@@ -11,24 +11,16 @@ class PersistentProperty<T>(
     defaultValue: T,
     private val serializer: KSerializer<T>,
 ) : ImmediateWritable<T>, BaseImmediateReadable<T>(defaultValue) {
-    private val listeners = ArrayList<() -> Unit>()
-
     override var value: T
         get() = super.value
         set(value) {
             PlatformStorage.set(key, DefaultJson.encodeToString(serializer, value))
+            println("Old: ${super.value} vs new: $value")
             super.value = value
         }
 
     override suspend infix fun set(value: T) {
         this.value = value
-    }
-
-    override fun addListener(listener: () -> Unit): () -> Unit {
-        listeners.add(listener)
-        return {
-            listeners.remove(listener)
-        }
     }
 
     init {

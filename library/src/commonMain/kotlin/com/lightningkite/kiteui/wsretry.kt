@@ -174,7 +174,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
             try {
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
-                TODO("Figure out error handling")
+                e.printStackTrace2()
             }
         }
     }
