@@ -34,8 +34,7 @@ object DynamicCSS {
         ))
         style("*", mapOf(
             "box-sizing" to "border-box",
-            "line-height" to "unset",
-            "overflow" to "hidden",
+            "line-height" to "unset"
         ))
         style("h1", mapOf("font-size" to "2rem"))
         style("h2", mapOf("font-size" to "1.6rem"))
