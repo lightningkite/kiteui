@@ -392,7 +392,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                             (value.max - allSubviews.last().index).coerceAtLeast(value.min - allSubviews.first().index)
                         } else 0
                         allSubviews.forEach {
-                            println("PERFORMING SHIFT C $shift")
+//                            println("PERFORMING SHIFT C $shift")
                             it.index += shift
                             if (it.index in value.min..value.max) {
                                 it.visible = true
@@ -445,7 +445,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-            println("Cannot get lock for $key, already held by $lockState!!!")
+//            println("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -480,7 +480,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     }
 
     private fun scrollTo(pos: Double, animate: Boolean) {
-        println("scrollTo: $pos")
+//        println("scrollTo: $pos")
         if (vertical) {
             setContentOffset(CGPointMake(
                 0.0,
@@ -504,7 +504,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
         if (allSubviews.isEmpty()) return
         if (index !in dataDirect.min..dataDirect.max) return
         if (viewportSize < 1) return
-        if(enqueuedJump != null) println("Enqueued jump activated")
+//        if(enqueuedJump != null) println("Enqueued jump activated")
         enqueuedJump = null
         lock("jump $index $align") {
             val rowIndex = index / columns
@@ -526,7 +526,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                         (rowIndex - existingBottom)
                     else 0
                     allSubviews.forEach {
-                        println("PERFORMING SHIFT B $shift")
+//                        println("PERFORMING SHIFT B $shift")
                         it.index += shift
                         if (it.index in dataDirect.min..dataDirect.max) {
                             it.visible = true

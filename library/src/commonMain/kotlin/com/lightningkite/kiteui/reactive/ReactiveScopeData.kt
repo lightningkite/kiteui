@@ -70,9 +70,9 @@ class ReactiveScopeData(
     }
 
     object Key : CoroutineContext.Key<ReactiveScopeData> {
-        init {
-            println("ReactiveScopeData V6")
-        }
+//        init {
+//            println("ReactiveScopeData V6")
+//        }
     }
 }
 
