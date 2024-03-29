@@ -43,8 +43,6 @@ fun ViewWriter.handleTheme(
     this.isRoot = false
     val changedThemes = changedThemes
     this.changedThemes = false
-    val parentIsSwap = includePaddingAtStackEmpty
-    includePaddingAtStackEmpty = false
 
     var firstTime = true
     inline fun animateAfterFirst(crossinline action: () -> Unit) {
@@ -71,7 +69,7 @@ fun ViewWriter.handleTheme(
         }
         val mightTransition = transition != ViewWriter.TransitionNextView.No
         val useBackground = shouldTransition
-        val usePadding = (mightTransition && !isRoot || viewForcePadding || parentIsSwap)/* && view !is UIImageView*/
+        val usePadding = (mightTransition && !isRoot || viewForcePadding)/* && view !is UIImageView*/
 
         val borders = !viewMarginless
 

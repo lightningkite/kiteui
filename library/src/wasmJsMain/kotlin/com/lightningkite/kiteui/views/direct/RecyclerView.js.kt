@@ -731,6 +731,7 @@ class RecyclerController2(
             .let { it.index + 1 + (viewportOffset + viewportSize - it.startPosition - it.size) / it.size.toDouble() }
         val numElements = dataDirect.max - dataDirect.min + 1
         suppressFakeScroll = true
+        fakeScroll.hidden = startIndexPartial.toInt() <= data.min && endIndexPartial >= data.max
         fakeScrollInner.style.size = "${100 * numElements}%"
         fakeScroll.scrollStart = (startIndexPartial + endIndexPartial - 1) / 2 * viewportSize
         updateVisibleIndexes()

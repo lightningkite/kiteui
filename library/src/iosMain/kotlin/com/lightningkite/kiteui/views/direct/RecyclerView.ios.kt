@@ -600,6 +600,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
         val endRatio = (endIndexPartial + dataDirect.min) / (dataDirect.max - dataDirect.min).coerceAtLeast(1)
         val sw = bounds.useContents { size.width }
         val sh = bounds.useContents { size.height }
+        fakeScrollIndicator.hidden = startIndexPartial.toInt() <= data.min && endIndexPartial >= data.max
         if(vertical) {
             fakeScrollIndicator.setFrame(CGRectMake(
                 bounds.useContents { size.width - 4.0 },

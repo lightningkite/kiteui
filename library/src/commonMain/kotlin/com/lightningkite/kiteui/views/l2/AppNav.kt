@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.contains
+import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Routes
@@ -67,21 +69,13 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             setup(appNav)
             toggleButton {
                 checked bind showMenu
-                image {
-                    val currentTheme = currentTheme
-                    ::source { Icon.menu.toImageSource(currentTheme().foreground) }
-                    description = "Open navigation menu"
-                }
+                icon(Icon.menu, "Open navigation menu")
             }
-            button {
-                image {
-                    val currentTheme = currentTheme
-                    ::source { Icon.arrowBack.toImageSource(currentTheme().foreground) }
-                    description = "Go Back"
-                }
+            if(Platform.current != Platform.Web) button {
+                icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
-            }
+            } else space(2.0)
             h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
                 Align.Center,
                 Align.Center
@@ -115,15 +109,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
         spacing = 0.px
         compactBar - row {
             setup(appNav)
-            button {
-                image {
-                    val currentTheme = currentTheme
-                    ::source { Icon.arrowBack.toImageSource(currentTheme().foreground) }
-                    description = "Go Back"
-                }
+            if(Platform.current != Platform.Web) button {
+                icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
-            }
+            } else space(2.0)
             h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
                 Align.Center,
                 Align.Center
@@ -134,7 +124,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             centered - navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        navigatorView(navigator) in weight(1f)
+        expanding - navigatorView(navigator)
     }
 }
 
@@ -145,15 +135,11 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 // Nav 3 top and bottom (top)
         compactBar - row {
             setup(appNav)
-            button {
-                image {
-                    val currentTheme = currentTheme
-                    ::source { Icon.arrowBack.toImageSource(currentTheme().foreground) }
-                    description = "Go Back"
-                }
+            if(Platform.current != Platform.Web) button {
+                icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
-            }
+            } else space(2.0)
             h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
                 Align.Center,
                 Align.Center
@@ -161,7 +147,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        navigatorView(navigator) in weight(1f)
+        expanding - navigatorView(navigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
             ::exists { appNav.existsProperty.await() && !SoftInputOpen.await() }
@@ -176,15 +162,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 // Nav 4 left and top - add dropdown for user info
         compactBar - row {
             setup(appNav)
-            button {
-                image {
-                    val currentTheme = currentTheme
-                    ::source { Icon.arrowBack.toImageSource(currentTheme().foreground) }
-                    description = "Go Back"
-                }
+            if(Platform.current != Platform.Web) button {
+                icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
-            }
+            } else space(2.0)
             h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
                 Align.Center,
                 Align.Center
@@ -200,7 +182,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
                 spacing = 0.px
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
-            navigatorView(navigator) in weight(1f)
+            expanding - navigatorView(navigator)
         } in weight(1f)
     }
 }

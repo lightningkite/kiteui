@@ -16,7 +16,7 @@ actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissB
         native.classList.add("dismissBackground")
         native.onclick = { navigator.dismiss() }
         setup(DismissBackground(native))
-        native.listNViews().forEach { it.onclick = { ev -> ev.stopImmediatePropagation() } }
+        native.listNViews().forEach { if(it.onclick != null) it.onclick = { ev -> ev.stopImmediatePropagation() } }
     }
 }
 

@@ -50,7 +50,6 @@ actual fun SwapView.swap(transition: ScreenTransition, createNewView: ViewWriter
         createNewView(vw)
     }
     (native.lastElementChild as? HTMLElement).takeUnless { it == previousLast }?.let { newView ->
-        newView.classList.add("forcePadding")
         exists = true
         val myStyle = window.getComputedStyle(native)
         val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"

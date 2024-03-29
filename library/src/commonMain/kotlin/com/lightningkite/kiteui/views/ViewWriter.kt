@@ -35,7 +35,6 @@ class ViewWriter(
         it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
-        it.includePaddingAtStackEmpty = includePaddingAtStackEmpty
         it.changedThemes = changedThemes
     }
 
@@ -49,8 +48,6 @@ class ViewWriter(
         it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
-        it.includePaddingAtStackEmpty = includePaddingAtStackEmpty
-        it.changedThemes = changedThemes
     }
 
     /**
@@ -63,8 +60,6 @@ class ViewWriter(
         it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
-        it.includePaddingAtStackEmpty = includePaddingAtStackEmpty
-        it.changedThemes = changedThemes
     }
 
     val stack = if (parent == null) arrayListOf() else arrayListOf(parent)

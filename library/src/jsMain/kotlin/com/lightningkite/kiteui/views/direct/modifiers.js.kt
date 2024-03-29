@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
@@ -15,6 +16,7 @@ import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+private val openingOtherPopover = ArrayList<()->Unit>()
 
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
@@ -28,13 +30,16 @@ actual fun ViewWriter.hasPopover(
         val sourceElement = this
         var existingElement: HTMLElement? = null
         var existingDismisser: HTMLElement? = null
-        val maxDist = 64
+        val maxDist = 32
         var stayOpen = false
         var close = {}
         val writerTargetingBody = targeting(document.body!!)
         val newViews = newViews()
         fun makeElement() {
             if (existingElement != null) return
+            openingOtherPopover.forEach { it() }
+            openingOtherPopover.clear()
+            openingOtherPopover.add { close() }
             with(writerTargetingBody) {
                 currentTheme = rootTheme
                 lastTheme = rootTheme
@@ -131,6 +136,9 @@ actual fun ViewWriter.hasPopover(
                     }, 16)
                     window.addEventListener("mousemove", mouseMove)
                     window.addEventListener("scroll", { reposition() }, true)
+                    addEventListener("mousewheel", { event: Event ->
+                        pos.dispatchEvent(event)
+                    })
                     setup(object : PopoverContext {
                         override fun close() {
                             close()

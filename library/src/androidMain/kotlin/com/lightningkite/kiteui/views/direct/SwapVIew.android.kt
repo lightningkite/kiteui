@@ -18,7 +18,7 @@ actual class NSwapView(context: Context): SlightlyModifiedFrameLayout(context) {
 @ViewDsl
 actual inline fun ViewWriter.swapViewActual(crossinline setup: SwapView.() -> Unit) {
     return viewElement(factory = ::NSwapView, wrapper = ::SwapView, setup = {
-        native.viewWriter = newViews().also { it.includePaddingAtStackEmpty = true }
+        native.viewWriter = newViews()
         setup(this)
     })
 }
@@ -26,7 +26,7 @@ actual inline fun ViewWriter.swapViewActual(crossinline setup: SwapView.() -> Un
 @ViewDsl
 actual inline fun ViewWriter.swapViewDialogActual(crossinline setup: SwapView.() -> Unit) {
     return viewElement(factory = ::NSwapView, wrapper = ::SwapView, setup = {
-        native.viewWriter = newViews().also { it.includePaddingAtStackEmpty = true }
+        native.viewWriter = newViews()
         native.visibility = View.GONE
         setup(this)
     })
@@ -40,7 +40,6 @@ actual fun SwapView.swap(
     native.viewWriter.rootCreated = null
     animationsEnabled = false
     try {
-        native.viewWriter.includePaddingAtStackEmpty = true
         native.viewWriter.createNewView()
     } finally {
         animationsEnabled = true

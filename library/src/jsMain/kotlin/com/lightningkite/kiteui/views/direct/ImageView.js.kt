@@ -47,6 +47,7 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
+    if((native.lastElementChild as? HTMLImageElement)?.src ?: "" == url) return
     if(!animationsEnabled) {
         native.innerHTML = ""
     }
