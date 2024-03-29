@@ -15,7 +15,7 @@ class PersistentProperty<T>(
         get() = super.value
         set(value) {
             PlatformStorage.set(key, DefaultJson.encodeToString(serializer, value))
-            println("Old: ${super.value} vs new: $value")
+//            println("Old: ${super.value} vs new: $value")
             super.value = value
         }
 

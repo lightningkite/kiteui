@@ -7,7 +7,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import java.io.File
-import java.util.HashMap
 
 interface KiteUiPluginExtension {
     var packageName: String
@@ -19,6 +18,12 @@ interface KiteUiPluginExtension {
 class KiteUiPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
         val ext = extensions.create("kiteui", KiteUiPluginExtension::class.java)
+        afterEvaluate {
+            if (ext.packageName == null)
+                throw IllegalArgumentException("KiteUiPluginExtension property packageName is null. Please configure KiteUiPluginExtension and provide a value")
+            if (ext.iosProjectRoot == null)
+                throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is null. Please configure KiteUiPluginExtension and provide a value")
+        }
         tasks.create("kiteuiResourcesCommon", Task::class.java).apply {
             group = "build"
             val resourceFolder = project.file("src/commonMain/resources")
@@ -354,7 +359,7 @@ sealed class Resource {
         val normal: SubFont,
         val bold: SubFont? = null,
         val italic: SubFont? = null,
-        val boldItalic: SubFont? = null
+        val boldItalic: SubFont? = null,
     ) : Resource() {
         data class SubFont(
             val source: File,

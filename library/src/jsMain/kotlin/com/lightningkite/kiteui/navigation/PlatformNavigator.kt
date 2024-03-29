@@ -118,6 +118,8 @@ actual object PlatformNavigator : KiteUiNavigator {
     override fun reset(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Neutral
         navigate(screen, pushState = false)
+        currentIndex = 0
+        nextIndex = 1
     }
 
     override fun goBack(): Boolean {
