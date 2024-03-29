@@ -1079,13 +1079,13 @@ object DynamicCSS {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
         style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage)", ".forcePadding:not(.cancelForcePadding):not(.swapImage)"), mapOf(
+            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded)", ".padded:not(.unpadded):not(.swapImage)"), mapOf(
                 "padding" to "var(--spacing, 0px)",
                 "--usePadding" to "1",
             )
         )
         style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage) > *", ".forcePadding:not(.cancelForcePadding):not(.swapImage) > *"), mapOf(
+            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *", ".padded:not(.unpadded):not(.swapImage) > *"), mapOf(
                 "--parentSpacing" to theme.spacing.value,
             )
         )

@@ -152,19 +152,19 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual val ViewWriter.marginless: ViewWrapper
+actual val ViewWriter.padded: ViewWrapper
     get() {
         beforeNextElementSetup {
-            extensionMarginless = true
+            extensionForcePadding = true
         }
         return ViewWrapper
     }
 
 @ViewModifierDsl3
-actual val ViewWriter.padded: ViewWrapper
+actual val ViewWriter.unpadded: ViewWrapper
     get() {
         beforeNextElementSetup {
-            extensionForcePadding = true
+            extensionForcePadding = false
         }
         return ViewWrapper
     }

@@ -48,8 +48,7 @@ object InfiniteImagesScreen : KiteUiScreen {
         recyclerView {
             columns = 4
             children(Constant(ReturnIndexList)) {
-                button {
-                    spacing = 0.px
+                unpadded - button {
                     sizeConstraints(height = 16.rem) - image {
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }

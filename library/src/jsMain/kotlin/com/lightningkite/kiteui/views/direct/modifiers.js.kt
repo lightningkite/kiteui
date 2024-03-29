@@ -249,17 +249,19 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual val ViewWriter.marginless: ViewWrapper
+actual val ViewWriter.padded: ViewWrapper
     get() {
-        (currentView as? HTMLDivElement)?.let(::ContainingView)?.spacing = 0.px
+        beforeNextElementSetup {
+            classList.add("padded")
+        }
         return ViewWrapper
     }
 
 @ViewModifierDsl3
-actual val ViewWriter.padded: ViewWrapper
+actual val ViewWriter.unpadded: ViewWrapper
     get() {
         beforeNextElementSetup {
-            classList.add("forcePadding")
+            classList.add("unpadded")
         }
         return ViewWrapper
     }

@@ -19,23 +19,22 @@ import com.lightningkite.kiteui.views.*
 import java.util.*
 
 
-val viewIsMarginless: WeakHashMap<View, Boolean> = WeakHashMap()
 val viewHasPadding: WeakHashMap<View, Boolean> = WeakHashMap()
-
-@ViewModifierDsl3
-actual val ViewWriter.marginless: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            viewIsMarginless[this] = true
-        }
-        return ViewWrapper
-    }
 
 @ViewModifierDsl3
 actual val ViewWriter.padded: ViewWrapper
     get() {
         beforeNextElementSetup {
             viewHasPadding[this] = true
+        }
+        return ViewWrapper
+    }
+
+@ViewModifierDsl3
+actual val ViewWriter.unpadded: ViewWrapper
+    get() {
+        beforeNextElementSetup {
+            viewHasPadding[this] = false
         }
         return ViewWrapper
     }

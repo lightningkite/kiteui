@@ -60,8 +60,6 @@ fun ViewWriter.handleTheme(
     view.calculationContext.reactiveScope {
         val theme = currentTheme()
 
-        val viewMarginless = view.extensionMarginless ?: false
-        val viewForcePadding = view.extensionForcePadding ?: false
         val shouldTransition = when (transition) {
             ViewWriter.TransitionNextView.No -> false
             ViewWriter.TransitionNextView.Yes -> true
@@ -69,9 +67,7 @@ fun ViewWriter.handleTheme(
         }
         val mightTransition = transition != ViewWriter.TransitionNextView.No
         val useBackground = shouldTransition
-        val usePadding = (mightTransition && !isRoot || viewForcePadding)/* && view !is UIImageView*/
-
-        val borders = !viewMarginless
+        val usePadding = view.extensionForcePadding ?: (mightTransition && !isRoot)/* && view !is UIImageView*/
 
         if (usePadding) {
             view.extensionPadding = (view.spacingOverride?.await() ?: theme.spacing).value
@@ -84,7 +80,7 @@ fun ViewWriter.handleTheme(
 
         animateAfterFirst {
             if (loading) {
-                applyThemeBackground(theme, view, parentSpacing, borders)
+                applyThemeBackground(theme, view, parentSpacing, true)
                 if (!useBackground) view.layer.apply {
                     shadowColor = null
                     shadowOpacity = 0f
@@ -109,7 +105,7 @@ fun ViewWriter.handleTheme(
                 cancelAnimation?.invoke()
                 cancelAnimation = null
                 if (useBackground) {
-                    applyThemeBackground(theme, view, parentSpacing, borders)
+                    applyThemeBackground(theme, view, parentSpacing, true)
                     background(theme)
                 } else if(view is UIImageView) {
                     val cr = when(val it = theme.cornerRadii) {
