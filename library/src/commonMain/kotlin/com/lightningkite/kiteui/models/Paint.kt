@@ -18,12 +18,19 @@ data class LinearGradient(
     val screenStatic: Boolean = false,
 ) : Paint {
     override fun closestColor(): Color {
-        return stops.maxByOrNull { it.ratio }?.color ?: Color.transparent
+        if(stops.isEmpty()) return Color.transparent
+        return stops.map { it.color.toHSV() }.let {
+            HSVColor(
+                hue = it.map { it.hue.turns }.average().let(::Angle),
+                value = it.map { it.value }.average().toFloat(),
+                saturation = it.map { it.saturation }.average().toFloat()
+            )
+        }.toRGB()
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
 
-    fun toGrayscale()  = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
+    fun toGrayscale() = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
     fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
     fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
     fun toWhite(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
@@ -39,6 +46,7 @@ data class RadialGradient(
     override fun closestColor(): Color {
         return stops.maxByOrNull { it.ratio }?.color ?: Color.transparent
     }
+
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
 }
 
@@ -98,6 +106,7 @@ data class Color(
         val black = Color(1f, 0f, 0f, 0f)
 
         val red = Color(1f, 1f, 0f, 0f)
+        val orange = Color(1f, 1f, 0.5f, 0f)
         val yellow = Color(1f, 1f, 1f, 0f)
         val green = Color(1f, 0f, 1f, 0f)
         val teal = Color(1f, 0f, 1f, 1f)

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.views.DynamicCSS.toCss
 import com.lightningkite.kiteui.views.direct.reservedScrollingSpace
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -994,6 +995,10 @@ object DynamicCSS {
         is RadialGradient -> "radial-gradient(circle at center, ${joinGradientStops(stops)})"
     }
 
+    private fun BackdropFilter.toCss(): String = when (this) {
+        is BackdropFilter.Blur -> "blur(${amount.value})"
+    }
+
     private fun joinGradientStops(stops: List<GradientStop>): String {
         return stops.joinToString {
             "${it.color.toWeb()} ${it.ratio * 100}%"
@@ -1102,7 +1107,7 @@ object DynamicCSS {
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
-            }
+            } + if(theme.backdropFilters.isNotEmpty()) mapOf("backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap()
         )
         style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),

@@ -125,4 +125,10 @@ actual object ExternalServices {
         (AndroidAppContext.activityCtx?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
             .setPrimaryClip(ClipData.newPlainText(value, value))
     }
+//    actual fun download(blob: Blob) {
+//
+//    }
+//    actual fun download(url: String) {
+//
+//    }
 }

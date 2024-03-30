@@ -26,7 +26,13 @@ object SampleLogInScreen : KiteUiScreen {
             }
             padded - scrolls - col {
                 expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - card - col {
+                centered - sizeConstraints(maxWidth = 50.rem) - themeFromLast {
+                    it.copy(
+                        background = Color.orange.withAlpha(0.25f),
+                        backdropFilters = listOf(BackdropFilter.Blur(1.rem)),
+                        card = { it }
+                    )
+                } - col {
                     h1 { content = "My App" }
                     label {
                         content = "Email"

@@ -7,4 +7,6 @@ expect object ExternalServices {
     fun requestCaptureSelf(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?)->Unit)
     fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?)->Unit)
     fun setClipboardText(value: String)
+//    fun download(blob: Blob)
+//    fun download(url: String)
 }

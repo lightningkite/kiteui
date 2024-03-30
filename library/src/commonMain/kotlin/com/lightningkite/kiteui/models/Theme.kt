@@ -13,6 +13,7 @@ data class Theme(
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
     val background: Paint = Color.white,
+    val backdropFilters: List<BackdropFilter> = listOf(),
     val card: (Theme.() -> Theme) = { this },
     val hover: (Theme.() -> Theme) = {
         copy(
