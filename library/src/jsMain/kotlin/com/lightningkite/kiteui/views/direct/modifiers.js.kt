@@ -272,7 +272,7 @@ actual val ViewWriter.unpadded: ViewWrapper
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
     wrapNext(document.createElement("div") as HTMLDivElement) {
-        className = "hidingContainer"
+        classList.add("hidingContainer")
         hidden = !default
         var last = !default
         calculationContext.reactiveScope {

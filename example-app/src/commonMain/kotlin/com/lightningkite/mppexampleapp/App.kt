@@ -18,7 +18,7 @@ val appTheme = Property<Theme>(
 )
 
 fun ViewWriter.app() {
-
+    rootTheme = { appTheme() }
     appNav(AutoRoutes) {
         appName = "KiteUI Sample App"
         ::navItems {
@@ -42,5 +42,5 @@ fun ViewWriter.app() {
             )
         )
 
-    } in setTheme { appTheme.await() }
+    }
 }

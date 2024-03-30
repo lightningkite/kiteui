@@ -43,7 +43,7 @@ object DynamicCSS {
         style("h4", mapOf("font-size" to "1.3rem"))
         style("h5", mapOf("font-size" to "1.2rem"))
         style("h6", mapOf("font-size" to "1.1rem"))
-        style(".subtext", mapOf("font-size" to "0.8rem"))
+        style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8"))
 //        style.visibility = if (value) "visible" else "hidden"
         style(
             ".visibleOnParentHover",

@@ -132,6 +132,7 @@ actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Uni
         this.extensionFontAndStyle = it.body
         it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
     }
+    opacity = 0.8
     setup(TextView(this))
 }
 

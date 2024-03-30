@@ -17,6 +17,7 @@ import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.opacity
 
 actual typealias NTextView = AndroidTextView
 
@@ -69,7 +70,8 @@ actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): U
 actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit): Unit = textElement(TextSizes.body, setup)
 
 @ViewDsl
-actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Unit): Unit = textElement(TextSizes.subtext, setup)
+actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Unit): Unit = textElement(TextSizes.subtext,
+    { opacity = 0.8; setup(this) })
 actual var TextView.content: String
     get() {
         return native.text.toString()
