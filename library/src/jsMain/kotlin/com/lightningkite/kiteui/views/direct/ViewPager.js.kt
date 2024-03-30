@@ -2,10 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.dom.addClass
 import org.w3c.dom.*
@@ -20,11 +17,11 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
         classList.add("recyclerView")
         val newViews: ViewWriter = newViews()
         ResizeObserver { entries, obs ->
-            style.setProperty("--pager-width", "calc(${clientWidth}px - var(--spacing, 0px) * 2 - 2px)")
-            style.setProperty("--pager-height", "calc(${clientHeight}px - var(--spacing, 0px) * 2 - 2px)")
+            style.setProperty("--pager-width", "calc(${clientWidth}px")
+            style.setProperty("--pager-height", "calc(${clientHeight}px")
         }.observe(this)
-        style.setProperty("--pager-width", "calc(${clientWidth}px - var(--spacing, 0px) * 2 - 2px)")
-        style.setProperty("--pager-height", "calc(${clientHeight}px - var(--spacing, 0px) * 2 - 2px)")
+        style.setProperty("--pager-width", "calc(${clientWidth}px")
+        style.setProperty("--pager-height", "calc(${clientHeight}px")
         val rc = RecyclerController2(
             root = this,
             newViews = newViews,
@@ -70,9 +67,10 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
 }
 
 actual val ViewPager.index: Writable<Int> get() {
-    return native.vprop("scroll", { (scrollLeft / clientWidth).roundToInt() }, {
-        (this.asDynamic().__ROCK__controller as RecyclerController2).jump(it, Align.Center, animationsEnabled)
-    })
+    return (native.asDynamic().__ROCK__controller as RecyclerController2).centerVisible
+        .withWrite {
+            (native.asDynamic().__ROCK__controller as RecyclerController2).jump(it, Align.Center, animationsEnabled)
+        }
 }
 
 actual fun <T> ViewPager.children(

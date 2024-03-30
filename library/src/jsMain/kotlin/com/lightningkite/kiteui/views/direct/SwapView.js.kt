@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
@@ -50,11 +51,20 @@ actual fun SwapView.swap(transition: ScreenTransition, createNewView: ViewWriter
         createNewView(vw)
     }
     (native.lastElementChild as? HTMLElement).takeUnless { it == previousLast }?.let { newView ->
+        if (native.hidden) {
+            native.hidden = false
+            native.style.opacity = "1"
+        }
         exists = true
         val myStyle = window.getComputedStyle(native)
         val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
         newView.style.animation = "${keyframeName}-enter $transitionTime forwards"
     } ?: run {
-        exists = false
+        if(!native.hidden) {
+            native.style.opacity = "0"
+            afterTimeout(150) {
+                native.hidden = true
+            }
+        }
     }
 }

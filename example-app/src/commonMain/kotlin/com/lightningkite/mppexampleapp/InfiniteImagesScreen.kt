@@ -68,7 +68,9 @@ class ImageViewPager(val initialIndex: Int) : KiteUiScreen {
 
     override fun ViewWriter.render() {
         stack {
+            val rv: ViewPager
             viewPager {
+                rv = this
                 children(Constant(InfiniteImagesScreen.ReturnIndexList)) { currImage ->
                     val renders = Property(0)
                     stack {
@@ -83,7 +85,7 @@ class ImageViewPager(val initialIndex: Int) : KiteUiScreen {
                             }
                             scaleType = ImageScaleType.Fit
                         }
-                        h2 { ::content { renders.await().toString() } }
+                        centered - h2 { ::content { renders.await().toString() } }
                     }
                 }
                 index bind currentPage
@@ -92,6 +94,21 @@ class ImageViewPager(val initialIndex: Int) : KiteUiScreen {
                 icon { source = Icon.close }
                 onClick {
                     navigator.dismiss()
+                }
+            }
+            atBottomCenter - row {
+                text {
+                    ::content { "currentPage ${currentPage.await()}" }
+                }
+                text {
+                    content = "I never update because I'm a loser"
+                    ::content { "rv.index ${rv.index.await()}" }
+                }
+            }
+            atBottomStart - button {
+                text("jump to #20")
+                onClick {
+                    currentPage.set(20)
                 }
             }
         } in themeFromLast { it.copy(background = Color.black, foreground = Color.white) }
