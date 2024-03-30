@@ -33,13 +33,10 @@ actual inline fun ViewWriter.rowActual(crossinline setup: ContainingView.() -> U
 actual var ContainingView.vertical: Boolean
     get() = native.js.classList.contains("kiteui-col")
     set(value) {
-        if (native.js.classList.contains("kiteui-col")) {
-            native.js.classList.remove("kiteui-col")
-            native.js.classList.add("kiteui-row")
-        } else {
-            native.js.classList.add("kiteui-col")
-            native.js.classList.remove("kiteui-row")
-        }
+        val className = if (value) "kiteui-col" else "kiteui-row"
+        val oppositeClassName = if (!value) "kiteui-col" else "kiteui-row"
+        native.js.classList.remove(oppositeClassName)
+        native.js.classList.add(className)
     }
 
 
