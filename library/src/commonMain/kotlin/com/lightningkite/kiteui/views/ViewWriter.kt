@@ -36,6 +36,7 @@ class ViewWriter(
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
         it.changedThemes = changedThemes
+        it.rootTheme = rootTheme
     }
 
     /**
@@ -48,6 +49,7 @@ class ViewWriter(
         it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
+        it.rootTheme = rootTheme
     }
 
     /**
@@ -60,6 +62,7 @@ class ViewWriter(
         it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
+        it.rootTheme = rootTheme
     }
 
     val stack = if (parent == null) arrayListOf() else arrayListOf(parent)

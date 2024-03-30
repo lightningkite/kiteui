@@ -49,8 +49,8 @@ object DynamicCSS {
             ".visibleOnParentHover",
             mapOf(
                 "visibility" to "hidden",
-                "width" to "max-content",
-                "height" to "max-content",
+                "width" to "auto",
+                "height" to "auto",
                 "max-width" to "unset",
                 "max-height" to "unset",
             )
@@ -852,13 +852,13 @@ object DynamicCSS {
             "display" to "flex",
             "flex-direction" to "row",
             "gap" to "var(--spacing, 0)",
-            "height" to "max-content"
+            "height" to "auto"
         ))
         style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
             "display" to "flex",
             "flex-direction" to "column",
             "gap" to "var(--spacing, 0)",
-            "width" to "max-content"
+            "width" to "auto"
         ))
         style(".recyclerViewGridSub > *",  mapOf(
             "flex-grow" to "1",

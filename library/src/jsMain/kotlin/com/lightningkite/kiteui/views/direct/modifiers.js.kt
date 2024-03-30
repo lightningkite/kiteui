@@ -41,8 +41,8 @@ actual fun ViewWriter.hasPopover(
             openingOtherPopover.clear()
             openingOtherPopover.add { close() }
             with(writerTargetingBody) {
-                currentTheme = rootTheme
-                lastTheme = rootTheme
+                currentTheme = { rootTheme().dialog() }
+                lastTheme = { rootTheme().dialog() }
                 stayOpen = false
                 element<HTMLDivElement>("div") {
                     existingElement = this
@@ -50,7 +50,7 @@ actual fun ViewWriter.hasPopover(
                     style.zIndex = "999"
 //                    style.transform = "scale(0,0)"
                     style.opacity = "0"
-                    style.height = "max-content"
+                    style.height = "auto"
                     calculationContext.reactiveScope {
                         style.setProperty("--parentSpacing", theme().spacing.value)
                     }
