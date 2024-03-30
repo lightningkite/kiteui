@@ -88,3 +88,9 @@ open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayo
         return null
     }
 }
+
+actual var ContainingView.vertical: Boolean
+    get() = (native as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.VERTICAL
+    set(value) {
+        (native as? SimplifiedLinearLayout)?.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
+    }

@@ -30,6 +30,19 @@ actual inline fun ViewWriter.rowActual(crossinline setup: ContainingView.() -> U
     setup(ContainingView(this))
 }
 
+actual var ContainingView.vertical: Boolean
+    get() = native.js.classList.contains("kiteui-col")
+    set(value) {
+        if (native.js.classList.contains("kiteui-col")) {
+            native.js.classList.remove("kiteui-col")
+            native.js.classList.add("kiteui-row")
+        } else {
+            native.js.classList.add("kiteui-col")
+            native.js.classList.remove("kiteui-row")
+        }
+    }
+
+
 //actual var ContainingView.spacing: Dimension
 //    get() {
 //        return Dimension(native.js.style.getPropertyValue("--spacing").takeUnless { it.isBlank() } ?: "0px")

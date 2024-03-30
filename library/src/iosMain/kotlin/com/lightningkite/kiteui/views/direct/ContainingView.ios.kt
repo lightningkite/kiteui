@@ -37,3 +37,9 @@ actual inline fun ViewWriter.rowActual(crossinline setup: ContainingView.() -> U
     }
     setup(ContainingView(this))
 }
+
+actual var ContainingView.vertical: Boolean
+    get() = (native as? LinearLayout)?.horizontal?.not() ?: false
+    set(value) {
+        (native as? LinearLayout)?.horizontal = !value
+    }

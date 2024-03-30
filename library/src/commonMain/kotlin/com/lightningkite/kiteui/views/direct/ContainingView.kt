@@ -21,6 +21,8 @@ expect fun ViewWriter.colActual(setup: ContainingView.()->Unit = {}): Unit
 expect fun ViewWriter.rowActual(setup: ContainingView.()->Unit = {}): Unit
 @OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.row(noinline setup: ContainingView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; rowActual(setup) }
 
+expect var ContainingView.vertical: Boolean
+
 var ContainingView.spacing: Dimension
     get() = native.spacing
     set(value) {
