@@ -230,8 +230,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement) {
 }
 
 fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.()->Unit) {
-    row {
-        spacing = 0.px
+    navSpacing - nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
                 compact - col {
@@ -275,13 +274,13 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                         ::exists {it.hidden?.invoke() != true}
                         display(it)
                         ::to { it.destination() }
-                    } in themeFromLast { existing ->
+                    } in maybeThemeFromLast { existing ->
                         if (navigator.currentScreen.await()?.let { navigator.routes.render(it) }?.urlLikePath?.segments == navigator.routes.render(
                                 it.destination()
                             )?.urlLikePath?.segments)
-                            (existing.bar() ?: existing).selected()
+                            existing.selected()
                         else
-                            existing.bar() ?: existing
+                            null
                     }
                     Unit
                 }

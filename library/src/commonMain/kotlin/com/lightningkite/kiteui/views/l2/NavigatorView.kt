@@ -13,7 +13,7 @@ fun ViewWriter.navigatorView(navigator: KiteUiNavigator) {
             views = { screen ->
                 this.navigator = navigator
                 if (screen != null)
-                    with(screen) { padded - render() }
+                    with(screen) { mainContent - padded - render() }
             }
         )
     }

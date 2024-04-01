@@ -8,12 +8,40 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
 
 val appTheme = Property<Theme>(
-    MaterialLikeTheme(
-        primary = Color(1f, 0.2f, 0.2f, 0.2f),
-        secondary = Color.blue,
-        title = FontAndStyle(font = Resources.fontsMontserrat),
-        body = FontAndStyle(font = Resources.fontsMontserrat),
-        spacing = 1.rem,
+    Theme(
+        title = FontAndStyle(Resources.fontsGoldman),
+        body = FontAndStyle(Resources.fontsRoboto),
+        elevation = 0.dp,
+        cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
+        spacing = 0.75.rem,
+        outline = Color.gray(0.8f),
+        outlineWidth = 0.px,
+        foreground = Color.gray(0.8f),
+        background = RadialGradient(
+            stops = listOf(
+                GradientStop(0f, Color.gray(0.2f)),
+                GradientStop(0.4f, Color.gray(0.1f)),
+                GradientStop(1f, Color.gray(0.1f)),
+            ),
+        ),
+        navSpacing = 1.rem,
+        mainContent = { card() },
+        bar = { card() },
+        dialog = { card() },
+        card = {
+            copy(background = this.background.closestColor().highlight(0.05f))
+        },
+        nav = {
+            copy(
+                background = LinearGradient(
+                    stops = listOf(
+                        GradientStop(0f, Color.gray(0.12f)),
+                        GradientStop(1f, Color.gray(0.1f)),
+                    ),
+                    angle = Angle.halfTurn
+                ),
+            )
+        }
     )
 )
 

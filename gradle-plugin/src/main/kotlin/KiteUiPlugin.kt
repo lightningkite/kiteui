@@ -381,6 +381,7 @@ fun File.resources(): Map<String, Resource> {
     val out = HashMap<String, Resource>()
     walkTopDown().forEach { file ->
         if (file.name.isEmpty()) return@forEach
+        if (file.nameWithoutExtension.isEmpty()) return@forEach
         if (file.isDirectory) return@forEach
         val relativeFile = file.relativeTo(this)
         val name = relativeFile.path.replace('/', ' ').replace('\\', ' ')

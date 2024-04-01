@@ -136,7 +136,7 @@ dependencies {
 
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.mppexampleapp"
-    this.iosProjectRoot = project.file("../example-app-ios/KiteUI Example App")
+    this.iosProjectRoot = project.file("../example-app-ios/Rock Example App")
 }
 
 android {

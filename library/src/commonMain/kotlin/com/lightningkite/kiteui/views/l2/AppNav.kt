@@ -58,14 +58,11 @@ fun ViewWriter.appNav(routes: Routes, setup: AppNav.() -> Unit) {
     }
 }
 
-private val ViewWriter.compactBar get() = themeFromLast { (it.bar() ?: it).let { it.copy(spacing = it.spacing / 2) } }
-
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
-    col {
-        spacing = 0.px
-        compactBar - row {
+    padded - navSpacing - col {
+        bar - row {
             setup(appNav)
             toggleButton {
                 checked bind showMenu
@@ -83,8 +80,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - stack {
-            spacing = 0.px
+        expanding - navSpacing - stack {
             navigatorView(navigator)
             atStart - nav - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() }
             scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
@@ -98,9 +94,8 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    col {
-        spacing = 0.px
-        compactBar - row {
+    padded - navSpacing - col {
+        bar - row {
             setup(appNav)
             if(Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -123,10 +118,9 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    col {
-        spacing = 0.px
+    padded - navSpacing - col {
 // Nav 3 top and bottom (top)
-        compactBar - row {
+        bar - row {
             setup(appNav)
             if(Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -150,10 +144,9 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    col {
-        spacing = 0.px
+    padded - navSpacing - col {
 // Nav 4 left and top - add dropdown for user info
-        compactBar - row {
+        bar - row {
             setup(appNav)
             if(Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -169,10 +162,8 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 
             ::exists { appNav.existsProperty.await() }
         }
-        row {
-            spacing = 0.px
-            nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
-                spacing = 0.px
+        navSpacing - row {
+            navSpacing - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
             expanding - navigatorView(navigator)

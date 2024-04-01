@@ -8,13 +8,17 @@ data class Theme(
     val elevation: Dimension = 1.px,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     val spacing: Dimension = 1.rem,
+    val navSpacing: Dimension = 0.rem,
     val foreground: Paint = Color.black,
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
     val background: Paint = Color.white,
     val backdropFilters: List<BackdropFilter> = listOf(),
+
     val card: (Theme.() -> Theme) = { this },
+    val field: (Theme.() -> Theme) = { this },
+    val button: (Theme.() -> Theme) = { this },
     val hover: (Theme.() -> Theme) = {
         copy(
             background = this.background.closestColor().highlight(0.2f),
@@ -50,6 +54,7 @@ data class Theme(
             outline = this.outline.applyAlpha(alpha = 0.25f),
         )
     },
+    val mainContent: (Theme.() -> Theme?) = { this },
     val bar: (Theme.() -> Theme?) = {
         copy(
             foreground = this.background,
@@ -90,12 +95,21 @@ data class Theme(
 ) {
     val icon: Paint get() = iconOverride ?: foreground
 
+    private var mainContentCache: Theme? = null
+    @JsName("mainContentDirect")
+    fun mainContent() = mainContentCache ?: mainContent(this).also { mainContentCache = it }
     private var cardCache: Theme? = null
     @JsName("cardDirect")
     fun card() = cardCache ?: card(this).also { cardCache = it }
     private var dialogCache: Theme? = null
     @JsName("dialogDirect")
     fun dialog() = dialogCache ?: dialog(this).also { dialogCache = it }
+    private var fieldCache: Theme? = null
+    @JsName("fieldDirect")
+    fun field() = fieldCache ?: field(this).also { fieldCache = it }
+    private var buttonCache: Theme? = null
+    @JsName("buttonDirect")
+    fun button() = buttonCache ?: button(this).also { buttonCache = it }
     private var hoverCache: Theme? = null
     @JsName("hoverDirect")
     fun hover() = hoverCache ?: hover(this).also { hoverCache = it }
