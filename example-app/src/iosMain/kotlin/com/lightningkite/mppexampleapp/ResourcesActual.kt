@@ -10,4 +10,5 @@ actual object Resources {
     actual val fontsRobotoLightItalic: Font = fontFromFamilyInfo(normal = "Roboto-LightItalic", italic = null, bold = null, boldItalic = null)  // Font(name=fontsRobotoLightItalic, normal=SubFont(source=/Users/jivie/Projects/kiteui/example-app/src/commonMain/resources/fonts/roboto/light-Italic.ttf, relativeFile=fonts/roboto/light-Italic.ttf, fontSuperFamily=Roboto, fontFamily=Roboto Light, fontSubFamily=Italic, postScriptName=Roboto-LightItalic), bold=null, italic=null, boldItalic=null)
     actual val imagesMammoth: ImageResource = ImageResource("imagesMammoth")
     actual val imagesSolera: ImageResource = ImageResource("imagesSolera")
+    actual val videoBack: VideoResource = VideoResource("videoBack", "mp4")
 }

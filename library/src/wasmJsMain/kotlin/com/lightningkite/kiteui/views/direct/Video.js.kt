@@ -35,3 +35,17 @@ actual inline var Video.source: VideoSource?
     }
 actual val Video.time: Writable<Double> get() = native.js.vprop("timeupdate", { this.currentTime }, { this.currentTime = it })
 actual val Video.playing: Writable<Boolean> get() = native.js.vprop("timeupdate", { !this.paused }, { if(it) play() else pause() })
+actual val Video.volume: Writable<Float> get() = native.js.vprop("volumechange", { this.volume.toFloat() }, {
+    this.volume = it.toDouble()
+})
+actual var Video.showControls: Boolean
+    get() = native.js.controls
+    set(value) { native.js.controls = value }
+actual var Video.loop: Boolean
+    get() = native.js.loop
+    set(value) { native.js.loop = value }
+actual var Video.scaleType: ImageScaleType
+    get() = TODO()
+    set(value) {
+        native.js.className = native.js.className.split(' ').filter { !it.startsWith("scaleType-") }.plus("scaleType-$value").joinToString(" ")
+    }

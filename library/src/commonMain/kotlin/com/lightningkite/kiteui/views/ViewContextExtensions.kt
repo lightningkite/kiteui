@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.views.l2.AppNav
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 

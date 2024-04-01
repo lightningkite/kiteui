@@ -77,6 +77,10 @@ object DynamicCSS {
         style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
         style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
+        style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
+        style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
+        style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
+        style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
 
         style(".noInteraction.noInteraction", mapOf(
             "pointer-events" to "none"

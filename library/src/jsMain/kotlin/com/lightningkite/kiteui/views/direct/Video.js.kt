@@ -17,8 +17,8 @@ actual typealias NVideo = org.w3c.dom.HTMLVideoElement
 @ViewDsl
 actual inline fun ViewWriter.videoActual(crossinline setup: Video.() -> Unit): Unit =
     themedElement<NVideo>("video") {
-        setup(Video(this))
         controls = true
+        setup(Video(this))
     }
 actual inline var Video.source: VideoSource?
     get() = TODO()
@@ -33,4 +33,22 @@ actual inline var Video.source: VideoSource?
         }
     }
 actual val Video.time: Writable<Double> get() = native.vprop("timeupdate", { this.currentTime }, { this.currentTime = it })
-actual val Video.playing: Writable<Boolean> get() = native.vprop("timeupdate", { !this.paused }, { if(it) play() else pause() })
+actual val Video.playing: Writable<Boolean> get() = native.vprop("timeupdate", { !this.paused }, {
+    if (it) play().catch { _ ->
+        autoplay = it
+    } else pause()
+})
+actual val Video.volume: Writable<Float> get() = native.vprop("volumechange", { this.volume.toFloat() }, {
+    this.volume = it.toDouble()
+})
+actual var Video.showControls: Boolean
+    get() = native.controls
+    set(value) { native.controls = value }
+actual var Video.loop: Boolean
+    get() = native.loop
+    set(value) { native.loop = value }
+actual var Video.scaleType: ImageScaleType
+    get() = TODO()
+    set(value) {
+        native.className = native.className.split(' ').filter { !it.startsWith("scaleType-") }.plus("scaleType-$value").joinToString(" ")
+    }

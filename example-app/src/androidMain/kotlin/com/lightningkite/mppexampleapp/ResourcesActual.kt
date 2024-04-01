@@ -11,4 +11,5 @@ actual object Resources {
     actual val fontsRobotoLightItalic: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_roboto_light_italic)
     actual val imagesMammoth: ImageResource = ImageResource(R.drawable.images_mammoth)
     actual val imagesSolera: ImageResource = ImageResource(R.drawable.images_solera)
+    actual val videoBack: VideoResource = VideoResource(R.raw.video_back)
 }

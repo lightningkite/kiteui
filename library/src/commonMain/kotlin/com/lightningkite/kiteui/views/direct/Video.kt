@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.NView
@@ -20,3 +21,7 @@ expect fun ViewWriter.videoActual(setup: Video.()->Unit = {}): Unit
 expect var Video.source: VideoSource?
 expect val Video.time: Writable<Double>
 expect val Video.playing: Writable<Boolean>
+expect val Video.volume: Writable<Float>
+expect var Video.showControls: Boolean
+expect var Video.loop: Boolean
+expect var Video.scaleType: ImageScaleType

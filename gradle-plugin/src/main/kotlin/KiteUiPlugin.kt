@@ -40,6 +40,7 @@ class KiteUiPlugin : Plugin<Project> {
                             when (val r = it.value) {
                                 is Resource.Font -> "val ${r.name}: Font"
                                 is Resource.Image -> "val ${r.name}: ImageResource"
+                                is Resource.Video -> "val ${r.name}: VideoResource"
                                 is Resource.Binary -> "suspend fun ${r.name}(): Blob"
                                 else -> ""
                             }
@@ -93,6 +94,10 @@ expect object Resources {
                                 }))"
 
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"common/${
+                                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                                }\")"
+
+                                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"common/${
                                     r.relativeFile.toString().replace(File.separatorChar, '/')
                                 }\")"
 
@@ -196,9 +201,52 @@ actual object Resources {
                             """.trimIndent()
                                 )
                             }
+                            is Resource.Video -> {
+                                val f = outAssets.resolve(it.key + ".dataset")
+                                f.mkdirs()
+                                val i = f.resolve(r.source.name)
+                                r.source.copyTo(i, overwrite = true)
+                                f.resolve("Contents.json").writeText(
+                                    """
+                                    {
+                                      "data" : [
+                                        {
+                                          "filename" : "${i.name}",
+                                          "idiom" : "universal"
+                                        }
+                                      ],
+                                      "info" : {
+                                        "author" : "xcode",
+                                        "version" : 1
+                                      }
+                                    }
+
+                            """.trimIndent()
+                                )
+                            }
 
                             is Resource.Binary -> {
+                                val f = outAssets.resolve(it.key + ".dataset")
+                                f.mkdirs()
+                                val i = f.resolve(r.source.name)
+                                r.source.copyTo(i, overwrite = true)
+                                f.resolve("Contents.json").writeText(
+                                    """
+                                    {
+                                      "data" : [
+                                        {
+                                          "filename" : "${i.name}",
+                                          "idiom" : "universal"
+                                        }
+                                      ],
+                                      "info" : {
+                                        "author" : "xcode",
+                                        "version" : 1
+                                      }
+                                    }
 
+                            """.trimIndent()
+                                )
                             }
 
                             else -> {}
@@ -214,6 +262,7 @@ actual object Resources {
                                         "boldItalic = ${r.boldItalic?.postScriptName.str()})  // ${r}"
 
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"${it.key}\")"
+                                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
                                 is Resource.Binary -> "actual suspend fun ${r.name}(): Blob = TODO()"
                                 else -> ""
                             }
@@ -318,6 +367,7 @@ ${variants.joinToString("\n")}
                             when (val r = it.value) {
                                 is Resource.Font -> "actual val ${r.name}: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()})"
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
+                                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
                                 is Resource.Binary -> "actual suspend fun ${r.name}(): Blob = TODO()"
                                 else -> ""
                             }
@@ -374,6 +424,7 @@ sealed class Resource {
     }
 
     data class Image(val name: String, val source: File, val relativeFile: File) : Resource()
+    data class Video(val name: String, val source: File, val relativeFile: File) : Resource()
     data class Binary(val name: String, val source: File, val relativeFile: File) : Resource()
 }
 
@@ -389,6 +440,7 @@ fun File.resources(): Map<String, Resource> {
             .camelCase()
         when (relativeFile.extension) {
             "png", "jpg" -> out[name] = Resource.Image(name, file, relativeFile)
+            "mp4" -> out[name] = Resource.Video(name, file, relativeFile)
             "otf", "ttf" -> {
                 val font = when (relativeFile.extension) {
                     "otf" -> OTFParser().parse(file)

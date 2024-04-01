@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AnimationFrame
@@ -90,3 +93,45 @@ actual val Video.playing: Writable<Boolean> get() = object: Writable<Boolean> {
         return { native.player!!.removeListener(l) }
     }
 }
+actual val Video.volume: Writable<Float> get() = object: Writable<Float> {
+    override suspend fun set(value: Float) {
+        native.player!!.volume = value
+    }
+
+    override val state: ReadableState<Float> get() = ReadableState(native.player!!.volume)
+
+    override fun addListener(listener: () -> Unit): () -> Unit {
+        val l = object: Player.Listener {
+            override fun onVolumeChanged(volume: Float) {
+                listener()
+            }
+        }
+        native.player!!.addListener(l)
+        return { native.player!!.removeListener(l) }
+    }
+}
+actual var Video.showControls: Boolean
+    get() = native.useController
+    set(value) {
+        native.useController = value
+    }
+actual var Video.loop: Boolean
+    get() = native.player!!.repeatMode == Player.REPEAT_MODE_ONE
+    set(value) {
+        native.player!!.repeatMode = Player.REPEAT_MODE_ONE
+    }
+@OptIn(UnstableApi::class) actual var Video.scaleType: ImageScaleType
+    get() = when(native.resizeMode) {
+        AspectRatioFrameLayout.RESIZE_MODE_FIT -> ImageScaleType.Fit
+        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH -> ImageScaleType.NoScale
+        AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT -> ImageScaleType.NoScale
+        AspectRatioFrameLayout.RESIZE_MODE_FILL -> ImageScaleType.Crop
+        else -> ImageScaleType.NoScale
+    }
+    set(value) {
+        native.resizeMode = when(value) {
+            ImageScaleType.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            ImageScaleType.Crop -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+            else -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+        }
+    }

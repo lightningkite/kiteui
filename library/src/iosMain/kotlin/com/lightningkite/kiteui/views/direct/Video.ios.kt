@@ -2,10 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.reactive.AnimationFrame
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.withWrite
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -57,10 +54,16 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         addSubview(controller.view)
     }
 
+    val volume = Property(1.0f)
     val time = Property(0.0)
     val playing = Property(false)
+    val controls = Property(false)
+    val loop = Property(false)
+    val scaleType = Property(ImageScaleType.Fit)
     private var animationFrameRateClose: (()->Unit)? = null
     private var playerRateObservationClose: (()->Unit)? = null
+    private var volumeObservationClose: (()->Unit)? = null
+    private var endObservationClose: (()->Unit)? = null
 
     @OptIn(ExperimentalNativeApi::class)
     var player: AVPlayer?
@@ -68,6 +71,10 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         set(value) {
             playerRateObservationClose?.invoke()
             playerRateObservationClose = null
+            volumeObservationClose?.invoke()
+            volumeObservationClose = null
+            endObservationClose?.invoke()
+            endObservationClose = null
             controller.player = value
             value?.let { player ->
                 val weakPlayer = WeakReference(player)
@@ -84,6 +91,12 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                         animationFrameRateClose = null
                     }
                 }
+                volumeObservationClose = player.observe("volume") {
+                    val player = weakPlayer.get() ?: return@observe
+                    val value = player.volume
+                    volume.value = value
+                }
+//                endObservationClose =
             }
         }
 }
@@ -152,4 +165,36 @@ actual val Video.playing: Writable<Boolean> get() = native.playing
             native.controller.player?.play()
         else
             native.controller.player?.pause()
+    }
+
+actual val Video.volume: Writable<Float> get() = native.volume
+    .withWrite {
+        native.controller.player?.volume = it
+    }
+actual var Video.showControls: Boolean
+    get() = native.controller.showsPlaybackControls
+    set(value) {
+        native.controller.showsPlaybackControls = value
+    }
+// TODO
+actual var Video.loop: Boolean
+    get() = native.loop.value
+    set(value) {
+        native.loop.value = value
+    }
+actual var Video.scaleType: ImageScaleType
+    get() = when(native.controller.videoGravity) {
+        AVLayerVideoGravityResizeAspect -> ImageScaleType.Fit
+        AVLayerVideoGravityResizeAspectFill -> ImageScaleType.Crop
+        AVLayerVideoGravityResize -> ImageScaleType.Stretch
+        AVLayerVideoGravityResize -> ImageScaleType.NoScale
+        else -> ImageScaleType.NoScale
+    }
+    set(value) {
+        native.controller.videoGravity = when(value) {
+            ImageScaleType.Fit -> AVLayerVideoGravityResizeAspect
+            ImageScaleType.Crop -> AVLayerVideoGravityResizeAspectFill
+            ImageScaleType.Stretch -> AVLayerVideoGravityResize
+            ImageScaleType.NoScale -> AVLayerVideoGravityResize
+        }
     }

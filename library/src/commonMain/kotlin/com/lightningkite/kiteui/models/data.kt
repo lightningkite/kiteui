@@ -110,6 +110,9 @@ data class PopoverPreferredDirection(
         val belowRight: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.End)
         val belowLeft: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.Start)
         val belowCenter: PopoverPreferredDirection = PopoverPreferredDirection(false, after = true, align = Align.Center)
+        val aboveRight: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.End)
+        val aboveLeft: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Start)
+        val aboveCenter: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Center)
     }
 }
 

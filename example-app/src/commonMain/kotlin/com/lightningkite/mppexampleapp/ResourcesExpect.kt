@@ -10,4 +10,5 @@ expect object Resources {
     val fontsRobotoLightItalic: Font
     val imagesMammoth: ImageResource
     val imagesSolera: ImageResource
+    val videoBack: VideoResource
 }

@@ -10,4 +10,5 @@ actual object Resources {
     actual val fontsRobotoLightItalic: Font = Font(cssFontFamilyName = "fontsRobotoLightItalic", direct = FontDirect(normal = "common/fonts/roboto/light-Italic.ttf", bold = null, italic = null, boldItalic = null))
     actual val imagesMammoth: ImageResource = ImageResource("common/images/Mammoth.png")
     actual val imagesSolera: ImageResource = ImageResource("common/images/solera.jpg")
+    actual val videoBack: VideoResource = VideoResource("common/video/back.mp4")
 }

@@ -240,36 +240,37 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
         }
         forEach(readable) {
             when (it) {
-                is NavAction -> button {
+                is NavAction -> expanding - button {
                     exists = false
                     ::exists {it.hidden?.invoke() != true}
                     display(it)
                     onClick { it.onSelect() }
                 }
 
-                is NavExternal -> externalLink {
+                is NavExternal -> expanding - externalLink {
                     exists = false
                     ::exists {it.hidden?.invoke() != true}
                     ::to { it.to() }
                     display(it)
                 }
 
-                is NavGroup -> button {
+                is NavGroup -> expanding - button {
                     exists = false
                     ::exists {it.hidden?.invoke() != true}
                     display(it)
-                    onClick { }  // TODO: select dialog
+                } in hasPopover(preferredDirection = PopoverPreferredDirection.aboveCenter) { context ->
+                    card - navGroupColumn(shared { it.children() }, { context.close() })
                 }
 
                 is NavCustom -> {
                     exists = false
                     ::exists {it.hidden?.invoke() != true}
-                    it.tall(this)
+                    expanding - it.tall(this)
                 }
 
                 is NavLink -> {
 
-                    link {
+                    expanding - link {
                         exists = false
                         ::exists {it.hidden?.invoke() != true}
                         display(it)
@@ -284,7 +285,7 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                     }
                     Unit
                 }
-            } in weight(1f) 
+            }
         }
     } 
 }
