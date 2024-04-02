@@ -37,7 +37,6 @@ actual fun ViewWriter.hasPopover(
             if (existingElement != null) return
             with(writerTargetingBody) {
                 currentTheme = rootTheme
-                lastTheme = rootTheme
                 stayOpen = false
                 element("div", ::NContainingView) {
                     existingElement = js
@@ -148,7 +147,6 @@ actual fun ViewWriter.hasPopover(
             stayOpen = true
             with(newViews)  {
                 currentTheme = rootTheme
-                lastTheme = rootTheme
                 dismissBackground {
                     native.js.style.position = "absolute"
                     native.js.style.left = "0"
