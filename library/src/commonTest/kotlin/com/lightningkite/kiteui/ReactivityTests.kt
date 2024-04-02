@@ -225,6 +225,21 @@ class ReactivityTests {
         }
         assertEquals(completions, 2)
     }
+
+    @Test fun websocketLikeTest() {
+        val source = LateInitProperty<LateInitProperty<String>>()
+        val socket = shared { source.await() }
+        val sublistener = shared { socket.await().await() }
+        testContext {
+            reactiveScope { println(sublistener.await()) }
+            println("Ready")
+            val s2 = LateInitProperty<String>()
+            source.value = s2
+            s2.value = "A"
+            s2.value = "B"
+            s2.value = "C"
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {

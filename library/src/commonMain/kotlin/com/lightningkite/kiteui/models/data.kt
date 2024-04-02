@@ -88,6 +88,12 @@ class VideoRaw(val data: ByteArray) : VideoSource()
 class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 
+expect sealed class AudioSource()
+data class AudioRemote(val url: String) : AudioSource()
+class AudioRaw(val data: Blob) : AudioSource()
+class AudioLocal(val file: FileReference) : AudioSource()
+expect class AudioResource : AudioSource
+
 data class SizeConstraints(
     val minWidth: Dimension? = null,
     val maxWidth: Dimension? = null,

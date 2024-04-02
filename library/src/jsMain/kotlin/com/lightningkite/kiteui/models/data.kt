@@ -42,6 +42,9 @@ actual class ImageResource(val relativeUrl: String) : ImageSource()
 actual sealed class VideoSource actual constructor()
 actual class VideoResource(val relativeUrl: String) : VideoSource()
 
+actual sealed class AudioSource actual constructor()
+actual class AudioResource(val relativeUrl: String) : AudioSource()
+
 fun Dimension.toBoxShadow(): String {
     if (value == "0px")
         return "none"

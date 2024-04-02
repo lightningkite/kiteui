@@ -6,6 +6,8 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.launch
+import com.lightningkite.kiteui.views.reactiveScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -13,7 +15,9 @@ import kotlin.random.Random
 @Routable("sample/websockets")
 object WebSocketScreen : KiteUiScreen {
     override fun ViewWriter.render() {
-        val socket = shared { retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/").also { use(it) } }
+        val socket = shared {
+            retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/").also { use(it) }
+        }
         val mostRecent = shared { socket.await().mostRecentMessage }
         col {
             h1 { content = "WS time!" }
@@ -31,6 +35,12 @@ object WebSocketScreen : KiteUiScreen {
                 onClick {
                     socket.await().close(1000, "OK")
                 }
+            }
+            reactiveScope {
+                println("mostRecent.await(): ${mostRecent.await()}")
+            }
+            reactiveScope {
+                println("mostRecent.await().await(): ${mostRecent.await().await()}")
             }
         }
     }

@@ -59,9 +59,9 @@ object ImageElementScreen: DocScreen {
                         expanding - button {
                             text("Pick")
                             onClick {
-                                ExternalServices.requestFile(listOf("image/*")) {
-                                    if(it != null) currentImage.value = ImageLocal(it)
-                                }
+                                ExternalServices.requestFile(listOf("image/*"))
+                                    ?.let(::ImageLocal)
+                                    ?.let { currentImage.value = it }
                             }
                         }
                     }

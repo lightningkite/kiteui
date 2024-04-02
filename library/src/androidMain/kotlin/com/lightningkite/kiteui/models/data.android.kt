@@ -41,4 +41,7 @@ actual class ImageResource(val resource: Int) : ImageSource()
 actual sealed class VideoSource actual constructor()
 actual class VideoResource(val resource: Int) : VideoSource()
 
+actual sealed class AudioSource actual constructor()
+actual class AudioResource(val resource: Int) : AudioSource()
+
 actual val Dimension.px: Double get() = value.toDouble()

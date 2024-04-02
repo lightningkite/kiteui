@@ -25,9 +25,7 @@ object ImageCropScreen : KiteUiScreen {
             button {
                 text("Upload Image")
                 onClick {
-                    ExternalServices.requestFile(listOf("image/*")) { uploaded ->
-                        image.value = uploaded
-                    }
+                    image.value = ExternalServices.requestFile(listOf("image/*"))
                 }
             }
             centered - sizeConstraints(width = 20.rem, height = 20.rem) - imageCrop {

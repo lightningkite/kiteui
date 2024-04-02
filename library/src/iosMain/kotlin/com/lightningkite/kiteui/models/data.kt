@@ -48,6 +48,8 @@ actual sealed class ImageSource actual constructor()
 actual class ImageResource(val name: String) : ImageSource()
 actual sealed class VideoSource actual constructor()
 actual class VideoResource(val name: String, val extension: String) : VideoSource()
+actual sealed class AudioSource actual constructor()
+actual class AudioResource(val name: String, val extension: String) : AudioSource()
 
 class ScreenTransitionPart(
     val from: Map<String, String>,

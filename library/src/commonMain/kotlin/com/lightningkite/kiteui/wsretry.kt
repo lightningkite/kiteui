@@ -46,7 +46,7 @@ fun retryWebsocket(
                 while (true) {
                     delay(30_000)
                     if (lastPong < clockMillis() - 60_000) it.close(
-                        (-1).toShort(),
+                        3000,
                         "Server did not respond to two consecutive pings."
                     )
                     it.send(" ")
@@ -136,7 +136,9 @@ interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
 }
 
 val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
-    get() = object : BaseImmediateReadable<RECEIVE?>(null) {
+    get() = object : Readable<RECEIVE?> {
+        var value: RECEIVE? = null
+            private set
 
         val listeners = ArrayList<() -> Unit>()
 
@@ -147,12 +149,12 @@ val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
             }
         }
 
-        override fun hashCode(): Int {
-            return this@mostRecentMessage.hashCode()
-        }
+        override val state: ReadableState<RECEIVE?> get() = ReadableState(value)
 
-        override fun equals(other: Any?): Boolean {
-            return this@mostRecentMessage.equals(other)
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            listeners.add(listener)
+            val parent = this@mostRecentMessage.start()
+            return { listeners.remove(listener); parent() }
         }
     }
 
