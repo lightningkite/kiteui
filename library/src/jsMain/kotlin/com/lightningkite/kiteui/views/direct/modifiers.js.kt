@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BasicListenable
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
@@ -140,6 +141,8 @@ actual fun ViewWriter.hasPopover(
                         pos.dispatchEvent(event)
                     })
                     setup(object : PopoverContext {
+                        override val calculationContext: CalculationContext
+                            get() = pos.calculationContext
                         override fun close() {
                             close()
                         }

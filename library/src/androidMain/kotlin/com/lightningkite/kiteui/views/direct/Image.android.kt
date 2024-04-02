@@ -155,7 +155,7 @@ actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.()
 }
 
 open class TransitionImageView(context: Context): FrameLayout(context), HasSpacingMultiplier {
-    override val spacingOverride: Property<Dimension?> = Property(0.px)
+    override val spacingOverride: Property<Dimension?> = Property(null)
     var scaleType: AImageView.ScaleType = AImageView.ScaleType.CENTER_INSIDE
         set(value) {
             field = value

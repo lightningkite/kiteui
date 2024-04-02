@@ -10,6 +10,7 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 actual object ExternalServices {
     actual fun openTab(url: String) {
@@ -20,7 +21,7 @@ actual object ExternalServices {
     }
 
     var currentPresenter: (UIViewController) -> Unit = {}
-    actual fun requestFile(mimeTypes: List<String>, onResult: (FileReference?) -> Unit): Unit {
+    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCoroutineCancellable { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
         if (imagePickerCompat) {
             val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
@@ -39,8 +40,8 @@ actual object ExternalServices {
                         picker.dismissViewControllerAnimated(true) {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
                                 (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-                                    onResult(FileReference(result.itemProvider))
-                                } ?: onResult(null)
+                                    cont.resume(FileReference(result.itemProvider))
+                                } ?: cont.resume(null)
                             })
                         }
                     }
@@ -48,94 +49,104 @@ actual object ExternalServices {
             controller.delegate = delegate
             controller.extensionStrongRef = delegate
             currentPresenter(controller)
+            return@suspendCoroutineCancellable {
+                try {
+                    controller.dismissViewControllerAnimated(true, {})
+                } catch (e: Exception) { /*squish*/
+                }
+            }
         } else {
-            println("Docs picker not implemented yet")
+            cont.resumeWithException(Exception("Docs picker not implemented yet"))
+            return@suspendCoroutineCancellable {}
         }
     }
 
-    actual fun requestFiles(mimeTypes: List<String>, onResult: (List<FileReference>) -> Unit): Unit {
-        val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
-        if (imagePickerCompat) {
-            val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
-                filter = PHPickerFilter.anyFilterMatchingSubfilters(
-                    listOfNotNull(
-                        PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
-                        PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
-                    )
-                )
-                preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
-                selectionLimit = Int.MAX_VALUE.toLong()
-            })
-            val delegate =
-                object : NSObject(), PHPickerViewControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
-                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-                        picker.dismissViewControllerAnimated(true) {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                didFinishPicking.filterIsInstance<PHPickerResult>()
-                                    .map { result -> FileReference(result.itemProvider) }
-                                    .let(onResult)
-                            })
+    actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
+        suspendCoroutineCancellable { cont ->
+            val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
+            if (imagePickerCompat) {
+                val controller =
+                    PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
+                        filter = PHPickerFilter.anyFilterMatchingSubfilters(
+                            listOfNotNull(
+                                PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
+                                PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
+                            )
+                        )
+                        preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
+                        selectionLimit = Int.MAX_VALUE.toLong()
+                    })
+                val delegate =
+                    object : NSObject(), PHPickerViewControllerDelegateProtocol,
+                        UINavigationControllerDelegateProtocol {
+                        override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+                            picker.dismissViewControllerAnimated(true) {
+                                dispatch_async(queue = dispatch_get_main_queue(), block = {
+                                    didFinishPicking.filterIsInstance<PHPickerResult>()
+                                        .map { result -> FileReference(result.itemProvider) }
+                                        .let { cont.resume(it) }
+                                })
+                            }
                         }
                     }
+                controller.delegate = delegate
+                controller.extensionStrongRef = delegate
+                currentPresenter(controller)
+                return@suspendCoroutineCancellable {
+                    try {
+                        controller.dismissViewControllerAnimated(true, {})
+                    } catch (e: Exception) { /*squish*/
+                    }
                 }
-            controller.delegate = delegate
-            controller.extensionStrongRef = delegate
-            currentPresenter(controller)
-        } else {
-            println("Docs picker not implemented yet")
+            } else {
+                cont.resumeWithException(Exception("Docs picker not implemented yet"))
+                return@suspendCoroutineCancellable {}
+            }
         }
-    }
 
-    actual fun requestCaptureSelf(mimeTypes: List<String>, onResult: (FileReference?) -> Unit): Unit {
-        if (mimeTypes.all { it.startsWith("image/") }) {
+    actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
+        return if (mimeTypes.all { it.startsWith("image/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                onResult
             )
-        } else if(mimeTypes.all { it.startsWith("video/") }) {
+        } else if (mimeTypes.all { it.startsWith("video/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-                onResult
             )
         } else {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                onResult
             )
         }
     }
 
-    actual fun requestCaptureEnvironment(mimeTypes: List<String>, onResult: (FileReference?) -> Unit): Unit {
-        if (mimeTypes.all { it.startsWith("image/") }) {
+    actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
+        return if (mimeTypes.all { it.startsWith("image/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                onResult
             )
-        } else if(mimeTypes.all { it.startsWith("video/") }) {
+        } else if (mimeTypes.all { it.startsWith("video/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo,
-                onResult
             )
         } else {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
                 UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto,
-                onResult
             )
         }
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    fun requestCapture(
+    suspend fun requestCapture(
         camera: UIImagePickerControllerCameraDevice,
         mode: UIImagePickerControllerCameraCaptureMode,
-        onResult: (FileReference?) -> Unit
-    ): Unit {
+    ): FileReference? = suspendCoroutineCancellable { cont ->
         val controller = UIImagePickerController()
         controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
         controller.cameraDevice = camera
@@ -151,7 +162,7 @@ actual object ExternalServices {
 
                     url?.let {
                         dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            onResult(FileReference(NSItemProvider(contentsOfURL = it)))
+                            cont.resume(FileReference(NSItemProvider(contentsOfURL = it)))
                         })
                         return
                     }
@@ -174,7 +185,7 @@ actual object ExternalServices {
 
                     picker.dismissViewControllerAnimated(true) {
                         dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            onResult(asFile)
+                            cont.resume(asFile)
                         })
                     }
                 }
@@ -182,8 +193,14 @@ actual object ExternalServices {
         controller.delegate = delegate
         controller.extensionStrongRef = delegate
         currentPresenter(controller)
-        return
+        return@suspendCoroutineCancellable {
+            try {
+                controller.dismissViewControllerAnimated(true, null)
+            } catch (e: Exception) { /*squish*/
+            }
+        }
     }
+
     actual fun setClipboardText(value: String) {
         UIPasteboard.generalPasteboard.string = value
     }

@@ -54,7 +54,7 @@ data class Theme(
             outline = this.outline.applyAlpha(alpha = 0.25f),
         )
     },
-    val mainContent: (Theme.() -> Theme?) = { this },
+    val mainContent: (Theme.() -> Theme?) = { null },
     val bar: (Theme.() -> Theme?) = {
         copy(
             foreground = this.background,

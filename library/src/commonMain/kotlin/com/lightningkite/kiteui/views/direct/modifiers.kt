@@ -5,12 +5,14 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
 
 @ViewModifierDsl3
 expect fun ViewWriter.hasPopover(requireClick: Boolean = false, preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight, setup: ViewWriter.(popoverContext: PopoverContext)->Unit): ViewWrapper
 interface PopoverContext {
+    val calculationContext: CalculationContext
     fun close()
 }
 @ViewModifierDsl3

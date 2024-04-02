@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
@@ -80,6 +81,8 @@ actual fun ViewWriter.hasPopover(
                             with(split()) {
                                 navigator = originalNavigator
                                 setup(object : PopoverContext {
+                                    override val calculationContext: CalculationContext
+                                        get() = this@beforeNextElementSetup.calculationContext
                                     override fun close() {
                                         navigator.dialog.dismiss()
                                     }

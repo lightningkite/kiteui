@@ -7,6 +7,7 @@ import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.*
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.Animation
 import android.widget.*
@@ -14,6 +15,7 @@ import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 import android.widget.TextView as AndroidTextView
@@ -25,8 +27,10 @@ val NView.selected: Writable<Boolean>
         override fun addListener(listener: () -> Unit): () -> Unit {
             return addListener(View::setOnClickListener, { View.OnClickListener { it() } }, listener)
         }
+
         override val state: ReadableState<Boolean>
             get() = ReadableState(this@selected.isSelected)
+
         override suspend fun set(value: Boolean) {
             this@selected.isSelected = value
         }
@@ -37,6 +41,7 @@ val NView.hovered: Readable<Boolean>
         override fun addListener(listener: () -> Unit): () -> Unit {
             return addListener(View::setOnHoverListener, { View.OnHoverListener { _, _ -> it(); true } }, listener)
         }
+
         override val state: ReadableState<Boolean>
             get() = ReadableState(this@hovered.isHovered)
     }
@@ -82,6 +87,8 @@ val applyTextColorFromTheme: (Theme, AndroidTextView) -> Unit = { theme, textVie
     textView.isAllCaps = theme.body.allCaps
 }
 
+val viewHasMightTransitionPadding: WeakHashMap<View, Float?> = WeakHashMap()
+
 inline fun <T : NView> ViewWriter.handleTheme(
     view: T,
     viewDraws: Boolean = true,
@@ -114,14 +121,33 @@ inline fun <T : NView> ViewWriter.handleTheme(
         val mightTransition = transition != ViewWriter.TransitionNextView.No
         val useBackground = shouldTransition
         val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
+        viewHasMightTransitionPadding[view] = if (mightTransition) theme.spacing.value else null
+
+        var parentSpacing = theme.spacing.value
+        var currentParent = view.parent as? ViewGroup
+        while (currentParent != null) {
+            val hsm = (currentParent as? HasSpacingMultiplier)?.spacingOverride?.await()
+            if (hsm != null) {
+                parentSpacing = hsm.value
+                break
+            }
+            val p = viewHasMightTransitionPadding[currentParent]
+            if (p != null) {
+                parentSpacing = p
+                break
+            }
+            currentParent = currentParent.parent as? ViewGroup
+        }
 
         if (usePadding) {
-            view.setPaddingAll(((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value.toInt())
+            view.setPaddingAll(
+                ((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value.toInt()
+            )
         } else {
             view.setPaddingAll(0)
         }
 
-        val parentSpacing = if(isRoot) 0f else ((view.parent as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value
+//        val parentSpacing = if(isRoot) 0f else ((view.parent as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value
 
         if (viewLoads && view.androidCalculationContext.loading.await()) {
 
@@ -174,12 +200,15 @@ inline fun <T : NView> ViewWriter.handleTheme(
                 view.elevation = 0f
                 view.background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
-                    val cr = when(val it = theme.cornerRadii) {
+                    val cr = when (val it = theme.cornerRadii) {
                         is CornerRadii.Constant -> min(parentSpacing, it.value.value)
                         is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
                     }
                     cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
-                    colors = intArrayOf(theme.background.applyAlpha(0.01f).colorInt(), theme.background.applyAlpha(0.01f).colorInt())
+                    colors = intArrayOf(
+                        theme.background.applyAlpha(0.01f).colorInt(),
+                        theme.background.applyAlpha(0.01f).colorInt()
+                    )
                 }
                 backgroundRemove()
             } else {
@@ -202,7 +231,7 @@ fun Theme.rippleDrawableOnly(
     } ?: RippleDrawable(rippleColor, null, null).apply { addLayer(null) }
     preparing.setDrawable(0, GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        val cr = when(val it = this@rippleDrawableOnly.cornerRadii) {
+        val cr = when (val it = this@rippleDrawableOnly.cornerRadii) {
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }
@@ -220,7 +249,7 @@ fun Theme.backgroundDrawable(
 ): LayerDrawable {
     val formDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        val cr = when(val it = this@backgroundDrawable.cornerRadii) {
+        val cr = when (val it = this@backgroundDrawable.cornerRadii) {
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }

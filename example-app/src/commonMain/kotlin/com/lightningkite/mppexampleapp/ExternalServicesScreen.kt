@@ -25,22 +25,22 @@ object ExternalServicesScreen : KiteUiScreen {
 
             button {
                 text { content = "requestFile" }
-                onClick { ExternalServices.requestFile(listOf("image/*")) {} }
+                onClick { ExternalServices.requestFile(listOf("image/*")) }
             }
 
             button {
                 text { content = "requestFiles" }
-                onClick { ExternalServices.requestFiles(listOf("image/*")) {} }
+                onClick { ExternalServices.requestFiles(listOf("image/*")) }
             }
 
             button {
                 text { content = "requestCaptureSelf" }
-                onClick { ExternalServices.requestCaptureSelf(listOf("image/*")) {} }
+                onClick { ExternalServices.requestCaptureSelf(listOf("image/*")) }
             }
 
             button {
                 text { content = "requestCaptureEnvironment" }
-                onClick { ExternalServices.requestCaptureEnvironment(listOf("image/*")) {} }
+                onClick { ExternalServices.requestCaptureEnvironment(listOf("image/*")) }
             }
 
         }

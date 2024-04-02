@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import org.w3c.dom.HTMLElement
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
@@ -133,6 +134,8 @@ actual fun ViewWriter.hasPopover(
                     window.addEventListener("mousemove", mouseMove)
                     window.addEventListener("scroll", { reposition() }, true)
                     setup(object : PopoverContext {
+                        override val calculationContext: CalculationContext
+                            get() = pos.js.calculationContext
                         override fun close() {
                             close()
                         }

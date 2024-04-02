@@ -298,9 +298,20 @@ actual object Resources {
                         .entries
                         .sortedBy { it.key }
                     val androidDrawableFolder = androidResFolder.resolve("drawable-xhdpi").also { it.mkdirs() }
+                    val androidRawFolder = androidResFolder.resolve("raw").also { it.mkdirs() }
                     resources.forEach { (key, value) ->
                         if (value !is Resource.Image) return@forEach
                         val destFile = androidDrawableFolder.resolve(key.snakeCase() + "." + value.source.extension)
+                        value.source.copyTo(destFile, overwrite = true)
+                    }
+                    resources.forEach { (key, value) ->
+                        if (value !is Resource.Video) return@forEach
+                        val destFile = androidRawFolder.resolve(key.snakeCase() + "." + value.source.extension)
+                        value.source.copyTo(destFile, overwrite = true)
+                    }
+                    resources.forEach { (key, value) ->
+                        if (value !is Resource.Binary) return@forEach
+                        val destFile = androidRawFolder.resolve(key.snakeCase() + "." + value.source.extension)
                         value.source.copyTo(destFile, overwrite = true)
                     }
                     val androidFontFolder = androidResFolder.resolve("font").also { it.mkdirs() }

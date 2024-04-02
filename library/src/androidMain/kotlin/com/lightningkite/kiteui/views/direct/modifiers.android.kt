@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import java.util.*
@@ -278,6 +279,8 @@ actual fun ViewWriter.hasPopover(
                             with(split()) {
                                 navigator = originalNavigator
                                 setup(object : PopoverContext {
+                                    override val calculationContext: CalculationContext
+                                        get() = this@beforeNextElementSetup.calculationContext
                                     override fun close() {
                                         navigator.dialog.dismiss()
                                     }

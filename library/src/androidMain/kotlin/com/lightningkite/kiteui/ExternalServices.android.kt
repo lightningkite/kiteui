@@ -12,27 +12,25 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
 import java.io.File
+import kotlin.coroutines.resume
 
 actual object ExternalServices {
     actual fun openTab(url: String) {
         AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
-    actual fun requestFile(
+    actual suspend fun requestFile(
         mimeTypes: List<String>,
-        onResult: (FileReference?) -> Unit,
-    ) = requestFiles(mimeTypes, { onResult(it.getOrNull(0)) }, false)
+    ) = requestFiles(mimeTypes, false).firstOrNull()
 
-    actual fun requestFiles(
+    actual suspend fun requestFiles(
         mimeTypes: List<String>,
-        onResult: (List<FileReference>) -> Unit,
-    ) = requestFiles(mimeTypes, onResult, true)
+    ) = requestFiles(mimeTypes, true)
 
-    fun requestFiles(
+    suspend fun requestFiles(
         mimeTypes: List<String>,
-        onResult: (List<FileReference>) -> Unit,
         allowMultiple: Boolean = true
-    ) {
+    ): List<FileReference> = suspendCoroutineCancellable{
 
         val type = mimeTypes.joinToString(",")
 
@@ -44,7 +42,7 @@ actual object ExternalServices {
 
         AndroidAppContext.startActivityForResult(chooserIntent) { code, data ->
             if (code == Activity.RESULT_OK) {
-                onResult(
+                it.resume(
                     data?.clipData?.let {
                         (0 until it.itemCount).map { index ->
                             it.getItemAt(index).uri.let(::FileReference)
@@ -54,57 +52,51 @@ actual object ExternalServices {
                         ?: listOf()
                 )
             } else {
-                onResult(listOf())
+                it.resume(listOf())
             }
         }
+        return@suspendCoroutineCancellable {}
     }
 
-    actual fun requestCaptureSelf(
-        mimeTypes: List<String>,
-        onResult: (FileReference?) -> Unit,
-    ) {
-        if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
+    actual suspend fun requestCaptureSelf(
+        mimeTypes: List<String>
+    ): FileReference? {
+        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
             true,
-            MediaStore.ACTION_IMAGE_CAPTURE,
-            onResult
+            MediaStore.ACTION_IMAGE_CAPTURE
         )
         else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
             true,
-            MediaStore.ACTION_VIDEO_CAPTURE,
-            onResult
+            MediaStore.ACTION_VIDEO_CAPTURE
         )
-        else System.err.println("Captures besides images and video not supported yet. Requested $mimeTypes")
+        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
     }
 
-    actual fun requestCaptureEnvironment(
-        mimeTypes: List<String>,
-        onResult: (FileReference?) -> Unit,
-    ) {
-        if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
+    actual suspend fun requestCaptureEnvironment(
+        mimeTypes: List<String>
+    ): FileReference? {
+        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
             false,
-            MediaStore.ACTION_IMAGE_CAPTURE,
-            onResult
+            MediaStore.ACTION_IMAGE_CAPTURE
         )
         else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
             false,
-            MediaStore.ACTION_VIDEO_CAPTURE,
-            onResult
+            MediaStore.ACTION_VIDEO_CAPTURE
         )
-        else System.err.println("Captures besides images and video not supported yet. Requested $mimeTypes")
+        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
     }
 
-    private fun requestImageCamera(
+    private suspend fun requestImageCamera(
         front: Boolean = false,
         capture: String = MediaStore.ACTION_IMAGE_CAPTURE,
-        onResult: (FileReference?) -> Unit,
-    ) {
+    ): FileReference? = suspendCoroutineCancellable { cont ->
         val fileProviderAuthority = AndroidAppContext.applicationCtx.packageName + ".fileprovider"
         val file = File(AndroidAppContext.applicationCtx.cacheDir, "images").also { it.mkdirs() }
             .let { File.createTempFile("image", ".jpg", it) }
             .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, fileProviderAuthority, it) }
 
         AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
-            if (!it.accepted) return@requestPermissions onResult(null)
+            if (!it.accepted) return@requestPermissions cont.resume(null)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
             if (front) {
@@ -114,12 +106,13 @@ actual object ExternalServices {
             }
             AndroidAppContext.startActivityForResult(intent) { code, data ->
                 if (code == Activity.RESULT_OK) {
-                    onResult(data?.data?.let(::FileReference))
+                    cont.resume(data?.data?.let(::FileReference))
                 } else {
-                    onResult(null)
+                    cont.resume(null)
                 }
             }
         }
+        return@suspendCoroutineCancellable {}
     }
     actual fun setClipboardText(value: String) {
         (AndroidAppContext.activityCtx?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
