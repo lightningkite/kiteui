@@ -104,12 +104,13 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
 @ViewDsl
 actual inline fun ViewWriter.videoActual(crossinline setup: Video.() -> Unit): Unit = element(NVideo()) {
-    handleTheme(this, viewDraws = false)
-    context.addChildViewController(controller)
-    calculationContext.onRemove {
-        controller.removeFromParentViewController()
+    handleTheme(this, viewDraws = false,) {
+        context.addChildViewController(controller)
+        calculationContext.onRemove {
+            controller.removeFromParentViewController()
+        }
+        setup(Video(this))
     }
-    setup(Video(this))
 }
 
 actual inline var Video.source: VideoSource?

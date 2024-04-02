@@ -23,8 +23,9 @@ actual inline fun ViewWriter.stackActual(crossinline setup: ContainingView.() ->
     factory = ::SlightlyModifiedFrameLayout,
     wrapper = ::ContainingView
 ) {
-    handleTheme(native, viewDraws = false)
-    setup(this)
+    handleTheme(native, viewDraws = false) {
+        setup(this)
+    }
 }
 
 @ViewDsl
@@ -33,10 +34,11 @@ actual inline fun ViewWriter.colActual(crossinline setup: ContainingView.() -> U
         val l = native as SlightlyModifiedLinearLayout
         l.orientation = SimplifiedLinearLayout.VERTICAL
         l.gravity = Gravity.CENTER_HORIZONTAL
-        handleTheme(l, viewDraws = false) { t, v ->
+        handleTheme(l, viewDraws = false, foreground = { t, v ->
             v.gap = (v.spacingOverride.value ?: t.spacing).value.toInt()
+        }) {
+            setup(ContainingView(l))
         }
-        setup(ContainingView(l))
     }
 }
 
@@ -46,10 +48,11 @@ actual inline fun ViewWriter.rowActual(crossinline setup: ContainingView.() -> U
         val l = native as SlightlyModifiedLinearLayout
         l.orientation = SimplifiedLinearLayout.HORIZONTAL
         l.gravity = Gravity.CENTER_VERTICAL
-        handleTheme(l, viewDraws = false) { t, v ->
+        handleTheme(l, viewDraws = false, foreground = { t, v ->
             v.gap = (v.spacingOverride.value ?: t.spacing).value.toInt()
+        }) {
+            setup(ContainingView(l))
         }
-        setup(ContainingView(l))
     }
 }
 

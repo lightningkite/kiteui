@@ -14,7 +14,8 @@ actual inline fun ViewWriter.activityIndicatorActual(crossinline setup: Activity
         handleTheme(native, foreground = {
             theme: Theme, progressBar: ProgressBar ->
             progressBar.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
-        })
-        setup(this)
+        }) {
+            setup(this)
+        }
     }
 }

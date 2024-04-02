@@ -33,6 +33,7 @@ fun ViewWriter.navSideBar(navElements: suspend () -> List<NavElement>) {
 fun ViewWriter.appBase(routes: Routes, mainLayout: ContainingView.() -> Unit) {
     transitionNextView = ViewWriter.TransitionNextView.Yes
     stack {
+        spacing = 0.px
         val navigator = PlatformNavigator
         PlatformNavigator.routes = routes
         this@appBase.navigator = navigator

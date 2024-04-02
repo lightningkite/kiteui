@@ -33,16 +33,14 @@ fun ViewWriter.handleTheme(
     viewLoads: Boolean = false,
     background: (Theme) -> Unit = {},
     backgroundRemove: () -> Unit = {},
-    foreground: (Theme) -> Unit = {}
+    foreground: (Theme) -> Unit = {},
+    setup: () -> Unit,
 ) {
     val transition = transitionNextView
     transitionNextView = ViewWriter.TransitionNextView.No
     val currentTheme = currentTheme
-    val parentTheme = lastTheme
     val isRoot = isRoot
     this.isRoot = false
-    val changedThemes = changedThemes
-    this.changedThemes = false
 
     var firstTime = true
     inline fun animateAfterFirst(crossinline action: () -> Unit) {
@@ -54,20 +52,27 @@ fun ViewWriter.handleTheme(
         }
     }
 
+    val viewForcePadding = view.extensionForcePadding
+    val mightTransition = transition != ViewWriter.TransitionNextView.No
+    val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
+    val parentSpacingCalc = lastSpacing
+
+    if (usePadding) {
+        val hp = view.spacingOverride
+        lastSpacing = { hp?.await() ?: currentTheme().spacing }
+    }
+
     var cancelAnimation: (() -> Unit)? = null
     if (viewLoads) calculationContext.onRemove { cancelAnimation?.invoke(); cancelAnimation = null }
 
     view.calculationContext.reactiveScope {
         val theme = currentTheme()
-
         val shouldTransition = when (transition) {
             ViewWriter.TransitionNextView.No -> false
             ViewWriter.TransitionNextView.Yes -> true
             is ViewWriter.TransitionNextView.Maybe -> transition.logic()
         }
-        val mightTransition = transition != ViewWriter.TransitionNextView.No
         val useBackground = shouldTransition
-        val usePadding = view.extensionForcePadding ?: (mightTransition && !isRoot)/* && view !is UIImageView*/
 
         if (usePadding) {
             view.extensionPadding = (view.spacingOverride?.await() ?: theme.spacing).value
@@ -75,9 +80,9 @@ fun ViewWriter.handleTheme(
             view.extensionPadding = 0.0
         }
 
-        val parentSpacing = if(isRoot) 0.0 else (view.superview?.spacingOverride?.await() ?: theme.spacing).value
         val loading = viewLoads && view.iosCalculationContext.loading.await()
 
+        val parentSpacing = parentSpacingCalc().value
         animateAfterFirst {
             if (loading) {
                 applyThemeBackground(theme, view, parentSpacing, true)
@@ -140,6 +145,12 @@ fun ViewWriter.handleTheme(
             }
             foreground(theme)
         }
+    }
+
+    setup()
+
+    if(usePadding) {
+        lastSpacing = parentSpacingCalc
     }
 }
 

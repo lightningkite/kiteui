@@ -23,11 +23,15 @@ actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.
         extensionStrongRef = null
     }
     backgroundColor = UIColor.clearColor
-    handleTheme(this, viewDraws = false) {
-        spacing = spacingOverride?.value ?: it.spacing
+    handleTheme(
+        this, viewDraws = false,
+        foreground = {
+            spacing = spacingOverride?.value ?: it.spacing
+        },
+    ) {
+        extensionViewWriter = newViews()
+        setup(RecyclerView(this))
     }
-    extensionViewWriter = newViews()
-    setup(RecyclerView(this))
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -39,11 +43,15 @@ actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: Rec
         extensionStrongRef = null
     }
     backgroundColor = UIColor.clearColor
-    handleTheme(this, viewDraws = false) {
-        spacing = spacingOverride?.value ?: it.spacing
+    handleTheme(
+        this, viewDraws = false,
+        foreground = {
+            spacing = spacingOverride?.value ?: it.spacing
+        },
+    ) {
+        extensionViewWriter = newViews()
+        setup(RecyclerView(this))
     }
-    extensionViewWriter = newViews()
-    setup(RecyclerView(this))
 }
 
 actual fun <T> RecyclerView.children(
@@ -281,8 +289,11 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             }
         var size: CGFloat = -1.0
             get() {
-                if(needsLayout) measure()
-                return field
+                return if (forceCentering) viewportSize
+                else {
+                    if (needsLayout) measure()
+                    field
+                }
             }
 
         fun measure() {
@@ -291,21 +302,21 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             val p = extensionPadding ?: 0.0
             if(elementsMatchSize) {
                 if(vertical) {
-                    size = this@NRecyclerView.bounds.useContents { size.height }
+                    size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
                     element.layoutSubviews()
                 } else {
-                    size = this@NRecyclerView.bounds.useContents { size.width }
+                    size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
                     element.layoutSubviews()
                 }
             } else {
                 if(vertical) {
-                    size = element.sizeThatFits(CGSizeMake(this@NRecyclerView.bounds.useContents { size.width }, 10000.0)).useContents { height }
+                    size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(this@NRecyclerView.bounds.useContents { size.width }, 10000.0)).useContents { height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
                     element.layoutSubviews()
                 } else {
-                    size = element.sizeThatFits(CGSizeMake(10000.0, this@NRecyclerView.bounds.useContents { size.height })).useContents { width }
+                    size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(10000.0, this@NRecyclerView.bounds.useContents { size.height })).useContents { width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
                     element.layoutSubviews()
                 }
@@ -417,13 +428,10 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                     updateVisibleIndexes()
                     updateFakeScroll()
                 }
-                enqueuedJump?.let {
-                    jump(it, Align.Center, false)
-                }
             }
         }
 
-    private fun forceCenteringHandler() {
+    private fun onScrollStop() {
         if (allSubviews.isNotEmpty()) {
             if (allSubviews.first().index <= dataDirect.min) {
                 // shift and attach to top
@@ -494,18 +502,12 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
         }
     }
 
-    var enqueuedJump: Int? = null
-        set(value) {
-            field = value
-        }
-
+    var startCreatingViewsAt: Pair<Int, Align> = 0 to Align.Start
     fun jump(index: Int, align: Align, animate: Boolean) {
-        enqueuedJump = index
-        if (allSubviews.isEmpty()) return
+        if (allSubviews.isEmpty() || viewportSize < 1) {
+            startCreatingViewsAt = index to align
+        }
         if (index !in dataDirect.min..dataDirect.max) return
-        if (viewportSize < 1) return
-//        if(enqueuedJump != null) println("Enqueued jump activated")
-        enqueuedJump = null
         lock("jump $index $align") {
             val rowIndex = index / columns
             if (animate) {
@@ -542,7 +544,6 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
-                forceCenteringHandler()
                 move()
                 allSubviews.find { it.index == rowIndex }?.let {
                     when (align) {
@@ -584,7 +585,6 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
-                forceCenteringHandler()
             }
         }
     }
@@ -641,9 +641,14 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     fun makeFirst(): Subview? {
         if (dataDirect.max < dataDirect.min) return null
         viewportOffset = reservedScrollingSpace / 2
-        val element = makeSubview(dataDirect.min, false)
+        val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
-        element.startPosition = reservedScrollingSpace / 2 + spacingRaw
+        element.startPosition = when(startCreatingViewsAt.second) {
+            Align.Start -> viewportOffset + spacing.value
+            Align.End -> viewportOffset + viewportSize - spacing.value - element.size
+            else -> viewportOffset + viewportSize / 2 - element.size / 2
+        }
+        println("Rendered first element at ${element.startPosition} with size ${element.size}")
         return element
     }
 
@@ -766,7 +771,6 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     }
 
     override fun scrollViewWillBeginDragging(scrollView: UIScrollView) {
-        enqueuedJump = null
     }
 
     override fun scrollViewDidEndDecelerating(scrollView: UIScrollView) {
@@ -774,7 +778,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             suppressTrueScrollEnd = false
             return
         }
-        forceCenteringHandler()
+        onScrollStop()
     }
 
     override fun scrollViewWillEndDragging(
@@ -813,19 +817,27 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
         }
         viewportSize = bounds.useContents { if(vertical) size.height else size.width }
         updateFakeScroll()
-        afterTimeout(10) {
-            enqueuedJump?.let {
-                jump(it, Align.Center, false)
-            }
-        }
     }
 
     init {
-        this.delegate = this
-        showsHorizontalScrollIndicator = false
-        showsVerticalScrollIndicator = false
-        setContentSize(if(vertical) CGSizeMake(0.0, reservedScrollingSpace) else CGSizeMake(reservedScrollingSpace,  0.0))
-        setContentOffset(if(vertical) CGPointMake(0.0, reservedScrollingSpace / 2) else CGPointMake(reservedScrollingSpace / 2,  0.0))
-        ready = true
+        afterTimeout(10) {
+            this.delegate = this
+            showsHorizontalScrollIndicator = false
+            showsVerticalScrollIndicator = false
+            setContentSize(
+                if (vertical) CGSizeMake(0.0, reservedScrollingSpace) else CGSizeMake(
+                    reservedScrollingSpace,
+                    0.0
+                )
+            )
+            setContentOffset(
+                if (vertical) CGPointMake(0.0, reservedScrollingSpace / 2) else CGPointMake(
+                    reservedScrollingSpace / 2,
+                    0.0
+                )
+            )
+            ready = true
+            populate()
+        }
     }
 }

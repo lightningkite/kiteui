@@ -139,8 +139,9 @@ actual var ImageView.description: String?
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit) {
     return viewElement(factory = ::TransitionImageView, wrapper = ::ImageView) {
         native.clipToOutline = true
-        handleTheme(native, viewDraws = true, viewLoads = true)
-        setup(this)
+        handleTheme(native, viewDraws = true, viewLoads = true) {
+            setup(this)
+        }
     }
 }
 
@@ -149,8 +150,9 @@ actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) {
     return viewElement(::ZoomClass, wrapper = ::ImageView){
         native.clipToOutline = true
-        handleTheme(native, viewDraws = true)
-        setup(this)
+        handleTheme(native, viewDraws = true) {
+            setup(this)
+        }
     }
 }
 

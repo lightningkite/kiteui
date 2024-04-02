@@ -43,7 +43,6 @@ actual fun ViewWriter.hasPopover(
             openingOtherPopover.add { close() }
             with(writerTargetingBody) {
                 currentTheme = { rootTheme().dialog() }
-                lastTheme = { rootTheme().dialog() }
                 stayOpen = false
                 element<HTMLDivElement>("div") {
                     existingElement = this
@@ -155,7 +154,6 @@ actual fun ViewWriter.hasPopover(
             stayOpen = true
             with(newViews) {
                 currentTheme = rootTheme
-                lastTheme = rootTheme
                 dismissBackground {
                     native.style.position = "absolute"
                     native.style.left = "0"

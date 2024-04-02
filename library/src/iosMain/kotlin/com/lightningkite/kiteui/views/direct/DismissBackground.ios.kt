@@ -1,28 +1,27 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
 import platform.UIKit.UIControlEventTouchUpInside
-import platform.UIKit.UITapGestureRecognizer
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NDismissBackground = FrameLayoutButton
 
 @ViewDsl
 actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit): Unit = element(FrameLayoutButton()) {
-    handleTheme(this) {
-        backgroundColor = it.background.closestColor().copy(alpha = 0.5f).toUiColor()
+    handleTheme(
+        this,
+        foreground = {
+            backgroundColor = it.background.closestColor().copy(alpha = 0.5f).toUiColor()
+        },
+    ) {
+        val d = DismissBackground(this)
+        __dismissBackgroundOtherSetupX(navigator)
+        setup(d)
+        __dismissBackgroundOtherSetup()
     }
-    val d = DismissBackground(this)
-    __dismissBackgroundOtherSetupX(navigator)
-    setup(d)
-    __dismissBackgroundOtherSetup()
 
 }
 

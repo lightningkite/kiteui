@@ -138,7 +138,8 @@ actual var TextField.range: ClosedRange<Double>?
 @ViewDsl
 actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit) {
     return viewElement(factory = ::EditText, wrapper = ::TextField) {
-        handleTheme<TextView>(native, foreground = applyTextColorFromTheme, viewLoads = true)
-        setup(this)
+        handleTheme<TextView>(native, foreground = applyTextColorFromTheme, viewLoads = true) {
+            setup(this)
+        }
     }
 }

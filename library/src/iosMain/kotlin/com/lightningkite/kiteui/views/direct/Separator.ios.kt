@@ -10,10 +10,14 @@ actual typealias NSeparator = UIView
 
 @ViewDsl
 actual inline fun ViewWriter.separatorActual(crossinline setup: Separator.() -> Unit): Unit = element(UIView()) {
-    handleTheme(this) {
-        backgroundColor = it.foreground.closestColor().toUiColor()
-        alpha = 0.25
+    handleTheme(
+        this,
+        foreground = {
+            backgroundColor = it.foreground.closestColor().toUiColor()
+            alpha = 0.25
+        },
+    ) {
+        extensionSizeConstraints = SizeConstraints(minWidth = 1.px, minHeight = 1.px)
+        setup(Separator(this))
     }
-    extensionSizeConstraints = SizeConstraints(minWidth = 1.px, minHeight = 1.px)
-    setup(Separator(this))
 }

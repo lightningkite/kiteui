@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.toNSData
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -23,10 +22,11 @@ actual typealias NImageView = MyImageView
 
 @ViewDsl
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit): Unit = element(NImageView()) {
-    handleTheme(this, viewDraws = true, viewLoads = false)
-    clipsToBounds = true
-    this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
-    setup(ImageView(this))
+    handleTheme(this, viewDraws = true, viewLoads = false,) {
+        clipsToBounds = true
+        this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
+        setup(ImageView(this))
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -132,9 +132,10 @@ actual inline var ImageView.description: String?
 @ViewDsl
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) =
     element(PanZoomImageView()) {
-        handleTheme(this, viewDraws = true)
-        setup(ImageView(imageView))
-        imageView.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
+        handleTheme(this, viewDraws = true,) {
+            setup(ImageView(imageView))
+            imageView.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
+        }
     }
 
 @OptIn(ExperimentalForeignApi::class)

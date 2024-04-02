@@ -15,12 +15,14 @@ actual typealias NSelect = TextFieldInput
 
 @ViewDsl
 actual inline fun ViewWriter.selectActual(crossinline setup: Select.() -> Unit): Unit = element(FrameLayout()) {
-    handleTheme(this, viewDraws = false)
-    element(TextFieldInput()) {
-        handleTheme(this) { textColor = it.foreground.closestColor().toUiColor() }
-        inputView = UIPickerView().apply {
+    handleTheme(this, viewDraws = false,) {
+        element(TextFieldInput()) {
+            handleTheme(this, foreground = { textColor = it.foreground.closestColor().toUiColor() }) {
+                inputView = UIPickerView().apply {
+                }
+                setup(Select(this))
+            }
         }
-        setup(Select(this))
     }
 }
 

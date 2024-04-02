@@ -18,11 +18,12 @@ actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> 
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
-        handleTheme(this, viewLoads = true) { textColor = it.foreground.closestColor().toUiColor() }
-        calculationContext.onRemove {
-            extensionStrongRef = null
+        handleTheme(this, viewLoads = true, foreground = { textColor = it.foreground.closestColor().toUiColor() },) {
+            calculationContext.onRemove {
+                extensionStrongRef = null
+            }
+            setup(TextField(this))
         }
-        setup(TextField(this))
     }
 }
 

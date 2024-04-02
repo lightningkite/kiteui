@@ -25,16 +25,18 @@ inline fun ViewWriter.textElement(textSize: Float, crossinline setup: TextView.(
     viewElement(factory = ::AndroidTextView, wrapper = ::TextView) {
         val androidText = native
         androidText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
-        handleTheme(native, viewLoads = true, foreground = applyTextColorFromTheme)
-        setup(TextView(androidText))
+        handleTheme(native, viewLoads = true, foreground = applyTextColorFromTheme) {
+            setup(TextView(androidText))
+        }
     }
 
 inline fun ViewWriter.header(textSize: Float, crossinline setup: TextView.() -> Unit) =
     viewElement(factory = ::AndroidTextView, wrapper = ::TextView) {
         val androidText = native
         androidText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
-        handleTheme(native, viewLoads = true, foreground = applyTextColorFromThemeHeader)
-        setup(TextView(androidText))
+        handleTheme(native, viewLoads = true, foreground = applyTextColorFromThemeHeader) {
+            setup(TextView(androidText))
+        }
     }
 
 object TextSizes {

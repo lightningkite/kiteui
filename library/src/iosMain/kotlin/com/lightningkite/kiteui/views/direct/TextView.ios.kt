@@ -15,12 +15,14 @@ actual inline fun ViewWriter.h1Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 2.0.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -31,12 +33,14 @@ actual inline fun ViewWriter.h2Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 1.6.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -47,12 +51,14 @@ actual inline fun ViewWriter.h3Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 1.4.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -63,12 +69,14 @@ actual inline fun ViewWriter.h4Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 1.3.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -79,12 +87,14 @@ actual inline fun ViewWriter.h5Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 1.2.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -95,12 +105,14 @@ actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): U
         minHeight = 1.1.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.title
-        it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.title
+            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -111,12 +123,14 @@ actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit):
         minHeight = 1.0.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.body
-        it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.body
+            it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { setup(TextView(this)) }
 }
 
 @ViewDsl
@@ -127,13 +141,14 @@ actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Uni
         minHeight = 0.8.rem * 1.5,
     )
     numberOfLines = 0
-    handleTheme(this, viewLoads = true) {
-        this.textColor = it.foreground.closestColor().toUiColor()
-        this.extensionFontAndStyle = it.body
-        it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
-    }
-    opacity = 0.8
-    setup(TextView(this))
+    handleTheme(
+        this, viewLoads = true,
+        foreground = {
+            this.textColor = it.foreground.closestColor().toUiColor()
+            this.extensionFontAndStyle = it.body
+            it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+        },
+    ) { opacity = 0.8; setup(TextView(this)) }
 }
 
 actual inline var TextView.content: String

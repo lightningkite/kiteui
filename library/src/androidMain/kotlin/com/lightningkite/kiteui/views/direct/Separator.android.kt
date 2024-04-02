@@ -16,7 +16,7 @@ actual inline fun ViewWriter.separatorActual(crossinline setup: Separator.() -> 
     val c = stack.asReversed().asSequence().filterIsInstance<SimplifiedLinearLayout>().firstOrNull()
         ?: throw IllegalStateException("Separators can only be used inside rows or columns")
     viewElement(factory = { NSeparator(it, c.orientation == SimplifiedLinearLayout.HORIZONTAL) }, wrapper = ::Separator) {
-        handleTheme(native) { it, v ->
+        handleTheme(native, foreground = { it, v ->
             v.background = ColorDrawable(it.foreground.closestColor().colorInt())
             v.alpha = 0.25f
             val size = it.outlineWidth.value.coerceAtLeast(1f).toInt()
@@ -33,10 +33,11 @@ actual inline fun ViewWriter.separatorActual(crossinline setup: Separator.() -> 
                     it.constraints = it.constraints.copy(height = size.px)
                 }
             }
+        }) {
+            native.minimumWidth = 1
+            native.minimumHeight = 1
+            setup(this)
         }
-        native.minimumWidth = 1
-        native.minimumHeight = 1
-        setup(this)
     }
 }
 

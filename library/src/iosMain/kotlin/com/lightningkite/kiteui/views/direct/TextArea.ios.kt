@@ -17,10 +17,11 @@ actual inline fun ViewWriter.textAreaActual(crossinline setup: TextArea.() -> Un
     element(UITextView()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
-        handleTheme(this, viewLoads = true) { textColor = it.foreground.closestColor().toUiColor() }
-        setup(TextArea(this))
-        calculationContext.onRemove {
-            extensionStrongRef = null
+        handleTheme(this, viewLoads = true, foreground = { textColor = it.foreground.closestColor().toUiColor() },) {
+            setup(TextArea(this))
+            calculationContext.onRemove {
+                extensionStrongRef = null
+            }
         }
     }
 }

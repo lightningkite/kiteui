@@ -21,21 +21,29 @@ actual class NSpace(): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
 
 @ViewDsl
 actual inline fun ViewWriter.spaceActual(crossinline setup: Space.() -> Unit): Unit = element(NSpace()) {
-    handleTheme(this) {
-        extensionSizeConstraints = SizeConstraints(
-            minHeight = it.spacing,
-            minWidth = it.spacing
-        )
+    handleTheme(
+        this,
+        foreground = {
+            extensionSizeConstraints = SizeConstraints(
+                minHeight = it.spacing,
+                minWidth = it.spacing
+            )
+        },
+    ) {
+        setup(Space(this))
     }
-    setup(Space(this))
 }
 
 actual fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit): Unit = element(NSpace()) {
-    handleTheme(this) {
-        extensionSizeConstraints = SizeConstraints(
-            minHeight = it.spacing * multiplier,
-            minWidth = it.spacing * multiplier
-        )
+    handleTheme(
+        this,
+        foreground = {
+            extensionSizeConstraints = SizeConstraints(
+                minHeight = it.spacing * multiplier,
+                minWidth = it.spacing * multiplier
+            )
+        },
+    ) {
+        setup(Space(this))
     }
-    setup(Space(this))
 }

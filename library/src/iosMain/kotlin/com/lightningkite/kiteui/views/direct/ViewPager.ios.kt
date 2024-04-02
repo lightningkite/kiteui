@@ -40,13 +40,17 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
         extensionStrongRef = null
     }
     backgroundColor = UIColor.clearColor
-    handleTheme(this, viewDraws = false) {
-        spacing = spacingOverride?.value ?: it.spacing
+    handleTheme(
+        this, viewDraws = false,
+        foreground = {
+            spacing = spacingOverride?.value ?: it.spacing
+        },
+    ) {
+        forceCentering = true
+        elementsMatchSize = true
+        extensionViewWriter = newViews()
+        setup(ViewPager(this))
     }
-    forceCentering = true
-    elementsMatchSize = true
-    extensionViewWriter = newViews()
-    setup(ViewPager(this))
 }
 
 @OptIn(ExperimentalForeignApi::class)

@@ -137,7 +137,7 @@ class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
     }
 }
 
-inline fun ViewWriter.handleThemeControl(view: UIControl, crossinline checked: suspend ()->Boolean = { false }, setup: ()->Unit) {
+inline fun ViewWriter.handleThemeControl(view: UIControl, crossinline checked: suspend ()->Boolean = { false }, noinline setup: ()->Unit) {
     val s = view.stateReadable
     withThemeGetter({
         if(checked()) return@withThemeGetter it().selected()
@@ -161,8 +161,7 @@ inline fun ViewWriter.handleThemeControl(view: UIControl, crossinline checked: s
                 }
             }
         }
-        handleTheme(view, viewDraws = false)
-        setup()
+        handleTheme(view, viewDraws = false, setup = setup)
     }
 }
 

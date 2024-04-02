@@ -20,9 +20,10 @@ actual typealias NVideo = PlayerView
 
 @ViewDsl
 actual inline fun ViewWriter.videoActual(crossinline setup: Video.() -> Unit): Unit = viewElement(factory = ::PlayerView, wrapper = ::Video) {
-    handleTheme(native, viewDraws = true, viewLoads = true)
-    native.player = ExoPlayer.Builder(context).build()
-    setup(this)
+    handleTheme(native, viewDraws = true, viewLoads = true) {
+        native.player = ExoPlayer.Builder(context).build()
+        setup(this)
+    }
 }
 actual inline var Video.source: VideoSource?
     get() = TODO()

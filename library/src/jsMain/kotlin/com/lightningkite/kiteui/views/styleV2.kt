@@ -19,8 +19,6 @@ fun ViewWriter.handleTheme(
     val currentTheme = currentTheme
     val isRoot = isRoot
     this.isRoot = false
-    val changedThemes = changedThemes
-    this.changedThemes = false
 
     view.calculationContext.reactiveScope {
         val theme = currentTheme()

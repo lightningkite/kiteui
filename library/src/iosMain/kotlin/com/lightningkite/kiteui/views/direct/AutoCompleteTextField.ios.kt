@@ -18,11 +18,12 @@ actual inline fun ViewWriter.autoCompleteTextFieldActual(crossinline setup: Auto
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
-        handleTheme(this) { textColor = it.foreground.closestColor().toUiColor() }
-        calculationContext.onRemove {
-            extensionStrongRef = null
+        handleTheme(this, foreground = { textColor = it.foreground.closestColor().toUiColor() },) {
+            calculationContext.onRemove {
+                extensionStrongRef = null
+            }
+            setup(AutoCompleteTextField(this))
         }
-        setup(AutoCompleteTextField(this))
     }
 }
 

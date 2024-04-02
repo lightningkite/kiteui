@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.l2.AppNav
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -31,6 +32,16 @@ fun <T> viewWriterAddonLateInit(): ReadWriteProperty<ViewWriter, T> = object : R
 
 var ViewWriter.navigator by viewWriterAddonLateInit<KiteUiNavigator>()
 //var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
+
+@ViewModifierDsl3 val ViewWriter.debugNext: ViewWrapper get() {
+    beforeNextElementSetup {
+        viewDebugTarget = this
+    }
+    afterNextElementSetup {
+        if(viewDebugTarget == this) viewDebugTarget = null
+    }
+    return ViewWrapper
+}
 
 @ViewModifierDsl3 inline fun ViewWriter.withTheme(theme: Theme, action: () -> Unit) = withThemeGetter({theme}, action)
 @ViewModifierDsl3 fun ViewWriter.setTheme(calculate: suspend ()-> Theme?): ViewWrapper {

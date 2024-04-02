@@ -1,20 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.toNSData
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CALayer
-import platform.QuartzCore.CAShapeLayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
-import platform.UniformTypeIdentifiers.UTTypeImage
-import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
-import platform.darwin.dispatch_async
-import platform.darwin.dispatch_get_main_queue
-import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -66,11 +58,15 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)) {
 
 @ViewDsl
 actual inline fun ViewWriter.iconActual(crossinline setup: IconView.() -> Unit): Unit = element(NIconView()) {
-    handleTheme(this, viewDraws = true, viewLoads = true) { theme ->
-        this.iconPaint = theme.icon
+    handleTheme(
+        this, viewDraws = true, viewLoads = true,
+        foreground = { theme ->
+            this.iconPaint = theme.icon
+        },
+    ) {
+        this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
+        setup(IconView(this))
     }
-    this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
-    setup(IconView(this))
 }
 
 actual inline var IconView.source: Icon?

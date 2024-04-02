@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.MaterialLikeTheme
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import kotlin.math.min
 
@@ -32,11 +34,10 @@ class ViewWriter(
     fun split(): ViewWriter = ViewWriter(stack.last(), context = context, startDepth = depth).also {
         it.addons.putAll(this.addons)
         it.currentTheme = currentTheme
-        it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
-        it.changedThemes = changedThemes
         it.rootTheme = rootTheme
+        it.lastSpacing = lastSpacing
     }
 
     /**
@@ -46,10 +47,10 @@ class ViewWriter(
     fun newViews(): ViewWriter = ViewWriter(null, context = context, startDepth = depth).also {
         it.addons.putAll(this.addons)
         it.currentTheme = currentTheme
-        it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
         it.rootTheme = rootTheme
+        it.lastSpacing = lastSpacing
     }
 
     /**
@@ -59,10 +60,10 @@ class ViewWriter(
     fun targeting(view: NView): ViewWriter = ViewWriter(view, context = context, startDepth = depth).also {
         it.addons.putAll(this.addons)
         it.currentTheme = currentTheme
-        it.lastTheme = lastTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
         it.rootTheme = rootTheme
+        it.lastSpacing = lastSpacing
     }
 
     val stack = if (parent == null) arrayListOf() else arrayListOf(parent)
@@ -78,19 +79,15 @@ class ViewWriter(
         }
 
     var rootTheme: suspend () -> Theme = { MaterialLikeTheme() }
-    var lastTheme: suspend () -> Theme = { rootTheme() }
     var currentTheme: suspend () -> Theme = { rootTheme() }
     inline fun <T> withThemeGetter(crossinline calculate: suspend (suspend () -> Theme) -> Theme, action: () -> T): T {
         val old = currentTheme
         changedThemes = true
-        val oldold = lastTheme
-        lastTheme = old
         currentTheme = { calculate(old) }
         try {
             return action()
         } finally {
             currentTheme = old
-            lastTheme = oldold
         }
     }
 
@@ -98,12 +95,9 @@ class ViewWriter(
     inline fun ViewWriter.themeModifier(crossinline calculate: suspend (suspend () -> Theme) -> Theme): ViewWrapper {
         val old = currentTheme
         changedThemes = true
-        val oldold = lastTheme
-        lastTheme = old
         currentTheme = { calculate(old) }
         afterNextElementSetup {
             currentTheme = old
-            lastTheme = oldold
         }
         return ViewWrapper
     }
@@ -117,10 +111,10 @@ class ViewWriter(
         class Maybe(val logic: suspend () -> Boolean) : TransitionNextView
     }
 
+    var lastSpacing: suspend () -> Dimension = { 0.px }
     var transitionNextView: TransitionNextView = TransitionNextView.No
     var changedThemes: Boolean = false
     var isRoot: Boolean = true
-    var includePaddingAtStackEmpty = false
     val stackEmpty: Boolean get() = stack.isEmpty()
 
     val calculationContext: CalculationContext get() = stack.last().calculationContext

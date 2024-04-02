@@ -59,9 +59,10 @@ actual var IconView.description: String?
 @ViewDsl
 actual inline fun ViewWriter.iconActual(crossinline setup: IconView.() -> Unit) {
     return viewElement(factory = ::NIconView, wrapper = ::IconView) {
-        handleTheme(native, viewDraws = true, viewLoads = true) { t, v ->
+        handleTheme(native, viewDraws = true, viewLoads = true, foreground = { t, v ->
             v.iconPaint = t.icon
+        }) {
+            setup(this)
         }
-        setup(this)
     }
 }

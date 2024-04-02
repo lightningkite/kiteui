@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import java.util.*
 import kotlin.math.min
@@ -87,8 +88,6 @@ val applyTextColorFromTheme: (Theme, AndroidTextView) -> Unit = { theme, textVie
     textView.isAllCaps = theme.body.allCaps
 }
 
-val viewHasMightTransitionPadding: WeakHashMap<View, Float?> = WeakHashMap()
-
 inline fun <T : NView> ViewWriter.handleTheme(
     view: T,
     viewDraws: Boolean = true,
@@ -97,52 +96,38 @@ inline fun <T : NView> ViewWriter.handleTheme(
     crossinline background: (Theme) -> Unit = {},
     crossinline backgroundRemove: () -> Unit = {},
     crossinline foreground: (Theme, T) -> Unit = { _, _ -> },
+    crossinline setup: () -> Unit,
 ) {
     val transition = transitionNextView
     transitionNextView = ViewWriter.TransitionNextView.No
     val currentTheme = currentTheme
-    val parentTheme = lastTheme
     val isRoot = isRoot
     this.isRoot = false
-    val changedThemes = changedThemes
-    this.changedThemes = false
     var animator: ValueAnimator? = null
+
+    val viewForcePadding = viewHasPadding[view]
+    val mightTransition = transition != ViewWriter.TransitionNextView.No
+    val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
+    val parentSpacingCalc = lastSpacing
+
+    if (usePadding) {
+        val hp = (view as? HasSpacingMultiplier)?.spacingOverride
+        lastSpacing = { hp?.await() ?: currentTheme().spacing }
+    }
 
     view.calculationContext.reactiveScope {
         val theme = currentTheme()
-
-        val viewForcePadding = viewHasPadding[view]
 
         val shouldTransition = when (transition) {
             ViewWriter.TransitionNextView.No -> false
             ViewWriter.TransitionNextView.Yes -> true
             is ViewWriter.TransitionNextView.Maybe -> transition.logic()
         }
-        val mightTransition = transition != ViewWriter.TransitionNextView.No
         val useBackground = shouldTransition
-        val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
-        viewHasMightTransitionPadding[view] = if (mightTransition) theme.spacing.value else null
-
-        var parentSpacing = theme.spacing.value
-        var currentParent = view.parent as? ViewGroup
-        while (currentParent != null) {
-            val hsm = (currentParent as? HasSpacingMultiplier)?.spacingOverride?.await()
-            if (hsm != null) {
-                parentSpacing = hsm.value
-                break
-            }
-            val p = viewHasMightTransitionPadding[currentParent]
-            if (p != null) {
-                parentSpacing = p
-                break
-            }
-            currentParent = currentParent.parent as? ViewGroup
-        }
 
         if (usePadding) {
-            view.setPaddingAll(
-                ((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value.toInt()
-            )
+            val v = ((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing)
+            view.setPaddingAll(v.value.toInt())
         } else {
             view.setPaddingAll(0)
         }
@@ -150,7 +135,7 @@ inline fun <T : NView> ViewWriter.handleTheme(
 //        val parentSpacing = if(isRoot) 0f else ((view.parent as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value
 
         if (viewLoads && view.androidCalculationContext.loading.await()) {
-
+            val parentSpacing = parentSpacingCalc().value
             val backgroundDrawable = theme.backgroundDrawable(
                 parentSpacing, view.isClickable, view.background,
                 customDrawable = customDrawable
@@ -185,6 +170,7 @@ inline fun <T : NView> ViewWriter.handleTheme(
             animator?.cancel()
             animator = null
             if (useBackground) {
+                val parentSpacing = parentSpacingCalc().value
                 val backgroundDrawable = theme.backgroundDrawable(
                     parentSpacing, view.isClickable, view.background,
                     customDrawable = customDrawable
@@ -193,10 +179,12 @@ inline fun <T : NView> ViewWriter.handleTheme(
                 view.elevation = if (parentSpacing > 0f) theme.elevation.value else 0f
                 background(theme)
             } else if (view.isClickable) {
+                val parentSpacing = parentSpacingCalc().value
                 view.elevation = 0f
                 view.background = theme.rippleDrawableOnly(parentSpacing, view.background)
                 backgroundRemove()
             } else if (view is TransitionImageView) {
+                val parentSpacing = parentSpacingCalc().value
                 view.elevation = 0f
                 view.background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
@@ -218,6 +206,12 @@ inline fun <T : NView> ViewWriter.handleTheme(
             }
         }
         foreground(theme, view)
+    }
+
+    setup()
+
+    if(usePadding) {
+        lastSpacing = parentSpacingCalc
     }
 }
 
@@ -324,7 +318,7 @@ inline fun <T : View> ViewWriter.handleThemeControl(
     crossinline background: (Theme) -> Unit = {},
     crossinline backgroundRemove: () -> Unit = {},
     crossinline foreground: (Theme, T) -> Unit = { _, _ -> },
-    setup: () -> Unit
+    crossinline setup: () -> Unit
 ) {
     val hovered = view.hovered
     withThemeGetter({
@@ -350,8 +344,7 @@ inline fun <T : View> ViewWriter.handleThemeControl(
                 }
             }
         }
-        handleTheme(view, false, viewLoads, customDrawable, background, backgroundRemove, foreground)
-        setup()
+        handleTheme(view, false, viewLoads, customDrawable, background, backgroundRemove, foreground, setup)
     }
 }
 

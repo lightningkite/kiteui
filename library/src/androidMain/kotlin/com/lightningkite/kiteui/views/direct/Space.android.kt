@@ -11,11 +11,12 @@ actual typealias NSpace = View
 @ViewDsl
 actual inline fun ViewWriter.spaceActual(crossinline setup: Space.() -> Unit) {
     return viewElement(factory = ::NSpace, wrapper = ::Space) {
-        handleTheme(native)  { it, native ->
+        handleTheme(native, foreground = { it, native ->
             native.lparams.width = it.spacing.value.toInt()
             native.lparams.height = it.spacing.value.toInt()
+        }) {
+            setup(this)
         }
-        setup(this)
     }
 }
 
@@ -24,10 +25,11 @@ actual fun ViewWriter.space(
     setup: Space.() -> Unit,
 ) {
     return viewElement(factory = ::View, wrapper = ::Space) {
-        handleTheme(native)  { it, native ->
+        handleTheme(native, foreground = { it, native ->
             native.lparams.width = it.spacing.value.times(multiplier).toInt()
             native.lparams.height = it.spacing.value.times(multiplier).toInt()
+        }) {
+            setup(this)
         }
-        setup(this)
     }
 }

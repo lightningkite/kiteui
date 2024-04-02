@@ -13,9 +13,13 @@ actual inline fun ViewWriter.activityIndicatorActual(crossinline setup: Activity
     element(UIActivityIndicatorView()) {
         hidden = false
         startAnimating()
-        handleTheme(this) {
-            this.color = it.foreground.closestColor().toUiColor()
+        handleTheme(
+            this,
+            foreground = {
+                this.color = it.foreground.closestColor().toUiColor()
+            },
+        ) {
+            extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)
+            setup(ActivityIndicator(this))
         }
-        extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)
-        setup(ActivityIndicator(this))
     }

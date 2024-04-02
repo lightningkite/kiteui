@@ -137,38 +137,30 @@ object LayoutExamplesScreen : KiteUiScreen {
                 card - row {
                     spacing = 0.rem
                     text("0.0")
-                    important - stack { space() }
-                    onlyWhen { showExtra.await() } - important - stack {
-                        space()
-                    }
-                    important - stack { space() }
+                    important - text("X")
+                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    stack { important - text("X") }
                 }
                 card - row {
                     spacing = 0.5.rem
                     text("0.5")
-                    important - stack { space() }
-                    onlyWhen { showExtra.await() } - important - stack {
-                        space()
-                    }
-                    important - stack { space() }
+                    important - text("X")
+                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    stack { important - text("X") }
                 }
                 card - row {
                     spacing = 1.rem
                     text("1.0")
-                    important - stack { space() }
-                    onlyWhen { showExtra.await() } - important - stack {
-                        space()
-                    }
-                    important - stack { space() }
+                    important - text("X")
+                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    stack { important - text("X") }
                 }
                 card - row {
                     spacing = 2.rem
                     text("2.0")
-                    important - stack { space() }
-                    onlyWhen { showExtra.await() } - important - stack {
-                        space()
-                    }
-                    important - stack { space() }
+                    important - text("X")
+                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    stack { important - text("X") }
                 }
                 card - button {
                     spacing = 0.rem

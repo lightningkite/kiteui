@@ -7,12 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0899F8D6A21066721E56642F /* Pods_KiteUi_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 833634D8CEA5B31E303DE247 /* Pods_KiteUi_Example_AppTests.framework */; };
 		18267D822B44BFFC00A45F8C /* fontsMontserrat-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D7E2B44BFFC00A45F8C /* fontsMontserrat-bold.ttf */; };
 		18267D832B44BFFC00A45F8C /* fontsMontserrat-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D7F2B44BFFC00A45F8C /* fontsMontserrat-italic.ttf */; };
 		18267D842B44BFFC00A45F8C /* fontsMontserrat-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D802B44BFFC00A45F8C /* fontsMontserrat-normal.ttf */; };
 		18267D852B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D812B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf */; };
 		183A2D592B335230001011C3 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 183A2D582B335230001011C3 /* test.m */; };
+		1858D8252BBCB927009ADC40 /* fontsGoldman-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */; };
+		1858D8262BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81E2BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf */; };
+		1858D8272BBCB927009ADC40 /* fontsRoboto-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81F2BBCB927009ADC40 /* fontsRoboto-normal.ttf */; };
+		1858D8282BBCB927009ADC40 /* fontsRobotoLight-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D8202BBCB927009ADC40 /* fontsRobotoLight-light.ttf */; };
+		1858D8292BBCB927009ADC40 /* fontsGoldman-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D8212BBCB927009ADC40 /* fontsGoldman-normal.ttf */; };
+		1858D82A2BBCB927009ADC40 /* fontsRoboto-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D8222BBCB927009ADC40 /* fontsRoboto-italic.ttf */; };
+		1858D82B2BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D8232BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf */; };
+		1858D82C2BBCB927009ADC40 /* fontsRoboto-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D8242BBCB927009ADC40 /* fontsRoboto-bold.ttf */; };
 		188D8B992B2B9CB400732A2E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B982B2B9CB400732A2E /* AppDelegate.swift */; };
 		188D8B9B2B2B9CB400732A2E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B9A2B2B9CB400732A2E /* SceneDelegate.swift */; };
 		188D8B9D2B2B9CB400732A2E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8B9C2B2B9CB400732A2E /* ViewController.swift */; };
@@ -22,8 +29,9 @@
 		188D8BB02B2B9CB500732A2E /* KiteUi_Example_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BAF2B2B9CB500732A2E /* KiteUi_Example_AppTests.swift */; };
 		188D8BBA2B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */; };
 		188D8BBC2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */; };
-		82159724A540A0D400A1DC53 /* Pods_KiteUi_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AA330A356C4640586219896 /* Pods_KiteUi_Example_App.framework */; };
-		A4FE1AB1BA41490ABED3D5BD /* Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 861A800737F15FD2996F84DC /* Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework */; };
+		3A97B2A80C49FB425A721694 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */; };
+		4112B762DB48049EBF16FBDC /* Pods_KiteUI_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */; };
+		B8CA354EE429CDDE2542B4EC /* Pods_KiteUI_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +59,14 @@
 		18267D812B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-bold-italic.ttf"; sourceTree = "<group>"; };
 		183A2D572B33522F001011C3 /* KiteUI Example App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KiteUI Example App-Bridging-Header.h"; sourceTree = "<group>"; };
 		183A2D582B335230001011C3 /* test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = test.m; sourceTree = "<group>"; };
+		1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldman-bold.ttf"; sourceTree = "<group>"; };
+		1858D81E2BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLightItalic-light-Italic.ttf"; sourceTree = "<group>"; };
+		1858D81F2BBCB927009ADC40 /* fontsRoboto-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-normal.ttf"; sourceTree = "<group>"; };
+		1858D8202BBCB927009ADC40 /* fontsRobotoLight-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLight-light.ttf"; sourceTree = "<group>"; };
+		1858D8212BBCB927009ADC40 /* fontsGoldman-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldman-normal.ttf"; sourceTree = "<group>"; };
+		1858D8222BBCB927009ADC40 /* fontsRoboto-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-italic.ttf"; sourceTree = "<group>"; };
+		1858D8232BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-bold-italic.ttf"; sourceTree = "<group>"; };
+		1858D8242BBCB927009ADC40 /* fontsRoboto-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-bold.ttf"; sourceTree = "<group>"; };
 		188D8B952B2B9CB400732A2E /* KiteUI Example App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KiteUI Example App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		188D8B982B2B9CB400732A2E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		188D8B9A2B2B9CB400732A2E /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -64,14 +80,14 @@
 		188D8BB52B2B9CB600732A2E /* KiteUI Example AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KiteUI Example AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITests.swift; sourceTree = "<group>"; };
 		188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7351D8F1431F47D326E21753 /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; sourceTree = "<group>"; };
-		7AA330A356C4640586219896 /* Pods_KiteUi_Example_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUi_Example_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		833634D8CEA5B31E303DE247 /* Pods_KiteUi_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUi_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		85FF7FBDE86680B139E170E6 /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		861A800737F15FD2996F84DC /* Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2E3C33757E53F1ED9BBD585 /* Pods-KiteUI Example AppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.release.xcconfig"; sourceTree = "<group>"; };
 		B99E476F4084FE81744DF5F2 /* Pods-KiteUI Example App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.debug.xcconfig"; sourceTree = "<group>"; };
+		D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5DC363722525FCD08430C52 /* Pods-KiteUI Example App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.release.xcconfig"; sourceTree = "<group>"; };
+		F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,7 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				82159724A540A0D400A1DC53 /* Pods_KiteUi_Example_App.framework in Frameworks */,
+				B8CA354EE429CDDE2542B4EC /* Pods_KiteUI_Example_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,7 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0899F8D6A21066721E56642F /* Pods_KiteUi_Example_AppTests.framework in Frameworks */,
+				4112B762DB48049EBF16FBDC /* Pods_KiteUI_Example_AppTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +111,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A4FE1AB1BA41490ABED3D5BD /* Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework in Frameworks */,
+				3A97B2A80C49FB425A721694 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +121,14 @@
 		18267D752B44BF5300A45F8C /* resourcesFromCommon */ = {
 			isa = PBXGroup;
 			children = (
+				1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */,
+				1858D8212BBCB927009ADC40 /* fontsGoldman-normal.ttf */,
+				1858D8232BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf */,
+				1858D8242BBCB927009ADC40 /* fontsRoboto-bold.ttf */,
+				1858D8222BBCB927009ADC40 /* fontsRoboto-italic.ttf */,
+				1858D81F2BBCB927009ADC40 /* fontsRoboto-normal.ttf */,
+				1858D8202BBCB927009ADC40 /* fontsRobotoLight-light.ttf */,
+				1858D81E2BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf */,
 				18267D812B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf */,
 				18267D7E2B44BFFC00A45F8C /* fontsMontserrat-bold.ttf */,
 				18267D7F2B44BFFC00A45F8C /* fontsMontserrat-italic.ttf */,
@@ -185,9 +209,9 @@
 		EE5D5A3EFFDD296A40CE1F5E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7AA330A356C4640586219896 /* Pods_KiteUi_Example_App.framework */,
-				861A800737F15FD2996F84DC /* Pods_KiteUi_Example_App_KiteUi_Example_AppUITests.framework */,
-				833634D8CEA5B31E303DE247 /* Pods_KiteUi_Example_AppTests.framework */,
+				F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */,
+				D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */,
+				3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -303,11 +327,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				188D8BA52B2B9CB500732A2E /* LaunchScreen.storyboard in Resources */,
+				1858D82B2BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf in Resources */,
+				1858D82A2BBCB927009ADC40 /* fontsRoboto-italic.ttf in Resources */,
 				188D8BA22B2B9CB500732A2E /* Assets.xcassets in Resources */,
 				188D8BA02B2B9CB400732A2E /* Main.storyboard in Resources */,
+				1858D8252BBCB927009ADC40 /* fontsGoldman-bold.ttf in Resources */,
 				18267D832B44BFFC00A45F8C /* fontsMontserrat-italic.ttf in Resources */,
+				1858D8292BBCB927009ADC40 /* fontsGoldman-normal.ttf in Resources */,
+				1858D8272BBCB927009ADC40 /* fontsRoboto-normal.ttf in Resources */,
 				18267D822B44BFFC00A45F8C /* fontsMontserrat-bold.ttf in Resources */,
+				1858D8262BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */,
+				1858D8282BBCB927009ADC40 /* fontsRobotoLight-light.ttf in Resources */,
 				18267D842B44BFFC00A45F8C /* fontsMontserrat-normal.ttf in Resources */,
+				1858D82C2BBCB927009ADC40 /* fontsRoboto-bold.ttf in Resources */,
 				18267D852B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

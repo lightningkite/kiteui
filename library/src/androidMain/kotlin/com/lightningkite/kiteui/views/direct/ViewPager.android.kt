@@ -36,8 +36,9 @@ actual class NViewPager(context: Context) : SlightlyModifiedFrameLayout(context)
 actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> Unit) {
     element(NViewPager(context))  {
         viewWriter = newViews()
-        handleTheme(this, viewDraws = false)
-        setup(ViewPager(this))
+        handleTheme(this, viewDraws = false) {
+            setup(ViewPager(this))
+        }
     }
 }
 

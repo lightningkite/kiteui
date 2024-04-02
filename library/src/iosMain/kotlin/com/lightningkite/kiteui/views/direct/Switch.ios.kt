@@ -13,10 +13,14 @@ actual typealias NSwitch = UISwitch
 
 @ViewDsl
 actual inline fun ViewWriter.switchActual(crossinline setup: Switch.() -> Unit): Unit = element(UISwitch()) {
-    handleTheme(this) {
+    handleTheme(
+        this,
+        foreground = {
 
+        },
+    ) {
+        setup(Switch(this))
     }
-    setup(Switch(this))
 }
 
 actual inline var Switch.enabled: Boolean
