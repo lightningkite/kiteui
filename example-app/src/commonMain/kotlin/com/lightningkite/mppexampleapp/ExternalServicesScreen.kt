@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -10,7 +11,7 @@ import com.lightningkite.kiteui.views.direct.*
 object ExternalServicesScreen : KiteUiScreen {
     override val title: Readable<String>
         get() = super.title
-
+//    val clip = Property<String>("")
     override fun ViewWriter.render() {
         col {
             col {
@@ -42,7 +43,22 @@ object ExternalServicesScreen : KiteUiScreen {
                 text { content = "requestCaptureEnvironment" }
                 onClick { ExternalServices.requestCaptureEnvironment(listOf("image/*")) }
             }
-
+//            row {
+//                textField { content bind clip }
+//                button {
+//                    row {
+//                        icon {
+//                            source = Icon.copy
+//                            description = "Copy text to clipboard"
+//                        }
+//
+//                        text {content = "setClipboardText"}
+//                    }
+//
+//
+//                    onClick{ExternalServices.setClipboardText(clip.await())}
+//                }
+//            }
         }
     }
 }
