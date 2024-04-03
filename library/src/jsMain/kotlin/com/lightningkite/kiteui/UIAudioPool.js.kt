@@ -17,12 +17,22 @@ actual class UIAudioPool {
         connect(context.destination)
     }
 
-    actual suspend fun play(sound: UIAudioSegment) = suspendCoroutineCancellable { continuation ->
+    private val gainNodes = (0..<numberOfStreams).map {
+        context.createGain().apply {
+            connect(merger, 0, it)
+        }
+    }
+
+    actual suspend fun play(sound: UIAudioSegment, gain: Float) = suspendCoroutineCancellable { continuation ->
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
         val bufferSource = context.createBufferSource()
+        val gainNode = gainNodes[mergerInputIndexCursor]
+
         bufferSource.buffer = sound
-        bufferSource.connect(merger, 0, mergerInputIndexCursor)
+        bufferSource.connect(gainNode)
+        gainNode.gain.value = gain
+
         mergerInputIndexCursor = (mergerInputIndexCursor + 1) % numberOfStreams
         bufferSource.start()
 
@@ -70,6 +80,7 @@ actual typealias UIAudioSegment = AudioBuffer
 external class AudioContext() {
     fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
     fun createBufferSource(): AudioBufferSourceNode
+    fun createGain(): GainNode
     fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
     val destination: AudioDestinationNode
 }
@@ -87,8 +98,16 @@ external class AudioBufferSourceNode : AudioNode {
     fun stop()
 }
 
+external class AudioDestinationNode : AudioNode
+
+external class GainNode : AudioNode {
+    val gain: AudioParam
+}
+
 external class AudioBuffer {
     val duration: Double
 }
 
-external class AudioDestinationNode : AudioNode
+external class AudioParam {
+    var value: Float
+}

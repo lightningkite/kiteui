@@ -73,7 +73,7 @@ class AudioScreen : KiteUiScreen {
                 println("Automatic audio file loaded, waiting to play")
                 delay(10000L)
                 println("Now playing audio automatically")
-                audioPool.play(sound)
+                audioPool.play(sound, 0.2F)
             }
         }
     }
