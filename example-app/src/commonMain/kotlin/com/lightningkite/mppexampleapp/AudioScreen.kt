@@ -1,8 +1,7 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.UIAudioPool
-import com.lightningkite.kiteui.UIAudioSegment
+import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.AudioLocal
 import com.lightningkite.kiteui.models.AudioRemote
 import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.reactive.Property
@@ -41,9 +40,41 @@ class AudioScreen : KiteUiScreen {
                     }
                 }
             }
+            fun uploadAudioAndPlay() = row {
+                val sound = Property<UIAudioSegment?>(null)
+                weight(1.0f) - button {
+                    text("Upload sound file")
+                    onClick {
+                        launch {
+                            ExternalServices.requestFile(listOf("audio/*"))?.let {
+                                sound.set(audioPool.load(AudioLocal(it)))
+                            }
+                        }
+                    }
+                }
+                weight(1.0f) - button {
+                    reactiveScope {
+                        enabled = sound.await() != null
+                    }
+                    text("Play")
+                    onClick {
+                        launch {
+                            sound.awaitNotNull().let { audioPool.play(it) }
+                        }
+                    }
+                }
+            }
             audioLoadAndPlay("https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav", "Cantina Band")
             audioLoadAndPlay("https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav", "Star Wars")
             audioLoadAndPlay("https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav", "Taunt")
+            uploadAudioAndPlay()
+            launch {
+                val sound = audioPool.load(AudioRemote("https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg10.wav"))
+                println("Automatic audio file loaded, waiting to play")
+                delay(10000L)
+                println("Now playing audio automatically")
+                audioPool.play(sound)
+            }
         }
     }
 
