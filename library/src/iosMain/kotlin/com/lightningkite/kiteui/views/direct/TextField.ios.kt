@@ -7,6 +7,10 @@ import com.lightningkite.kiteui.models.KeyboardType
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
+import platform.Foundation.NSAttributedString
+import platform.Foundation.NSAttributedStringMeta
+import platform.Foundation.NSMutableAttributedString
+import platform.Foundation.NSString
 import platform.UIKit.*
 import platform.darwin.NSObject
 
@@ -18,7 +22,10 @@ actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> 
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
-        handleTheme(this, viewLoads = true, foreground = { textColor = it.foreground.closestColor().toUiColor() },) {
+        handleTheme(this, viewLoads = true, foreground = {
+            textColor = it.foreground.closestColor().toUiColor()
+//            attributedPlaceholder = NSMutableAttributedString()
+        }) {
             calculationContext.onRemove {
                 extensionStrongRef = null
             }

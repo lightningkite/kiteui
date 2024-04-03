@@ -108,13 +108,11 @@ suspend fun <T> Readable<T>.await(): T {
             rerunOn(this@await)
             state.get()
         } else {
+            // If we're already listening to it, just 'await once'
+            val listenable = this@await
+            if (it.removers.containsKey(listenable)) return@let awaitOnce()
             // otherwise, wait for the first instance of it
             suspendCoroutineCancellable { cont ->
-                val listenable = this@await
-                if (it.removers.containsKey(listenable)) {
-                    println("Congratulations!  You've hit a weird case!  You have a readable whose state has changed to 'Not Ready' in the middle of a second read.  We're just going to abandon and try again.")
-                    throw CancelledException()
-                }
                 var runOnce = false
                 val remover = listenable.addListener {
                     // The first time the listener runs, resume.  After that, rerun the whole scope.

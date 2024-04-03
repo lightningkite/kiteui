@@ -48,21 +48,20 @@ actual fun <T> Select.bind(
                 return convertView
             } else {
                 with(native.viewWriter) {
-                    text {
+                    padded - text {
                         content = render(list[position])
                     }
                 }
                 return native.viewWriter.rootCreated!!.also {
                     it.layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                        ViewGroup.LayoutParams.MATCH_PARENT,
                     )
                 }
             }
         }
     }
     native.adapter = adapter
-    native.minimumHeight = 4.rem.value.toInt()
     native.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
         override fun onNothingSelected(parent: AdapterView<*>?) {
 
