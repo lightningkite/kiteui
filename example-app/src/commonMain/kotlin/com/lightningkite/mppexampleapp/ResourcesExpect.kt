@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.models.*
 
 expect object Resources {
+    val audioTaunt: AudioResource
     val fontsGoldman: Font
     val fontsMontserrat: Font
     val fontsRoboto: Font

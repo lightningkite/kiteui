@@ -46,6 +46,7 @@ object RootScreen : KiteUiScreen {
                     }
                 } in card
 
+                linkScreen(AudioScreen)
                 linkScreen(HorizontalRecyclerViewScreen)
                 linkScreen(InfiniteImagesScreen)
                 linkScreen(PlatformSpecificScreen)
