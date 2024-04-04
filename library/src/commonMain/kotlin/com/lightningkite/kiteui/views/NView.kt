@@ -14,6 +14,7 @@ expect open class NView
 
 expect class NContext
 expect val NView.nContext: NContext
+expect val NContext.darkMode: Boolean?
 
 expect val NView.calculationContext: CalculationContext
 expect var NView.nativeRotation: Angle

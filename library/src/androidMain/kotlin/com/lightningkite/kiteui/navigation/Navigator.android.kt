@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.navigation
 
-actual object PlatformNavigator: KiteUiNavigator by LocalNavigator({ PlatformNavigator.routes }, LocalNavigator({ PlatformNavigator.routes }, null)) {
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+actual object PlatformNavigator: LocalNavigator({ PlatformNavigator.routes }, LocalNavigator({ PlatformNavigator.routes }, null)) {
     private lateinit var _routes: Routes
     actual override var routes: Routes
         get() = _routes

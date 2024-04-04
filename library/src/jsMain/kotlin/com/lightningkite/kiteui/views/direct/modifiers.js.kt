@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
@@ -12,7 +11,6 @@ import kotlinx.browser.window
 import org.w3c.dom.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -21,7 +19,7 @@ private val openingOtherPopover = ArrayList<()->Unit>()
 
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
-    requireClick: Boolean,
+    requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
@@ -149,30 +147,28 @@ actual fun ViewWriter.hasPopover(
                 }
             }
         }
-        this.addEventListener("click", {
-            makeElement()
-            stayOpen = true
-            with(newViews) {
-                currentTheme = rootTheme
-                dismissBackground {
-                    native.style.position = "absolute"
-                    native.style.left = "0"
-                    native.style.right = "0"
-                    native.style.bottom = "0"
-                    native.style.top = "0"
-                    native.style.opacity = "0"
-                    native.style.setProperty("backdrop-filter", "blur(0px)")
-                    window.setTimeout({
-                        native.style.opacity = "1"
-                        native.style.removeProperty("backdrop-filter")
-                    }, 16)
-                    onClick { close() }
-                    existingDismisser = native
-                }
-            }
-            document.body!!.insertBefore(newViews.rootCreated!!, existingElement)
-        })
-        if (!requireClick) {
+        if(this.tagName != "button") {
+            this.addEventListener("click", {
+                makeElement()
+                stayOpen = true
+                val native = document.createElement("div") as HTMLDivElement
+                native.style.position = "absolute"
+                native.style.left = "0"
+                native.style.right = "0"
+                native.style.bottom = "0"
+                native.style.top = "0"
+                native.style.opacity = "0"
+                native.style.setProperty("backdrop-filter", "blur(0px)")
+                window.setTimeout({
+                    native.style.opacity = "1"
+                    native.style.removeProperty("backdrop-filter")
+                }, 16)
+                native.onclick = { close() }
+                existingDismisser = native
+                document.body!!.insertBefore(native, existingElement)
+            })
+        }
+        if (!requiresClick) {
             this.onmouseenter = {
                 makeElement()
             }

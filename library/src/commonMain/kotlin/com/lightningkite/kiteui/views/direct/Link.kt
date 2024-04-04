@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.RView
@@ -17,5 +18,6 @@ value class Link(override val native: NLink) : RView<NLink>
 expect fun ViewWriter.linkActual(setup: Link.()->Unit = {}): Unit
 @OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.link(noinline setup: Link.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; linkActual(setup) }
 expect var Link.to: KiteUiScreen
+expect var Link.navigator: KiteUiNavigator
 expect var Link.newTab: Boolean
 expect fun Link.onNavigate(action: suspend () -> Unit)

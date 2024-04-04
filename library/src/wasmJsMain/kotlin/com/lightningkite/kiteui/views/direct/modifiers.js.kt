@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
 import kotlin.math.min
@@ -18,7 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
-    requireClick: Boolean,
+    requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
@@ -135,6 +134,7 @@ actual fun ViewWriter.hasPopover(
                     setup(object : PopoverContext {
                         override val calculationContext: CalculationContext
                             get() = pos.js.calculationContext
+
                         override fun close() {
                             close()
                         }
@@ -145,7 +145,7 @@ actual fun ViewWriter.hasPopover(
         this.js.addEventListener("click", {
             makeElement()
             stayOpen = true
-            with(newViews)  {
+            with(newViews) {
                 currentTheme = rootTheme
                 dismissBackground {
                     native.js.style.position = "absolute"
@@ -166,7 +166,8 @@ actual fun ViewWriter.hasPopover(
             }
             document.body!!.insertBefore(newViews.rootCreated!!.js, existingElement)
         })
-        if(!requireClick) {
+
+        if (!requiresClick) {
             js.onmouseenter = {
                 makeElement()
             }

@@ -40,7 +40,7 @@ fun ImageVector.toWeb(): String {
         append("</defs>")
         paths.forEachIndexed { index, path ->
             append(
-                "<path d=\"${path.path}\" stroke=\"${path.strokeColor?.toWeb() ?: Color.transparent.toWeb()}\" stroke-width=\"${path.strokeWidth ?: 0}\" fill=\"${
+                "<path fill-rule=\"evenodd\" d=\"${path.path}\" stroke=\"${path.strokeColor?.toWeb() ?: Color.transparent.toWeb()}\" stroke-width=\"${path.strokeWidth ?: 0}\" fill=\"${
                     when(val f = path.fillColor) {
                         is LinearGradient -> "url(#fill$index)"
                         is RadialGradient -> "url(#fill$index)"

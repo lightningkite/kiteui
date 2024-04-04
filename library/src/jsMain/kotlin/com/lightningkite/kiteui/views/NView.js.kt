@@ -155,3 +155,8 @@ actual val NView.calculationContext: CalculationContext
 actual fun NView.consumeInputEvents() {
     onclick = { it.stopImmediatePropagation() }
 }
+
+/**
+ *  There's no explicit "light" mode detection in web.  Bummer.  So it's `true` or `null`.
+ */
+actual val NContext.darkMode: Boolean? get() = window.matchMedia("(prefers-color-scheme: dark)").matches.takeIf { it }

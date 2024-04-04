@@ -17,8 +17,6 @@ actual object PlatformNavigator : KiteUiNavigator {
     } ?: "/"
 
     override fun isStackEmpty(): Boolean = false
-    override fun restoreStack(navStack: Array<String>) {}
-    override fun saveStack(): Array<String> = arrayOf()
 
     private lateinit var _routes: Routes
     actual override var routes: Routes
@@ -105,17 +103,17 @@ actual object PlatformNavigator : KiteUiNavigator {
         _currentScreen.value = kiteuiScreen
     }
 
-    override fun navigate(screen: KiteUiScreen) {
+    override fun navigateRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Forward
         navigate(screen, pushState = true)
     }
 
-    override fun replace(screen: KiteUiScreen) {
+    override fun replaceRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Neutral
         navigate(screen, pushState = false)
     }
 
-    override fun reset(screen: KiteUiScreen) {
+    override fun resetRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Neutral
         navigate(screen, pushState = false)
         currentIndex = 0
@@ -130,5 +128,9 @@ actual object PlatformNavigator : KiteUiNavigator {
     override fun dismiss(): Boolean {
         window.history.go(-1)
         return true
+    }
+
+    override fun clear() {
+        window.history.go(-1)
     }
 }

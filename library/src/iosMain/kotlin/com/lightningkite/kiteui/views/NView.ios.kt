@@ -142,7 +142,9 @@ val UIView.spacingOverride: Property<Dimension?>?
 
 actual var NView.ignoreInteraction: Boolean
     get() = !this.userInteractionEnabled
-    set(value) { userInteractionEnabled = !value }
+    set(value) {
+        userInteractionEnabled = !value
+    }
 
 actual var NView.spacing: Dimension
     get() = spacingOverride?.value ?: 0.px
@@ -181,10 +183,18 @@ actual fun NView.addNView(child: NView) {
 }
 
 actual typealias NContext = UIViewController
-actual val NView.nContext: NContext get() {
-    return nextResponder?.let {
-        if(it is UIViewController) it
-        else if(it is UIView) it.nContext
-        else throw IllegalStateException()
-    } ?: throw IllegalStateException()
-}
+
+actual val NView.nContext: NContext
+    get() {
+        return nextResponder?.let {
+            if (it is UIViewController) it
+            else if (it is UIView) it.nContext
+            else throw IllegalStateException()
+        } ?: throw IllegalStateException()
+    }
+actual val NContext.darkMode: Boolean?
+    get() = when (traitCollection.userInterfaceStyle) {
+        UIUserInterfaceStyle.UIUserInterfaceStyleDark -> true
+        UIUserInterfaceStyle.UIUserInterfaceStyleLight -> false
+        else -> null
+    }

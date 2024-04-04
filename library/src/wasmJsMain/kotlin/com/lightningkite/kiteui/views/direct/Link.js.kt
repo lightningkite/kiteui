@@ -23,7 +23,7 @@ actual class NLink(override val js: HTMLAnchorElement): NView2<HTMLAnchorElement
 
 @ViewDsl
 actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Unit = themedElementClickable("a", ::NLink) {
-    this.navigator = this@linkActual.navigator
+    this.navigator = PlatformNavigator
     js.classList.add("kiteui-stack")
     setup(Link(this))
 }
@@ -43,6 +43,11 @@ actual inline var Link.to: KiteUiScreen
                 calculationContext.launchManualCancel(it)
             }
         }
+    }
+actual inline var Link.navigator: KiteUiNavigator
+    get() = native.navigator ?: PlatformNavigator
+    set(value) {
+        native.navigator = value
     }
 actual inline var Link.newTab: Boolean
     get() = native.js.target == "_blank"

@@ -7,19 +7,24 @@ interface KiteUiNavigator {
     val routes: Routes
     val currentScreen: Readable<KiteUiScreen?>
     val canGoBack: Readable<Boolean>
-    fun navigate(screen: KiteUiScreen)
-    fun replace(screen: KiteUiScreen)
-    fun reset(screen: KiteUiScreen)
+    fun navigate(screen: KiteUiScreen) = navigateRaw(wrap(screen))
+    fun replace(screen: KiteUiScreen) = replaceRaw(wrap(screen))
+    fun reset(screen: KiteUiScreen) = resetRaw(wrap(screen))
+
+    fun wrap(screen: KiteUiScreen): KiteUiScreen = screen
+    fun navigateRaw(screen: KiteUiScreen)
+    fun replaceRaw(screen: KiteUiScreen)
+    fun resetRaw(screen: KiteUiScreen)
+
     fun goBack(): Boolean
     fun dismiss(): Boolean
+    fun clear()
     fun isStackEmpty(): Boolean
-    fun saveStack(): Array<String>
-    fun restoreStack(navStack: Array<String>)
     val direction: Direction?
     enum class Direction { Back, Neutral, Forward }
 }
 
-class LocalNavigator(val routesGetter: ()->Routes, dialog: KiteUiNavigator? = null): KiteUiNavigator {
+open class LocalNavigator(val routesGetter: ()->Routes, dialog: KiteUiNavigator? = null): KiteUiNavigator {
     constructor(routes: Routes, dialog: KiteUiNavigator? = null):this({routes}, dialog)
     override val routes: Routes by lazy { routesGetter() }
     override val dialog: KiteUiNavigator = dialog ?: this
@@ -44,22 +49,25 @@ class LocalNavigator(val routesGetter: ()->Routes, dialog: KiteUiNavigator? = nu
             return true
         } else return false
     }
-    override fun navigate(screen: KiteUiScreen) {
+    override fun clear() {
+        stack.value = listOf()
+    }
+    override fun navigateRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Forward
         stack.value = stack.value.plus(screen)
     }
-    override fun replace(screen: KiteUiScreen) {
+    override fun replaceRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Neutral
         stack.value = stack.value.dropLast(1).plus(screen)
     }
-    override fun reset(screen: KiteUiScreen) {
+    override fun resetRaw(screen: KiteUiScreen) {
         direction = KiteUiNavigator.Direction.Neutral
         stack.value = listOf(screen)
     }
     override fun isStackEmpty() = stack.value.isEmpty()
-    override fun saveStack(): Array<String> =
+    fun saveStack(): Array<String> =
         stack.value.mapNotNull { routes.render(it)?.urlLikePath?.render() }.toTypedArray()
-    override fun restoreStack(navStack: Array<String>) {
+    fun restoreStack(navStack: Array<String>) {
         direction = KiteUiNavigator.Direction.Forward
         stack.value = navStack.map(UrlLikePath::fromUrlString).mapNotNull(routes::parse)
     }

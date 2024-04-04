@@ -20,3 +20,5 @@ actual fun NView.scrollIntoView(
 
 actual fun NView.consumeInputEvents() {
 }
+
+actual val NContext.darkMode: Boolean? get() = null

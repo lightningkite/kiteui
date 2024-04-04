@@ -10,7 +10,11 @@ import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
 
 @ViewModifierDsl3
-expect fun ViewWriter.hasPopover(requireClick: Boolean = false, preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight, setup: ViewWriter.(popoverContext: PopoverContext)->Unit): ViewWrapper
+expect fun ViewWriter.hasPopover(
+    requiresClick: Boolean = false,
+    preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
+    setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
+): ViewWrapper
 interface PopoverContext {
     val calculationContext: CalculationContext
     fun close()

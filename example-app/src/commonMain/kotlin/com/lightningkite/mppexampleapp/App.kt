@@ -26,22 +26,12 @@ val appTheme = Property<Theme>(
         ),
         navSpacing = 1.rem,
         mainContent = { card() },
-        bar = { card() },
+        bar = { null },
         dialog = { card() },
         card = {
             copy(background = this.background.closestColor().highlight(0.05f))
         },
-        nav = {
-            copy(
-                background = LinearGradient(
-                    stops = listOf(
-                        GradientStop(0f, Color.gray(0.12f)),
-                        GradientStop(1f, Color.gray(0.1f)),
-                    ),
-                    angle = Angle.halfTurn
-                ),
-            )
-        }
+        nav = {null },
     )
 )
 

@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
-import platform.UIKit.UIButton
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -67,7 +66,7 @@ import platform.objc.sel_registerName
 
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
-    requireClick: Boolean,
+    requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {

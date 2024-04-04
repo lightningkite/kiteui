@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.reactive.await
@@ -23,6 +24,11 @@ actual var Link.to: KiteUiScreen
             calculationContext.launchManualCancel { native.onNavigate() }
         }
     }
+actual var Link.navigator: KiteUiNavigator
+    get() = native.navigator
+    set(value) {
+        native.navigator = value
+    }
 actual var Link.newTab: Boolean
     get() {
         return false
@@ -37,7 +43,7 @@ actual fun Link.onNavigate(action: suspend () -> Unit): Unit {
 @ViewDsl
 actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit) {
     return viewElement(factory = ::LinkFrameLayout, wrapper = ::Link) {
-        native.navigator = navigator
+        native.navigator = PlatformNavigator
         // OnClickListener may not be set until after handleTheme() is called, so we must manually set isClickable for
         // the RippleDrawable to be added to the background
         native.isClickable = true

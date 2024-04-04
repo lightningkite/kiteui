@@ -22,6 +22,9 @@ import kotlinx.datetime.*
 actual inline var Link.to: KiteUiScreen
     get() = TODO()
     set(value) { }
+actual inline var Link.navigator: KiteUiNavigator
+    get() = TODO()
+    set(value) { }
 actual inline var Link.newTab: Boolean
     get() = TODO()
     set(value) { }
@@ -231,7 +234,7 @@ actual var RecyclerView.columns: Int
     get() = 1
     set(value) { TODO() }
 actual fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit = TODO()
-@ViewModifierDsl3 actual fun ViewWriter.hasPopover(requireClick: Boolean, preferredDirection: PopoverPreferredDirection, setup: ViewWriter.(popoverContext: PopoverContext)->Unit): ViewWrapper = TODO()
+@ViewModifierDsl3 actual fun ViewWriter.hasPopover(requiresClick: Boolean, preferredDirection: PopoverPreferredDirection, setup: ViewWriter.(popoverContext: PopoverContext)->Unit): ViewWrapper = TODO()
 @ViewModifierDsl3 actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 @ViewModifierDsl3 actual fun ViewWriter.weight(amount: Float): ViewWrapper = TODO()
 @ViewModifierDsl3 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper = TODO()

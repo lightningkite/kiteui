@@ -265,7 +265,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
-    requireClick: Boolean,
+    requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
 ): ViewWrapper {
