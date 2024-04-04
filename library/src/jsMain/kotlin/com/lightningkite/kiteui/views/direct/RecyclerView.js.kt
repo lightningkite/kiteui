@@ -461,8 +461,8 @@ class RecyclerController2(
         if (allSubviews.isNotEmpty()) {
             if (allSubviews.first().index <= dataDirect.min) {
                 // shift and attach to top
-                if ((allSubviews.first().startPosition - spacing).absoluteValue > 2) {
-                    offsetWholeSystem(-allSubviews.first().startPosition + spacing)
+                if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
+                    offsetWholeSystem(-allSubviews.first().startPosition + padding)
                 }
             } else {
                 if (viewportOffset > reservedScrollingSpace * 7 / 8) {
@@ -566,6 +566,7 @@ class RecyclerController2(
             lock("ready") {
                 viewportSize = root.clientSize
                 spacing = window.getComputedStyle(root).columnGap.removeSuffix("px").toDouble().toInt()
+                padding = window.getComputedStyle(root).paddingTop.removeSuffix("px").toDouble().toInt()
                 ready = true
                 populate()
                 nonEmergencyEdges()
@@ -593,11 +594,11 @@ class RecyclerController2(
     private fun emergencyEdges() {
         if (allSubviews.isNotEmpty()) {
             if (allSubviews.first()
-                    .let { it.index <= dataDirect.min && it.startPosition >= viewportOffset + spacing }
+                    .let { it.index <= dataDirect.min && it.startPosition >= viewportOffset + padding }
             ) {
                 // shift and attach to top
-                if ((allSubviews.first().startPosition - spacing).absoluteValue > 2) {
-                    offsetWholeSystem(-allSubviews.first().startPosition + spacing)
+                if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
+                    offsetWholeSystem(-allSubviews.first().startPosition + padding)
                 }
             } else {
                 if (viewportOffset > reservedScrollingSpace) {
@@ -702,10 +703,10 @@ class RecyclerController2(
                     }
                 }
                 viewportOffset = when (align) {
-                    Align.Start -> allSubviews.first().startPosition - spacing
-                    Align.End -> allSubviews.last().let { it.startPosition + it.size } - viewportSize - spacing
+                    Align.Start -> allSubviews.first().startPosition - padding
+                    Align.End -> allSubviews.last().let { it.startPosition + it.size } - viewportSize - padding
                     else -> target?.let { it.startPosition + it.size / 2 - viewportSize / 2 }
-                        ?: (allSubviews.first().startPosition - spacing)
+                        ?: (allSubviews.first().startPosition - padding)
                 }
                 println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
                 populate()
@@ -812,8 +813,8 @@ class RecyclerController2(
         val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
         element.startPosition = when(startCreatingViewsAt.second) {
-            Align.Start -> viewportOffset + spacing
-            Align.End -> viewportOffset + viewportSize - spacing - element.size
+            Align.Start -> viewportOffset + padding
+            Align.End -> viewportOffset + viewportSize - padding - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
         }
         return element
