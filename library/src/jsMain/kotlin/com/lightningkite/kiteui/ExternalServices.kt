@@ -16,6 +16,7 @@ actual object ExternalServices {
             accept = mimeTypes.joinToString(",")
             setup()
             onchange = { e -> it.resume(files?.let { (0 until it.length).map { index -> it.item(index)!! } } ?: listOf()) }
+            oncancel = { e -> it.resume(listOf()) }
         }.click()
         return@suspendCoroutineCancellable { }
     }
