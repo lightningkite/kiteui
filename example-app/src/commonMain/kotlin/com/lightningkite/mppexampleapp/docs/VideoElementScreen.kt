@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoRemote
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
@@ -26,10 +27,14 @@ object VideoElementScreen: DocScreen {
                     this.playing bind playing
                 }
                 """.trimIndent()) {
-                sizeConstraints(height = 10.rem) - video {
-                    source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
-                    this.time bind time
-                    this.playing bind playing
+                stack {
+                    centered - sizeConstraints(width = 8.rem, height = 8.rem) - video {
+                        source =
+                            VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                        this.time bind time
+                        this.playing bind playing
+                        scaleType = ImageScaleType.Crop
+                    }
                 }
             }
             text("You can observe or control the current time via 'time'.")

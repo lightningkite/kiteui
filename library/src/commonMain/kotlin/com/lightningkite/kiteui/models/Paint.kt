@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.models
 
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 sealed interface Paint {
     fun closestColor(): Color
@@ -18,7 +19,7 @@ data class LinearGradient(
     val screenStatic: Boolean = false,
 ) : Paint {
     override fun closestColor(): Color {
-        if(stops.isEmpty()) return Color.transparent
+        if (stops.isEmpty()) return Color.transparent
         return stops.map { it.color.toHSV() }.let {
             HSVColor(
                 hue = it.map { it.hue.turns }.average().let(::Angle),
@@ -51,10 +52,7 @@ data class RadialGradient(
 }
 
 data class Color(
-    val alpha: Float = 0f,
-    val red: Float = 0f,
-    val green: Float = 0f,
-    val blue: Float = 0f
+    val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
     override fun closestColor(): Color = this
@@ -66,31 +64,23 @@ data class Color(
 
     fun toGradient(ratio: Float = 0.2f): LinearGradient = LinearGradient(
         stops = listOf(
-            GradientStop(1f, this),
-            GradientStop(0f, darken(ratio))
+            GradientStop(1f, this), GradientStop(0f, darken(ratio))
         )
     )
 
     fun toGrayscale(): Color {
         val average = 0.299f * red + 0.587f * green + 0.114f * blue
         return Color(
-            alpha = alpha,
-            red = average,
-            green = average,
-            blue = average
+            alpha = alpha, red = average, green = average, blue = average
         )
     }
 
     fun darken(ratio: Float): Color = copy(
-        red = red * (1f - ratio),
-        green = green * (1f - ratio),
-        blue = blue * (1f - ratio)
+        red = red * (1f - ratio), green = green * (1f - ratio), blue = blue * (1f - ratio)
     )
 
     fun lighten(ratio: Float): Color = copy(
-        red = red + (1f - red) * ratio,
-        green = green + (1f - green) * ratio,
-        blue = blue + (1f - blue) * ratio
+        red = red + (1f - red) * ratio, green = green + (1f - green) * ratio, blue = blue + (1f - blue) * ratio
     )
 
     fun withAlpha(alpha: Float): Color = copy(
@@ -113,9 +103,9 @@ data class Color(
         val blue = Color(1f, 0f, 0f, 1f)
         val purple = Color(1f, 1f, 0f, 1f)
 
-        private fun Float.byteize() = (this * 0xFF).toInt()
+        private fun Float.byteize() = (this * 0xFF).toInt().coerceIn(0x00, 0xFF)
 
-        private fun Int.floatize() = (this.toFloat() / 0xFF)
+        private fun Int.floatize() = (this.coerceIn(0x00, 0xFF).toFloat() / 0xFF)
 
         fun fromInt(value: Int): Color = Color(
             alpha = value.ushr(24).and(0xFF).floatize(),
@@ -148,33 +138,38 @@ data class Color(
     }
 
     val average: Float get() = (red + green + blue) / 3f
-    val perceivedBrightness: Float get() = (red + green * 2 + blue) / 4f
+    val perceivedBrightness: Float
+        get() = sqrt(
+            red * red * HSPColor.redBrightness +
+                    green * green * HSPColor.greenBrightness +
+                    blue * blue * HSPColor.blueBrightness
+        )
     val redInt: Int get() = red.byteize()
     val greenInt: Int get() = green.byteize()
     val blueInt: Int get() = blue.byteize()
 
     operator fun plus(other: Color): Color = copy(
-        red = (red + other.red).coerceIn(0f, 1f),
-        green = (green + other.green).coerceIn(0f, 1f),
-        blue = (blue + other.blue).coerceIn(0f, 1f)
+        red = (red + other.red),
+        green = (green + other.green),
+        blue = (blue + other.blue),
     )
 
     operator fun minus(other: Color): Color = copy(
-        red = (red - other.red).coerceIn(0f, 1f),
-        green = (green - other.green).coerceIn(0f, 1f),
-        blue = (blue - other.blue).coerceIn(0f, 1f)
+        red = (red - other.red),
+        green = (green - other.green),
+        blue = (blue - other.blue),
     )
 
     operator fun div(other: Color): Color = copy(
-        red = (red / other.red).coerceIn(0f, 1f),
-        green = (green / other.green).coerceIn(0f, 1f),
-        blue = (blue / other.blue).coerceIn(0f, 1f)
+        red = (red / other.red),
+        green = (green / other.green),
+        blue = (blue / other.blue),
     )
 
     operator fun times(other: Color): Color = copy(
-        red = (red * other.red).coerceIn(0f, 1f),
-        green = (green * other.green).coerceIn(0f, 1f),
-        blue = (blue * other.blue).coerceIn(0f, 1f)
+        red = (red * other.red),
+        green = (green * other.green),
+        blue = (blue * other.blue),
     )
 
     fun toWhite(ratio: Float) = interpolate(this, white, ratio)
@@ -182,33 +177,50 @@ data class Color(
     fun highlight(ratio: Float) = if (average > .5) toBlack(ratio) else toWhite(ratio)
     fun invert(): Color = Color(alpha = alpha, red = 1f - red, green = 1f - green, blue = 1f - blue)
 
-    fun toHSV(): HSVColor = HSVColor(
-        alpha = alpha,
-        hue = when {
-            (red > green && red > blue) -> (green - blue).div(max(max(red, green), blue) - min(min(red, green), blue))
-            (green > red && green > blue) -> (blue - red).div(
-                max(max(red, green), blue) - min(
-                    min(red, green),
-                    blue
-                )
-            ).plus(2)
+    fun toHSV(): HSVColor = HSVColor(alpha = alpha, hue = when {
+        (red > green && red > blue) -> (green - blue).div(max(max(red, green), blue) - min(min(red, green), blue))
+        (green > red && green > blue) -> (blue - red).div(
+            max(max(red, green), blue) - min(
+                min(red, green), blue
+            )
+        ).plus(2)
 
-            (blue > green && blue > red) -> (red - green).div(
-                max(max(red, green), blue) - min(
-                    min(red, green),
-                    blue
-                )
-            ).plus(4)
+        (blue > green && blue > red) -> (red - green).div(
+            max(max(red, green), blue) - min(
+                min(red, green), blue
+            )
+        ).plus(4)
 
-            else -> 0f
-        }.let { Angle(it.plus(6f).rem(6f).div(6f)) },
-        saturation = run {
-            val min = min(min(red, green), blue)
-            val max = max(max(red, green), blue)
-            if (max == 0f) 0f
-            else (max - min) / max
-        },
-        value = max(max(red, green), blue)
+        else -> 0f
+    }.let { Angle(it.plus(6f).rem(6f).div(6f)) }, saturation = run {
+        val min = min(min(red, green), blue)
+        val max = max(max(red, green), blue)
+        if (max == 0f) 0f
+        else (max - min) / max
+    }, value = max(max(red, green), blue)
+    )
+
+    fun toHSP(): HSPColor = HSPColor(alpha = alpha, hue = when {
+        (red > green && red > blue) -> (green - blue).div(max(max(red, green), blue) - min(min(red, green), blue))
+        (green > red && green > blue) -> (blue - red).div(
+            max(max(red, green), blue) - min(
+                min(red, green), blue
+            )
+        ).plus(2)
+
+        (blue > green && blue > red) -> (red - green).div(
+            max(max(red, green), blue) - min(
+                min(red, green), blue
+            )
+        ).plus(4)
+
+        else -> 0f
+    }.let { Angle(it.plus(6f).rem(6f).div(6f)) }, saturation = run {
+        val min = min(min(red, green), blue)
+        val max = max(max(red, green), blue)
+        if (max == 0f) 0f
+        else (max - min) / max
+    }, brightness = perceivedBrightness
     )
 
     fun toWeb(): String {
@@ -216,23 +228,19 @@ data class Color(
     }
 
     fun toAlphalessWeb(): String {
-        @Suppress("EXPERIMENTAL_API_USAGE")
-        return "#" + this.toInt().toUInt().toString(16).padStart(8, '0').drop(2)
+        @Suppress("EXPERIMENTAL_API_USAGE") return "#" + this.toInt().toUInt().toString(16).padStart(8, '0').drop(2)
     }
 }
 
 data class HSVColor(
-    val alpha: Float = 1f,
-    val hue: Angle = Angle(0f),
-    val saturation: Float = 0f,
-    val value: Float = 0f
+    val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val value: Float = 0f
 ) {
     fun toRGB(): Color {
         val h = (hue.turns.mod(1f) * 6).toInt()
         val f = hue.turns.mod(1f) * 6 - h
-        val p = value * (1 - saturation)
-        val q = value * (1 - f * saturation)
-        val t = value * (1 - (1 - f) * saturation)
+        val p = value.coerceIn(0f, 1f) * (1 - saturation.coerceIn(0f, 1f))
+        val q = value.coerceIn(0f, 1f) * (1 - f * saturation.coerceIn(0f, 1f))
+        val t = value.coerceIn(0f, 1f) * (1 - (1 - f) * saturation.coerceIn(0f, 1f))
 
         return when (h) {
             0 -> Color(alpha = alpha, red = value, green = t, blue = p)
@@ -256,6 +264,82 @@ data class HSVColor(
                 hue = left.hue + (left.hue angleTo right.hue) * ratio,
                 saturation = left.saturation.times(invRatio) + right.saturation.times(ratio),
                 value = left.value.times(invRatio) + right.value.times(ratio)
+            )
+        }
+    }
+}
+
+data class HSPColor(
+    val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val brightness: Float = 0f
+) {
+    fun toRGB(): Color {
+        val minOverMax = 1f - saturation
+        var part: Float = 0f
+        val r: Float
+        val g: Float
+        val b: Float
+        var hue = this.hue.turns
+        if (minOverMax > 0f) {
+            if (hue < 1f / 6f) {   //  R>G>B
+                hue = 6f * (hue - 0f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                b =
+                    brightness / sqrt(redBrightness / minOverMax / minOverMax + greenBrightness * part * part + blueBrightness);
+                r = (b) / minOverMax; g = (b) + hue * ((r) - (b)); } else if (hue < 2f / 6f) {   //  G>R>B
+                hue = 6f * (-hue + 2f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                b =
+                    brightness / sqrt(greenBrightness / minOverMax / minOverMax + redBrightness * part * part + blueBrightness);
+                g = (b) / minOverMax; r = (b) + hue * ((g) - (b)); } else if (hue < 3f / 6f) {   //  G>B>R
+                hue = 6f * (hue - 2f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                r =
+                    brightness / sqrt(greenBrightness / minOverMax / minOverMax + blueBrightness * part * part + redBrightness);
+                g = (r) / minOverMax; b = (r) + hue * ((g) - (r)); } else if (hue < 4f / 6f) {   //  B>G>R
+                hue = 6f * (-hue + 4f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                r =
+                    brightness / sqrt(blueBrightness / minOverMax / minOverMax + greenBrightness * part * part + redBrightness);
+                b = (r) / minOverMax; g = (r) + hue * ((b) - (r)); } else if (hue < 5f / 6f) {   //  B>R>G
+                hue = 6f * (hue - 4f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                g =
+                    brightness / sqrt(blueBrightness / minOverMax / minOverMax + redBrightness * part * part + greenBrightness);
+                b = (g) / minOverMax; r = (g) + hue * ((b) - (g)); } else {   //  R>B>G
+                hue = 6f * (-hue + 6f / 6f); part = 1f + hue * (1f / minOverMax - 1f);
+                g =
+                    brightness / sqrt(redBrightness / minOverMax / minOverMax + blueBrightness * part * part + greenBrightness);
+                r = (g) / minOverMax; b = (g) + hue * ((r) - (g)); }
+        } else {
+            if (hue < 1f / 6f) {   //  R>G>B
+                hue = 6f * (hue - 0f / 6f); r =
+                    sqrt(brightness * brightness / (redBrightness + greenBrightness * hue * hue)); g = (r) * hue; b =
+                    0f; } else if (hue < 2f / 6f) {   //  G>R>B
+                hue = 6f * (-hue + 2f / 6f); g =
+                    sqrt(brightness * brightness / (greenBrightness + redBrightness * hue * hue)); r = (g) * hue; b =
+                    0f; } else if (hue < 3f / 6f) {   //  G>B>R
+                hue = 6f * (hue - 2f / 6f); g =
+                    sqrt(brightness * brightness / (greenBrightness + blueBrightness * hue * hue)); b = (g) * hue; r =
+                    0f; } else if (hue < 4f / 6f) {   //  B>G>R
+                hue = 6f * (-hue + 4f / 6f); b =
+                    sqrt(brightness * brightness / (blueBrightness + greenBrightness * hue * hue)); g = (b) * hue; r =
+                    0f; } else if (hue < 5f / 6f) {   //  B>R>G
+                hue = 6f * (hue - 4f / 6f); b =
+                    sqrt(brightness * brightness / (blueBrightness + redBrightness * hue * hue)); r = (b) * hue; g =
+                    0f; } else {   //  R>B>G
+                hue = 6f * (-hue + 6f / 6f); r =
+                    sqrt(brightness * brightness / (redBrightness + blueBrightness * hue * hue)); b = (r) * hue; g =
+                    0f; }
+        }
+        return Color(red = r, green = g, blue = b, alpha = alpha)
+    }
+
+    companion object {
+        const val redBrightness = .299f
+        const val greenBrightness = .587f
+        const val blueBrightness = .114f
+        fun interpolate(left: HSPColor, right: HSPColor, ratio: Float): HSPColor {
+            val invRatio = 1 - ratio
+            return HSPColor(
+                alpha = left.alpha.times(invRatio) + right.alpha.times(ratio),
+                hue = left.hue + (left.hue angleTo right.hue) * ratio,
+                saturation = left.saturation.times(invRatio) + right.saturation.times(ratio),
+                brightness = left.brightness.times(invRatio) + right.brightness.times(ratio)
             )
         }
     }

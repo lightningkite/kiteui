@@ -179,5 +179,9 @@ data class Theme(
                 this.outlineWidth == other.outlineWidth &&
                 this.background == other.background
     }
+
+    companion object {
+
+    }
 }
 
