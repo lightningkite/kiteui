@@ -499,8 +499,14 @@ object DynamicCSS {
                 "height" to "1.5rem",
                 "position" to "relative",
                 "padding" to "0px !important",
-//                "border-width" to "0.25rem",
-//                "border-style" to "solid",
+                "border-width" to "0.1rem",
+                "border-style" to "solid",
+                "opacity" to "0.75",
+            )
+        )
+        style(
+            ".checkbox:checked", mapOf(
+                "opacity" to "1",
             )
         )
         style(
@@ -510,8 +516,8 @@ object DynamicCSS {
                 "display" to "block",
                 "width" to "0.8rem",
                 "height" to "0.3rem",
-                "top" to "0.4rem",
-                "left" to "0.25rem",
+                "top" to "0.3rem",
+                "left" to "0.16rem",
                 "border-left-color" to "currentColor",
                 "border-bottom-color" to "currentColor",
                 "border-left-style" to "solid",
@@ -1166,6 +1172,8 @@ object DynamicCSS {
             sel(".mightTransition", ".swapImage"), mapOf(
                 "border-radius" to when(val it = theme.cornerRadii) {
                     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
+                    is CornerRadii.ForceConstant -> it.value.value
+                    is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
                     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
                 },
             )

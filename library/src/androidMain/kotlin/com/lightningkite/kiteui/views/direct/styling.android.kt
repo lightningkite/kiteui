@@ -189,6 +189,8 @@ inline fun <T : NView> ViewWriter.handleTheme(
                 view.background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     val cr = when (val it = theme.cornerRadii) {
+                        is CornerRadii.ForceConstant -> it.value.value
+                        is CornerRadii.RatioOfSize -> 10000f
                         is CornerRadii.Constant -> min(parentSpacing, it.value.value)
                         is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
                     }
@@ -226,6 +228,8 @@ fun Theme.rippleDrawableOnly(
     preparing.setDrawable(0, GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         val cr = when (val it = this@rippleDrawableOnly.cornerRadii) {
+            is CornerRadii.ForceConstant -> it.value.value
+            is CornerRadii.RatioOfSize -> 10000f
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }
@@ -244,6 +248,8 @@ fun Theme.backgroundDrawable(
     val formDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         val cr = when (val it = this@backgroundDrawable.cornerRadii) {
+            is CornerRadii.ForceConstant -> it.value.value
+            is CornerRadii.RatioOfSize -> 10000f
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }

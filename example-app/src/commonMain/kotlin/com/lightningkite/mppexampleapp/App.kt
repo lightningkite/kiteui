@@ -33,6 +33,5 @@ fun ViewWriter.app() {
                 destination = { DocSearchScreen }
             )
         )
-
     }
 }

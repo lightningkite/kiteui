@@ -1114,6 +1114,8 @@ object DynamicCSS {
             sel(".mightTransition", ".swapImage"), mapOf(
                 "border-radius" to when(val it = theme.cornerRadii) {
                     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
+                    is CornerRadii.ForceConstant -> it.value.value
+                    is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
                     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
                 },
             )
