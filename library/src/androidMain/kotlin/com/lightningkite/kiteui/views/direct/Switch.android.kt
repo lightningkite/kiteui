@@ -33,7 +33,7 @@ actual inline fun ViewWriter.switchActual(crossinline setup: Switch.() -> Unit) 
             native.thumbTintList = ColorStateList(
                 arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
                     it.background.closestColor().highlight(.2f).colorInt(),
-                    it.selected().background.colorInt()
+                    it.important().background.colorInt()
                 )
             )
             native.trackTintList = ColorStateList(

@@ -124,15 +124,13 @@ actual var Video.loop: Boolean
 @OptIn(UnstableApi::class) actual var Video.scaleType: ImageScaleType
     get() = when(native.resizeMode) {
         AspectRatioFrameLayout.RESIZE_MODE_FIT -> ImageScaleType.Fit
-        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH -> ImageScaleType.NoScale
-        AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT -> ImageScaleType.NoScale
-        AspectRatioFrameLayout.RESIZE_MODE_FILL -> ImageScaleType.Crop
+        AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> ImageScaleType.Crop
         else -> ImageScaleType.NoScale
     }
     set(value) {
         native.resizeMode = when(value) {
             ImageScaleType.Fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
-            ImageScaleType.Crop -> AspectRatioFrameLayout.RESIZE_MODE_FILL
-            else -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            ImageScaleType.Crop -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            else -> AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
     }

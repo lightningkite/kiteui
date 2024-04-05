@@ -32,8 +32,8 @@ actual inline fun ViewWriter.radioButtonActual(crossinline setup: RadioButton.()
             val it = theme()
             CompoundButtonCompat.setButtonTintList(native, ColorStateList(
                 arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
-                    it.selected().background.closestColor().copy(alpha = 0.5f).colorInt(),
-                    it.selected().background.colorInt()
+                    it.selected().let { it.iconOverride ?: it.foreground }.closestColor().copy(alpha = 0.75f).colorInt(),
+                    it.selected().let { it.iconOverride ?: it.foreground }.colorInt()
                 )
             ))
         }

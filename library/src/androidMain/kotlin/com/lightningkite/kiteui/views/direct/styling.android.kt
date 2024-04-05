@@ -189,6 +189,8 @@ inline fun <T : NView> ViewWriter.handleTheme(
                 view.background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     val cr = when (val it = theme.cornerRadii) {
+                        is CornerRadii.ForceConstant -> it.value.value
+                        is CornerRadii.RatioOfSize -> 10000f
                         is CornerRadii.Constant -> min(parentSpacing, it.value.value)
                         is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
                     }
@@ -226,6 +228,8 @@ fun Theme.rippleDrawableOnly(
     preparing.setDrawable(0, GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         val cr = when (val it = this@rippleDrawableOnly.cornerRadii) {
+            is CornerRadii.ForceConstant -> it.value.value
+            is CornerRadii.RatioOfSize -> 10000f
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }
@@ -244,6 +248,8 @@ fun Theme.backgroundDrawable(
     val formDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         val cr = when (val it = this@backgroundDrawable.cornerRadii) {
+            is CornerRadii.ForceConstant -> it.value.value
+            is CornerRadii.RatioOfSize -> 10000f
             is CornerRadii.Constant -> min(parentSpacing, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
         }
@@ -313,6 +319,38 @@ fun Theme.backgroundDrawable(
 inline fun <T : View> ViewWriter.handleThemeControl(
     view: T,
     viewLoads: Boolean = false,
+    noinline customDrawable: LayerDrawable.(Theme) -> Unit = {},
+    crossinline background: (Theme) -> Unit = {},
+    crossinline backgroundRemove: () -> Unit = {},
+    crossinline foreground: (Theme, T) -> Unit = { _, _ -> },
+    crossinline setup: () -> Unit
+) {
+    val hovered = view.hovered
+    withThemeGetter({
+        val isHovered = hovered.await()
+        when {
+            isHovered -> it().hover()
+            else -> it()
+        }
+    }) {
+        if (transitionNextView == ViewWriter.TransitionNextView.No) {
+            transitionNextView = ViewWriter.TransitionNextView.Maybe {
+                val isHovered = hovered.await()
+                when {
+                    isHovered -> true
+                    else -> false
+                }
+            }
+        }
+        handleTheme(view, false, viewLoads, customDrawable, background, backgroundRemove, foreground, setup)
+    }
+}
+
+
+
+inline fun <T : View> ViewWriter.handleThemeControl(
+    view: T,
+    viewLoads: Boolean = false,
     noinline checked: suspend () -> Boolean = { false },
     noinline customDrawable: LayerDrawable.(Theme) -> Unit = {},
     crossinline background: (Theme) -> Unit = {},
@@ -322,14 +360,11 @@ inline fun <T : View> ViewWriter.handleThemeControl(
 ) {
     val hovered = view.hovered
     withThemeGetter({
-        if (checked()) return@withThemeGetter it().selected()
+        val base = if (checked()) it().selected() else it().unselected()
         val isHovered = hovered.await()
         when {
-            // TODO: State control
-//            state and UIControlStateDisabled != 0UL -> it().disabled()
-//            state and UIControlStateHighlighted != 0UL -> it().down()
-            isHovered -> it().hover()
-            else -> it()
+            isHovered -> base.hover()
+            else -> base
         }
     }) {
         if (transitionNextView == ViewWriter.TransitionNextView.No) {
@@ -337,8 +372,6 @@ inline fun <T : View> ViewWriter.handleThemeControl(
                 if (checked()) return@Maybe true
                 val isHovered = hovered.await()
                 when {
-//                    state and UIControlStateDisabled != 0UL -> true
-//                    state and UIControlStateHighlighted != 0UL -> true
                     isHovered -> true
                     else -> false
                 }

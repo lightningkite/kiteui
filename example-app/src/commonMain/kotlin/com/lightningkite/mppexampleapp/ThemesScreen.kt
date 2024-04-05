@@ -2,13 +2,11 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.models.M3Theme
-import com.lightningkite.kiteui.models.MaterialLikeTheme
-import com.lightningkite.kiteui.models.randomElevationAndCorners
-import com.lightningkite.kiteui.models.randomTitleFontSettings
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlin.random.Random
 
 @Routable("themes")
 object ThemesScreen : KiteUiScreen {
@@ -72,6 +70,28 @@ object ThemesScreen : KiteUiScreen {
                     h6 { content = "M3 Dark" }
                     onClick {
                         appTheme set M3Theme.randomDark().randomElevationAndCorners().randomTitleFontSettings()
+                    }
+                } in card
+                button {
+                    h6 { content = "Flat Light" }
+                    onClick {
+                        val a = Angle(Random.nextFloat())
+                        appTheme set Theme.flat(hue = a, saturation = 0.2f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
+                            .copy(
+                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                            )
+                            .randomTitleFontSettings()
+                    }
+                } in card
+                button {
+                    h6 { content = "Flat Dark" }
+                    onClick {
+                        val a = Angle(Random.nextFloat())
+                        appTheme set Theme.flat(hue = a, accentHue = a + Angle.halfTurn)
+                            .copy(
+                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                            )
+                            .randomTitleFontSettings()
                     }
                 } in card
             } in card

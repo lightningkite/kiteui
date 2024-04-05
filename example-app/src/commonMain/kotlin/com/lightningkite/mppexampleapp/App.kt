@@ -7,33 +7,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
 
-val appTheme = Property<Theme>(
-    Theme(
-        title = FontAndStyle(Resources.fontsGoldman),
-        body = FontAndStyle(Resources.fontsRoboto),
-        elevation = 0.dp,
-        cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
-        spacing = 0.75.rem,
-        outline = Color.gray(0.8f),
-        outlineWidth = 0.px,
-        foreground = Color.gray(0.8f),
-        background = RadialGradient(
-            stops = listOf(
-                GradientStop(0f, Color.gray(0.2f)),
-                GradientStop(0.4f, Color.gray(0.1f)),
-                GradientStop(1f, Color.gray(0.1f)),
-            ),
-        ),
-        navSpacing = 1.rem,
-        mainContent = { card() },
-        bar = { null },
-        dialog = { card() },
-        card = {
-            copy(background = this.background.closestColor().highlight(0.05f))
-        },
-        nav = {null },
-    )
-)
+val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)))
 
 fun ViewWriter.app() {
     rootTheme = { appTheme() }
@@ -59,6 +33,5 @@ fun ViewWriter.app() {
                 destination = { DocSearchScreen }
             )
         )
-
     }
 }
