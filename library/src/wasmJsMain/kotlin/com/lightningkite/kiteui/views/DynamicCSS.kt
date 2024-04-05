@@ -889,21 +889,31 @@ object DynamicCSS {
         style(
             "progress", mapOf(
                 "height" to "0.5rem",
-                "background-color" to "green",
+                "border" to "none",
+                "border-radius" to "1rem",
+                "padding" to "0px !important",
+                "appearance" to "none",
+                "background" to "color-mix(in srgb, currentColor 20%, transparent)",
             )
         )
-        style(
-            "progress::-webkit-progress-bar", mapOf(
-                "height" to "0.5rem",
-                "background-color" to "blue",
+        try {
+            style(
+                "progress::-webkit-progress-value", mapOf(
+                    "height" to "100%",
+                    "background-color" to "currentColor",
+                    "border-radius" to "1rem",
+                )
             )
-        )
-        style(
-            "progress::-webkit-progress-value", mapOf(
-                "height" to "0.5rem",
-                "background-color" to "red",
+        } catch(e: Throwable) { /*squish*/ }
+        try {
+            style(
+                "progress::-moz-progress-bar", mapOf(
+                    "height" to "100%",
+                    "background-color" to "currentColor",
+                    "border-radius" to "1rem",
+                )
             )
-        )
+        } catch(e: Throwable) { /*squish*/ }
     }
 
     fun rule(rule: String, index: Int = 0): Int {
