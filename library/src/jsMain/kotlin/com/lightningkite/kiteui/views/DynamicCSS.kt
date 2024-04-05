@@ -898,6 +898,23 @@ object DynamicCSS {
                 }
             }
         """.trimIndent())
+        style(
+            "progress", mapOf(
+                "height" to "0.5rem",
+                "border" to "none",
+                "border-radius" to "1rem",
+                "padding" to "0px !important",
+                "appearance" to "none",
+                "background" to "color-mix(in srgb, currentColor 20%, transparent)",
+            )
+        )
+        style(
+            "progress::-webkit-progress-value, progress::-moz-progress-bar", mapOf(
+                "height" to "100%",
+                "background-color" to "currentColor",
+                "border-radius" to "1rem",
+            )
+        )
     }
 
     fun rule(rule: String, index: Int = 0): Int {

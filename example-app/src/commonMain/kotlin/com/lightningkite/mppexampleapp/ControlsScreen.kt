@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import kotlinx.datetime.*
+import kotlin.math.roundToInt
 
 @Routable("controls")
 object ControlsScreen : KiteUiScreen {
@@ -19,6 +20,32 @@ object ControlsScreen : KiteUiScreen {
         col {
 
             h1 { content = "Controls" }
+
+            card - col {
+                h2 { content = "Progress Bars" }
+                val ratio = Property(0.5f)
+                launch {
+                    while(true) {
+                        delay(20L)
+                        ratio.value += 0.01f
+                        if(ratio.value > 1f) {
+                            ratio.value = 0f
+                        }
+                    }
+                }
+                text { ::content { ratio().times(100).roundToInt().toString() + "%" } }
+                row {
+                    expanding - space {}
+                    sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    card - sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    important - sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    critical - sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    warning - sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    danger - sizeConstraints(width = 5.rem) - progressBar { ::ratio { ratio() } }
+                    expanding - space {}
+                } in scrollsHorizontally
+            }
+
             card - col {
                 h2 { content = "Buttons" }
                 row {
