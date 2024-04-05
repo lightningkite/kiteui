@@ -1073,6 +1073,47 @@ object DynamicCSS {
             includeMaybeTransition = true
         )
 
+        theme(
+            theme.unselected(),
+            listOf(
+                "input:not(:checked).checkResponsive .theme-${theme.id}",
+                "input:not(:checked).checkResponsive.theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive .theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive.theme-${theme.id}",
+            ),
+            includeMaybeTransition = true
+        )
+        theme(
+            theme.unselected().hover(),
+            listOf(
+                "input:not(:checked).checkResponsive:hover .theme-${theme.id}",
+                "input:not(:checked).checkResponsive:hover.theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:hover .theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:hover.theme-${theme.id}",
+            ),
+            includeMaybeTransition = true
+        )
+        theme(
+            theme.unselected().focus(),
+            listOf(
+                "input:not(:checked).checkResponsive:focus-visible .theme-${theme.id}",
+                "input:not(:checked).checkResponsive:focus-visible.theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:focus-visible .theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:focus-visible.theme-${theme.id}",
+            ),
+            includeMaybeTransition = true
+        )
+        theme(
+            theme.unselected().disabled(),
+            listOf(
+                "input:not(:checked).checkResponsive:disabled .theme-${theme.id}",
+                "input:not(:checked).checkResponsive:disabled.theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:disabled .theme-${theme.id}",
+                "input:not(:checked)+.checkResponsive:disabled.theme-${theme.id}",
+            ),
+            includeMaybeTransition = true
+        )
+
         return theme(theme)
     }
 

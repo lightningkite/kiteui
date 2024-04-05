@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui.models
 
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+
 fun Theme.Companion.flat(
     hue: Angle,
     accentHue: Angle = hue + Angle.halfTurn,
@@ -20,34 +23,56 @@ fun Theme.Companion.flat(
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
     important = {
-        val b = HSPColor(hue = hue, saturation = saturation, brightness = 0.5f).toRGB()
-        copy(
-            foreground = b.highlight(1f),
-            background = b
-        )
-    },
-    critical = {
-        val b = HSPColor(hue = accentHue, saturation = saturation, brightness = 0.5f).toRGB()
-        copy(
-            foreground = b.highlight(1f),
-            background = b
-        )
+        val existing = background.closestColor().toHSP()
+        if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
+            val b = existing.copy(brightness = 0.5f).toRGB()
+            copy(
+                foreground = b.highlight(1f),
+                background = b,
+                outline = b,
+            )
+        } else {
+            val closerToAccent = (existing.hue angleTo hue).turns.absoluteValue > (existing.hue angleTo accentHue).turns.absoluteValue
+            val b = HSPColor(hue = if(closerToAccent) hue else accentHue, saturation = saturation, brightness = 0.5f).toRGB()
+            copy(
+                foreground = b.highlight(1f),
+                background = b,
+                outline = b,
+            )
+        }
     },
     dialog = { card() },
     card = {
         copy(background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB())
+        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
+            it.copy(brightness = it.brightness + brightnessStep)
+        }.toRGB() )
+    },
+    unselected = {
+        val existing = background.closestColor().toHSP()
+        if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
+            this
+        } else {
+            copy(
+                background = Color.transparent,
+                outlineWidth = 1.dp
+            )
+        }
     },
     selected = {
         copy(background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep * 2, saturation = saturation + 0.3f)
-        }.toRGB())
+        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
+            it.copy(brightness = it.brightness + brightnessStep * 2, saturation = saturation + 0.3f)
+        }.toRGB(), outlineWidth = outlineWidth * 2)
     },
     hover = {
         copy(background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB())
+        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
+            it.copy(brightness = it.brightness + brightnessStep)
+        }.toRGB(), outlineWidth = outlineWidth * 2)
     },
     focus = {
         copy(
@@ -57,7 +82,9 @@ fun Theme.Companion.flat(
     down = {
         copy(background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep * 3)
-        }.toRGB())
+        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
+            it.copy(brightness = it.brightness + brightnessStep * 3)
+        }.toRGB(), outlineWidth = outlineWidth * 2)
     },
 
     field = {
