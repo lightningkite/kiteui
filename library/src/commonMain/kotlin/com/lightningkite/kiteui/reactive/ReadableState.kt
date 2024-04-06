@@ -21,7 +21,7 @@ value class ReadableState<out T>(val raw: T) {
         @Suppress("UNCHECKED_CAST")
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
         @Suppress("UNCHECKED_CAST")
-        fun <T> exception(exception: Exception) = ReadableState<Any?>(exception) as ReadableState<T>
+        fun <T> exception(exception: Exception) = ReadableState<Any?>(ThrownException(exception)) as ReadableState<T>
     }
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {

@@ -134,9 +134,9 @@ actual fun ViewWriter.hasPopover(
                     }, 16)
                     window.addEventListener("mousemove", mouseMove)
                     window.addEventListener("scroll", { reposition() }, true)
-                    addEventListener("mousewheel", { event: Event ->
-                        pos.dispatchEvent(event)
-                    })
+//                    addEventListener("mousewheel", { event: Event ->
+//                        pos.dispatchEvent(event)
+//                    })
                     setup(object : PopoverContext {
                         override val calculationContext: CalculationContext
                             get() = pos.calculationContext
