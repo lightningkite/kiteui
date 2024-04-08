@@ -417,7 +417,7 @@ class RecyclerController2(
     var viewportSize: Int = 0
         set(value) {
             field = value
-            println("viewportSize: $value")
+//            println("viewportSize: $value")
             relayout()
         }
     private var _viewportOffsetField: Int = 0
@@ -577,7 +577,7 @@ class RecyclerController2(
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-            println("Cannot get lock for $key, already held by $lockState!!!")
+//            println("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -631,7 +631,7 @@ class RecyclerController2(
 
     var startCreatingViewsAt: Pair<Int, Align> = 0 to Align.Start
     fun jump(index: Int, align: Align, animate: Boolean, onlyIfNear: Boolean = false) {
-        println("Jump $index")
+//        println("Jump $index")
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
         }
@@ -679,7 +679,8 @@ class RecyclerController2(
                         Align.End -> scrollTo((it.startPosition + it.size - viewportSize).toDouble(), true)
                         else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
                     }
-                } ?: println("Wha?!")
+                }
+//                    ?: println("Wha?!")
             } else {
                 val existingIndex = when (align) {
                     Align.Start -> allSubviews.first().index
@@ -708,7 +709,7 @@ class RecyclerController2(
                     else -> target?.let { it.startPosition + it.size / 2 - viewportSize / 2 }
                         ?: (allSubviews.first().startPosition - padding)
                 }
-                println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
+//                println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
