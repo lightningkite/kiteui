@@ -16,6 +16,7 @@ val kspVersion:String by project
 dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:$kspVersion")
     implementation("org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }
 
 standardPublishing {
