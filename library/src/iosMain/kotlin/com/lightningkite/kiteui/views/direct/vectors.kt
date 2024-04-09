@@ -39,7 +39,7 @@ val spaceOrComma = Regex("[ ,]+")
 @OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.addQuadCurve(cx: CGFloat, cy: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddQuadCurveToPoint(this, null, cx, cy, x, y)
 @OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.addCurve(c1x: CGFloat, c1y: CGFloat, c2x: CGFloat, c2y: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddCurveToPoint(this, null, c1x, c1y, c2x, c2y, x, y)
 @OptIn(ExperimentalForeignApi::class) fun CGMutablePathRef.arcTo(lastX: CGFloat, lastY: CGFloat, x: CGFloat, y: CGFloat, radiusX: CGFloat, radiusY: CGFloat, rotation: CGFloat, largeArcFlag: Boolean, sweepFlag: Boolean) {
-    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $rotation, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
+//    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $rotation, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
     if (radiusX == 0.0 || radiusY == 0.0) {
         addLine(x, y)
         return
