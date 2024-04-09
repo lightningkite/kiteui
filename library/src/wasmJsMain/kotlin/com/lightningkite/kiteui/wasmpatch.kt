@@ -19,7 +19,7 @@ class JsAnyNativeDelegate<T: JsAny, V: Any>(val key: String): ReadWriteProperty<
 }
 class JsAnyDelegate<T: JsAny, V: JsAny>(val key: String): ReadWriteProperty<T, V?> {
     override fun getValue(thisRef: T, property: KProperty<*>): V? {
-        println("thisRef: $thisRef")
+//        println("thisRef: $thisRef")
         return thisRef.get(key)?.also { println("it $it") }?.unsafeCast()
     }
 

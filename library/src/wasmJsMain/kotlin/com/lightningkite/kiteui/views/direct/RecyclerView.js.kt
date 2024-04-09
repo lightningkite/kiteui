@@ -580,7 +580,7 @@ class RecyclerController2(
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-            println("Cannot get lock for $key, already held by $lockState!!!")
+//            println("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -685,7 +685,8 @@ class RecyclerController2(
                         Align.End -> scrollTo((it.startPosition + it.size - viewportSize).toDouble(), true)
                         else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
                     }
-                } ?: println("Wha?!")
+                }
+//                    ?: println("Wha?!")
             } else {
                 val existingIndex = when (align) {
                     Align.Start -> allSubviews.first().index

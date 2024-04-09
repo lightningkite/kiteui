@@ -373,7 +373,7 @@ fun DrawingResources.drawArc(
     path: Path, lastX: Float, lastY: Float, x: Float, y: Float, radiusX: Float, radiusY: Float, theta: Float,
     largeArcFlag: Boolean, sweepFlag: Boolean
 ) {
-    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $theta, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
+//    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $theta, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
     // Log.d("drawArc", "from (" + lastX + "," + lastY + ") to (" + x + ","+ y + ") r=(" + rx + "," + ry +
     // ") theta=" + theta + " flags="+ largeArc + "," + sweepArc);
 

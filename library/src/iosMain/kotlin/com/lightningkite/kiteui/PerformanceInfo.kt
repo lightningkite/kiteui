@@ -24,7 +24,7 @@ class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
         val now = clockMillis()
         if(now - lastReport > 5000) {
             lastReport = now
-            println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
+//            println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
             reset()
         }
     }

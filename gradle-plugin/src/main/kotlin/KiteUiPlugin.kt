@@ -486,7 +486,7 @@ fun File.resources(): Map<String, Resource> {
             .substringBeforeLast('.')
             .camelCase()
         when (relativeFile.extension) {
-            "png", "jpg" -> out[name] = Resource.Image(name, file, relativeFile)
+            "png", "jpg", "webp" -> out[name] = Resource.Image(name, file, relativeFile)
             "mp4" -> out[name] = Resource.Video(name, file, relativeFile)
             "mp3", "ogg", "wav" -> out[name] = Resource.Audio(name, file, relativeFile)
             "otf", "ttf" -> {
