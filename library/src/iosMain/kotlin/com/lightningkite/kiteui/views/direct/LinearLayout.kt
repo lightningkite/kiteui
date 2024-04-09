@@ -198,11 +198,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.zip(sizes) { view, size ->
             view as UIView
-            if (view.hidden) return@zip
-            if (first) {
-                first = false
-            } else {
-                primary += gap
+            if(!view.hidden) {
+                if (first) {
+                    first = false
+                } else {
+                    primary += gap
+                }
             }
             val ps = primary
             val a = view.secondaryAlign ?: Align.Stretch

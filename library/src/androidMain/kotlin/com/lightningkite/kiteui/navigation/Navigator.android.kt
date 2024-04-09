@@ -1,16 +1,12 @@
 package com.lightningkite.kiteui.navigation
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual object PlatformNavigator: LocalNavigator({ PlatformNavigator.routes }, LocalNavigator({ PlatformNavigator.routes }, null)) {
-    private lateinit var _routes: Routes
-    actual override var routes: Routes
-        get() = _routes
-        set(value) {
-            _routes = value
-
-            // The navigation stack could be recreated using savedInstanceState data in KiteUiActivity.onCreate; only
-            // navigate to root if not
-            if (isStackEmpty())
-                navigate(routes.parse(UrlLikePath(listOf(), mapOf())) ?: routes.fallback)
-        }
+import android.app.Activity
+import com.lightningkite.kiteui.KiteUiActivity
+import com.lightningkite.kiteui.views.NContext
+actual fun ScreenStack.bindToPlatform(context: NContext) {
+    (context as? KiteUiActivity)?.savedInstanceState?.getStringArray("navStack")?.let {
+        ScreenStack.main.stack.value = it.mapNotNull { ScreenStack.mainRoutes.parse(UrlLikePath.fromUrlString(it)) }
+    } ?: run {
+        ScreenStack.main.stack.value = (ScreenStack.mainRoutes.parse(UrlLikePath(listOf(), mapOf())) ?: ScreenStack.mainRoutes.fallback).let(::listOf)
+    }
 }

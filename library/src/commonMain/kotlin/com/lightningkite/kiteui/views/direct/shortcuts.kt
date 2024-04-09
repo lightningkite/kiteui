@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
@@ -30,7 +30,7 @@ fun ViewWriter.confirmDanger(
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    navigator.dialog.navigate(object : KiteUiScreen {
+    navigator.dialog.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {
@@ -61,7 +61,7 @@ fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    navigator.dialog.navigate(object : KiteUiScreen {
+    navigator.dialog.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {

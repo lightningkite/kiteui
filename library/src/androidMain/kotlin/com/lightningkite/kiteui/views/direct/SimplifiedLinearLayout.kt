@@ -195,9 +195,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 ++i
                 continue
             }
-            if (i > 0) mTotalLength += gap
-            nonSkippedChildCount++
             val lp = child.layoutParams as LayoutParams
+            if (i > 0) mTotalLength += (gap * lp.gapRatio).toInt()
+            nonSkippedChildCount++
             totalWeight += lp.weight
             val useExcessSpace = lp.height == 0 && lp.weight > 0
             if (heightMode == MeasureSpec.EXACTLY && useExcessSpace) {
@@ -532,9 +532,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 ++i
                 continue
             }
-            if (i > 0) mTotalLength += gap
-            nonSkippedChildCount++
             val lp = child.layoutParams as LayoutParams
+            if (i > 0) mTotalLength += (gap * lp.gapRatio).toInt()
+            nonSkippedChildCount++
             totalWeight += lp.weight
             val useExcessSpace = lp.width == 0 && lp.weight > 0
             if (widthMode == MeasureSpec.EXACTLY && useExcessSpace) {
@@ -1061,7 +1061,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     child, childLeft, childTop + getLocationOffset(child),
                     childWidth, childHeight
                 )
-                childTop += childHeight + gap + getNextLocationOffset(child)
+                childTop += childHeight + (gap * lp.gapRatio).toInt() + getNextLocationOffset(child)
                 i += getChildrenSkipCount(child, i)
             }
             i++
@@ -1179,7 +1179,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     child, childLeft + getLocationOffset(child), childTop,
                     childWidth, childHeight
                 )
-                childLeft += (childWidth + gap +
+                childLeft += (childWidth + (gap * lp.gapRatio).toInt() +
                         getNextLocationOffset(child))
                 i += getChildrenSkipCount(child, childIndex)
             }
@@ -1311,6 +1311,14 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          */
         @ViewDebug.ExportedProperty(category = "layout")
         var weight = 0f
+        /**
+         * Indicates how much of the extra space in the LinearLayout will be
+         * allocated to the view associated with these LayoutParams. Specify
+         * 0 if the view should not be stretched. Otherwise the extra pixels
+         * will be pro-rated among all views whose weight is greater than 0.
+         */
+        @ViewDebug.ExportedProperty(category = "layout")
+        var gapRatio = 1f
 
         /**
          * Gravity for the view associated with these LayoutParams.

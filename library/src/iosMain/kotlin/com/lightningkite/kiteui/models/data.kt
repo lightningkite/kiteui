@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.models
 
-import platform.CoreGraphics.CGFloat
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
+import platform.CoreGraphics.*
 import platform.UIKit.*
 
 actual typealias DimensionRaw = Double
@@ -52,10 +54,10 @@ actual sealed class AudioSource actual constructor()
 actual class AudioResource(val name: String, val extension: String) : AudioSource()
 
 class ScreenTransitionPart(
-    val from: Map<String, String>,
-    val to: Map<String, String>
+    val from: UIView.()->Unit,
+    val to: UIView.()->Unit
 ) {
-    operator fun plus(other: ScreenTransitionPart) = ScreenTransitionPart(from = from + other.from, to = to + other.to)
+    operator fun plus(other: ScreenTransitionPart) = ScreenTransitionPart(from = { from(this); other.from(this) }, to = { to(this); other.to(this) })
 }
 
 actual class ScreenTransition(
@@ -68,69 +70,87 @@ actual class ScreenTransition(
         actual val None: ScreenTransition = ScreenTransition(
             name = "None",
             enter = ScreenTransitionPart(
-                from = mapOf(),
-                to = mapOf(),
+                from = {},
+                to = {},
             ),
             exit = ScreenTransitionPart(
-                from = mapOf(),
-                to = mapOf(),
+                from = {},
+                to = {},
             ),
         )
-        private fun translate(dir: String, from: Int, to: Int) = ScreenTransitionPart(
-            from = mapOf("transform" to "translate$dir(${from}%)"),
-            to = mapOf("transform" to "translate$dir(${to}%)"),
+        @OptIn(ExperimentalForeignApi::class)
+        private fun translateX(ratio: CGFloat): UIView.()->Unit {
+            return { transform = CGAffineTransformMakeTranslation((superview?.bounds?.useContents { size.width } ?: bounds?.useContents { size.width } ?: 0.0) * ratio, 0.0) }
+        }
+        @OptIn(ExperimentalForeignApi::class)
+        private fun translateY(ratio: CGFloat): UIView.()->Unit {
+            return { transform = CGAffineTransformMakeTranslation((superview?.bounds?.useContents { size.width } ?: bounds?.useContents { size.width } ?: 0.0) * ratio, 0.0) }
+        }
+        private fun translateX(fromPercent: Int, toPercent: Int) = ScreenTransitionPart(
+            from = translateX(fromPercent / 100.0),
+            to = translateX(toPercent / 100.0),
+        )
+        private fun translateY(fromPercent: Int, toPercent: Int) = ScreenTransitionPart(
+            from = translateY(fromPercent / 100.0),
+            to = translateY(toPercent / 100.0),
         )
         actual val Push: ScreenTransition = ScreenTransition(
             name = "Push",
-            enter = translate("X", 100, 0),
-            exit = translate("X", 0, -100),
+            enter = translateX(100, 0),
+            exit = translateX(0, -100),
         )
         actual val Pop: ScreenTransition = ScreenTransition(
             name = "Pop",
-            enter = translate("X", -100, 0),
-            exit = translate("X", 0, 100),
+            enter = translateX(-100, 0),
+            exit = translateX(0, 100),
         )
         actual val PullUp: ScreenTransition = ScreenTransition(
             name = "PullUp",
-            enter = translate("Y", 100, 0),
-            exit = translate("Y", 0, -100),
+            enter = translateY(100, 0),
+            exit = translateY(0, -100),
         )
         actual val PullDown: ScreenTransition = ScreenTransition(
             name = "PullDown",
-            enter = translate("Y", -100, 0),
-            exit = translate("Y", 0, 100),
+            enter = translateY(-100, 0),
+            exit = translateY(0, 100),
         )
         actual val Fade: ScreenTransition = ScreenTransition(
             name = "Fade",
             enter = ScreenTransitionPart(
-                from = mapOf("opacity" to "0"),
-                to = mapOf("opacity" to "1"),
+                from = { alpha = 0.0 },
+                to = { alpha = 1.0 },
             ),
             exit = ScreenTransitionPart(
-                from = mapOf("opacity" to "1"),
-                to = mapOf("opacity" to "0"),
+                from = { alpha = 1.0 },
+                to = { alpha = 0.0 },
             ),
         )
+        @OptIn(ExperimentalForeignApi::class)
+        private val sizeNeutral: UIView.()->Unit = { transform = CGAffineTransformMakeTranslation(0.0, 0.0) }
+        @OptIn(ExperimentalForeignApi::class)
+        private val sizeLarge: UIView.()->Unit = { transform = CGAffineTransformMakeScale(1.33, 1.33).let { CGAffineTransformTranslate(it, 0.0, -100.0) } }
+        @OptIn(ExperimentalForeignApi::class)
+        private val sizeSmall: UIView.()->Unit = { transform = CGAffineTransformMakeScale(0.75, 0.75).let { CGAffineTransformTranslate(it, 0.0, 100.0) } }
         actual val GrowFade: ScreenTransition = ScreenTransition(
             name = "Grow",
             enter = ScreenTransitionPart(
-                from = mapOf("transform" to "scale(0.75) translateY(7vh)"),
-                to = mapOf("transform" to "scale(1.0) translateY(0)"),
+                from = sizeSmall,
+                to = sizeNeutral,
             ),
             exit = ScreenTransitionPart(
-                from = mapOf("transform" to "scale(1.00) translateY(0)"),
-                to = mapOf("transform" to "scale(1.33) translateY(-7vh)"),
+                from = sizeNeutral,
+                to = sizeLarge,
             ),
         ) + Fade
         actual val ShrinkFade: ScreenTransition = ScreenTransition(
             name = "Shrink",
             enter = ScreenTransitionPart(
-                from = mapOf("transform" to "scale(1.33) translateY(-7vh)"),
-                to = mapOf("transform" to "scale(1.0) translateY(0)"),
+                from = sizeLarge,
+                to = sizeNeutral,
             ),
             exit = ScreenTransitionPart(
-                from = mapOf("transform" to "scale(1.0) translateY(0vh)"),
-                to = mapOf("transform" to "scale(0.75) translateY(7vh)"),
+                from = sizeNeutral,
+                to = sizeSmall,
             ),
         ) + Fade
     }

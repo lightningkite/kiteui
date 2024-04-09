@@ -67,6 +67,7 @@ private fun ViewWriter.navGroupColumnInner(readable: Readable<List<NavElement>>,
             }
 
             is NavLink -> link {
+                resetsStack = true
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
                 ::to { it.destination() }
@@ -126,6 +127,7 @@ private fun ViewWriter.navGroupActionsInner(readable: Readable<List<NavElement>>
             }
 
             is NavLink -> link {
+                resetsStack = true
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
                 ::to { it.destination() }
@@ -183,6 +185,7 @@ private fun ViewWriter.navGroupTopInner(readable: Readable<List<NavElement>>) {
             }
 
             is NavLink -> link {
+                resetsStack = true
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
                 ::to { it.destination() }
@@ -271,6 +274,7 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                 is NavLink -> {
 
                     expanding - link {
+                        resetsStack = true
                         exists = false
                         ::exists {it.hidden?.invoke() != true}
                         display(it)

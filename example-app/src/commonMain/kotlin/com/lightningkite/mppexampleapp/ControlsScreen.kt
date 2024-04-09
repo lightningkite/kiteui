@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -14,7 +14,7 @@ import kotlinx.datetime.*
 import kotlin.math.roundToInt
 
 @Routable("controls")
-object ControlsScreen : KiteUiScreen {
+object ControlsScreen : Screen {
     override fun ViewWriter.render() {
         val booleanContent = Property(true)
         col {

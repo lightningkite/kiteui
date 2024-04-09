@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
-import com.lightningkite.kiteui.navigation.KiteUiScreen
-import com.lightningkite.kiteui.navigation.render
+import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.calculationContext
@@ -21,24 +18,28 @@ actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Uni
     setup(Link(this))
 }
 
-actual inline var Link.to: KiteUiScreen
-    get() = this.native.asDynamic().__ROCK__screen as KiteUiScreen
+actual inline var Link.to: Screen
+    get() = this.native.asDynamic().__ROCK__screen as Screen
     set(value) {
         this.native.asDynamic().__ROCK__screen = value
-        val navigator = (this.native.asDynamic().__ROCK__navigator as KiteUiNavigator)
+        val navigator = (this.native.asDynamic().__ROCK__navigator as ScreenStack)
         navigator.routes.render(value)?.let {
-            native.href = PlatformNavigator.basePath + it.urlLikePath.render()
+            native.href = basePath + it.urlLikePath.render()
         }
         native.onclick = {
             it.preventDefault()
-            navigator.navigate(value)
-            (native.asDynamic().__ROCK__onNavigate as? suspend ()->Unit)?.let {
+            if(resetsStack) {
+                navigator.reset(value)
+            } else {
+                navigator.navigate(value)
+            }
+            (native.asDynamic().__ROCK__onNavigate as? suspend () -> Unit)?.let {
                 calculationContext.launchManualCancel(it)
             }
         }
     }
-actual inline var Link.navigator: KiteUiNavigator
-    get() = native.asDynamic().__ROCK__navigator as KiteUiNavigator
+actual inline var Link.navigator: ScreenStack
+    get() = native.asDynamic().__ROCK__navigator as ScreenStack
     set(value) {
         native.asDynamic().__ROCK__navigator = value
     }
@@ -47,6 +48,12 @@ actual inline var Link.newTab: Boolean
     set(value) {
         native.target = if (value) "_blank" else "_self"
     }
+actual var Link.resetsStack: Boolean
+    get() = native.getAttribute("data-resetsStack")?.toBoolean() ?: false
+    set(value) {
+        native.setAttribute("data-resetsStack", value.toString())
+    }
+
 actual fun Link.onNavigate(action: suspend () -> Unit): Unit {
     native.asDynamic().__ROCK__onNavigate = action
 }

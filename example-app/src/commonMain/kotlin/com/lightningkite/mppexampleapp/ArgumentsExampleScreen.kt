@@ -2,7 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("arguments-example/{id}")
-class ArgumentsExampleScreen(val id: String): KiteUiScreen {
+class ArgumentsExampleScreen(val id: String): Screen {
 
     @QueryParameter
     val toAdd = Property("")

@@ -151,21 +151,23 @@ actual fun ViewWriter.hasPopover(
             this.addEventListener("click", {
                 makeElement()
                 stayOpen = true
-                val native = document.createElement("div") as HTMLDivElement
-                native.style.position = "absolute"
-                native.style.left = "0"
-                native.style.right = "0"
-                native.style.bottom = "0"
-                native.style.top = "0"
-                native.style.opacity = "0"
-                native.style.setProperty("backdrop-filter", "blur(0px)")
-                window.setTimeout({
-                    native.style.opacity = "1"
-                    native.style.removeProperty("backdrop-filter")
-                }, 16)
-                native.onclick = { close() }
-                existingDismisser = native
-                document.body!!.insertBefore(native, existingElement)
+                if(existingDismisser == null) {
+                    val native = document.createElement("div") as HTMLDivElement
+                    native.style.position = "absolute"
+                    native.style.left = "0"
+                    native.style.right = "0"
+                    native.style.bottom = "0"
+                    native.style.top = "0"
+                    native.style.opacity = "0"
+                    native.style.setProperty("backdrop-filter", "blur(0px)")
+                    window.setTimeout({
+                        native.style.opacity = "1"
+                        native.style.removeProperty("backdrop-filter")
+                    }, 16)
+                    native.onclick = { close() }
+                    existingDismisser = native
+                    document.body!!.insertBefore(native, existingElement)
+                }
             })
         }
         if (!requiresClick) {

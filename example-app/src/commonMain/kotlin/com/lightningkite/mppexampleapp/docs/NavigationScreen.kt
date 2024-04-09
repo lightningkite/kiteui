@@ -3,7 +3,7 @@ package com.lightningkite.mppexampleapp.docs
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
@@ -178,7 +178,7 @@ object NavigationScreen: DocScreen {
                 button {
                     text("Open a dialog")
                     onClick {
-                        navigator.dialog.navigate(object: KiteUiScreen {
+                        navigator.dialog.navigate(object: Screen {
                             override fun ViewWriter.render() {
                                 stack {
                                     centered - card - col {

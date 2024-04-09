@@ -267,13 +267,28 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
         }
     val spacingRaw: CGFloat get() = spacing.value
 
+    var existingAfterTimeout: (()->Unit)? = null
     override fun subviewDidChangeSizing(view: UIView?) {
-//        allSubviews.find { it.element === view }?.let {
-//            it.needsLayout = true
-//            afterTimeout(16) {
-//                if(it.needsLayout) setNeedsLayout()
-//            }
-//        }
+        allSubviews.find { it.element === view }?.let {
+            it.needsLayout = true
+            val useAnim = animationsEnabled
+            if(existingAfterTimeout == null)
+            existingAfterTimeout = afterTimeout(16) {
+                existingAfterTimeout?.invoke()
+                existingAfterTimeout = null
+                val before = animationsEnabled
+                try {
+                    animationsEnabled = useAnim
+                    animateIfAllowed {
+                        if (allSubviews.any { it.needsLayout }) {
+                            relayout()
+                        }
+                    }
+                } finally {
+                    animationsEnabled = before
+                }
+            }
+        }
     }
 
     inner class Subview(

@@ -62,9 +62,9 @@ fun Theme.Companion.flat(
     },
     selected = {
         copy(background = this.background.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 2, saturation = saturation + 0.3f)
+            it.copy(brightness = it.brightness + brightnessStep * 2)
         }.toRGB(), outline = this.outline.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 2, saturation = saturation + 0.3f)
+            it.copy(brightness = it.brightness + brightnessStep * 2)
         }.toRGB(), outlineWidth = outlineWidth * 2)
     },
     hover = {

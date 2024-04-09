@@ -8,6 +8,7 @@ import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NSwapView = HTMLDivElement
@@ -32,20 +33,21 @@ actual fun SwapView.swap(transition: ScreenTransition, createNewView: ViewWriter
     val vw = native.asDynamic().__ROCK_ViewWriter__ as ViewWriter
     val keyframeName = DynamicCSS.transition(transition)
     val previousLast = native.lastElementChild
+    val myStyle = window.getComputedStyle(native)
+    val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
+    val transitionMs = Duration.parseOrNull(transitionTime)?.inWholeMilliseconds ?: 150L
     native.children.let { (0 until it.length).map { i -> it.get(i) } }.filterIsInstance<HTMLElement>()
         .forEach { view ->
             if (view.asDynamic().__ROCK__removing) return@forEach
             view.asDynamic().__ROCK__removing = true
             view.shutdown()
-            val myStyle = window.getComputedStyle(native)
-            val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
             view.style.animation = "${keyframeName}-exit $transitionTime forwards"
             val parent = view.parentElement
-            window.setTimeout({
+            afterTimeout(transitionMs) {
                 if (view.parentElement == parent) {
                     native.removeChild(view)
                 }
-            }, 240)
+            }
         }
     native.withoutAnimation {
         createNewView(vw)
@@ -56,13 +58,11 @@ actual fun SwapView.swap(transition: ScreenTransition, createNewView: ViewWriter
             native.style.opacity = "1"
         }
         exists = true
-        val myStyle = window.getComputedStyle(native)
-        val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"
         newView.style.animation = "${keyframeName}-enter $transitionTime forwards"
     } ?: run {
         if(!native.hidden) {
             native.style.opacity = "0"
-            afterTimeout(150) {
+            afterTimeout(transitionMs) {
                 native.hidden = true
             }
         }

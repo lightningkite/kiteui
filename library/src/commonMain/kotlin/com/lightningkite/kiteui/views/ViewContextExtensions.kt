@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
+import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
@@ -30,7 +30,7 @@ fun <T> viewWriterAddonLateInit(): ReadWriteProperty<ViewWriter, T> = object : R
     }
 }
 
-var ViewWriter.navigator by viewWriterAddonLateInit<KiteUiNavigator>()
+var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
 //var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
 
 @ViewModifierDsl3 val ViewWriter.debugNext: ViewWrapper get() {

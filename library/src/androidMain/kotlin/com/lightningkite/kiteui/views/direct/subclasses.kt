@@ -5,12 +5,13 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
+import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.views.animationsEnabled
 
 class LinkFrameLayout(context: Context): SlightlyModifiedFrameLayout(context) {
-    lateinit var navigator: KiteUiNavigator
-    var onNavigate: suspend ()->Unit = {}
+    lateinit var navigator: ScreenStack
+    var onNavigate: suspend () -> Unit = {}
+    var resetsStack: Boolean = false
 }
 
 class KiteUiLayoutTransition: LayoutTransition() {

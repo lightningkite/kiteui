@@ -6,8 +6,13 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
+import kotlin.time.Duration.Companion.seconds
 
-val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)))
+val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)).copy(
+    transitionDuration = 1.seconds,
+    bodyTransitions = ScreenTransitions.HorizontalSlide,
+    dialogTransitions = ScreenTransitions.FadeResize,
+))
 
 fun ViewWriter.app() {
     rootTheme = { appTheme() }

@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("sample/login")
-object SampleLogInScreen : KiteUiScreen {
+object SampleLogInScreen : Screen {
     override fun ViewWriter.render() {
         val email = Property("")
         val password = Property("")

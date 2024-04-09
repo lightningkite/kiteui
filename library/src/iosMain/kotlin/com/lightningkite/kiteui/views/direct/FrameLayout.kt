@@ -45,4 +45,6 @@ class FrameLayout: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent).takeUnless { it == this }
     }
+
+    internal var swapViewKeepLast = true
 }

@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
@@ -16,7 +16,7 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
 @Routable("sample/data")
-object DataLoadingExampleScreen : KiteUiScreen {
+object DataLoadingExampleScreen : Screen {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
     override fun ViewWriter.render() {

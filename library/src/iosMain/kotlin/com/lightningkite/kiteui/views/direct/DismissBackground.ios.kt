@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
+import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIControlEventTouchUpInside
@@ -25,7 +25,7 @@ actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissB
 
 }
 
-fun FrameLayoutButton.__dismissBackgroundOtherSetupX(navigator: KiteUiNavigator) {
+fun FrameLayoutButton.__dismissBackgroundOtherSetupX(navigator: ScreenStack) {
     DismissBackground(this).onClick {
         navigator.dismiss()
     }

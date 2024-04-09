@@ -17,12 +17,15 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.AndroidAppContext
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: suspend () -> Theme get() = { Theme() }
+    var savedInstanceState: Bundle? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowInfo.value = WindowStatistics(
@@ -38,14 +41,12 @@ abstract class KiteUiActivity : AppCompatActivity() {
         CalculationContext.NeverEnds.reactiveScope {
             window?.statusBarColor = theme().let { it.bar() ?: it }.background.closestColor().darken(0.3f).toInt()
         }
-
-        savedInstanceState?.getStringArray("navStack")?.let(PlatformNavigator::restoreStack)
+        this.savedInstanceState = savedInstanceState
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
-        outState.putStringArray("navStack", PlatformNavigator.saveStack())
+        outState.putStringArray("navStack", ScreenStack.main.stack.value.mapNotNull { ScreenStack.mainRoutes.render(it)?.urlLikePath?.render() }.toTypedArray())
     }
 
     private var currentNum = 0

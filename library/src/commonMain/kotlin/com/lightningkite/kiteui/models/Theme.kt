@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.models
 
 import kotlin.js.JsName
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 data class Theme(
     val title: FontAndStyle = FontAndStyle(systemDefaultFont),
@@ -15,6 +17,9 @@ data class Theme(
     val outlineWidth: Dimension = 0.px,
     val background: Paint = Color.white,
     val backdropFilters: List<BackdropFilter> = listOf(),
+    val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
+    val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
+    val transitionDuration: Duration = 0.15.seconds,
 
     val card: (Theme.() -> Theme) = { this },
     val field: (Theme.() -> Theme) = { this },

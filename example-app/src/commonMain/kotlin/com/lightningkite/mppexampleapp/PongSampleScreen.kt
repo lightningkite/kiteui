@@ -2,18 +2,18 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.clockMillis
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.min
 
 @Routable("sample/pong")
-object PongSampleScreen : KiteUiScreen {
+object PongSampleScreen : Screen {
 
     override fun ViewWriter.render() = stack {
         canvas {

@@ -2,13 +2,13 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("external-services")
-object ExternalServicesScreen : KiteUiScreen {
+object ExternalServicesScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 //    val clip = Property<String>("")

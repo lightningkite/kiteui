@@ -4,7 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
@@ -73,7 +73,7 @@ actual fun ViewWriter.hasPopover(
     beforeNextElementSetup {
         val originalNavigator = navigator
         fun openDialog() {
-            navigator.dialog.navigate(object : KiteUiScreen {
+            navigator.dialog.navigate(object : Screen {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - stack {
@@ -175,7 +175,7 @@ actual val ViewWriter.unpadded: ViewWrapper
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
     beforeNextElementSetup {
-        exists = true
+        exists = default
         ::exists.invoke(condition)
     }
     return ViewWrapper

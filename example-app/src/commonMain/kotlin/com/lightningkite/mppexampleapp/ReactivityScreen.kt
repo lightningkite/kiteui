@@ -1,13 +1,13 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("reactivity")
-object ReactivityScreen : KiteUiScreen {
+object ReactivityScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 

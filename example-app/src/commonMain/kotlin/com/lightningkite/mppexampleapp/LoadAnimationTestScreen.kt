@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
 @Routable("load-animation-test")
-object LoadAnimationTestScreen : KiteUiScreen {
+object LoadAnimationTestScreen : Screen {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
     override fun ViewWriter.render() {
