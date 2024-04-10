@@ -198,7 +198,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.zip(sizes) { view, size ->
             view as UIView
-            if(!view.hidden) {
+            if (!view.hidden) {
                 if (first) {
                     first = false
                 } else {
@@ -217,13 +217,11 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val oldSize = view.bounds.useContents { this.size.width to this.size.height }
             val widthSize = if (horizontal) size.primary else secondarySize
             val heightSize = if (horizontal) secondarySize else size.primary
-            view.setFrame(
-                CGRectMake(
-                    if (horizontal) ps else offset,
-                    if (horizontal) offset else ps,
-                    widthSize,
-                    heightSize,
-                )
+            view.setPsuedoframe(
+                if (horizontal) ps else offset,
+                if (horizontal) offset else ps,
+                widthSize,
+                heightSize,
             )
             if (oldSize.first != widthSize || oldSize.second != heightSize) {
                 view.layoutSubviews()

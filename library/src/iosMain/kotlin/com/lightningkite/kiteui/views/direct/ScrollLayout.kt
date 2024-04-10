@@ -17,11 +17,13 @@ import kotlin.math.max
 //class LayoutParams()
 
 @OptIn(ExperimentalForeignApi::class)
-class ScrollLayout: UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
+class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
     var horizontal: Boolean = true
     var padding: Double
         get() = extensionPadding ?: 0.0
-        set(value) { extensionPadding = value }
+        set(value) {
+            extensionPadding = value
+        }
 
     override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
@@ -29,16 +31,17 @@ class ScrollLayout: UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverride
 
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
-    val Size.objc get() = CGSizeMake(if(horizontal) primary else secondary, if(horizontal) secondary else primary)
-    val CGSize.local get() = Size(if(horizontal) width else height, if(horizontal) height else width)
+
+    val Size.objc get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
+    val CGSize.local get() = Size(if (horizontal) width else height, if (horizontal) height else width)
     val CValue<CGSize>.local get() = useContents { local }
-    val SizeConstraints.primaryMax get() = if(horizontal) maxWidth else maxHeight
-    val SizeConstraints.secondaryMax get() = if(horizontal) maxHeight else maxWidth
-    val SizeConstraints.primaryMin get() = if(horizontal) minWidth else minHeight
-    val SizeConstraints.secondaryMin get() = if(horizontal) minHeight else minWidth
-    val SizeConstraints.primary get() = if(horizontal) width else height
-    val SizeConstraints.secondary get() = if(horizontal) height else width
-    val UIView.secondaryAlign get() = if(horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    val SizeConstraints.primaryMax get() = if (horizontal) maxWidth else maxHeight
+    val SizeConstraints.secondaryMax get() = if (horizontal) maxHeight else maxWidth
+    val SizeConstraints.primaryMin get() = if (horizontal) minWidth else minHeight
+    val SizeConstraints.secondaryMin get() = if (horizontal) minHeight else minWidth
+    val SizeConstraints.primary get() = if (horizontal) width else height
+    val SizeConstraints.secondary get() = if (horizontal) height else width
+    val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
 
     val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden }
 
@@ -62,7 +65,7 @@ class ScrollLayout: UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverride
 
         var totalWeight = 0f
         return mainSubview?.let {
-            val remainingPrimary = if(unbound) 10000.0 else remaining.primary
+            val remainingPrimary = if (unbound) 10000.0 else remaining.primary
             val required = it.sizeThatFits2(
                 CGSizeMake(
                     if (horizontal) remainingPrimary else remaining.secondary,
@@ -100,38 +103,36 @@ class ScrollLayout: UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverride
             return
         }
         var size = calcSizes(frame.useContents { this.size.local }, true)
-        if(size.primary >= 9999.0) {
+        if (size.primary >= 9999.0) {
             size = calcSizes(frame.useContents { this.size.local }, false)
         }
         val ps = primary
         val a = view.secondaryAlign ?: Align.Stretch
-        val offset = when(a) {
+        val offset = when (a) {
             Align.Start -> padding
             Align.Stretch -> padding
             Align.End -> mySize.secondary - padding - size.secondary
             Align.Center -> (mySize.secondary - size.secondary) / 2
         }
-        val secondarySize = if(a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary
+        val secondarySize = if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
-        val widthSize = if(horizontal) size.primary else secondarySize
-        val heightSize = if(horizontal) secondarySize else size.primary
-        view.setFrame(
-            CGRectMake(
-                if(horizontal) ps else offset,
-                if(horizontal) offset else ps,
-                widthSize,
-                heightSize,
-            )
+        val widthSize = if (horizontal) size.primary else secondarySize
+        val heightSize = if (horizontal) secondarySize else size.primary
+        view.setPsuedoframe(
+            if (horizontal) ps else offset,
+            if (horizontal) offset else ps,
+            widthSize,
+            heightSize,
         )
-        if(oldSize.first != widthSize || oldSize.second != heightSize) {
+        if (oldSize.first != widthSize || oldSize.second != heightSize) {
             view.layoutSubviews()
         }
         primary += size.primary
         primary += padding
         setContentSize(
             CGSizeMake(
-                if(horizontal) primary else 0.0,
-                if(!horizontal) primary else 0.0,
+                if (horizontal) primary else 0.0,
+                if (!horizontal) primary else 0.0,
             )
         )
     }

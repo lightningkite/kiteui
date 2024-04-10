@@ -39,16 +39,16 @@ actual inline fun NView.withoutAnimation(action: () -> Unit) {
     }
 }
 
-inline fun animateIfAllowed(crossinline animations: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(0.15) {
+inline fun NView.animateIfAllowed(crossinline animations: () -> Unit) {
+    if (animationsEnabled) UIView.animateWithDuration(extensionAnimationDuration ?: 0.15) {
         animations()
     } else {
         animations()
     }
 }
 
-inline fun animateIfAllowedWithComplete(crossinline animations: () -> Unit, crossinline completion: () -> Unit, ) {
-    if (animationsEnabled) UIView.animateWithDuration(duration = 0.15, animations = {
+inline fun NView.animateIfAllowedWithComplete(crossinline animations: () -> Unit, crossinline completion: () -> Unit, ) {
+    if (animationsEnabled) UIView.animateWithDuration(duration = extensionAnimationDuration ?: 0.15, animations = {
         animations()
     }, completion = { completion() }) else {
         animations()

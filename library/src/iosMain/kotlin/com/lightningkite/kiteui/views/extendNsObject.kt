@@ -81,6 +81,9 @@ var UIView.extensionForcePadding: Boolean? by UIViewMarginless
 private val UIViewWriter = ExtensionProperty<UIView, ViewWriter>()
 var UIView.extensionViewWriter: ViewWriter? by UIViewWriter
 
+private val UIViewAnimationDuration = ExtensionProperty<UIView, Double>()
+var UIView.extensionAnimationDuration: Double? by UIViewAnimationDuration
+
 private val UIViewProp = ExtensionProperty<UIView, Property<*>>()
 var UIView.extensionProp: Property<*>? by UIViewProp
 

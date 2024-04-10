@@ -53,77 +53,52 @@ actual class VideoResource(val name: String, val extension: String) : VideoSourc
 actual sealed class AudioSource actual constructor()
 actual class AudioResource(val name: String, val extension: String) : AudioSource()
 
-class ScreenTransitionPart(
-    val from: UIView.()->Unit,
-    val to: UIView.()->Unit
-) {
-    operator fun plus(other: ScreenTransitionPart) = ScreenTransitionPart(from = { from(this); other.from(this) }, to = { to(this); other.to(this) })
-}
-
 actual class ScreenTransition(
     val name: String,
-    val enter: ScreenTransitionPart,
-    val exit: ScreenTransitionPart,
+    val enter: UIView.()->Unit,
+    val exit: UIView.()->Unit,
 ) {
-    operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = enter + other.enter, exit = exit + other.exit)
+    operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = { enter(this); other.enter(this) }, exit = { exit(this); other.exit(this) })
     actual companion object {
         actual val None: ScreenTransition = ScreenTransition(
             name = "None",
-            enter = ScreenTransitionPart(
-                from = {},
-                to = {},
-            ),
-            exit = ScreenTransitionPart(
-                from = {},
-                to = {},
-            ),
+            enter = {},
+            exit = {},
         )
         @OptIn(ExperimentalForeignApi::class)
         private fun translateX(ratio: CGFloat): UIView.()->Unit {
+//            return { transform = CGAffineTransformMakeTranslation(ratio * 100.0, 0.0) }
             return { transform = CGAffineTransformMakeTranslation((superview?.bounds?.useContents { size.width } ?: bounds?.useContents { size.width } ?: 0.0) * ratio, 0.0) }
         }
         @OptIn(ExperimentalForeignApi::class)
         private fun translateY(ratio: CGFloat): UIView.()->Unit {
-            return { transform = CGAffineTransformMakeTranslation((superview?.bounds?.useContents { size.width } ?: bounds?.useContents { size.width } ?: 0.0) * ratio, 0.0) }
+            return { transform = CGAffineTransformMakeTranslation(0.0, (superview?.bounds?.useContents { size.height } ?: bounds?.useContents { size.height } ?: 0.0) * ratio) }
         }
-        private fun translateX(fromPercent: Int, toPercent: Int) = ScreenTransitionPart(
-            from = translateX(fromPercent / 100.0),
-            to = translateX(toPercent / 100.0),
-        )
-        private fun translateY(fromPercent: Int, toPercent: Int) = ScreenTransitionPart(
-            from = translateY(fromPercent / 100.0),
-            to = translateY(toPercent / 100.0),
-        )
+        @OptIn(ExperimentalForeignApi::class)
         actual val Push: ScreenTransition = ScreenTransition(
             name = "Push",
-            enter = translateX(100, 0),
-            exit = translateX(0, -100),
+            enter = translateX(1.0),
+            exit = translateX(-1.0),
         )
         actual val Pop: ScreenTransition = ScreenTransition(
             name = "Pop",
-            enter = translateX(-100, 0),
-            exit = translateX(0, 100),
+            enter = translateX(-1.0),
+            exit = translateX(1.0),
         )
         actual val PullUp: ScreenTransition = ScreenTransition(
             name = "PullUp",
-            enter = translateY(100, 0),
-            exit = translateY(0, -100),
+            enter = translateY(1.0),
+            exit = translateY(1.0),
         )
         actual val PullDown: ScreenTransition = ScreenTransition(
             name = "PullDown",
-            enter = translateY(-100, 0),
-            exit = translateY(0, 100),
+            enter = translateY(-1.0),
+            exit = translateY(1.0),
         )
         actual val Fade: ScreenTransition = ScreenTransition(
             name = "Fade",
-            enter = ScreenTransitionPart(
-                from = { alpha = 0.0 },
-                to = { alpha = 1.0 },
-            ),
-            exit = ScreenTransitionPart(
-                from = { alpha = 1.0 },
-                to = { alpha = 0.0 },
-            ),
+            enter = { alpha = 0.0 },
+            exit = { alpha = 0.0 },
         )
         @OptIn(ExperimentalForeignApi::class)
         private val sizeNeutral: UIView.()->Unit = { transform = CGAffineTransformMakeTranslation(0.0, 0.0) }
@@ -133,25 +108,13 @@ actual class ScreenTransition(
         private val sizeSmall: UIView.()->Unit = { transform = CGAffineTransformMakeScale(0.75, 0.75).let { CGAffineTransformTranslate(it, 0.0, 100.0) } }
         actual val GrowFade: ScreenTransition = ScreenTransition(
             name = "Grow",
-            enter = ScreenTransitionPart(
-                from = sizeSmall,
-                to = sizeNeutral,
-            ),
-            exit = ScreenTransitionPart(
-                from = sizeNeutral,
-                to = sizeLarge,
-            ),
+            enter = sizeSmall,
+            exit = sizeLarge,
         ) + Fade
         actual val ShrinkFade: ScreenTransition = ScreenTransition(
             name = "Shrink",
-            enter = ScreenTransitionPart(
-                from = sizeLarge,
-                to = sizeNeutral,
-            ),
-            exit = ScreenTransitionPart(
-                from = sizeNeutral,
-                to = sizeSmall,
-            ),
+            enter = sizeLarge,
+            exit = sizeSmall,
         ) + Fade
     }
 }
