@@ -67,19 +67,19 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
                 val removed = lastStack.subList(indexWhereChangesStart, lastStack.size)
                 val added = s.subList(indexWhereChangesStart, s.size)
                 println("Nav changed!  Removed $removed, added $added")
-                if (removed.isNotEmpty()) {
-                    // Pop the states
-                    try {
-                        suppressNav = true
-                        for (item in removed) {
-                            if (routes.render(item) == null) continue
-                            println("Popping...")
-                            window.history.back()
-                        }
-                    } finally {
-                        suppressNav = false
-                    }
-                }
+//                if (removed.isNotEmpty()) {
+//                    // Pop the states
+//                    try {
+//                        suppressNav = true
+//                        for (item in removed) {
+//                            if (routes.render(item) == null) continue
+//                            println("Popping...")
+//                            window.history.back()
+//                        }
+//                    } finally {
+//                        suppressNav = false
+//                    }
+//                }
                 if (added.isNotEmpty()) {
                     for ((index, new) in added.withIndex()) {
                         routes.render(new)?.urlLikePath?.render()?.let {
