@@ -158,6 +158,7 @@ actual fun ViewWriter.hasPopover(
                 native.style.bottom = "0"
                 native.style.top = "0"
                 native.style.opacity = "0"
+                native.style.zIndex = "998"
                 native.style.setProperty("backdrop-filter", "blur(0px)")
                 window.setTimeout({
                     native.style.opacity = "1"
