@@ -4,6 +4,8 @@ import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.navigation.bindToPlatform
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -34,9 +36,9 @@ fun ViewWriter.appBase(routes: Routes, mainLayout: ContainingView.() -> Unit) {
     transitionNextView = ViewWriter.TransitionNextView.Yes
     stack {
         spacing = 0.px
-        val navigator = PlatformNavigator
-        PlatformNavigator.routes = routes
-        this@appBase.navigator = navigator
+        ScreenStack.mainRoutes = routes
+        ScreenStack.main.bindToPlatform(context)
+        this@appBase.navigator = ScreenStack.main
         mainLayout()
         navigatorViewDialog() in tweakTheme { it.dialog() }
     } 

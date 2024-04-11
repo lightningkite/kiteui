@@ -2,12 +2,12 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("twopane")
-object TwoPaneTestScreen : KiteUiScreen {
+object TwoPaneTestScreen : Screen {
     override fun ViewWriter.render() {
         this.twoPane(
             setup = {},

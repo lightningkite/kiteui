@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
 
@@ -172,9 +172,9 @@ data class NavLink(
     override val icon: suspend () -> Icon,
     override val count: (suspend () -> Int?)? = null,
     override val hidden: (suspend () -> Boolean)? = { false },
-    val destination: suspend () -> KiteUiScreen,
+    val destination: suspend () -> Screen,
 ) : NavElement {
-    constructor(title: String, icon: Icon, destination: KiteUiScreen) : this({ title }, { icon }, null, { false }, { destination })
+    constructor(title: String, icon: Icon, destination: Screen) : this({ title }, { icon }, null, { false }, { destination })
 }
 @Deprecated("Use NavExternal", ReplaceWith("NavExternal"))
 typealias ExternalNav = NavExternal

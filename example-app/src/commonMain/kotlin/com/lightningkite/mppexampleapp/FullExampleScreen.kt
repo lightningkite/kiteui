@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.MaterialLikeTheme
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -17,7 +17,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.setTheme
 
 @Routable("full-screen")
-class FullExampleScreen: KiteUiScreen, UseFullScreen {
+class FullExampleScreen: Screen, UseFullScreen {
 
     override fun ViewWriter.render() {
         debugNext

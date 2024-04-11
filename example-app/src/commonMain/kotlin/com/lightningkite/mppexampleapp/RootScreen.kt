@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.minus
 
 @Routable("/")
-object RootScreen : KiteUiScreen {
+object RootScreen : Screen {
     override fun ViewWriter.render() {
         scrolls - col {
             col {
@@ -35,7 +35,7 @@ object RootScreen : KiteUiScreen {
             }
             col {
 
-                fun ViewWriter.linkScreen(screen: KiteUiScreen) = link {
+                fun ViewWriter.linkScreen(screen: Screen) = link {
                     to = screen
                     row {
                         text {

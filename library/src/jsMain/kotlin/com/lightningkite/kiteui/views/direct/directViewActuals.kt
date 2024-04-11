@@ -58,6 +58,13 @@ fun HTMLElement.__resetContentToOptionList(options: List<WidgetOption>, selected
         this.selected = item.key == selected
     })
 }
+fun HTMLElement.__selectOption(selected: String) {
+    children.let { (0..<it.length).map { index -> it.get(index) } }.forEach {
+        if(it is HTMLOptionElement) {
+            it.selected = it.value == selected
+        }
+    }
+}
 
 internal fun Canvas.pointerListenerHandler(action: (id: Int, x: Double, y: Double, width: Double, height: Double) -> Unit): (Event) -> Unit =
     {

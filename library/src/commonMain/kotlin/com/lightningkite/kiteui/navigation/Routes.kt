@@ -7,11 +7,11 @@ import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.reflect.KClass
 
 class Routes(
-    val parsers: List<(UrlLikePath)->KiteUiScreen?>,
-    val renderers: Map<KClass<out KiteUiScreen>, (KiteUiScreen)->RouteRendered?>,
-    val fallback: KiteUiScreen
+    val parsers: List<(UrlLikePath) -> Screen?>,
+    val renderers: Map<KClass<out Screen>, (Screen) -> RouteRendered?>,
+    val fallback: Screen
 ) {
-    fun render(screen: KiteUiScreen) = renderers.get(screen::class)?.invoke(screen)
+    fun render(screen: Screen) = renderers.get(screen::class)?.invoke(screen)
     fun parse(path: UrlLikePath) = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
 }
 
@@ -29,7 +29,8 @@ data class UrlLikePath(
 
         fun fromParts(pathname: String, search: String) = UrlLikePath(
             segments = pathname.split('/').filter { it.isNotBlank() },
-            parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }.associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
+            parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
+                .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
         )
 
         fun fromUrlString(url: String): UrlLikePath {
@@ -38,9 +39,12 @@ data class UrlLikePath(
         }
     }
 
-    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString("&", "?") { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")
+    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+        "&",
+        "?"
+    ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")
 
 }
 
-fun KiteUiScreen.render(viewWriter: ViewWriter) = with(viewWriter) { render() }
+fun Screen.render(viewWriter: ViewWriter) = with(viewWriter) { render() }
 

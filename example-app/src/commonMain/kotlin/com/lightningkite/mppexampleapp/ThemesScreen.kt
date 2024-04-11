@@ -3,13 +3,13 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.random.Random
 
 @Routable("themes")
-object ThemesScreen : KiteUiScreen {
+object ThemesScreen : Screen {
     override fun ViewWriter.render() {
         col {
             h1 { content = "Theme Control" }
@@ -76,7 +76,7 @@ object ThemesScreen : KiteUiScreen {
                     h6 { content = "Flat Light" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, saturation = 0.2f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
+                        appTheme set Theme.flat(hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
                             .copy(
                                 cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
                             )
@@ -87,7 +87,7 @@ object ThemesScreen : KiteUiScreen {
                     h6 { content = "Flat Dark" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, accentHue = a + Angle.halfTurn)
+                        appTheme set Theme.flat(hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
                             .copy(
                                 cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
                             )

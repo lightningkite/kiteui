@@ -1,11 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
+import androidx.core.animation.doOnEnd
+import androidx.core.view.ViewCompat
 
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.ViewWrapper
@@ -13,9 +19,10 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import java.util.*
 
@@ -272,7 +279,7 @@ actual fun ViewWriter.hasPopover(
     val originalNavigator = navigator
     beforeNextElementSetup {
         setOnClickListener {
-            navigator.dialog.navigate(object : KiteUiScreen {
+            navigator.dialog.navigate(object : Screen {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - stack {
@@ -306,9 +313,168 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
-    beforeNextElementSetup {
+    afterNextElementSetup {
+//        exists = default
+//        ::exists.invoke(condition)
+//        (parent as? SimplifiedLinearLayout)?.let {
+//            if(it.layoutTransition == null) {
+//                it.layoutTransition = KiteUiLayoutTransition()
+//            }
+//        }
+
         exists = default
-        ::exists.invoke(condition)
+        var existingAnimator: ValueAnimator? = null
+        val theme = currentTheme
+        var goal = default
+        calculationContext.reactiveScope {
+            val value = condition()
+            if(goal == value) return@reactiveScope
+            goal = value
+            existingAnimator?.cancel()
+            existingAnimator = null
+            val parent = parent
+            exists = true
+            if(animationsEnabled) {
+                existingAnimator = if(value) {
+                    if(parent is SimplifiedLinearLayout) {
+                        if(parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            widthAnimator(WRAP_CONTENT)
+                        } else {
+                            heightAnimator(WRAP_CONTENT)
+                        }.also { it.addUpdateListener { (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = it.animatedFraction } }
+                    }  else {
+                        heightAnimator(WRAP_CONTENT)
+                    }
+                } else {
+                    if(parent is SimplifiedLinearLayout) {
+                        if(parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            widthAnimator(0)
+                        } else {
+                            heightAnimator(0)
+                        }.also { it.addUpdateListener { (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = 1f - it.animatedFraction } }
+                    }  else {
+                        heightAnimator(0)
+                    }
+                }.setDuration(theme().transitionDuration.inWholeMilliseconds).also {
+                    it.doOnEnd {
+                        exists = value
+                    }
+                    it.start()
+                }
+            } else {
+                exists = value
+            }
+        }
     }
     return ViewWrapper
+}
+
+/**
+ * Creates an animator that will animate from the current height to a new height.
+ */
+private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
+    val currentHeight = layoutParams.height.let {
+        when (it) {
+            WRAP_CONTENT, MATCH_PARENT -> height
+            else -> it
+        }
+    }
+    val fixedToHeight = when (toHeight) {
+        WRAP_CONTENT -> {
+            measure(
+                View.MeasureSpec.makeMeasureSpec((parent as? View)?.width
+                    ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(Int.MAX_VALUE / 2 - 1, View.MeasureSpec.AT_MOST)
+            )
+            measuredHeight
+        }
+        else -> toHeight
+    }
+    return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
+        layoutParams.height = it
+        if (!ViewCompat.isInLayout(this@heightAnimator)) requestLayout()
+    }.apply {
+        addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationRepeat(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) {
+                println("ENDING, set to $toHeight")
+                layoutParams.height = toHeight
+            }
+        })
+    }
+}
+
+/**
+ * Creates an animator that will animate from the current width to a new width.
+ */
+private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
+    val currentWidth = layoutParams.width.let {
+        when (it) {
+            WRAP_CONTENT, MATCH_PARENT -> width
+            else -> it
+        }
+    }
+    val fixedToWidth = when (toWidth) {
+        WRAP_CONTENT -> {
+            measure(
+                View.MeasureSpec.makeMeasureSpec(Int.MAX_VALUE / 2 - 1, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec((parent as? View)?.height
+                    ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST),
+            )
+            measuredWidth
+        }
+        else -> toWidth
+    }
+    return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {
+        layoutParams.width = it
+        println("SETTING WIDTH TO $it")
+        if (!ViewCompat.isInLayout(this@widthAnimator)) requestLayout()
+    }.apply {
+        addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationRepeat(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) {
+                println("ENDING, set to $toWidth")
+                layoutParams.width = toWidth
+            }
+        })
+    }
+}
+
+private object TypedValueAnimator {
+
+    /**
+     * A value animator that animates between [Int] values.
+     */
+    class IntAnimator(vararg values: Int) : ValueAnimator() {
+        init {
+            setIntValues(*values)
+        }
+
+        fun onUpdate(lambda: IntAnimator.(Int) -> Unit): IntAnimator {
+            addUpdateListener {
+                lambda(animatedValue as Int)
+            }
+            return this
+        }
+    }
+
+    /**
+     * A value animator that animates between [Float] values.
+     */
+    class FloatAnimator(vararg values: Float) : ValueAnimator() {
+        init {
+            setFloatValues(*values)
+        }
+
+        fun onUpdate(lambda: FloatAnimator.(Float) -> Unit): FloatAnimator {
+            addUpdateListener {
+                lambda(animatedValue as Float)
+            }
+            return this
+        }
+    }
 }

@@ -7,8 +7,6 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.views.direct.FrameLayout
-import com.lightningkite.kiteui.views.direct.LinearLayout
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import platform.CoreGraphics.CGAffineTransformRotate
@@ -41,11 +39,19 @@ actual inline fun NView.withoutAnimation(action: () -> Unit) {
     }
 }
 
-inline fun animateIfAllowed(crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(0.15) {
-        action()
+inline fun NView.animateIfAllowed(crossinline animations: () -> Unit) {
+    if (animationsEnabled) UIView.animateWithDuration(extensionAnimationDuration ?: 0.15) {
+        animations()
     } else {
-        action()
+        animations()
+    }
+}
+
+inline fun NView.animateIfAllowedWithComplete(crossinline animations: () -> Unit, crossinline completion: () -> Unit, ) {
+    if (animationsEnabled) UIView.animateWithDuration(duration = extensionAnimationDuration ?: 0.15, animations = {
+        animations()
+    }, completion = { completion() }) else {
+        animations()
     }
 }
 
@@ -113,17 +119,32 @@ val UIView.iosCalculationContext: NViewCalculationContext
 actual val NView.calculationContext: CalculationContext
     get() = iosCalculationContext
 
+@OptIn(ExperimentalForeignApi::class)
 actual var NView.exists: Boolean
     get() = !hidden
     set(value) {
-        if (animationsEnabled) UIView.animateWithDuration(0.15) {
-            hidden = !value
-            informParentOfSizeChange()
-            layoutIfNeeded()
+        if (animationsEnabled) {
+            UIView.animateWithDuration(0.15) {
+                hidden = !value
+                informParentOfSizeChange()
+                superview?.layoutIfNeeded()
+            }
         } else {
             hidden = !value
             informParentOfSizeChange()
         }
+//        if(hidden) {
+//            val sv = superview
+//            if(sv is LinearLayout)  {
+//                if(sv.horizontal) {
+//                    setFrame(frame.useContents { CGRectMake(origin.x, origin.y, 0.0, size.height) })
+//                } else {
+//                    setFrame(frame.useContents { CGRectMake(origin.x, origin.y, size.width, 0.0) })
+//                }
+//            } /*else {
+//                alpha = 0.0
+//            }*/
+//        }
     }
 
 actual var NView.visible: Boolean

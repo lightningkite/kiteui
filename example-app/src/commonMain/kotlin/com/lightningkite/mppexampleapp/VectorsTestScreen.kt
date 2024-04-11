@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("test/vectors")
-object VectorsTestScreen : KiteUiScreen {
+object VectorsTestScreen : Screen {
     override fun ViewWriter.render() {
         col {
             row {

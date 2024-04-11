@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.models
 
 import android.view.Gravity
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.Interpolator
 import androidx.transition.*
 import androidx.transition.Visibility.MODE_IN
 import androidx.transition.Visibility.MODE_OUT
@@ -21,25 +24,25 @@ actual class ScreenTransition(
         actual val Push: ScreenTransition
             get() = ScreenTransition(
                 "Push",
-                enter = Slide(Gravity.LEFT),
-                exit = Slide(Gravity.RIGHT)
+                enter = Slide(Gravity.RIGHT).setInterpolator(DecelerateInterpolator()),
+                exit = Slide(Gravity.LEFT).setInterpolator(DecelerateInterpolator()),
             )
         actual val Pop: ScreenTransition
             get() = ScreenTransition(
                 name = "Pop",
-                enter = Slide(Gravity.RIGHT),
-                exit = Slide(Gravity.LEFT)
+                enter = Slide(Gravity.LEFT).setInterpolator(DecelerateInterpolator()),
+                exit = Slide(Gravity.RIGHT).setInterpolator(DecelerateInterpolator()),
             )
         actual val PullDown: ScreenTransition
             get() = ScreenTransition(
                 name = "Pull Down",
                 enter = null,
-                exit = Slide(Gravity.BOTTOM)
+                exit = Slide(Gravity.BOTTOM).setInterpolator(DecelerateInterpolator())
             )
         actual val PullUp: ScreenTransition
             get() = ScreenTransition(
                 name = "Pull up",
-                enter = Slide(Gravity.BOTTOM),
+                enter = Slide(Gravity.BOTTOM).setInterpolator(DecelerateInterpolator()),
                 exit = null
             )
         actual val Fade: ScreenTransition
@@ -63,4 +66,3 @@ actual class ScreenTransition(
             )
     }
 }
-

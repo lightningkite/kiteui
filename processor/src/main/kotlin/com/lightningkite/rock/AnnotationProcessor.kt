@@ -29,7 +29,7 @@ class RouterGeneration(
             .filter { it.annotation("FallbackRoute") != null }
             .toList()
             .singleOrNull()
-            ?: resolver.getClassDeclarationByName("com.lightningkite.kiteui.navigation.KiteUiScreen.Empty")!!
+            ?: resolver.getClassDeclarationByName("com.lightningkite.kiteui.navigation.Screen.Empty")!!
 
         val topPackage = allRoutables
             .takeIf { it.isNotEmpty() }

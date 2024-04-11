@@ -22,7 +22,7 @@ actual typealias NImageView = MyImageView
 
 @ViewDsl
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit): Unit = element(NImageView()) {
-    handleTheme(this, viewDraws = true, viewLoads = false,) {
+    handleTheme(this, viewDraws = true, viewLoads = false) {
         clipsToBounds = true
         this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
         setup(ImageView(this))
@@ -55,12 +55,12 @@ actual inline var ImageView.source: ImageSource?
         native.imageSource = value
         when (value) {
             null -> {
-                animateIfAllowed { native.image = null }
+                native.animateIfAllowed { native.image = null }
                 native.informParentOfSizeChange()
             }
 
             is ImageRaw -> {
-                animateIfAllowed { native.image = UIImage(data = value.data.data) }
+                native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
                 native.informParentOfSizeChange()
             }
 
@@ -70,7 +70,7 @@ actual inline var ImageView.source: ImageSource?
                     if (native.imageSource != value) return@launch
                     val image = ImageCache.get(value) { UIImage(data = fetch(value.url).blob().data) }
                     native.endLoad()
-                    animateIfAllowed {
+                    native.animateIfAllowed {
                         native.image = image
                     }
                     native.informParentOfSizeChange()
@@ -78,18 +78,18 @@ actual inline var ImageView.source: ImageSource?
             }
 
             is ImageResource -> {
-                animateIfAllowed { native.image = UIImage.imageNamed(value.name) }
+                native.animateIfAllowed { native.image = UIImage.imageNamed(value.name) }
                 native.informParentOfSizeChange()
             }
 
             is ImageVector -> {
-                animateIfAllowed { native.image = ImageCache.get(value) { value.render() } }
+                native.animateIfAllowed { native.image = ImageCache.get(value) { value.render() } }
                 native.informParentOfSizeChange()
             }
 
             is ImageLocal -> {
                 ImageCache.get(value)?.let {
-                    animateIfAllowed { native.image = it }
+                    native.animateIfAllowed { native.image = it }
                     native.informParentOfSizeChange()
                 } ?: run {
                     native.startLoad()
@@ -102,7 +102,7 @@ actual inline var ImageView.source: ImageSource?
                                 val image = UIImage(data = data)
                                 ImageCache.set(value, image)
                                 if (native.imageSource != value) return@dispatch_async
-                                animateIfAllowed { native.image = image }
+                                native.animateIfAllowed { native.image = image }
                                 native.informParentOfSizeChange()
                             })
                         }
@@ -132,7 +132,7 @@ actual inline var ImageView.description: String?
 @ViewDsl
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) =
     element(PanZoomImageView()) {
-        handleTheme(this, viewDraws = true,) {
+        handleTheme(this, viewDraws = true) {
             setup(ImageView(imageView))
             imageView.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
         }
@@ -172,13 +172,11 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
             val outerSize = this.size
             loadingIndicator.bounds.useContents {
                 val mySize = this.size
-                loadingIndicator.setFrame(
-                    CGRectMake(
-                        outerSize.width / 2 - mySize.width / 2,
-                        outerSize.height / 2 - mySize.height / 2,
-                        mySize.width,
-                        mySize.height
-                    )
+                loadingIndicator.setPsuedoframe(
+                    outerSize.width / 2 - mySize.width / 2,
+                    outerSize.height / 2 - mySize.height / 2,
+                    mySize.width,
+                    mySize.height
                 )
             }
         }

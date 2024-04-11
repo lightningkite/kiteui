@@ -6,8 +6,6 @@ import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
-import com.lightningkite.kiteui.navigation.KiteUiScreen
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
@@ -19,6 +17,8 @@ import platform.objc.sel_registerName
 import kotlin.math.max
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.Property
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
@@ -47,10 +47,11 @@ class NativeLink: UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProto
         super.willRemoveSubview(subview)
     }
 
-    var toScreen: KiteUiScreen? = null
-    var onNavigator: KiteUiNavigator? = null
+    var toScreen: Screen? = null
+    var onNavigator: ScreenStack? = null
     var toUrl: String? = null
     var newTab: Boolean = false
+    var resetsStack: Boolean = false
     var onNavigate: suspend ()->Unit = {}
 
     init {
@@ -58,7 +59,13 @@ class NativeLink: UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProto
     }
 
     @ObjCAction fun clicked() {
-        toScreen?.let { onNavigator?.navigate(it) }
+        toScreen?.let {
+            if(resetsStack) {
+                onNavigator?.reset(it)
+            } else {
+                onNavigator?.navigate(it)
+            }
+        }
         toUrl?.let { UIApplication.sharedApplication.openURL(NSURL(string = it)) }
         calculationContext.launchManualCancel(onNavigate)
     }

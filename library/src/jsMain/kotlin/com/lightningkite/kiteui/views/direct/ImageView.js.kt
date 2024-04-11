@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -35,7 +36,7 @@ actual inline var ImageView.source: ImageSource?
                 setSrc(URL.createObjectURL(value.data))
             }
             is ImageResource -> {
-                setSrc(PlatformNavigator.basePath + value.relativeUrl)
+                setSrc(basePath + value.relativeUrl)
             }
             is ImageLocal -> {
                 setSrc(URL.createObjectURL(value.file))

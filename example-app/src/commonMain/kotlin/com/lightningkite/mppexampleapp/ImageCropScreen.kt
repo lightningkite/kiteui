@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.awaitNotNull
@@ -14,7 +14,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("image-crop")
-object ImageCropScreen : KiteUiScreen {
+object ImageCropScreen : Screen {
     override fun ViewWriter.render() {
         val image = Property<FileReference?>(null)
         val croppedImage = Property<ImageRaw?>(null)

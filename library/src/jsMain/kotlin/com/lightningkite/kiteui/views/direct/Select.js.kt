@@ -34,9 +34,21 @@ actual fun <T> Select.bind(
             list.indexOf(edits.awaitOnce()).toString()
         )
     }
+    var alreadyHandled = false
+    reactiveScope {
+        val newValue = edits.await()
+        val list = data.await()
+        if(alreadyHandled) return@reactiveScope
+        alreadyHandled = true
+        native.__selectOption(list.indexOf(newValue).toString())
+        alreadyHandled = false
+    }
     native.onchange = {
         launch {
+            if(alreadyHandled) return@launch
+            alreadyHandled = true
             native.value.toIntOrNull()?.let { edits set list[it] }
+            alreadyHandled = false
         }
     }
 }

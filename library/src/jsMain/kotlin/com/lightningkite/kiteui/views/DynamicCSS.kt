@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.views.DynamicCSS.toCss
 import com.lightningkite.kiteui.views.direct.reservedScrollingSpace
 import kotlinx.browser.document
@@ -13,6 +14,7 @@ import org.w3c.dom.css.CSSStyleSheet
 import org.w3c.dom.css.get
 import org.w3c.dom.events.Event
 import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 object DynamicCSS {
     val customStyleSheet: CSSStyleSheet by lazy {
@@ -782,7 +784,6 @@ object DynamicCSS {
 
         style(
             ":not(.unkiteui)", mapOf(
-                "transition-duration" to "0.15s",
                 "transition-timing-function" to "linear",
                 "transition-delay" to "0s",
                 "transition-property" to "color, background-image, background-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter",
@@ -965,16 +966,16 @@ object DynamicCSS {
         }
         if (font.direct != null) {
             font.direct.normal?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: normal;src:url('${PlatformNavigator.basePath + it}');}")
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: normal;src:url('${basePath + it}');}")
             }
             font.direct.bold?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: bold;src:url('${PlatformNavigator.basePath + it}');}")
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: bold;src:url('${basePath + it}');}")
             }
             font.direct.italic?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: normal;src:url('${PlatformNavigator.basePath + it}');}")
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: normal;src:url('${basePath + it}');}")
             }
             font.direct.boldItalic?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: bold;src:url('${PlatformNavigator.basePath + it}');}")
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: bold;src:url('${basePath + it}');}")
             }
         }
         return font.cssFontFamilyName
@@ -1027,6 +1028,7 @@ object DynamicCSS {
         return "$offsetX $offsetY $blur $spread #77777799"
     }
 
+    private fun Duration.toCss() = this.toDouble(DurationUnit.SECONDS).toString() + "s"
     private fun Paint.toCss() = when (this) {
         is Color -> this.toWeb()
         is LinearGradient -> "linear-gradient(${angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(stops)})"
@@ -1234,6 +1236,7 @@ object DynamicCSS {
                 "line-height" to theme.body.lineSpacingMultiplier.toString(),
                 "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
                 "outline-color" to theme.outline.toCss(),
+                "transition-duration" to theme.transitionDuration.toCss(),
             )
         )
         style(

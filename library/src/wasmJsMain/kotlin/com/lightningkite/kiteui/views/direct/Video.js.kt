@@ -4,6 +4,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLVideoElement
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
@@ -28,7 +29,7 @@ actual inline var Video.source: VideoSource?
             null -> native.js.src = ""
             is VideoRemote -> native.js.src = value.url
             is VideoRaw -> TODO()
-            is VideoResource -> native.js.src = PlatformNavigator.basePath + value.relativeUrl
+            is VideoResource -> native.js.src = basePath + value.relativeUrl
             is VideoLocal -> native.js.src = URL.createObjectURL(value.file)
             else -> {}
         }

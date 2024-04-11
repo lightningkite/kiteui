@@ -5,14 +5,14 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.lazyExpanding
 
 @Routable("recycler-view")
-object RecyclerViewScreen : KiteUiScreen {
+object RecyclerViewScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
@@ -22,7 +22,7 @@ object RecyclerViewScreen : KiteUiScreen {
         var recyclerView: RecyclerView? = null
         col {
             row {
-                for(align in Align.values()) {
+                for (align in Align.values()) {
                     expanding - button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, false) }
@@ -30,7 +30,7 @@ object RecyclerViewScreen : KiteUiScreen {
                 }
             }
             row {
-                for(align in Align.values()) {
+                for (align in Align.values()) {
                     expanding - button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, true) }
@@ -49,11 +49,11 @@ object RecyclerViewScreen : KiteUiScreen {
             recyclerView {
                 recyclerView = this
                 spacing = 0.5.rem
-                columns = 2
+//                columns = 2
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
                     themeFromLast { theme ->
-                        if(it.await() == 50) theme.important() else if(it.await() % 7 == 0) theme.hover() else theme
+                        if (it.await() == 50) theme.important() else if (it.await() % 7 == 0) theme.hover() else theme
                     } - col {
                         row {
                             expanding - centered - text { ::content { "Item ${it.await()}" } }
@@ -62,39 +62,20 @@ object RecyclerViewScreen : KiteUiScreen {
                                     ::content { if (expanded.await() == it.await()) "Expanded" else "Expand" }
                                 }
                                 onClick {
-                                    expanded.value = if(it.await() == expanded.value) -1 else it.await()
+                                    expanded.value = if (it.await() == expanded.value) -1 else it.await()
                                     native.scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }
-                        lazyExpanding(shared { expanded.await() == it.await() }) {
-                            col {
-                                ::exists
-                                text { ::content { "Content for ${it.await()} == ${expanded.await()}" } }
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                                text("More Content")
-                            }
+                        onlyWhen { expanded.await() == it.await() } - col {
+                            text { ::content { "Content for ${it.await()} == ${expanded.await()}" } }
+                            text("More Content")
+                            text("More Content")
+                            text("More Content")
+                            text("More Content")
+                            text("More Content")
                         }
+
                     }
                 }
             } in weight(1f)

@@ -2,9 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.navigation.KiteUiNavigator
 import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
@@ -16,15 +16,19 @@ import timber.log.Timber
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NLink = LinkFrameLayout
 
-actual var Link.to: KiteUiScreen
+actual var Link.to: Screen
     get() = TODO()
     set(value) {
         native.setOnClickListener {
-            native.navigator.navigate(value)
+            if(native.resetsStack) {
+                native.navigator.reset(value)
+            } else {
+                native.navigator.navigate(value)
+            }
             calculationContext.launchManualCancel { native.onNavigate() }
         }
     }
-actual var Link.navigator: KiteUiNavigator
+actual var Link.navigator: ScreenStack
     get() = native.navigator
     set(value) {
         native.navigator = value
@@ -36,6 +40,13 @@ actual var Link.newTab: Boolean
     set(value) {
         Timber.d("New Tab called with value $value")
     }
+
+actual var Link.resetsStack: Boolean
+    get() = native.resetsStack
+    set(value) {
+        native.resetsStack = value
+    }
+
 actual fun Link.onNavigate(action: suspend () -> Unit): Unit {
     native.onNavigate = action
 }

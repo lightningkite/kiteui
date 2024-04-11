@@ -17,6 +17,7 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIImageView
 import platform.UIKit.UIView
 import kotlin.math.min
+import kotlin.time.DurationUnit
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -47,7 +48,7 @@ fun ViewWriter.handleTheme(
             firstTime = false
             action()
         } else {
-            animateIfAllowed(action)
+            view.animateIfAllowed(action)
         }
     }
 
@@ -66,6 +67,7 @@ fun ViewWriter.handleTheme(
 
     view.calculationContext.reactiveScope {
         val theme = currentTheme()
+        view.extensionAnimationDuration = theme.transitionDuration.toDouble(DurationUnit.SECONDS)
         val shouldTransition = when (transition) {
             ViewWriter.TransitionNextView.No -> false
             ViewWriter.TransitionNextView.Yes -> true

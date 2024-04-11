@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.navigation.KiteUiScreen
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
 @Routable("sample/websockets")
-object WebSocketScreen : KiteUiScreen {
+object WebSocketScreen : Screen {
     override fun ViewWriter.render() {
         val socket = shared {
             retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/").also { use(it) }

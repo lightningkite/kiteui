@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.dom.HTMLAudioElement
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.navigation.basePath
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.ArrayBuffer
@@ -66,7 +67,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
                     }
 
                     is AudioResource -> {
-                        val response = window.fetch(PlatformNavigator.basePath + sound.relativeUrl).await()
+                        val response = window.fetch(basePath + sound.relativeUrl).await()
                         val arrayBuffer = response.arrayBuffer().await()
                         context.decodeAudioData(arrayBuffer).await()
                     }
@@ -151,7 +152,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             null -> native.src = ""
             is AudioRemote -> native.src = value.url
             is AudioRaw -> native.src = URL.createObjectURL(Blob(arrayOf(value.data)))
-            is AudioResource -> native.src = PlatformNavigator.basePath + value.relativeUrl
+            is AudioResource -> native.src = basePath + value.relativeUrl
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
             else -> {}
         }
