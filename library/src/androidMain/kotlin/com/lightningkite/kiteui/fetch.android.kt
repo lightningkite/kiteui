@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
@@ -57,22 +58,10 @@ actual suspend fun fetch(
                         }
 
                         is RequestBodyFile -> {
-                            val length =
-                                AndroidAppContext.applicationCtx.contentResolver.openAssetFileDescriptor(
-                                    body.content.uri,
-                                    "r"
-                                )
-                                    ?.use {
-                                        it.length
-                                    } ?: -1L
-                            val type = AndroidAppContext.applicationCtx.contentResolver.getType(body.content.uri)
-                                ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                    MimeTypeMap.getFileExtensionFromUrl(body.content.uri.toString())
-                                ) ?: "application/octet-stream"
-                            contentType(ContentType.parse(type))
-                            setBody(
-                                body.content.uri.path?.let { File(it).readBytes() }
-                            )
+                            contentType(ContentType.parse(body.content.mimeType()))
+                            with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
+                                this?.readBytes()?.let { setBody(it) }
+                            }
                         }
 
                         is RequestBodyText -> {
@@ -281,9 +270,13 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class FileReference(val uri: Uri)
 
 
-actual fun FileReference.mimeType(): String {
-    return AndroidAppContext.applicationCtx.contentResolver.getType(uri) ?: "*/*"
-}
+actual fun FileReference.mimeType() = when(uri.scheme) {
+    ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
+    ContentResolver.SCHEME_FILE ->
+        MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
+    ContentResolver.SCHEME_ANDROID_RESOURCE -> null
+    else -> null
+} ?: "*/*"
 
 actual fun FileReference.fileName(): String {
     return AndroidAppContext.applicationCtx.contentResolver
