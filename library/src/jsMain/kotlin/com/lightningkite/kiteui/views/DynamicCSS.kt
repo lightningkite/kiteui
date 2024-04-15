@@ -1165,26 +1165,31 @@ object DynamicCSS {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
         style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded)", ".padded:not(.unpadded):not(.swapImage)"), mapOf(
+            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"), mapOf(
                 "padding" to "var(--spacing, 0px)",
                 "--usePadding" to "1",
             )
         )
         style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *", ".padded:not(.unpadded):not(.swapImage) > *"), mapOf(
+            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"), mapOf(
                 "--parentSpacing" to theme.spacing.value,
             )
         )
         style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
             when (val it = theme.background) {
-                is Color -> mapOf("background-color" to it.toCss())
+                is Color -> mapOf(
+                    "background-color" to it.toCss(),
+                    "background-image" to "none",
+                )
                 is LinearGradient -> mapOf(
+                    "background-color" to it.closestColor().toCss(),
                     "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
 
                 is RadialGradient -> mapOf(
+                    "background-color" to it.closestColor().toCss(),
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
