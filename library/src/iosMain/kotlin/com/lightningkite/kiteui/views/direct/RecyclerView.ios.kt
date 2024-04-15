@@ -436,6 +436,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                             // Force to bottom
                             viewportOffset = allSubviews.last().let { it.startPosition + it.size } - viewportSize
                         }
+                        populate()
                     } else {
                         populate()
                     }

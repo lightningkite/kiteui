@@ -71,9 +71,9 @@ fun ImageView.setSrc(url: String) {
     newElement.style.opacity = "0"
     val now = clockMillis()
     newElement.onload = label@{
-        native.style.setProperty("aspect-ratio",
-            (newElement.naturalWidth.toDouble() / newElement.naturalHeight).toString()
-        )
+//        native.style.setProperty("aspect-ratio",
+//            (newElement.naturalWidth.toDouble() / newElement.naturalHeight).toString()
+//        )
         val children = (0..<native.children.length).mapNotNull { native.children[it] }
         val myIndex = children.indexOf(newElement)
         if(myIndex == -1) return@label Unit

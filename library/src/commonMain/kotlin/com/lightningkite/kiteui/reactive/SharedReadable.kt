@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.printStackTrace2
 
-class SharedReadable<T>(private val action: suspend CalculationContext.() -> T) : Readable<T> {
+class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val action: suspend CalculationContext.() -> T) : Readable<T> {
     val removers = ArrayList<() -> Unit>()
     val ctx = object : CalculationContext {
         override fun onRemove(action: () -> Unit) {
@@ -17,7 +17,9 @@ class SharedReadable<T>(private val action: suspend CalculationContext.() -> T) 
     private fun startupIfNeeded() {
         if (listening) return
         listening = true
-        ctx.reactiveScope {
+        ctx.reactiveScope(onLoad = {
+            if(!useLastWhileLoading) state = ReadableState.notReady
+        }) {
             try {
                 val result = ReadableState(action(ctx))
                 if (result == state) return@reactiveScope
@@ -75,5 +77,14 @@ class SharedReadable<T>(private val action: suspend CalculationContext.() -> T) 
  * - Inside a reactive scope, [Readable.await] starts the whole system listening and sharing the calculation.
  */
 fun <T> shared(action: suspend CalculationContext.() -> T): Readable<T> {
-    return SharedReadable(action)
+    return SharedReadable(action = action)
+}
+/**
+ * Desired behavior for shared:
+ *
+ * - Outside a reactive scope, [Readable.await] invokes the action with no sharing
+ * - Inside a reactive scope, [Readable.await] starts the whole system listening and sharing the calculation.
+ */
+fun <T> shared(useLastWhileLoading: Boolean, action: suspend CalculationContext.() -> T): Readable<T> {
+    return SharedReadable(useLastWhileLoading = useLastWhileLoading, action = action)
 }

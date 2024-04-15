@@ -180,8 +180,8 @@ private fun ViewWriter.navGroupTopInner(readable: Readable<List<NavElement>>) {
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
                 text { ::content { it.title() } }
-            } in hasPopover { _ ->
-                card - navGroupColumn(shared { it.children() })
+            } in hasPopover { context ->
+                card - navGroupColumn(shared { it.children() }, onNavigate = { context.close() })
             }
 
             is NavLink -> link {

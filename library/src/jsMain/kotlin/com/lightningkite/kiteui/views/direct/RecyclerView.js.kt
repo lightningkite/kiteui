@@ -370,15 +370,15 @@ class RecyclerController2(
                         } else if (outOfBoundsBottom) {
                             (value.max - allSubviews.last().index).coerceAtLeast(value.min - allSubviews.first().index)
                         } else 0
-                        allSubviews.forEach {
+                        allSubviews.toList().forEach {
                             it.index += shift
                             if (it.index in value.min..value.max) {
-                                it.visible = true
                                 it.element.withoutAnimation {
                                     rendererDirect.updateAny(it.element, value[it.index])
                                 }
                             } else {
-                                it.visible = false
+                                contentHolder.removeNView(it.element)
+                                allSubviews.remove(it)
                             }
                         }
                         if (shift > 0) {
@@ -656,15 +656,15 @@ class RecyclerController2(
                     else if (rowIndex > existingBottom)
                         (rowIndex - existingBottom)
                     else 0
-                    allSubviews.forEach {
+                    allSubviews.toList().forEach {
                         it.index += shift
                         if (it.index in dataDirect.min..dataDirect.max) {
-                            it.visible = true
                             it.element.withoutAnimation {
                                 rendererDirect.updateAny(it.element, dataDirect[it.index])
                             }
                         } else {
-                            it.visible = false
+                            contentHolder.removeNView(it.element)
+                            allSubviews.remove(it)
                         }
                     }
                 }
@@ -691,16 +691,16 @@ class RecyclerController2(
                 val shift = (rowIndex - existingIndex)
                     .coerceAtMost(dataDirect.max - allSubviews.last().index)
                     .coerceAtLeast(dataDirect.min - allSubviews.first().index)
-                allSubviews.forEach {
+                allSubviews.toList().forEach {
                     it.index += shift
                     if (it.index == rowIndex) target = it
                     if (it.index in dataDirect.min..dataDirect.max) {
-                        it.visible = true
                         it.element.withoutAnimation {
                             rendererDirect.updateAny(it.element, dataDirect[it.index])
                         }
                     } else {
-                        it.visible = false
+                        contentHolder.removeNView(it.element)
+                        allSubviews.remove(it)
                     }
                 }
                 viewportOffset = when (align) {
@@ -774,12 +774,6 @@ class RecyclerController2(
                 size = element.scrollSize
             }
         }
-
-        var visible: Boolean
-            get() = element.exists
-            set(value) {
-                element.exists = value
-            }
 
         fun placeBefore(top: Int): Int {
             startPosition = top - size - spacing
