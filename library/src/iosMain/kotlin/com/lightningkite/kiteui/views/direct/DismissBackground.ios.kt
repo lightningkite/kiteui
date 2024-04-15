@@ -27,7 +27,7 @@ actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissB
 
 fun FrameLayoutButton.__dismissBackgroundOtherSetupX(navigator: ScreenStack) {
     DismissBackground(this).onClick {
-        navigator.dismiss()
+        navigator.clear()
     }
 }
 fun FrameLayoutButton.__dismissBackgroundOtherSetup() {
