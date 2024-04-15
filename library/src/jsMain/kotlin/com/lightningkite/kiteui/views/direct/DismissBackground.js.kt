@@ -14,7 +14,7 @@ actual typealias NDismissBackground = HTMLElement
 actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit): Unit {
     stack {
         native.classList.add("dismissBackground")
-        native.onclick = { navigator.dismiss() }
+        native.onclick = { navigator.clear() }
         setup(DismissBackground(native))
         native.listNViews().forEach { it.onclick = { ev -> ev.stopImmediatePropagation() } }
     }

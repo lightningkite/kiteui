@@ -14,7 +14,7 @@ actual class NDismissBackground(override val js: HTMLElement): NView2<HTMLElemen
 actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit): Unit {
     stack {
         native.js.classList.add("dismissBackground")
-        native.js.onclick = { navigator.dismiss() }
+        native.js.onclick = { navigator.clear() }
         setup(DismissBackground(NDismissBackground(native.js)))
         native.listNViews().forEach { it.js.onclick = { ev -> ev.stopImmediatePropagation() } }
     }

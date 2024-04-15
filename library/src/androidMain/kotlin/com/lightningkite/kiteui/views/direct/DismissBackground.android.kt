@@ -21,7 +21,7 @@ actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissB
         view.setBackgroundColor(it.background.closestColor().copy(alpha = 0.5f).toInt())
     }) {
         setOnClickListener {
-            navigator.dismiss()
+            navigator.clear()
         }
         setup(DismissBackground(this))
         listNViews().forEach {
