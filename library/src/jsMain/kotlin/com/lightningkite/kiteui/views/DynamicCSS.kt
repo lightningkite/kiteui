@@ -1183,13 +1183,11 @@ object DynamicCSS {
                     "background-image" to "none",
                 )
                 is LinearGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
                     "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
 
                 is RadialGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
