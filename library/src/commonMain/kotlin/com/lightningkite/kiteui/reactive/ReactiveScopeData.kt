@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.cancel
 import com.lightningkite.kiteui.childCancellation
 import com.lightningkite.kiteui.suspendCoroutineCancellable
@@ -15,28 +14,31 @@ class ReactiveScopeData(
     internal val latestPass: ArrayList<ResourceUse> = ArrayList()
     override val key: CoroutineContext.Key<ReactiveScopeData> = Key
     internal var previousContext: CoroutineContext? = null
+    private var notifiedCalculationContextOfStart = false
 
     internal fun run() {
         val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
-        previousContext?.cancel()
-        previousContext = context
+        previousContext.let {
+            previousContext = context
+            it?.cancel()
+        }
         latestPass.clear()
 
         var done = false
-        var loadStarted = false
 
         action.startCoroutine(object : Continuation<Unit> {
             override val context: CoroutineContext = context
 
             // called when a coroutine ends. do nothing.
             override fun resumeWith(result: Result<Unit>) {
+                if (previousContext !== context) return
                 done = true
-                if (loadStarted) {
+                if (notifiedCalculationContextOfStart) {
+                    notifiedCalculationContextOfStart = false
                     calculationContext.notifyLongComplete(result)
                 } else {
                     calculationContext.notifyComplete(result)
                 }
-                if (previousContext !== context) return
                 for (entry in removers.entries.toList()) {
                     if (entry.key !in latestPass) {
                         entry.value()
@@ -46,9 +48,9 @@ class ReactiveScopeData(
             }
         })
 
-        if (!done) {
+        if (!done && !notifiedCalculationContextOfStart) {
             // start load
-            loadStarted = true
+            notifiedCalculationContextOfStart = true
             calculationContext.notifyStart()
             onLoad?.invoke()
         }
