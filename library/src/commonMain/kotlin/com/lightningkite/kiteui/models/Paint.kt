@@ -24,7 +24,8 @@ data class LinearGradient(
             HSVColor(
                 hue = it.map { it.hue.turns }.average().let(::Angle),
                 value = it.map { it.value }.average().toFloat(),
-                saturation = it.map { it.saturation }.average().toFloat()
+                saturation = it.map { it.saturation }.average().toFloat(),
+                alpha = stops.map { it.color.alpha }.average().toFloat()
             )
         }.toRGB()
     }

@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.cancel
 import com.lightningkite.kiteui.childCancellation
 import com.lightningkite.kiteui.suspendCoroutineCancellable
@@ -39,8 +38,10 @@ class ReactiveScopeData(
     internal fun run() {
 //        println("Calculating $this")
         val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
-        previousContext?.cancel()
-        previousContext = context
+        previousContext.let {
+            previousContext = context
+            it?.cancel()
+        }
         latestPass.clear()
 
         var done = false
@@ -49,9 +50,9 @@ class ReactiveScopeData(
 
             // called when a coroutine ends. do nothing.
             override fun resumeWith(result: Result<Unit>) {
+                if (previousContext !== context) return
                 done = true
                 runningLong = result
-                if (previousContext !== context) return
                 for (entry in removers.entries.toList()) {
                     if (entry.key !in latestPass) {
                         entry.value()
