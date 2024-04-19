@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.utils.commaString
 import kotlin.jvm.JvmName
 
 
@@ -57,6 +58,19 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
             action(this@withWrite, value)
         }
     }
+
+fun <T: Any> Writable<T>.nullable(): Writable<T?> = shared { this@nullable.await() }
+    .withWrite { it?.let { this@nullable set it } }
+fun <T: Any> Writable<T?>.notNull(default: T): Writable<T> = shared { this@notNull.await() ?: default }
+    .withWrite { this@notNull set it }
+
+@JvmName("writableStringAsDouble")
+fun Writable<String>.asDouble(): Writable<Double?> = shared { this@asDouble.await().filter { it.isDigit() || it == '.' }.toDoubleOrNull() }
+    .withWrite { this@asDouble set (it?.commaString() ?: "") }
+
+@JvmName("writableIntAsDouble")
+fun Writable<Int?>.asDouble(): Writable<Double?> = shared { this@asDouble.await()?.toDouble() }
+    .withWrite { this@asDouble set it?.toInt() }
 
 @JvmName("writableIntAsString")
 fun Writable<Int>.asString(): Writable<String> = shared { this@asString.await().toString() }

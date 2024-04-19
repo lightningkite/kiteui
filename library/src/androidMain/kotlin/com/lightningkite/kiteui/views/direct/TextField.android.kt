@@ -1,14 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.text.InputType
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.KeyEvent
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.models.KeyboardCase
-import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.kiteui.models.KeyboardType
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewAction
 import com.lightningkite.kiteui.views.ViewDsl
@@ -110,29 +111,36 @@ actual var TextField.hint: String
     set(value) {
         this@hint.native.hint = value
     }
-actual var TextField.range: ClosedRange<Double>?
+actual var TextField.align: Align
     get() {
-        return native.tag as? ClosedRange<Double>
+        return when (native.gravity) {
+            Gravity.START -> Align.Start
+            Gravity.END -> Align.End
+            Gravity.CENTER -> Align.Center
+            Gravity.CENTER_VERTICAL -> Align.Start
+            Gravity.CENTER_HORIZONTAL -> Align.Center
+            else -> Align.Start
+        }
     }
     set(value) {
-        if (value == null) return
-
-        native.tag = value
-        native.doAfterTextChanged {
-            try {
-                if (it == null) return@doAfterTextChanged
-
-                val string = it.toString()
-                val doubleValue = string.toDouble()
-                if (doubleValue < value.start || doubleValue > value.endInclusive) {
-                    val newValue = doubleValue.coerceIn(value)
-                    it.clear()
-                    it.append(newValue.toString())
+        when (value) {
+            Align.Start -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
+            Align.End -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_END
+            Align.Center -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_CENTER
+            Align.Stretch -> {
+                native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
+                native.updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.width = ViewGroup.LayoutParams.MATCH_PARENT
                 }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
             }
         }
+    }
+actual var TextField.textSize: Dimension
+    get() {
+        return Dimension(native.textSize)
+    }
+    set(value) {
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
     }
 
 @ViewDsl

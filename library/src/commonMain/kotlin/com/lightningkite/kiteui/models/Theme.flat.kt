@@ -90,6 +90,7 @@ fun Theme.Companion.flat(
     field = {
         copy(
             outlineWidth = 1.px,
+            background = background.closestColor(),
         )
     },
     bar = { null },

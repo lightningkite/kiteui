@@ -16,26 +16,41 @@ class ReactiveScopeData(
     override val key: CoroutineContext.Key<ReactiveScopeData> = Key
     internal var previousContext: CoroutineContext? = null
 
+    var runningLong: Result<Unit>? = Result.success(Unit)
+        set(value) {
+            if((field == null) != (value == null)) {
+                if(value != null) {
+                    calculationContext.notifyLongComplete(value)
+                } else {
+                    onLoad?.invoke()
+                    calculationContext.notifyStart()
+                }
+            } else if(value != null) {
+                calculationContext.notifyComplete(value)
+            }
+            field = value
+        }
+
+    internal fun setLoading() {
+//        println("Skip calc attempt $this")
+        runningLong = null
+    }
+
     internal fun run() {
+//        println("Calculating $this")
         val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
         previousContext?.cancel()
         previousContext = context
         latestPass.clear()
 
         var done = false
-        var loadStarted = false
-
         action.startCoroutine(object : Continuation<Unit> {
             override val context: CoroutineContext = context
 
             // called when a coroutine ends. do nothing.
             override fun resumeWith(result: Result<Unit>) {
                 done = true
-                if (loadStarted) {
-                    calculationContext.notifyLongComplete(result)
-                } else {
-                    calculationContext.notifyComplete(result)
-                }
+                runningLong = result
                 if (previousContext !== context) return
                 for (entry in removers.entries.toList()) {
                     if (entry.key !in latestPass) {
@@ -48,9 +63,7 @@ class ReactiveScopeData(
 
         if (!done) {
             // start load
-            loadStarted = true
-            calculationContext.notifyStart()
-            onLoad?.invoke()
+            runningLong = null
         }
     }
 
@@ -70,9 +83,9 @@ class ReactiveScopeData(
     }
 
     object Key : CoroutineContext.Key<ReactiveScopeData> {
-//        init {
-//            println("ReactiveScopeData V6")
-//        }
+        init {
+//            println("ReactiveScopeData V7")
+        }
     }
 }
 
@@ -105,24 +118,48 @@ suspend fun <T> Readable<T>.await(): T {
         val state = state
         if(state.ready) {
             // and the value is ready to go, just add the listener and proceed with the value.
-            rerunOn(this@await)
+            if (!it.removers.containsKey(this)) {
+//                println("ReactiveScope $it adding listener to $this")
+                it.removers[this] = this.addListener {
+//                    println("ReactiveScope $it READABLE LISTENER HIT A")
+                    if(this.state.ready) {
+                        it.run()
+                    } else {
+                        // Don't even bother trying to calculate, since we don't have data yet.
+                        it.setLoading()
+                    }
+                }
+            } else {
+//                println("ReactiveScope $it already depends on $this")
+            }
+            it.latestPass.add(this)
             state.get()
         } else {
             // If we're already listening to it, just 'await once'
             val listenable = this@await
-            if (it.removers.containsKey(listenable)) return@let awaitOnce()
+            if (it.removers.containsKey(listenable)) {
+//                println("ReactiveScope $it already depends on $this")
+                return@let awaitOnce()
+            }
             // otherwise, wait for the first instance of it
             suspendCoroutineCancellable { cont ->
                 var runOnce = false
+//                println("ReactiveScope $it adding listener to $this")
                 val remover = listenable.addListener {
+//                    println("ReactiveScope $it READABLE LISTENER HIT B")
                     // The first time the listener runs, resume.  After that, rerun the whole scope.
                     val state = this@await.state
-                    if(state.ready) {
-                        if(runOnce) it.run()
-                        else {
-                            runOnce = true
-                            cont.resumeState(state)
+                    if(runOnce) {
+                        if(state.ready) {
+                            it.run()
+                        } else {
+                            it.setLoading()
                         }
+                    } else if(state.ready) {
+                        runOnce = true
+                        cont.resumeState(state)
+                    } else {
+//                        println("ReactiveScope $it no resume")
                     }
                 }
                 it.latestPass.add(listenable)

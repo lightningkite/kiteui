@@ -240,6 +240,30 @@ class ReactivityTests {
             s2.value = "C"
         }
     }
+
+    @Test fun scopeSkippedIfLoading() {
+        val source = LateInitProperty<Int>()
+        var starts = 0
+        var hits = 0
+        testContext {
+            reactiveScope {
+                starts++
+                source()
+                hits++
+            }
+            assertEquals(1, starts)
+            assertEquals(0, hits)
+            source.value = 1
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.unset()
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.value = 2
+            assertEquals(2, starts)
+            assertEquals(2, hits)
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {
@@ -262,6 +286,22 @@ class VirtualDelay<T>(val action: () -> T) {
         ready = true
         for(continuation in continuations) {
             continuation.resume(value)
+        }
+        continuations.clear()
+    }
+}
+
+class VirtualDelayer() {
+    val continuations = ArrayList<Continuation<Unit>>()
+    suspend fun await(): Unit {
+        return suspendCoroutineCancellable {
+            continuations.add(it)
+            return@suspendCoroutineCancellable {}
+        }
+    }
+    fun go() {
+        for(continuation in continuations) {
+            continuation.resume(Unit)
         }
         continuations.clear()
     }

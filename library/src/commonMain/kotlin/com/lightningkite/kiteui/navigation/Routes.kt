@@ -13,6 +13,9 @@ class Routes(
 ) {
     fun render(screen: Screen) = renderers.get(screen::class)?.invoke(screen)
     fun parse(path: UrlLikePath) = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+    fun parseOrFallback(path: UrlLikePath) = try { parse(path) } catch(e: Exception) {
+        fallback
+    }
 }
 
 data class RouteRendered(

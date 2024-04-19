@@ -18,6 +18,7 @@ actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Uni
     setup(Link(this))
 }
 
+// TODO: Make this a generator
 actual inline var Link.to: Screen
     get() = this.native.asDynamic().__ROCK__screen as Screen
     set(value) {

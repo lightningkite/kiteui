@@ -266,7 +266,35 @@ actual var TextField.action: Action?
 actual inline var TextField.hint: String
     get() = TODO()
     set(value) {}
-actual inline var TextField.range: ClosedRange<Double>?
+actual var TextField.align: Align
+    get() = TODO()
+    set(value) {}
+actual var TextField.textSize: Dimension
+    get() = TODO()
+    set(value) {}
+
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+actual typealias NNumberField = HTMLElement
+
+@ViewDsl
+actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.() -> Unit): Unit = todo("textField")
+actual val NumberField.content: Writable<Double?> get() = Property(null)
+actual inline var NumberField.keyboardHints: KeyboardHints
+    get() = TODO()
+    set(value) {}
+actual var NumberField.action: Action?
+    get() = TODO()
+    set(value) {}
+actual inline var NumberField.hint: String
+    get() = TODO()
+    set(value) {}
+actual inline var NumberField.range: ClosedRange<Double>?
+    get() = TODO()
+    set(value) {}
+actual var NumberField.align: Align
+    get() = TODO()
+    set(value) {}
+actual var NumberField.textSize: Dimension
     get() = TODO()
     set(value) {}
 

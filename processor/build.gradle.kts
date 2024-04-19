@@ -17,6 +17,7 @@ dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:$kspVersion")
     implementation("org.jetbrains.kotlin:kotlin-compiler:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    testImplementation("junit:junit:4.13.2")
 }
 
 standardPublishing {
