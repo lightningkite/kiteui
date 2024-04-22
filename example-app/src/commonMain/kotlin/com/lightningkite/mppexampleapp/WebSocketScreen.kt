@@ -16,7 +16,7 @@ import kotlin.random.Random
 object WebSocketScreen : Screen {
     override fun ViewWriter.render() {
         val socket = shared {
-            retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/").also { use(it) }
+            retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/", 30_000L).also { use(it) }
         }
         val mostRecent = shared { socket.await().mostRecentMessage }
         col {
