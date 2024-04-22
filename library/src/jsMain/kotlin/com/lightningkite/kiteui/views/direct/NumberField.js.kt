@@ -3,22 +3,39 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.asDouble
+import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlinx.browser.window
 import org.w3c.dom.HTMLInputElement
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NTextField = HTMLInputElement
+actual typealias NNumberField = HTMLInputElement
 
 @ViewDsl
-actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit): Unit =
+actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.() -> Unit): Unit =
     themedElementEditable<HTMLInputElement>("input") {
-        setup(TextField(this))
+        addEventListener("input", {
+            numberAutocommaRepair(
+                dirty = value,
+                selectionStart = selectionStart,
+                selectionEnd = selectionEnd,
+                setResult = {
+                    println("Repairing to $it")
+                    value = it
+                            },
+                setSelectionRange = {start, end, -> setSelectionRange(start, end)}
+            )
+        })
+        setup(NumberField(this).also {
+            it.keyboardHints = KeyboardHints.decimal
+            it.align = Align.End
+        })
     }
 
-actual val TextField.content: Writable<String> get() = native.vprop("input", { value }, { value = it })
-actual inline var TextField.keyboardHints: KeyboardHints
+actual val NumberField.content: Writable<Double?> get() = native.vprop("input", { value }, { value = it }).asDouble()
+actual inline var NumberField.keyboardHints: KeyboardHints
     get() = TODO()
     set(value) {
         native.type = when (value.type) {
@@ -61,7 +78,7 @@ actual inline var TextField.keyboardHints: KeyboardHints
             }
         }
     }
-actual var TextField.action: Action?
+actual var NumberField.action: Action?
     get() = TODO()
     set(value) {
         native.onkeyup = if (value == null) null else { ev ->
@@ -72,12 +89,27 @@ actual var TextField.action: Action?
             }
         }
     }
-actual inline var TextField.hint: String
+actual inline var NumberField.hint: String
     get() = native.placeholder
     set(value) {
         native.placeholder = value
     }
-actual inline var TextField.align: Align
+actual inline var NumberField.range: ClosedRange<Double>?
+    get() {
+        if (native.min.isBlank()) return null
+        if (native.max.isBlank()) return null
+        return native.min.toDouble()..native.max.toDouble()
+    }
+    set(value) {
+        value?.let {
+            native.min = it.start.toString()
+            native.max = it.endInclusive.toString()
+        } ?: run {
+            native.removeAttribute("min")
+            native.removeAttribute("max")
+        }
+    }
+actual inline var NumberField.align: Align
     get() = when (window.getComputedStyle(native).textAlign) {
         "start" -> Align.Start
         "center" -> Align.Center
@@ -93,7 +125,7 @@ actual inline var TextField.align: Align
             Align.Stretch -> "justify"
         }
     }
-actual inline var TextField.textSize: Dimension
+actual inline var NumberField.textSize: Dimension
     get() = Dimension(window.getComputedStyle(native).fontSize)
     set(value) {
         native.style.fontSize = value.value

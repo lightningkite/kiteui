@@ -12,10 +12,10 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NTextField = UITextField
+actual typealias NNumberField = UITextField
 
 @ViewDsl
-actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit): Unit = stack {
+actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.() -> Unit): Unit = stack {
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
@@ -26,25 +26,25 @@ actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> 
             calculationContext.onRemove {
                 extensionStrongRef = null
             }
-            setup(TextField(this))
+            setup(NumberField(this).also { it.keyboardHints = KeyboardHints.decimal; it.align = Align.End })
         }
     }
 }
 
-actual val TextField.content: Writable<String>
-    get() = object : Writable<String> {
-        override val state get() = ReadableState(native.text ?: "")
+actual val NumberField.content: Writable<Double?>
+    get() = object : Writable<Double?> {
+        override val state get() = ReadableState((native.text ?: "")?.toDoubleOrNull())
         override fun addListener(listener: () -> Unit): () -> Unit {
             return native.onEvent(UIControlEventEditingChanged) {
                 listener()
             }
         }
 
-        override suspend fun set(value: String) {
-            native.text = value
+        override suspend fun set(value: Double?) {
+            native.text = value?.toString() ?: ""
         }
     }
-actual inline var TextField.keyboardHints: KeyboardHints
+actual inline var NumberField.keyboardHints: KeyboardHints
     get() = TODO()
     set(value) {
         native.autocapitalizationType = when (value.case) {
@@ -61,7 +61,7 @@ actual inline var TextField.keyboardHints: KeyboardHints
             KeyboardType.Email -> UIKeyboardTypeEmailAddress
         }
     }
-actual var TextField.action: Action?
+actual var NumberField.action: Action?
     get() = TODO()
     set(value) {
         native.delegate = value?.let {
@@ -90,12 +90,15 @@ actual var TextField.action: Action?
             else -> UIReturnKeyType.UIReturnKeyDone
         }
     }
-actual inline var TextField.hint: String
+actual inline var NumberField.hint: String
     get() = native.placeholder ?: ""
     set(value) {
         native.placeholder = value
     }
-actual inline var TextField.align: Align
+actual inline var NumberField.range: ClosedRange<Double>?
+    get() = TODO()
+    set(value) {}
+actual inline var NumberField.align: Align
     get() = when (native.textAlignment) {
         NSTextAlignmentLeft -> Align.Start
         NSTextAlignmentCenter -> Align.Center
@@ -117,7 +120,7 @@ actual inline var TextField.align: Align
             Align.Stretch -> NSTextAlignmentJustified
         }
     }
-actual inline var TextField.textSize: Dimension
+actual inline var NumberField.textSize: Dimension
     get() = native.font?.pointSize?.let(::Dimension) ?: 1.rem
     set(value) {
         native.extensionFontAndStyle?.let {

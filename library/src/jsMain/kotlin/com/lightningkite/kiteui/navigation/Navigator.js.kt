@@ -21,13 +21,13 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
         println("Finding $urlBar in ${storedStack.value}, index $goToIndex")
         if (goToIndex == -1) {
             println("Could not find, pushing")
-            val newScreen = (routes.parse(urlBar) ?: routes.fallback)
-            this.stack.value = storedStack.value.mapNotNull { routes.parse(UrlLikePath.fromUrlString(it)) } + newScreen
+            val newScreen = (routes.parseOrFallback(urlBar) ?: routes.fallback)
+            this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newScreen
             routes.render(newScreen)?.let { storedStack.value += it.urlLikePath.render() }
         } else {
             println("Found, popping backwards")
             storedStack.value = storedStack.value.subList(0, goToIndex + 1)
-            this.stack.value = storedStack.value.mapNotNull { routes.parse(UrlLikePath.fromUrlString(it)) }
+            this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) }
         }
     }
     guessAndImplementFromUrlBar()

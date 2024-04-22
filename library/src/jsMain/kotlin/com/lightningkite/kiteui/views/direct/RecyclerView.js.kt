@@ -379,15 +379,21 @@ class RecyclerController2(
                             } else {
                                 contentHolder.removeNView(it.element)
                                 allSubviews.remove(it)
+//                                println("Removing ${it.index} due to out of bounds")
                             }
                         }
                         if (shift > 0) {
                             // Force to top
-                            viewportOffset = allSubviews.first().startPosition
+                            if(allSubviews.first().startPosition < 0) {
+                                offsetWholeSystem(-allSubviews.first().startPosition)
+                            } else {
+                                viewportOffset = allSubviews.first().startPosition
+                            }
                         } else if (shift < 0) {
                             // Force to bottom
                             viewportOffset = allSubviews.last().let { it.startPosition + it.size } - viewportSize
                         }
+                        populate()
                     } else {
                         populate()
                     }
@@ -424,6 +430,7 @@ class RecyclerController2(
     var viewportOffset: Int
         get() = _viewportOffsetField
         set(value) {
+            if(value < 0) IllegalStateException("Offset cannot be $value").printStackTrace2()
             _viewportOffsetField = value
             suppressTrueScroll = true
             contentHolder.scrollStart = value.toDouble()
@@ -598,13 +605,17 @@ class RecyclerController2(
             ) {
                 // shift and attach to top
                 if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
+//                    println("Attach to top - ${allSubviews.first().startPosition} -> offset ${-allSubviews.first().startPosition + padding} ")
                     offsetWholeSystem(-allSubviews.first().startPosition + padding)
+                    populate()
                 }
             } else {
                 if (viewportOffset > reservedScrollingSpace) {
                     offsetWholeSystem(reservedScrollingSpace / -2)
+                    populate()
                 } else if (viewportOffset < 0) {
                     offsetWholeSystem(reservedScrollingSpace / 2)
+                    populate()
                 }
             }
             capViewAtBottom = allSubviews.last().index >= dataDirect.max
@@ -665,6 +676,7 @@ class RecyclerController2(
                         } else {
                             contentHolder.removeNView(it.element)
                             allSubviews.remove(it)
+//                            println("Removing ${it.index} due to out of bounds")
                         }
                     }
                 }
@@ -701,6 +713,7 @@ class RecyclerController2(
                     } else {
                         contentHolder.removeNView(it.element)
                         allSubviews.remove(it)
+//                        println("Removing ${it.index} due to out of bounds")
                     }
                 }
                 viewportOffset = when (align) {
@@ -787,11 +800,13 @@ class RecyclerController2(
     }
 
     fun offsetWholeSystem(by: Int) {
+        val byFiltered = by.coerceAtLeast(-viewportOffset)
+//        if(byFiltered != by) println("You're trying to offset too much!  $by -> $byFiltered viewportOffset: $viewportOffset")
         for (view in allSubviews) {
             view.startPosition += by
         }
         capViewAtBottom = capViewAtBottom
-        viewportOffset += by
+        viewportOffset += byFiltered
     }
 
     fun makeSubview(index: Int, atStart: Boolean): Subview {
@@ -842,7 +857,9 @@ class RecyclerController2(
     fun populateDown() {
         var anchor = allSubviews.lastOrNull() ?: makeFirst() ?: return
         var bottom = anchor.startPosition + anchor.size
-        while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering)) {
+        while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering).also {
+//            println("populateDown ($bottom < $viewportSize + $viewportOffset + $beyondEdgeRendering)")
+            }) {
             val nextIndex = anchor.index + 1
             if (nextIndex > dataDirect.max) break
             // Get the element to place
@@ -860,12 +877,15 @@ class RecyclerController2(
             bottom = element.placeAfter(bottom)
             anchor = element
         }
+//        println("populateDown complete")
     }
 
     fun populateUp() {
         var anchor = allSubviews.firstOrNull() ?: makeFirst() ?: return
         var top = anchor.startPosition
-        while ((top > viewportOffset - beyondEdgeRendering)) {
+        while ((top > viewportOffset - beyondEdgeRendering).also {
+//            println("populateUp ($top > $viewportOffset - $beyondEdgeRendering)")
+        }) {
             val nextIndex = anchor.index - 1
             if (nextIndex < dataDirect.min) break
             // Get the element to place
@@ -883,6 +903,7 @@ class RecyclerController2(
             top = element.placeBefore(top)
             anchor = element
         }
+//        println("populateUp complete")
     }
 
     val anchorPosition: Align = Align.Start

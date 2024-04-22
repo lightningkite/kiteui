@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
+import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.MaterialLikeTheme
 import com.lightningkite.kiteui.models.Theme
@@ -147,18 +149,23 @@ class ViewWriter(
     fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
         stack.lastOrNull()?.addNView(element) ?: run { rootCreated = element }
         stack.add(element)
-        val beforeCopy = if (beforeNextElementSetupList.isNotEmpty()) beforeNextElementSetupList.toList() else listOf()
-        beforeNextElementSetupList = ArrayList()
-        val afterCopy = if (afterNextElementSetupList.isNotEmpty()) afterNextElementSetupList.toList() else listOf()
-        afterNextElementSetupList = ArrayList()
+        val delaySetupToChild = Platform.current != Platform.Web
+        val beforeCopy = beforeNextElementSetupList.toList()
+        val afterCopy = afterNextElementSetupList.toList()
+        if (!delaySetupToChild) {
+            beforeNextElementSetupList = ArrayList()
+            afterNextElementSetupList = ArrayList()
+        }
         CalculationContextStack.useIn(element.calculationContext) {
             val oldPop = popCount
             popCount = 0
-            beforeCopy.forEach { it(element) }
+            if (!delaySetupToChild) beforeCopy.forEach { it(element) }
             setup(element)
             afterNextElementPopList.add {
-                CalculationContextStack.useIn(element.calculationContext) {
-                    afterCopy.asReversed().forEach { it(element) }
+                if (!delaySetupToChild) {
+                    CalculationContextStack.useIn(element.calculationContext) {
+                        afterCopy.asReversed().forEach { it(element) }
+                    }
                 }
             }
             popCount = oldPop

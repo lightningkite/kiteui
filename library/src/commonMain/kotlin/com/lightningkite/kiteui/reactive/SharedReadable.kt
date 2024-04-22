@@ -18,7 +18,9 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
         if (listening) return
         listening = true
         ctx.reactiveScope(onLoad = {
-            if(!useLastWhileLoading) state = ReadableState.notReady
+            if(!useLastWhileLoading) {
+                state = ReadableState.notReady
+            }
         }) {
             try {
                 val result = ReadableState(action(ctx))

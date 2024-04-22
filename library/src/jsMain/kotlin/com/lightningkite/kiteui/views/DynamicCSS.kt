@@ -927,6 +927,20 @@ object DynamicCSS {
                 )
             )
         } catch(e: Throwable) { /*squish*/ }
+        try {
+            style(
+                "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
+                    "-webkit-appearance" to "none",
+                )
+            )
+        } catch(e: Throwable) { /*squish*/ }
+        try {
+            style(
+                "input[type=number]", mapOf(
+                    "-moz-appearance" to "textfield"
+                )
+            )
+        } catch(e: Throwable) { /*squish*/ }
     }
 
     fun rule(rule: String, index: Int = 0): Int {
@@ -1025,7 +1039,7 @@ object DynamicCSS {
         val offsetY = value
         val blur = (this * 2).value
         val spread = 0.px.value
-        return "$offsetX $offsetY $blur $spread #77777799"
+        return "$offsetX $offsetY $blur $spread #00000099"
     }
 
     private fun Duration.toCss() = this.toDouble(DurationUnit.SECONDS).toString() + "s"

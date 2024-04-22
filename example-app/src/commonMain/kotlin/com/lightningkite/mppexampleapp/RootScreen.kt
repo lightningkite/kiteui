@@ -46,6 +46,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen(ExperimentScreen)
                 linkScreen(AudioScreen)
                 linkScreen(HorizontalRecyclerViewScreen)
                 linkScreen(InfiniteImagesScreen)
