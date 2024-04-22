@@ -92,9 +92,27 @@ fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: Cont
     }
 }
 private fun ViewWriter.navGroupActionsInner(readable: Readable<List<NavElement>>) {
+    fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
+        padded - stack {
+            icon {
+                ::source { navElement.icon() }
+            } in gravity(Align.Center, Align.Center)
+        }
+        navElement.count?.let { count ->
+            gravity(Align.End, Align.Start) - compact - critical - stack {
+                exists = false
+                ::exists { count() != null }
+                space(0.01)
+                centered - text {
+                    ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
+                    textSize = 0.75.rem
+                }
+            }
+        }
+    }
     forEach(readable) {
         when (it) {
-            is NavAction -> button {
+            is NavAction -> unpadded - button {
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
 //                text { ::content { it.title() } }
@@ -102,7 +120,7 @@ private fun ViewWriter.navGroupActionsInner(readable: Readable<List<NavElement>>
                 onClick { it.onSelect() }
             }
 
-            is NavExternal -> externalLink {
+            is NavExternal -> unpadded - externalLink {
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
                 ::to { it.to() }
@@ -126,7 +144,7 @@ private fun ViewWriter.navGroupActionsInner(readable: Readable<List<NavElement>>
                 }
             }
 
-            is NavLink -> link {
+            is NavLink -> unpadded - link {
                 resetsStack = true
                 exists = false
                 ::exists {it.hidden?.invoke() != true}

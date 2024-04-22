@@ -237,13 +237,22 @@ object ControlsScreen : Screen {
             } in card
 
             col {
+                val number = Property<Double?>(1.0)
+                h2 { content = "Number Fields" }
+                text { ::content { "Value: ${number.await()}" }}
+                numberField { content bind number }
+                numberField { content bind number } in card
+                numberField { content bind number } in important
+                numberField { content bind number } in critical
+            } in card
+
+            col {
                 val number = Property(1)
                 val text = Property("text")
                 h2 { content = "Text Fields" }
-                textField { content bind number.asString() }
-                text { ::content { "Value: ${number.await()}" }}
-                textField { content bind text } in card
                 text { ::content { "Text: ${text.await()}" }}
+                textField { content bind text }
+                textField { content bind text } in card
                 textField { content bind text } in important
                 textField { content bind text } in critical
             } in card

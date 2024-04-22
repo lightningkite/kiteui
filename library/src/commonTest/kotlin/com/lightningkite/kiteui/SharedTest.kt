@@ -166,4 +166,29 @@ class SharedTest {
             assertEquals(2, hits)
         }
     }
+
+    @Test fun sharedReloads() {
+        val late = LateInitProperty<Int>()
+        var starts = 0
+        var hits = 0
+        val a = shared {
+            starts++
+            val r = late.await()
+            hits++
+            r
+        }
+        testContext {
+            late.addListener {}
+            a.addListener {}
+
+            late.value = 1
+            assertEquals(ReadableState(1), a.state)
+
+            late.unset()
+            assertEquals(ReadableState.notReady, a.state)
+
+            late.value = 2
+            assertEquals(ReadableState(2), a.state)
+        }
+    }
 }

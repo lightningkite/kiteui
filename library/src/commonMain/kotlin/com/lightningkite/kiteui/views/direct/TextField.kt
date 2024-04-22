@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.NView
@@ -22,4 +24,5 @@ expect val TextField.content: Writable<String>
 expect var TextField.keyboardHints: KeyboardHints
 expect var TextField.action: Action?
 expect var TextField.hint: String
-expect var TextField.range: ClosedRange<Double>?
+expect var TextField.align: Align
+expect var TextField.textSize: Dimension

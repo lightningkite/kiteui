@@ -240,6 +240,30 @@ class ReactivityTests {
             s2.value = "C"
         }
     }
+
+    @Test fun scopeSkippedIfLoading() {
+        val source = LateInitProperty<Int>()
+        var starts = 0
+        var hits = 0
+        testContext {
+            reactiveScope {
+                starts++
+                source()
+                hits++
+            }
+            assertEquals(1, starts)
+            assertEquals(0, hits)
+            source.value = 1
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.unset()
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.value = 2
+            assertEquals(2, starts)
+            assertEquals(2, hits)
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {
@@ -267,12 +291,37 @@ class VirtualDelay<T>(val action: () -> T) {
     }
 }
 
+class VirtualDelayer() {
+    val continuations = ArrayList<Continuation<Unit>>()
+    suspend fun await(): Unit {
+        return suspendCoroutineCancellable {
+            continuations.add(it)
+            return@suspendCoroutineCancellable {}
+        }
+    }
+    fun go() {
+        for(continuation in continuations) {
+            continuation.resume(Unit)
+        }
+        continuations.clear()
+    }
+}
+
 fun testContext(action: CalculationContext.()->Unit): Cancellable {
     var error: Throwable? = null
     val onRemoveSet = HashSet<()->Unit>()
+    var numOutstandingContracts = 0
     with(object: CalculationContext {
         override fun onRemove(action: () -> Unit) {
             onRemoveSet.add(action)
+        }
+
+        override fun notifyLongComplete(result: Result<Unit>) {
+            numOutstandingContracts--
+        }
+
+        override fun notifyStart() {
+            numOutstandingContracts++
         }
 
         override fun notifyComplete(result: Result<Unit>) {
@@ -284,6 +333,7 @@ fun testContext(action: CalculationContext.()->Unit): Cancellable {
     }) {
         action()
         if(error != null) throw error!!
+        assertEquals(numOutstandingContracts, 0)
     }
     return object: Cancellable {
         override fun cancel() {
