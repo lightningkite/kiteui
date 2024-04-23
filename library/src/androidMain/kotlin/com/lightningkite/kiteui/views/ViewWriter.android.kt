@@ -16,6 +16,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.HasSpacingMultiplier
 import com.lightningkite.kiteui.views.direct.KiteUiLayoutTransition
 import io.ktor.client.HttpClient
@@ -140,6 +141,9 @@ actual var NView.exists: Boolean
             View.VISIBLE
         } else {
             View.GONE
+        }
+        (parent as? DesiredSizeView)?.apply {
+            visibility = this@exists.visibility
         }
     }
 
