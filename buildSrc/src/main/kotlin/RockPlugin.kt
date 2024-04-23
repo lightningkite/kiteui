@@ -688,7 +688,8 @@ fun String.localizer(out: MutableSet<NeededStringTemplate>) {
                         !prerender.contains(bannedChars) &&
                         !prerender.contains(camel) &&
                         annotationParenLevel == -1 &&
-                        printlnParenLevel == -1
+                        printlnParenLevel == -1 &&
+                        (prerender.length >= 2 && (prerender[0].lowercaseChar() != 'm' || !prerender[1].isDigit()))
                     ) {
                         out.add(t)
                     }

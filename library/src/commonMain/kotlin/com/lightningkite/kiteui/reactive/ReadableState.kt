@@ -32,6 +32,12 @@ value class ReadableState<out T>(val raw: T) {
             return exception(e)
         }
     }
+
+    override fun toString(): String = when(raw) {
+        is NotReady -> "NotReady"
+        is ThrownException -> "ThrownException(${raw.exception})"
+        else -> "Ready($raw)"
+    }
 }
 class ThrownException(val exception: Exception)
 object NotReady

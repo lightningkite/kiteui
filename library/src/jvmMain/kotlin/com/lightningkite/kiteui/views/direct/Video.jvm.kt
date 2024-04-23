@@ -30,3 +30,6 @@ actual var Video.scaleType: ImageScaleType
     set(value) {
         TODO()
     }
+
+//actual fun Video.onComplete(action: () -> Unit) {
+//}

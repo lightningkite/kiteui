@@ -191,4 +191,38 @@ class SharedTest {
             assertEquals(ReadableState(2), a.state)
         }
     }
+
+    interface CachingModelRestEndpoints {
+        fun item(id: Int): Readable<Int?>
+    }
+    @Test fun recreation() {
+        class CachingModelRestEndpointsC(): CachingModelRestEndpoints {
+            val items = HashMap<Int, LateInitProperty<Int?>>()
+            override fun item(id: Int) = items.getOrPut(id) { LateInitProperty() }
+        }
+        data class Session(val dealerships: CachingModelRestEndpoints)
+        val session = LateInitProperty<Session?>()
+        fun Readable<CachingModelRestEndpoints>.flatten(): CachingModelRestEndpoints = object : CachingModelRestEndpoints {
+            override fun item(id: Int): Readable<Int?> {
+                return shared { this@flatten().item(id) }.let { shared { it()() } }
+            }
+        }
+        val dealerships = shared { session.awaitNotNull().dealerships }.flatten()
+        val currentId = Property<Int>(0)
+        suspend fun alt() = dealerships.item(currentId()).await()
+        val seller = shared { dealerships.item(currentId())() }
+        val sellerNn = seller.waitForNotNull
+        testContext {
+            reactiveScope {println("session: ${session()}") }
+            reactiveScope {println("alt: ${alt()}") }
+            reactiveScope {println("seller: ${seller()}") }
+            reactiveScope {println("sellerNn: ${sellerNn()}") }
+            val e = CachingModelRestEndpointsC()
+            session.value = Session(e)
+            e.item(0).value = 1
+            currentId.value = 1
+            e.item(1).value = 2
+            println("DONE")
+        }
+    }
 }

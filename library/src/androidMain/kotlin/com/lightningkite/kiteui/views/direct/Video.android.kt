@@ -134,3 +134,13 @@ actual var Video.loop: Boolean
             else -> AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
     }
+
+//actual fun Video.onComplete(action: () -> Unit) {
+//    val l = object: Player.Listener {
+//        override fun onIsPlayingChanged(isPlaying: Boolean) {
+//            action()
+//        }
+//    }
+//    native.player!!.addListener(l)
+//    return { native.player!!.removeListener(l) }
+//}

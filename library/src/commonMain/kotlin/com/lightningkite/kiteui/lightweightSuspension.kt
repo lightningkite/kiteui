@@ -11,10 +11,22 @@ suspend fun <T> suspendCoroutineCancellable(start: (Continuation<T>)->()->Unit):
     val result: T = try {
         val context = coroutineContext
         suspendCoroutine<T> {
+            val c = context[CancellationState.Key]!!
+            var terminate: (()->Unit)? = null
             val st = SingleThreadContinuation(it) {
-                context[CancellationState.Key]!!.waitingOn = null
+                c.waitingOn = null
+                terminate?.invoke()
             }
-            context[CancellationState.Key]!!.waitingOn = st
+            c.waitingOn = st
+            if(c.debug) {
+                val e = Exception("Still waiting for this to complete")
+                var printer = {}
+                printer = {
+                    e.printStackTrace2()
+                    terminate = afterTimeout(1000L, printer)
+                }
+                terminate = afterTimeout(1000L, printer)
+            }
             canceller = start(st)
         }
     } catch(e: CancelledException) {
@@ -84,14 +96,21 @@ suspend fun <T> timeoutOrNull(milliseconds: Long, action: suspend () -> T): T? {
 }
 
 fun CoroutineContext.childCancellation(): CoroutineContext = this + CancellationState(false, this.get(CancellationState.Key))
-private class CancellationState(var stop: Boolean, var parent: CancellationState? = null, var waitingOn: Continuation<*>? = null): CoroutineContext.Element {
+private class CancellationState(var stop: Boolean, var parent: CancellationState? = null, var waitingOn: Continuation<*>? = null, var waitingDebugException: Exception? = null): CoroutineContext.Element {
     override val key: CoroutineContext.Key<CancellationState> = Key
     val shouldStop: Boolean get() = stop || (parent?.stop ?: false)
+    var debug: Boolean = false
     object Key: CoroutineContext.Key<CancellationState>
 }
+fun CoroutineContext.debugCancellation() {
+    val c = this[CancellationState.Key]!!
+    c.debug = true
+}
 fun CoroutineContext.cancel() {
-    this[CancellationState.Key]!!.stop = true
-    this[CancellationState.Key]!!.waitingOn?.resumeWithException(CancelledException())
+    val c = this[CancellationState.Key]!!
+    if(c.debug) CancelledException().printStackTrace2()
+    c.stop = true
+    c.waitingOn?.resumeWithException(CancelledException())
 }
 suspend fun stopIfCancelled() {
     val state = coroutineContext[CancellationState.Key]!!
