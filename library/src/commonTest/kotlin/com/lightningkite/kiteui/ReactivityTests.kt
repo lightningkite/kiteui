@@ -310,9 +310,18 @@ class VirtualDelayer() {
 fun testContext(action: CalculationContext.()->Unit): Cancellable {
     var error: Throwable? = null
     val onRemoveSet = HashSet<()->Unit>()
+    var numOutstandingContracts = 0
     with(object: CalculationContext {
         override fun onRemove(action: () -> Unit) {
             onRemoveSet.add(action)
+        }
+
+        override fun notifyLongComplete(result: Result<Unit>) {
+            numOutstandingContracts--
+        }
+
+        override fun notifyStart() {
+            numOutstandingContracts++
         }
 
         override fun notifyComplete(result: Result<Unit>) {
@@ -324,6 +333,7 @@ fun testContext(action: CalculationContext.()->Unit): Cancellable {
     }) {
         action()
         if(error != null) throw error!!
+        assertEquals(numOutstandingContracts, 0)
     }
     return object: Cancellable {
         override fun cancel() {

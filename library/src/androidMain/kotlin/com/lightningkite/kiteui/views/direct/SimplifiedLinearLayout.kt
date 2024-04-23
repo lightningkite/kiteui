@@ -533,7 +533,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (i > 0) mTotalLength += (gap * lp.gapRatio).toInt()
+            if (nonSkippedChildCount > 0) mTotalLength += (gap * lp.gapRatio).toInt()
             nonSkippedChildCount++
             totalWeight += lp.weight
             val useExcessSpace = lp.width == 0 && lp.weight > 0
