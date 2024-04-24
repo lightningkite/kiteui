@@ -52,3 +52,7 @@ actual var Video.scaleType: ImageScaleType
     set(value) {
         native.className = native.className.split(' ').filter { !it.startsWith("scaleType-") }.plus("scaleType-$value").joinToString(" ")
     }
+
+//actual fun Video.onComplete(action: () -> Unit) {
+//    native.on
+//}

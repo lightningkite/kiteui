@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 
 fun retryWebsocket(
     url: String,
+    pingTime:Long,
 ): RetryWebsocket {
     val baseDelay = 1000L
     var currentDelay = baseDelay
@@ -18,43 +19,46 @@ fun retryWebsocket(
     val onCloseList = ArrayList<(Short) -> Unit>()
     var lastPong = clockMillis()
     fun reset() {
-        currentWebSocket = websocket(url).also {
-            it.onOpen {
+        currentWebSocket = websocket(url).also { socket ->
+            var pings: Cancellable? = null
+            socket.onOpen {
                 onOpenList.toList().forEach { l -> l() }
             }
-            it.onMessage {
+            socket.onMessage {
+                lastPong = clockMillis()
                 if (it.isNotBlank()) onMessageList.toList().forEach { l -> l(it) }
-                else lastPong = clockMillis()
             }
-            it.onBinaryMessage {
+            socket.onBinaryMessage {
                 onBinaryMessageList.toList().forEach { l -> l(it) }
             }
-            it.onClose {
+            socket.onClose {
                 onCloseList.toList().forEach { l -> l(it) }
             }
-            it.onOpen {
+            socket.onOpen {
                 lastConnect = clockMillis()
+                lastPong = lastConnect
                 connected.value = true
-            }
-            it.onClose {
-                currentDelay *= 2
-                if (connected.value && clockMillis() - lastConnect > 60_000.0) currentDelay = baseDelay
-                connected.value = false
-            }
+                pings?.cancel()
+                pings = launchGlobal {
+                    while (true) {
+                        delay(pingTime)
+                        val now = clockMillis()
+                        when {
+                            lastPong < now - (pingTime * 3) -> socket.close(
+                                3000,
+                                "Server did not respond to three consecutive pings."
+                            )
+                            lastPong < now - pingTime -> socket.send(" ")
 
-            val pings = launchGlobal {
-                while (true) {
-                    delay(30_000)
-                    if (lastPong < clockMillis() - 60_000) it.close(
-                        3000,
-                        "Server did not respond to two consecutive pings."
-                    )
-                    it.send(" ")
+                        }
+                    }
                 }
             }
-
-            onCloseList.add {
-                pings.cancel()
+            socket.onClose {
+                pings?.cancel()
+                currentDelay *= 2
+                if (connected.value && clockMillis() - lastConnect > (pingTime * 2)) currentDelay = baseDelay
+                connected.value = false
             }
 
         }

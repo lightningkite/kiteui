@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.readValue
 import platform.AVFoundation.*
 import platform.AVKit.AVPlayerViewController
@@ -16,12 +17,15 @@ import platform.CoreGraphics.CGSize
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMake
 import platform.Foundation.NSBundle
+import platform.Foundation.NSNotification
+import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSURL
 import platform.UIKit.*
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.UniformTypeIdentifiers.loadFileRepresentationForContentType
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import platform.darwin.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
@@ -52,6 +56,18 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     init {
         controller.delegate = this
         addSubview(controller.view)
+        NSNotificationCenter.defaultCenter.addObserver(
+            observer = this,
+            selector = sel_registerName("playerItemDidReachEnd:"),
+            name = AVPlayerItemDidPlayToEndTimeNotification,
+            `object` = null
+        )
+    }
+    @ObjCAction
+    fun playerItemDidReachEnd(notification: NSNotification?) {
+        if(player?.rate == 0f) {
+            onComplete?.invoke()
+        }
     }
 
     val volume = Property(1.0f)
@@ -64,6 +80,7 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     private var playerRateObservationClose: (()->Unit)? = null
     private var volumeObservationClose: (()->Unit)? = null
     private var endObservationClose: (()->Unit)? = null
+    internal var onComplete: (()->Unit)? = null
 
     @OptIn(ExperimentalNativeApi::class)
     var player: AVPlayer?
@@ -199,3 +216,7 @@ actual var Video.scaleType: ImageScaleType
             ImageScaleType.NoScale -> AVLayerVideoGravityResize
         }
     }
+
+//actual fun Video.onComplete(action: () -> Unit) {
+//    native.onComplete = action
+//}

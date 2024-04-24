@@ -2,13 +2,15 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.cancel
 import com.lightningkite.kiteui.childCancellation
+import com.lightningkite.kiteui.debugCancellation
 import com.lightningkite.kiteui.suspendCoroutineCancellable
 import kotlin.coroutines.*
 
 class ReactiveScopeData(
     val calculationContext: CalculationContext,
     var action: suspend () -> Unit,
-    var onLoad: (() -> Unit)? = null
+    var onLoad: (() -> Unit)? = null,
+    var debug: Boolean = false
 ) : CoroutineContext.Element {
     internal val removers: HashMap<ResourceUse, () -> Unit> = HashMap()
     internal val latestPass: ArrayList<ResourceUse> = ArrayList()
@@ -36,14 +38,15 @@ class ReactiveScopeData(
     }
 
     internal fun run() {
-//        println("Calculating $this")
         val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
+        if(debug) context.debugCancellation()
         previousContext.let {
             previousContext = context
             it?.cancel()
         }
         latestPass.clear()
 
+        if(debug) println("Calculating")
         var done = false
         action.startCoroutine(object : Continuation<Unit> {
             override val context: CoroutineContext = context
@@ -52,6 +55,7 @@ class ReactiveScopeData(
             override fun resumeWith(result: Result<Unit>) {
                 if (previousContext !== context) return
                 done = true
+                if(debug) println("Complete, got result $result")
                 runningLong = result
                 for (entry in removers.entries.toList()) {
                     if (entry.key !in latestPass) {
@@ -64,6 +68,7 @@ class ReactiveScopeData(
 
         if (!done) {
             // start load
+            if(debug) println("Load started")
             runningLong = null
         }
     }
@@ -136,7 +141,6 @@ suspend fun <T> Readable<T>.await(): T {
             it.latestPass.add(this)
             state.get()
         } else {
-            // If we're already listening to it, just 'await once'
             val listenable = this@await
             if (it.removers.containsKey(listenable)) {
 //                println("ReactiveScope $it already depends on $this")

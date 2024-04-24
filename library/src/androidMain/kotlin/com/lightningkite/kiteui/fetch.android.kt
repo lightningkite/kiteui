@@ -72,10 +72,18 @@ actual suspend fun fetch(
                         null -> {}
                     }
                     onUploadProgress?.let {
-                        onUpload { a, b -> it(a.toInt(), b.toInt()) }
+                        onUpload { a, b ->
+                            withContext(Dispatchers.Main) {
+                                it(a.toInt(), b.toInt())
+                            }
+                        }
                     }
                     onDownloadProgress?.let {
-                        onDownload { a, b -> it(a.toInt(), b.toInt()) }
+                        onDownload { a, b ->
+                            withContext(Dispatchers.Main) {
+                                it(a.toInt(), b.toInt())
+                            }
+                        }
                     }
                 }
             }
