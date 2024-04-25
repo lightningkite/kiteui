@@ -279,4 +279,10 @@ class CALayerResizing: CALayer() {
         refreshCorners()
         super.drawInContext(ctx)
     }
+
+    // layoutSublayersOfLayer implementation that calls setNeedsDisplay on this class somehow causes the system to call
+    // this method (and fail if an implementation is not provided)
+    override fun initWithLayer(layer: Any): CALayer {
+        return CALayer(layer)
+    }
 }
