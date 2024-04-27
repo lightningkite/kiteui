@@ -41,5 +41,7 @@ fun ViewWriter.appBase(routes: Routes, mainLayout: ContainingView.() -> Unit) {
         this@appBase.navigator = ScreenStack.main
         mainLayout()
         navigatorViewDialog() in tweakTheme { it.dialog() }
-    } 
+        baseStack = this
+        baseStackWriter = split()
+    }
 }

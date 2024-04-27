@@ -18,6 +18,132 @@ import kotlin.time.Duration.Companion.milliseconds
 private val openingOtherPopover = ArrayList<()->Unit>()
 
 @ViewModifierDsl3
+actual fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection,
+    setup: ViewWriter.() -> Unit
+): ViewWrapper {
+    beforeNextElementSetup {
+        val theme = currentTheme
+        val pos = this
+        val sourceElement = this
+        var existingElement: HTMLElement? = null
+        var existingDismisser: HTMLElement? = null
+        var stayOpen = false
+        var close = {}
+        val writerTargetingBody = targeting(document.body!!)
+        fun makeElement() {
+            if (existingElement != null) return
+            with(writerTargetingBody) {
+                currentTheme = { rootTheme().dialog() }
+                stayOpen = false
+                transitionNextView = ViewWriter.TransitionNextView.Yes
+                themedElement<HTMLDivElement>("div") {
+                    existingElement = this
+                    style.position = "absolute"
+                    style.zIndex = "999"
+//                    style.transform = "scale(0,0)"
+                    style.opacity = "0"
+                    style.height = "auto"
+                    calculationContext.reactiveScope {
+                        style.setProperty("--parentSpacing", theme().spacing.value)
+                    }
+                    fun reposition() {
+                        val r = pos.getBoundingClientRect()
+                        style.removeProperty("top")
+                        style.removeProperty("left")
+                        style.removeProperty("right")
+                        style.removeProperty("bottom")
+                        style.removeProperty("transform")
+                        if (preferredDirection.horizontal) {
+                            if (preferredDirection.after) {
+                                style.left = "${r.right}px"
+                            } else {
+                                style.right = "${window.innerWidth - r.left}px"
+                            }
+                            when (preferredDirection.align) {
+                                Align.Start -> style.bottom = "${window.innerHeight - r.bottom}px"
+                                Align.End -> style.top = "${r.top}px"
+                                else -> {
+                                    style.top = "${(r.top + r.bottom) / 2}px"
+                                    style.transform = "translateY(-50%)"
+                                }
+                            }
+                        } else {
+                            if (preferredDirection.after) {
+                                style.top = "${r.bottom}px"
+                            } else {
+                                style.bottom = "${window.innerHeight - r.top}px"
+                            }
+                            when (preferredDirection.align) {
+                                Align.Start -> style.right = "${window.innerWidth - r.right}px"
+                                Align.End -> style.left = "${r.left}px"
+                                else -> {
+                                    style.left = "${(r.left + r.right) / 2}px"
+                                    style.transform = "translateX(-50%)"
+                                }
+                            }
+                        }
+                    }
+                    reposition()
+                    val currentElement = this
+                    this.style.setProperty("pointer-events", "none")
+                    close = {
+                        existingElement?.style?.opacity = "0"
+//                        existingElement?.style?.transform = "scale(0,0)"
+                        existingDismisser?.style?.opacity = "0"
+                        window.setTimeout({
+                            existingElement?.let { it.parentElement?.removeChild(it) }
+                            existingElement = null
+                            existingDismisser?.let { it.parentElement?.removeChild(it) }
+                            existingDismisser = null
+                        }, 150)
+                        close = {}
+                    }
+                    window.setTimeout({
+                        style.opacity = "1"
+//                        style.transform = "none"
+                    }, 16)
+                    window.addEventListener("scroll", { reposition() }, true)
+//                    addEventListener("mousewheel", { event: Event ->
+//                        pos.dispatchEvent(event)
+//                    })
+                    setup()
+                }
+            }
+        }
+        this.addEventListener("contextmenu", {
+            makeElement()
+            stayOpen = true
+            if(existingDismisser == null) {
+                val native = document.createElement("div") as HTMLDivElement
+                native.style.position = "absolute"
+                native.style.left = "0"
+                native.style.right = "0"
+                native.style.bottom = "0"
+                native.style.top = "0"
+                native.style.opacity = "0"
+                native.style.zIndex = "998"
+                native.style.setProperty("backdrop-filter", "blur(0px)")
+                window.setTimeout({
+                    native.style.opacity = "1"
+                    native.style.removeProperty("backdrop-filter")
+                }, 16)
+                native.onclick = { close() }
+                existingDismisser = native
+                document.body!!.insertBefore(native, existingElement)
+            }
+        })
+        this.onmouseenter = {
+            makeElement()
+        }
+        this.onmouseleave = {
+            close()
+        }
+    }
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
@@ -33,7 +159,6 @@ actual fun ViewWriter.hasPopover(
         var stayOpen = false
         var close = {}
         val writerTargetingBody = targeting(document.body!!)
-        val newViews = newViews()
         fun makeElement() {
             if (existingElement != null) return
             openingOtherPopover.forEach { it() }
@@ -193,6 +318,24 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         style.flexGrow = "$amount"
         style.flexShrink = "$amount"
         style.flexBasis = "0"
+    }
+    return ViewWrapper
+}
+@ViewModifierDsl3
+actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+    beforeNextElementSetup {
+        calculationContext.reactiveScope {
+            val amount = amount()
+            if(amount != 0f) {
+                style.flexGrow = "$amount"
+                style.flexShrink = "$amount"
+                style.flexBasis = "0"
+            } else {
+                style.flexGrow = "0"
+                style.flexShrink = "0"
+                style.flexBasis = "auto"
+            }
+        }
     }
     return ViewWrapper
 }

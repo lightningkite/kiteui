@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.TextOverflow
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlinx.browser.window
@@ -62,4 +63,21 @@ actual inline var TextView.textSize: Dimension
     get() = Dimension(window.getComputedStyle(native).fontSize)
     set(value) {
         native.style.fontSize = value.value
+    }
+actual var TextView.ellipsis: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.style.textOverflow = if(value) "ellipsis" else "clip"
+        if(value)
+            native.style.setProperty("overflow", "hidden")
+        else
+            native.style.removeProperty("overflow")
+    }
+actual var TextView.wraps: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.style.setProperty("text-wrap", if(value) "wrap" else "nowrap")
+        println("text-wrap <- ${if(value) "wrap" else "nowrap" }")
+        native.style.setProperty("text-wrap-mode", if(value) "wrap" else "nowrap")
+        println("text-wrap-mode <- ${if(value) "wrap" else "nowrap" }")
     }

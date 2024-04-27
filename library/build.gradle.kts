@@ -30,6 +30,7 @@ kotlin {
             api("androidx.transition:transition:1.4.1")
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
+            api("com.squareup.picasso:picasso:2.8")
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")
@@ -54,9 +55,9 @@ kotlin {
     js(IR) {
         browser()
     }
-    wasmJs {
-        browser()
-    }
+//    wasmJs {
+//        browser()
+//    }
 
     sourceSets {
         applyDefaultHierarchyTemplate()
@@ -102,9 +103,9 @@ kotlin {
             dependsOn(commonHtmlMain)
         }
 
-        val wasmJsMain by getting {
+//        val wasmJsMain by getting {
 //            dependsOn(commonHtmlMain)
-        }
+//        }
     }
 
 //    cocoapods {

@@ -7,8 +7,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.toast
 import kotlinx.cinterop.*
+import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -64,6 +67,26 @@ import platform.objc.sel_registerName
 //    get() = TODO()
 //    set(value) {}
 
+@OptIn(ExperimentalForeignApi::class)
+@ViewModifierDsl3
+actual fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection,
+    setup: ViewWriter.() -> Unit,
+): ViewWrapper {
+    beforeNextElementSetup {
+        fun openDialog() {
+            toast(inner = setup)
+        }
+        val actionHolder = object : NSObject() {
+            @ObjCAction
+            fun eventHandler() = openDialog()
+        }
+        val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+        addGestureRecognizer(rec)
+    }
+    return ViewWrapper
+}
+
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -117,7 +140,16 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     }
     return ViewWrapper
 }
-
+@ViewModifierDsl3
+actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+    val parent = this.currentView
+    this.beforeNextElementSetup {
+        calculationContext.reactiveScope {
+            this.extensionWeight = amount()
+        }
+    }
+    return ViewWrapper
+}
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {

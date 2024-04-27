@@ -51,7 +51,7 @@ object InfiniteImagesScreen : Screen {
                 unpadded - button {
                     sizeConstraints(height = 16.rem) - image {
                         scaleType = ImageScaleType.Crop
-                        ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }
+                        ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/1000/1000") }
 //                            source = Resources.imagesSolera
                     }
                     onClick {

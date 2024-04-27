@@ -18,7 +18,7 @@ suspend fun <T> suspendCoroutineCancellable(start: (Continuation<T>)->()->Unit):
                 terminate?.invoke()
             }
             c.waitingOn = st
-            if(c.debug) {
+            if(c.debug != null) {
                 val e = Exception("Still waiting for this to complete")
                 var printer = {}
                 printer = {
@@ -99,16 +99,16 @@ fun CoroutineContext.childCancellation(): CoroutineContext = this + Cancellation
 private class CancellationState(var stop: Boolean, var parent: CancellationState? = null, var waitingOn: Continuation<*>? = null, var waitingDebugException: Exception? = null): CoroutineContext.Element {
     override val key: CoroutineContext.Key<CancellationState> = Key
     val shouldStop: Boolean get() = stop || (parent?.stop ?: false)
-    var debug: Boolean = false
+    var debug: Console? = null
     object Key: CoroutineContext.Key<CancellationState>
 }
-fun CoroutineContext.debugCancellation() {
+fun CoroutineContext.setDebugLog(console: Console) {
     val c = this[CancellationState.Key]!!
-    c.debug = true
+    c.debug = console
 }
 fun CoroutineContext.cancel() {
     val c = this[CancellationState.Key]!!
-    if(c.debug) CancelledException().printStackTrace2()
+    if(c.debug != null) CancelledException().printStackTrace2()
     c.stop = true
     c.waitingOn?.resumeWithException(CancelledException())
 }
@@ -196,7 +196,7 @@ fun launchGlobal(action: suspend () -> Unit): Cancellable {
         // called when a coroutine ends. do nothing.
         override fun resumeWith(result: Result<Unit>) {
             result.onFailure { ex : Throwable ->
-                println("launchGlobal $action experienced an exception:")
+                ConsoleRoot.error("launchGlobal $action experienced an exception:")
                 ex.printStackTrace2()
             }
         }

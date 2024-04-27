@@ -2,7 +2,9 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.utils.commaString
+import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
 
@@ -21,6 +23,16 @@ infix fun <T> Writable<T>.equalToDynamic(value: suspend () -> T): Writable<Boole
     if (it) set(value())
 }
 
+@JsName("invokeAllSafeMutable")
+@JvmName("invokeAllSafeMutable")
+fun MutableList<() -> Unit>.invokeAllSafe() = toList().invokeAllSafe()
+fun List<() -> Unit>.invokeAllSafe() = forEach {
+    try {
+        it()
+    } catch (e: Exception) {
+        e.printStackTrace2()
+    }
+}
 
 infix fun <T> Writable<T>.bind(master: Writable<T>) {
     with(CalculationContextStack.current()) {
@@ -59,14 +71,16 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
         }
     }
 
-fun <T: Any> Writable<T>.nullable(): Writable<T?> = shared { this@nullable.await() }
+fun <T : Any> Writable<T>.nullable(): Writable<T?> = shared { this@nullable.await() }
     .withWrite { it?.let { this@nullable set it } }
-fun <T: Any> Writable<T?>.notNull(default: T): Writable<T> = shared { this@notNull.await() ?: default }
+
+fun <T : Any> Writable<T?>.notNull(default: T): Writable<T> = shared { this@notNull.await() ?: default }
     .withWrite { this@notNull set it }
 
 @JvmName("writableStringAsDouble")
-fun Writable<String>.asDouble(): Writable<Double?> = shared { this@asDouble.await().filter { it.isDigit() || it == '.' }.toDoubleOrNull() }
-    .withWrite { this@asDouble set (it?.commaString() ?: "") }
+fun Writable<String>.asDouble(): Writable<Double?> =
+    shared { this@asDouble.await().filter { it.isDigit() || it == '.' }.toDoubleOrNull() }
+        .withWrite { this@asDouble set (it?.commaString() ?: "") }
 
 @JvmName("writableIntAsDouble")
 fun Writable<Int?>.asDouble(): Writable<Double?> = shared { this@asDouble.await()?.toDouble() }

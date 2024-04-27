@@ -70,12 +70,16 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
                 checked bind showMenu
                 icon(Icon.menu, "Open navigation menu")
             }
-            if(Platform.current != Platform.Web) button {
+            if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
             }
-            h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
+            h2 {
+                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                wraps = false
+                ellipsis = true
+            } in gravity(
                 Align.Center,
                 Align.Center
             ) in weight(1f)
@@ -99,12 +103,16 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     padded - navSpacing { appNav.existsProperty.await() } - col {
         bar - row {
             setup(appNav)
-            if(Platform.current != Platform.Web) button {
+            if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
             }
-            h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
+            h2 {
+                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                wraps = false
+                ellipsis = true
+            } in gravity(
                 Align.Center,
                 Align.Center
             )
@@ -124,12 +132,16 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 // Nav 3 top and bottom (top)
         bar - row {
             setup(appNav)
-            if(Platform.current != Platform.Web) button {
+            if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
             }
-            h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
+            h2 {
+                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                wraps = false
+                ellipsis = true
+            } in gravity(
                 Align.Center,
                 Align.Center
             ) in weight(1f)
@@ -150,12 +162,16 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
             setup(appNav)
-            if(Platform.current != Platform.Web) button {
+            if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
                 ::visible { navigator.canGoBack.await() }
                 onClick { navigator.goBack() }
             }
-            h2 { ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" } } in gravity(
+            h2 {
+                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                wraps = false
+                ellipsis = true
+            } in gravity(
                 Align.Center,
                 Align.Center
             )
@@ -178,7 +194,7 @@ fun ViewWriter.navSpacing(showNav: suspend () -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         val theme = currentTheme
         calculationContext.reactiveScope {
-            spacing = if(showNav()) theme().navSpacing else 0.px
+            spacing = if (showNav()) theme().navSpacing else 0.px
         }
     }
     return ViewWrapper

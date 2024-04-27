@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
@@ -206,6 +207,8 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     val firstVisible = Property(0)
     val centerVisible = Property(0)
     val lastVisible = Property(0)
+
+    val log = ConsoleRoot.tag("NRecyclerView")
 
     val allSubviews: ArrayList<Subview> = ArrayList()
 
@@ -418,7 +421,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                             (value.max - allSubviews.last().index).coerceAtLeast(value.min - allSubviews.first().index)
                         } else 0
                         allSubviews.forEach {
-//                            println("PERFORMING SHIFT C $shift")
+//                            log.log("PERFORMING SHIFT C $shift")
                             it.index += shift
                             if (it.index in value.min..value.max) {
                                 it.visible = true
@@ -469,7 +472,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-//            println("Cannot get lock for $key, already held by $lockState!!!")
+//            log.log("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -504,7 +507,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     }
 
     private fun scrollTo(pos: Double, animate: Boolean) {
-//        println("scrollTo: $pos")
+//        log.log("scrollTo: $pos")
         if (vertical) {
             setContentOffset(CGPointMake(
                 0.0,
@@ -544,7 +547,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                         (rowIndex - existingBottom)
                     else 0
                     allSubviews.forEach {
-//                        println("PERFORMING SHIFT B $shift")
+//                        log.log("PERFORMING SHIFT B $shift")
                         it.index += shift
                         if (it.index in dataDirect.min..dataDirect.max) {
                             it.visible = true
@@ -567,7 +570,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                         Align.End -> scrollTo((it.startPosition + it.size - viewportSize).toDouble(), true)
                         else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
                     }
-                } ?: println("Wha?!")
+                } ?: log.log("Wha?!")
             } else {
                 val existingIndex = when (align) {
                     Align.Start -> allSubviews.first().index
@@ -579,7 +582,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                     .coerceAtMost(dataDirect.max - allSubviews.last().index)
                     .coerceAtLeast(dataDirect.min - allSubviews.first().index)
                 allSubviews.forEach {
-                    println("PERFORMING SHIFT A $shift")
+                    log.log("PERFORMING SHIFT A $shift")
                     it.index += shift
                     if (it.index == rowIndex) target = it
                     if (it.index in dataDirect.min..dataDirect.max) {
@@ -597,7 +600,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                     else -> target?.let { it.startPosition + it.size / 2 - viewportSize / 2 }
                         ?: (allSubviews.first().startPosition - spacingRaw)
                 }
-                println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
+                log.log("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
@@ -664,7 +667,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             Align.End -> viewportOffset + viewportSize - spacing.value - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
         }
-        println("Rendered first element at ${element.startPosition} with size ${element.size}")
+        log.log("Rendered first element at ${element.startPosition} with size ${element.size}")
         return element
     }
 
@@ -702,7 +705,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             val element: Subview = allSubviews.first().takeIf {
                 (it.startPosition + it.size < viewportOffset - beyondEdgeRendering)
             }?.also {
-                println("populateDown $nextIndex")
+                log.log("populateDown $nextIndex")
                 it.index = nextIndex
                 it.element.withoutAnimation {
                     rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])
@@ -726,7 +729,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             val element: Subview = allSubviews.last().takeIf {
                 it.startPosition > viewportOffset + viewportSize + beyondEdgeRendering
             }?.also {
-                println("populateUp $nextIndex")
+                log.log("populateUp $nextIndex")
                 it.index = nextIndex
                 it.element.withoutAnimation {
                     rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])

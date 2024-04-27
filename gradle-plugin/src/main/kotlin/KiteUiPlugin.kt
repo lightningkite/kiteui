@@ -545,6 +545,7 @@ fun File.resources(): Map<String, Resource> {
         val name = relativeFile.path.replace('/', ' ').replace('\\', ' ')
             .substringBeforeLast('.')
             .camelCase()
+            .filter { it.isLetterOrDigit() }
         when (relativeFile.extension) {
             "png", "jpg" -> out[name] = Resource.Image(name, file, relativeFile)
             "mp4" -> out[name] = Resource.Video(name, file, relativeFile)

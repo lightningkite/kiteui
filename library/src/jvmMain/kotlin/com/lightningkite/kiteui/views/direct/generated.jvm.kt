@@ -398,6 +398,12 @@ actual fun ViewWriter.hasPopover(
 ): ViewWrapper = TODO()
 
 @ViewModifierDsl3
+actual fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection,
+    setup: ViewWriter.() -> Unit
+): ViewWrapper = TODO()
+
+@ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 
 @ViewModifierDsl3

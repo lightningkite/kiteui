@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.CancelledException
+import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
 import kotlin.random.Random
 
@@ -13,7 +14,7 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
     }
     override var state: ReadableState<T> = ReadableState.notReady
     var listening = false
-    var debug: Boolean = false
+    var debug: Console? = null
     val me = Random.nextInt()
 
     private val listeners = ArrayList<() -> Unit>()
@@ -21,7 +22,7 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
 
     private fun startupIfNeeded() {
         if (listening) return
-        if(debug) println("Starting up $me...")
+        debug?.log("Starting up...")
         listening = true
         ReactiveScopeData(ctx, action = {
             try {
@@ -35,14 +36,8 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
                 state = ReadableState.exception(e)
             }
             iterating = true
-            if(debug) println("Informing ${listeners.size} listeners of new state $state from $me...")
-            listeners.toList().forEach {
-                try {
-                    it()
-                } catch (e: Exception) {
-                    e.printStackTrace2()
-                }
-            }
+            debug?.log("Informing ${listeners.size} listeners of new state $state...")
+            listeners.invokeAllSafe()
             iterating = false
             shutdownIfNotNeeded()
         }, onLoad = {
@@ -55,7 +50,7 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
     private fun shutdownIfNotNeeded() {
         if(listeners.isNotEmpty()) return
         if (!listening) return
-        if(debug) println("Shutting down $me...")
+        debug?.log("Shutting down...")
         listening = false
         removers.forEach {
             try {

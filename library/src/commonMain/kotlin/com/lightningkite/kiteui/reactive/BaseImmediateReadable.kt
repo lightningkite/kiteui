@@ -6,7 +6,7 @@ abstract class BaseImmediateReadable<T>(start: T): ImmediateReadable<T> {
         set(value) {
             if(field != value) {
                 field = value
-                listeners.toList().forEach { it() }
+                listeners.invokeAllSafe()
             }
         }
 

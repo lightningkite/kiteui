@@ -1,34 +1,31 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.graphics.BitmapFactory
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.BitmapDrawable
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.LoadRemoteImageScope
 import com.lightningkite.kiteui.views.Path.PathDrawable
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
 import timber.log.Timber
 import android.content.Context
-import android.graphics.Matrix
-import android.graphics.PointF
+import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.Window
 import android.widget.FrameLayout
 import androidx.annotation.Nullable
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.children
 import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.views.animationsEnabled
+import com.lightningkite.kiteui.reactive.WindowInfo
+import com.lightningkite.kiteui.views.*
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.Target
 import android.widget.ImageView as AImageView
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -37,7 +34,11 @@ actual typealias NImageView = TransitionImageView
 actual var ImageView.source: ImageSource?
     get() = TODO()
     set(value) {
+        println("$this: Cleared")
         native.tag = value
+        if(!animationsEnabled) native.removeAllViews()
+        if(!animationsEnabled) native.ignoreAnimationsUntil = System.currentTimeMillis() + 16
+        val h = native.lparams.height.coerceAtLeast(0).let { if(it == 0) WindowInfo.value.height.value.toInt() else it }
         when (value) {
             null -> {
                 native.transition(null)
@@ -64,21 +65,7 @@ actual var ImageView.source: ImageSource?
             }
 
             is ImageRemote -> {
-                LoadRemoteImageScope.bitmapFromUrl(value.url, onBitmapLoaded = { bitmap ->
-                    Handler(Looper.getMainLooper()).post {
-                        Timber.d("REMOTE IMAGE SET DRAWABLE")
-                        native.transition {
-                            setImageDrawable(BitmapDrawable(native.resources, bitmap))
-                        }
-                    }
-                }) {
-                    Handler(Looper.getMainLooper()).post {
-                        native.transition {
-                            it.printStackTrace()
-                            setImageResource(R.drawable.baseline_broken_image_24)
-                        }
-                    }
-                }
+                Picasso.get().load(value.url).resize(0, h).onlyScaleDown().into(native)
             }
 
             is ImageResource -> {
@@ -94,9 +81,7 @@ actual var ImageView.source: ImageSource?
             }
 
             is ImageLocal -> {
-                native.transition {
-                    setImageURI(value.file.uri)
-                }
+                Picasso.get().load(value.file.uri).resize(0, h).onlyScaleDown().into(native)
             }
 
             else -> {
@@ -156,7 +141,8 @@ actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.()
     }
 }
 
-open class TransitionImageView(context: Context): FrameLayout(context), HasSpacingMultiplier {
+open class TransitionImageView(context: Context): FrameLayout(context), HasSpacingMultiplier, Target {
+    var ignoreAnimationsUntil = 0L
     override val spacingOverride: Property<Dimension?> = Property(null)
     var scaleType: AImageView.ScaleType = AImageView.ScaleType.CENTER_INSIDE
         set(value) {
@@ -164,17 +150,33 @@ open class TransitionImageView(context: Context): FrameLayout(context), HasSpaci
             children.filterIsInstance<AImageView>().forEach { it.scaleType = value }
         }
     open fun transition(setter: (AImageView.()->Unit)?) {
-        if(!animationsEnabled) removeAllViews()
         children.forEach { it.animate().alpha(0f).setDuration(150L).withEndAction { removeView(it) }.start() }
         if(setter != null) {
             addView(AImageView(context).apply(setter).also {
                 it.scaleType = this@TransitionImageView.scaleType
-                if(animationsEnabled) {
+                if(animationsEnabled && System.currentTimeMillis() > ignoreAnimationsUntil) {
                     it.alpha = 0f
                     it.animate().alpha(1f).setDuration(150L).start()
                 }
             })
         }
+    }
+    override fun onBitmapFailed(p0: java.lang.Exception?, p1: Drawable?) {
+        Handler(Looper.getMainLooper()).post {
+            transition {
+                p0?.printStackTrace()
+                setImageResource(R.drawable.baseline_broken_image_24)
+            }
+        }
+    }
+    override fun onBitmapLoaded(p0: Bitmap?, p1: Picasso.LoadedFrom?) {
+        Handler(Looper.getMainLooper()).post {
+            transition {
+                setImageDrawable(BitmapDrawable(resources, p0))
+            }
+        }
+    }
+    override fun onPrepareLoad(p0: Drawable?) {
     }
 }
 

@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup
-import android.widget.LinearLayout
 
 
 typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
@@ -151,6 +150,8 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         return true
     }
 
+    private val LayoutParams.weightUnlessIgnored: Float get() = if(ignoreWeights) 0f else weight
+
     /**
      * Measures the children when the orientation of this LinearLayout is set
      * to [.VERTICAL].
@@ -198,8 +199,8 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             val lp = child.layoutParams as LayoutParams
             if (i > 0) mTotalLength += (gap * lp.gapRatio).toInt()
             nonSkippedChildCount++
-            totalWeight += lp.weight
-            val useExcessSpace = lp.height == 0 && lp.weight > 0
+            totalWeight += lp.weightUnlessIgnored
+            val useExcessSpace = lp.height == 0 && lp.weightUnlessIgnored > 0
             if (heightMode == MeasureSpec.EXACTLY && useExcessSpace) {
                 // Optimization: don't bother measuring children who are only
                 // laid out using excess space. These views will get measured
@@ -226,7 +227,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     child, i, widthMeasureSpec, 0,
                     heightMeasureSpec, usedHeight
                 )
-                val childHeight = child.measuredHeight
+                val childHeight = child.measuredHeight.coerceAtMost(lp.maxHeight)
                 if (useExcessSpace) {
                     // Restore the original height and record how much space
                     // we've allocated to excess-only children so that we can
@@ -253,7 +254,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             // if we are trying to use a child index for our baseline, the above
             // book keeping only works if there are no children above it with
             // weight.  fail fast to aid the developer.
-            if (i < baselineChildIndex && lp.weight > 0) {
+            if (i < baselineChildIndex && lp.weightUnlessIgnored > 0) {
                 throw RuntimeException(
                     ("A child of LinearLayout with index "
                             + "less than mBaselineAlignedChildIndex has weight > 0, which "
@@ -271,11 +272,11 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 matchWidthLocally = true
             }
             val margin = 0
-            val measuredWidth = child.measuredWidth + margin
+            val measuredWidth = child.measuredWidth.coerceAtMost(lp.maxWidth) + margin
             maxWidth = Math.max(maxWidth, measuredWidth)
             childState = combineMeasuredStates(childState, child.measuredState)
             allFillParent = allFillParent && lp.width == ViewGroup.LayoutParams.MATCH_PARENT
-            if (lp.weight > 0) {
+            if (lp.weightUnlessIgnored > 0) {
                 /*
                  * Widths of weighted Views are bogus if we end up
                  * remeasuring, so keep them separate.
@@ -283,12 +284,12 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 weightedMaxWidth = Math.max(
                     weightedMaxWidth,
                     if (matchWidthLocally) margin else measuredWidth
-                )
+                ).coerceAtMost(lp.maxWidth)
             } else {
                 alternativeMaxWidth = Math.max(
                     alternativeMaxWidth,
                     if (matchWidthLocally) margin else measuredWidth
-                )
+                ).coerceAtMost(lp.maxWidth)
             }
             i += getChildrenSkipCount(child, i)
             ++i
@@ -346,9 +347,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     continue
                 }
                 val lp = child.layoutParams as LayoutParams
-                val childWeight = lp.weight
+                val childWeight = lp.weightUnlessIgnored
                 if (childWeight > 0) {
-                    val share = (childWeight * remainingExcess / remainingWeightSum).toInt()
+                    val share = (childWeight * remainingExcess / remainingWeightSum).coerceAtMost(lp.maxHeight.toFloat()).toInt()
                     remainingExcess -= share
                     remainingWeightSum -= childWeight
                     val childHeight: Int
@@ -417,7 +418,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                         continue
                     }
                     val lp = child.layoutParams as LayoutParams
-                    val childExtra = lp.weight
+                    val childExtra = lp.weightUnlessIgnored
                     if (childExtra > 0) {
                         child.measure(
                             MeasureSpec.makeMeasureSpec(
@@ -471,6 +472,23 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 }
             }
         }
+    }
+
+    override fun measureChild(child: View?, parentWidthMeasureSpec: Int, parentHeightMeasureSpec: Int) {
+        val lp = child!!.layoutParams
+
+        val childWidthMeasureSpec = getChildMeasureSpec(
+            parentWidthMeasureSpec,
+            paddingLeft + paddingRight,
+            if(orientation == HORIZONTAL && ignoreWeights && lp.width == 0) ViewGroup.LayoutParams.WRAP_CONTENT else  lp.width
+        )
+        val childHeightMeasureSpec = getChildMeasureSpec(
+            parentHeightMeasureSpec,
+            paddingTop + paddingBottom,
+            if(orientation == VERTICAL && ignoreWeights && lp.height == 0) ViewGroup.LayoutParams.WRAP_CONTENT else  lp.height
+        )
+
+        child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
     }
 
     /**
@@ -535,8 +553,8 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             val lp = child.layoutParams as LayoutParams
             if (nonSkippedChildCount > 0) mTotalLength += (gap * lp.gapRatio).toInt()
             nonSkippedChildCount++
-            totalWeight += lp.weight
-            val useExcessSpace = lp.width == 0 && lp.weight > 0
+            totalWeight += lp.weightUnlessIgnored
+            val useExcessSpace = lp.width == 0 && lp.weightUnlessIgnored > 0
             if (widthMode == MeasureSpec.EXACTLY && useExcessSpace) {
                 // Optimization: don't bother measuring children who are only
                 // laid out using excess space. These views will get measured
@@ -625,7 +643,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             }
             maxHeight = Math.max(maxHeight, childHeight)
             allFillParent = allFillParent && lp.height == ViewGroup.LayoutParams.MATCH_PARENT
-            if (lp.weight > 0) {
+            if (lp.weightUnlessIgnored > 0) {
                 /*
                  * Heights of weighted Views are bogus if we end up
                  * remeasuring, so keep them separate.
@@ -744,7 +762,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 }
                 nonSkippedChildCount++
                 val lp = child.layoutParams as LayoutParams
-                val childWeight = lp.weight
+                val childWeight = lp.weightUnlessIgnored
                 if (childWeight > 0) {
                     val share = (childWeight * remainingExcess / remainingWeightSum).toInt()
                     remainingExcess -= share
@@ -860,7 +878,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                         continue
                     }
                     val lp = child.layoutParams as LayoutParams
-                    val childExtra = lp.weight
+                    val childExtra = lp.weightUnlessIgnored
                     if (childExtra > 0) {
                         child.measure(
                             MeasureSpec.makeMeasureSpec(largestChildWidth, MeasureSpec.EXACTLY),
@@ -1212,6 +1230,12 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             }
         }
 
+    var ignoreWeights: Boolean = false
+        set(value) {
+            field = value
+            requestLayout()
+        }
+
     var gravity: Int
         /**
          * Returns the current gravity. See [android.view.Gravity]
@@ -1302,7 +1326,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_weight
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_gravity
      */
-    open class LayoutParams : UseMarginsLayoutParams {
+    open class LayoutParams : UseMarginsLayoutParams, MaxSizeLayoutParams {
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1319,6 +1343,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          */
         @ViewDebug.ExportedProperty(category = "layout")
         var gapRatio = 1f
+
+        override var maxWidth: Int = Int.MAX_VALUE / 4
+        override var maxHeight: Int = Int.MAX_VALUE / 4
 
         /**
          * Gravity for the view associated with these LayoutParams.

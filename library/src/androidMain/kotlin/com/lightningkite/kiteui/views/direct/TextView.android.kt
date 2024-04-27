@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import android.graphics.Typeface
 import android.text.Editable
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
@@ -12,6 +13,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.TextOverflow
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
@@ -143,3 +145,14 @@ abstract class EquatableByRef(val key: String, val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
+
+actual var TextView.ellipsis: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.ellipsize = if(value) TextUtils.TruncateAt.END else TextUtils.TruncateAt.MARQUEE
+    }
+actual var TextView.wraps: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.maxLines = if(value) Integer.MAX_VALUE else 1
+    }

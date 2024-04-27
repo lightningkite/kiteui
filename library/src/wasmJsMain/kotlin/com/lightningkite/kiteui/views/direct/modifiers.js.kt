@@ -16,6 +16,12 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 @ViewModifierDsl3
+actual fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection,
+    setup: ViewWriter.() -> Unit
+): ViewWrapper = hasPopover(requiresClick = false, preferredDirection = preferredDirection, setup = { setup() })
+
+@ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,

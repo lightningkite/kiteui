@@ -20,6 +20,9 @@ expect fun ViewWriter.colActual(setup: ContainingView.()->Unit = {}): Unit
 @ViewDsl
 expect fun ViewWriter.rowActual(setup: ContainingView.()->Unit = {}): Unit
 @OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.row(noinline setup: ContainingView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; rowActual(setup) }
+@ViewDsl
+expect fun ViewWriter.rowCollapsingToColumnActual(breakpoint: Dimension, setup: ContainingView.()->Unit = {}): Unit
+@OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.rowCollapsingToColumn(breakpoint: Dimension, noinline setup: ContainingView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; rowCollapsingToColumnActual(breakpoint, setup) }
 
 expect var ContainingView.vertical: Boolean
 
