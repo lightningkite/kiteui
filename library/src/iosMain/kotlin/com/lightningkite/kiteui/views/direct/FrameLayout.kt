@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
+import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATextLayer
 import platform.UIKit.*
 import kotlin.math.max
@@ -35,6 +36,13 @@ class FrameLayout: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
+    }
+    override fun layoutSublayersOfLayer(layer: CALayer) {
+        super.layoutSublayersOfLayer(layer)
+        layer.sublayers?.forEach {
+            if (it is CALayerResizing) it.setNeedsDisplay()
+            if (it is CAGradientLayerResizing) it.setNeedsDisplay()
+        }
     }
     override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null

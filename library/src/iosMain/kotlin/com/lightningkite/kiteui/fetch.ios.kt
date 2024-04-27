@@ -89,10 +89,18 @@ actual suspend fun fetch(
                         null -> {}
                     }
                     onUploadProgress?.let {
-                        onUpload { a, b -> it(a.toInt(), b.toInt()) }
+                        onUpload { a, b ->
+                            withContext(Dispatchers.Main) {
+                                it(a.toInt(), b.toInt())
+                            }
+                        }
                     }
                     onDownloadProgress?.let {
-                        onDownload { a, b -> it(a.toInt(), b.toInt()) }
+                        onDownload { a, b ->
+                            withContext(Dispatchers.Main) {
+                                it(a.toInt(), b.toInt())
+                            }
+                        }
                     }
                 }
             }
@@ -289,11 +297,14 @@ actual class Blob(val data: NSData, val type: String = "application/octet-stream
 actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
 
-actual fun FileReference.mimeType(): String {
-    TODO()
-}
+actual fun FileReference.mimeType(): String = provider.registeredContentTypes
+    .filterIsInstance<UTType>()
+    .firstNotNullOfOrNull { it.preferredMIMEType() } ?: "application/octet-stream"
 actual fun FileReference.fileName(): String {
-    TODO()
+    val extension = provider.registeredContentTypes
+        .filterIsInstance<UTType>()
+        .firstNotNullOfOrNull { it.preferredFilenameExtension } ?: ""
+    return "${provider.suggestedName ?: ""}.$extension"
 }
 
 fun String.nsdata(): NSData? =

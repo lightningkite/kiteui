@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
+import platform.QuartzCore.CALayer
 import platform.UIKit.*
 import kotlin.math.max
 
@@ -66,6 +67,14 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         if (index != -1) childSizeCache[index].clear()
         lastLaidOutSize = null
         informParentOfSizeChange()
+    }
+
+    override fun layoutSublayersOfLayer(layer: CALayer) {
+        super.layoutSublayersOfLayer(layer)
+        layer.sublayers?.forEach {
+            if (it is CALayerResizing) it.setNeedsDisplay()
+            if (it is CAGradientLayerResizing) it.setNeedsDisplay()
+        }
     }
 
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
