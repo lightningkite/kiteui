@@ -4,6 +4,7 @@ import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
@@ -62,6 +63,13 @@ var EditText.keyboardHints: KeyboardHints
             InputType.TYPE_CLASS_PHONE -> KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
             InputType.TYPE_CLASS_DATETIME -> KeyboardHints(KeyboardCase.None, KeyboardType.Text)
             else -> KeyboardHints(KeyboardCase.None, KeyboardType.Text)
+        }.let {
+            autofillHints?.let { hints ->
+                return if (hints.contains(View.AUTOFILL_HINT_EMAIL_ADDRESS)) it.copy(autocomplete = AutoComplete.Email)
+                else if (hints.contains(View.AUTOFILL_HINT_PASSWORD)) it.copy(autocomplete = AutoComplete.Password)
+                else if (hints.contains(View.AUTOFILL_HINT_PHONE)) it.copy(autocomplete = AutoComplete.Phone)
+                else it
+            } ?: it
         }
     }
     set(value) {
@@ -80,8 +88,18 @@ var EditText.keyboardHints: KeyboardHints
 
             KeyboardType.Phone -> InputType.TYPE_CLASS_PHONE
             KeyboardType.Email -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        }.let {
+            if (value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword))
+                it or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            else it
         }
         n.inputType = inputType
+        when (value.autocomplete) {
+            AutoComplete.Email -> View.AUTOFILL_HINT_EMAIL_ADDRESS
+            AutoComplete.Password, AutoComplete.NewPassword -> View.AUTOFILL_HINT_PASSWORD
+            AutoComplete.Phone -> View.AUTOFILL_HINT_PHONE
+            null -> null
+        }?.let { n.setAutofillHints(it) }
     }
 actual var TextField.keyboardHints: KeyboardHints
     get() {

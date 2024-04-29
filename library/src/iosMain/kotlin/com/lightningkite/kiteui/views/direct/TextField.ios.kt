@@ -60,6 +60,13 @@ actual inline var TextField.keyboardHints: KeyboardHints
             KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
             KeyboardType.Email -> UIKeyboardTypeEmailAddress
         }
+        native.textContentType = when (value.autocomplete) {
+            AutoComplete.Email -> UITextContentTypeUsername
+            AutoComplete.Password -> UITextContentTypePassword
+            AutoComplete.NewPassword -> UITextContentTypeNewPassword
+            else -> null
+        }
+        native.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
     }
 actual var TextField.action: Action?
     get() = TODO()
