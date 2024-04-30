@@ -1259,7 +1259,7 @@ object DynamicCSS {
                 "transition-duration" to theme.transitionDuration.toCss(),
             ) + when (val it = theme.foreground) {
                 is Color -> mapOf("color" to it.toCss())
-                else -> mapOf(
+                is LinearGradient, is RadialGradient -> mapOf(
                     "color" to it.toCss(),
                     "background" to "-webkit-${it.toCss()}",
                     "-webkit-background-clip" to "text",
