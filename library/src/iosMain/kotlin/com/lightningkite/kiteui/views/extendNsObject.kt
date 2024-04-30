@@ -3,11 +3,13 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
+import platform.QuartzCore.CALayer
 import platform.UIKit.UIView
 import platform.darwin.NSObject
 import platform.objc.objc_AssociationPolicy
@@ -86,6 +88,9 @@ var UIView.extensionAnimationDuration: Double? by UIViewAnimationDuration
 
 private val UIViewProp = ExtensionProperty<UIView, Property<*>>()
 var UIView.extensionProp: Property<*>? by UIViewProp
+
+//private val CALayerCornerRadii = ExtensionProperty<CALayer, CornerRadii>()
+//var CALayer.cornerRadii: CornerRadii? by CALayerCornerRadii
 
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
 var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder

@@ -264,6 +264,19 @@ class ReactivityTests {
             assertEquals(2, hits)
         }
     }
+
+    @Test fun bindTest() {
+        val master = LateInitProperty<Int>()
+        val secondary = Property<Int>(0)
+        testContext {
+            reactiveScope { println("master: ${master()}") }
+            reactiveScope { println("secondary: ${secondary()}") }
+            secondary bind master
+            secondary.value = 1
+            master.value = 5
+
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {
@@ -331,7 +344,9 @@ fun testContext(action: CalculationContext.()->Unit): Cancellable {
             }
         }
     }) {
-        action()
+        CalculationContextStack.useIn(this) {
+            action()
+        }
         if(error != null) throw error!!
         assertEquals(numOutstandingContracts, 0)
     }

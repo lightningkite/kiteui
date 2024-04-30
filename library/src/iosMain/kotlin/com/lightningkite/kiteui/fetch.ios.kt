@@ -107,7 +107,7 @@ actual suspend fun fetch(
 
             RequestResponse(response)
         } catch (e: Exception) {
-            throw e
+            throw ConnectionException("Network request failed", e)
         }
     }
 }
@@ -117,6 +117,7 @@ actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders =
 
 actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
+
 actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
 actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
@@ -167,7 +168,9 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders get() = HttpHeaders(wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
+    actual val headers: HttpHeaders
+        get() = HttpHeaders(
+            wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
 actual fun websocket(url: String): WebSocket {
@@ -205,59 +208,65 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
     init {
         GlobalScope.launch(Dispatchers.IO) {
-            client.webSocket(url) {
-                withContext(Dispatchers.Main) {
-                    onOpen.forEach { it() }
-                }
-                launch {
-                    try {
-                        while (stayOn) {
-                            send(sending.receive())
-                        }
-                    } catch (e: ClosedReceiveChannelException) {
+            try {
+                client.webSocket(url) {
+                    withContext(Dispatchers.Main) {
+                        onOpen.forEach { it() }
                     }
-                }
-                launch {
-                    try {
-                        this@WebSocketWrapper.closeReason.receive().let { reason ->
-                            close(reason)
-                            withContext(Dispatchers.Main) {
-                                onClose.forEach { it(reason.code) }
+                    launch {
+                        try {
+                            while (stayOn) {
+                                send(sending.receive())
                             }
+                        } catch (e: ClosedReceiveChannelException) {
                         }
-                    } catch (e: ClosedReceiveChannelException) {
                     }
-                }
-                var reason: CloseReason? = null
-                while (stayOn) {
-                    try {
-                        when (val x = incoming.receive()) {
-                            is Frame.Binary -> {
-                                val data = Blob(x.data.toNSData())
+                    launch {
+                        try {
+                            this@WebSocketWrapper.closeReason.receive().let { reason ->
+                                close(reason)
                                 withContext(Dispatchers.Main) {
-                                    onBinaryMessage.forEach { it(data) }
+                                    onClose.forEach { it(reason.code) }
                                 }
                             }
-
-                            is Frame.Text -> {
-                                val text = x.readText()
-                                withContext(Dispatchers.Main) {
-                                    onMessage.forEach { it(text) }
-                                }
-                            }
-
-                            is Frame.Close -> {
-                                reason = x.readReason()
-                                break
-                            }
-
-                            else -> {}
+                        } catch (e: ClosedReceiveChannelException) {
                         }
-                    } catch (e: ClosedReceiveChannelException) {
+                    }
+                    var reason: CloseReason? = null
+                    while (stayOn) {
+                        try {
+                            when (val x = incoming.receive()) {
+                                is Frame.Binary -> {
+                                    val data = Blob(x.data.toNSData())
+                                    withContext(Dispatchers.Main) {
+                                        onBinaryMessage.forEach { it(data) }
+                                    }
+                                }
+
+                                is Frame.Text -> {
+                                    val text = x.readText()
+                                    withContext(Dispatchers.Main) {
+                                        onMessage.forEach { it(text) }
+                                    }
+                                }
+
+                                is Frame.Close -> {
+                                    reason = x.readReason()
+                                    break
+                                }
+
+                                else -> {}
+                            }
+                        } catch (e: ClosedReceiveChannelException) {
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    onClose.forEach { it(reason?.code ?: 0) }
+                    onClose.forEach { it(0) }
                 }
             }
         }
@@ -300,6 +309,7 @@ actual class FileReference(val provider: NSItemProvider, val suggestedType: UTTy
 actual fun FileReference.mimeType(): String = provider.registeredContentTypes
     .filterIsInstance<UTType>()
     .firstNotNullOfOrNull { it.preferredMIMEType() } ?: "application/octet-stream"
+
 actual fun FileReference.fileName(): String {
     val extension = provider.registeredContentTypes
         .filterIsInstance<UTType>()

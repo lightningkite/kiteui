@@ -128,6 +128,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             override var isPlaying: Boolean
                 get() = !native.paused
                 set(value) {
+                    println("Play ${this@load} started")
                     if (value) native.play() else native.pause()
                 }
 
@@ -156,6 +157,9 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
             else -> {}
         }
-        return@suspendCoroutineCancellable { native.src = "" }
+        return@suspendCoroutineCancellable {
+            println("Cancelled loading of ${this@load}.")
+            native.src = ""
+        }
     }
 }

@@ -10,6 +10,7 @@ buildscript {
         maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
         google()
         mavenCentral()
+        maven("https://jitpack.io")
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
@@ -23,6 +24,7 @@ allprojects {
     group = "com.lightningkite.kiteui"
     repositories {
         mavenLocal()
+        maven("https://jitpack.io")
 //        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
         google()
@@ -31,6 +33,7 @@ allprojects {
 }
 repositories {
     mavenLocal()
+    maven("https://jitpack.io")
     maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
     maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
     google()

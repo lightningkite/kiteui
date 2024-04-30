@@ -11,6 +11,7 @@ import org.w3c.xhr.ProgressEvent
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 
 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE", "UnsafeCastFromDynamic")
@@ -39,7 +40,12 @@ actual suspend fun fetch(
         request.responseType = XMLHttpRequestResponseType.BLOB
         request.open(method.name, url)
         headers.forEach { key, value -> request.setRequestHeader(key, value) }
-        request.onloadend = { ev -> cont.resume(RequestResponse(request)) }
+        request.onloadend = { ev ->
+            if(request.status >= 100)
+                cont.resume(RequestResponse(request))
+            else
+                cont.resumeWithException(ConnectionException("Connection failed"))
+        }
         when (body) {
             null -> request.send()
             is RequestBodyBlob -> {

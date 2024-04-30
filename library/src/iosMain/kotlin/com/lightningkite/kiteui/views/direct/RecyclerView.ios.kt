@@ -322,21 +322,21 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
                 if(vertical) {
                     size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
-                    element.layoutSubviews()
+                    element.layoutSubviewsAndLayers()
                 } else {
                     size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
-                    element.layoutSubviews()
+                    element.layoutSubviewsAndLayers()
                 }
             } else {
                 if(vertical) {
                     size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(this@NRecyclerView.bounds.useContents { size.width }, 10000.0)).useContents { height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
-                    element.layoutSubviews()
+                    element.layoutSubviewsAndLayers()
                 } else {
                     size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(10000.0, this@NRecyclerView.bounds.useContents { size.height })).useContents { width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
-                    element.layoutSubviews()
+                    element.layoutSubviewsAndLayers()
                 }
             }
         }

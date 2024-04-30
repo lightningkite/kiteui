@@ -31,7 +31,7 @@ interface CalculationContext {
             onRemoveSet.add(action)
         }
         override fun cancel() {
-            onRemoveSet.forEach { it() }
+            onRemoveSet.invokeAllSafe()
             onRemoveSet.clear()
         }
     }

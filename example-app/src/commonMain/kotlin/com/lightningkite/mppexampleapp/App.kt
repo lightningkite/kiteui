@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.l2.*
 import kotlin.time.Duration.Companion.seconds
 
 val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)).copy(
-    transitionDuration = 1.seconds,
+    transitionDuration = 0.25.seconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
     dialogTransitions = ScreenTransitions.FadeResize,
 ))

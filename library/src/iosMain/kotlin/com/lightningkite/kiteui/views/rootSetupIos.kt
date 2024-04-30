@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.kiteui.reactive.SoftInputOpen
+import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
 import kotlinx.cinterop.CPointer
 import platform.Foundation.NSNotification
@@ -87,4 +88,9 @@ fun UIViewController.setup(app: ViewWriter.()->Unit) {
     val g = UITapGestureRecognizer(target = observer, action = sel_registerName("hideKeyboardWhenTappedAround"))
     g.cancelsTouchesInView = false
     view.addGestureRecognizer(g)
+
+    subview.observe("bounds") {
+        println("Root bounds change")
+        subview.layoutLayers()
+    }
 }

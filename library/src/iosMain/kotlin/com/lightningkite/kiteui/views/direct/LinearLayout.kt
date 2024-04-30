@@ -69,14 +69,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         informParentOfSizeChange()
     }
 
-    override fun layoutSublayersOfLayer(layer: CALayer) {
-        super.layoutSublayersOfLayer(layer)
-        layer.sublayers?.forEach {
-            if (it is CALayerResizing) it.setNeedsDisplay()
-            if (it is CAGradientLayerResizing) it.setNeedsDisplay()
-        }
-    }
-
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
 
@@ -239,7 +231,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                 heightSize,
             )
             if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                view.layoutSubviews()
+                view.layoutSubviewsAndLayers()
             }
             primary += size.primary
         }

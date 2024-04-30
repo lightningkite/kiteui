@@ -10,10 +10,10 @@ actual val Int.px: Dimension
     get() = Dimension(this.toDouble() / UIScreen.mainScreen.scale)
 
 actual val Int.rem: Dimension
-    get() = Dimension(this.toDouble() * UIFont.systemFontSize)
+    get() = Dimension(this.toDouble() * UIFont.systemFontSize * 0.75)
 
 actual val Double.rem: Dimension
-    get() = Dimension(this * UIFont.systemFontSize)
+    get() = Dimension(this * UIFont.systemFontSize * 0.75)
 
 actual val Int.dp: Dimension
     get() = Dimension(this.toDouble())

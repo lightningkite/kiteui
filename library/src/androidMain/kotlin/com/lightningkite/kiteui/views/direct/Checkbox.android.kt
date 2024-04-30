@@ -29,13 +29,14 @@ actual val Checkbox.checked: Writable<Boolean>
 actual inline fun ViewWriter.checkboxActual(crossinline setup: Checkbox.() -> Unit) {
     return viewElement(factory = ::AndroidCheckBox, wrapper = ::Checkbox) {
         val theme = currentTheme
+        transitionNextView = ViewWriter.TransitionNextView.No
         reactiveScope {
             val it = theme()
             CompoundButtonCompat.setButtonTintList(
                 native, ColorStateList(
                     arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
-                        it.selected().let { it.iconOverride ?: it.foreground }.closestColor().copy(alpha = 0.75f).colorInt(),
-                        it.selected().let { it.iconOverride ?: it.foreground }.colorInt()
+                        it.let { it.iconOverride ?: it.foreground }.closestColor().copy(alpha = 0.75f).colorInt(),
+                        it.let { it.iconOverride ?: it.foreground }.colorInt()
                     )
                 )
             )

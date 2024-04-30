@@ -5,6 +5,7 @@ pluginManagement {
         google()
         gradlePluginPortal()
         mavenCentral()
+        maven("https://jitpack.io")
     }
     val kotlinVersion: String by settings
     val kspVersion: String by settings

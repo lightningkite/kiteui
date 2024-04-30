@@ -160,7 +160,7 @@ class ViewWriter(
      * Wraps the next created element within this element.
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
+    fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
         stack.lastOrNull()?.addNView(element) ?: run { rootCreated = element }
         stack.add(element)
         val beforeCopy = beforeNextElementSetupList.toList()
@@ -186,7 +186,7 @@ class ViewWriter(
     /**
      * Writes an element to the current parent.
      */
-    inline fun <T : NView> element(initialElement: T, setup: T.() -> Unit) {
+    fun <T : NView> element(initialElement: T, setup: T.() -> Unit) {
         initialElement.apply {
             stack.lastOrNull()?.addNView(this) ?: run { rootCreated = this }
             val beforeCopy =

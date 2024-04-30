@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.reactive.CalculationContext
+import com.lightningkite.kiteui.reactive.invokeAllSafe
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
@@ -125,7 +126,7 @@ fun NView.shutdown() {
 data class NViewCalculationContext(val native: NView): CalculationContext.WithLoadTracking(), Cancellable {
     val removeListeners = ArrayList<()->Unit>()
     override fun cancel() {
-        removeListeners.removeAll { it(); true }
+        removeListeners.invokeAllSafe()
     }
 
     override fun onRemove(action: () -> Unit) {

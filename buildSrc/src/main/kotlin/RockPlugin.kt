@@ -208,51 +208,13 @@ actual object Resources {
                             }
 
                             is Resource.Audio -> {
-                                val f = outAssets.resolve(it.key + ".dataset")
-                                f.mkdirs()
-                                val i = f.resolve(r.source.name)
+                                val i = outNonAssets.resolve(r.source.name)
                                 r.source.copyTo(i, overwrite = true)
-                                f.resolve("Contents.json").writeText(
-                                    """
-                                    {
-                                      "data" : [
-                                        {
-                                          "filename" : "${i.name}",
-                                          "idiom" : "universal"
-                                        }
-                                      ],
-                                      "info" : {
-                                        "author" : "xcode",
-                                        "version" : 1
-                                      }
-                                    }
-
-                            """.trimIndent()
-                                )
                             }
 
                             is Resource.Video -> {
-                                val f = outAssets.resolve(it.key + ".dataset")
-                                f.mkdirs()
-                                val i = f.resolve(r.source.name)
+                                val i = outNonAssets.resolve(r.source.name)
                                 r.source.copyTo(i, overwrite = true)
-                                f.resolve("Contents.json").writeText(
-                                    """
-                                    {
-                                      "data" : [
-                                        {
-                                          "filename" : "${i.name}",
-                                          "idiom" : "universal"
-                                        }
-                                      ],
-                                      "info" : {
-                                        "author" : "xcode",
-                                        "version" : 1
-                                      }
-                                    }
-
-                            """.trimIndent()
-                                )
                             }
 
                             is Resource.Binary -> {

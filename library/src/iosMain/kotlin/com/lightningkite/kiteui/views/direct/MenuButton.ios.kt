@@ -62,6 +62,7 @@ actual class NMenuButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverri
 @ViewDsl
 actual inline fun ViewWriter.menuButtonActual(crossinline setup: MenuButton.() -> Unit): Unit = element(NMenuButton()) {
     val l = iosCalculationContext.loading
+    this.navigator = this@menuButtonActual.navigator
     handleThemeControl(this) {
         setup(MenuButton(this))
     }

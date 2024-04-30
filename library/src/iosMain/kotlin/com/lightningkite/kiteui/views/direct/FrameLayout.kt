@@ -37,13 +37,6 @@ class FrameLayout: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
-    override fun layoutSublayersOfLayer(layer: CALayer) {
-        super.layoutSublayersOfLayer(layer)
-        layer.sublayers?.forEach {
-            if (it is CALayerResizing) it.setNeedsDisplay()
-            if (it is CAGradientLayerResizing) it.setNeedsDisplay()
-        }
-    }
     override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null
         if(this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path
+            path="images"
+            name="image-cache" />
+    <cache-path
+            path="videos"
+            name="video-cache" />
+</paths>
