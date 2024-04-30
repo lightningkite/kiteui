@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.direct.*
 object ExternalServicesScreen : Screen {
     override val title: Readable<String>
         get() = super.title
-//    val clip = Property<String>("")
+    val image = Property<ImageSource?>(null)
     override fun ViewWriter.render() {
         col {
             col {
@@ -19,29 +19,68 @@ object ExternalServicesScreen : Screen {
 //                text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }
             } in padded
 
-            button {
-                text { content = "openTab" }
-                onClick { ExternalServices.openTab("https://google.com") }
+            row {
+                button {
+                    text { content = "openTab" }
+                    onClick { ExternalServices.openTab("https://google.com") }
+                }
+
+                button {
+                    text { content = "openTab (mail)" }
+                    onClick { ExternalServices.openTab("mailto:joseph@lightningkite.com") }
+                }
+                button {
+                    text { content = "openTab (phone)" }
+                    onClick { ExternalServices.openTab("tel:8013693729") }
+                }
+            }
+            row {
+                externalLink {
+                    text { content = "openTab" }
+                    to = "https://google.com"
+                }
+
+                externalLink {
+                    text { content = "openTab (mail)" }
+                    to = "mailto:joseph@lightningkite.com"
+                }
+                externalLink {
+                    text { content = "openTab (phone)" }
+                    to = "tel:8013693729"
+                }
             }
 
             button {
                 text { content = "requestFile" }
-                onClick { ExternalServices.requestFile(listOf("image/*")) }
+                onClick {
+                    println(ExternalServices.requestFile(listOf("image/*")))
+                }
             }
 
             button {
                 text { content = "requestFiles" }
-                onClick { ExternalServices.requestFiles(listOf("image/*")) }
+                onClick {
+                    println(ExternalServices.requestFiles(listOf("image/*")))
+                }
             }
 
             button {
                 text { content = "requestCaptureSelf" }
-                onClick { ExternalServices.requestCaptureSelf(listOf("image/*")) }
+                onClick {
+                    image.value = ExternalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
+                }
             }
 
             button {
                 text { content = "requestCaptureEnvironment" }
-                onClick { ExternalServices.requestCaptureEnvironment(listOf("image/*")) }
+                onClick {
+                    image.value = ExternalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
+                }
+            }
+
+            expanding - zoomableImage {
+                ::source { image.invoke() }
+                scaleType = ImageScaleType.Crop
             }
 //            row {
 //                textField { content bind clip }

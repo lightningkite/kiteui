@@ -105,8 +105,9 @@ actual object ExternalServices {
                 intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
             }
             AndroidAppContext.startActivityForResult(intent) { code, data ->
+                println("Result is $code $data")
                 if (code == Activity.RESULT_OK) {
-                    cont.resume(data?.data?.let(::FileReference))
+                    cont.resume((data?.data ?: file)?.let(::FileReference))
                 } else {
                     cont.resume(null)
                 }

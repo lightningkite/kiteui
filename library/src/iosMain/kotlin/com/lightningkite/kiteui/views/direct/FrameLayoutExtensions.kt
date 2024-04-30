@@ -49,7 +49,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
                 heightSize,
             )
             if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                view.layoutSubviews()
+                view.layoutSubviewsAndLayers()
             }
             Unit
         }

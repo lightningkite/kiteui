@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.Animation
 import android.widget.*
+import android.widget.ImageView
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -187,7 +188,7 @@ inline fun <T : NView> ViewWriter.handleTheme(
                 view.elevation = 0f
                 view.background = theme.rippleDrawableOnly(parentSpacing, view.background)
                 backgroundRemove()
-            } else if (view is TransitionImageView) {
+            } else if (view is ImageView) {
                 val parentSpacing = parentSpacingCalc().value
                 view.elevation = 0f
                 view.background = GradientDrawable().apply {

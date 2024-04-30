@@ -7,6 +7,7 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import androidx.core.view.children
 import com.lightningkite.kiteui.Cancellable
 import com.lightningkite.kiteui.KiteUiActivity
@@ -16,9 +17,11 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.HasSpacingMultiplier
 import com.lightningkite.kiteui.views.direct.KiteUiLayoutTransition
+import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
@@ -69,12 +72,16 @@ fun View.shutdown() {
     ViewCalculationContexts[this]?.cancel()
     ViewCalculationContexts.remove(this)
     ViewAction.remove(this)
+    if(this is ViewGroup)
+        for(child in this.children) {
+            child.shutdown()
+        }
 }
 
 data class NViewCalculationContext(val native: View): CalculationContext.WithLoadTracking(), Cancellable {
     val onRemove = ArrayList<()->Unit>()
     override fun cancel() {
-        onRemove.forEach { it() }
+        onRemove.invokeAllSafe()
         onRemove.clear()
     }
     override fun onRemove(action: () -> Unit) {

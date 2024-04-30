@@ -25,7 +25,7 @@ value class ReadableState<out T>(val raw: T) {
     }
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
-        if(raw is NotReady || raw is ThrownException) return raw as ReadableState<B>
+        if(raw is NotReady || raw is ThrownException) return this as ReadableState<B>
         try {
             return ReadableState(mapper(raw))
         } catch(e: Exception) {

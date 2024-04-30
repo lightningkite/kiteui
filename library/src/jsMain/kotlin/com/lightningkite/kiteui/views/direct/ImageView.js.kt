@@ -48,21 +48,24 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
-    if((native.lastElementChild as? HTMLImageElement)?.src ?: "" == url) return
+    if(((native.lastElementChild as? HTMLImageElement)?.src ?: "") == url) {
+        (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
+        return
+    }
     if(!animationsEnabled) {
         native.innerHTML = ""
     }
     if(url.isBlank()) {
         if(animationsEnabled) {
             val children = (0..<native.children.length).mapNotNull { native.children[it] }
-            children.forEach {
-                (it as? HTMLElement)?.style?.opacity = "0"
+            children.filterIsInstance<HTMLElement>().forEach {
+                it.style.opacity = "0"
+                window.setTimeout({
+                    if(it.parentElement == native && it.style.opacity == "0") {
+                        native.removeChild(it)
+                    }
+                }, 150)
             }
-            window.setTimeout({
-                children.forEach {
-                    native.removeChild(it)
-                }
-            }, 150)
         }
         return
     }
@@ -86,9 +89,11 @@ fun ImageView.setSrc(url: String) {
             newElement.style.opacity = "1"
         }
         for(index in 0..<myIndex) {
-            val it = children[index]
+            val it = children[index] as? HTMLElement ?: continue
             window.setTimeout({
-                native.removeChild(it)
+                if(it.parentElement == native && it.style.opacity == "0") {
+                    native.removeChild(it)
+                }
             }, 150)
         }
     }

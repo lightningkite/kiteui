@@ -125,7 +125,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
             heightSize,
         )
         if (oldSize.first != widthSize || oldSize.second != heightSize) {
-            view.layoutSubviews()
+            view.layoutSubviewsAndLayers()
         }
         primary += size.primary
         primary += padding

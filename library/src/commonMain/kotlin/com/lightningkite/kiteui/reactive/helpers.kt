@@ -36,26 +36,27 @@ fun List<() -> Unit>.invokeAllSafe() = forEach {
 
 infix fun <T> Writable<T>.bind(master: Writable<T>) {
     with(CalculationContextStack.current()) {
+        var setting = false
         launch {
             this@bind.set(master.await())
+            master.addListener {
+                if (setting) return@addListener
+                setting = true
+                launch {
+                    this@bind.set(master.await())
+                }
+                setting = false
+            }.also { onRemove(it) }
+            this@bind.addListener {
+                if (setting) return@addListener
+                setting = true
+                launch {
+                    master.set(this@bind.await())
+                }
+                setting = false
+            }.also { onRemove(it) }
         }
-        var setting = false
-        master.addListener {
-            if (setting) return@addListener
-            setting = true
-            launch {
-                this@bind.set(master.await())
-            }
-            setting = false
-        }.also { onRemove(it) }
-        this@bind.addListener {
-            if (setting) return@addListener
-            setting = true
-            launch {
-                master.set(this@bind.await())
-            }
-            setting = false
-        }.also { onRemove(it) }
+
     }
 }
 

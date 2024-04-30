@@ -16,7 +16,9 @@ import kotlin.math.roundToInt
 @Routable("controls")
 object ControlsScreen : Screen {
     override fun ViewWriter.render() {
-        val booleanContent = Property(true)
+        val booleanContent = Property(true).also {
+            it.addListener { println("booleanContent changed!") }
+        }
         col {
 
             h1 { content = "Controls" }

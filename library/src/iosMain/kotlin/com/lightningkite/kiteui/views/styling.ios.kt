@@ -4,20 +4,20 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.views.direct.observe
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
-import platform.Foundation.NSNumber
-import platform.Foundation.numberWithFloat
-import platform.QuartzCore.CAGradientLayer
-import platform.QuartzCore.CALayer
-import platform.QuartzCore.kCAGradientLayerAxial
-import platform.QuartzCore.kCAGradientLayerRadial
+import platform.QuartzCore.*
 import platform.UIKit.UIColor
 import platform.UIKit.UIImageView
 import platform.UIKit.UIView
+import platform.darwin.NSObject
 import kotlin.math.min
 import kotlin.time.DurationUnit
+import platform.Foundation.*
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -81,7 +81,8 @@ fun ViewWriter.handleTheme(
             view.extensionPadding = 0.0
         }
 
-        val loading = viewLoads && view.iosCalculationContext.loading.await()
+//        val loading = viewLoads && view.iosCalculationContext.loading.await()
+        val loading = false
 
         val parentSpacing = parentSpacingCalc().value
         animateAfterFirst {
@@ -145,12 +146,12 @@ private fun applyThemeBackground(
     parentSpacing: Double,
     borders: Boolean
 ) {
+//    view.layer.observe()
     view.clearOldLayers()
     val newLayer = when (val b = theme.background) {
         is Color -> CALayerResizing().apply {
             this.parentSpacing = parentSpacing
             this.backgroundColor = b.toUiColor().CGColor!!
-            this.needsDisplayOnBoundsChange = true
 
             if (borders) {
                 borderWidth = theme.outlineWidth.value
@@ -171,7 +172,6 @@ private fun applyThemeBackground(
             this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
             this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
             this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
-            this.needsDisplayOnBoundsChange = true
 
             if (borders) {
                 borderWidth = theme.outlineWidth.value
@@ -192,7 +192,6 @@ private fun applyThemeBackground(
             this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
             this.startPoint = CGPointMake(0.5, 0.5)
             this.endPoint = CGPointMake(0.0, 0.0)
-            this.needsDisplayOnBoundsChange = true
             if(borders) {
                 borderWidth = theme.outlineWidth.value
                 borderColor = theme.outline.closestColor().toUiColor().CGColor
@@ -205,10 +204,42 @@ private fun applyThemeBackground(
         }
     }
     view.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+    newLayer.matchParentSize("insert")
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class CAGradientLayerResizing: CAGradientLayer() {
+private inline fun CALayer.matchParentSize(context: String) {
+    superlayer?.bounds?.let {
+        println("$context: Matching size to ${it.useContents { "${size.width}x${size.height}" }} - ${this.superlayer?.delegate?.debugDescription()}")
+        frame = it
+    }
+}
+
+internal inline fun UIView.layoutSubviewsAndLayers() {
+    layoutSubviews()
+    layoutLayers()
+}
+
+internal fun UIView.layoutLayers() {
+    layer.sublayers?.forEach {
+        it as CALayer
+        if(it is CALayerResizing) {
+            it.matchParentSize("layoutSubviewsAndLayers")
+            it.refreshCorners()
+        } else if(it is CAGradientLayerResizing) {
+            it.matchParentSize("layoutSubviewsAndLayers")
+            it.refreshCorners()
+        }
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+class CAGradientLayerResizing: CAGradientLayer {
+
+    @OverrideInit constructor():super()
+    @OverrideInit constructor(coder: platform.Foundation.NSCoder):super(coder)
+    @OverrideInit constructor(layer: kotlin.Any):super(layer)
+
     var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
         set(value) {
             field = value
@@ -227,25 +258,22 @@ class CAGradientLayerResizing: CAGradientLayer() {
             is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
             is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
         }
-        superlayer?.cornerRadius = v
+        superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         cornerRadius = v
     }
 
     init {
         needsDisplayOnBoundsChange = true
-        frame = CGRectMake(0.0, 0.0, 10.0, 10.0)
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    override fun drawInContext(ctx: CGContextRef?) {
-        superlayer?.bounds?.let { frame = it }
-        refreshCorners()
-        super.drawInContext(ctx)
     }
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class CALayerResizing: CALayer() {
+class CALayerResizing: CALayer {
+
+    @OverrideInit constructor():super()
+    @OverrideInit constructor(coder: platform.Foundation.NSCoder):super(coder)
+    @OverrideInit constructor(layer: kotlin.Any):super(layer)
+
     var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
         set(value) {
             field = value
@@ -264,25 +292,13 @@ class CALayerResizing: CALayer() {
             is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
             is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
         }
-        superlayer?.cornerRadius = v
+        superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         cornerRadius = v
     }
 
     init {
         needsDisplayOnBoundsChange = true
         frame = CGRectMake(0.0, 0.0, 10.0, 10.0)
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    override fun drawInContext(ctx: CGContextRef?) {
-        superlayer?.bounds?.let { frame = it }
         refreshCorners()
-        super.drawInContext(ctx)
-    }
-
-    // layoutSublayersOfLayer implementation that calls setNeedsDisplay on this class somehow causes the system to call
-    // this method (and fail if an implementation is not provided)
-    override fun initWithLayer(layer: Any): CALayer {
-        return CALayer(layer)
     }
 }

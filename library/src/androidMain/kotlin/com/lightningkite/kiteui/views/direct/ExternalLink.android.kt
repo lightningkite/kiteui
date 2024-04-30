@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Intent
 import android.net.Uri
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
@@ -19,18 +20,7 @@ actual var ExternalLink.to: String
     set(value) {
         native.tag = UUID.randomUUID() to value
         native.setOnClickListener { view ->
-            val url = if(!value.startsWith("http")) "http://$value" else value
-            val temp = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            view.context.startActivity(temp)
-            calculationContext.launchManualCancel { native.onNavigate() }
-//            val intent = Intent().apply {
-//                action = Intent.ACTION_VIEW
-//                categories?.add(Intent.CATEGORY_APP_BROWSER)
-//                data = Uri.parse(value)
-//            }
-//            view.context.packageManager.resolveActivity(intent, intent.flags)?.let {
-//                view.context.startActivity(intent)
-//            }
+            ExternalServices.openTab(value)
         }
     }
 actual var ExternalLink.newTab: Boolean

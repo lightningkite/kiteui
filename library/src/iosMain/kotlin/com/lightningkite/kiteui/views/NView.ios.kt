@@ -15,6 +15,7 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
+import com.lightningkite.kiteui.reactive.invokeAllSafe
 
 actual fun NView.removeNView(child: NView) {
     child.removeFromSuperview()
@@ -86,7 +87,7 @@ class NViewCalculationContext() : CalculationContext.WithLoadTracking(), Cancell
 
     val onRemove = ArrayList<() -> Unit>()
     override fun cancel() {
-        onRemove.forEach { it() }
+        onRemove.invokeAllSafe()
         onRemove.clear()
     }
 

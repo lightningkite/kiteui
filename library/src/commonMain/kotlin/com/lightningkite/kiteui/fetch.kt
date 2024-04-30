@@ -28,6 +28,8 @@ expect suspend fun fetch(
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
 ): RequestResponse
 
+class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
+
 enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
 
 fun httpHeaders(vararg entries: Pair<String, String>) = httpHeaders(entries.toList())

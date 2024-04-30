@@ -11,10 +11,6 @@ plugins {
     id("signing")
 }
 
-repositories {
-    mavenCentral()
-}
-
 val ktorVersion = "2.3.7"
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -30,7 +26,8 @@ kotlin {
             api("androidx.transition:transition:1.4.1")
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
-            api("com.squareup.picasso:picasso:2.8")
+            api("com.github.bumptech.glide:glide:5.0.0-rc01")
+            api("com.github.MikeOrtiz:TouchImageView:3.6")
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")
