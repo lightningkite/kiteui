@@ -84,20 +84,20 @@ data class ImageVector(
     data class Path(val fillColor: Paint? = null, val strokeColor: Color? = null, val strokeWidth: Double? = null, val path: String)
 }
 data class ImageRemote(val url: String) : ImageSource()
-class ImageRaw(val data: Blob) : ImageSource()
-class ImageLocal(val file: FileReference) : ImageSource()
+data class ImageRaw(val data: Blob) : ImageSource()
+data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
 
 expect sealed class VideoSource()
 data class VideoRemote(val url: String) : VideoSource()
-class VideoRaw(val data: ByteArray) : VideoSource()
-class VideoLocal(val file: FileReference) : VideoSource()
+data class VideoRaw(val data: ByteArray) : VideoSource()
+data class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 
 expect sealed class AudioSource()
 data class AudioRemote(val url: String) : AudioSource()
-class AudioRaw(val data: Blob) : AudioSource()
-class AudioLocal(val file: FileReference) : AudioSource()
+data class AudioRaw(val data: Blob) : AudioSource()
+data class AudioLocal(val file: FileReference) : AudioSource()
 expect class AudioResource : AudioSource
 
 data class SizeConstraints(
