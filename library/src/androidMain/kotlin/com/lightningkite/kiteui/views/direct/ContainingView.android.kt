@@ -11,9 +11,12 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.reactiveScope
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NContainingView = ViewGroup
@@ -97,3 +100,31 @@ actual var ContainingView.vertical: Boolean
     set(value) {
         (native as? SimplifiedLinearLayout)?.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
     }
+
+@ViewDsl
+actual fun ViewWriter.rowCollapsingToColumnActual(
+    breakpoint: Dimension,
+    setup: ContainingView.() -> Unit
+) {
+    viewElement(factory = ::SlightlyModifiedLinearLayout, wrapper = ::ContainingView) {
+        val l = native as SlightlyModifiedLinearLayout
+        l.orientation = SimplifiedLinearLayout.VERTICAL
+        l.gravity = Gravity.CENTER_HORIZONTAL
+        reactiveScope {
+            if(WindowInfo().width < breakpoint) {
+                l.orientation = SimplifiedLinearLayout.VERTICAL
+                l.gravity = Gravity.CENTER_HORIZONTAL
+                l.ignoreWeights = true
+            } else {
+                l.orientation = SimplifiedLinearLayout.HORIZONTAL
+                l.gravity = Gravity.CENTER_VERTICAL
+                l.ignoreWeights = false
+            }
+        }
+        handleTheme(l, viewDraws = false, foreground = { t, v ->
+            v.gap = (v.spacingOverride.value ?: t.spacing).value.toInt()
+        }) {
+            setup(ContainingView(l))
+        }
+    }
+}

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.dom.HTMLScriptElement
 import com.lightningkite.kiteui.reactive.*
@@ -13,19 +14,20 @@ import org.w3c.dom.ScrollRestoration
 import kotlin.math.min
 
 actual fun ScreenStack.bindToPlatform(context: NContext) {
+    val log = ConsoleRoot.tag("ScreenStack.bindToPlatform")
     val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 
     fun guessAndImplementFromUrlBar() {
         val urlBar = window.location.urlLike()
         val goToIndex = storedStack.value.indexOfLast { UrlLikePath.fromUrlString(it) == urlBar }
-        println("Finding $urlBar in ${storedStack.value}, index $goToIndex")
+        log.log("Finding $urlBar in ${storedStack.value}, index $goToIndex")
         if (goToIndex == -1) {
-            println("Could not find, pushing")
+            log.log("Could not find, pushing")
             val newScreen = (routes.parseOrFallback(urlBar) ?: routes.fallback)
             this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newScreen
             routes.render(newScreen)?.let { storedStack.value += it.urlLikePath.render() }
         } else {
-            println("Found, popping backwards")
+            log.log("Found, popping backwards")
             storedStack.value = storedStack.value.subList(0, goToIndex + 1)
             this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) }
         }
@@ -42,10 +44,10 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
                 ?.takeIf { it < stack.value.size }
                 ?.takeIf { window.location.urlLike() == routes.render(stack.value[it])?.urlLikePath }
                 ?.let {
-                    println("popstate pops back to index $it")
+                    log.log("popstate pops back to index $it")
                     stack.value = stack.value.subList(0, it + 1)
                 } ?: run {
-                println("popstate is going to match the best it can")
+                log.log("popstate is going to match the best it can")
                 guessAndImplementFromUrlBar()
             }
         } finally {
@@ -66,14 +68,14 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
                 if (indexWhereChangesStart == -1) indexWhereChangesStart = min(s.size, lastStack.size)
                 val removed = lastStack.subList(indexWhereChangesStart, lastStack.size)
                 val added = s.subList(indexWhereChangesStart, s.size)
-                println("Nav changed!  Removed $removed, added $added")
+                log.log("Nav changed!  Removed $removed, added $added")
 //                if (removed.isNotEmpty()) {
 //                    // Pop the states
 //                    try {
 //                        suppressNav = true
 //                        for (item in removed) {
 //                            if (routes.render(item) == null) continue
-//                            println("Popping...")
+//                            log.log("Popping...")
 //                            window.history.back()
 //                        }
 //                    } finally {
@@ -83,7 +85,7 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
                 if (added.isNotEmpty()) {
                     for ((index, new) in added.withIndex()) {
                         routes.render(new)?.urlLikePath?.render()?.let {
-                            println("Pushing $it as index ${index + indexWhereChangesStart}...")
+                            log.log("Pushing $it as index ${index + indexWhereChangesStart}...")
                             window.history.pushState(index + indexWhereChangesStart, "", basePath + it)
                         }
                     }
@@ -96,7 +98,7 @@ actual fun ScreenStack.bindToPlatform(context: NContext) {
             val s = stack()
             s.lastOrNull()?.let { routes.render(it) }?.let {
                 it.listenables.forEach { rerunOn(it) }
-                println("Replacing  state as index ${s.lastIndex}")
+                log.log("Replacing  state as index ${s.lastIndex}")
                 window.history.replaceState(
                     s.lastIndex, "", basePath + it.urlLikePath.render()
                 )

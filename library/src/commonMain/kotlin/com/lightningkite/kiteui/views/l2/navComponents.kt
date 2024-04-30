@@ -194,12 +194,15 @@ private fun ViewWriter.navGroupTopInner(readable: Readable<List<NavElement>>) {
                 }
             }
 
-            is NavGroup -> button {
+            is NavGroup -> menuButton {
                 exists = false
                 ::exists {it.hidden?.invoke() != true}
+                preferredDirection = PopoverPreferredDirection.belowRight
+                val closer = popoverClosers
+                opensMenu {
+                    navGroupColumn(shared { it.children() }, { closer.forEach { it() }; closer.clear() })
+                }
                 text { ::content { it.title() } }
-            } in hasPopover { context ->
-                card - navGroupColumn(shared { it.children() }, onNavigate = { context.close() })
             }
 
             is NavLink -> link {
@@ -275,12 +278,15 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                     display(it)
                 }
 
-                is NavGroup -> expanding - button {
+                is NavGroup -> expanding - menuButton {
                     exists = false
                     ::exists {it.hidden?.invoke() != true}
                     display(it)
-                } in hasPopover(preferredDirection = PopoverPreferredDirection.aboveCenter) { context ->
-                    card - navGroupColumn(shared { it.children() }, { context.close() })
+                    preferredDirection = PopoverPreferredDirection.aboveCenter
+                    val closer = popoverClosers
+                    opensMenu {
+                        navGroupColumn(shared { it.children() }, { closer.forEach { it() }; closer.clear() })
+                    }
                 }
 
                 is NavCustom -> {

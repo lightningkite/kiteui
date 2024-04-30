@@ -38,7 +38,6 @@ inline fun ViewWriter.textElement(elementBase: String, crossinline setup: TextVi
     element<HTMLDivElement>(elementBase) {
         handleTheme(this, true)
         setup(TextView(this))
-        style.whiteSpace = "pre-wrap"
     }
 
 @ViewDsl
@@ -47,7 +46,6 @@ inline fun ViewWriter.headerElement(elementBase: String, crossinline setup: Text
         classList.add("title")
         handleTheme(this, true)
         setup(TextView(this))
-        style.whiteSpace = "pre-wrap"
     }
 
 fun HTMLElement.__resetContentToOptionList(options: List<WidgetOption>, selected: String) {

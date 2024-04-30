@@ -13,6 +13,6 @@ class BasicListenable : Listenable {
     }
 
     fun invokeAll() {
-        listeners.toList().forEach { it() }
+        listeners.invokeAllSafe()
     }
 }

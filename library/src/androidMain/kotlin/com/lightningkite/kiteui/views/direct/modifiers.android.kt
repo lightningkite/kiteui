@@ -24,6 +24,7 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.toast
 import java.util.*
 
 
@@ -50,21 +51,55 @@ actual val ViewWriter.unpadded: ViewWrapper
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
-        try {
-            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-            lp.weight = amount
-            if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                lp.width = 0
-            } else {
-                lp.height = 0
+            try {
+                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+                lp.weight = amount
+                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                    lp.width = 0
+                } else {
+                    lp.height = 0
+                }
+            } catch (ex: Throwable) {
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
             }
-        } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
-        }
+
     }
     return ViewWrapper
 }
 
+
+@ViewModifierDsl3
+actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+    afterNextElementSetup {
+            val originalSize = try {
+                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                    lp.width
+                } else {
+                    lp.height
+                }
+            } catch (ex: Throwable) {
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
+                WRAP_CONTENT
+            }
+
+            calculationContext.reactiveScope {
+                try {
+                    val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+                    lp.weight = amount()
+                    if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                        lp.width = if (lp.weight != 0f) 0 else originalSize
+                    } else {
+                        lp.height = if (lp.weight != 0f) 0 else originalSize
+                    }
+                } catch (ex: Throwable) {
+                    RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
+                }
+            }
+
+    }
+    return ViewWrapper
+}
 
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
@@ -122,7 +157,7 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
-    if(constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null) {
+    if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null) {
         wrapNext(DesiredSizeView(this.context)) {
             this.constraints = constraints
         }
@@ -130,11 +165,18 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         beforeNextElementSetup {
             constraints.width?.let { it: Dimension -> this.lparams.width = it.value.toInt() }
             constraints.height?.let { it: Dimension -> this.lparams.height = it.value.toInt() }
+            constraints.maxWidth?.let { it: Dimension -> (this.lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt() }
+            constraints.maxHeight?.let { it: Dimension -> (this.lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt() }
             constraints.minWidth?.let { this.minimumWidth = it.value.toInt() }
             constraints.minHeight?.let { this.minimumHeight = it.value.toInt() }
         }
     }
     return ViewWrapper
+}
+
+interface MaxSizeLayoutParams {
+    var maxWidth: Int
+    var maxHeight: Int
 }
 
 class DesiredSizeView(context: Context) : ViewGroup(context) {
@@ -146,10 +188,10 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         getChildAt(0).measure(
-            MeasureSpec.makeMeasureSpec(r-l, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(b-t, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(r - l, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(b - t, MeasureSpec.EXACTLY)
         )
-        getChildAt(0).layout(0, 0,  r - l, b - t)
+        getChildAt(0).layout(0, 0, r - l, b - t)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -225,13 +267,14 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
                 outSize = outSize.coerceAtLeast(it)
             }
 
-            when(MeasureSpec.getMode(originalSpec)) {
+            when (MeasureSpec.getMode(originalSpec)) {
                 MeasureSpec.EXACTLY -> {
                     outMode = MeasureSpec.EXACTLY
                     outSize = outSize.coerceAtMost(outerRulesSize)
                 }
+
                 MeasureSpec.AT_MOST -> {
-                    if(outMode == MeasureSpec.EXACTLY) {
+                    if (outMode == MeasureSpec.EXACTLY) {
                         outSize = outSize.coerceAtMost(outerRulesSize)
                     } else {
                         outMode = MeasureSpec.AT_MOST
@@ -245,7 +288,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             }
             max?.let {
                 outSize = outSize.coerceAtMost(it)
-                if(outMode == MeasureSpec.UNSPECIFIED) {
+                if (outMode == MeasureSpec.UNSPECIFIED) {
                     outMode = MeasureSpec.AT_MOST
                 }
             }
@@ -271,6 +314,20 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 }
 
 @ViewModifierDsl3
+actual fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection,
+    setup: ViewWriter.() -> Unit,
+): ViewWrapper {
+    beforeNextElementSetup {
+        setOnLongClickListener {
+            toast(inner = setup)
+            true
+        }
+    }
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
@@ -288,6 +345,7 @@ actual fun ViewWriter.hasPopover(
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
                                         get() = this@beforeNextElementSetup.calculationContext
+
                                     override fun close() {
                                         navigator.dialog.dismiss()
                                     }
@@ -328,32 +386,41 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
         var goal = default
         calculationContext.reactiveScope {
             val value = condition()
-            if(goal == value) return@reactiveScope
+            if (goal == value) return@reactiveScope
             goal = value
             existingAnimator?.cancel()
             existingAnimator = null
             val parent = parent
             exists = true
-            if(animationsEnabled) {
-                existingAnimator = if(value) {
-                    if(parent is SimplifiedLinearLayout) {
-                        if(parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+            if (animationsEnabled) {
+                existingAnimator = if (value) {
+                    if (parent is SimplifiedLinearLayout) {
+                        if (parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
                             widthAnimator(WRAP_CONTENT)
                         } else {
                             heightAnimator(WRAP_CONTENT)
-                        }.also { it.addUpdateListener { (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = it.animatedFraction } }
-                    }  else {
-                        heightAnimator(WRAP_CONTENT)
+                        }.also {
+                            it.addUpdateListener {
+                                (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = it.animatedFraction
+                            }
+                        }
+                    } else {
+                        TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { alpha = it }
                     }
                 } else {
-                    if(parent is SimplifiedLinearLayout) {
-                        if(parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                    if (parent is SimplifiedLinearLayout) {
+                        if (parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
                             widthAnimator(0)
                         } else {
                             heightAnimator(0)
-                        }.also { it.addUpdateListener { (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = 1f - it.animatedFraction } }
-                    }  else {
-                        heightAnimator(0)
+                        }.also {
+                            it.addUpdateListener {
+                                (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                    1f - it.animatedFraction
+                            }
+                        }
+                    } else {
+                        TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { alpha = it }
                     }
                 }.setDuration(theme().transitionDuration.inWholeMilliseconds).also {
                     it.doOnEnd {
@@ -382,12 +449,15 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
     val fixedToHeight = when (toHeight) {
         WRAP_CONTENT -> {
             measure(
-                View.MeasureSpec.makeMeasureSpec((parent as? View)?.width
-                    ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(
+                    (parent as? View)?.width
+                        ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST
+                ),
                 View.MeasureSpec.makeMeasureSpec(Int.MAX_VALUE / 2 - 1, View.MeasureSpec.AT_MOST)
             )
             measuredHeight
         }
+
         else -> toHeight
     }
     return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
@@ -420,11 +490,14 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
         WRAP_CONTENT -> {
             measure(
                 View.MeasureSpec.makeMeasureSpec(Int.MAX_VALUE / 2 - 1, View.MeasureSpec.AT_MOST),
-                View.MeasureSpec.makeMeasureSpec((parent as? View)?.height
-                    ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(
+                    (parent as? View)?.height
+                        ?: (Int.MAX_VALUE / 2 - 1), View.MeasureSpec.AT_MOST
+                ),
             )
             measuredWidth
         }
+
         else -> toWidth
     }
     return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {

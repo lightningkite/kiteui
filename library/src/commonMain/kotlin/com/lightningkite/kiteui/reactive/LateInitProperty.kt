@@ -4,7 +4,6 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class LateInitProperty<T>() : Writable<T>, ReadWriteProperty<Any?, T>, BaseReadable<T>() {
-    private val listeners = ArrayList<() -> Unit>()
     var value: T
         get() = state.get()
         set(value) {

@@ -149,7 +149,7 @@ val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
         init {
             onMessage {
                 value = it
-                listeners.forEach { it() }
+                listeners.invokeAllSafe()
             }
         }
 

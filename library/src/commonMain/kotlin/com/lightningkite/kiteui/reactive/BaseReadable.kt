@@ -6,7 +6,7 @@ abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady)
         protected set(value) {
             if(field != value) {
                 field = value
-                listeners.toList().forEach { it() }
+                listeners.invokeAllSafe()
             }
         }
 

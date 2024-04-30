@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.MaterialLikeTheme
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.direct.ContainingView
 import kotlin.math.min
 
 /**
@@ -33,13 +34,16 @@ class ViewWriter(
      * Creates a copy of the [ViewWriter] with the current view as its root.
      * Used for view containers that need their contents removed and replaced later.
      */
-    fun split(): ViewWriter = ViewWriter(stack.last(), context = context, startDepth = depth).also {
+    fun split(): ViewWriter = ViewWriter(stack.lastOrNull(), context = context, startDepth = depth).also {
         it.addons.putAll(this.addons)
         it.currentTheme = currentTheme
         it.isRoot = isRoot
         it.transitionNextView = TransitionNextView.No
         it.rootTheme = rootTheme
         it.lastSpacing = lastSpacing
+        it.popoverClosers = popoverClosers
+        it.baseStack = baseStack
+        it.baseStackWriter = baseStackWriter
     }
 
     /**
@@ -53,6 +57,9 @@ class ViewWriter(
         it.transitionNextView = TransitionNextView.No
         it.rootTheme = rootTheme
         it.lastSpacing = lastSpacing
+        it.popoverClosers = popoverClosers
+        it.baseStack = baseStack
+        it.baseStackWriter = baseStackWriter
     }
 
     /**
@@ -66,11 +73,14 @@ class ViewWriter(
         it.transitionNextView = TransitionNextView.No
         it.rootTheme = rootTheme
         it.lastSpacing = lastSpacing
+        it.popoverClosers = popoverClosers
+        it.baseStack = baseStack
+        it.baseStackWriter = baseStackWriter
     }
 
     val stack = if (parent == null) arrayListOf() else arrayListOf(parent)
     val currentView: NView get() = stack.last()
-    private inline fun <T : NView> stackUse(item: T, action: T.() -> Unit) =
+    inline fun <T : NView> stackUse(item: T, action: T.() -> Unit) =
         CalculationContextStack.useIn(item.calculationContext) {
             stack.add(item)
             try {
@@ -119,6 +129,10 @@ class ViewWriter(
     var isRoot: Boolean = true
     val stackEmpty: Boolean get() = stack.isEmpty()
 
+    var baseStack: ContainingView? = null
+    var baseStackWriter: ViewWriter? = null
+    var popoverClosers = ArrayList<()->Unit>()
+
     val calculationContext: CalculationContext get() = stack.last().calculationContext
 
     /**
@@ -135,37 +149,32 @@ class ViewWriter(
         afterNextElementSetupList.add(action)
     }
 
-    private var beforeNextElementSetupList = ArrayList<NView.() -> Unit>()
-    private var afterNextElementSetupList = ArrayList<NView.() -> Unit>()
-    private var afterNextElementPopList = ArrayList<()->Unit>()
+    var beforeNextElementSetupList = ArrayList<NView.() -> Unit>()
+    var afterNextElementSetupList = ArrayList<NView.() -> Unit>()
+    var afterNextElementPopList = ArrayList<()->Unit>()
 
     //    private val wrapperToDoList = ArrayList<NView.() -> Unit>()
-    private var popCount = 0
+    var popCount = 0
 
     /**
      * Wraps the next created element within this element.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
+    inline fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
         stack.lastOrNull()?.addNView(element) ?: run { rootCreated = element }
         stack.add(element)
-        val delaySetupToChild = Platform.current != Platform.Web
         val beforeCopy = beforeNextElementSetupList.toList()
         val afterCopy = afterNextElementSetupList.toList()
-        if (!delaySetupToChild) {
             beforeNextElementSetupList = ArrayList()
             afterNextElementSetupList = ArrayList()
-        }
         CalculationContextStack.useIn(element.calculationContext) {
             val oldPop = popCount
             popCount = 0
-            if (!delaySetupToChild) beforeCopy.forEach { it(element) }
+            beforeCopy.forEach { it(element) }
             setup(element)
             afterNextElementPopList.add {
-                if (!delaySetupToChild) {
-                    CalculationContextStack.useIn(element.calculationContext) {
-                        afterCopy.asReversed().forEach { it(element) }
-                    }
+                CalculationContextStack.useIn(element.calculationContext) {
+                    afterCopy.asReversed().forEach { it(element) }
                 }
             }
             popCount = oldPop
@@ -177,7 +186,7 @@ class ViewWriter(
     /**
      * Writes an element to the current parent.
      */
-    fun <T : NView> element(initialElement: T, setup: T.() -> Unit) {
+    inline fun <T : NView> element(initialElement: T, setup: T.() -> Unit) {
         initialElement.apply {
             stack.lastOrNull()?.addNView(this) ?: run { rootCreated = this }
             val beforeCopy =

@@ -29,6 +29,15 @@ actual inline fun ViewWriter.rowActual(crossinline setup: ContainingView.() -> U
     setup(ContainingView(this))
 }
 
+@ViewDsl
+actual fun ViewWriter.rowCollapsingToColumnActual(
+    breakpoint: Dimension,
+    setup: ContainingView.() -> Unit
+) = themedElementBackIfChanged<HTMLDivElement>("div") {
+    classList.add(DynamicCSS.rowCollapsingToColumn(breakpoint))
+    setup(ContainingView(this))
+}
+
 actual var ContainingView.vertical: Boolean
     get() = native.classList.contains("kiteui-col")
     set(value) {

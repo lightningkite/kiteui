@@ -112,6 +112,10 @@ data class SizeConstraints(
 enum class Align {
     Start, Center, End, Stretch
 }
+enum class TextOverflow {
+    Wrap,
+    Ellipsis
+}
 
 data class PopoverPreferredDirection(
     val horizontal: Boolean = false,
@@ -125,6 +129,12 @@ data class PopoverPreferredDirection(
         val aboveRight: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.End)
         val aboveLeft: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Start)
         val aboveCenter: PopoverPreferredDirection = PopoverPreferredDirection(false, after = false, align = Align.Center)
+        val rightBottom: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.End)
+        val rightTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.Start)
+        val rightCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = true, align = Align.Center)
+        val leftBottom: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.End)
+        val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
+        val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
     }
 }
 

@@ -36,6 +36,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             setNeedsLayout()
             informParentOfSizeChange()
         }
+    var ignoreWeights: Boolean = false
+        set(value) {
+            field = value
+            setNeedsLayout()
+            informParentOfSizeChange()
+        }
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
@@ -148,7 +154,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             } else {
                 remaining.primary -= gap
             }
-            it.extensionWeight?.let {
+            it.extensionWeight?.takeUnless { ignoreWeights }?.let {
                 totalWeight += it
                 return@forEachIndexed
             }
@@ -177,7 +183,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             it as UIView
             if (out[index] != null) return@forEachIndexed
             if (it.isHidden()) return@forEachIndexed
-            val w = it.extensionWeight!!.toDouble()
+            val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
             val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             val required =
                 it.sizeThatFits2(Size(available, remaining.secondary).objc, it.extensionSizeConstraints).local

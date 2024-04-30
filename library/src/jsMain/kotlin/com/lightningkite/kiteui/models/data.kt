@@ -37,13 +37,13 @@ actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.g
 actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
 actual sealed class ImageSource actual constructor()
-actual class ImageResource(val relativeUrl: String) : ImageSource()
+actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
 actual sealed class VideoSource actual constructor()
-actual class VideoResource(val relativeUrl: String) : VideoSource()
+actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
 actual sealed class AudioSource actual constructor()
-actual class AudioResource(val relativeUrl: String) : AudioSource()
+actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
 fun Dimension.toBoxShadow(): String {
     if (value == "0px")

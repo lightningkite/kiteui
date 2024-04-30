@@ -1,16 +1,13 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.cancel
-import com.lightningkite.kiteui.childCancellation
-import com.lightningkite.kiteui.debugCancellation
-import com.lightningkite.kiteui.suspendCoroutineCancellable
+import com.lightningkite.kiteui.*
 import kotlin.coroutines.*
 
 class ReactiveScopeData(
     val calculationContext: CalculationContext,
     var action: suspend () -> Unit,
     var onLoad: (() -> Unit)? = null,
-    var debug: Boolean = false
+    val debug: Console? = null
 ) : CoroutineContext.Element {
     internal val removers: HashMap<ResourceUse, () -> Unit> = HashMap()
     internal val latestPass: ArrayList<ResourceUse> = ArrayList()
@@ -39,14 +36,14 @@ class ReactiveScopeData(
 
     internal fun run() {
         val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
-        if(debug) context.debugCancellation()
+        if(debug != null) context.setDebugLog(debug)
         previousContext.let {
             previousContext = context
             it?.cancel()
         }
         latestPass.clear()
 
-        if(debug) println("Calculating")
+        debug?.log("Calculating")
         var done = false
         action.startCoroutine(object : Continuation<Unit> {
             override val context: CoroutineContext = context
@@ -55,7 +52,7 @@ class ReactiveScopeData(
             override fun resumeWith(result: Result<Unit>) {
                 if (previousContext !== context) return
                 done = true
-                if(debug) println("Complete, got result $result")
+                debug?.log("Complete, got result $result")
                 runningLong = result
                 for (entry in removers.entries.toList()) {
                     if (entry.key !in latestPass) {
@@ -68,7 +65,7 @@ class ReactiveScopeData(
 
         if (!done) {
             // start load
-            if(debug) println("Load started")
+            debug?.log("Load started")
             runningLong = null
         }
     }

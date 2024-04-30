@@ -186,3 +186,13 @@ actual inline var TextView.textSize: Dimension
             native.font = it.font.get(value.value, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic)
         }
     }
+actual var TextView.ellipsis: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.lineBreakMode = if(value) NSLineBreakByTruncatingTail else NSLineBreakByClipping
+    }
+actual var TextView.wraps: Boolean
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.numberOfLines = if(value) 0 else 1
+    }

@@ -14,3 +14,8 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend ()->Boolean)
     }
     return ViewWrapper
 }
+
+@ViewModifierDsl3
+actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+    TODO("Not yet implemented")
+}

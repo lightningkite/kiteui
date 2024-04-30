@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.*
+import android.os.Build.VERSION
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
@@ -76,6 +77,9 @@ val applyTextColorFromThemeHeader: (Theme, AndroidTextView) -> Unit = { theme, t
 }
 val applyTextColorFromTheme: (Theme, AndroidTextView) -> Unit = { theme, textView ->
     textView.setTextColor(theme.foreground.colorInt())
+    if(textView is EditText) {
+        textView.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
+    }
     textView.setTypeface(
         theme.body.font, when {
             !theme.body.bold && !theme.body.italic -> Typeface.NORMAL
@@ -282,7 +286,10 @@ fun Theme.backgroundDrawable(
             }
 
             is LinearGradient -> {
-                colors = background.stops.map { it.color.toInt() }.toIntArray()
+                if(VERSION.SDK_INT >= 29)
+                    setColors(background.stops.map { it.color.toInt() }.toIntArray(), background.stops.map { it.ratio }.toFloatArray())
+                else
+                    colors = background.stops.map { it.color.toInt() }.toIntArray()
                 orientation = when ((background.angle angleTo Angle.zero).turns.times(8).roundToInt()) {
                     -3 -> GradientDrawable.Orientation.TR_BL
                     -2 -> GradientDrawable.Orientation.TOP_BOTTOM
@@ -297,7 +304,10 @@ fun Theme.backgroundDrawable(
             }
 
             is RadialGradient -> {
-                colors = background.stops.map { it.color.toInt() }.toIntArray()
+                if(VERSION.SDK_INT >= 29)
+                    setColors(background.stops.map { it.color.toInt() }.toIntArray(), background.stops.map { it.ratio }.toFloatArray())
+                else
+                    colors = background.stops.map { it.color.toInt() }.toIntArray()
                 gradientType = GradientDrawable.RADIAL_GRADIENT
             }
         }

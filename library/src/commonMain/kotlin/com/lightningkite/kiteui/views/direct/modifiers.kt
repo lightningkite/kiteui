@@ -9,6 +9,14 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
 
+
+@ViewModifierDsl3
+expect fun ViewWriter.hintPopover(
+    preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
+    setup: ViewWriter.() -> Unit
+): ViewWrapper
+
+@Deprecated("Use hintPopover or menuPopover depending on your situation.")
 @ViewModifierDsl3
 expect fun ViewWriter.hasPopover(
     requiresClick: Boolean = false,
@@ -23,6 +31,8 @@ interface PopoverContext {
 expect fun ViewWriter.textPopover(message: String): ViewWrapper
 @ViewModifierDsl3
 expect fun ViewWriter.weight(amount: Float): ViewWrapper
+@ViewModifierDsl3
+expect fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper
 @ViewModifierDsl3
 expect fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper
 @ViewModifierDsl3

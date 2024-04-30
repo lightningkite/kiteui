@@ -39,13 +39,14 @@ object DynamicCSS {
             "box-sizing" to "border-box",
             "line-height" to "unset"
         ))
-        style("h1", mapOf("font-size" to "2rem"))
-        style("h2", mapOf("font-size" to "1.6rem"))
-        style("h3", mapOf("font-size" to "1.4rem"))
-        style("h4", mapOf("font-size" to "1.3rem"))
-        style("h5", mapOf("font-size" to "1.2rem"))
-        style("h6", mapOf("font-size" to "1.1rem"))
-        style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8"))
+        style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
+        style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
+        style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
+        style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
+        style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
+        style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
+        style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
+        style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
 //        style.visibility = if (value) "visible" else "hidden"
         style(
             ".visibleOnParentHover",
@@ -1278,6 +1279,64 @@ object DynamicCSS {
         )
 
         return "theme-${theme.id}"
+    }
+
+    val rowCollapsingToColumnHandled = HashSet<String>()
+    fun rowCollapsingToColumn(breakpoint: Dimension): String {
+        val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
+        if(rowCollapsingToColumnHandled.add(name)) {
+            style(".$name", mapOf(
+                "display" to "flex"
+            ))
+            rule(
+                """
+                    @media (min-width: ${breakpoint.value}) {
+                        .$name {
+                            flex-direction: row;
+                        }
+                        .$name > .vStart {
+                            align-self: start;
+                        }
+                        .$name > .vCenter {
+                            align-self: center;
+                        }
+                        .$name > .vStretch {
+                            align-self: stretch;
+                        }
+                        .$name > .vEnd {
+                            align-self: end;
+                        }
+                    }
+                """.trimIndent()
+            )
+            rule(
+                """
+                    @media (max-width: ${breakpoint.value}) {
+                        .$name {
+                            flex-direction: column;
+                        }
+                        .$name > * {
+                            flex-grow: 0 !important;
+                            flex-shrink: 0 !important;
+                            flex-basis: auto !important;
+                        }
+                        .$name > .hStart {
+                            align-self: start;
+                        }
+                        .$name > .hCenter {
+                            align-self: center;
+                        }
+                        .$name > .hStretch {
+                            align-self: stretch;
+                        }
+                        .$name > .hEnd {
+                            align-self: end;
+                        }
+                    }
+                """.trimIndent()
+            )
+        }
+        return name
     }
 }
 

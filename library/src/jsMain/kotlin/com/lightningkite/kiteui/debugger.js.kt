@@ -24,3 +24,23 @@ actual fun Throwable.printStackTrace2() {
         console.log(this)
     }
 }
+
+actual object ConsoleRoot: Console by PlatformConsole("MyApp")
+private class PlatformConsole(val tag: String): Console {
+    override fun tag(tag: String): Console = PlatformConsole(tag)
+    override fun log(vararg entries: Any?) {
+        console.log(tag, *entries)
+    }
+
+    override fun error(vararg entries: Any?) {
+        console.error(tag, *entries)
+    }
+
+    override fun info(vararg entries: Any?) {
+        console.info(tag, *entries)
+    }
+
+    override fun warn(vararg entries: Any?) {
+        console.warn(tag, *entries)
+    }
+}

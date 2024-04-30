@@ -25,10 +25,10 @@ object ControlsScreen : Screen {
                 h2 { content = "Progress Bars" }
                 val ratio = Property(0.5f)
                 launch {
-                    while(true) {
+                    while (true) {
                         delay(20L)
                         ratio.value += 0.01f
-                        if(ratio.value > 1f) {
+                        if (ratio.value > 1f) {
                             ratio.value = 0f
                         }
                     }
@@ -50,17 +50,43 @@ object ControlsScreen : Screen {
                 h2 { content = "Buttons" }
                 row {
                     expanding - space {}
-                    centered - important - compact - compact - button {
+                    hintPopover {
+                        text("Hint")
+                    } - centered - important - compact - compact - button {
                         icon {
-                             source = Icon.star
+                            source = Icon.star
                         }
                     }
-                    button { onClick { delay(1000L) }; text { content = "Sample" }; ::enabled { booleanContent.await() } }
-                    card - button { onClick { delay(1000L) }; text { content = "Card" }; ::enabled { booleanContent.await() } }
-                    important - button { onClick { delay(1000L) }; text { content = "Important" }; ::enabled { booleanContent.await() } }
-                    critical - button { onClick { delay(1000L) }; text { content = "Critical" }; ::enabled { booleanContent.await() } }
-                    warning - button { onClick { delay(1000L) }; text { content = "Warning" }; ::enabled { booleanContent.await() } }
-                    danger - button { onClick { delay(1000L) }; text { content = "Danger" }; ::enabled { booleanContent.await() } }
+                    button {
+                        onClick { delay(1000L) }; text {
+                        content = "Sample"
+                    }; ::enabled { booleanContent.await() }
+                    }
+                    card - button {
+                        onClick { delay(1000L) }; text {
+                        content = "Card"
+                    }; ::enabled { booleanContent.await() }
+                    }
+                    important - button {
+                        onClick { delay(1000L) }; text {
+                        content = "Important"
+                    }; ::enabled { booleanContent.await() }
+                    }
+                    critical - button {
+                        onClick { delay(1000L) }; text {
+                        content = "Critical"
+                    }; ::enabled { booleanContent.await() }
+                    }
+                    warning - button {
+                        onClick { delay(1000L) }; text {
+                        content = "Warning"
+                    }; ::enabled { booleanContent.await() }
+                    }
+                    danger - button {
+                        onClick { delay(1000L) }; text {
+                        content = "Danger"
+                    }; ::enabled { booleanContent.await() }
+                    }
                     expanding - space {}
                 } in scrollsHorizontally
             }
@@ -69,10 +95,116 @@ object ControlsScreen : Screen {
                 h2 { content = "Toggle Buttons" }
                 row {
                     space {} in weight(1f)
-                    toggleButton { checked bind booleanContent; row { icon(Icon.starFilled, "star"); centered - text { content = "Sample" } } }
-                    toggleButton { checked bind booleanContent; row { icon(Icon.starFilled, "star"); centered - text { content = "Card" } } } in card
-                    toggleButton { checked bind booleanContent; row { icon(Icon.starFilled, "star"); centered - text { content = "Important" } } } in important
-                    toggleButton { checked bind booleanContent; row { icon(Icon.starFilled, "star"); centered - text { content = "Critical" } } } in critical
+                    toggleButton {
+                        checked bind booleanContent; row {
+                        icon(
+                            Icon.starFilled,
+                            "star"
+                        ); centered - text { content = "Sample" }
+                    }
+                    }
+                    toggleButton {
+                        checked bind booleanContent; row {
+                        icon(
+                            Icon.starFilled,
+                            "star"
+                        ); centered - text { content = "Card" }
+                    }
+                    } in card
+                    toggleButton {
+                        checked bind booleanContent; row {
+                        icon(
+                            Icon.starFilled,
+                            "star"
+                        ); centered - text { content = "Important" }
+                    }
+                    } in important
+                    toggleButton {
+                        checked bind booleanContent; row {
+                        icon(
+                            Icon.starFilled,
+                            "star"
+                        ); centered - text { content = "Critical" }
+                    }
+                    } in critical
+                    space {} in weight(1f)
+                } in scrollsHorizontally
+            } in card
+
+            col {
+                h2 { content = "Menus" }
+                row {
+                    space {} in weight(1f)
+                    menuButton {
+                        text("Menu")
+                        opensMenu {
+                            col {
+                                menuButton {
+                                    text("1")
+                                    preferredDirection = PopoverPreferredDirection.rightTop
+                                    opensMenu {
+                                        col {
+                                            button { text("A") }
+                                            button { text("B") }
+                                            button { text("C") }
+                                        }
+                                    }
+                                }
+                                menuButton {
+                                    text("2")
+                                    preferredDirection = PopoverPreferredDirection.rightTop
+                                    opensMenu {
+                                        col {
+                                            button { text("A") }
+                                            button { text("B") }
+                                            button { text("C") }
+                                        }
+                                    }
+                                }
+                                menuButton {
+                                    text("3")
+                                    preferredDirection = PopoverPreferredDirection.rightTop
+                                    opensMenu {
+                                        col {
+                                            button { text("A") }
+                                            button { text("B") }
+                                            button { text("C") }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    menuButton {
+                        text("Menu")
+                        opensMenu {
+                            col {
+                                button { text("A") }
+                                button { text("B") }
+                                button { text("C") }
+                            }
+                        }
+                    } in card
+                    menuButton {
+                        text("Menu")
+                        opensMenu {
+                            col {
+                                button { text("A") }
+                                button { text("B") }
+                                button { text("C") }
+                            }
+                        }
+                    } in important
+                    menuButton {
+                        text("Menu")
+                        opensMenu {
+                            col {
+                                button { text("A") }
+                                button { text("B") }
+                                button { text("C") }
+                            }
+                        }
+                    } in critical
                     space {} in weight(1f)
                 } in scrollsHorizontally
             } in card
@@ -197,7 +329,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDate?>(null)
                 h2 { content = "Date Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" }}
+                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
@@ -211,7 +343,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalTime?>(null)
                 h2 { content = "Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" }}
+                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time }
@@ -225,7 +357,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDateTime?>(null)
                 h2 { content = "Date Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" }}
+                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
@@ -239,7 +371,7 @@ object ControlsScreen : Screen {
             col {
                 val number = Property<Double?>(1.0)
                 h2 { content = "Number Fields" }
-                text { ::content { "Value: ${number.await()}" }}
+                text { ::content { "Value: ${number.await()}" } }
                 numberField { content bind number }
                 numberField { content bind number } in card
                 numberField { content bind number } in important
@@ -250,7 +382,7 @@ object ControlsScreen : Screen {
                 val number = Property(1)
                 val text = Property("text")
                 h2 { content = "Text Fields" }
-                text { ::content { "Text: ${text.await()}" }}
+                text { ::content { "Text: ${text.await()}" } }
                 textField { content bind text }
                 textField { content bind text } in card
                 textField { content bind text } in important
