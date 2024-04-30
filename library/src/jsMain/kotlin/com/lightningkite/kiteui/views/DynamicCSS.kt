@@ -1257,7 +1257,15 @@ object DynamicCSS {
                 "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
                 "outline-color" to theme.outline.toCss(),
                 "transition-duration" to theme.transitionDuration.toCss(),
-            )
+            ) + when (val it = theme.foreground) {
+                is Color -> mapOf("color" to it.toCss())
+                is LinearGradient, is RadialGradient -> mapOf(
+                    "color" to it.toCss(),
+                    "background" to "-webkit-${it.toCss()}",
+                    "-webkit-background-clip" to "text",
+                    "-webkit-text-fill-color" to "transparent",
+                )
+            }
         )
         style(
             sel(".dismissBackground"), mapOf(
