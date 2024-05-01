@@ -47,11 +47,11 @@ actual val systemDefaultFont: Font get() = Font { size, weight, italic -> if(ita
 actual val systemDefaultFixedWidthFont: Font get() = Font { size, weight, italic -> UIFont.systemFontOfSize(size, weight) }
 
 actual sealed class ImageSource actual constructor()
-actual class ImageResource(val name: String) : ImageSource()
+actual data class ImageResource(val name: String) : ImageSource()
 actual sealed class VideoSource actual constructor()
-actual class VideoResource(val name: String, val extension: String) : VideoSource()
+actual data class VideoResource(val name: String, val extension: String) : VideoSource()
 actual sealed class AudioSource actual constructor()
-actual class AudioResource(val name: String, val extension: String) : AudioSource()
+actual data class AudioResource(val name: String, val extension: String) : AudioSource()
 
 actual class ScreenTransition(
     val name: String,

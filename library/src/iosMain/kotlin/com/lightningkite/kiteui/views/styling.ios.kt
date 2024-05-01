@@ -203,6 +203,7 @@ private fun applyThemeBackground(
             }
         }
     }
+    newLayer.zPosition = -99999.0
     view.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
     newLayer.matchParentSize("insert")
 }
