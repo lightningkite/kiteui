@@ -12,6 +12,8 @@
 		18267D842B44BFFC00A45F8C /* fontsMontserrat-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D802B44BFFC00A45F8C /* fontsMontserrat-normal.ttf */; };
 		18267D852B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18267D812B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf */; };
 		183A2D592B335230001011C3 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 183A2D582B335230001011C3 /* test.m */; };
+		185504C22BE2ED7A003368D8 /* videoBack.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 185504C02BE2ED7A003368D8 /* videoBack.mp4 */; };
+		185504C32BE2ED7A003368D8 /* audioTaunt.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 185504C12BE2ED7A003368D8 /* audioTaunt.mp3 */; };
 		1858D8252BBCB927009ADC40 /* fontsGoldman-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */; };
 		1858D8262BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81E2BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf */; };
 		1858D8272BBCB927009ADC40 /* fontsRoboto-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1858D81F2BBCB927009ADC40 /* fontsRoboto-normal.ttf */; };
@@ -59,6 +61,8 @@
 		18267D812B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserrat-bold-italic.ttf"; sourceTree = "<group>"; };
 		183A2D572B33522F001011C3 /* KiteUI Example App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KiteUI Example App-Bridging-Header.h"; sourceTree = "<group>"; };
 		183A2D582B335230001011C3 /* test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = test.m; sourceTree = "<group>"; };
+		185504C02BE2ED7A003368D8 /* videoBack.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = videoBack.mp4; sourceTree = "<group>"; };
+		185504C12BE2ED7A003368D8 /* audioTaunt.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = audioTaunt.mp3; sourceTree = "<group>"; };
 		1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldman-bold.ttf"; sourceTree = "<group>"; };
 		1858D81E2BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLightItalic-light-Italic.ttf"; sourceTree = "<group>"; };
 		1858D81F2BBCB927009ADC40 /* fontsRoboto-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-normal.ttf"; sourceTree = "<group>"; };
@@ -121,6 +125,8 @@
 		18267D752B44BF5300A45F8C /* resourcesFromCommon */ = {
 			isa = PBXGroup;
 			children = (
+				185504C12BE2ED7A003368D8 /* audioTaunt.mp3 */,
+				185504C02BE2ED7A003368D8 /* videoBack.mp4 */,
 				1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */,
 				1858D8212BBCB927009ADC40 /* fontsGoldman-normal.ttf */,
 				1858D8232BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf */,
@@ -327,9 +333,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				188D8BA52B2B9CB500732A2E /* LaunchScreen.storyboard in Resources */,
+				185504C32BE2ED7A003368D8 /* audioTaunt.mp3 in Resources */,
 				1858D82B2BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf in Resources */,
 				1858D82A2BBCB927009ADC40 /* fontsRoboto-italic.ttf in Resources */,
 				188D8BA22B2B9CB500732A2E /* Assets.xcassets in Resources */,
+				185504C22BE2ED7A003368D8 /* videoBack.mp4 in Resources */,
 				188D8BA02B2B9CB400732A2E /* Main.storyboard in Resources */,
 				1858D8252BBCB927009ADC40 /* fontsGoldman-bold.ttf in Resources */,
 				18267D832B44BFFC00A45F8C /* fontsMontserrat-italic.ttf in Resources */,

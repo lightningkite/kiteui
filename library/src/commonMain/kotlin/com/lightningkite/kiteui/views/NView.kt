@@ -28,6 +28,7 @@ expect fun NView.addNView(child: NView)
 expect fun NView.removeNView(child: NView)
 expect fun NView.listNViews(): List<NView>
 expect fun NView.scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
+expect fun NView.nativeRequestFocus()
 expect fun NView.consumeInputEvents()
 //expect fun NView.getFrameRelativeToParent(): Rect
 

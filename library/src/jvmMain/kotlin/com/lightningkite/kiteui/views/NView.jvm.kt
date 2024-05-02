@@ -22,3 +22,5 @@ actual fun NView.consumeInputEvents() {
 }
 
 actual val NContext.darkMode: Boolean? get() = null
+actual fun NView.nativeRequestFocus() {
+}

@@ -18,8 +18,8 @@ actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Uni
     }
 }
 
-actual inline var Link.to: Screen
-    get() = native.toScreen ?: Screen.Empty
+actual var Link.to: ()->Screen
+    get() = native.toScreen ?: { Screen.Empty }
     set(value) {
         native.toScreen = value
     }

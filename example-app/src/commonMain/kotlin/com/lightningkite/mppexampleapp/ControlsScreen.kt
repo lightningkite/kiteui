@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
+import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
@@ -60,7 +61,11 @@ object ControlsScreen : Screen {
                         }
                     }
                     button {
-                        onClick { delay(1000L) }; text {
+                        onClick {
+                            delay(1000L);
+                            val x = fetch("https://sitedoesnotexist.com")
+                            println(x.text())
+                        }; text {
                         content = "Sample"
                     }; ::enabled { booleanContent.await() }
                     }

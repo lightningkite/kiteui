@@ -20,10 +20,10 @@ fun ViewWriter.app() {
         appName = "KiteUI Sample App"
         ::navItems {
             listOf(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { RootScreen },
-                NavLink({ "Themes" }, { Icon.sync }) { ThemesScreen },
-                NavLink({ "Navigation" }, { Icon.chevronRight }) { NavigationTestScreen },
-                NavLink(title = { "Docs" }, icon = { Icon.list }) { DocSearchScreen },
+                NavLink(title = { "Home" }, icon = { Icon.home }) { { RootScreen } },
+                NavLink({ "Themes" }, { Icon.sync }) { { ThemesScreen } },
+                NavLink({ "Navigation" }, { Icon.chevronRight }) { { NavigationTestScreen } },
+                NavLink(title = { "Docs" }, icon = { Icon.list }) { { DocSearchScreen } },
             )
         }
 
@@ -35,7 +35,7 @@ fun ViewWriter.app() {
             NavLink(
                 title = { "Search" },
                 icon = { Icon.search },
-                destination = { DocSearchScreen }
+                destination = { { DocSearchScreen } }
             )
         )
     }

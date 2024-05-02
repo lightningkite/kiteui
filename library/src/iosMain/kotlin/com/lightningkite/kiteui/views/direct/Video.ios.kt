@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
@@ -54,6 +55,7 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
     val controller = AVPlayerViewController()
     init {
+        hidden = true
         controller.delegate = this
         addSubview(controller.view)
         NSNotificationCenter.defaultCenter.addObserver(
@@ -81,11 +83,13 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     private var volumeObservationClose: (()->Unit)? = null
     private var endObservationClose: (()->Unit)? = null
     internal var onComplete: (()->Unit)? = null
+    internal var shouldPlay = false
 
     @OptIn(ExperimentalNativeApi::class)
     var player: AVPlayer?
         get() = controller.player
         set(value) {
+            hidden = value == null
             playerRateObservationClose?.invoke()
             playerRateObservationClose = null
             volumeObservationClose?.invoke()
@@ -98,14 +102,20 @@ actual class NVideo: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                 playerRateObservationClose = player.observe("rate") {
                     val player = weakPlayer.get() ?: return@observe
                     val value = player.rate > 0f
-                    if(playing.value != value) playing.value = value
-                    if (player.rate > 0f) {
-                        animationFrameRateClose = AnimationFrame.addListener {
-                            time.value = CMTimeGetSeconds(player.currentTime())
-                        }
+                    if(!value && loop.value && shouldPlay) {
+                        controller.player?.seekToTime(CMTimeMake(0.toLong(), 1000))
+                        controller.player?.play()
+                        if(!playing.value) playing.value = true
                     } else {
-                        animationFrameRateClose?.invoke()
-                        animationFrameRateClose = null
+                        if(playing.value != value) playing.value = value
+                        if (player.rate > 0f) {
+                            animationFrameRateClose = AnimationFrame.addListener {
+                                time.value = CMTimeGetSeconds(player.currentTime())
+                            }
+                        } else {
+                            animationFrameRateClose?.invoke()
+                            animationFrameRateClose = null
+                        }
                     }
                 }
                 volumeObservationClose = player.observe("volume") {
@@ -148,8 +158,15 @@ actual inline var Video.source: VideoSource?
             }
 
             is VideoResource -> {
-                native.player = AVPlayer(NSBundle.mainBundle.URLForResource(value.name, value.extension)!!)
-                native.informParentOfSizeChange()
+                try {
+                    native.player = AVPlayer(
+                        NSBundle.mainBundle.URLForResource(value.name, value.extension)
+                            ?: throw Exception("Could not find the video in the bundle ${value.name} / ${value.extension}")
+                    )
+                    native.informParentOfSizeChange()
+                } catch(e: Exception) {
+                    e.printStackTrace2()
+                }
             }
 
             is VideoLocal -> {
@@ -179,6 +196,7 @@ actual val Video.time: Writable<Double> get() = native.time
 @OptIn(ExperimentalForeignApi::class)
 actual val Video.playing: Writable<Boolean> get() = native.playing
     .withWrite {
+        native.shouldPlay = it
         if(it)
             native.controller.player?.play()
         else
@@ -194,7 +212,6 @@ actual var Video.showControls: Boolean
     set(value) {
         native.controller.showsPlaybackControls = value
     }
-// TODO
 actual var Video.loop: Boolean
     get() = native.loop.value
     set(value) {

@@ -2,6 +2,7 @@ language = Objective-C
 package = com.lightningkite.kiteui.objc
 ---
 #import <objc/runtime.h>
+#import <UIKit/UIImage.h>
 #import <UIKit/UIView.h>
 #import <UIKit/UIColor.h>
 #import <CoreGraphics/CGColor.h>
@@ -14,6 +15,10 @@ package = com.lightningkite.kiteui.objc
 #import <Foundation/NSURLResponse.h>
 #import <Foundation/NSError.h>
 
+typedef void (^ LoadImageCallback)(__kindof id<NSItemProviderReading> object, NSError *error);
+void loadImageFromProvider(NSItemProvider *provider, LoadImageCallback callback) {
+  [provider loadObjectOfClass: [UIImage class] completionHandler: callback];
+}
 id getAssociatedObjectWithKey(id object, NSValue* key) {
   return objc_getAssociatedObject(object, key.pointerValue);
 }

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.mppexampleapp.Resources
 
 @Routable("docs/video")
 object VideoElementScreen: DocScreen {
@@ -78,6 +79,25 @@ object VideoElementScreen: DocScreen {
                     button {
                         text("Pause")
                         onClick { playing set false }
+                    }
+                }
+            }
+            text("Here's a looping video")
+            example("""
+                video {
+                    source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                    this.time bind time
+                    this.playing bind playing
+                }
+                """.trimIndent()) {
+                stack {
+                    centered - sizeConstraints(width = 8.rem, height = 8.rem) - video {
+                        source = Resources.videoBack
+                        this.loop = true
+                        scaleType = ImageScaleType.Crop
+                        launch {
+                            this.playing set true
+                        }
                     }
                 }
             }

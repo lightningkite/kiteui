@@ -208,12 +208,12 @@ actual object Resources {
                             }
 
                             is Resource.Audio -> {
-                                val i = outNonAssets.resolve(r.source.name)
+                                val i = outNonAssets.resolve(r.name + "." + r.relativeFile.extension)
                                 r.source.copyTo(i, overwrite = true)
                             }
 
                             is Resource.Video -> {
-                                val i = outNonAssets.resolve(r.source.name)
+                                val i = outNonAssets.resolve(r.name + "." + r.relativeFile.extension)
                                 r.source.copyTo(i, overwrite = true)
                             }
 

@@ -37,6 +37,7 @@ var RView<*>.spacing: Dimension
 var RView<*>.ignoreInteraction: Boolean
     get() = native.ignoreInteraction
     set(value) { native.ignoreInteraction = value }
+fun RView<*>.requestFocus() = native.nativeRequestFocus()
 
 fun <T> ViewWriter.forEach(items: Readable<List<T>>, render: ViewWriter.(T)->Unit) = with(split()) {
     calculationContext.reactiveScope {

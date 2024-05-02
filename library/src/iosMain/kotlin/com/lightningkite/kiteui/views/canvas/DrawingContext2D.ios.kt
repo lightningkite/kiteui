@@ -21,11 +21,6 @@ actual abstract class DrawingContext2D {
     actual abstract fun translate(x: Double, y: Double)
     actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 
-    //  actual abstract   fun getTransform(): DOMMatrix
-    actual abstract fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
-
-    //    actual abstract fun setTransform(transform: dynamic)
-    actual abstract fun resetTransform()
     actual abstract var globalCompositeOperation: String
     actual abstract var imageSmoothingEnabled: Boolean
 
@@ -126,10 +121,6 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
             a, b, c, d, e, f
         )
     )
-
-    override fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) = TODO()
-
-    override fun resetTransform() = TODO()
 
     override var globalCompositeOperation: String
         get() = TODO("Not yet implemented")

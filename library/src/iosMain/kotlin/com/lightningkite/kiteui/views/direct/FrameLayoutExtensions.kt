@@ -42,14 +42,28 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
             val heightSize =
                 if (v == Align.Stretch) mySize.height - padding * 2 else size.height
             val oldSize = view.bounds.useContents { this.size.width to this.size.height }
-            view.setPsuedoframe(
-                offsetH,
-                offsetV,
-                widthSize,
-                heightSize,
-            )
-            if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                view.layoutSubviewsAndLayers()
+            if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
+                view.withoutAnimation {
+                    view.setPsuedoframe(
+                        offsetH,
+                        offsetV,
+                        widthSize,
+                        heightSize,
+                    )
+                    if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                        view.layoutSubviewsAndLayers()
+                    }
+                }
+            } else {
+                view.setPsuedoframe(
+                    offsetH,
+                    offsetV,
+                    widthSize,
+                    heightSize,
+                )
+                if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                    view.layoutSubviewsAndLayers()
+                }
             }
             Unit
         }

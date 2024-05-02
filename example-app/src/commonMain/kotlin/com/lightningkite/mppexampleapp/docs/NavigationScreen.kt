@@ -49,7 +49,7 @@ object NavigationScreen: DocScreen {
             """.trimIndent()
             ) {
                 link {
-                    to = DocSearchScreen
+                    to = { DocSearchScreen }
                     centered - row {
                         centered - icon(Icon.arrowBack, "Back")
                         centered - expanding - text("Back to the search screen")

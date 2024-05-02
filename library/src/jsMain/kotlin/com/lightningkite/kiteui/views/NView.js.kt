@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.Cancellable
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
@@ -161,3 +162,8 @@ actual fun NView.consumeInputEvents() {
  *  There's no explicit "light" mode detection in web.  Bummer.  So it's `true` or `null`.
  */
 actual val NContext.darkMode: Boolean? get() = window.matchMedia("(prefers-color-scheme: dark)").matches.takeIf { it }
+actual fun NView.nativeRequestFocus() {
+    afterTimeout(16) {
+        focus()
+    }
+}

@@ -1,20 +1,27 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.objc.*
+import com.lightningkite.kiteui.reactive.sub
+import com.lightningkite.kiteui.views.launch
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSizeMake
-import platform.Foundation.NSCache
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
 import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
+import platform.posix.QOS_CLASS_USER_INITIATED
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -46,32 +53,46 @@ object ImageCache {
         return loaded
     }
     val imageCacheSized = NSCache()
-    inline fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: () -> UIImage): UIImage {
+    suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = Triple(key, minWidth, minHeight)
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let { return it }
-        val baseCached = get(key, load)
-//        println("Desired size is ${"$minWidth x $minHeight" }")
-//        println("Original image is ${baseCached.size.useContents { "$width x $height" }}")
+        val baseCached = get(key, { load() })
+        if(minWidth == 0 || minHeight == 0) return baseCached
         val scaling = max(
             minWidth.toFloat() / baseCached.size.useContents { width } ,
             minHeight.toFloat() / baseCached.size.useContents { height }
         )
-//        println("Scaling is $scaling")
         if(scaling >= 1f) return baseCached
-        val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
-        val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
+        return inBackground {
+            val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
+            val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
 //        println("Resized image will be ${ "$newWidth x $newHeight" }")
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), true, 0.0)
-        val image = try {
-            baseCached.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
-            UIGraphicsGetImageFromCurrentImageContext()
-        } finally {
-            UIGraphicsEndImageContext()
-        }
-        if(image == null) return baseCached
+            UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), true, 0.0)
+            val image = try {
+                baseCached.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
+                UIGraphicsGetImageFromCurrentImageContext()
+            } finally {
+                UIGraphicsEndImageContext()
+            }
+            if(image == null) return@inBackground baseCached
 //        println("Resized image is be ${image.size.useContents { "$width x $height" }}")
-        imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
-        return image
+            imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
+            image
+        }
+    }
+}
+
+private suspend fun <T> inBackground(action: ()->T): T {
+    return suspendCoroutineCancellable<T> { cont ->
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED.toLong(), 0UL)) {
+            try {
+                val result = action()
+                dispatch_async(dispatch_get_main_queue(), { cont.resume(result) })
+            } catch(e: Exception) {
+                dispatch_async(dispatch_get_main_queue(), { cont.resumeWithException(e) })
+            }
+        }
+        return@suspendCoroutineCancellable {}
     }
 }
 
@@ -92,7 +113,7 @@ actual var ImageView.source: ImageSource?
         }
         setImageInternal(value)
     }
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private fun ImageView.setImageInternal(value: ImageSource?) {
     if (!animationsEnabled) {
         native.image = null
@@ -112,9 +133,13 @@ private fun ImageView.setImageInternal(value: ImageSource?) {
 
         is ImageRemote -> {
             native.startLoad()
-            launch {
+            calculationContext.sub().launch {
+                val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    inBackground {
+                        UIImage(data = NSData.dataWithContentsOfURL(NSURL.URLWithString(value.url) ?: throw IllegalStateException("Invalid URL ${value.url}")) ?: throw IllegalStateException("No data found at URL ${value.url}"))
+                    }
+                }
                 if (native.imageSource != value) return@launch
-                val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) { UIImage(data = fetch(value.url).blob().data) }
                 native.endLoad()
                 native.animateIfAllowed {
                     native.image = image
@@ -134,25 +159,31 @@ private fun ImageView.setImageInternal(value: ImageSource?) {
         }
 
         is ImageLocal -> {
-            ImageCache.get(value)?.let {
-                native.animateIfAllowed { native.image = it }
-                native.informParentOfSizeChange()
-            } ?: run {
-                native.startLoad()
-                value.file.provider.loadDataRepresentationForContentType(
-                    value.file.suggestedType ?: UTTypeImage
-                ) { data, err ->
-                    if (data != null) {
-                        dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            native.endLoad()
-                            val image = UIImage(data = data)
-                            ImageCache.set(value, image)
-                            if (native.imageSource != value) return@dispatch_async
-                            native.animateIfAllowed { native.image = image }
-                            native.informParentOfSizeChange()
-                        })
+            native.startLoad()
+            calculationContext.sub().launch {
+                if (native.imageSource != value) return@launch
+                val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    suspendCoroutineCancellable { cont ->
+                        loadImageFromProvider(value.file.provider, ) { data, err ->
+                            if (err != null) cont.resumeWithException(Exception(err.description))
+                            else if (data is UIImage) {
+                                dispatch_async(queue = dispatch_get_main_queue(), block = {
+                                    val image = data
+                                    if (native.imageSource != value) return@dispatch_async
+                                    cont.resume(image)
+                                })
+                            } else {
+                                cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
+                            }
+                        }
+                        return@suspendCoroutineCancellable {}
                     }
                 }
+                native.endLoad()
+                native.animateIfAllowed {
+                    native.image = image
+                }
+                native.informParentOfSizeChange()
             }
         }
 

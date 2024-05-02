@@ -7,6 +7,7 @@ import platform.CoreGraphics.*
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
+import kotlin.math.min
 
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -40,12 +41,15 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)) {
     override fun layoutSubviews() {
         super.layoutSubviews()
         val currentSize = bounds.useContents { size.width to size.height }
+        val scale = min(currentSize.first / iconOriginalSize.first, currentSize.second / iconOriginalSize.second)
+        val nw = iconOriginalSize.first * scale
+        val nh = iconOriginalSize.second * scale
         iconLayer?.transform = CATransform3DMakeScale(
-            currentSize.first / iconOriginalSize.first,
-            currentSize.second / iconOriginalSize.second,
+            scale,
+            scale,
             1.0
         )
-        iconLayer?.frame = bounds
+        iconLayer?.frame = CGRectMake((currentSize.first - nw) / 2, (currentSize.second - nh) / 2, nw, nh)
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {

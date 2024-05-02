@@ -19,6 +19,7 @@ actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> 
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
+        backgroundColor = UIColor.clearColor
         handleTheme(this, viewLoads = true, foreground = {
             textColor = it.foreground.closestColor().toUiColor()
 //            attributedPlaceholder = NSMutableAttributedString()

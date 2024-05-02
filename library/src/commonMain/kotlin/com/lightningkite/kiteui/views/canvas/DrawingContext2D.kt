@@ -16,9 +16,7 @@ expect abstract class DrawingContext2D {
     abstract fun translate(x: Double, y: Double)
     abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 //  abstract   fun getTransform(): DOMMatrix
-    abstract fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
-//    abstract fun setTransform(transform: dynamic)
-    abstract fun resetTransform()
+//    abstract fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 //    abstract var globalAlpha: Double
     abstract var globalCompositeOperation: String
     abstract var imageSmoothingEnabled: Boolean

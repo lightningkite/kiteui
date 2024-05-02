@@ -224,14 +224,28 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val oldSize = view.bounds.useContents { this.size.width to this.size.height }
             val widthSize = if (horizontal) size.primary else secondarySize
             val heightSize = if (horizontal) secondarySize else size.primary
-            view.setPsuedoframe(
-                if (horizontal) ps else offset,
-                if (horizontal) offset else ps,
-                widthSize,
-                heightSize,
-            )
-            if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                view.layoutSubviewsAndLayers()
+            if(view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
+                withoutAnimation {
+                    view.setPsuedoframe(
+                        if (horizontal) ps else offset,
+                        if (horizontal) offset else ps,
+                        widthSize,
+                        heightSize,
+                    )
+                    if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                        view.layoutSubviewsAndLayers()
+                    }
+                }
+            } else {
+                view.setPsuedoframe(
+                    if (horizontal) ps else offset,
+                    if (horizontal) offset else ps,
+                    widthSize,
+                    heightSize,
+                )
+                if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                    view.layoutSubviewsAndLayers()
+                }
             }
             primary += size.primary
         }

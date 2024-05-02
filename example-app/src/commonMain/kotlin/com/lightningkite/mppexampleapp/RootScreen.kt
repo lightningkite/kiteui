@@ -35,45 +35,45 @@ object RootScreen : Screen {
             }
             col {
 
-                fun ViewWriter.linkScreen(screen: Screen) = link {
+                fun ViewWriter.linkScreen(screen: () -> Screen) = link {
                     to = screen
                     row {
                         text {
-                            ::content{ screen.title.await() }
+                            ::content{ screen().title.await() }
 //                            content  = screen.toString()
                         } in weight(1f)
                         icon(Icon.chevronRight, "Open")
                     }
                 } in card
 
-                linkScreen(ExperimentScreen)
-                linkScreen(AudioScreen)
-                linkScreen(HorizontalRecyclerViewScreen)
-                linkScreen(InfiniteImagesScreen)
-                linkScreen(PlatformSpecificScreen)
-                linkScreen(VideoElementScreen)
-                linkScreen(ViewPagerElementScreen)
-                linkScreen(TwoPaneTestScreen)
-                linkScreen(ThemesScreen)
-                linkScreen(ControlsScreen)
-                linkScreen(FormsScreen)
-                linkScreen(NavigationTestScreen)
-                linkScreen(LayoutExamplesScreen)
-                linkScreen(VectorsTestScreen)
-                linkScreen(SampleLogInScreen)
-                linkScreen(DataLoadingExampleScreen)
-                linkScreen(LoadAnimationTestScreen)
-                linkScreen(WebSocketScreen)
-                linkScreen(CanvasSampleScreen)
-                linkScreen(PongSampleScreen)
-                linkScreen(ReactivityScreen)
-                linkScreen(DialogSamplesScreen)
-                linkScreen(ExternalServicesScreen)
-                linkScreen(ImageCropScreen)
-                linkScreen(FullExampleScreen())
-                linkScreen(RecyclerViewScreen)
-                linkScreen(PerformanceTestScreen)
-                linkScreen(ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" })
+                linkScreen { ExperimentScreen }
+                linkScreen { AudioScreen }
+                linkScreen { HorizontalRecyclerViewScreen }
+                linkScreen { InfiniteImagesScreen }
+                linkScreen { PlatformSpecificScreen }
+                linkScreen { VideoElementScreen }
+                linkScreen { ViewPagerElementScreen }
+                linkScreen { TwoPaneTestScreen }
+                linkScreen { ThemesScreen }
+                linkScreen { ControlsScreen }
+                linkScreen { FormsScreen }
+                linkScreen { NavigationTestScreen }
+                linkScreen { LayoutExamplesScreen }
+                linkScreen { VectorsTestScreen }
+                linkScreen { SampleLogInScreen }
+                linkScreen { DataLoadingExampleScreen }
+                linkScreen { LoadAnimationTestScreen }
+                linkScreen { WebSocketScreen }
+                linkScreen { CanvasSampleScreen }
+                linkScreen { PongSampleScreen }
+                linkScreen { ReactivityScreen }
+                linkScreen { DialogSamplesScreen }
+                linkScreen { ExternalServicesScreen }
+                linkScreen { ImageCropScreen }
+                linkScreen { FullExampleScreen() }
+                linkScreen { RecyclerViewScreen }
+                linkScreen { PerformanceTestScreen }
+                linkScreen { ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" } }
 
                 button {
                     text { content = "GC" }

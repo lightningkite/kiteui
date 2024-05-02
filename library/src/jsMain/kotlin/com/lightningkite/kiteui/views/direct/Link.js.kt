@@ -18,21 +18,20 @@ actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Uni
     setup(Link(this))
 }
 
-// TODO: Make this a generator
-actual inline var Link.to: Screen
-    get() = this.native.asDynamic().__ROCK__screen as Screen
+actual var Link.to: ()->Screen
+    get() = this.native.asDynamic().__ROCK__screen as ()->Screen
     set(value) {
         this.native.asDynamic().__ROCK__screen = value
         val navigator = (this.native.asDynamic().__ROCK__navigator as ScreenStack)
-        navigator.routes.render(value)?.let {
+        navigator.routes.render(value())?.let {
             native.href = basePath + it.urlLikePath.render()
         }
         native.onclick = {
             it.preventDefault()
             if(resetsStack) {
-                navigator.reset(value)
+                navigator.reset(value())
             } else {
-                navigator.navigate(value)
+                navigator.navigate(value())
             }
             (native.asDynamic().__ROCK__onNavigate as? suspend () -> Unit)?.let {
                 calculationContext.launchManualCancel(it)

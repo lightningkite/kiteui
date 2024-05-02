@@ -5,9 +5,11 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.KeyboardType
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.*
 import platform.darwin.NSObject
+import platform.posix.listen
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NTextArea = UITextView
@@ -17,6 +19,10 @@ actual inline fun ViewWriter.textAreaActual(crossinline setup: TextArea.() -> Un
     element(UITextView()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
+        backgroundColor = UIColor.clearColor
+        val dg = TextAreaDelegate()
+        delegate = dg
+        extensionStrongRef = dg
         handleTheme(this, viewLoads = true, foreground = { textColor = it.foreground.closestColor().toUiColor() },) {
             setup(TextArea(this))
             calculationContext.onRemove {
@@ -26,18 +32,22 @@ actual inline fun ViewWriter.textAreaActual(crossinline setup: TextArea.() -> Un
     }
 }
 
+class TextAreaDelegate(): NSObject(), UITextViewDelegateProtocol {
+    val listeners = ArrayList<()->Unit>()
+    override fun textViewDidChange(textView: UITextView) {
+        listeners.invokeAllSafe()
+    }
+}
+
 actual val TextArea.content: Writable<String>
     get() = object : Writable<String> {
         override val state get() = ReadableState(native.text)
         override fun addListener(listener: () -> Unit): () -> Unit {
-            // TODO: Multiple listeners
-            native.setDelegate(object : NSObject(), UITextViewDelegateProtocol {
-                override fun textViewDidChange(textView: UITextView) {
-                    listener()
-                }
-            })
+            val dg = native.extensionStrongRef as TextAreaDelegate
+            dg.listeners.add(listener)
             return {
-                native.setDelegate(null)
+                val i = dg.listeners.indexOf(listener)
+                if(i != -1) dg.listeners.removeAt(i)
             }
         }
 

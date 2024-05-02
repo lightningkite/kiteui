@@ -16,14 +16,14 @@ import timber.log.Timber
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NLink = LinkFrameLayout
 
-actual var Link.to: Screen
+actual var Link.to: ()->Screen
     get() = TODO()
     set(value) {
         native.setOnClickListener {
             if(native.resetsStack) {
-                native.navigator.reset(value)
+                native.navigator.reset(value())
             } else {
-                native.navigator.navigate(value)
+                native.navigator.navigate(value())
             }
             calculationContext.launchManualCancel { native.onNavigate() }
         }

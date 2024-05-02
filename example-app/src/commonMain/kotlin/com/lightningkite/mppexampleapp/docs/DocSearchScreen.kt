@@ -35,19 +35,19 @@ object DocSearchScreen : Screen {
                 expanding - recyclerView {
                     children(shared {
                         listOf(
-                            TextElementScreen,
-                            DataScreen,
-                            NavigationScreen,
-                            VideoElementScreen,
-                            ViewPagerElementScreen,
-                            ImageElementScreen,
-                            IconsScreen,
-                            ViewModifiersScreen,
-                            LayoutScreen
+                            { TextElementScreen },
+                            { DataScreen },
+                            { NavigationScreen },
+                            { VideoElementScreen },
+                            { ViewPagerElementScreen },
+                            { ImageElementScreen },
+                            { IconsScreen },
+                            { ViewModifiersScreen },
+                            { LayoutScreen }
                         ).mapNotNull {
                             val q = query.await()
-                            if(q.isBlank()) return@mapNotNull it to it.covers
-                            val matchingTerms = it.covers.filter { term ->
+                            if(q.isBlank()) return@mapNotNull it to it().covers
+                            val matchingTerms = it().covers.filter { term ->
                                 q.split(' ').all { part -> term.contains(part, ignoreCase = true) }
                             }
                             if(matchingTerms.isEmpty()) return@mapNotNull null
@@ -58,7 +58,7 @@ object DocSearchScreen : Screen {
                             ::to { it.await().first }
                             col {
                                 spacing = 0.25.rem
-                                text { ::content { it.await().first.title.await() } }
+                                text { ::content { it.await().first().title.await() } }
                                 subtext { ::content { it.await().second.joinToString() }}
                             }
                         }
