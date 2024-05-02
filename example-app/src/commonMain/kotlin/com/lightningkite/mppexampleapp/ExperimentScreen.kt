@@ -13,12 +13,21 @@ object ExperimentScreen : Screen {
         get() = super.title
 
     override fun ViewWriter.render() {
-        col {
-            forEachUpdating(shared {
-                delay(4000)
-                (1..20).map { it.toString() }
-            }) {
-                text { ::content { it() }}
+        scrolls - stack {
+            centered - card - col {
+                spacing = 2.rem
+                card - button { text("A") }
+                card - button { text("B") }
+                card - button { text("C") }
+                card - col {
+                    spacing = 1.rem
+                    card - button { text("A") }
+                    card - button { text("B") }
+                    card - button { text("C") }
+                }
+                card - button { text("A") }
+                card - button { text("B") }
+                card - button { text("C") }
             }
         }
     }

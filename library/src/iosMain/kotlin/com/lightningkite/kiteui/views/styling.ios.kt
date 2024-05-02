@@ -57,11 +57,6 @@ fun ViewWriter.handleTheme(
     val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
     val parentSpacingCalc = lastSpacing
 
-    if (usePadding) {
-        val hp = view.spacingOverride
-        lastSpacing = { hp?.await() ?: currentTheme().spacing }
-    }
-
     var cancelAnimation: (() -> Unit)? = null
     if (viewLoads) calculationContext.onRemove { cancelAnimation?.invoke(); cancelAnimation = null }
 
@@ -125,8 +120,11 @@ fun ViewWriter.handleTheme(
         }
     }
 
+    if (usePadding) {
+        val hp = view.spacingOverride
+        lastSpacing = { hp?.await() ?: currentTheme().spacing }
+    }
     setup()
-
     if(usePadding) {
         lastSpacing = parentSpacingCalc
     }
@@ -138,6 +136,22 @@ private fun NView.clearOldLayers() {
         if(it is CALayerResizing) it.removeFromSuperlayer()
     }
 }
+private inline fun <reified T: CALayer> NView.getOrCreateLayer(create: ()->T, setup: T.()->Unit): T {
+    var sublayer: T? = null
+    layer.sublayers?.forEach {
+        if(it is T) {
+            setup(it)
+            sublayer = it
+        } else if(it is CAGradientLayerResizing) it.removeFromSuperlayer()
+        else if(it is CALayerResizing) it.removeFromSuperlayer()
+    }
+    return sublayer ?: run {
+        val newLayer = create()
+        setup(newLayer)
+        layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+        newLayer
+    }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 private fun applyThemeBackground(
@@ -146,10 +160,9 @@ private fun applyThemeBackground(
     parentSpacing: Double,
     borders: Boolean
 ) {
-//    view.layer.observe()
-    view.clearOldLayers()
-    val newLayer = when (val b = theme.background) {
-        is Color -> CALayerResizing().apply {
+    when (val b = theme.background) {
+        is Color -> view.getOrCreateLayer(::CALayerResizing) {
+            this.zPosition = -99999.0
             this.parentSpacing = parentSpacing
             this.backgroundColor = b.toUiColor().CGColor!!
 
@@ -163,7 +176,8 @@ private fun applyThemeBackground(
                 shadowRadius = theme.elevation.value
             }
         }
-        is LinearGradient -> CAGradientLayerResizing().apply {
+        is LinearGradient -> view.getOrCreateLayer(::CAGradientLayerResizing) {
+            this.zPosition = -99999.0
             this.parentSpacing = parentSpacing
             this.type = kCAGradientLayerAxial
             this.locations = b.stops.map {
@@ -183,7 +197,8 @@ private fun applyThemeBackground(
                 shadowRadius = theme.elevation.value
             }
         }
-        is RadialGradient -> CAGradientLayerResizing().apply {
+        is RadialGradient -> view.getOrCreateLayer(::CAGradientLayerResizing) {
+            this.zPosition = -99999.0
             this.parentSpacing = parentSpacing
             this.type = kCAGradientLayerRadial
             this.locations = b.stops.map {
@@ -202,10 +217,7 @@ private fun applyThemeBackground(
                 shadowRadius = theme.elevation.value
             }
         }
-    }
-    newLayer.zPosition = -99999.0
-    view.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
-    newLayer.matchParentSize("insert")
+    }.matchParentSize("insert")
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -264,6 +276,11 @@ class CAGradientLayerResizing: CAGradientLayer {
         cornerRadius = v
     }
 
+    override fun layoutSublayers() {
+        super.layoutSublayers()
+        refreshCorners()
+    }
+
     init {
         needsDisplayOnBoundsChange = true
     }
@@ -296,6 +313,11 @@ class CALayerResizing: CALayer {
         }
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         cornerRadius = v
+    }
+
+    override fun layoutSublayers() {
+        super.layoutSublayers()
+        refreshCorners()
     }
 
     init {
