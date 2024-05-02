@@ -53,14 +53,28 @@ object ExternalServicesScreen : Screen {
             button {
                 text { content = "requestFile" }
                 onClick {
-                    println(ExternalServices.requestFile(listOf("image/*")))
+                    println(ExternalServices.requestFile(listOf("*/*")))
                 }
             }
 
             button {
                 text { content = "requestFiles" }
                 onClick {
-                    println(ExternalServices.requestFiles(listOf("image/*")))
+                    println(ExternalServices.requestFiles(listOf("*/*")))
+                }
+            }
+
+            button {
+                text { content = "requestFile image" }
+                onClick {
+                    image.value = ExternalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+                }
+            }
+
+            button {
+                text { content = "requestFiles image" }
+                onClick {
+                    image.value = ExternalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
                 }
             }
 

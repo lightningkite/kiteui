@@ -14,11 +14,11 @@ object ExperimentScreen : Screen {
 
     override fun ViewWriter.render() {
         col {
-            row {
-                ::vertical { WindowInfo().width < 100.rem }
-                expanding - card - stack { text("A") }
-                expanding - card - stack { text("B") }
-                expanding - card - stack { text("C") }
+            forEachUpdating(shared {
+                delay(4000)
+                (1..20).map { it.toString() }
+            }) {
+                text { ::content { it() }}
             }
         }
     }

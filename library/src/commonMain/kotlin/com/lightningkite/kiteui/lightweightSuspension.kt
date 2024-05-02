@@ -196,8 +196,10 @@ fun launchGlobal(action: suspend () -> Unit): Cancellable {
         // called when a coroutine ends. do nothing.
         override fun resumeWith(result: Result<Unit>) {
             result.onFailure { ex : Throwable ->
-                ConsoleRoot.error("launchGlobal $action experienced an exception:")
-                ex.printStackTrace2()
+                if(ex !is CancelledException) {
+                    ConsoleRoot.error("launchGlobal $action experienced an exception:")
+                    ex.printStackTrace2()
+                }
             }
         }
     })

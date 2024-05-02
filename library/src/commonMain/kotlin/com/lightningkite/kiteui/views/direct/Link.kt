@@ -23,7 +23,7 @@ inline fun ViewWriter.link(noinline setup: Link.() -> Unit = {}) {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; linkActual(setup)
 }
 
-expect var Link.to: Screen
+expect var Link.to: ()->Screen
 expect var Link.navigator: ScreenStack
 expect var Link.newTab: Boolean
 expect var Link.resetsStack: Boolean

@@ -243,8 +243,8 @@ class ViewWriter(
                 }
             }
         }) {
+            val itemList = items.await()
             currentView.withoutAnimation {
-                val itemList = items.await()
                 val oldCurrentViewsSize = currentViews.size
                 if (currentViews.size < itemList.size) {
                     repeat(itemList.size - currentViews.size) {

@@ -134,7 +134,6 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
-    val parent = this.currentView
     this.beforeNextElementSetup {
         this.extensionWeight = amount
     }
@@ -142,7 +141,6 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
-    val parent = this.currentView
     this.beforeNextElementSetup {
         calculationContext.reactiveScope {
             this.extensionWeight = amount()

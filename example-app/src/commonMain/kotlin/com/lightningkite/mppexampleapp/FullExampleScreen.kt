@@ -25,7 +25,7 @@ class FullExampleScreen: Screen, UseFullScreen {
             h1 { content = "Full Screen!" }
             link {
                 text { content = "Go back to root" }
-                to = RootScreen
+                to = { RootScreen }
             }
         } in setTheme { MaterialLikeTheme.randomDark() }
     }

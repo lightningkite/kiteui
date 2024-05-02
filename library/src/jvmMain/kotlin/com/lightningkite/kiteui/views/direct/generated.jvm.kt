@@ -32,7 +32,7 @@ actual typealias NLink = HTMLElement
 
 @ViewDsl
 actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Unit = todo("link")
-actual inline var Link.to: Screen
+actual inline var Link.to: ()->Screen
     get() = TODO()
     set(value) {}
 actual inline var Link.navigator: ScreenStack

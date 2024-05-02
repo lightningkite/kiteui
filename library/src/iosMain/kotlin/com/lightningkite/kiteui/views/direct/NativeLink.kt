@@ -47,7 +47,7 @@ class NativeLink: UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProto
         super.willRemoveSubview(subview)
     }
 
-    var toScreen: Screen? = null
+    var toScreen: (()->Screen)? = null
     var onNavigator: ScreenStack? = null
     var toUrl: String? = null
     var newTab: Boolean = false
@@ -61,9 +61,9 @@ class NativeLink: UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProto
     @ObjCAction fun clicked() {
         toScreen?.let {
             if(resetsStack) {
-                onNavigator?.reset(it)
+                onNavigator?.reset(it())
             } else {
-                onNavigator?.navigate(it)
+                onNavigator?.navigate(it())
             }
         }
         toUrl?.let { UIApplication.sharedApplication.openURL(NSURL(string = it)) }

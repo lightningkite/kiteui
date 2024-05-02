@@ -10,9 +10,7 @@ actual abstract class DrawingContext2D {
     actual abstract fun translate(x: Double, y: Double)
     actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
     //  actual abstract   fun getTransform(): DOMMatrix
-    actual abstract fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
     //    actual abstract fun setTransform(transform: dynamic)
-    actual abstract fun resetTransform()
     actual abstract var globalCompositeOperation: String
     actual abstract var imageSmoothingEnabled: Boolean
     //  actual abstract   var imageSmoothingQuality: ImageSmoothingQuality

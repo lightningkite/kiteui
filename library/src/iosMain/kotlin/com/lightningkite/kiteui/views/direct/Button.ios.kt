@@ -16,7 +16,7 @@ actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit):
     handleThemeControl(this) {
         setup(Button(this))
         activityIndicator {
-            ::exists.invoke { l.await() }
+            ::opacity.invoke { if(l.await()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
     }

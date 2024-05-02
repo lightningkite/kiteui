@@ -211,18 +211,19 @@ private fun applyThemeBackground(
 @OptIn(ExperimentalForeignApi::class)
 private inline fun CALayer.matchParentSize(context: String) {
     superlayer?.bounds?.let {
-        println("$context: Matching size to ${it.useContents { "${size.width}x${size.height}" }} - ${this.superlayer?.delegate?.debugDescription()}")
         frame = it
     }
 }
 
 internal inline fun UIView.layoutSubviewsAndLayers() {
-    layoutSubviews()
-    layoutLayers()
+    if(this != null) {
+        layoutSubviews()
+        layoutLayers()
+    }
 }
 
 internal fun UIView.layoutLayers() {
-    layer.sublayers?.forEach {
+    layer?.sublayers?.forEach {
         it as CALayer
         if(it is CALayerResizing) {
             it.matchParentSize("layoutSubviewsAndLayers")

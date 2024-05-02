@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.Cancellable
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
@@ -16,6 +17,7 @@ import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.reactive.invokeAllSafe
+import platform.QuartzCore.CATransaction
 
 actual fun NView.removeNView(child: NView) {
     child.removeFromSuperview()
@@ -29,12 +31,24 @@ actual fun NView.listNViews(): List<NView> {
 var animationsEnabled: Boolean = true
 actual inline fun NView.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {
-        action()
+        CATransaction.begin()
+        CATransaction.disableActions()
+        try {
+            action()
+        } finally {
+            CATransaction.commit()
+        }
         return
     }
     try {
         animationsEnabled = false
-        action()
+        CATransaction.begin()
+        CATransaction.disableActions()
+        try {
+            action()
+        } finally {
+            CATransaction.commit()
+        }
     } finally {
         animationsEnabled = true
     }
@@ -220,3 +234,9 @@ actual val NContext.darkMode: Boolean?
         UIUserInterfaceStyle.UIUserInterfaceStyleLight -> false
         else -> null
     }
+
+actual fun NView.nativeRequestFocus() {
+    afterTimeout(16) {
+        becomeFirstResponder()
+    }
+}

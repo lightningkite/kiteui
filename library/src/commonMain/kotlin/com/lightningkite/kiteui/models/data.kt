@@ -184,9 +184,9 @@ data class NavLink(
     override val icon: suspend () -> Icon,
     override val count: (suspend () -> Int?)? = null,
     override val hidden: (suspend () -> Boolean)? = { false },
-    val destination: suspend () -> Screen,
+    val destination: suspend () -> () -> Screen,
 ) : NavElement {
-    constructor(title: String, icon: Icon, destination: Screen) : this({ title }, { icon }, null, { false }, { destination })
+    constructor(title: String, icon: Icon, destination: () -> Screen) : this({ title }, { icon }, null, { false }, { destination })
 }
 @Deprecated("Use NavExternal", ReplaceWith("NavExternal"))
 typealias ExternalNav = NavExternal

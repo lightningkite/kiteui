@@ -41,16 +41,6 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
         f: Double
     )
 
-    actual abstract fun setTransform(
-        a: Double,
-        b: Double,
-        c: Double,
-        d: Double,
-        e: Double,
-        f: Double
-    )
-
-    actual abstract fun resetTransform()
     actual abstract var globalCompositeOperation: String
     actual abstract var imageSmoothingEnabled: Boolean
     actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
@@ -125,33 +115,6 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
                 1f
             ))
         })
-    }
-
-    override fun setTransform(
-        a: Double,
-        b: Double,
-        c: Double,
-        d: Double,
-        e: Double,
-        f: Double,
-    ) {
-        canvas.setMatrix(Matrix().apply {
-            setValues(floatArrayOf(
-                a.toFloat(),
-                b.toFloat(),
-                c.toFloat(),
-                d.toFloat(),
-                e.toFloat(),
-                f.toFloat(),
-                0f,
-                0f,
-                1f
-            ))
-        })
-    }
-
-    override fun resetTransform() {
-        canvas.setMatrix(Matrix())
     }
     override var globalCompositeOperation: String
         get() = TODO()

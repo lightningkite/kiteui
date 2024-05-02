@@ -75,7 +75,7 @@ private fun ViewWriter.navGroupColumnInner(readable: Readable<List<NavElement>>,
                 this.onNavigate(onNavigate)
             } in maybeThemeFromLast { existing ->
                 if (navigator.currentScreen.await()
-                        ?.let { navigator.routes.render(it) } == navigator.routes.render(it.destination())
+                        ?.let { navigator.routes.render(it) } == navigator.routes.render(it.destination()())
                 )
                     existing.selected()
                 else
@@ -153,7 +153,7 @@ private fun ViewWriter.navGroupActionsInner(readable: Readable<List<NavElement>>
                 navElementIconAndCount(it)
             } in maybeThemeFromLast { existing ->
                 if (navigator.currentScreen.await()
-                        ?.let { navigator.routes.render(it) } == navigator.routes.render(it.destination())
+                        ?.let { navigator.routes.render(it) } == navigator.routes.render(it.destination()())
                 )
                     existing.down()
                 else
@@ -305,7 +305,7 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                         ::to { it.destination() }
                     } in maybeThemeFromLast { existing ->
                         if (navigator.currentScreen.await()?.let { navigator.routes.render(it) }?.urlLikePath?.segments == navigator.routes.render(
-                                it.destination()
+                                it.destination()()
                             )?.urlLikePath?.segments)
                             existing.selected()
                         else

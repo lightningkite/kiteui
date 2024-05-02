@@ -25,10 +25,14 @@ class ArgumentsExampleScreen(val id: String): Screen {
         text { content = "This is a demonstration of how you can use classes and properties to navigate to different views." }
         link {
             text { content = "Append '-plus'" }
-            ::to {
-                ArgumentsExampleScreen("$id-plus").also {
-                    it.toAdd.value = toAdd.await()
-                    it.list.value = list.await()
+            ::to label@{
+                val a = toAdd.await()
+                val b = list.await()
+                return@label {
+                    ArgumentsExampleScreen("$id-plus").also {
+                        it.toAdd.value = a
+                        it.list.value = b
+                    }
                 }
             }
         }

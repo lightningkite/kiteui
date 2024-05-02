@@ -70,11 +70,13 @@ actual suspend fun fetch(
                         is RequestBodyFile -> {
                             val mime = body.content.suggestedType
                                 ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
-                            contentType(ContentType.parse(mime.preferredMIMEType!!))
+                            // Type is dyn.age8u (null)
+                            println("Type is $mime (${mime.preferredMIMEType})")
+                            contentType(ContentType.parse(mime.preferredMIMEType ?: throw Exception("No mime type found from file")))
                             val fileData = suspendCoroutine {
                                 body.content.provider.loadDataRepresentationForContentType(mime) { data, error ->
-                                    if (error != null) throw Exception(error?.description)
-                                    val rawData = data!!.toByteArray()
+                                    if (error != null) throw Exception(error.description)
+                                    val rawData = data?.toByteArray() ?: throw Exception("Data is null")
                                     it.resume(rawData)
                                 }
                             }
