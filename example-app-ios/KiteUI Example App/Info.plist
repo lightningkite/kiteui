@@ -2,8 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Take test pictures</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>fontsGoldman-normal.ttf</string>
+		<string>fontsGoldman-bold.ttf</string>
+		<string>fontsMontserrat-normal.ttf</string>
+		<string>fontsMontserrat-bold.ttf</string>
+		<string>fontsMontserrat-italic.ttf</string>
+		<string>fontsMontserrat-bold-italic.ttf</string>
+		<string>fontsRoboto-normal.ttf</string>
+		<string>fontsRoboto-bold.ttf</string>
+		<string>fontsRoboto-italic.ttf</string>
+		<string>fontsRoboto-bold-italic.ttf</string>
+		<string>fontsRobotoLight-light.ttf</string>
+		<string>fontsRobotoLightItalic-light-Italic.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -23,6 +38,5 @@
 			</array>
 		</dict>
 	</dict>
-	<key>UIAppFonts</key><array><string>fontsGoldman-normal.ttf</string><string>fontsGoldman-bold.ttf</string><string>fontsMontserrat-normal.ttf</string><string>fontsMontserrat-bold.ttf</string><string>fontsMontserrat-italic.ttf</string><string>fontsMontserrat-bold-italic.ttf</string><string>fontsRoboto-normal.ttf</string><string>fontsRoboto-bold.ttf</string><string>fontsRoboto-italic.ttf</string><string>fontsRoboto-bold-italic.ttf</string><string>fontsRobotoLight-light.ttf</string><string>fontsRobotoLightItalic-light-Italic.ttf</string></array>
 </dict>
 </plist>

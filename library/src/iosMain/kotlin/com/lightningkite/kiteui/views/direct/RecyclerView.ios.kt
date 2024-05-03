@@ -610,10 +610,10 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
 
     private fun updateFakeScroll() {
         if (allSubviews.isEmpty()) return
-        val startIndexPartial = (allSubviews.firstOrNull { it.startPosition + it.size > viewportOffset } ?: return)
-            .let { it.index + ((viewportOffset - it.startPosition) / it.size.toDouble()) }
-        val endIndexPartial = (allSubviews.lastOrNull { it.startPosition < viewportOffset + viewportSize } ?: return)
-            .let { it.index + 1 + (viewportOffset + viewportSize - it.startPosition - it.size) / it.size.toDouble() }
+        val startIndexPartial = (allSubviews.firstOrNull { it.startPosition + it.size > viewportOffset && it.size > 0 } ?: return)
+            .let { it.index + ((viewportOffset - it.startPosition) / it.size) }
+        val endIndexPartial = (allSubviews.lastOrNull { it.startPosition < viewportOffset + viewportSize && it.size > 0 } ?: return)
+            .let { it.index + 1 + (viewportOffset + viewportSize - it.startPosition - it.size) / it.size }
         val numElements = dataDirect.max - dataDirect.min + 1
         val startRatio = (startIndexPartial + dataDirect.min) / (dataDirect.max - dataDirect.min).coerceAtLeast(1)
         val endRatio = (endIndexPartial + dataDirect.min) / (dataDirect.max - dataDirect.min).coerceAtLeast(1)

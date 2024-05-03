@@ -105,6 +105,7 @@ data class SizeConstraints(
     val maxWidth: Dimension? = null,
     val minHeight: Dimension? = null,
     val maxHeight: Dimension? = null,
+    val aspectRatio: Pair<Int, Int>? = null,
     val width: Dimension? = null,
     val height: Dimension? = null,
 )

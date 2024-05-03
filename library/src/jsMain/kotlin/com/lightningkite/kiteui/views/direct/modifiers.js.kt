@@ -382,6 +382,9 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         if (constraints.maxWidth == null) style.removeProperty("maxWidth")
         else style.maxWidth = constraints.maxWidth.value
 
+        if (constraints.aspectRatio == null) style.removeProperty("aspect-ratio")
+        else style.setProperty("aspect-ratio", "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}")
+
         if (constraints.width == null) style.removeProperty("width")
         else style.width = constraints.width.value
 
