@@ -186,10 +186,10 @@ fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<I
             if (index in data.min..data.max) {
                 val sub = data[index]
                 if (child is NSpace) {
-                    element.insertSubview(this.create(parent, sub), index.toLong())
+                    element.insertSubview(this@columned.create(parent, sub).apply { extensionWeight = 1f }, index.toLong())
                     child.removeFromSuperview()
                 } else {
-                    this.update(parent, child, sub)
+                    this@columned.update(parent, child, sub)
                 }
                 child.alpha = 1.0
             } else {
