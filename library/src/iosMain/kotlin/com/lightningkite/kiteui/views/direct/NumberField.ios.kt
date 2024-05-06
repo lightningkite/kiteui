@@ -3,11 +3,12 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.utils.commaString
+import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
-import platform.Foundation.NSAttributedString
-import platform.Foundation.NSAttributedStringMeta
-import platform.Foundation.NSMutableAttributedString
-import platform.Foundation.NSString
+import kotlinx.cinterop.CValue
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
@@ -19,6 +20,31 @@ actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.()
     element(UITextField()) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
+//        delegate = AutoFormatter
+        var block = false
+        onEvent(UIControlEventEditingChanged) {
+            if (block) return@onEvent
+            block = true
+            try {
+                numberAutocommaRepair(
+                    dirty = text ?: "",
+                    selectionStart = selectedTextRange?.start?.let { offsetFromPosition(beginningOfDocument, it) }?.toInt(),
+                    selectionEnd = selectedTextRange?.end?.let { offsetFromPosition(beginningOfDocument, it) }?.toInt(),
+                    setResult = {
+                        println("Repaired to $it")
+                        text = it
+                    },
+                    setSelectionRange = { start, end ->
+                        selectedTextRange = textRangeFromPosition(
+                            positionFromPosition(beginningOfDocument, start.toLong()) ?: return@numberAutocommaRepair,
+                            positionFromPosition(beginningOfDocument, end.toLong()) ?: return@numberAutocommaRepair,
+                        )
+                    }
+                )
+            } finally {
+                block = false
+            }
+        }
         handleTheme(this, viewLoads = true, foreground = {
             textColor = it.foreground.closestColor().toUiColor()
 //            attributedPlaceholder = NSMutableAttributedString()
@@ -31,9 +57,13 @@ actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.()
     }
 }
 
+//object AutoFormatter: NSObject(), UITextFieldDelegateProtocol {
+//    override fun textField
+//}
+
 actual val NumberField.content: Writable<Double?>
     get() = object : Writable<Double?> {
-        override val state get() = ReadableState((native.text ?: "")?.toDoubleOrNull())
+        override val state get() = ReadableState((native.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull())
         override fun addListener(listener: () -> Unit): () -> Unit {
             return native.onEvent(UIControlEventEditingChanged) {
                 listener()
@@ -41,7 +71,7 @@ actual val NumberField.content: Writable<Double?>
         }
 
         override suspend fun set(value: Double?) {
-            native.text = value?.toString() ?: ""
+            native.text = value?.commaString() ?: ""
         }
     }
 actual inline var NumberField.keyboardHints: KeyboardHints

@@ -12,6 +12,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.asDouble
+import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.ViewAction
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
@@ -114,7 +115,34 @@ actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.()
         handleTheme<TextView>(native, foreground = applyTextColorFromTheme, viewLoads = true) {
             keyboardHints = KeyboardHints.decimal
             align = Align.End
+            this.__numberFieldSetup()
             setup(this)
+        }
+    }
+}
+
+fun NumberField.__numberFieldSetup() {
+    var block = false
+    native.doAfterTextChanged {
+        if(block) return@doAfterTextChanged
+        block = true
+        try {
+            println("Repairing $it...")
+            if (it == null) return@doAfterTextChanged
+            numberAutocommaRepair(
+                dirty = it.toString(),
+                selectionStart = native.selectionStart,
+                selectionEnd = native.selectionEnd,
+                setResult = {
+                    println("Repaired to $it")
+                    native.setText(it)
+                },
+                setSelectionRange = { start, end ->
+                    native.setSelection(start, end)
+                }
+            )
+        } finally {
+            block = false
         }
     }
 }
