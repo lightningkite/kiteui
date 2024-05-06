@@ -1,6 +1,11 @@
 package com.lightningkite.kiteui.utils
 
-fun Pair<Double, Double>.fitInsideBox(width: Double, height: Double): Pair<Double, Double> {
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
+
+@JvmName("fitInsideBoxDouble")
+@JsName("fitInsideBoxDouble")
+internal fun Pair<Double, Double>.fitInsideBox(width: Double, height: Double): Pair<Double, Double> {
     val aspectWidthToHeight = first / second
     val boxWidthToHeight = width / height
 
@@ -13,5 +18,7 @@ fun Pair<Double, Double>.fitInsideBox(width: Double, height: Double): Pair<Doubl
     }
 }
 
-fun Pair<Int, Int>.fitInsideBox(width: Double, height: Double) =
+@JvmName("fitInsideBoxInt")
+@JsName("fitInsideBoxInt")
+internal fun Pair<Int, Int>.fitInsideBox(width: Double, height: Double) =
     (first.toDouble() to second.toDouble()).fitInsideBox(width, height)
