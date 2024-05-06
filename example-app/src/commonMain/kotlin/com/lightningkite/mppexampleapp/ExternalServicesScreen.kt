@@ -6,6 +6,10 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.hours
 
 @Routable("external-services")
 object ExternalServicesScreen : Screen {
@@ -13,7 +17,7 @@ object ExternalServicesScreen : Screen {
         get() = super.title
     val image = Property<ImageSource?>(null)
     override fun ViewWriter.render() {
-        col {
+        scrolls - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }
 //                text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }
@@ -50,49 +54,88 @@ object ExternalServicesScreen : Screen {
                 }
             }
 
-            button {
-                text { content = "requestFile" }
-                onClick {
-                    println(ExternalServices.requestFile(listOf("*/*")))
+            row {
+                button {
+                    text("Open Map")
+                    onClick { ExternalServices.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
+                }
+                button {
+                    text("Open Event")
+                    onClick { ExternalServices.openEvent(
+                        title = "Test Event",
+                        description = "This is a test event from the KiteUI Tester app.",
+                        location = "255 S 300 W Logan, UT 84321",
+                        start = Clock.System.now().plus(1.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
+                        end = Clock.System.now().plus(2.hours).toLocalDateTime(TimeZone.currentSystemDefault()),
+                        zone = TimeZone.currentSystemDefault()
+                    ) }
+                }
+                button {
+                    text("Download")
+                    onClick {
+                        ExternalServices.download("yes.png", "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png")
+                    }
+                }
+                button {
+                    text("Share")
+                    onClick {
+                        ExternalServices.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
+                    }
                 }
             }
 
-            button {
-                text { content = "requestFiles" }
-                onClick {
-                    println(ExternalServices.requestFiles(listOf("*/*")))
+            row {
+
+                button {
+                    text { content = "requestFile" }
+                    onClick {
+                        println(ExternalServices.requestFile(listOf("*/*")))
+                    }
+                }
+
+                button {
+                    text { content = "requestFiles" }
+                    onClick {
+                        println(ExternalServices.requestFiles(listOf("*/*")))
+                    }
                 }
             }
 
-            button {
-                text { content = "requestFile image" }
-                onClick {
-                    image.value = ExternalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+            row {
+                button {
+                    text { content = "requestFile image" }
+                    onClick {
+                        image.value = ExternalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+                    }
+                }
+
+                button {
+                    text { content = "requestFiles image" }
+                    onClick {
+                        image.value =
+                            ExternalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
+                    }
                 }
             }
 
-            button {
-                text { content = "requestFiles image" }
-                onClick {
-                    image.value = ExternalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
+            row {
+                button {
+                    text { content = "requestCaptureSelf" }
+                    onClick {
+                        image.value = ExternalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
+                    }
+                }
+
+                button {
+                    text { content = "requestCaptureEnvironment" }
+                    onClick {
+                        image.value =
+                            ExternalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
+                    }
                 }
             }
 
-            button {
-                text { content = "requestCaptureSelf" }
-                onClick {
-                    image.value = ExternalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
-                }
-            }
-
-            button {
-                text { content = "requestCaptureEnvironment" }
-                onClick {
-                    image.value = ExternalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
-                }
-            }
-
-            expanding - zoomableImage {
+            sizeConstraints(height = 30.rem) - zoomableImage {
                 ::source { image.invoke() }
                 scaleType = ImageScaleType.Crop
             }

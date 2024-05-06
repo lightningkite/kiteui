@@ -13,6 +13,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.Animation
 import android.widget.*
 import android.widget.ImageView
+import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -66,13 +67,12 @@ fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 val applyTextColorFromThemeHeader: (Theme, AndroidTextView) -> Unit = { theme, textView ->
     textView.setTextColor(theme.foreground.colorInt())
     textView.setTypeface(
-        theme.title.font, when {
-            !theme.title.bold && !theme.title.italic -> Typeface.NORMAL
-            !theme.title.bold && theme.title.italic -> Typeface.ITALIC
-            theme.title.bold && !theme.title.italic -> Typeface.BOLD
-            theme.title.bold && theme.title.italic -> Typeface.BOLD_ITALIC
-            else -> Typeface.NORMAL
-        }
+        TypefaceCompat.create(
+            textView.context,
+            theme.title.font,
+            theme.title.weight,
+            theme.title.italic
+        )
     )
     textView.isAllCaps = theme.title.allCaps
 }
@@ -82,13 +82,12 @@ val applyTextColorFromTheme: (Theme, AndroidTextView) -> Unit = { theme, textVie
         textView.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
     }
     textView.setTypeface(
-        theme.body.font, when {
-            !theme.body.bold && !theme.body.italic -> Typeface.NORMAL
-            !theme.body.bold && theme.body.italic -> Typeface.ITALIC
-            theme.body.bold && !theme.body.italic -> Typeface.BOLD
-            theme.body.bold && theme.body.italic -> Typeface.BOLD_ITALIC
-            else -> Typeface.NORMAL
-        }
+        TypefaceCompat.create(
+            textView.context,
+            theme.body.font,
+            theme.body.weight,
+            theme.body.italic
+        )
     )
     textView.isAllCaps = theme.body.allCaps
 }

@@ -129,6 +129,6 @@ actual inline var TextField.textSize: Dimension
     get() = native.font?.pointSize?.let(::Dimension) ?: 1.rem
     set(value) {
         native.extensionFontAndStyle?.let {
-            native.font = it.font.get(value.value, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic)
+            native.font = it.font.get(value.value, it.weight.toUIFontWeight(), it.italic)
         }
     }
