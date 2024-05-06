@@ -5,6 +5,7 @@ import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.AndroidAppContext
+import java.io.Closeable
 import kotlin.coroutines.resume
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
@@ -72,11 +73,17 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
 }
 
 actual suspend fun AudioSource.load(): PlayableAudio {
-    val player = when(this) {
-        is AudioLocal -> MediaPlayer.create(AndroidAppContext.applicationCtx, file.uri)
+    val player = MediaPlayer()
+    var toClose: Closeable? = null
+    when(this) {
+        is AudioLocal -> player.setDataSource(AndroidAppContext.applicationCtx, file.uri)
         is AudioRaw -> TODO()
-        is AudioRemote -> MediaPlayer.create(AndroidAppContext.applicationCtx, Uri.parse(url))
-        is AudioResource -> MediaPlayer.create(AndroidAppContext.applicationCtx, resource)
+        is AudioRemote -> player.setDataSource(AndroidAppContext.applicationCtx, Uri.parse(url))
+        is AudioResource -> {
+            val afd = AndroidAppContext.applicationCtx.resources.openRawResourceFd(this.resource) ?: throw IllegalStateException("No such resource found")
+            player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            toClose = afd
+        }
         else -> TODO()
     }
     val audio = object: PlayableAudio {
@@ -100,6 +107,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     }
     return suspendCoroutineCancellable { cont ->
         player.setOnPreparedListener {
+            toClose?.close()
             cont.resume(audio)
         }
         player.prepareAsync()

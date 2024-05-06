@@ -82,7 +82,7 @@ object ImageCache {
     }
 }
 
-private suspend fun <T> inBackground(action: ()->T): T {
+internal suspend fun <T> inBackground(action: ()->T): T {
     return suspendCoroutineCancellable<T> { cont ->
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED.toLong(), 0UL)) {
             try {
