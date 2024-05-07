@@ -114,10 +114,8 @@ inline fun <T : NView> ViewWriter.handleTheme(
     val usePadding = viewForcePadding ?: (mightTransition && !isRoot)
     val parentSpacingCalc = lastSpacing
 
-    if (usePadding) {
-        val hp = (view as? HasSpacingMultiplier)?.spacingOverride
-        lastSpacing = { hp?.await() ?: currentTheme().spacing }
-    }
+    val hp = (view as? HasSpacingMultiplier)?.spacingOverride
+    lastSpacing = { hp?.await() ?: currentTheme().spacing }
 
     view.calculationContext.reactiveScope {
         val theme = currentTheme()
@@ -216,9 +214,7 @@ inline fun <T : NView> ViewWriter.handleTheme(
 
     setup()
 
-    if(usePadding) {
-        lastSpacing = parentSpacingCalc
-    }
+    lastSpacing = parentSpacingCalc
 }
 
 fun Theme.rippleDrawableOnly(

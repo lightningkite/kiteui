@@ -980,17 +980,11 @@ object DynamicCSS {
             })
         }
         if (font.direct != null) {
-            font.direct.normal?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: normal;src:url('${basePath + it}');}")
+            font.direct.normal.forEach {
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: ${it.key};src:url('${basePath + it.value}');}")
             }
-            font.direct.bold?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: bold;src:url('${basePath + it}');}")
-            }
-            font.direct.italic?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: normal;src:url('${basePath + it}');}")
-            }
-            font.direct.boldItalic?.let {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: bold;src:url('${basePath + it}');}")
+            font.direct.italics.forEach {
+                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: ${it.key};src:url('${basePath + it.value}');}")
             }
         }
         return font.cssFontFamilyName

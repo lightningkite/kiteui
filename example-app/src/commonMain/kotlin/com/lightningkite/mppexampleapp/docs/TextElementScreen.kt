@@ -77,6 +77,22 @@ object TextElementScreen : DocScreen {
                     allCaps - text("All Caps Text")
                 }
             }
+            text("Custom weights are available too.")
+            example(
+                """
+                col {
+                    for(weight in 900 downTo 100) {
+                        tweakTheme { it.copy(body = it.body.copy(weight = weight)) } - text("Weight ${'$'}weight")
+                    }
+                }
+                """.trimIndent()
+            ) {
+                col {
+                    for(weight in 900 downTo 100 step 100) {
+                        tweakTheme { it.copy(body = it.body.copy(weight = weight)) } - text("Weight $weight")
+                    }
+                }
+            }
         }
     }
 

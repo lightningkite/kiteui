@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.views.toUIFontWeight
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.UIKit.*
+import kotlin.math.abs
 
 actual typealias DimensionRaw = Double
 actual val Int.px: Dimension
@@ -34,13 +36,24 @@ fun fontFromFamilyInfo(
     bold: String?,
     boldItalic: String?
 ) = Font { size, weight, getItalic ->
-    println("Checking weight $weight against ${UIFontWeightBold}")
     val fn = if(getItalic) {
         if(weight >= UIFontWeightBold) boldItalic ?: bold ?: italic ?: normal
         else italic ?: normal
     } else {
         if(weight >= UIFontWeightBold) bold ?: normal
         else normal
+    }
+    UIFont.fontWithName(fn, size) ?: systemDefaultFont.get(size, weight, getItalic)
+}
+fun fontFromFamilyInfo(
+    normal: Map<Int, String>,
+    italics: Map<Int, String>,
+) = Font { size, weight, getItalic ->
+    val fn = if(getItalic) {
+        italics.entries.minByOrNull { abs(weight - it.key.toUIFontWeight()) }?.value
+        normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }?.value
+    } else {
+        normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }?.value
     }
     UIFont.fontWithName(fn, size) ?: systemDefaultFont.get(size, weight, getItalic)
 }
