@@ -8,6 +8,8 @@ import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
 
+fun String.pluralize(count: Int): String = if (count == 1) this else "${this}s"
+
 infix fun <T> Writable<T>.equalTo(value: T): Writable<Boolean> = object : Writable<Boolean> {
     override val state: ReadableState<Boolean> get() = this@equalTo.state.map { it == value }
     override fun addListener(listener: () -> Unit): () -> Unit = this@equalTo.addListener(listener)
