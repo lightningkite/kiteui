@@ -81,18 +81,11 @@ expect object Resources {
                         .sortedBy { it.key }
                         .joinToString("\n    ") {
                             when (val r = it.value) {
-                                is Resource.Font -> "actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = \"common/${
-                                    r.normal.relativeFile.toString().replace(File.separatorChar, '/')
-                                }\", bold = ${
-                                    r.bold?.relativeFile?.toString()?.replace(File.separatorChar, '/')
-                                        ?.let { "\"common/$it\"" }
-                                }, italic = ${
-                                    r.italic?.relativeFile?.toString()?.replace(File.separatorChar, '/')
-                                        ?.let { "\"common/$it\"" }
-                                }, boldItalic = ${
-                                    r.boldItalic?.relativeFile?.toString()?.replace(File.separatorChar, '/')
-                                        ?.let { "\"common/$it\"" }
-                                }))"
+                                is Resource.Font -> {
+                                    val normal = r.normal.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                                    val italics = r.italics.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                                    "actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = mapOf($normal), italics = mapOf($italics)))"
+                                }
 
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"common/${
                                     r.relativeFile.toString().replace(File.separatorChar, '/')
@@ -248,10 +241,11 @@ actual object Resources {
                     val lines = resources
                         .joinToString("\n    ") {
                             when (val r = it.value) {
-                                is Resource.Font -> "actual val ${r.name}: Font = fontFromFamilyInfo(normal = ${r.normal.postScriptName.str()}, " +
-                                        "italic = ${r.italic?.postScriptName.str()}, " +
-                                        "bold = ${r.bold?.postScriptName.str()}, " +
-                                        "boldItalic = ${r.boldItalic?.postScriptName.str()})  // ${r}"
+                                is Resource.Font -> {
+                                    val normal = r.normal.entries.joinToString { "${it.key} to ${it.value.postScriptName.str()}" }
+                                    val italics = r.italics.entries.joinToString { "${it.key} to ${it.value.postScriptName.str()}" }
+                                    "actual val ${r.name}: Font = fontFromFamilyInfo(normal = mapOf($normal), italics = mapOf($italics))  // ${r}"
+                                }
 
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"${it.key}\")"
                                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
@@ -316,52 +310,27 @@ actual object Resources {
                     resources.forEach { (key, value) ->
                         if (value !is Resource.Font) return@forEach
                         val xmlFile = androidFontFolder.resolve(key.snakeCase() + ".xml")
-                        val variants = listOfNotNull(
-                            value.normal.let {
-                                val destFile =
-                                    androidFontFolder.resolve(key.snakeCase() + "_normal." + it.source.extension)
-                                it.source.copyTo(destFile, overwrite = true)
-                                """
+                        val variants = value.normal.map {
+                            val destFile =
+                                androidFontFolder.resolve(key.snakeCase() + "_${it.key}_normal." + it.value.source.extension)
+                            it.value.source.copyTo(destFile, overwrite = true)
+                            """
                             <font
                                 android:fontStyle="normal"
-                                android:fontWeight="400"
+                                android:fontWeight="${it.key}"
                                 android:font="@font/${destFile.nameWithoutExtension}" />
                             """.trimIndent()
-                            },
-                            value.bold?.let {
-                                val destFile =
-                                    androidFontFolder.resolve(key.snakeCase() + "_bold." + it.source.extension)
-                                it.source.copyTo(destFile, overwrite = true)
-                                """
-                            <font
-                                android:fontStyle="normal"
-                                android:fontWeight="700"
-                                android:font="@font/${destFile.nameWithoutExtension}" />
-                            """.trimIndent()
-                            },
-                            value.italic?.let {
-                                val destFile =
-                                    androidFontFolder.resolve(key.snakeCase() + "_italic." + it.source.extension)
-                                it.source.copyTo(destFile, overwrite = true)
-                                """
+                        } + value.italics.map {
+                            val destFile =
+                                androidFontFolder.resolve(key.snakeCase() + "_${it.key}_italic." + it.value.source.extension)
+                            it.value.source.copyTo(destFile, overwrite = true)
+                            """
                             <font
                                 android:fontStyle="italic"
-                                android:fontWeight="400"
+                                android:fontWeight="${it.key}"
                                 android:font="@font/${destFile.nameWithoutExtension}" />
                             """.trimIndent()
-                            },
-                            value.boldItalic?.let {
-                                val destFile =
-                                    androidFontFolder.resolve(key.snakeCase() + "_bold_italic." + it.source.extension)
-                                it.source.copyTo(destFile, overwrite = true)
-                                """
-                            <font
-                                android:fontStyle="italic"
-                                android:fontWeight="700"
-                                android:font="@font/${destFile.nameWithoutExtension}" />
-                            """.trimIndent()
-                            }
-                        )
+                        }
                         xmlFile.writeText(
                             """
 <?xml version="1.0" encoding="utf-8"?>
@@ -474,10 +443,8 @@ fun String?.str() = if (this == null) "null" else "\"$this\""
 sealed class Resource {
     data class Font(
         val name: String,
-        val normal: SubFont,
-        val bold: SubFont? = null,
-        val italic: SubFont? = null,
-        val boldItalic: SubFont? = null,
+        val normal: Map<Int, SubFont>,
+        val italics: Map<Int, SubFont>,
     ) : Resource() {
         data class SubFont(
             val source: File,
@@ -488,7 +455,7 @@ sealed class Resource {
             val postScriptName: String,
         )
 
-        val files get() = listOfNotNull(normal, bold, italic, boldItalic)
+        val files get() = normal.values + italics.values
     }
 
     data class Image(val name: String, val source: File, val relativeFile: File) : Resource()
@@ -496,6 +463,25 @@ sealed class Resource {
     data class Audio(val name: String, val source: File, val relativeFile: File) : Resource()
     data class Binary(val name: String, val source: File, val relativeFile: File) : Resource()
 }
+
+val boldnessNames = mapOf(
+    "Thin" to 100,
+    "Hairline" to 100,
+    "UltraLight" to 200,
+    "ExtraLight" to 200,
+    "Light" to 300,
+    "Normal" to 400,
+    "Regular" to 400,
+    "Medium" to 500,
+    "SemiBold" to 600,
+    "DemiBold" to 600,
+    "Bold" to 700,
+    "ExtraBold" to 800,
+    "UltraBold" to 800,
+    "Black" to 900,
+    "Heavy" to 900,
+).mapKeys { it.key.lowercase() }
+val boldnessNamesByLength = boldnessNames.entries.sortedByDescending { it.key.length }
 
 fun File.resources(): Map<String, Resource> {
     val out = HashMap<String, Resource>()
@@ -527,31 +513,33 @@ fun File.resources(): Map<String, Resource> {
                     fontSubFamily = font.naming.fontSubFamily,
                     postScriptName = font.naming.postScriptName,
                 )
-                if (relativeFile.nameWithoutExtension in setOf(
-                        "bold",
-                        "bold-italic",
-                        "italic",
-                        "normal",
-                    )
-                ) {
+                val siblings = file.parentFile.listFiles() ?: arrayOf()
+                val siblingsCommonPrefix = siblings.map { it.nameWithoutExtension }.reduceOrNull { a, b -> a.commonPrefixWith(b) } ?: ""
+                val siblingsAreOfSameFont = siblings.isNotEmpty() && siblings.all {
+                    it.nameWithoutExtension.removePrefix(siblingsCommonPrefix)
+                        .filter { it.isLetter() }
+                        .lowercase()
+                        .replace("italic", "")
+                        .let { it.isBlank() || it in boldnessNames.keys }
+                }
+                val italic = file.nameWithoutExtension.contains("italic", true)
+                val weight = boldnessNamesByLength.find { (key, value) -> file.nameWithoutExtension.lowercase().contains(key) }?.value ?: 400
+                if (siblingsAreOfSameFont) {
                     val folderName = relativeFile.parentFile.path.replace('/', ' ').replace('\\', ' ')
                         .substringBeforeLast('.')
                         .camelCase()
                     out[folderName] = (out[folderName] as? Resource.Font)?.let {
-                        it.copy(
-                            normal = if (relativeFile.nameWithoutExtension == "normal") sf else it.normal,
-                            boldItalic = if (relativeFile.nameWithoutExtension == "bold-italic") sf else it.boldItalic,
-                            italic = if (relativeFile.nameWithoutExtension == "italic") sf else it.italic,
-                            bold = if (relativeFile.nameWithoutExtension == "bold") sf else it.bold,
-                        )
+                        if(italic) {
+                            it.copy(italics = it.italics + (weight to sf))
+                        } else {
+                            it.copy(normal = it.normal + (weight to sf))
+                        }
                     } ?: Resource.Font(
                         folderName,
-                        normal = sf,
-                        boldItalic = if (relativeFile.nameWithoutExtension == "bold-italic") sf else null,
-                        italic = if (relativeFile.nameWithoutExtension == "italic") sf else null,
-                        bold = if (relativeFile.nameWithoutExtension == "bold") sf else null,
+                        normal = if(!italic) mapOf(weight to sf) else mapOf(),
+                        italics = if(italic) mapOf(weight to sf) else mapOf(),
                     )
-                } else out[name] = Resource.Font(name, sf)
+                } else out[name] = Resource.Font(name, normal = mapOf(400 to sf), italics = mapOf())
             }
 
             "" -> {}

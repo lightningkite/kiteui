@@ -31,7 +31,10 @@ actual data class Font(
     val direct: FontDirect? = null,
 )
 
-data class FontDirect(val normal: String, val bold: String? = null, val italic: String? = null, val boldItalic: String? = null)
+data class FontDirect(
+    val normal: Map<Int, String>,
+    val italics: Map<Int, String>,
+)
 
 actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
 actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")

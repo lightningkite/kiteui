@@ -31,6 +31,32 @@
 		188D8BB02B2B9CB500732A2E /* KiteUi_Example_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BAF2B2B9CB500732A2E /* KiteUi_Example_AppTests.swift */; };
 		188D8BBA2B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */; };
 		188D8BBC2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */; };
+		18ACCE4C2BEAE164001D41D5 /* fontsOpensans-OpenSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE322BEAE163001D41D5 /* fontsOpensans-OpenSans-Medium.ttf */; };
+		18ACCE4D2BEAE164001D41D5 /* fontsRobotoBoldItalic-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE332BEAE163001D41D5 /* fontsRobotoBoldItalic-bold-italic.ttf */; };
+		18ACCE4E2BEAE164001D41D5 /* fontsRobotoItalic-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE342BEAE163001D41D5 /* fontsRobotoItalic-italic.ttf */; };
+		18ACCE4F2BEAE164001D41D5 /* fontsOpensans-OpenSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE352BEAE163001D41D5 /* fontsOpensans-OpenSans-MediumItalic.ttf */; };
+		18ACCE502BEAE164001D41D5 /* fontsMontserratNormal-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE362BEAE163001D41D5 /* fontsMontserratNormal-normal.ttf */; };
+		18ACCE512BEAE164001D41D5 /* fontsOpensans-OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE372BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBold.ttf */; };
+		18ACCE522BEAE164001D41D5 /* taunt.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE382BEAE163001D41D5 /* taunt.mp3 */; };
+		18ACCE532BEAE164001D41D5 /* fontsOpensans-OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE392BEAE163001D41D5 /* fontsOpensans-OpenSans-LightItalic.ttf */; };
+		18ACCE542BEAE164001D41D5 /* fontsOpensans-OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3A2BEAE163001D41D5 /* fontsOpensans-OpenSans-Regular.ttf */; };
+		18ACCE552BEAE164001D41D5 /* fontsOpensans-OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3B2BEAE163001D41D5 /* fontsOpensans-OpenSans-Bold.ttf */; };
+		18ACCE562BEAE164001D41D5 /* fontsMontserratItalic-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3C2BEAE163001D41D5 /* fontsMontserratItalic-italic.ttf */; };
+		18ACCE572BEAE164001D41D5 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3D2BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */; };
+		18ACCE582BEAE164001D41D5 /* fontsRoboto-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3E2BEAE163001D41D5 /* fontsRoboto-light.ttf */; };
+		18ACCE592BEAE164001D41D5 /* fontsRobotoBold-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE3F2BEAE163001D41D5 /* fontsRobotoBold-bold.ttf */; };
+		18ACCE5A2BEAE164001D41D5 /* back.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE402BEAE163001D41D5 /* back.mp4 */; };
+		18ACCE5B2BEAE164001D41D5 /* fontsMontserratBoldItalic-bold-italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE412BEAE163001D41D5 /* fontsMontserratBoldItalic-bold-italic.ttf */; };
+		18ACCE5C2BEAE164001D41D5 /* fontsOpensans-OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE422BEAE163001D41D5 /* fontsOpensans-OpenSans-Light.ttf */; };
+		18ACCE5D2BEAE164001D41D5 /* fontsOpensans-OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE432BEAE163001D41D5 /* fontsOpensans-OpenSans-BoldItalic.ttf */; };
+		18ACCE5E2BEAE164001D41D5 /* fontsOpensans-OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE442BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBold.ttf */; };
+		18ACCE5F2BEAE164001D41D5 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE452BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */; };
+		18ACCE602BEAE164001D41D5 /* fontsGoldmanNormal-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE462BEAE163001D41D5 /* fontsGoldmanNormal-normal.ttf */; };
+		18ACCE612BEAE164001D41D5 /* fontsMontserratBold-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE472BEAE164001D41D5 /* fontsMontserratBold-bold.ttf */; };
+		18ACCE622BEAE164001D41D5 /* fontsRoboto-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE482BEAE164001D41D5 /* fontsRoboto-light-Italic.ttf */; };
+		18ACCE632BEAE164001D41D5 /* fontsGoldmanBold-bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE492BEAE164001D41D5 /* fontsGoldmanBold-bold.ttf */; };
+		18ACCE642BEAE164001D41D5 /* fontsOpensans-OpenSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE4A2BEAE164001D41D5 /* fontsOpensans-OpenSans-Italic.ttf */; };
+		18ACCE652BEAE164001D41D5 /* fontsRobotoNormal-normal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18ACCE4B2BEAE164001D41D5 /* fontsRobotoNormal-normal.ttf */; };
 		3A97B2A80C49FB425A721694 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */; };
 		4112B762DB48049EBF16FBDC /* Pods_KiteUI_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */; };
 		B8CA354EE429CDDE2542B4EC /* Pods_KiteUI_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */; };
@@ -84,6 +110,32 @@
 		188D8BB52B2B9CB600732A2E /* KiteUI Example AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KiteUI Example AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		188D8BB92B2B9CB600732A2E /* KiteUi_Example_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITests.swift; sourceTree = "<group>"; };
 		188D8BBB2B2B9CB600732A2E /* KiteUi_Example_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiteUi_Example_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		18ACCE322BEAE163001D41D5 /* fontsOpensans-OpenSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Medium.ttf"; sourceTree = "<group>"; };
+		18ACCE332BEAE163001D41D5 /* fontsRobotoBoldItalic-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoBoldItalic-bold-italic.ttf"; sourceTree = "<group>"; };
+		18ACCE342BEAE163001D41D5 /* fontsRobotoItalic-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoItalic-italic.ttf"; sourceTree = "<group>"; };
+		18ACCE352BEAE163001D41D5 /* fontsOpensans-OpenSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-MediumItalic.ttf"; sourceTree = "<group>"; };
+		18ACCE362BEAE163001D41D5 /* fontsMontserratNormal-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserratNormal-normal.ttf"; sourceTree = "<group>"; };
+		18ACCE372BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		18ACCE382BEAE163001D41D5 /* taunt.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = taunt.mp3; sourceTree = "<group>"; };
+		18ACCE392BEAE163001D41D5 /* fontsOpensans-OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
+		18ACCE3A2BEAE163001D41D5 /* fontsOpensans-OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Regular.ttf"; sourceTree = "<group>"; };
+		18ACCE3B2BEAE163001D41D5 /* fontsOpensans-OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Bold.ttf"; sourceTree = "<group>"; };
+		18ACCE3C2BEAE163001D41D5 /* fontsMontserratItalic-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserratItalic-italic.ttf"; sourceTree = "<group>"; };
+		18ACCE3D2BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
+		18ACCE3E2BEAE163001D41D5 /* fontsRoboto-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-light.ttf"; sourceTree = "<group>"; };
+		18ACCE3F2BEAE163001D41D5 /* fontsRobotoBold-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoBold-bold.ttf"; sourceTree = "<group>"; };
+		18ACCE402BEAE163001D41D5 /* back.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = back.mp4; sourceTree = "<group>"; };
+		18ACCE412BEAE163001D41D5 /* fontsMontserratBoldItalic-bold-italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserratBoldItalic-bold-italic.ttf"; sourceTree = "<group>"; };
+		18ACCE422BEAE163001D41D5 /* fontsOpensans-OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Light.ttf"; sourceTree = "<group>"; };
+		18ACCE432BEAE163001D41D5 /* fontsOpensans-OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
+		18ACCE442BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		18ACCE452BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
+		18ACCE462BEAE163001D41D5 /* fontsGoldmanNormal-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldmanNormal-normal.ttf"; sourceTree = "<group>"; };
+		18ACCE472BEAE164001D41D5 /* fontsMontserratBold-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsMontserratBold-bold.ttf"; sourceTree = "<group>"; };
+		18ACCE482BEAE164001D41D5 /* fontsRoboto-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRoboto-light-Italic.ttf"; sourceTree = "<group>"; };
+		18ACCE492BEAE164001D41D5 /* fontsGoldmanBold-bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsGoldmanBold-bold.ttf"; sourceTree = "<group>"; };
+		18ACCE4A2BEAE164001D41D5 /* fontsOpensans-OpenSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsOpensans-OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		18ACCE4B2BEAE164001D41D5 /* fontsRobotoNormal-normal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoNormal-normal.ttf"; sourceTree = "<group>"; };
 		3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7351D8F1431F47D326E21753 /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; sourceTree = "<group>"; };
 		85FF7FBDE86680B139E170E6 /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -125,6 +177,32 @@
 		18267D752B44BF5300A45F8C /* resourcesFromCommon */ = {
 			isa = PBXGroup;
 			children = (
+				18ACCE402BEAE163001D41D5 /* back.mp4 */,
+				18ACCE492BEAE164001D41D5 /* fontsGoldmanBold-bold.ttf */,
+				18ACCE462BEAE163001D41D5 /* fontsGoldmanNormal-normal.ttf */,
+				18ACCE472BEAE164001D41D5 /* fontsMontserratBold-bold.ttf */,
+				18ACCE412BEAE163001D41D5 /* fontsMontserratBoldItalic-bold-italic.ttf */,
+				18ACCE3C2BEAE163001D41D5 /* fontsMontserratItalic-italic.ttf */,
+				18ACCE362BEAE163001D41D5 /* fontsMontserratNormal-normal.ttf */,
+				18ACCE3B2BEAE163001D41D5 /* fontsOpensans-OpenSans-Bold.ttf */,
+				18ACCE432BEAE163001D41D5 /* fontsOpensans-OpenSans-BoldItalic.ttf */,
+				18ACCE372BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBold.ttf */,
+				18ACCE3D2BEAE163001D41D5 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf */,
+				18ACCE4A2BEAE164001D41D5 /* fontsOpensans-OpenSans-Italic.ttf */,
+				18ACCE422BEAE163001D41D5 /* fontsOpensans-OpenSans-Light.ttf */,
+				18ACCE392BEAE163001D41D5 /* fontsOpensans-OpenSans-LightItalic.ttf */,
+				18ACCE322BEAE163001D41D5 /* fontsOpensans-OpenSans-Medium.ttf */,
+				18ACCE352BEAE163001D41D5 /* fontsOpensans-OpenSans-MediumItalic.ttf */,
+				18ACCE3A2BEAE163001D41D5 /* fontsOpensans-OpenSans-Regular.ttf */,
+				18ACCE442BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBold.ttf */,
+				18ACCE452BEAE163001D41D5 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf */,
+				18ACCE482BEAE164001D41D5 /* fontsRoboto-light-Italic.ttf */,
+				18ACCE3E2BEAE163001D41D5 /* fontsRoboto-light.ttf */,
+				18ACCE3F2BEAE163001D41D5 /* fontsRobotoBold-bold.ttf */,
+				18ACCE332BEAE163001D41D5 /* fontsRobotoBoldItalic-bold-italic.ttf */,
+				18ACCE342BEAE163001D41D5 /* fontsRobotoItalic-italic.ttf */,
+				18ACCE4B2BEAE164001D41D5 /* fontsRobotoNormal-normal.ttf */,
+				18ACCE382BEAE163001D41D5 /* taunt.mp3 */,
 				185504C12BE2ED7A003368D8 /* audioTaunt.mp3 */,
 				185504C02BE2ED7A003368D8 /* videoBack.mp4 */,
 				1858D81D2BBCB927009ADC40 /* fontsGoldman-bold.ttf */,
@@ -332,23 +410,49 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18ACCE5E2BEAE164001D41D5 /* fontsOpensans-OpenSans-SemiBold.ttf in Resources */,
 				188D8BA52B2B9CB500732A2E /* LaunchScreen.storyboard in Resources */,
 				185504C32BE2ED7A003368D8 /* audioTaunt.mp3 in Resources */,
+				18ACCE542BEAE164001D41D5 /* fontsOpensans-OpenSans-Regular.ttf in Resources */,
+				18ACCE582BEAE164001D41D5 /* fontsRoboto-light.ttf in Resources */,
 				1858D82B2BBCB927009ADC40 /* fontsRoboto-bold-italic.ttf in Resources */,
+				18ACCE4D2BEAE164001D41D5 /* fontsRobotoBoldItalic-bold-italic.ttf in Resources */,
+				18ACCE572BEAE164001D41D5 /* fontsOpensans-OpenSans-ExtraBoldItalic.ttf in Resources */,
 				1858D82A2BBCB927009ADC40 /* fontsRoboto-italic.ttf in Resources */,
 				188D8BA22B2B9CB500732A2E /* Assets.xcassets in Resources */,
 				185504C22BE2ED7A003368D8 /* videoBack.mp4 in Resources */,
+				18ACCE4C2BEAE164001D41D5 /* fontsOpensans-OpenSans-Medium.ttf in Resources */,
 				188D8BA02B2B9CB400732A2E /* Main.storyboard in Resources */,
+				18ACCE5B2BEAE164001D41D5 /* fontsMontserratBoldItalic-bold-italic.ttf in Resources */,
 				1858D8252BBCB927009ADC40 /* fontsGoldman-bold.ttf in Resources */,
 				18267D832B44BFFC00A45F8C /* fontsMontserrat-italic.ttf in Resources */,
+				18ACCE522BEAE164001D41D5 /* taunt.mp3 in Resources */,
 				1858D8292BBCB927009ADC40 /* fontsGoldman-normal.ttf in Resources */,
+				18ACCE632BEAE164001D41D5 /* fontsGoldmanBold-bold.ttf in Resources */,
 				1858D8272BBCB927009ADC40 /* fontsRoboto-normal.ttf in Resources */,
 				18267D822B44BFFC00A45F8C /* fontsMontserrat-bold.ttf in Resources */,
+				18ACCE5D2BEAE164001D41D5 /* fontsOpensans-OpenSans-BoldItalic.ttf in Resources */,
+				18ACCE532BEAE164001D41D5 /* fontsOpensans-OpenSans-LightItalic.ttf in Resources */,
+				18ACCE502BEAE164001D41D5 /* fontsMontserratNormal-normal.ttf in Resources */,
+				18ACCE622BEAE164001D41D5 /* fontsRoboto-light-Italic.ttf in Resources */,
+				18ACCE552BEAE164001D41D5 /* fontsOpensans-OpenSans-Bold.ttf in Resources */,
 				1858D8262BBCB927009ADC40 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */,
+				18ACCE642BEAE164001D41D5 /* fontsOpensans-OpenSans-Italic.ttf in Resources */,
 				1858D8282BBCB927009ADC40 /* fontsRobotoLight-light.ttf in Resources */,
+				18ACCE5C2BEAE164001D41D5 /* fontsOpensans-OpenSans-Light.ttf in Resources */,
+				18ACCE652BEAE164001D41D5 /* fontsRobotoNormal-normal.ttf in Resources */,
+				18ACCE4E2BEAE164001D41D5 /* fontsRobotoItalic-italic.ttf in Resources */,
+				18ACCE5A2BEAE164001D41D5 /* back.mp4 in Resources */,
+				18ACCE4F2BEAE164001D41D5 /* fontsOpensans-OpenSans-MediumItalic.ttf in Resources */,
+				18ACCE602BEAE164001D41D5 /* fontsGoldmanNormal-normal.ttf in Resources */,
 				18267D842B44BFFC00A45F8C /* fontsMontserrat-normal.ttf in Resources */,
+				18ACCE5F2BEAE164001D41D5 /* fontsOpensans-OpenSans-SemiBoldItalic.ttf in Resources */,
+				18ACCE562BEAE164001D41D5 /* fontsMontserratItalic-italic.ttf in Resources */,
+				18ACCE612BEAE164001D41D5 /* fontsMontserratBold-bold.ttf in Resources */,
 				1858D82C2BBCB927009ADC40 /* fontsRoboto-bold.ttf in Resources */,
 				18267D852B44BFFC00A45F8C /* fontsMontserrat-bold-italic.ttf in Resources */,
+				18ACCE512BEAE164001D41D5 /* fontsOpensans-OpenSans-ExtraBold.ttf in Resources */,
+				18ACCE592BEAE164001D41D5 /* fontsRobotoBold-bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
