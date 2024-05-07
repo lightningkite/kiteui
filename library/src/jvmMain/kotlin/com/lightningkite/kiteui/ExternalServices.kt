@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui
 
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+
 actual object ExternalServices {
     actual fun openTab(url: String) = Unit
     actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = TODO()
@@ -7,4 +10,13 @@ actual object ExternalServices {
     actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? = TODO()
     actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? = TODO()
     actual fun setClipboardText(value: String) : Unit = TODO()
+    actual fun download(url: String, onProgress: (Double) -> Unit) {
+
+    }
+    actual fun share(title: String, message: String?, url: String?){
+
+    }
+    actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
+
+    }
 }

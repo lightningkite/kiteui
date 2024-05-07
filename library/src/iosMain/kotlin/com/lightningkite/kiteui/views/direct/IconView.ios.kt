@@ -41,7 +41,10 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)) {
     override fun layoutSubviews() {
         super.layoutSubviews()
         val currentSize = bounds.useContents { size.width to size.height }
-        val scale = min(currentSize.first / iconOriginalSize.first, currentSize.second / iconOriginalSize.second)
+        val axisTotalPadding = (extensionPadding ?: 0.0) * 2
+        val contentAreaSize = currentSize.first - axisTotalPadding to currentSize.second - axisTotalPadding
+
+        val scale = min(contentAreaSize.first / iconOriginalSize.first, contentAreaSize.second / iconOriginalSize.second)
         val nw = iconOriginalSize.first * scale
         val nh = iconOriginalSize.second * scale
         iconLayer?.transform = CATransform3DMakeScale(

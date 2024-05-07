@@ -127,7 +127,7 @@ object MaterialLikeTheme {
     fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
 }
 
-fun Theme.randomTitleFontSettings() = copy(title = title.copy(font = systemDefaultFont, bold = Random.nextBoolean(), allCaps = Random.nextBoolean()))
+fun Theme.randomTitleFontSettings() = copy(title = title.copy(font = systemDefaultFont, weight = if(Random.nextBoolean()) 700 else 500, allCaps = Random.nextBoolean()))
 fun Theme.randomElevationAndCorners() = when(Random.nextInt(0, 3)) {
     0 -> copy(
             elevation = Random.nextInt(2, 4).dp,

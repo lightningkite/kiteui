@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.contains
+import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -81,4 +84,36 @@ fun ViewWriter.alert(
             }
         }
     })
+}
+
+
+fun Button.onClickAssociatedField(
+    field: TextField,
+    title: String = "Submit",
+    icon: Icon = Icon.done,
+    action: suspend () -> Unit
+) {
+    field.action = Action(
+        title = title,
+        icon = icon,
+        onSelect = {
+            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
+        }
+    )
+    onClick { action() }
+}
+fun Button.onClickAssociatedField(
+    field: NumberField,
+    title: String = "Submit",
+    icon: Icon = Icon.done,
+    action: suspend () -> Unit
+) {
+    field.action = Action(
+        title = title,
+        icon = icon,
+        onSelect = {
+            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
+        }
+    )
+    onClick { action() }
 }

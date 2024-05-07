@@ -1231,7 +1231,7 @@ object DynamicCSS {
         style(
             sel(".title"), mapOf(
                 "font-family" to font(theme.title.font),
-                "font-weight" to if (theme.title.bold) "bold" else "normal",
+                "font-weight" to theme.title.weight.toString(),
                 "font-style" to if (theme.title.italic) "italic" else "normal",
                 "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
                 "line-height" to theme.title.lineSpacingMultiplier.toString(),
@@ -1250,7 +1250,7 @@ object DynamicCSS {
                 "--usePadding" to "0",
                 "gap" to "var(--spacing, 0.0)",
                 "font-family" to font(theme.body.font),
-                "font-weight" to if (theme.body.bold) "bold" else "normal",
+                "font-weight" to theme.body.weight.toString(),
                 "font-style" to if (theme.body.italic) "italic" else "normal",
                 "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
                 "line-height" to theme.body.lineSpacingMultiplier.toString(),

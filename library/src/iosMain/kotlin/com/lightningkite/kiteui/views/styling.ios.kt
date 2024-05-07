@@ -18,6 +18,7 @@ import platform.darwin.NSObject
 import kotlin.math.min
 import kotlin.time.DurationUnit
 import platform.Foundation.*
+import platform.UIKit.UIFontWeightRegular
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -325,4 +326,22 @@ class CALayerResizing: CALayer {
         frame = CGRectMake(0.0, 0.0, 10.0, 10.0)
         refreshCorners()
     }
+}
+//100 	Thin (Hairline)
+//200 	Extra Light (Ultra Light)
+//300 	Light
+//400 	Normal
+//500 	Medium
+//600 	Semi Bold (Demi Bold)
+//700 	Bold
+//800 	Extra Bold (Ultra Bold)
+//900 	Black (Heavy)
+
+//UIFontWeight light UIFontWeight(rawValue: -0.4000000059604645)
+//UIFontWeight medium UIFontWeight(rawValue: 0.23000000417232513)
+//UIFontWeight regular UIFontWeight(rawValue: 0.0)
+//UIFontWeight semibold UIFontWeight(rawValue: 0.30000001192092896)
+//UIFontWeight bold UIFontWeight(rawValue: 0.4000000059604645)
+fun Int.toUIFontWeight(): Double {
+    return (this - 400) * (0.4 / 300)
 }

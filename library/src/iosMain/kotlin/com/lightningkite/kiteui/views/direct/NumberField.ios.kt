@@ -31,7 +31,6 @@ actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.()
                     selectionStart = selectedTextRange?.start?.let { offsetFromPosition(beginningOfDocument, it) }?.toInt(),
                     selectionEnd = selectedTextRange?.end?.let { offsetFromPosition(beginningOfDocument, it) }?.toInt(),
                     setResult = {
-                        println("Repaired to $it")
                         text = it
                     },
                     setSelectionRange = { start, end ->
@@ -154,6 +153,6 @@ actual inline var NumberField.textSize: Dimension
     get() = native.font?.pointSize?.let(::Dimension) ?: 1.rem
     set(value) {
         native.extensionFontAndStyle?.let {
-            native.font = it.font.get(value.value, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic)
+            native.font = it.font.get(value.value, it.weight.toUIFontWeight(), it.italic)
         }
     }

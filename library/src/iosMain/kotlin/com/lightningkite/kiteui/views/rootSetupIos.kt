@@ -30,6 +30,8 @@ fun UIViewController.setup(app: ViewWriter.()->Unit) {
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
 
+    ExternalServices.rootView = subview
+
     class Observer: NSObject() {
         var keyboardAnimationDuration: Double = 0.25
 

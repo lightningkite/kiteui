@@ -34,6 +34,7 @@ fun fontFromFamilyInfo(
     bold: String?,
     boldItalic: String?
 ) = Font { size, weight, getItalic ->
+    println("Checking weight $weight against ${UIFontWeightBold}")
     val fn = if(getItalic) {
         if(weight >= UIFontWeightBold) boldItalic ?: bold ?: italic ?: normal
         else italic ?: normal

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.canvas
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.addLine
 import com.lightningkite.kiteui.views.direct.arcTo
+import com.lightningkite.kiteui.views.toUIFontWeight
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -286,7 +287,7 @@ actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
 
 actual fun DrawingContext2D.font(size: Double, value: FontAndStyle): Unit {
     (this as DrawingContext2DImpl).font =
-        value.font.get(size, if (value.bold) UIFontWeightBold else UIFontWeightRegular, value.italic)
+        value.font.get(size, value.weight.toUIFontWeight(), value.italic)
 }
 
 actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {

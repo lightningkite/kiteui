@@ -2,7 +2,22 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.extensionStrongRef
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toNSDate
+import platform.CoreGraphics.CGRectMake
+import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.EventKit.EKEntityType
+import platform.EventKit.EKEvent
+import platform.EventKit.EKEventStore
+import platform.EventKitUI.EKEventEditViewAction
+import platform.EventKitUI.EKEventEditViewController
+import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
+import platform.MapKit.MKMapItem
+import platform.MapKit.MKPlacemark
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -10,6 +25,7 @@ import platform.UniformTypeIdentifiers.*
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import platform.posix.option
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -31,6 +47,7 @@ actual object ExternalServices {
         UTTypeSourceCode,
     )
     var currentPresenter: (UIViewController) -> Unit = {}
+    lateinit var rootView: UIView
     actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCoroutineCancellable { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
         if (imagePickerCompat) {
@@ -329,5 +346,112 @@ actual object ExternalServices {
 
     actual fun setClipboardText(value: String) {
         UIPasteboard.generalPasteboard.string = value
+    }
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun download(name: String, url: String, onProgress: (Double) -> Unit) {
+        val url = NSURL(string = url)
+
+        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask).firstOrNull() as? NSURL
+        val destinationFileUrl =  documentsUrl?.URLByAppendingPathComponent(name)
+
+        val task = NSURLSession.sharedSession.downloadTaskWithURL(url) { localURL, urlResponse, error ->
+            if(localURL == null) return@downloadTaskWithURL
+            if(destinationFileUrl == null) return@downloadTaskWithURL
+            val destination = destinationFileUrl
+            afterTimeout(1) {
+                val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
+                ac.popoverPresentationController?.sourceView = rootView
+                ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
+                currentPresenter(ac)
+            }
+        }
+
+        task.resume()
+    }
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun share(title: String, message: String?, url: String?){
+        currentPresenter(UIActivityViewController(
+            listOfNotNull(message, url?.let { NSURL(string = it) }),
+            null
+        ).apply {
+            popoverPresentationController?.sourceView = rootView
+            popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
+        })
+    }
+    actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
+        val store = EKEventStore()
+        store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
+            if (hasPermission) {
+                afterTimeout(1) {
+                    val addController = EKEventEditViewController()
+                    addController.eventStore = store
+                    val dg = object: NSObject(), EKEventEditViewDelegateProtocol {
+                        override fun eventEditViewController(
+                            controller: EKEventEditViewController,
+                            didCompleteWithAction: EKEventEditViewAction
+                        ) {
+                            controller.dismissViewControllerAnimated(true, null)
+                        }
+                    }
+                    addController.editViewDelegate = dg
+                    addController.extensionStrongRef = dg
+                    val event = EKEvent.eventWithEventStore(store)
+                    event.title = title
+                    event.notes = description
+                    event.location = location
+                    event.startDate = start.toInstant(zone).toNSDate()
+                    event.endDate = end.toInstant(zone).toNSDate()
+                    addController.event = event
+                    currentPresenter(addController)
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
+
+        val options = arrayListOf(
+            "Apple Maps" to {
+                val mapItem = MKMapItem(placemark = MKPlacemark(CLLocationCoordinate2DMake(
+                    latitude, longitude
+                )))
+                mapItem.name = label
+                mapItem.openInMapsWithLaunchOptions(mapOf<Any?, Any?>())
+            }
+        )
+        if (UIApplication.sharedApplication.canOpenURL(NSURL(string = "comgooglemaps://"))) {
+            options += ("Google Maps" to {
+                var url = "string: comgooglemaps://?center=${latitude},${longitude}"
+                zoom?.let { zoom ->
+                    url += "&zoom=${zoom}"
+                }
+                label?.let { label ->
+                    url += "&q=${label}"
+                }
+                UIApplication.sharedApplication.openURL(NSURL(string = url))
+            })
+        }
+        if (options.size == 1) {
+            options[0].second()
+        } else {
+            val optionsView = UIAlertController.alertControllerWithTitle(
+                title = "Open in Maps",
+                message = null,
+                preferredStyle = UIAlertControllerStyleAlert
+            )
+            for (option in options) {
+                optionsView.addAction(UIAlertAction.actionWithTitle(
+                    title = option.first,
+                    style = UIAlertActionStyleDefault,
+                    handler = { optionsView.dismissViewControllerAnimated(true, null); option.second() }
+                ))
+//                optionsView.addAction(UIAlertAction(title = option.first, style: .default, handler: { (action) in
+//                        optionsView.dismiss(animated: true, completion: nil)
+//                    option.1()
+//                }))
+            }
+            currentPresenter(optionsView)
+        }
     }
 }

@@ -20,7 +20,7 @@ actual inline fun ViewWriter.h1Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -38,7 +38,7 @@ actual inline fun ViewWriter.h2Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -56,7 +56,7 @@ actual inline fun ViewWriter.h3Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -74,7 +74,7 @@ actual inline fun ViewWriter.h4Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -92,7 +92,7 @@ actual inline fun ViewWriter.h5Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -110,7 +110,7 @@ actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -128,7 +128,7 @@ actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit):
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.body
-            it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.body.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { setup(TextView(this)) }
 }
@@ -146,7 +146,7 @@ actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Uni
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.body
-            it.body.let { this.font = it.font.get(font.pointSize, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic) }
+            it.body.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
         },
     ) { opacity = 0.8; setup(TextView(this)) }
 }
@@ -183,7 +183,7 @@ actual inline var TextView.textSize: Dimension
     get() = Dimension(native.font.pointSize)
     set(value) {
         native.extensionFontAndStyle?.let {
-            native.font = it.font.get(value.value, if (it.bold) UIFontWeightBold else UIFontWeightRegular, it.italic)
+            native.font = it.font.get(value.value, it.weight.toUIFontWeight(), it.italic)
         }
     }
 actual var TextView.ellipsis: Boolean

@@ -1,5 +1,9 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.models.ImageSource
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+
 expect object ExternalServices {
     fun openTab(url: String)
     suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
@@ -7,6 +11,10 @@ expect object ExternalServices {
     suspend fun requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference?
     suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
     fun setClipboardText(value: String)
+    fun download(name: String, url: String, onProgress: (Double) -> Unit = {})
+    fun share(title: String, message: String? = null, url: String? = null)
+    fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
+    fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)
 //    fun download(blob: Blob)
 //    fun download(url: String)
 }
