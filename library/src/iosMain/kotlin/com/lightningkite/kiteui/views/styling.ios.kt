@@ -4,9 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.reactiveScope
-import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
@@ -14,11 +12,9 @@ import platform.QuartzCore.*
 import platform.UIKit.UIColor
 import platform.UIKit.UIImageView
 import platform.UIKit.UIView
-import platform.darwin.NSObject
 import kotlin.math.min
 import kotlin.time.DurationUnit
 import platform.Foundation.*
-import platform.UIKit.UIFontWeightRegular
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -83,7 +79,7 @@ fun ViewWriter.handleTheme(
         val parentSpacing = parentSpacingCalc().value
         animateAfterFirst {
             if (loading) {
-                applyThemeBackground(theme, view, parentSpacing, true)
+                applyThemeBackground(theme, view, parentSpacing)
                 if (!useBackground) view.layer.apply {
                     shadowColor = null
                     shadowOpacity = 0f
@@ -108,7 +104,7 @@ fun ViewWriter.handleTheme(
                 cancelAnimation?.invoke()
                 cancelAnimation = null
                 if (useBackground) {
-                    applyThemeBackground(theme, view, parentSpacing, true)
+                    applyThemeBackground(theme, view, parentSpacing)
                     background(theme)
                 } else if(view is UIImageView) {
                     view.clearOldLayers()
@@ -121,14 +117,9 @@ fun ViewWriter.handleTheme(
         }
     }
 
-    if (usePadding) {
-        val hp = view.spacingOverride
-        lastSpacing = { hp?.await() ?: currentTheme().spacing }
-    }
+    lastSpacing = { view.spacingOverride?.await() ?: currentTheme().spacing }
     setup()
-    if(usePadding) {
-        lastSpacing = parentSpacingCalc
-    }
+    lastSpacing = parentSpacingCalc
 }
 
 private fun NView.clearOldLayers() {
@@ -159,27 +150,12 @@ private fun applyThemeBackground(
     theme: Theme,
     view: NView,
     parentSpacing: Double,
-    borders: Boolean
 ) {
     when (val b = theme.background) {
         is Color -> view.getOrCreateLayer(::CALayerResizing) {
-            this.zPosition = -99999.0
-            this.parentSpacing = parentSpacing
             this.backgroundColor = b.toUiColor().CGColor!!
-
-            if (borders) {
-                borderWidth = theme.outlineWidth.value
-                borderColor = theme.outline.closestColor().toUiColor().CGColor
-                desiredCornerRadius = theme.cornerRadii
-                shadowColor = UIColor.grayColor.CGColor
-                shadowOpacity = 1f
-                shadowOffset = CGSizeMake(0.0, theme.elevation.value)
-                shadowRadius = theme.elevation.value
-            }
         }
         is LinearGradient -> view.getOrCreateLayer(::CAGradientLayerResizing) {
-            this.zPosition = -99999.0
-            this.parentSpacing = parentSpacing
             this.type = kCAGradientLayerAxial
             this.locations = b.stops.map {
                 NSNumber.numberWithFloat(it.ratio)
@@ -187,20 +163,8 @@ private fun applyThemeBackground(
             this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
             this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
             this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
-
-            if (borders) {
-                borderWidth = theme.outlineWidth.value
-                borderColor = theme.outline.closestColor().toUiColor().CGColor
-                desiredCornerRadius = theme.cornerRadii
-                shadowColor = UIColor.grayColor.CGColor
-                shadowOpacity = 1f
-                shadowOffset = CGSizeMake(0.0, theme.elevation.value)
-                shadowRadius = theme.elevation.value
-            }
         }
         is RadialGradient -> view.getOrCreateLayer(::CAGradientLayerResizing) {
-            this.zPosition = -99999.0
-            this.parentSpacing = parentSpacing
             this.type = kCAGradientLayerRadial
             this.locations = b.stops.map {
                 NSNumber.numberWithFloat(it.ratio)
@@ -208,15 +172,22 @@ private fun applyThemeBackground(
             this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
             this.startPoint = CGPointMake(0.5, 0.5)
             this.endPoint = CGPointMake(0.0, 0.0)
-            if(borders) {
-                borderWidth = theme.outlineWidth.value
-                borderColor = theme.outline.closestColor().toUiColor().CGColor
-                desiredCornerRadius = theme.cornerRadii
-                shadowColor = UIColor.grayColor.CGColor
-                shadowOpacity = 1f
-                shadowOffset = CGSizeMake(0.0, theme.elevation.value)
-                shadowRadius = theme.elevation.value
-            }
+        }
+    }.apply {
+        zPosition = -99999.0
+        (this as? CALayerResizing)?.parentSpacing = parentSpacing
+        (this as? CAGradientLayerResizing)?.parentSpacing = parentSpacing
+
+        borderWidth = theme.outlineWidth.value
+        borderColor = theme.outline.closestColor().toUiColor().CGColor
+        (this as? CALayerResizing)?.desiredCornerRadius = theme.cornerRadii
+        (this as? CAGradientLayerResizing)?.desiredCornerRadius = theme.cornerRadii
+
+        if (theme.elevation != 0.px) {
+            shadowColor = UIColor.grayColor.CGColor
+            shadowOpacity = 1f
+            shadowOffset = CGSizeMake(0.0, theme.elevation.value)
+            shadowRadius = theme.elevation.value
         }
     }.matchParentSize("insert")
 }
