@@ -5,10 +5,9 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import org.w3c.dom.DataTransfer
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
+import org.w3c.dom.url.URL
 import kotlin.coroutines.resume
 import kotlin.js.json
 
@@ -42,9 +41,20 @@ actual object ExternalServices {
         window.navigator.clipboard.writeText(value)
     }
 
-    actual fun download(name: String, url: String, onProgress: (Double) -> Unit) {
+    private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
+    actual fun download(name: String, url: String) {
+        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         a.href = url
+        a.download = name
+        a.target = "_blank"
+        a.click()
+    }
+    @JsName("downloadBlob")
+    actual fun download(name: String, blob: Blob) {
+        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+        val a = document.createElement("a") as HTMLAnchorElement
+        a.href = URL.Companion.createObjectURL(blob)
         a.download = name
         a.target = "_blank"
         a.click()

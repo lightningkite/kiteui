@@ -73,7 +73,10 @@ object ExternalServicesScreen : Screen {
                 button {
                     text("Download")
                     onClick {
-                        ExternalServices.download("yes.png", "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png")
+                        ExternalServices.download(
+                            "yes.png",
+                            "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png"
+                        )
                     }
                 }
                 button {
