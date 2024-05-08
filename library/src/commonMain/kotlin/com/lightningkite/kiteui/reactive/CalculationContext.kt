@@ -63,6 +63,37 @@ interface CalculationContext {
             super.notifyLongComplete(result)
         }
     }
+    class StandardWithLoadTracking: CalculationContext, Cancellable {
+        val onRemoveSet = ArrayList<()->Unit>()
+        override fun onRemove(action: () -> Unit) {
+            onRemoveSet.add(action)
+        }
+        override fun cancel() {
+            onRemoveSet.invokeAllSafe()
+            onRemoveSet.clear()
+        }
+
+        val loadShown = Property(false)
+        var loadCount = 0
+            set(value) {
+                field = value
+                if(value == 0 && loadShown.value) {
+                    loadShown.value = false
+                } else if(value > 0 && !loadShown.value) {
+                    loadShown.value = true
+                }
+            }
+
+        override fun notifyStart() {
+            super.notifyStart()
+            loadCount++
+        }
+
+        override fun notifyLongComplete(result: Result<Unit>) {
+            loadCount--
+            super.notifyLongComplete(result)
+        }
+    }
 }
 
 fun CalculationContext.sub(): SubCalculationContext = SubCalculationContext(this)
