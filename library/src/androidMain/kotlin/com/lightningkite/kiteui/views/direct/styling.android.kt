@@ -334,7 +334,9 @@ inline fun <T : View> ViewWriter.handleThemeControl(
     val hovered = view.hovered
     withThemeGetter({
         val isHovered = hovered.await()
+        val isEnabled = view.androidCalculationContext.enabledListeners()
         when {
+            !isEnabled -> it().disabled()
             isHovered -> it().hover()
             else -> it()
         }
@@ -368,7 +370,9 @@ inline fun <T : View> ViewWriter.handleThemeControl(
     withThemeGetter({
         val base = if (checked()) it().selected() else it().unselected()
         val isHovered = hovered.await()
+        val isEnabled = view.androidCalculationContext.enabledListeners()
         when {
+            !isEnabled -> base.disabled()
             isHovered -> base.hover()
             else -> base
         }

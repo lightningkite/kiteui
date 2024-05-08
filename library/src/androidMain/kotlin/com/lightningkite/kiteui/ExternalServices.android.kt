@@ -4,22 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.*
 import android.content.*
-import android.content.Context.NOTIFICATION_SERVICE
 import android.net.Uri
-import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.provider.CalendarContract
 import android.provider.MediaStore
-import android.util.Log
+import android.webkit.MimeTypeMap
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
 import io.ktor.client.*
@@ -27,8 +19,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -146,28 +136,60 @@ actual object ExternalServices {
 
     val logger = ConsoleRoot.tag("ExternalServices")
 
+    private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
+
     @SuppressLint("MissingPermission")
-    actual fun download(name: String, url: String, onProgress: (Double) -> Unit) {
+    actual fun download(name: String, url: String) {
+        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         if(VERSION.SDK_INT < VERSION_CODES.Q) {
             AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                 if(it.accepted) {
-                    downloadContinued(name, url, onProgress)
+                    downloadContinued(name, url)
                 }
             }
         } else {
-            downloadContinued(name, url, onProgress)
+            downloadContinued(name, url)
         }
     }
-    private fun downloadContinued(name: String, url: String, onProgress: (Double) -> Unit) {
+    private fun downloadContinued(name: String, url: String) {
         val request = DownloadManager.Request(Uri.parse(url)) // 5.
             .setNotificationVisibility( // 6.
                 DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationInExternalPublicDir( // 7.
                 Environment.DIRECTORY_DOWNLOADS, name)
+        request.allowScanningByMediaScanner()
         (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request) // 8.
         Toast.makeText( // 9.
             AndroidAppContext.activityCtx!!, "Download started", Toast.LENGTH_SHORT
         ).show()
+    }
+
+    @SuppressLint("MissingPermission")
+    actual fun download(name: String, blob: Blob) {
+        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+        AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+            if(it.accepted) {
+                downloadContinued(name, blob)
+            }
+        }
+    }
+    private fun downloadContinued(name: String, blob: Blob) {
+        val base = AndroidAppContext.applicationCtx.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS).firstOrNull() ?: return
+
+        val nameWithoutExt = name.substringBeforeLast('.')
+        val nameExt = name.substringAfterLast('.', "").takeUnless { it.isBlank() } ?: MimeTypeMap.getSingleton().getExtensionFromMimeType(blob.type) ?: when(blob.type) {
+            "audio/mp4" -> "mp4"
+            else -> "file"
+        }
+
+        var out = base.resolve("$nameWithoutExt.$nameExt")
+        var num = 2
+        while(out.exists()) {
+            out = base.resolve("$nameWithoutExt-$num.$nameExt")
+        }
+        Thread {
+            out.writeBytes(blob.data)
+        }.start()
     }
 
     actual fun share(title: String, message: String?, url: String?) {
