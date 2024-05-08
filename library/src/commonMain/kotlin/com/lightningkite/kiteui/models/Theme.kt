@@ -173,7 +173,9 @@ data class Theme(
     override fun hashCode(): Int = hashCode
 
     override fun equals(other: Any?): Boolean {
-        return other is Theme && this.title == other.title &&
+        return other is Theme &&
+                this.hashCode == other.hashCode &&
+                this.title == other.title &&
                 this.body == other.body &&
                 this.elevation == other.elevation &&
                 this.cornerRadii == other.cornerRadii &&
@@ -186,7 +188,7 @@ data class Theme(
     }
 
     companion object {
-
+        val placeholder = Theme()
     }
 }
 

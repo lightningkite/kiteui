@@ -31,16 +31,46 @@ abstract class RView(val context: NContext) : CalculationContext {
     var useBackground: Boolean = false
         set(value) {
             field = value
-            theme.state.onSuccess { it?.let { apply(it) } }
+            refreshTheming()
         }
-    var theme: Theme? = null
-    var theme: Theme? = null
+    sealed interface ThemeChoice {
+        data class Set(val theme: Theme): ThemeChoice
+        data class Derive(val derivation: (Theme) -> Theme): ThemeChoice
+//        data class ControlStateDerive(val derivation: (Theme) -> Theme): ThemeChoice
+    }
+    var myThemeOverride: Theme? = null
+    var themeChoice: ThemeChoice? = null
+        set(value) {
+            field = value
+            refreshTheming()
+        }
+    var theme: Theme = Theme.placeholder
+        private set(value) {
+            if(value != field) {
+                field = value
+                applyForeground(value)
+                applyBackground(if (useBackground) value else null)
+                if (value != lastTheme) {
+                    lastTheme = value
+                    for (child in internalChildren) {
+                        if (child.themeChoice !is ThemeChoice.Set)
+                            child.refreshTheming()
+                    }
+                }
+            }
+        }
+//    abstract val handlesControlStateDerive: Boolean
+    private var lastTheme: Theme? = null
+    private fun refreshTheming() {
+        theme = myThemeOverride ?: when(val t = themeChoice) {
+//            is ThemeChoice.ControlStateDerive -> t.derivation(parent?.theme ?: Theme())
+            is ThemeChoice.Derive -> t.derivation(parent?.theme ?: Theme())
+            is ThemeChoice.Set -> t.theme
+            null -> parent?.theme ?: Theme()
+        }
+    }
     abstract fun applyBackground(theme: Theme?)
     abstract fun applyForeground(theme: Theme)
-    fun apply(theme: Theme) {
-        applyForeground(theme)
-        applyBackground(theme.takeIf { useBackground })
-    }
 
 
     // Children
@@ -143,21 +173,5 @@ abstract class RView(val context: NContext) : CalculationContext {
     override fun notifyLongComplete(result: Result<Unit>) {
         loadCount--
         super.notifyLongComplete(result)
-    }
-
-
-    // Startup
-
-    init {
-        theme.state.onSuccess { it?.let {
-            apply(it)
-            if(useBackground) applyBackground(it)
-        } }
-        theme.addListener {
-            theme.state.onSuccess { it?.let {
-                apply(it)
-                if(useBackground) applyBackground(it)
-            } }
-        }
     }
 }
