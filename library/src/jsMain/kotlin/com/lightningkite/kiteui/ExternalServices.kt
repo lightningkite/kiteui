@@ -54,10 +54,14 @@ actual object ExternalServices {
     actual fun download(name: String, blob: Blob) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
-        a.href = URL.Companion.createObjectURL(blob)
+        val url = URL.Companion.createObjectURL(blob)
+        a.href = url
         a.download = name
         a.target = "_blank"
         a.click()
+        afterTimeout(60_000) {
+            URL.Companion.revokeObjectURL(url)
+        }
     }
 
     actual fun share(title: String, message: String?, url: String?) {
