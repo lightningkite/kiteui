@@ -7,6 +7,7 @@ import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.maybeCalculationContext
 import com.lightningkite.kiteui.views.reactiveScope
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -18,6 +19,7 @@ actual var RadioButton.enabled: Boolean
     }
     set(value) {
         native.isEnabled = value
+        native.maybeCalculationContext?.enabledListeners?.value = value
     }
 actual val RadioButton.checked: Writable<Boolean>
     get() {

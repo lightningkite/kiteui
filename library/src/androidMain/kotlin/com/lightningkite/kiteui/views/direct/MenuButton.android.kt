@@ -61,6 +61,7 @@ actual var MenuButton.enabled: Boolean
     }
     set(value) {
         native.isEnabled = value
+        native.maybeCalculationContext?.enabledListeners?.value = value
     }
 actual var MenuButton.requireClick: Boolean
     get() = true

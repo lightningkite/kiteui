@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.maybeCalculationContext
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NRadioToggleButton(context: Context): SlightlyModifiedFrameLayout(context), View.OnClickListener {
@@ -26,6 +27,7 @@ actual var RadioToggleButton.enabled: Boolean
     }
     set(value) {
         native.isEnabled = value
+        native.maybeCalculationContext?.enabledListeners?.value = value
     }
 actual val RadioToggleButton.checked: Writable<Boolean>
     get() = native.checked

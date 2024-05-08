@@ -42,4 +42,5 @@ actual var Button.enabled: Boolean
     }
     set(value) {
         native.isEnabled = value
+        native.maybeCalculationContext?.enabledListeners?.value = value
     }

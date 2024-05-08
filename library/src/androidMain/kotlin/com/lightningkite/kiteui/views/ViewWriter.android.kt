@@ -79,6 +79,9 @@ fun View.shutdown() {
 }
 
 data class NViewCalculationContext(val native: View): CalculationContext.WithLoadTracking(), Cancellable {
+    val enabledListeners by lazy {
+        Property(native.isEnabled)
+    }
     val onRemove = ArrayList<()->Unit>()
     override fun cancel() {
         onRemove.invokeAllSafe()
