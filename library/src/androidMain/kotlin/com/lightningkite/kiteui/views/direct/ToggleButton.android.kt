@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.maybeCalculationContext
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NToggleButton(context: Context): SlightlyModifiedFrameLayout(context), View.OnClickListener {
@@ -25,6 +26,7 @@ actual var ToggleButton.enabled: Boolean
     }
     set(value) {
         native.isEnabled = value
+        native.maybeCalculationContext?.enabledListeners?.value = value
     }
 actual val ToggleButton.checked: Writable<Boolean>
     get() = native.checked

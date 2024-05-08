@@ -25,7 +25,6 @@ import platform.UniformTypeIdentifiers.*
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
-import platform.posix.option
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -348,16 +347,15 @@ actual object ExternalServices {
         UIPasteboard.generalPasteboard.string = value
     }
     @OptIn(ExperimentalForeignApi::class)
-    actual fun download(name: String, url: String, onProgress: (Double) -> Unit) {
+    actual fun download(name: String, url: String) {
         val url = NSURL(string = url)
 
-        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask).firstOrNull() as? NSURL
-        val destinationFileUrl =  documentsUrl?.URLByAppendingPathComponent(name)
+        val destination = getDownloadUrl(name)
 
         val task = NSURLSession.sharedSession.downloadTaskWithURL(url) { localURL, urlResponse, error ->
             if(localURL == null) return@downloadTaskWithURL
-            if(destinationFileUrl == null) return@downloadTaskWithURL
-            val destination = destinationFileUrl
+            if(destination == null) return@downloadTaskWithURL
+            NSFileManager.defaultManager.copyItemAtURL(localURL, destination, null)
             afterTimeout(1) {
                 val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
                 ac.popoverPresentationController?.sourceView = rootView
@@ -367,6 +365,28 @@ actual object ExternalServices {
         }
 
         task.resume()
+    }
+
+    private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
+    private fun getDownloadUrl(name: String): NSURL {
+        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
+        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL ?: throw IllegalStateException("No download directory")
+        while(true) {
+            val destinationFileUrl =  documentsUrl.URLByAppendingPathComponent(name)!!
+            if(!NSFileManager.defaultManager.isReadableFileAtPath(destinationFileUrl.path!!))
+                return destinationFileUrl
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun download(name: String, blob: Blob) {
+        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL
+        val destination = getDownloadUrl(name)
+
+        val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
+        ac.popoverPresentationController?.sourceView = rootView
+        ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
+        currentPresenter(ac)
     }
     @OptIn(ExperimentalForeignApi::class)
     actual fun share(title: String, message: String?, url: String?){
