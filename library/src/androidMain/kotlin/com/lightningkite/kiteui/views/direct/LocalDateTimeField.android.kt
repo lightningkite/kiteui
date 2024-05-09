@@ -51,7 +51,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) :
             refreshTheming()
         }
 
-    override fun beforeRefreshTheming() = when {
+    override fun getStateThemeChoice() = when {
         !enabled -> ThemeChoice.Derive { it.disabled() }
         else -> null
     }

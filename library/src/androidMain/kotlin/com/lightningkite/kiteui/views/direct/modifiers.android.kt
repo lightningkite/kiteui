@@ -25,17 +25,17 @@ import com.lightningkite.kiteui.views.*
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
-            try {
-                val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
-                lp.weight = amount
-                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width = 0
-                } else {
-                    lp.height = 0
-                }
-            } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
+        try {
+            val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
+            lp.weight = amount
+            if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                lp.width = 0
+            } else {
+                lp.height = 0
             }
+        } catch (ex: Throwable) {
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
+        }
 
     }
     return ViewWrapper
@@ -45,31 +45,31 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
     afterNextElementSetup {
-            val originalSize = try {
+        val originalSize = try {
+            val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
+            if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                lp.width
+            } else {
+                lp.height
+            }
+        } catch (ex: Throwable) {
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
+            WRAP_CONTENT
+        }
+
+        reactiveScope {
+            try {
                 val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
-                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width
+                lp.weight = amount()
+                if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                    lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
-                    lp.height
+                    lp.height = if (lp.weight != 0f) 0 else originalSize
                 }
             } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
-                WRAP_CONTENT
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
             }
-
-            reactiveScope {
-                try {
-                    val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
-                    lp.weight = amount()
-                    if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                        lp.width = if (lp.weight != 0f) 0 else originalSize
-                    } else {
-                        lp.height = if (lp.weight != 0f) 0 else originalSize
-                    }
-                } catch (ex: Throwable) {
-                    RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
-                }
-            }
+        }
 
     }
     return ViewWrapper
@@ -118,8 +118,12 @@ actual val ViewWriter.scrolls: ViewWrapper
             override val native: View = NestedScrollView(context.activity).apply {
                 isFillViewport = true
             }
-            override fun applyForeground(theme: Theme) { /*Do nothing*/ }
-            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/ }
+
+            override fun applyForeground(theme: Theme) { /*Do nothing*/
+            }
+
+            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+            }
         })
         return ViewWrapper
     }
@@ -131,8 +135,12 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
             override val native: View = HorizontalScrollView(context.activity).apply {
                 isFillViewport = true
             }
-            override fun applyForeground(theme: Theme) { /*Do nothing*/ }
-            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/ }
+
+            override fun applyForeground(theme: Theme) { /*Do nothing*/
+            }
+
+            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+            }
         })
         return ViewWrapper
     }
@@ -149,8 +157,12 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         beforeNextElementSetup {
             constraints.width?.let { it: Dimension -> native.lparams.width = it.value.toInt() }
             constraints.height?.let { it: Dimension -> native.lparams.height = it.value.toInt() }
-            constraints.maxWidth?.let { it: Dimension -> (native.lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt() }
-            constraints.maxHeight?.let { it: Dimension -> (native.lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt() }
+            constraints.maxWidth?.let { it: Dimension ->
+                (native.lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt()
+            }
+            constraints.maxHeight?.let { it: Dimension ->
+                (native.lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt()
+            }
             constraints.minWidth?.let { native.minimumWidth = it.value.toInt() }
             constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
         }
@@ -382,7 +394,8 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
                             native.heightAnimator(WRAP_CONTENT)
                         }.also {
                             it.addUpdateListener {
-                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = it.animatedFraction
+                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                    it.animatedFraction
                             }
                         }
                     } else {

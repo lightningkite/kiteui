@@ -28,7 +28,7 @@ actual class ToggleButton actual constructor(context: RContext): RView(context) 
             refreshTheming()
         }
 
-    override fun beforeRefreshTheming() = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
+    override fun getStateThemeChoice() = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
             if(enabled) null else ThemeChoice.Derive { it.disabled() }
 
     init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }

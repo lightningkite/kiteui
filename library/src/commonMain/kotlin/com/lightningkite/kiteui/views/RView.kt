@@ -1,13 +1,11 @@
 package com.lightningkite.kiteui.views
 
 import ViewWriter
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
-import kotlin.math.roundToInt
 
 expect abstract class RView : RViewHelper {
     override fun opacitySet(value: Double)
@@ -90,7 +88,6 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
             refreshTheming()
         }
     private var actuallyUseBackground: Boolean = false
-    var myThemeOverride: Theme? = null
     var themeChoice: ThemeChoice? = null
         set(value) {
             field = value
@@ -107,25 +104,22 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
                 )
                 applyForeground(value)
                 applyBackground(value, actuallyUseBackground)
-                if (value != lastTheme) {
-                    lastTheme = value
-                    for (child in internalChildren) {
-                        if (child.themeChoice !is ThemeChoice.Set)
-                            child.refreshTheming()
-                    }
+                for (child in internalChildren) {
+                    if (child.themeChoice !is ThemeChoice.Set)
+                        child.refreshTheming()
                 }
             }
         }
 
     protected val parentSpacing: Dimension get() = (parent?.spacing ?: (if(parent?.useNavSpacing == true) parent?.theme?.navSpacing else parent?.theme?.spacing) ?: 0.px)
-    private var lastTheme: Theme? = null
-    private var fullyStarted = false
-    open fun beforeRefreshTheming(): ThemeChoice? = null
+    protected var fullyStarted = false
+    open fun getStateThemeChoice(): ThemeChoice? = null
     protected fun refreshTheming() {
         if (!fullyStarted) return
-        val stateThemeChoice = beforeRefreshTheming()
+        if (parent?.fullyStarted == false) return
+        val stateThemeChoice = getStateThemeChoice()
         var changed = true
-        val futureTheme = myThemeOverride ?: when (val t = themeChoice + stateThemeChoice) {
+        val futureTheme = when (val t = themeChoice + stateThemeChoice) {
             is ThemeChoice.Derive -> {
                 val p = parent?.theme ?: Theme()
                 t.derivation(p) ?: run {
