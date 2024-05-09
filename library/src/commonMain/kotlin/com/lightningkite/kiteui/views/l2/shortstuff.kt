@@ -3,11 +3,12 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @ViewDsl
-fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
+fun RView.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
     icon {
         source = icon
         this.description = description
@@ -16,19 +17,18 @@ fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = 
 }
 
 @ViewDsl
-fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Unit) {
+fun RView.lazyExpanding(visible: Readable<Boolean>, sub: RView.()->Unit) {
     col {
-        val split = split()
         var noViewCreated = true
-        var view: NView? = null
+        var view: RView? = null
         reactiveScope {
             val v = visible.await()
             if(v) {
                 if(noViewCreated) {
                     noViewCreated = false
-                    native.withoutAnimation {
-                        split.sub()
-                        view = native.listNViews()[0]
+                    withoutAnimation {
+                        sub()
+                        view = children[0]
                         view?.exists = false
                     }
                     view?.exists = true

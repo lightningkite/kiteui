@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.RView
 
 expect fun debugger(): Unit
@@ -10,7 +9,7 @@ expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()
 
-var viewDebugTarget: NView? = null
+var viewDebugTarget: RView? = null
 
 interface Console {
     fun tag(tag: String): Console

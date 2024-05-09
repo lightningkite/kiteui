@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.launch
 import kotlinx.datetime.*
 import org.w3c.dom.HTMLInputElement

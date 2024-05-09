@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.plus
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.WindowInfo

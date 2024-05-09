@@ -1,148 +1,149 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.ViewGroup
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.asDouble
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
-import com.lightningkite.kiteui.views.ViewAction
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.launch
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NNumberField = EditText
-
-actual val NumberField.content: Writable<Double?>
-    get() {
-        return this@content.native.content.asDouble()
-    }
-actual var NumberField.keyboardHints: KeyboardHints
-    get() {
-        return native.keyboardHints
-    }
-    set(value) {
-        native.keyboardHints = value
-    }
-actual var NumberField.action: Action?
-    get() {
-        return ViewAction[native]
-    }
-    set(value) {
-        ViewAction[native] = value
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-        native.setOnEditorActionListener { v, actionId, event ->
-            launch {
-                value?.onSelect?.invoke()
-            }
-            value != null
-        }
-    }
-actual var NumberField.hint: String
-    get() {
-        return this@hint.native.hint.toString()
-    }
-    set(value) {
-        this@hint.native.hint = value
-    }
-actual var NumberField.range: ClosedRange<Double>?
-    get() {
-        return native.tag as? ClosedRange<Double>
-    }
-    set(value) {
-        if (value == null) return
-
-        native.tag = value
-        native.doAfterTextChanged {
+actual class NumberField actual constructor(context: RContext): RView(context) {
+    override val native = EditText(context.activity).apply {
+        var block = false
+        doAfterTextChanged {
+            if(block) return@doAfterTextChanged
+            block = true
             try {
                 if (it == null) return@doAfterTextChanged
-
-                val string = it.toString()
-                val doubleValue = string.toDouble()
-                if (doubleValue < value.start || doubleValue > value.endInclusive) {
-                    val newValue = doubleValue.coerceIn(value)
-                    it.clear()
-                    it.append(newValue.toString())
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
+                numberAutocommaRepair(
+                    dirty = it.toString(),
+                    selectionStart = selectionStart,
+                    selectionEnd = selectionEnd,
+                    setResult = {
+                        setText(it)
+                    },
+                    setSelectionRange = { start, end ->
+                        setSelection(start, end)
+                    }
+                )
+            } finally {
+                block = false
             }
         }
     }
-actual var NumberField.align: Align
-    get() {
-        return when (native.gravity) {
-            Gravity.START -> Align.Start
-            Gravity.END -> Align.End
-            Gravity.CENTER -> Align.Center
-            Gravity.CENTER_VERTICAL -> Align.Start
-            Gravity.CENTER_HORIZONTAL -> Align.Center
-            else -> Align.Start
-        }
-    }
-    set(value) {
-        when (value) {
-            Align.Start -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-            Align.End -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_END
-            Align.Center -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_CENTER
-            Align.Stretch -> {
-                native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-                native.updateLayoutParams<ViewGroup.LayoutParams> {
-                    this.width = ViewGroup.LayoutParams.MATCH_PARENT
-                }
-            }
-        }
-    }
-actual var NumberField.textSize: Dimension
-    get() {
-        return Dimension(native.textSize)
-    }
-    set(value) {
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
-    }
 
-@ViewDsl
-actual inline fun ViewWriter.numberFieldActual(crossinline setup: NumberField.() -> Unit) {
-    return viewElement(factory = ::EditText, wrapper = ::NumberField) {
-        handleTheme<TextView>(native, foreground = applyTextColorFromTheme, viewLoads = true) {
-            keyboardHints = KeyboardHints.decimal
-            align = Align.End
-            this.__numberFieldSetup()
-            setup(this)
-        }
-    }
-}
-
-fun NumberField.__numberFieldSetup() {
-    var block = false
-    native.doAfterTextChanged {
-        if(block) return@doAfterTextChanged
-        block = true
-        try {
-            println("Repairing $it...")
-            if (it == null) return@doAfterTextChanged
-            numberAutocommaRepair(
-                dirty = it.toString(),
-                selectionStart = native.selectionStart,
-                selectionEnd = native.selectionEnd,
-                setResult = {
-                    println("Repaired to $it")
-                    native.setText(it)
-                },
-                setSelectionRange = { start, end ->
-                    native.setSelection(start, end)
-                }
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        native.setTextColor(theme.foreground.colorInt())
+        native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
+        native.setTypeface(
+            TypefaceCompat.create(
+                native.context,
+                theme.body.font,
+                theme.body.weight,
+                theme.body.italic
             )
-        } finally {
-            block = false
+        )
+        native.isAllCaps = theme.body.allCaps
+    }
+    actual val content: Writable<Double?> = native.contentProperty().asDouble()
+    actual var keyboardHints: KeyboardHints
+        get() {
+            return native.keyboardHints
         }
+        set(value) {
+            native.keyboardHints = value
+        }
+    actual var action: Action? = null
+        set(value) {
+            field = value
+            native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+            native.setOnEditorActionListener { v, actionId, event ->
+                launch {
+                    value?.onSelect?.invoke()
+                }
+                value != null
+            }
+        }
+    actual var hint: String
+        get() {
+            return native.hint.toString()
+        }
+        set(value) {
+            native.hint = value
+        }
+    actual var range: ClosedRange<Double>?
+        get() {
+            return native.tag as? ClosedRange<Double>
+        }
+        set(value) {
+            if (value == null) return
+
+            native.tag = value
+            native.doAfterTextChanged {
+                try {
+                    if (it == null) return@doAfterTextChanged
+
+                    val string = it.toString()
+                    val doubleValue = string.toDouble()
+                    if (doubleValue < value.start || doubleValue > value.endInclusive) {
+                        val newValue = doubleValue.coerceIn(value)
+                        it.clear()
+                        it.append(newValue.toString())
+                    }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+            }
+        }
+    actual var align: Align
+        get() {
+            return when (native.gravity) {
+                Gravity.START -> Align.Start
+                Gravity.END -> Align.End
+                Gravity.CENTER -> Align.Center
+                Gravity.CENTER_VERTICAL -> Align.Start
+                Gravity.CENTER_HORIZONTAL -> Align.Center
+                else -> Align.Start
+            }
+        }
+        set(value) {
+            when (value) {
+                Align.Start -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+                Align.End -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
+                Align.Center -> native.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                Align.Stretch -> {
+                    native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+                    native.updateLayoutParams<ViewGroup.LayoutParams> {
+                        this.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    }
+                }
+            }
+        }
+    actual var textSize: Dimension
+        get() {
+            return Dimension(native.textSize)
+        }
+        set(value) {
+            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
+        }
+    init {
+        keyboardHints = KeyboardHints.decimal
+        align = Align.End
     }
 }
+

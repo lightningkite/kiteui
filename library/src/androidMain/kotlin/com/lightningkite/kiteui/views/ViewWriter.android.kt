@@ -19,8 +19,6 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
-import com.lightningkite.kiteui.views.direct.HasSpacingMultiplier
-import com.lightningkite.kiteui.views.direct.KiteUiLayoutTransition
 import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.*
@@ -33,11 +31,6 @@ import java.util.WeakHashMap
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-
-/**
- * A native view in the underlying view system.
- */
-actual typealias NView = View
 
 object AndroidAppContext {
     lateinit var applicationCtx: Context
@@ -63,123 +56,4 @@ object AndroidAppContext {
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
-}
-
-private val ViewCalculationContexts = WeakHashMap<View, NViewCalculationContext>()
-internal val ViewAction = WeakHashMap<View, Action>()
-
-fun View.shutdown() {
-    ViewCalculationContexts[this]?.cancel()
-    ViewCalculationContexts.remove(this)
-    ViewAction.remove(this)
-    if(this is ViewGroup)
-        for(child in this.children) {
-            child.shutdown()
-        }
-}
-
-data class NViewCalculationContext(val native: View): CalculationContext.WithLoadTracking(), Cancellable {
-    val enabledListeners by lazy {
-        Property(native.isEnabled)
-    }
-    val onRemove = ArrayList<()->Unit>()
-    override fun cancel() {
-        onRemove.invokeAllSafe()
-        onRemove.clear()
-    }
-    override fun onRemove(action: () -> Unit) {
-        onRemove.add(action)
-    }
-
-    val loading = Property(false)
-    override fun hideLoad() {
-        loading.value = false
-    }
-
-    override fun showLoad() {
-        loading.value = true
-    }
-}
-
-val NView.maybeCalculationContext: NViewCalculationContext?
-    get() = ViewCalculationContexts.get(this)
-
-val NView.androidCalculationContext: NViewCalculationContext
-    get() = ViewCalculationContexts.getOrPut(this) { NViewCalculationContext(this) }
-
-actual val NView.calculationContext: CalculationContext
-    get() = ViewCalculationContexts.getOrPut(this) { NViewCalculationContext(this) }
-
-actual var NView.nativeRotation: Angle
-    get() = Angle(rotation / Angle.DEGREES_PER_CIRCLE)
-    set(value) {
-        rotation = value.degrees
-    }
-
-actual var NView.opacity: Double
-    get() {
-        return this.alpha.toDouble()
-    }
-
-    set(value) {
-        if (animationsEnabled) {
-            ValueAnimator.ofFloat(this.alpha, value.toFloat()).apply { addUpdateListener {
-                this@opacity.alpha = animatedValue as Float
-            } }.start()
-        } else {
-            this.alpha = value.toFloat()
-        }
-    }
-
-actual var NView.ignoreInteraction: Boolean
-    get() = !isClickable
-    set(value) {
-        isClickable = !value
-        isFocusable = !value
-    }
-
-private fun NView.assertLayoutTransitionReady() {
-//    val animateHost = (parent as? ViewGroup)
-//    if (animateHost?.layoutTransition == null) animateHost?.layoutTransition = KiteUiLayoutTransition()
-}
-
-actual var NView.exists: Boolean
-    get() = visibility == View.VISIBLE
-    set(value) {
-        assertLayoutTransitionReady()
-        visibility = if (value) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-        (parent as? DesiredSizeView)?.apply {
-            visibility = this@exists.visibility
-        }
-    }
-
-actual var NView.visible: Boolean
-    get() = visibility == View.VISIBLE
-    set(value) {
-        visibility = if (value) {
-            View.VISIBLE
-        } else {
-            View.INVISIBLE
-        }
-    }
-
-actual var NView.spacing: Dimension
-    get() = (this as? HasSpacingMultiplier)?.spacingOverride?.value ?: 0.px
-    set(value) {
-        (this as? HasSpacingMultiplier)?.spacingOverride?.value = value
-    }
-
-actual fun NView.clearNViews() {
-    if (this !is ViewGroup) throw RuntimeException("clearChildren can only be called on Android ViewGroups")
-    this.children.forEach { it.shutdown() }
-    this.removeAllViews()
-}
-
-actual fun NView.addNView(child: NView) {
-    if (this !is ViewGroup) throw RuntimeException("addChild can only be called on Android ViewGroups")
-    this.addView(child)
 }

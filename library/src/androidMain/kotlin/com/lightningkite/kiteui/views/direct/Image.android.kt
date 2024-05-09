@@ -34,89 +34,95 @@ import com.lightningkite.kiteui.views.*
 import com.ortiz.touchview.TouchImageView
 import android.widget.ImageView as AImageView
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NImageView = AppCompatImageView
 
-actual var ImageView.source: ImageSource?
-    get() = TODO()
-    set(value) {
-        @Suppress("KotlinConstantConditions")
-        if(native is TouchImageView) {
-            fun target() = object: SimpleTarget<Drawable>() {
-                override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
-                    println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
-                    native.setImageDrawable(p0)
+actual class ImageView actual constructor(context: RContext): RView(context) {
+    override val native = AppCompatImageView(context.activity)
+
+    actual var source: ImageSource?
+        get() = TODO()
+        set(value) {
+            @Suppress("KotlinConstantConditions")
+            if (native is TouchImageView) {
+                fun target() = object : SimpleTarget<Drawable>() {
+                    override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
+                        println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
+                        native.setImageDrawable(p0)
+                    }
+                }
+                when (value) {
+                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(target())
+                    is ImageRaw -> Glide.with(native).load(value.data).into(target())
+                    is ImageRemote -> Glide.with(native).load(value.url).into(target())
+                    is ImageResource -> Glide.with(native).load(value.resource).into(target())
+                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
+                    null -> native.setImageDrawable(null)
+                    else -> TODO()
+                }
+            } else {
+                when (value) {
+                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(native)
+                    is ImageRaw -> Glide.with(native).load(value.data).into(native)
+                    is ImageRemote -> Glide.with(native).load(value.url).into(native)
+                    is ImageResource -> Glide.with(native).load(value.resource).into(native)
+                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
+                    null -> native.setImageDrawable(null)
+                    else -> TODO()
                 }
             }
-            when(value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).into(target())
-                is ImageRaw -> Glide.with(native).load(value.data).into(target())
-                is ImageRemote -> Glide.with(native).load(value.url).into(target())
-                is ImageResource -> Glide.with(native).load(value.resource).into(target())
-                is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                null -> native.setImageDrawable(null)
-                else -> TODO()
-            }
-        } else {
-            when(value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).into(native)
-                is ImageRaw -> Glide.with(native).load(value.data).into(native)
-                is ImageRemote -> Glide.with(native).load(value.url).into(native)
-                is ImageResource -> Glide.with(native).load(value.resource).into(native)
-                is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                null -> native.setImageDrawable(null)
-                else -> TODO()
+        }
+    actual var scaleType: ImageScaleType
+        get() {
+            return when (this.native.scaleType) {
+                AImageView.ScaleType.MATRIX -> ImageScaleType.NoScale
+                AImageView.ScaleType.FIT_XY -> ImageScaleType.Stretch
+                AImageView.ScaleType.FIT_START -> ImageScaleType.Fit
+                AImageView.ScaleType.FIT_CENTER -> ImageScaleType.Fit
+                AImageView.ScaleType.FIT_END -> ImageScaleType.Fit
+                AImageView.ScaleType.CENTER -> ImageScaleType.Fit
+                AImageView.ScaleType.CENTER_CROP -> ImageScaleType.Crop
+                AImageView.ScaleType.CENTER_INSIDE -> ImageScaleType.NoScale
+                else -> ImageScaleType.Fit
             }
         }
-    }
-actual var ImageView.scaleType: ImageScaleType
-    get() {
-        return when (this.native.scaleType) {
-            AImageView.ScaleType.MATRIX -> ImageScaleType.NoScale
-            AImageView.ScaleType.FIT_XY -> ImageScaleType.Stretch
-            AImageView.ScaleType.FIT_START -> ImageScaleType.Fit
-            AImageView.ScaleType.FIT_CENTER -> ImageScaleType.Fit
-            AImageView.ScaleType.FIT_END -> ImageScaleType.Fit
-            AImageView.ScaleType.CENTER -> ImageScaleType.Fit
-            AImageView.ScaleType.CENTER_CROP -> ImageScaleType.Crop
-            AImageView.ScaleType.CENTER_INSIDE -> ImageScaleType.NoScale
-            else -> ImageScaleType.Fit
+        set(value) {
+            val scaleType: AImageView.ScaleType = when (value) {
+                ImageScaleType.Fit -> AImageView.ScaleType.FIT_CENTER
+                ImageScaleType.Crop -> AImageView.ScaleType.CENTER_CROP
+                ImageScaleType.Stretch -> AImageView.ScaleType.FIT_XY
+                ImageScaleType.NoScale -> AImageView.ScaleType.CENTER_INSIDE
+            }
+            this.native.scaleType = scaleType
         }
-    }
-    set(value) {
-        val scaleType: AImageView.ScaleType = when (value) {
-            ImageScaleType.Fit -> AImageView.ScaleType.FIT_CENTER
-            ImageScaleType.Crop -> AImageView.ScaleType.CENTER_CROP
-            ImageScaleType.Stretch -> AImageView.ScaleType.FIT_XY
-            ImageScaleType.NoScale -> AImageView.ScaleType.CENTER_INSIDE
+    actual var description: String?
+        get() {
+            return native.contentDescription.toString()
         }
-        this.native.scaleType = scaleType
-    }
-actual var ImageView.description: String?
-    get() {
-        return native.contentDescription.toString()
-    }
-    set(value) {
-        native.contentDescription = value
-    }
+        set(value) {
+            native.contentDescription = value
+        }
 
-@ViewDsl
-actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit) {
-    return viewElement(factory = ::NImageView, wrapper = ::ImageView) {
-        native.clipToOutline = true
-        handleTheme(native, viewDraws = true, viewLoads = true) {
-            setup(this)
-        }
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        super.applyBackground(theme, true)
     }
 }
 
-
-@ViewDsl
-actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) {
-    return viewElement(::TouchImageView, wrapper = ::ImageView){
-        native.clipToOutline = true
-        handleTheme(native, viewDraws = true) {
-            setup(this)
-        }
-    }
-}
+//@ViewDsl
+//actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit) {
+//    return viewElement(factory = ::NImageView, wrapper = ::ImageView) {
+//        native.clipToOutline = true
+//        handleTheme(native, viewDraws = true, viewLoads = true) {
+//            setup(this)
+//        }
+//    }
+//}
+//
+//
+//@ViewDsl
+//actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) {
+//    return viewElement(::TouchImageView, wrapper = ::ImageView){
+//        native.clipToOutline = true
+//        handleTheme(native, viewDraws = true) {
+//            setup(this)
+//        }
+//    }
+//}

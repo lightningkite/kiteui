@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await

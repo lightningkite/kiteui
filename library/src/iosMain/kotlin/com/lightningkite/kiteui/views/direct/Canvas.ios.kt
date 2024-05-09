@@ -2,20 +2,14 @@
 
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.canvas.DrawingContext2D
+import ViewWriter
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlinx.cinterop.*
-import platform.CoreFoundation.CFAbsoluteTimeGetCurrent
 import platform.CoreGraphics.*
-import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
-import kotlin.concurrent.AtomicInt
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NCanvas = CanvasView

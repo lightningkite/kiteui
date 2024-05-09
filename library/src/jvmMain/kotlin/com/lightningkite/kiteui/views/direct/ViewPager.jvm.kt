@@ -3,9 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NViewPager = HTMLElement

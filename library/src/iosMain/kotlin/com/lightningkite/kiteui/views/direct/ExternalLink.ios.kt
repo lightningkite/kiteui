@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.calculationContext
-import platform.UIKit.UIControlEventTouchUpInside
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NExternalLink = NativeLink

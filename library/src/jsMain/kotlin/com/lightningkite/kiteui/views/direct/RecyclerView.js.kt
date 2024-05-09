@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.dom.CSSStyleDeclaration
 import com.lightningkite.kiteui.models.Align

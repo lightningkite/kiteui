@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import platform.UIKit.UIView
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp
 
+import ViewWriter
 import com.lightningkite.mppexampleapp.docs.DocSearchScreen
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -17,7 +17,7 @@ val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)).copy(
 ))
 
 fun ViewWriter.app() {
-    rootTheme = { appTheme() }
+//    rootTheme = { appTheme() }
     appNav(AutoRoutes) {
         appName = "KiteUI Sample App"
         ::navItems {

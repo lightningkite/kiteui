@@ -1,65 +1,60 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.widget.FrameLayout
+import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.KiteUiActivity
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.calculationContext
-import com.lightningkite.kiteui.views.navigator
+import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NLink = LinkFrameLayout
 
-actual var Link.to: ()->Screen
-    get() = TODO()
-    set(value) {
-        native.setOnClickListener {
-            if(native.resetsStack) {
-                native.navigator.reset(value())
-            } else {
-                native.navigator.navigate(value())
+actual class Link actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayout(context.activity).apply {
+        isClickable = true
+    }
+
+    actual var to: ()->Screen = { Screen.Empty }
+        set(value) {
+            field = value
+            native.setOnClickListener { view ->
+                if(resetsStack) {
+                    navigator.reset(value())
+                } else {
+                    navigator.navigate(value())
+                }
+                launchManualCancel { onNavigate() }
             }
-            calculationContext.launchManualCancel { native.onNavigate() }
         }
-    }
-actual var Link.navigator: ScreenStack
-    get() = native.navigator
-    set(value) {
-        native.navigator = value
-    }
-actual var Link.newTab: Boolean
-    get() {
-        return false
-    }
-    set(value) {
-        Timber.d("New Tab called with value $value")
+    actual var newTab: Boolean = false
+    private var onNavigate: suspend () -> Unit = {}
+    actual fun onNavigate(action: suspend () -> Unit): Unit {
+        onNavigate = action
     }
 
-actual var Link.resetsStack: Boolean
-    get() = native.resetsStack
-    set(value) {
-        native.resetsStack = value
+    var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
+        }
+
+    actual var navigator: ScreenStack = ScreenStack.main
+    actual var resetsStack: Boolean = false
+
+    override fun beforeRefreshTheming() = when {
+        !enabled -> ThemeChoice.Derive { it.disabled() }
+        else -> null
     }
 
-actual fun Link.onNavigate(action: suspend () -> Unit): Unit {
-    native.onNavigate = action
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }
 
-@ViewDsl
-actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit) {
-    return viewElement(factory = ::LinkFrameLayout, wrapper = ::Link) {
-        native.navigator = PlatformNavigator
-        // OnClickListener may not be set until after handleTheme() is called, so we must manually set isClickable for
-        // the RippleDrawable to be added to the background
-        native.isClickable = true
-        handleThemeControl(native) {
-            setup(this)
-        }
-    }
-}
+

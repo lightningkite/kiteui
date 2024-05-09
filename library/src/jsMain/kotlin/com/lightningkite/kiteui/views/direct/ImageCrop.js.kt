@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.await
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw

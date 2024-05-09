@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
+import ViewWriter
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.navigation.bindToPlatform
@@ -33,15 +33,16 @@ fun ViewWriter.navSideBar(navElements: suspend () -> List<NavElement>) {
 }
 
 fun ViewWriter.appBase(routes: Routes, mainLayout: ContainingView.() -> Unit) {
-    transitionNextView = ViewWriter.TransitionNextView.Yes
     stack {
+        useBackground = UseBackground.Yes
         spacing = 0.px
+        navigator = ScreenStack.main
         ScreenStack.mainRoutes = routes
         ScreenStack.main.bindToPlatform(context)
         this@appBase.navigator = ScreenStack.main
         mainLayout()
         navigatorViewDialog() in tweakTheme { it.dialog() }
-        baseStack = this
-        baseStackWriter = split()
+//        baseStack = this
+//        baseStackWriter = split()
     }
 }

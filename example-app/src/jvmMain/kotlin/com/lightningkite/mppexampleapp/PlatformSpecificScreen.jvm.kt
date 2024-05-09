@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.views.*
+import ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 
 actual fun ViewWriter.platformSpecific() {

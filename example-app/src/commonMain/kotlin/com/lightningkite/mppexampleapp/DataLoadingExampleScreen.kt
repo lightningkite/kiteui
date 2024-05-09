@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.shared
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding

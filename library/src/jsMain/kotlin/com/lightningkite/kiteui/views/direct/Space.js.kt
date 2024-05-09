@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.element
 import com.lightningkite.kiteui.views.reactiveScope
 import org.w3c.dom.HTMLElement

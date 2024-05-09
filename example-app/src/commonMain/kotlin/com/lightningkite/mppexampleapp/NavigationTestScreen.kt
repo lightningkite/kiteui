@@ -2,9 +2,8 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*

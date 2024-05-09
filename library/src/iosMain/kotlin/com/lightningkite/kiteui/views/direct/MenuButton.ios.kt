@@ -1,14 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchManualCancel
+import ViewWriter
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue

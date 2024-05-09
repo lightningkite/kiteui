@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import org.w3c.dom.HTMLIFrameElement
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

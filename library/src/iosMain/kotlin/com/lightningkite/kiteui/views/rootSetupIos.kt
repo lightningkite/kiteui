@@ -1,13 +1,11 @@
 package com.lightningkite.kiteui.views
 
-import cnames.structs.objc_method
+import ViewWriter
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.objc.cgRectValue
-import com.lightningkite.kiteui.reactive.SoftInputOpen
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
-import kotlinx.cinterop.CPointer
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNumber

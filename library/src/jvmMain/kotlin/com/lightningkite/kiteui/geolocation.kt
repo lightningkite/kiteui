@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 actual fun ViewWriter.geolocate(onFixed: (GeolocationResult) -> Unit): Unit = TODO()
 

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import kotlinx.browser.document
 import org.w3c.dom.*

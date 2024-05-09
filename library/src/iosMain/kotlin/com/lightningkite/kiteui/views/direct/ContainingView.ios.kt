@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.handleTheme
 import com.lightningkite.kiteui.views.reactiveScope
 import platform.UIKit.UIView

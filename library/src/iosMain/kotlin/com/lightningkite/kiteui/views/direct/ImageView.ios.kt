@@ -1,20 +1,18 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.sub
-import com.lightningkite.kiteui.views.launch
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.*
 import platform.UIKit.*
-import platform.UniformTypeIdentifiers.UTTypeImage
-import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue

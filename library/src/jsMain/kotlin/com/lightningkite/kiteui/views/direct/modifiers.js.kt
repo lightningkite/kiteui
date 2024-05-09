@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*

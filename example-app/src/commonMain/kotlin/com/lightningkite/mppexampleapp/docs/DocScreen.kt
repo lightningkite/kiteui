@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
+import ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen

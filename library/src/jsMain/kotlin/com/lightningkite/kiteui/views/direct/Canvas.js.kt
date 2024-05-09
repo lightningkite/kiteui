@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import com.lightningkite.kiteui.views.element
 import org.w3c.dom.CanvasLineCap
@@ -10,7 +10,6 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.ROUND
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.WheelEvent
-import org.w3c.dom.pointerevents.PointerEvent
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NCanvas = HTMLCanvasElement

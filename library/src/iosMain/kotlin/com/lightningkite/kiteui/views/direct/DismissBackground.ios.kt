@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.views.*

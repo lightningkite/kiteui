@@ -1,14 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.dom.HTMLElement
-import com.lightningkite.kiteui.dom.HTMLVideoElement
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 

@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.navigation
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
 import com.lightningkite.kiteui.reactive.Listenable
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.RView
 import kotlin.reflect.KClass
 
 class Routes(
@@ -49,5 +49,5 @@ data class UrlLikePath(
 
 }
 
-fun Screen.render(viewWriter: ViewWriter) = with(viewWriter) { render() }
+fun Screen.render(RView: RView) = with(RView) { render() }
 

@@ -1,13 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
-import platform.Foundation.NSAttributedString
-import platform.Foundation.NSAttributedStringMeta
-import platform.Foundation.NSMutableAttributedString
-import platform.Foundation.NSString
 import platform.UIKit.*
 import platform.darwin.NSObject
 

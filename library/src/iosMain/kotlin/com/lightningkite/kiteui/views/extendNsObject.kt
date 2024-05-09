@@ -2,24 +2,15 @@
 
 package com.lightningkite.kiteui.views
 
+import ViewWriter
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.*
-import platform.QuartzCore.CALayer
 import platform.UIKit.UIView
 import platform.darwin.NSObject
-import platform.objc.objc_AssociationPolicy
-import platform.objc.objc_getAssociatedObject
-import platform.objc.objc_setAssociatedObject
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.identityHashCode
-import kotlin.native.ref.WeakReference
 import kotlin.properties.ReadWriteProperty
-import kotlin.random.Random
 import kotlin.reflect.KProperty
 
 class ExtensionProperty<A: NSObject, B>: ReadWriteProperty<A, B?> {

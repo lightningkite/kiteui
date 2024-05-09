@@ -2,9 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.TextOverflow
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 

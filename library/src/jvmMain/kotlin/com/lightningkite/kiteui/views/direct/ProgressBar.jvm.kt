@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.HTMLProgressElement
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NProgressBar = HTMLProgressElement

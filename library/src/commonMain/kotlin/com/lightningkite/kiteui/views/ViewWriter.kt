@@ -1,3 +1,7 @@
+import com.lightningkite.kiteui.reactive.CalculationContextStack
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
+
 //package com.lightningkite.kiteui.views
 //
 //import com.lightningkite.kiteui.Platform
@@ -15,7 +19,7 @@
 // * An object that writes view trees, similar to the way a Writer in Java sequentially writes text data.
 // * Views rendered through here will be inserted into the given parent in the constructor.
 // */
-//class ViewWriter(
+//class RView(
 //    parent: NView?,
 //    val context: NContext = parent?.nContext ?: throw IllegalArgumentException(),
 //    private val startDepth: Int = 0,
@@ -26,15 +30,15 @@
 //    /**
 //     * Additional data keyed by string attached to the context.
 //     * Copied to writers that are split off.
-//     * Easiest use comes from [viewWriterAddon] and [viewWriterAddonLateInit].
+//     * Easiest use comes from [RViewAddon] and [RViewAddonLateInit].
 //     */
 //    val addons: MutableMap<String, Any?> = mutableMapOf()
 //
 //    /**
-//     * Creates a copy of the [ViewWriter] with the current view as its root.
+//     * Creates a copy of the [RView] with the current view as its root.
 //     * Used for view containers that need their contents removed and replaced later.
 //     */
-//    fun split(): ViewWriter = ViewWriter(stack.lastOrNull(), context = context, startDepth = depth).also {
+//    fun split(): RView = RView(stack.lastOrNull(), context = context, startDepth = depth).also {
 //        it.addons.putAll(this.addons)
 //        it.currentTheme = currentTheme
 //        it.isRoot = isRoot
@@ -47,10 +51,10 @@
 //    }
 //
 //    /**
-//     * Creates a copy of the [ViewWriter] with no root view.
+//     * Creates a copy of the [RView] with no root view.
 //     * Used for view containers that need their contents removed and replaced later.
 //     */
-//    fun newViews(): ViewWriter = ViewWriter(null, context = context, startDepth = depth).also {
+//    fun newViews(): RView = RView(null, context = context, startDepth = depth).also {
 //        it.addons.putAll(this.addons)
 //        it.currentTheme = currentTheme
 //        it.isRoot = isRoot
@@ -63,10 +67,10 @@
 //    }
 //
 //    /**
-//     * Creates a copy of the [ViewWriter] with no root view.
+//     * Creates a copy of the [RView] with no root view.
 //     * Used for view containers that need their contents removed and replaced later.
 //     */
-//    fun targeting(view: NView): ViewWriter = ViewWriter(view, context = context, startDepth = depth).also {
+//    fun targeting(view: NView): RView = RView(view, context = context, startDepth = depth).also {
 //        it.addons.putAll(this.addons)
 //        it.currentTheme = currentTheme
 //        it.isRoot = isRoot
@@ -104,7 +108,7 @@
 //    }
 //
 //    @ViewModifierDsl3
-//    inline fun ViewWriter.themeModifier(crossinline calculate: suspend (suspend () -> Theme) -> Theme): ViewWrapper {
+//    inline fun RView.themeModifier(crossinline calculate: suspend (suspend () -> Theme) -> Theme): ViewWrapper {
 //        val old = currentTheme
 //        changedThemes = true
 //        currentTheme = { calculate(old) }
@@ -130,7 +134,7 @@
 //    val stackEmpty: Boolean get() = stack.isEmpty()
 //
 //    var baseStack: ContainingView? = null
-//    var baseStackWriter: ViewWriter? = null
+//    var baseStackWriter: RView? = null
 //    var popoverClosers = ArrayList<()->Unit>()
 //
 //    val calculationContext: CalculationContext get() = stack.last().calculationContext
@@ -213,7 +217,7 @@
 //    fun <T> forEachUpdating(
 //        items: Readable<List<T>>,
 //        placeholdersWhileLoading: Int = 5,
-//        render: ViewWriter.(Readable<T>) -> Unit
+//        render: RView.(Readable<T>) -> Unit
 //    ) {
 //        val split = split()
 //        val currentViews = ArrayList<LateInitProperty<T>>()
@@ -271,3 +275,49 @@
 //        }
 //    }
 //}
+abstract class ViewWriter {
+    abstract val context: RContext
+    abstract fun addChild(view: RView)
+
+    fun split(): ViewWriter = object: ViewWriter() {
+        override val context: RContext = this@ViewWriter.context.split()
+        override fun addChild(view: RView) {
+            this@ViewWriter.addChild(view)
+        }
+    }
+
+    // Modifier and wrapper handling
+
+    var beforeNextElementSetup: (RView.() -> Unit)? = null
+    inline fun beforeNextElementSetup(crossinline action: RView.() -> Unit) {
+        val prev = beforeNextElementSetup
+        beforeNextElementSetup = { prev?.invoke(this); action() }
+    }
+
+    var afterNextElementSetup: (RView.() -> Unit)? = null
+    inline fun afterNextElementSetup(crossinline action: RView.() -> Unit) {
+        val prev = afterNextElementSetup
+        afterNextElementSetup = { prev?.invoke(this); action() }
+    }
+
+    var _wrapElement: RView? = null
+    fun wrapNextIn(view: RView) {
+        (_wrapElement ?: this).addChild(view)
+        _wrapElement = view
+        view.postSetup()
+    }
+
+    inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
+        (_wrapElement ?: this).addChild(view)
+        _wrapElement = null
+        CalculationContextStack.useIn(view) {
+            beforeNextElementSetup?.invoke(view)
+            beforeNextElementSetup = null
+            setup(view)
+            view.postSetup()
+            afterNextElementSetup?.invoke(view)
+            afterNextElementSetup = null
+        }
+        return view
+    }
+}

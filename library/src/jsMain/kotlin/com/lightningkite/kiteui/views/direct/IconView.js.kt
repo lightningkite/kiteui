@@ -1,18 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import kotlinx.dom.addClass
 import kotlinx.dom.appendElement
 import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.get
-import org.w3c.dom.svg.SVGElement
 import org.w3c.dom.svg.SVGSVGElement
-import org.w3c.dom.url.URL
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NIconView = HTMLDivElement

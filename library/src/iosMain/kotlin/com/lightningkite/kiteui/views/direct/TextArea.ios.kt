@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.KeyboardCase
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.KeyboardType
@@ -9,7 +10,6 @@ import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.*
 import platform.darwin.NSObject
-import platform.posix.listen
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NTextArea = UITextView

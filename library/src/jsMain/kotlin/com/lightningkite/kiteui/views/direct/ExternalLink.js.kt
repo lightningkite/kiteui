@@ -2,8 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.calculationContext
+import ViewWriter
 import org.w3c.dom.HTMLAnchorElement
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

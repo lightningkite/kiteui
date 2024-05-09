@@ -1,12 +1,12 @@
 package com.lightningkite.mppexampleapp
 
+import ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.lazyExpanding
 
 @Routable("recycler-view-infinite-images")
 object InfiniteImagesScreen : Screen {

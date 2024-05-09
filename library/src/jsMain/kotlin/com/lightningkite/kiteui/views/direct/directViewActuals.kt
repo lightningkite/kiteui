@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
 import org.w3c.dom.*

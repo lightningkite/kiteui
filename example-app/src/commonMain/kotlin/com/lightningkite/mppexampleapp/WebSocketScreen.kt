@@ -3,14 +3,9 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.card
+import ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.launch
 import com.lightningkite.kiteui.views.reactiveScope
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
 @Routable("sample/websockets")
 object WebSocketScreen : Screen {

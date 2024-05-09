@@ -5,7 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 private val locationService: LocationManager by lazy {
     AndroidAppContext.applicationCtx.getSystemService(Context.LOCATION_SERVICE) as LocationManager

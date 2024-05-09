@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+import ViewWriter
 import android.animation.ValueAnimator
 import android.annotation.TargetApi
 import android.content.Intent
@@ -18,14 +19,28 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.AndroidAppContext
+import com.lightningkite.kiteui.views.*
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: suspend () -> Theme get() = { Theme() }
     var savedInstanceState: Bundle? = null
+
+    val viewWriter = object: ViewWriter() {
+        override val context: RContext
+            get() = RContext(this@KiteUiActivity)
+        override fun addChild(view: RView) {
+            setContentView(view.native)
+        }
+        init {
+            beforeNextElementSetup {
+                useBackground = UseBackground.Yes
+                ::themeChoice { ThemeChoice.Set(theme()) }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowInfo.value = WindowStatistics(

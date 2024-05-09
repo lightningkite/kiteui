@@ -1,43 +1,95 @@
 package com.lightningkite.kiteui.views
 
+import ViewWriter
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
+import kotlin.math.roundToInt
 
-typealias ViewWriter = RView
-abstract class RView(val context: NContext) : CalculationContext {
-    abstract var opacity: Double
-    abstract var exists: Boolean
-    abstract var visible: Boolean
-    abstract var spacing: Dimension
-    abstract var ignoreInteraction: Boolean
+expect abstract class RView : RViewHelper {
+    override fun opacitySet(value: Double)
+    override fun existsSet(value: Boolean)
+    override fun visibleSet(value: Boolean)
+    override fun spacingSet(value: Dimension?)
+    override fun ignoreInteractionSet(value: Boolean)
+    override fun forcePaddingSet(value: Boolean?)
+    override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
+    override fun requestFocus()
+    override fun applyElevation(dimension: Dimension)
+    override fun applyPadding(dimension: Dimension)
+    override fun applyBackground(theme: Theme, fullyApply: Boolean)
+    override fun applyForeground(theme: Theme)
+    override fun internalAddChild(index: Int, view: RView)
+    override fun internalRemoveChild(index: Int)
+    override fun internalClearChildren()
+}
+
+expect inline fun RView.withoutAnimation(action: () -> Unit)
+abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
+    var opacity: Double = 1.0
+        set(value) {
+            field = value
+            opacitySet(value)
+        }
+
+    protected abstract fun opacitySet(value: Double)
+    var exists: Boolean = true
+        set(value) {
+            field = value
+            existsSet(value)
+        }
+
+    protected abstract fun existsSet(value: Boolean)
+    var visible: Boolean = true
+        set(value) {
+            field = value
+            visibleSet(value)
+        }
+
+    protected abstract fun visibleSet(value: Boolean)
+    var spacing: Dimension? = null
+        set(value) {
+            field = value
+            spacingSet(value)
+        }
+
+    protected abstract fun spacingSet(value: Dimension?)
+    var ignoreInteraction: Boolean = false
+        set(value) {
+            field = value
+            ignoreInteractionSet(value)
+        }
+
+    protected abstract fun ignoreInteractionSet(value: Boolean)
+    var forcePadding: Boolean? = null
+        set(value) {
+            field = value
+            forcePaddingSet(value)
+        }
+
+    protected abstract fun forcePaddingSet(value: Boolean?)
+
+    var useNavSpacing: Boolean = false
 
     abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
     abstract fun requestFocus()
 
-    abstract fun disableAnimation()
-    abstract fun enableAnimation()
-    inline fun withoutAnimation(action: ()->Unit) {
-        disableAnimation()
-        try { action() } finally {
-            enableAnimation()
-        }
+    companion object {
+        var animationsEnabled: Boolean = true
     }
 
 
     // Theming
 
-    var useBackground: Boolean = false
+    var useBackground: UseBackground = UseBackground.No
         set(value) {
             field = value
             refreshTheming()
         }
-    sealed interface ThemeChoice {
-        data class Set(val theme: Theme): ThemeChoice
-        data class Derive(val derivation: (Theme) -> Theme): ThemeChoice
-//        data class ControlStateDerive(val derivation: (Theme) -> Theme): ThemeChoice
-    }
+    private var actuallyUseBackground: Boolean = false
     var myThemeOverride: Theme? = null
     var themeChoice: ThemeChoice? = null
         set(value) {
@@ -46,10 +98,15 @@ abstract class RView(val context: NContext) : CalculationContext {
         }
     var theme: Theme = Theme.placeholder
         private set(value) {
-            if(value != field) {
+            if (value != field) {
                 field = value
+                applyElevation(if (actuallyUseBackground) theme.elevation else 0.px)
+                applyPadding(
+                    if (forcePadding ?: (useBackground != UseBackground.No)) (spacing
+                        ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else 0.px
+                )
                 applyForeground(value)
-                applyBackground(if (useBackground) value else null)
+                applyBackground(value, actuallyUseBackground)
                 if (value != lastTheme) {
                     lastTheme = value
                     for (child in internalChildren) {
@@ -59,40 +116,71 @@ abstract class RView(val context: NContext) : CalculationContext {
                 }
             }
         }
-//    abstract val handlesControlStateDerive: Boolean
+
+    protected val parentSpacing: Dimension get() = (parent?.spacing ?: (if(parent?.useNavSpacing == true) parent?.theme?.navSpacing else parent?.theme?.spacing) ?: 0.px)
     private var lastTheme: Theme? = null
-    private fun refreshTheming() {
-        theme = myThemeOverride ?: when(val t = themeChoice) {
-//            is ThemeChoice.ControlStateDerive -> t.derivation(parent?.theme ?: Theme())
-            is ThemeChoice.Derive -> t.derivation(parent?.theme ?: Theme())
+    private var fullyStarted = false
+    open fun beforeRefreshTheming(): ThemeChoice? = null
+    protected fun refreshTheming() {
+        if (!fullyStarted) return
+        val stateThemeChoice = beforeRefreshTheming()
+        var changed = true
+        val futureTheme = myThemeOverride ?: when (val t = themeChoice + stateThemeChoice) {
+            is ThemeChoice.Derive -> {
+                val p = parent?.theme ?: Theme()
+                t.derivation(p) ?: run {
+                    changed = false
+                    p
+                }
+            }
+
             is ThemeChoice.Set -> t.theme
             null -> parent?.theme ?: Theme()
         }
+        actuallyUseBackground = when (useBackground) {
+            UseBackground.No -> false
+            UseBackground.Yes -> true
+            UseBackground.IfChanged -> changed
+        }
+        theme = futureTheme
     }
-    abstract fun applyBackground(theme: Theme?)
+
+    abstract fun applyElevation(dimension: Dimension)
+    abstract fun applyPadding(dimension: Dimension)
+    abstract fun applyBackground(theme: Theme, fullyApply: Boolean)
     abstract fun applyForeground(theme: Theme)
 
 
     // Children
 
     var parent: RView? = null
-        private set
+        set(value) {
+            field = value
+            if (parent != null) refreshTheming()
+        }
     private val internalChildren = ArrayList<RView>()
     val children: List<RView> get() = internalChildren
     fun addChild(index: Int, view: RView) {
-        view.parent = this
+        view.parent = this as RView
         internalAddChild(index, view)
         internalChildren.add(index, view)
     }
 
-    fun addChild(view: RView) {
-        addChild(children.size, view)
+    override fun addChild(view: RView) {
+        view.parent = this as RView
+        internalAddChild(children.size, view)
+        internalChildren.add(children.size, view)
     }
 
     fun removeChild(index: Int) {
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
         internalChildren.removeAt(index).parent = null
+    }
+
+    fun removeChild(view: RView) {
+        val i = children.indexOf(view)
+        if (i != -1) removeChild(i)
     }
 
     fun clearChildren() {
@@ -104,7 +192,7 @@ abstract class RView(val context: NContext) : CalculationContext {
         }
     }
 
-    private fun shutdown() {
+    protected fun shutdown() {
         onRemoveSet.invokeAllSafe()
         onRemoveSet.clear()
         for (child in internalChildren)
@@ -114,40 +202,16 @@ abstract class RView(val context: NContext) : CalculationContext {
     abstract fun internalAddChild(index: Int, view: RView)
     abstract fun internalRemoveChild(index: Int)
     abstract fun internalClearChildren()
-
-
-    // Modifier and wrapper handling
-
-    var beforeNextElementSetup: (RView.() -> Unit)? = null
-    inline fun beforeNextElementSetup(crossinline action: RView.() -> Unit) {
-        val prev = beforeNextElementSetup
-        beforeNextElementSetup = { prev?.invoke(this); action() }
-    }
-
-    var afterNextElementSetup: (RView.() -> Unit)? = null
-    inline fun afterNextElementSetup(crossinline action: RView.() -> Unit) {
-        val prev = afterNextElementSetup
-        afterNextElementSetup = { prev?.invoke(this); action() }
-    }
-
-    var _wrapElement: RView? = null
-    fun wrapNextIn(view: RView) {
-        (_wrapElement ?: this).addChild(view)
-        _wrapElement = view
-    }
-
-    inline fun <T: RView> write(view: T, setup: T.()->Unit) {
-        (_wrapElement ?: this).addChild(view)
-        _wrapElement = null
-        beforeNextElementSetup?.invoke(view)
-        beforeNextElementSetup = null
-        setup(view)
-        afterNextElementSetup?.invoke(view)
-        afterNextElementSetup = null
+    open fun postSetup() {
+        fullyStarted = true
+        refreshTheming()
     }
 
 
     // Calculation context
+
+    @Deprecated("Not needed anymore", ReplaceWith("this"))
+    val calculationContext: CalculationContext get() = this
 
     private val onRemoveSet = ArrayList<() -> Unit>()
     override fun onRemove(action: () -> Unit) {
@@ -175,3 +239,4 @@ abstract class RView(val context: NContext) : CalculationContext {
         super.notifyLongComplete(result)
     }
 }
+

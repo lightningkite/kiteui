@@ -7,8 +7,9 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
 import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.forEachUpdating
 
 @Routable("arguments-example/{id}")
 class ArgumentsExampleScreen(val id: String): Screen {

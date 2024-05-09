@@ -1,11 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchGlobal
-import com.lightningkite.kiteui.launchManualCancel
+import ViewWriter
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document

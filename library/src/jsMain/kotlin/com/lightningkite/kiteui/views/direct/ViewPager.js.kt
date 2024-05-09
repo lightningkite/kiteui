@@ -1,12 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.dom.addClass
 import org.w3c.dom.*
-import kotlin.math.roundToInt
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NViewPager = HTMLDivElement

@@ -1,27 +1,20 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.clockMillis
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.gc
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.navigation.bindToPlatform
 import com.lightningkite.kiteui.reactive.CalculationContextStack
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.appBase
-import com.lightningkite.kiteui.views.l2.navigatorViewDialog
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 import platform.darwin.NSObject
-import platform.posix.basename_r
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.identityHashCode
 import kotlin.native.runtime.GC
 import kotlin.native.runtime.NativeRuntimeApi
 

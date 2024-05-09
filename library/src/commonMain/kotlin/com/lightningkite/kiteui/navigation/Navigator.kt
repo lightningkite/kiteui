@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.NContext
+import com.lightningkite.kiteui.views.RContext
 
 @Deprecated("Use ScreenStack directly instead", ReplaceWith("ScreenStack", "com.lightningkite.kiteui.navigation.ScreenStack"))
 typealias KiteUiNavigator = ScreenStack
@@ -56,4 +56,4 @@ class ScreenStack(private val routesGetter: ()->Routes, dialog: ScreenStack? = n
 @Deprecated("Use ScreenStack.main", ReplaceWith("ScreenStack.main", "com.lightningkite.kiteui.navigation.ScreenStack"))
 val PlatformNavigator get() = ScreenStack.main
 
-expect fun ScreenStack.bindToPlatform(context: NContext)
+expect fun ScreenStack.bindToPlatform(context: RContext)

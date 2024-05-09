@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import org.w3c.dom.HTMLTextAreaElement
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

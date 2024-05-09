@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Action
@@ -9,25 +10,37 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
 @ViewDsl
-fun ViewWriter.h1(text: String) = h1 { content = text }
+inline fun RView.h1(crossinline setup: HeaderView.()->Unit = {}) = header(1, setup)
 @ViewDsl
-fun ViewWriter.h2(text: String) = h2 { content = text }
+inline fun RView.h2(crossinline setup: HeaderView.()->Unit = {}) = header(2, setup)
 @ViewDsl
-fun ViewWriter.h3(text: String) = h3 { content = text }
+inline fun RView.h3(crossinline setup: HeaderView.()->Unit = {}) = header(3, setup)
 @ViewDsl
-fun ViewWriter.h4(text: String) = h4 { content = text }
+inline fun RView.h4(crossinline setup: HeaderView.()->Unit = {}) = header(4, setup)
 @ViewDsl
-fun ViewWriter.h5(text: String) = h5 { content = text }
+inline fun RView.h5(crossinline setup: HeaderView.()->Unit = {}) = header(5, setup)
 @ViewDsl
-fun ViewWriter.h6(text: String) = h6 { content = text }
+inline fun RView.h6(crossinline setup: HeaderView.()->Unit = {}) = header(6, setup)
 @ViewDsl
-fun ViewWriter.text(text: String) = text { content = text }
+fun RView.h1(text: String) = h1 { content = text }
 @ViewDsl
-fun ViewWriter.subtext(text: String) = subtext { content = text }
+fun RView.h2(text: String) = h2 { content = text }
+@ViewDsl
+fun RView.h3(text: String) = h3 { content = text }
+@ViewDsl
+fun RView.h4(text: String) = h4 { content = text }
+@ViewDsl
+fun RView.h5(text: String) = h5 { content = text }
+@ViewDsl
+fun RView.h6(text: String) = h6 { content = text }
+@ViewDsl
+fun RView.text(text: String) = text { content = text }
+@ViewDsl
+fun RView.subtext(text: String) = subtext { content = text }
 
 // TODO: Button with working indicator
 
-fun ViewWriter.confirmDanger(
+fun RView.confirmDanger(
     title: String,
     body: String,
     actionName: String = "OK",
@@ -60,7 +73,7 @@ fun ViewWriter.confirmDanger(
         }
     })
 }
-fun ViewWriter.alert(
+fun RView.alert(
     title: String,
     body: String,
 ) {

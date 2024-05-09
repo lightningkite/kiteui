@@ -1,11 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.contains
+import ViewWriter
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.*
-import org.w3c.dom.HTMLSpanElement
 import org.w3c.dom.HTMLElement
-import org.w3c.dom.get
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NDismissBackground = HTMLElement

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.contains
+import ViewWriter
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.dp
@@ -9,7 +9,6 @@ import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
-import kotlin.math.max
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NCheckbox = FrameLayoutToggleButton

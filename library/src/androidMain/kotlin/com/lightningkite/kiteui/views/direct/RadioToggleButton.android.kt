@@ -4,39 +4,36 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatToggleButton
+import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.maybeCalculationContext
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NRadioToggleButton(context: Context): SlightlyModifiedFrameLayout(context), View.OnClickListener {
-    val checked = Property(false)
-    init { setOnClickListener(this) }
-
-    override fun onClick(v: View?) {
-        if(!checked.value) checked.value = true
+actual class RadioToggleButton actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayout(context.activity).apply {
+        isClickable = true
+        setOnClickListener { checkedProp.value = true }
     }
-}
+    private val checkedProp = Property(false)
+    actual val checked: Writable<Boolean> get() = checkedProp
 
-actual var RadioToggleButton.enabled: Boolean
-    get() {
-        return native.isEnabled
+    init {
+        checked.addListener { refreshTheming() }
     }
-    set(value) {
-        native.isEnabled = value
-        native.maybeCalculationContext?.enabledListeners?.value = value
-    }
-actual val RadioToggleButton.checked: Writable<Boolean>
-    get() = native.checked
 
-@ViewDsl
-actual inline fun ViewWriter.radioToggleButtonActual(crossinline setup: RadioToggleButton.() -> Unit) {
-    return viewElement(factory = ::NRadioToggleButton, wrapper = ::RadioToggleButton) {
-        handleThemeControl(native, checked = { checked.await() }){
-            setup(this)
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
         }
-    }
+
+    override fun beforeRefreshTheming() = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
+            if(enabled) null else ThemeChoice.Derive { it.disabled() }
+
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

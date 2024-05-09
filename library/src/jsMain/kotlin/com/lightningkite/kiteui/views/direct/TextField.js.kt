@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import kotlinx.browser.window
 import org.w3c.dom.HTMLInputElement
 

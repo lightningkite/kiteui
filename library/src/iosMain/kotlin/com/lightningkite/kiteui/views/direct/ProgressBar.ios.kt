@@ -1,10 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.models.rem
+import ViewWriter
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIProgressView
-import kotlin.math.roundToInt
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NProgressBar = UIProgressView

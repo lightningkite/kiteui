@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp
 
+import ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.navigation.Screen

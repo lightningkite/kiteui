@@ -1,13 +1,11 @@
 package com.lightningkite.mppexampleapp.docs
 
+import ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon

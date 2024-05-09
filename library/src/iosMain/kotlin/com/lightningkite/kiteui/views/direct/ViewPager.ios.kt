@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*

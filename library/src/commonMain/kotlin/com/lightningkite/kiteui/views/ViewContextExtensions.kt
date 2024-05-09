@@ -1,36 +1,37 @@
 package com.lightningkite.kiteui.views
 
+import ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.l2.AppNav
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
-fun <T> viewWriterAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
+fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.addons.getOrPut(property.name) { init } as T
+        thisRef.context.addons.getOrPut(property.name) { init } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        thisRef.addons[property.name] = value
+        thisRef.context.addons[property.name] = value
     }
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> viewWriterAddonLateInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
+fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized.") } as T
+        thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized.") } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        thisRef.addons[property.name] = value
+        thisRef.context.addons[property.name] = value
     }
 }
 
-var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
+var ViewWriter.navigator by rContextAddonInit<ScreenStack>()
+var ViewWriter.popoverClosers by rContextAddonInit<ArrayList<()->Unit>>()
 //var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
 
 @ViewModifierDsl3 val ViewWriter.debugNext: ViewWrapper get() {
@@ -43,17 +44,34 @@ var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
     return ViewWrapper
 }
 
-@ViewModifierDsl3 inline fun ViewWriter.withTheme(theme: Theme, action: () -> Unit) = withThemeGetter({theme}, action)
-@ViewModifierDsl3 fun ViewWriter.setTheme(calculate: suspend ()-> Theme?): ViewWrapper {
-    transitionNextView = ViewWriter.TransitionNextView.Yes
-    return themeModifier { calculate() ?: it() }
+@ViewModifierDsl3 fun ViewWriter.setTheme(calculate: suspend () -> Theme?): ViewWrapper {
+    beforeNextElementSetup {
+        useBackground = UseBackground.Yes
+        reactiveScope {
+            ::themeChoice { calculate()?.let { ThemeChoice.Set(it) } }
+        }
+    }
+    return ViewWrapper
 }
-@ViewModifierDsl3 inline fun ViewWriter.themeFromLast(crossinline calculate: suspend (Theme)->Theme?): ViewWrapper {
-    transitionNextView = ViewWriter.TransitionNextView.Yes
-    return themeModifier { val e = it(); calculate(e) ?: e }
+@ViewModifierDsl3 fun ViewWriter.themeFromLast(calculate: (Theme)->Theme?): ViewWrapper {
+    beforeNextElementSetup {
+        useBackground = UseBackground.Yes
+        themeChoice = ThemeChoice.Derive(calculate)
+        }
+    return ViewWrapper
 }
-@ViewModifierDsl3 inline fun ViewWriter.tweakTheme(crossinline calculate: suspend (Theme)->Theme?): ViewWrapper {
-    return themeModifier { val e = it(); calculate(e) ?: e }
+@ViewModifierDsl3 fun ViewWriter.maybeThemeFromLast(calculate: (Theme)-> Theme?): ViewWrapper {
+    beforeNextElementSetup {
+        useBackground = UseBackground.IfChanged
+        themeChoice = ThemeChoice.Derive(calculate)
+    }
+    return ViewWrapper
+}
+@ViewModifierDsl3 fun ViewWriter.tweakTheme(calculate: (Theme)->Theme?): ViewWrapper {
+    beforeNextElementSetup {
+        themeChoice = ThemeChoice.Derive(calculate)
+    }
+    return ViewWrapper
 }
 @ViewModifierDsl3 val ViewWriter.card: ViewWrapper get() = themeFromLast { it.card() }
 @ViewModifierDsl3 val ViewWriter.dialog: ViewWrapper get() = themeFromLast { it.dialog() }
@@ -81,10 +99,7 @@ var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
 @ViewModifierDsl3
 val ViewWriter.navSpacing: ViewWrapper get() {
     beforeNextElementSetup {
-        val theme = currentTheme
-        calculationContext.reactiveScope {
-            spacing = theme().navSpacing
-        }
+        useNavSpacing = true
     }
     return ViewWrapper
 }

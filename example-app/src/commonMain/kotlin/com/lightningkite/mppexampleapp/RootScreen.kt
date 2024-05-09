@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
@@ -53,7 +53,6 @@ object RootScreen : Screen {
                 linkScreen { PlatformSpecificScreen }
                 linkScreen { VideoElementScreen }
                 linkScreen { ViewPagerElementScreen }
-                linkScreen { TwoPaneTestScreen }
                 linkScreen { ThemesScreen }
                 linkScreen { ControlsScreen }
                 linkScreen { FormsScreen }
@@ -69,7 +68,6 @@ object RootScreen : Screen {
                 linkScreen { ReactivityScreen }
                 linkScreen { DialogSamplesScreen }
                 linkScreen { ExternalServicesScreen }
-                linkScreen { ImageCropScreen }
                 linkScreen { FullExampleScreen() }
                 linkScreen { RecyclerViewScreen }
                 linkScreen { PerformanceTestScreen }

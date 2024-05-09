@@ -4,9 +4,8 @@ import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT") actual typealias NVideo = HTMLElement
 @ViewDsl

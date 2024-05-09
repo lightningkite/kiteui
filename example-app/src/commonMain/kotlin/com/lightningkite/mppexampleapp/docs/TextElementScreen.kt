@@ -1,12 +1,10 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ExternalServices
+import ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.random.Random
 
 @Routable("docs/text")
 object TextElementScreen : DocScreen {

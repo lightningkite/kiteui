@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 
 @Deprecated("Use Screen directly instead", ReplaceWith("Screen", "com.lightningkite.kiteui.navigation.Screen"))
@@ -12,7 +12,7 @@ interface Screen {
         get() = Constant(
             this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen")
         )
-    fun ViewWriter.render()
+    fun ViewWriter.render(): Any?
     object Empty: Screen {
         override fun ViewWriter.render() {
             space { }

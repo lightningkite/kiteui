@@ -1,16 +1,15 @@
 package com.lightningkite.kiteui.views.l2
 
+import ViewWriter
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.js.JsName
 
 data class UserInfo(
     val name: String,
@@ -43,7 +42,7 @@ interface AppNav {
 }
 
 
-val ViewWriter.appNavFactory by viewWriterAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Property(
         ViewWriter::appNavBottomTabs
     )
@@ -193,9 +192,8 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 @ViewModifierDsl3
 fun ViewWriter.navSpacing(showNav: suspend () -> Boolean): ViewWrapper {
     beforeNextElementSetup {
-        val theme = currentTheme
-        calculationContext.reactiveScope {
-            spacing = if (showNav()) theme().navSpacing else 0.px
+        reactiveScope {
+            useNavSpacing = showNav()
         }
     }
     return ViewWrapper

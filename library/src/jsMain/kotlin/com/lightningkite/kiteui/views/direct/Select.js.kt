@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.awaitOnce
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.launch
 import com.lightningkite.kiteui.views.reactiveScope
 import org.w3c.dom.HTMLSelectElement

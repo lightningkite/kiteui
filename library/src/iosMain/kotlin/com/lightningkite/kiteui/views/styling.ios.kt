@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.await

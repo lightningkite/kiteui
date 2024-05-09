@@ -1,23 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.models.ScreenTransition
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
-import kotlin.jvm.JvmInline
-import kotlin.contracts.*
 
-expect class NSwapView : NView
 
-@JvmInline
-value class SwapView(override val native: NSwapView) : RView<NSwapView>
+expect class SwapView(context: RContext) : RView {
 
-@ViewDsl
-expect fun ViewWriter.swapViewActual(setup: SwapView.()->Unit = {}): Unit
-@OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.swapView(noinline setup: SwapView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; swapViewActual(setup) }
-@ViewDsl
-expect fun ViewWriter.swapViewDialogActual(setup: SwapView.()->Unit = {}): Unit
-@OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.swapViewDialog(noinline setup: SwapView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; swapViewDialogActual(setup) }
-expect fun SwapView.swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.()->Unit): Unit
+    fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> Unit): Unit
 
+}
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: suspend () -> T,
@@ -28,15 +21,15 @@ inline fun <T> SwapView.swapping(
     reactiveScope {
         val c = current()
         queue.add(c)
-        if(alreadySwapping) {
+        if (alreadySwapping) {
             return@reactiveScope
         }
         alreadySwapping = true
-        while(queue.isNotEmpty()) {
+        while (queue.isNotEmpty()) {
             val next = queue.removeAt(0)
             try {
                 swap(transition(next)) { views(next) }
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }

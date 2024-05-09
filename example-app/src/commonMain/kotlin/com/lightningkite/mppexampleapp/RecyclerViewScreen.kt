@@ -1,15 +1,13 @@
 package com.lightningkite.mppexampleapp
 
+import ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.lazyExpanding
 
 @Routable("recycler-view")
 object RecyclerViewScreen : Screen {
@@ -52,9 +50,8 @@ object RecyclerViewScreen : Screen {
 //                columns = 2
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
-                    themeFromLast { theme ->
-                        if (it.await() == 50) theme.important() else if (it.await() % 7 == 0) theme.hover() else theme
-                    } - col {
+                    col {
+                        ::themeChoice { if (it() == 50) ThemeChoice.Derive { it.important() } else if (it() % 7 == 0) ThemeChoice.Derive { it.hover() } else null }
                         row {
                             expanding - centered - text { ::content { "Item ${it.await()}" } }
                             centered - button {
@@ -63,7 +60,7 @@ object RecyclerViewScreen : Screen {
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
-                                    native.scrollIntoView(null, Align.Start, true)
+                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }

@@ -2,9 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NMenuButton = HTMLElement

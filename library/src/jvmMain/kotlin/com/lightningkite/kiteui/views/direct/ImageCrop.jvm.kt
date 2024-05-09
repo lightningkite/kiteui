@@ -1,12 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NImageCrop = HTMLElement

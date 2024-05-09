@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ScreenTransition
@@ -9,12 +10,10 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cValue
 import kotlinx.cinterop.readValue
 import platform.CoreGraphics.*
 import platform.UIKit.UIEvent
 import platform.UIKit.UIView
-import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class)
 actual class NSwapView: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol,

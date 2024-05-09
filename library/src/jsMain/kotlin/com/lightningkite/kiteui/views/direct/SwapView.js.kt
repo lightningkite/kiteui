@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import ViewWriter
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
@@ -8,7 +9,6 @@ import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NSwapView = HTMLDivElement

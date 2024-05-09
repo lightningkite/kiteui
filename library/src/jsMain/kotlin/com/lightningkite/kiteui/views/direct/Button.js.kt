@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 import com.lightningkite.kiteui.views.calculationContext
 import org.w3c.dom.HTMLButtonElement
 
