@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -8,13 +9,18 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 import kotlin.math.min
+import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)) {
+actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         setUserInteractionEnabled(false)
     }
+
+    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    override fun getSpacingOverrideProperty() = spacingOverride
+
     override fun drawLayer(layer: CALayer, inContext: CGContextRef?) {
         super.drawLayer(layer, inContext)
     }
@@ -56,7 +62,11 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)) {
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        return CGSizeMake(icon?.width?.value ?: 0.0, icon?.height?.value ?: 0.0)
+        val axisTotalPadding = (extensionPadding ?: 0.0) * 2
+        return CGSizeMake(
+            icon?.width?.value?.let { it + axisTotalPadding } ?: 0.0,
+            icon?.height?.value?.let { it + axisTotalPadding } ?: 0.0
+        )
     }
 
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? = null
