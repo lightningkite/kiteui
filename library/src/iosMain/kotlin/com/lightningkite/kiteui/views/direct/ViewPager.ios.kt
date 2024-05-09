@@ -42,8 +42,8 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
     backgroundColor = UIColor.clearColor
     handleTheme(
         this, viewDraws = false,
-        foreground = {
-            spacing = spacingOverride?.value ?: it.spacing
+        foregroundSkipAnimate = {
+            spacing = spacingOverride() ?: it.spacing
         },
     ) {
         forceCentering = true

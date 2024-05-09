@@ -31,6 +31,7 @@ fun ViewWriter.handleTheme(
     background: (Theme) -> Unit = {},
     backgroundRemove: () -> Unit = {},
     foreground: (Theme) -> Unit = {},
+    foregroundSkipAnimate: suspend (Theme) -> Unit = {},
     setup: () -> Unit,
 ) {
     val transition = transitionNextView
@@ -115,6 +116,7 @@ fun ViewWriter.handleTheme(
             }
             foreground(theme)
         }
+        foregroundSkipAnimate(theme)
     }
 
     lastSpacing = { view.spacingOverride?.await() ?: currentTheme().spacing }
