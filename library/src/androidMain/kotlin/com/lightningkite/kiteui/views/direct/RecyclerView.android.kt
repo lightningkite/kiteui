@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import android.content.Context
 import android.graphics.Rect
 import android.view.View

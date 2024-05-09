@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.Theme

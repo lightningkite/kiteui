@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenStack

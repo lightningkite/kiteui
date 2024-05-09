@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.RView
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 
 
 expect class MenuButton(context: RContext) : RView {

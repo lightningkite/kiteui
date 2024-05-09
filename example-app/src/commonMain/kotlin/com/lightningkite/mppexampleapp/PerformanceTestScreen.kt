@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*

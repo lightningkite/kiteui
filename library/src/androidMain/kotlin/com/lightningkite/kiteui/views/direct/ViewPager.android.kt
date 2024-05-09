@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import androidx.viewpager2.widget.ViewPager2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*

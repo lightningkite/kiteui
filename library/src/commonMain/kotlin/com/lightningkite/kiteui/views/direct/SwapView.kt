@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*

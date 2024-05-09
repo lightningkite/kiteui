@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Action

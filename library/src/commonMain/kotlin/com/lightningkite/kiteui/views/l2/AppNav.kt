@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.contains

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.MaterialLikeTheme
 import com.lightningkite.kiteui.navigation.Screen
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.debugNext
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.setTheme

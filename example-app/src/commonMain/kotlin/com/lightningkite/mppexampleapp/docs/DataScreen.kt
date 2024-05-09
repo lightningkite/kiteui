@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.await
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.minus

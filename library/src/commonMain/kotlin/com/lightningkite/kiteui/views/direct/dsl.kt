@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

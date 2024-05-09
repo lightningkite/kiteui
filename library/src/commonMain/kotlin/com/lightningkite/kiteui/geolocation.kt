@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 
 data class GeolocationResult(
     val latitude: Double,

@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.mppexampleapp.docs.DocSearchScreen
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*

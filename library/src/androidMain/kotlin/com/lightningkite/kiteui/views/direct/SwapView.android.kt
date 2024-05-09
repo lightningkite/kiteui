@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout

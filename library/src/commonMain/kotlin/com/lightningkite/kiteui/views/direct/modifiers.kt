@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 
 
 @ViewModifierDsl3

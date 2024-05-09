@@ -1,6 +1,6 @@
+package com.lightningkite.kiteui.views
+
 import com.lightningkite.kiteui.reactive.CalculationContextStack
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
 
 abstract class ViewWriter {
     abstract val context: RContext

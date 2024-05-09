@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context

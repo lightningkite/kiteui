@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Readable
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 
 @Deprecated("Use Screen directly instead", ReplaceWith("Screen", "com.lightningkite.kiteui.navigation.Screen"))
