@@ -26,8 +26,8 @@ actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.
     backgroundColor = UIColor.clearColor
     handleTheme(
         this, viewDraws = false,
-        foreground = {
-            spacing = spacingOverride?.value ?: it.spacing
+        foregroundSkipAnimate = {
+            spacing = spacingOverride() ?: it.spacing
         },
     ) {
         extensionViewWriter = newViews()
@@ -46,8 +46,8 @@ actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: Rec
     backgroundColor = UIColor.clearColor
     handleTheme(
         this, viewDraws = false,
-        foreground = {
-            spacing = spacingOverride?.value ?: it.spacing
+        foregroundSkipAnimate = {
+            spacing = spacingOverride() ?: it.spacing
         },
     ) {
         extensionViewWriter = newViews()
