@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.reactive.invokeAllSafe
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
+import kotlin.js.Json
 
 actual class NContext { companion object { val shared = NContext() }}
 actual val NView.nContext: NContext get() = NContext.shared
@@ -40,26 +41,6 @@ actual fun NView.scrollIntoView(horizontal: Align?, vertical: Align?, animate: B
     this.scrollIntoView(d)
 }
 
-var animationsEnabled: Boolean = true
-actual inline fun NView.withoutAnimation(action: () -> Unit) {
-    if(!animationsEnabled) {
-        action()
-        return
-    }
-    try {
-        animationsEnabled = false
-        clientWidth
-        classList.add("notransition")
-        clientWidth
-        action()
-    } finally {
-        offsetHeight  // force layout calculation
-        window.setTimeout({
-            classList.remove("notransition")
-        }, 100)
-        animationsEnabled = true
-    }
-}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NView = HTMLElement
@@ -83,7 +64,7 @@ actual var NView.spacing: Dimension
     set(value) {
         style.setProperty("--spacing", value.value)
         val cn = "spacingOf${value.value.replace(".", "_").filter { it.isLetterOrDigit() || it == '_' }}"
-        DynamicCSS.styleIfMissing(".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
+        KiteUiCss.styleIfMissing(".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
             "--parentSpacing" to value.value
         ))
         className = className.split(' ').filter { !it.startsWith("spacingOf") }.plus(cn).joinToString(" ")
@@ -97,6 +78,7 @@ actual var NView.opacity: Double
     get() = throw NotImplementedError()
     set(value) {
         style.opacity = value.toString()
+        Json
     }
 
 actual var NView.nativeRotation: Angle

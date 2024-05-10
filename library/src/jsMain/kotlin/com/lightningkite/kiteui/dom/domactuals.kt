@@ -1,15 +1,16 @@
 package com.lightningkite.kiteui.dom
 
 import kotlinx.browser.document
+import org.w3c.dom.DOMRect
 import org.w3c.dom.get
 
-@Suppress("NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS")
 actual typealias CSSStyleDeclaration = org.w3c.dom.css.CSSStyleDeclaration
 actual typealias Node = org.w3c.dom.Node
 actual typealias CharacterData = org.w3c.dom.CharacterData
-@Suppress("NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS")
 actual typealias Text = org.w3c.dom.Text
 actual typealias Element = org.w3c.dom.Element
+actual typealias DOMRect = org.w3c.dom.DOMRect
+actual typealias DOMRectReadOnly = org.w3c.dom.DOMRectReadOnly
 actual typealias HTMLElement = org.w3c.dom.HTMLElement
 actual typealias HTMLAnchorElement = org.w3c.dom.HTMLAnchorElement
 actual typealias HTMLAppletElement = org.w3c.dom.HTMLAppletElement

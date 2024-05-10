@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.views.DynamicCSS
 import com.lightningkite.kiteui.views.ViewDsl
 import ViewWriter
 import org.w3c.dom.HTMLDivElement

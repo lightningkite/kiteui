@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
@@ -31,7 +30,7 @@ actual inline fun ViewWriter.swapViewDialogActual(crossinline setup: SwapView.()
 
 actual fun SwapView.swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {
     val vw = native.asDynamic().__ROCK_ViewWriter__ as ViewWriter
-    val keyframeName = DynamicCSS.transition(transition)
+    val keyframeName = KiteUiCss.transition(transition)
     val previousLast = native.lastElementChild
     val myStyle = window.getComputedStyle(native)
     val transitionTime = myStyle.transitionDuration.takeUnless { it.isBlank() } ?: "0.15"

@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import ViewWriter
 import com.lightningkite.kiteui.reactive.reactiveScope
 import org.w3c.dom.asList
 
@@ -36,7 +35,7 @@ fun ViewWriter.handleTheme(
         else virtualClasses.remove("mightTransition")
 
         virtualClasses.removeAll { it.startsWith("theme-") }
-        virtualClasses.add(DynamicCSS.themeInteractive(theme))
+        virtualClasses.add(KiteUiCss.themeInteractive(theme))
 
         view.className = virtualClasses.joinToString(" ")
     }

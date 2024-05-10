@@ -416,7 +416,7 @@ expect class ImageResource : ImageSource
 
 expect sealed class VideoSource()
 data class VideoRemote(val url: String) : VideoSource()
-data class VideoRaw(val data: ByteArray) : VideoSource()
+data class VideoRaw(val data: Blob) : VideoSource()
 data class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 

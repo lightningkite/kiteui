@@ -247,6 +247,23 @@ expect abstract class Element: Node {
     open var className: String  // class
     open var id: String  // id
     open var slot: String  // slot
+    fun getBoundingClientRect(): DOMRect
+}
+expect open class DOMRectReadOnly {
+    open val x: Double
+    open val y: Double
+    open val width: Double
+    open val height: Double
+    open val top: Double
+    open val right: Double
+    open val bottom: Double
+    open val left: Double
+}
+expect open class DOMRect : DOMRectReadOnly {
+    override var x: Double
+    override var y: Double
+    override var width: Double
+    override var height: Double
 }
 
 expect abstract class HTMLElement: Element {

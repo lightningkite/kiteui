@@ -1,50 +1,29 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.basePath
-import kotlinx.browser.document
-import org.w3c.dom.HTMLLinkElement
-import org.w3c.dom.HTMLStyleElement
-import org.w3c.dom.css.CSSStyleSheet
-import org.w3c.dom.css.get
-import org.w3c.dom.events.Event
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
-object DynamicCSS {
-    val customStyleSheet: CSSStyleSheet by lazy {
-        val sheet = document.createElement("style") as HTMLStyleElement
-        sheet.title = "generated-css"
-        document.head!!.appendChild(sheet)
-        document.styleSheets.let {
-            for (i in 0 until it.length) {
-                val copy = it.get(i)!!
-                if (copy.title == sheet.title) return@let copy as CSSStyleSheet
-            }
-            throw IllegalStateException()
-        }
-    }
-
+object KiteUiCss {
     init {
         // basis rules
-        style(":root", mapOf(
+        DynamicCss.style(":root", mapOf(
             "--usePadding" to "0",
         ))
-        style("*", mapOf(
+        DynamicCss.style("*", mapOf(
             "box-sizing" to "border-box",
             "line-height" to "unset"
         ))
-        style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
-        style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
-        style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
-        style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
-        style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
-        style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
-        style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
-        style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
+        DynamicCss.style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
 //        style.visibility = if (value) "visible" else "hidden"
-        style(
+        DynamicCss.style(
             ".visibleOnParentHover",
             mapOf(
                 "visibility" to "hidden",
@@ -54,16 +33,16 @@ object DynamicCSS {
                 "max-height" to "unset",
             )
         )
-        style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
-        style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
+        DynamicCss.style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
+        DynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
 
-        style(".swapImage", mapOf(
+        DynamicCss.style(".swapImage", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
             "overflow" to "hidden",
         ))
-        style(".swapImage > *", mapOf(
+        DynamicCss.style(".swapImage > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -72,23 +51,23 @@ object DynamicCSS {
             "justify-self" to "stretch",
             "object-fit" to "contain",
         ))
-        style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
-        style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
-        style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
-        style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
-        style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
-        style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
-        style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
-        style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
+        DynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
+        DynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
+        DynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
+        DynamicCss.style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
+        DynamicCss.style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
+        DynamicCss.style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
+        DynamicCss.style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
+        DynamicCss.style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
 
-        style(".noInteraction.noInteraction", mapOf(
+        DynamicCss.style(".noInteraction.noInteraction", mapOf(
             "pointer-events" to "none"
         ))
-        style(".noInteraction > *", mapOf(
+        DynamicCss.style(".noInteraction > *", mapOf(
             "pointer-events" to "auto"
         ))
 
-        style(
+        DynamicCss.style(
             "body", mapOf(
                 "height" to "100svh",
                 "max-height" to "100svh",
@@ -97,27 +76,27 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             "body > div", mapOf(
                 "height" to "100%",
                 "max-width" to "100vw",
             )
         )
 
-        style(
+        DynamicCss.style(
             "a", mapOf(
                 "text-decoration" to "none",
                 "color" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             "a:visited", mapOf(
                 "color" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             "button, input, textarea, select", mapOf(
                 "background" to "none",
                 "border-width" to "0",
@@ -128,7 +107,7 @@ object DynamicCSS {
             )
         )
 
-//        style(
+//        DynamicCss.style(
 //            "input.sameThemeText, textarea.sameThemeText", mapOf(
 //                "border-bottom-style" to "solid",
 //                "border-bottom-width" to "1px",
@@ -136,13 +115,13 @@ object DynamicCSS {
 //            )
 //        )
 //
-//        style(
+//        DynamicCss.style(
 //            "input.sameThemeText:focus, textarea.sameThemeText:focus", mapOf(
 //                "border-radius" to "0",
 //            )
 //        )
 //
-//        style(
+//        DynamicCss.style(
 //            "input:not(.mightTransition).editable.editable, textarea:not(.mightTransition).editable.editable, select:not(.mightTransition).editable.editable", mapOf(
 //                "border-bottom-color" to "currentColor",
 //                "border-bottom-width" to "1px",
@@ -150,7 +129,7 @@ object DynamicCSS {
 //            )
 //        )
 //
-//        style(
+//        DynamicCss.style(
 //            "input:not(.mightTransition).editable.editable:focus, textarea:not(.mightTransition).editable.editable:focus, select:not(.mightTransition).editable.editable:focus", mapOf(
 //                "border-bottom-color" to "currentColor",
 //                "border-bottom-width" to "2px",
@@ -159,27 +138,27 @@ object DynamicCSS {
 //            )
 //        )
 
-        style(
+        DynamicCss.style(
             "input:focus textarea:focus", mapOf(
                 "outline" to "inherit",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".toggle-button", mapOf(
                 "display" to "flex",
                 "align-items" to "stretch",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".toggle-button > span", mapOf(
                 "flex-grow" to "1",
                 "flex-shrink" to "1",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".spinner", mapOf(
                 "width" to "32px !important",
                 "height" to "32px !important",
@@ -193,12 +172,12 @@ object DynamicCSS {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        style(".kiteui-swap", mapOf(
+        DynamicCss.style(".kiteui-swap", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
         ))
-        style(".kiteui-swap > *", mapOf(
+        DynamicCss.style(".kiteui-swap > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -208,14 +187,14 @@ object DynamicCSS {
         ))
 
 
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-swap", mapOf(
 //                "display" to "block",
 //                "position" to "relative",
 //            )
 //        )
 //
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-swap > *", mapOf(
 //                "position" to "absolute",
 //                "top" to "0",
@@ -227,12 +206,12 @@ object DynamicCSS {
 //            )
 //        )
 
-        style(".hidingContainer", mapOf(
+        DynamicCss.style(".hidingContainer", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
         ))
-        style(".hidingContainer > *", mapOf(
+        DynamicCss.style(".hidingContainer > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -241,7 +220,7 @@ object DynamicCSS {
             "justify-self" to "stretch",
         ))
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack", mapOf(
                 "display" to "grid",
                 "grid-template-columns" to "100%",
@@ -249,7 +228,7 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > *", mapOf(
                 "grid-column-start" to "1",
                 "grid-column-end" to "1",
@@ -260,134 +239,134 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .hStart", mapOf(
                 "justify-self" to "start",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .hCenter", mapOf(
                 "justify-self" to "center",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .hStretch", mapOf(
                 "justify-self" to "stretch",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .hEnd", mapOf(
                 "justify-self" to "end",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .vStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .vCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .vStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-stack > .vEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-row", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
             )
         )
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-row > *", mapOf(
 //                "max-width" to "unset",
 //            )
 //        )
 
-        style(
+        DynamicCss.style(
             ".kiteui-row > .vStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-row > .vCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-row > .vStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-row > .vEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-col", mapOf(
                 "display" to "flex",
                 "flex-direction" to "column",
             )
         )
 
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-col > *", mapOf(
 //                "max-height" to "unset",
 //            )
 //        )
 
-        style(
+        DynamicCss.style(
             ".kiteui-col > .hStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-col > .hCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-col > .hStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-col > .hEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        style(
+        DynamicCss.style(
             "img", mapOf(
                 "overflow" to "hidden",
             )
         )
 
-        style(
+        DynamicCss.style(
             "p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack)",
             mapOf(
                 "min-height" to "1em",
@@ -397,7 +376,7 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             "button.loading:after", mapOf(
                 "opacity" to "0.5 !important",
                 "content" to "\"\"",
@@ -417,20 +396,20 @@ object DynamicCSS {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        style("button", mapOf("position" to "relative"))
-        style(
+        DynamicCss.style("button", mapOf("position" to "relative"))
+        DynamicCss.style(
             "button.loading > *", mapOf(
                 "opacity" to "0.15",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".clickable", mapOf(
                 "cursor" to "pointer",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch", mapOf(
                 "position" to "relative",
                 "overflow" to "visible",
@@ -446,13 +425,13 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch:checked", mapOf(
                 "background-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch::before", mapOf(
                 "position" to "absolute",
                 "content" to "\"\"",
@@ -472,26 +451,26 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch:hover::before", mapOf(
                 "box-shadow" to "0 0 0px 8px rgba(0, 0, 0, .15)"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch:checked:hover::before", mapOf(
                 "box-shadow" to "0 0 0px 8px rgba(236, 72, 153, .15)"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".switch:checked:before", mapOf(
                 "left" to "calc(3rem - 1.6rem)",
                 "border-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".checkbox", mapOf(
                 "appearance" to "none",
                 "width" to "1.5rem",
@@ -503,12 +482,12 @@ object DynamicCSS {
                 "opacity" to "0.75",
             )
         )
-        style(
+        DynamicCss.style(
             ".checkbox:checked", mapOf(
                 "opacity" to "1",
             )
         )
-        style(
+        DynamicCss.style(
             ".checkbox::after", mapOf(
                 "position" to "absolute",
                 "content" to "\"\"",
@@ -529,13 +508,13 @@ object DynamicCSS {
                 "transition-timing-function" to "linear",
             )
         )
-        style(
+        DynamicCss.style(
             ":checked.checkbox::after", mapOf(
                 "opacity" to "1",
                 "transform" to "rotate(-45deg)"
             )
         )
-        style(
+        DynamicCss.style(
             ".radio", mapOf(
                 "appearance" to "none",
                 "width" to "1.5rem",
@@ -547,7 +526,7 @@ object DynamicCSS {
                 "border-style" to "solid",
             )
         )
-        style(
+        DynamicCss.style(
             ".radio::after", mapOf(
                 "position" to "absolute",
                 "border-radius" to "999px",
@@ -564,20 +543,20 @@ object DynamicCSS {
                 "transition-timing-function" to "linear",
             )
         )
-        style(
+        DynamicCss.style(
             ":checked.radio::after", mapOf(
                 "opacity" to "1",
                 "transform" to "none"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".crowd", mapOf(
                 "padding" to "0 !important",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-label.kiteui-label", mapOf(
                 "display" to "flex",
                 "flex-direction" to "column",
@@ -585,7 +564,7 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             "*", mapOf(
                 "scrollbar-color" to "#999 #0000",
                 "scrollbar-width" to "thin",
@@ -599,21 +578,21 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             "input", mapOf(
                 "min-height" to "1.5rem",
                 "min-width" to "1.5rem",
             )
         )
 
-        style(
+        DynamicCss.style(
             "::placeholder", mapOf(
                 "color" to "currentColor",
                 "opacity" to "0.3",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".kiteui-separator", mapOf(
                 "background-color" to "currentColor",
                 "opacity" to "0.25",
@@ -622,13 +601,13 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             "iframe#webpack-dev-server-client-overlay", mapOf(
                 "display" to "none !important"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".icon", mapOf(
                 "display" to "grid",
                 "grid-template-columns" to "100%",
@@ -636,7 +615,7 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".icon > *", mapOf(
                 "grid-column-start" to "1",
                 "grid-column-end" to "1",
@@ -647,19 +626,19 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".recycler", mapOf(
                 "overflow-y" to "auto"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".recycler > *", mapOf(
                 "max-height" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".recycler-horz", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
@@ -667,13 +646,13 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".recycler-horz > *", mapOf(
                 "max-width" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".recycler-grid", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
@@ -681,52 +660,52 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".scroll-vertical > *", mapOf(
                 "max-height" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".scroll-vertical", mapOf(
                 "overflow-y" to "auto",
                 "overflow-x" to "hidden",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".scroll-horizontal > *", mapOf(
                 "max-width" to "unset",
             )
         )
 
-        style(
+        DynamicCss.style(
             ".scroll-horizontal", mapOf(
                 "overflow-x" to "auto",
                 "overflow-y" to "hidden",
             )
         )
 
-        style(
+        DynamicCss.style(
             "::-webkit-scrollbar", mapOf(
                 "background" to "#0000",
             )
         )
 
-        style(
+        DynamicCss.style(
             "::-webkit-scrollbar-thumb", mapOf(
                 "background" to "color-mix(in srgb, currentColor 20%, transparent)",
                 "-webkit-border-radius" to "4px",
             )
         )
 
-        style(
+        DynamicCss.style(
             "::-webkit-scrollbar-corner", mapOf(
                 "background" to "#0000"
             )
         )
 
-        rule(
+        DynamicCss.rule(
             """
             @keyframes flickerAnimation {
                 0% {
@@ -741,7 +720,7 @@ object DynamicCSS {
             }
         """.trimIndent()
         )
-        rule(
+        DynamicCss.rule(
             """
             @keyframes spin {
                 from {
@@ -754,32 +733,32 @@ object DynamicCSS {
         """.trimIndent()
         )
 
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-row > [hidden]", mapOf(
 //                "width" to "0px !important",
 //                "transform" to "scaleX(0)",
 //            )
 //        )
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-col > [hidden]", mapOf(
 //                "height" to "0px !important",
 //                "transform" to "scaleY(0)",
 //            )
 //        )
-//        style(
+//        DynamicCss.style(
 //            ".kiteui-stack > [hidden]", mapOf(
 ////                "width" to "0px !important",
 ////                "height" to "0px !important",
 //                "transform" to "scale(0, 0)",
 //            )
 //        )
-        style(
+        DynamicCss.style(
             "[hidden]", mapOf(
                 "display" to "none !important",
             )
         )
 
-        style(
+        DynamicCss.style(
             ":not(.unkiteui)", mapOf(
                 "transition-timing-function" to "linear",
                 "transition-delay" to "0s",
@@ -787,7 +766,7 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ":not(.unkiteui).animatingShowHide", mapOf(
                 "overflow" to "hidden",
                 "minWidth" to "0px",
@@ -795,36 +774,36 @@ object DynamicCSS {
             )
         )
 
-        style(
+        DynamicCss.style(
             ".notransition, .notransition *", mapOf(
                 "transition" to "none !important"
             )
         )
 
-        style(
+        DynamicCss.style(
             ".dismissBackground", mapOf(
                 "z-index" to "998",
                 "pointer-events" to "auto"
             )
         )
-        style(
+        DynamicCss.style(
             ".dismissBackground + *", mapOf(
                 "z-index" to "999",
             )
         )
 //        recyclerView
-        style(".recyclerView", mapOf(
+        DynamicCss.style(".recyclerView", mapOf(
             "position" to "relative",
             "padding" to "0 !important"
         ))
 
-        style(".contentScroll-V::-webkit-scrollbar", mapOf(
+        DynamicCss.style(".contentScroll-V::-webkit-scrollbar", mapOf(
             "display" to "none"
         ))
-        style(".contentScroll-H::-webkit-scrollbar", mapOf(
+        DynamicCss.style(".contentScroll-H::-webkit-scrollbar", mapOf(
             "display" to "none"
         ))
-        style(".contentScroll-V",  mapOf(
+        DynamicCss.style(".contentScroll-V",  mapOf(
             "width" to "100%",
             "height" to "100%",
             "position" to "relative",
@@ -832,7 +811,7 @@ object DynamicCSS {
             "overflow-anchor" to "none",
             "scrollbar-width" to "none",
         ))
-        style(".contentScroll-H",  mapOf(
+        DynamicCss.style(".contentScroll-H",  mapOf(
             "width" to "100%",
             "height" to "100%",
             "position" to "relative",
@@ -840,7 +819,7 @@ object DynamicCSS {
             "overflow-anchor" to "none",
             "scrollbar-width" to "none",
         ))
-        style(".contentScroll-V > *",  mapOf(
+        DynamicCss.style(".contentScroll-V > *",  mapOf(
             "position" to "absolute",
             "max-height" to "unset",
             "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
@@ -848,7 +827,7 @@ object DynamicCSS {
             "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
             "overflow-anchor" to "revert",
         ))
-        style(".contentScroll-H > *",  mapOf(
+        DynamicCss.style(".contentScroll-H > *",  mapOf(
             "max-width" to "unset",
             "position" to "absolute",
             "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
@@ -856,19 +835,19 @@ object DynamicCSS {
             "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
             "overflow-anchor" to "revert",
         ))
-        style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
+        DynamicCss.style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
             "display" to "flex",
             "flex-direction" to "row",
             "gap" to "var(--spacing, 0)",
             "height" to "auto"
         ))
-        style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
+        DynamicCss.style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
             "display" to "flex",
             "flex-direction" to "column",
             "gap" to "var(--spacing, 0)",
             "width" to "auto"
         ))
-        style(".recyclerViewGridSub > *",  mapOf(
+        DynamicCss.style(".recyclerViewGridSub > *",  mapOf(
             "flex-grow" to "1",
             "flex-shrink" to "1",
             "flex-basis" to "0",
@@ -877,26 +856,26 @@ object DynamicCSS {
 //        content
 //        barScroll
 //        barContent
-//        style(".viewPager", mapOf(
+//        DynamicCss.style(".viewPager", mapOf(
 //            "scroll-snap-type" to "x mandatory",
 //            "scroll-behavior" to "smooth"
 //        ))
-        style(".viewPager > *", mapOf(
+        DynamicCss.style(".viewPager > *", mapOf(
             "width" to "var(--pager-width, 0rem)",
             "height" to "var(--pager-height, 0rem)",
             "scroll-snap-align" to "center",
         ))
-        style(".touchscreenOnly", mapOf(
+        DynamicCss.style(".touchscreenOnly", mapOf(
             "visibility" to "gone"
         ))
-        rule("""
+        DynamicCss.rule("""
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
                     visibility: visible
                 }
             }
         """.trimIndent())
-        style(
+        DynamicCss.style(
             "progress", mapOf(
                 "height" to "0.5rem",
                 "border" to "none",
@@ -907,7 +886,7 @@ object DynamicCSS {
             )
         )
         try {
-            style(
+            DynamicCss.style(
                 "progress::-webkit-progress-value", mapOf(
                     "height" to "100%",
                     "background-color" to "currentColor",
@@ -916,7 +895,7 @@ object DynamicCSS {
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            style(
+            DynamicCss.style(
                 "progress::-moz-progress-bar", mapOf(
                     "height" to "100%",
                     "background-color" to "currentColor",
@@ -925,23 +904,19 @@ object DynamicCSS {
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            style(
+            DynamicCss.style(
                 "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
                     "-webkit-appearance" to "none",
                 )
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            style(
+            DynamicCss.style(
                 "input[type=number]", mapOf(
                     "-moz-appearance" to "textfield"
                 )
             )
         } catch(e: Throwable) { /*squish*/ }
-    }
-
-    fun rule(rule: String, index: Int = 0): Int {
-        return customStyleSheet.insertRule(rule, index)
     }
 
     private val transitionHandled = HashSet<String>()
@@ -954,73 +929,15 @@ object DynamicCSS {
             append("}")
         }
 
-        rule(buildString {
+        DynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-enter { from { ")
             extracted(transition.enter)
         }, 0)
-        rule(buildString {
+        DynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-exit { from { ")
             extracted(transition.exit)
         }, 0)
         return "transition-${transition.name}"
-    }
-
-    private val fontHandled = HashSet<String>()
-    fun font(font: Font): String {
-        if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName
-        if (font.url != null) {
-            document.head!!.appendChild((document.createElement("link") as HTMLLinkElement).apply {
-                rel = "stylesheet"
-                type = "text/css"
-                href = font.url
-            })
-        }
-        if (font.direct != null) {
-            font.direct.normal.forEach {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: normal;font-weight: ${it.key};src:url('${basePath + it.value}');}")
-            }
-            font.direct.italics.forEach {
-                rule("@font-face {font-family: '${font.cssFontFamilyName}';font-style: italic;font-weight: ${it.key};src:url('${basePath + it.value}');}")
-            }
-        }
-        return font.cssFontFamilyName
-    }
-
-    private val styleOnces = HashSet<String>()
-    fun styleIfMissing(selector: String, map: Map<String, String>) {
-        if(styleOnces.add(selector)) {
-            val wrapSelector = selector//":not(.unkiteui) $selector"
-            rule(
-                """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }""",
-                0
-            )
-        }
-    }
-
-    fun style(selector: String, map: Map<String, String>) {
-        val wrapSelector = selector//":not(.unkiteui) $selector"
-        rule(
-            """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }""",
-            0
-        )
-    }
-
-    fun tempStyle(selector: String, map: Map<String, String>): () -> Unit {
-        val wrapSelector = selector//":not(.unkiteui) $selector"
-        val content = """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }"""
-        rule(
-            content,
-            0
-        )
-        val rule = customStyleSheet.cssRules.get(0)
-        return {
-            customStyleSheet.cssRules.let {
-                (
-                        0..<it.length).find { index -> it.get(index) === rule }
-            }?.let {
-                customStyleSheet.deleteRule(it)
-            }
-        }
     }
 
     private fun Dimension.toBoxShadow(): String {
@@ -1169,18 +1086,18 @@ object DynamicCSS {
         fun sel(vararg plus: String): String {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
-        style(
+        DynamicCss.style(
             sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"), mapOf(
                 "padding" to "var(--spacing, 0px)",
                 "--usePadding" to "1",
             )
         )
-        style(
+        DynamicCss.style(
             sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"), mapOf(
                 "--parentSpacing" to theme.spacing.value,
             )
         )
-        style(
+        DynamicCss.style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
             when (val it = theme.background) {
                 is Color -> mapOf(
@@ -1200,7 +1117,7 @@ object DynamicCSS {
                 )
             } + if(theme.backdropFilters.isNotEmpty()) mapOf("backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap()
         )
-        style(
+        DynamicCss.style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
             mapOf(
                 "outline-width" to theme.outlineWidth.value,
@@ -1208,7 +1125,7 @@ object DynamicCSS {
                 "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
             )
         )
-        style(
+        DynamicCss.style(
             sel(".mightTransition", ".swapImage"), mapOf(
                 "border-radius" to when(val it = theme.cornerRadii) {
                     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
@@ -1218,9 +1135,9 @@ object DynamicCSS {
                 },
             )
         )
-        style(
+        DynamicCss.style(
             sel(".title"), mapOf(
-                "font-family" to font(theme.title.font),
+                "font-family" to DynamicCss.font(theme.title.font),
                 "font-weight" to theme.title.weight.toString(),
                 "font-style" to if (theme.title.italic) "italic" else "normal",
                 "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
@@ -1228,18 +1145,18 @@ object DynamicCSS {
                 "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
             )
         )
-        style(
+        DynamicCss.style(
             sel(".icon"), mapOf(
                 "color" to theme.icon.toCss()
             )
         )
-        style(
+        DynamicCss.style(
             sel(""), mapOf(
                 "color" to theme.foreground.toCss(),
                 "--spacing" to theme.spacing.value,
                 "--usePadding" to "0",
                 "gap" to "var(--spacing, 0.0)",
-                "font-family" to font(theme.body.font),
+                "font-family" to DynamicCss.font(theme.body.font),
                 "font-weight" to theme.body.weight.toString(),
                 "font-style" to if (theme.body.italic) "italic" else "normal",
                 "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
@@ -1257,7 +1174,7 @@ object DynamicCSS {
                 )
             }
         )
-        style(
+        DynamicCss.style(
             sel(".dismissBackground"), mapOf(
                 "border-radius" to "0",
                 "outline-width" to "0",
@@ -1283,10 +1200,10 @@ object DynamicCSS {
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
         if(rowCollapsingToColumnHandled.add(name)) {
-            style(".$name", mapOf(
+            DynamicCss.style(".$name", mapOf(
                 "display" to "flex"
             ))
-            rule(
+            DynamicCss.rule(
                 """
                     @media (min-width: ${breakpoint.value}) {
                         .$name {
@@ -1307,7 +1224,7 @@ object DynamicCSS {
                     }
                 """.trimIndent()
             )
-            rule(
+            DynamicCss.rule(
                 """
                     @media (max-width: ${breakpoint.value}) {
                         .$name {
@@ -1336,31 +1253,4 @@ object DynamicCSS {
         }
         return name
     }
-}
-
-
-fun js(vararg entries: Pair<String, Any?>): dynamic {
-    val out = js("{}")
-    for (entry in entries) out[entry.first] = entry.second
-    return out
-}
-
-@Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
-    this.asDynamic().animate(keyframes, options) as Animation
-
-@Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-inline fun HTMLElement.getAnimations(): Array<Animation> = this.asDynamic().getAnimations as Array<Animation>
-external interface Animation {
-    var oncancel: ((Event) -> Unit)?
-    var onfinish: ((Event) -> Unit)?
-    var onremove: ((Event) -> Unit)?
-    fun cancel()
-    fun commitStyles()
-    fun finish()
-    fun pause()
-    fun play()
-    fun reverse()
-    var currentTime: Double
-    var startTime: Double
 }
