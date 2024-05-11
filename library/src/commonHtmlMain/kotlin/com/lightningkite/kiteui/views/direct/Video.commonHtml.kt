@@ -8,9 +8,9 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "video"
     }
-    actual inline var source: VideoSource?
-        get() = TODO()
+    actual var source: VideoSource? = null
         set(value) {
+            field = value
             when(value) {
                 null -> native.attributes.src = ""
                 is VideoRemote -> native.attributes.src = value.url

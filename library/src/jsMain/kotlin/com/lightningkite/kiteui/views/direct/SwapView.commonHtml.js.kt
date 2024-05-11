@@ -27,6 +27,7 @@ actual fun SwapView.nativeSwap(
     children.lastOrNull().takeUnless { it == previousLast }?.let { newView ->
         previousLast = newView
         exists = true
+        opacity = 1.0
         newView.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
     } ?: run {
         if (exists) {

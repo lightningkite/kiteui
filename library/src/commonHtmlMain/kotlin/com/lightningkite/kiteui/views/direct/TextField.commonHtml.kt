@@ -13,9 +13,9 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
         native.classes.add("editable")
     }
     actual val content: Writable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
-    actual inline var keyboardHints: KeyboardHints
-        get() = TODO()
+    actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
+            field = value
             native.attributes.type = when (value.type) {
                 KeyboardType.Text -> "text"
                 KeyboardType.Decimal -> "text"
