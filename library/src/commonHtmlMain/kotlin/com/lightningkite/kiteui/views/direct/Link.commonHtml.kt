@@ -24,6 +24,8 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         }
     }
 
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+
     actual var navigator: KiteUiNavigator = (this as RView).navigator
     actual var to: ()->Screen = { Screen.Empty }
         set(value) {

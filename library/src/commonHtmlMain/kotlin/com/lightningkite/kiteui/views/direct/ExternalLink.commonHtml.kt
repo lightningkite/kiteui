@@ -26,4 +26,6 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
             launchManualCancel(action)
         }
     }
+
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
 }
