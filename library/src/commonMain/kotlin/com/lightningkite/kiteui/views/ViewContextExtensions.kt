@@ -23,7 +23,7 @@ fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : Read
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized.") } as T
+        thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
         thisRef.context.addons[property.name] = value
@@ -31,7 +31,7 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
 }
 
 var ViewWriter.navigator by rContextAddonInit<ScreenStack>()
-var ViewWriter.popoverClosers by rContextAddonInit<ArrayList<()->Unit>>()
+var ViewWriter.popoverClosers by rContextAddon<ArrayList<()->Unit>>(ArrayList())
 //var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
 
 @ViewModifierDsl3 val ViewWriter.debugNext: ViewWrapper get() {

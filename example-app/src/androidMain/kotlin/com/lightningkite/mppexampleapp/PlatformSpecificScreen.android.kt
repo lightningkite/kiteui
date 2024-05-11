@@ -1,6 +1,5 @@
 package com.lightningkite.mppexampleapp
 
-import ViewWriter
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*

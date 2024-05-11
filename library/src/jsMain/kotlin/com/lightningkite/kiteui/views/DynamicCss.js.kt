@@ -1,11 +1,12 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.dom.HTMLLinkElement
-import com.lightningkite.kiteui.dom.HTMLScriptElement
 import com.lightningkite.kiteui.models.Font
 import com.lightningkite.kiteui.navigation.basePath
-import com.lightningkite.kiteui.views.DynamicCSS.customStyleSheet
 import kotlinx.browser.document
+import org.w3c.dom.HTMLLinkElement
+import org.w3c.dom.HTMLScriptElement
+import org.w3c.dom.HTMLStyleElement
+import org.w3c.dom.css.CSSStyleSheet
 import org.w3c.dom.css.get
 
 
@@ -13,11 +14,25 @@ external interface BaseUrlScript {
     val baseUrl: String
 }
 
-actual object DynamicCss {
+actual class DynamicCss actual constructor(actual val basePath: String) {
+    val customStyleSheet: CSSStyleSheet by lazy {
+        val sheet = document.createElement("style") as HTMLStyleElement
+        sheet.title = "generated-css"
+        document.head!!.appendChild(sheet)
+        document.styleSheets.let {
+            for (i in 0 until it.length) {
+                val copy = it.get(i)!!
+                if (copy.title == sheet.title) return@let copy as CSSStyleSheet
+            }
+            throw IllegalStateException()
+        }
+    }
 
-    actual val basePath: String = (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
-        JSON.parse<BaseUrlScript>(it).baseUrl
-    } ?: "/"
+    constructor():this(
+        (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
+            JSON.parse<BaseUrlScript>(it).baseUrl
+        } ?: "/"
+    )
 
     private val fontHandled = HashSet<String>()
     actual fun font(font: Font): String {

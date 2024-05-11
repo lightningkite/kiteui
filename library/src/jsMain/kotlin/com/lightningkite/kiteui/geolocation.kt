@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import kotlinx.browser.window
 
 actual fun ViewWriter.geolocate(onFixed: (GeolocationResult) -> Unit) {

@@ -17,7 +17,7 @@ expect abstract class RView : RViewHelper {
     override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
     override fun requestFocus()
     override fun applyElevation(dimension: Dimension)
-    override fun applyPadding(dimension: Dimension)
+    override fun applyPadding(dimension: Dimension?)
     override fun applyBackground(theme: Theme, fullyApply: Boolean)
     override fun applyForeground(theme: Theme)
     override fun internalAddChild(index: Int, view: RView)
@@ -100,7 +100,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
                 applyElevation(if (actuallyUseBackground) theme.elevation else 0.px)
                 applyPadding(
                     if (forcePadding ?: (useBackground != UseBackground.No)) (spacing
-                        ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else 0.px
+                        ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else null
                 )
                 applyForeground(value)
                 applyBackground(value, actuallyUseBackground)
@@ -140,7 +140,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     }
 
     abstract fun applyElevation(dimension: Dimension)
-    abstract fun applyPadding(dimension: Dimension)
+    abstract fun applyPadding(dimension: Dimension?)
     abstract fun applyBackground(theme: Theme, fullyApply: Boolean)
     abstract fun applyForeground(theme: Theme)
 
@@ -186,7 +186,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
-    protected fun shutdown() {
+    fun shutdown() {
         onRemoveSet.invokeAllSafe()
         onRemoveSet.clear()
         for (child in internalChildren)

@@ -4,26 +4,26 @@ import com.lightningkite.kiteui.models.*
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
-object KiteUiCss {
+class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
-        DynamicCss.style(":root", mapOf(
+        dynamicCss.style(":root", mapOf(
             "--usePadding" to "0",
         ))
-        DynamicCss.style("*", mapOf(
+        dynamicCss.style("*", mapOf(
             "box-sizing" to "border-box",
             "line-height" to "unset"
         ))
-        DynamicCss.style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
-        DynamicCss.style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
+        dynamicCss.style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
 //        style.visibility = if (value) "visible" else "hidden"
-        DynamicCss.style(
+        dynamicCss.style(
             ".visibleOnParentHover",
             mapOf(
                 "visibility" to "hidden",
@@ -33,16 +33,17 @@ object KiteUiCss {
                 "max-height" to "unset",
             )
         )
-        DynamicCss.style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
-        DynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
+        dynamicCss.style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
+        dynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
+        dynamicCss.style(".kiteui-space", mapOf("min-width" to "calc(var(--space-multiplier, 1.0) * var(--spacing, 0px))"))
 
-        DynamicCss.style(".swapImage", mapOf(
+        dynamicCss.style(".swapImage", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
             "overflow" to "hidden",
         ))
-        DynamicCss.style(".swapImage > *", mapOf(
+        dynamicCss.style(".swapImage > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -51,23 +52,23 @@ object KiteUiCss {
             "justify-self" to "stretch",
             "object-fit" to "contain",
         ))
-        DynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
-        DynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
-        DynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
-        DynamicCss.style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
-        DynamicCss.style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
-        DynamicCss.style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
-        DynamicCss.style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
-        DynamicCss.style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
+        dynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
+        dynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
+        dynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
+        dynamicCss.style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
+        dynamicCss.style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
+        dynamicCss.style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
+        dynamicCss.style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
+        dynamicCss.style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
 
-        DynamicCss.style(".noInteraction.noInteraction", mapOf(
+        dynamicCss.style(".noInteraction.noInteraction", mapOf(
             "pointer-events" to "none"
         ))
-        DynamicCss.style(".noInteraction > *", mapOf(
+        dynamicCss.style(".noInteraction > *", mapOf(
             "pointer-events" to "auto"
         ))
 
-        DynamicCss.style(
+        dynamicCss.style(
             "body", mapOf(
                 "height" to "100svh",
                 "max-height" to "100svh",
@@ -76,27 +77,27 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "body > div", mapOf(
                 "height" to "100%",
                 "max-width" to "100vw",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "a", mapOf(
                 "text-decoration" to "none",
                 "color" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "a:visited", mapOf(
                 "color" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "button, input, textarea, select", mapOf(
                 "background" to "none",
                 "border-width" to "0",
@@ -138,27 +139,27 @@ object KiteUiCss {
 //            )
 //        )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "input:focus textarea:focus", mapOf(
                 "outline" to "inherit",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".toggle-button", mapOf(
                 "display" to "flex",
                 "align-items" to "stretch",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".toggle-button > span", mapOf(
                 "flex-grow" to "1",
                 "flex-shrink" to "1",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".spinner", mapOf(
                 "width" to "32px !important",
                 "height" to "32px !important",
@@ -172,12 +173,12 @@ object KiteUiCss {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        DynamicCss.style(".kiteui-swap", mapOf(
+        dynamicCss.style(".kiteui-swap", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
         ))
-        DynamicCss.style(".kiteui-swap > *", mapOf(
+        dynamicCss.style(".kiteui-swap > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -206,12 +207,12 @@ object KiteUiCss {
 //            )
 //        )
 
-        DynamicCss.style(".hidingContainer", mapOf(
+        dynamicCss.style(".hidingContainer", mapOf(
             "display" to "grid",
             "grid-template-columns" to "100%",
             "grid-template-rows" to "100%",
         ))
-        DynamicCss.style(".hidingContainer > *", mapOf(
+        dynamicCss.style(".hidingContainer > *", mapOf(
             "grid-column-start" to "1",
             "grid-column-end" to "1",
             "grid-row-start" to "1",
@@ -220,7 +221,7 @@ object KiteUiCss {
             "justify-self" to "stretch",
         ))
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack", mapOf(
                 "display" to "grid",
                 "grid-template-columns" to "100%",
@@ -228,7 +229,7 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > *", mapOf(
                 "grid-column-start" to "1",
                 "grid-column-end" to "1",
@@ -239,55 +240,55 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .hStart", mapOf(
                 "justify-self" to "start",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .hCenter", mapOf(
                 "justify-self" to "center",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .hStretch", mapOf(
                 "justify-self" to "stretch",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .hEnd", mapOf(
                 "justify-self" to "end",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .vStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .vCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .vStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-stack > .vEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-row", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
@@ -299,31 +300,31 @@ object KiteUiCss {
 //            )
 //        )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-row > .vStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-row > .vCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-row > .vStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-row > .vEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-col", mapOf(
                 "display" to "flex",
                 "flex-direction" to "column",
@@ -336,37 +337,37 @@ object KiteUiCss {
 //            )
 //        )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-col > .hStart", mapOf(
                 "align-self" to "start",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-col > .hCenter", mapOf(
                 "align-self" to "center",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-col > .hStretch", mapOf(
                 "align-self" to "stretch",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-col > .hEnd", mapOf(
                 "align-self" to "end",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "img", mapOf(
                 "overflow" to "hidden",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack)",
             mapOf(
                 "min-height" to "1em",
@@ -376,7 +377,7 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "button.loading:after", mapOf(
                 "opacity" to "0.5 !important",
                 "content" to "\"\"",
@@ -396,20 +397,20 @@ object KiteUiCss {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        DynamicCss.style("button", mapOf("position" to "relative"))
-        DynamicCss.style(
+        dynamicCss.style("button", mapOf("position" to "relative"))
+        dynamicCss.style(
             "button.loading > *", mapOf(
                 "opacity" to "0.15",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".clickable", mapOf(
                 "cursor" to "pointer",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch", mapOf(
                 "position" to "relative",
                 "overflow" to "visible",
@@ -425,13 +426,13 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch:checked", mapOf(
                 "background-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch::before", mapOf(
                 "position" to "absolute",
                 "content" to "\"\"",
@@ -451,26 +452,26 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch:hover::before", mapOf(
                 "box-shadow" to "0 0 0px 8px rgba(0, 0, 0, .15)"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch:checked:hover::before", mapOf(
                 "box-shadow" to "0 0 0px 8px rgba(236, 72, 153, .15)"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".switch:checked:before", mapOf(
                 "left" to "calc(3rem - 1.6rem)",
                 "border-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".checkbox", mapOf(
                 "appearance" to "none",
                 "width" to "1.5rem",
@@ -482,12 +483,12 @@ object KiteUiCss {
                 "opacity" to "0.75",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ".checkbox:checked", mapOf(
                 "opacity" to "1",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ".checkbox::after", mapOf(
                 "position" to "absolute",
                 "content" to "\"\"",
@@ -508,13 +509,13 @@ object KiteUiCss {
                 "transition-timing-function" to "linear",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ":checked.checkbox::after", mapOf(
                 "opacity" to "1",
                 "transform" to "rotate(-45deg)"
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ".radio", mapOf(
                 "appearance" to "none",
                 "width" to "1.5rem",
@@ -526,7 +527,7 @@ object KiteUiCss {
                 "border-style" to "solid",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ".radio::after", mapOf(
                 "position" to "absolute",
                 "border-radius" to "999px",
@@ -543,20 +544,20 @@ object KiteUiCss {
                 "transition-timing-function" to "linear",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ":checked.radio::after", mapOf(
                 "opacity" to "1",
                 "transform" to "none"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".crowd", mapOf(
                 "padding" to "0 !important",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-label.kiteui-label", mapOf(
                 "display" to "flex",
                 "flex-direction" to "column",
@@ -564,7 +565,7 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "*", mapOf(
                 "scrollbar-color" to "#999 #0000",
                 "scrollbar-width" to "thin",
@@ -578,21 +579,21 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "input", mapOf(
                 "min-height" to "1.5rem",
                 "min-width" to "1.5rem",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "::placeholder", mapOf(
                 "color" to "currentColor",
                 "opacity" to "0.3",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".kiteui-separator", mapOf(
                 "background-color" to "currentColor",
                 "opacity" to "0.25",
@@ -601,13 +602,13 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "iframe#webpack-dev-server-client-overlay", mapOf(
                 "display" to "none !important"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".icon", mapOf(
                 "display" to "grid",
                 "grid-template-columns" to "100%",
@@ -615,7 +616,7 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".icon > *", mapOf(
                 "grid-column-start" to "1",
                 "grid-column-end" to "1",
@@ -626,19 +627,19 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".recycler", mapOf(
                 "overflow-y" to "auto"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".recycler > *", mapOf(
                 "max-height" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".recycler-horz", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
@@ -646,13 +647,13 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".recycler-horz > *", mapOf(
                 "max-width" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".recycler-grid", mapOf(
                 "display" to "flex",
                 "flex-direction" to "row",
@@ -660,52 +661,52 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".scroll-vertical > *", mapOf(
                 "max-height" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".scroll-vertical", mapOf(
                 "overflow-y" to "auto",
                 "overflow-x" to "hidden",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".scroll-horizontal > *", mapOf(
                 "max-width" to "unset",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".scroll-horizontal", mapOf(
                 "overflow-x" to "auto",
                 "overflow-y" to "hidden",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "::-webkit-scrollbar", mapOf(
                 "background" to "#0000",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "::-webkit-scrollbar-thumb", mapOf(
                 "background" to "color-mix(in srgb, currentColor 20%, transparent)",
                 "-webkit-border-radius" to "4px",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             "::-webkit-scrollbar-corner", mapOf(
                 "background" to "#0000"
             )
         )
 
-        DynamicCss.rule(
+        dynamicCss.rule(
             """
             @keyframes flickerAnimation {
                 0% {
@@ -720,7 +721,7 @@ object KiteUiCss {
             }
         """.trimIndent()
         )
-        DynamicCss.rule(
+        dynamicCss.rule(
             """
             @keyframes spin {
                 from {
@@ -752,13 +753,13 @@ object KiteUiCss {
 //                "transform" to "scale(0, 0)",
 //            )
 //        )
-        DynamicCss.style(
+        dynamicCss.style(
             "[hidden]", mapOf(
                 "display" to "none !important",
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ":not(.unkiteui)", mapOf(
                 "transition-timing-function" to "linear",
                 "transition-delay" to "0s",
@@ -766,7 +767,7 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ":not(.unkiteui).animatingShowHide", mapOf(
                 "overflow" to "hidden",
                 "minWidth" to "0px",
@@ -774,36 +775,36 @@ object KiteUiCss {
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".notransition, .notransition *", mapOf(
                 "transition" to "none !important"
             )
         )
 
-        DynamicCss.style(
+        dynamicCss.style(
             ".dismissBackground", mapOf(
                 "z-index" to "998",
                 "pointer-events" to "auto"
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             ".dismissBackground + *", mapOf(
                 "z-index" to "999",
             )
         )
 //        recyclerView
-        DynamicCss.style(".recyclerView", mapOf(
+        dynamicCss.style(".recyclerView", mapOf(
             "position" to "relative",
             "padding" to "0 !important"
         ))
 
-        DynamicCss.style(".contentScroll-V::-webkit-scrollbar", mapOf(
+        dynamicCss.style(".contentScroll-V::-webkit-scrollbar", mapOf(
             "display" to "none"
         ))
-        DynamicCss.style(".contentScroll-H::-webkit-scrollbar", mapOf(
+        dynamicCss.style(".contentScroll-H::-webkit-scrollbar", mapOf(
             "display" to "none"
         ))
-        DynamicCss.style(".contentScroll-V",  mapOf(
+        dynamicCss.style(".contentScroll-V",  mapOf(
             "width" to "100%",
             "height" to "100%",
             "position" to "relative",
@@ -811,7 +812,7 @@ object KiteUiCss {
             "overflow-anchor" to "none",
             "scrollbar-width" to "none",
         ))
-        DynamicCss.style(".contentScroll-H",  mapOf(
+        dynamicCss.style(".contentScroll-H",  mapOf(
             "width" to "100%",
             "height" to "100%",
             "position" to "relative",
@@ -819,7 +820,7 @@ object KiteUiCss {
             "overflow-anchor" to "none",
             "scrollbar-width" to "none",
         ))
-        DynamicCss.style(".contentScroll-V > *",  mapOf(
+        dynamicCss.style(".contentScroll-V > *",  mapOf(
             "position" to "absolute",
             "max-height" to "unset",
             "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
@@ -827,7 +828,7 @@ object KiteUiCss {
             "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
             "overflow-anchor" to "revert",
         ))
-        DynamicCss.style(".contentScroll-H > *",  mapOf(
+        dynamicCss.style(".contentScroll-H > *",  mapOf(
             "max-width" to "unset",
             "position" to "absolute",
             "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
@@ -835,19 +836,19 @@ object KiteUiCss {
             "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
             "overflow-anchor" to "revert",
         ))
-        DynamicCss.style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
+        dynamicCss.style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
             "display" to "flex",
             "flex-direction" to "row",
             "gap" to "var(--spacing, 0)",
             "height" to "auto"
         ))
-        DynamicCss.style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
+        dynamicCss.style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
             "display" to "flex",
             "flex-direction" to "column",
             "gap" to "var(--spacing, 0)",
             "width" to "auto"
         ))
-        DynamicCss.style(".recyclerViewGridSub > *",  mapOf(
+        dynamicCss.style(".recyclerViewGridSub > *",  mapOf(
             "flex-grow" to "1",
             "flex-shrink" to "1",
             "flex-basis" to "0",
@@ -860,22 +861,22 @@ object KiteUiCss {
 //            "scroll-snap-type" to "x mandatory",
 //            "scroll-behavior" to "smooth"
 //        ))
-        DynamicCss.style(".viewPager > *", mapOf(
+        dynamicCss.style(".viewPager > *", mapOf(
             "width" to "var(--pager-width, 0rem)",
             "height" to "var(--pager-height, 0rem)",
             "scroll-snap-align" to "center",
         ))
-        DynamicCss.style(".touchscreenOnly", mapOf(
+        dynamicCss.style(".touchscreenOnly", mapOf(
             "visibility" to "gone"
         ))
-        DynamicCss.rule("""
+        dynamicCss.rule("""
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
                     visibility: visible
                 }
             }
         """.trimIndent())
-        DynamicCss.style(
+        dynamicCss.style(
             "progress", mapOf(
                 "height" to "0.5rem",
                 "border" to "none",
@@ -886,7 +887,7 @@ object KiteUiCss {
             )
         )
         try {
-            DynamicCss.style(
+            dynamicCss.style(
                 "progress::-webkit-progress-value", mapOf(
                     "height" to "100%",
                     "background-color" to "currentColor",
@@ -895,7 +896,7 @@ object KiteUiCss {
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            DynamicCss.style(
+            dynamicCss.style(
                 "progress::-moz-progress-bar", mapOf(
                     "height" to "100%",
                     "background-color" to "currentColor",
@@ -904,14 +905,14 @@ object KiteUiCss {
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            DynamicCss.style(
+            dynamicCss.style(
                 "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
                     "-webkit-appearance" to "none",
                 )
             )
         } catch(e: Throwable) { /*squish*/ }
         try {
-            DynamicCss.style(
+            dynamicCss.style(
                 "input[type=number]", mapOf(
                     "-moz-appearance" to "textfield"
                 )
@@ -929,11 +930,11 @@ object KiteUiCss {
             append("}")
         }
 
-        DynamicCss.rule(buildString {
+        dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-enter { from { ")
             extracted(transition.enter)
         }, 0)
-        DynamicCss.rule(buildString {
+        dynamicCss.rule(buildString {
             append("@keyframes transition-${transition.name}-exit { from { ")
             extracted(transition.exit)
         }, 0)
@@ -1086,18 +1087,18 @@ object KiteUiCss {
         fun sel(vararg plus: String): String {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"), mapOf(
                 "padding" to "var(--spacing, 0px)",
                 "--usePadding" to "1",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"), mapOf(
                 "--parentSpacing" to theme.spacing.value,
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
             when (val it = theme.background) {
                 is Color -> mapOf(
@@ -1117,7 +1118,7 @@ object KiteUiCss {
                 )
             } + if(theme.backdropFilters.isNotEmpty()) mapOf("backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap()
         )
-        DynamicCss.style(
+        dynamicCss.style(
             if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
             mapOf(
                 "outline-width" to theme.outlineWidth.value,
@@ -1125,7 +1126,7 @@ object KiteUiCss {
                 "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".mightTransition", ".swapImage"), mapOf(
                 "border-radius" to when(val it = theme.cornerRadii) {
                     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
@@ -1135,9 +1136,9 @@ object KiteUiCss {
                 },
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".title"), mapOf(
-                "font-family" to DynamicCss.font(theme.title.font),
+                "font-family" to dynamicCss.font(theme.title.font),
                 "font-weight" to theme.title.weight.toString(),
                 "font-style" to if (theme.title.italic) "italic" else "normal",
                 "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
@@ -1145,18 +1146,18 @@ object KiteUiCss {
                 "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".icon"), mapOf(
                 "color" to theme.icon.toCss()
             )
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(""), mapOf(
                 "color" to theme.foreground.toCss(),
                 "--spacing" to theme.spacing.value,
                 "--usePadding" to "0",
                 "gap" to "var(--spacing, 0.0)",
-                "font-family" to DynamicCss.font(theme.body.font),
+                "font-family" to dynamicCss.font(theme.body.font),
                 "font-weight" to theme.body.weight.toString(),
                 "font-style" to if (theme.body.italic) "italic" else "normal",
                 "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
@@ -1174,7 +1175,7 @@ object KiteUiCss {
                 )
             }
         )
-        DynamicCss.style(
+        dynamicCss.style(
             sel(".dismissBackground"), mapOf(
                 "border-radius" to "0",
                 "outline-width" to "0",
@@ -1200,10 +1201,10 @@ object KiteUiCss {
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
         if(rowCollapsingToColumnHandled.add(name)) {
-            DynamicCss.style(".$name", mapOf(
+            dynamicCss.style(".$name", mapOf(
                 "display" to "flex"
             ))
-            DynamicCss.rule(
+            dynamicCss.rule(
                 """
                     @media (min-width: ${breakpoint.value}) {
                         .$name {
@@ -1224,7 +1225,7 @@ object KiteUiCss {
                     }
                 """.trimIndent()
             )
-            DynamicCss.rule(
+            dynamicCss.rule(
                 """
                     @media (max-width: ${breakpoint.value}) {
                         .$name {

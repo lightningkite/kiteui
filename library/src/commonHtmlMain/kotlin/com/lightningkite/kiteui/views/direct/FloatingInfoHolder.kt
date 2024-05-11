@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 
 expect class FloatingInfoHolder(source: RView) {
-    actual var preferredDirection: PopoverPreferredDirection
+    var preferredDirection: PopoverPreferredDirection
     var menuGenerator: ViewWriter.() -> Unit
     fun open()
     fun close()

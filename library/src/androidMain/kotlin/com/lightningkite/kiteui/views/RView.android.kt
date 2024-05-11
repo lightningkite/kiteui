@@ -110,7 +110,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun applyElevation(dimension: Dimension) { native.elevation = dimension.value }
-    actual override fun applyPadding(dimension: Dimension) { native.setPaddingAll(dimension.value.roundToInt()) }
+    actual override fun applyPadding(dimension: Dimension?) { native.setPaddingAll(dimension?.value?.roundToInt() ?: 0) }
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         val view = native
         if (fullyApply) {

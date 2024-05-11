@@ -1,21 +1,20 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.px
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
-    var native: HtmlElementLike = FutureElement()
-    lateinit var element: HTMLElement
+    var native = FutureElement()
 
     protected actual override fun opacitySet(value: Double) {
         native.style.opacity = value.toString()
     }
 
     protected actual override fun existsSet(value: Boolean) {
-        native.attributes["hidden"] = "true"
+        native.attributes.hidden = !value
     }
 
     protected actual override fun visibleSet(value: Boolean) {
@@ -23,11 +22,11 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     protected actual override fun spacingSet(value: Dimension?) {
-        native.style.record["--spacing"] = value?.value
+        native.setStyleProperty("--spacing", value?.value)
         native.classes.removeAll { it.startsWith("spacingOf") }
         value?.let { value ->
             val cn = "spacingOf${value.value.replace(".", "_").filter { it.isLetterOrDigit() || it == '_' }}"
-            DynamicCss.styleIfMissing(
+            context.dynamicCss.styleIfMissing(
                 ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
                     "--parentSpacing" to value.value
                 )
@@ -61,124 +60,75 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     ) = nativeScrollIntoView(horizontal, vertical, animate)
 
     actual override fun requestFocus() {
-        native.attributes["autofocus"] = "true"
+        native.setAttribute("autofocus", "true")
     }
 
     actual override fun applyElevation(dimension: Dimension) {
     }
 
-    actual override fun applyPadding(dimension: Dimension) {
+    actual override fun applyPadding(dimension: Dimension?) {
+        if(dimension == null) native.classes.remove("mightTransition")
+        else native.classes.add("mightTransition")
     }
 
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-
         if (fullyApply) native.classes.add("transition")
         else native.classes.remove("transition")
-//        if (mightTransition) virtualClasses.add("mightTransition")
-//        else virtualClasses.remove("mightTransition")
 
         native.classes.removeAll { it.startsWith("theme-") }
-        native.classes.add(KiteUiCss.themeInteractive(theme))
+        native.classes.add(context.kiteUiCss.themeInteractive(theme))
     }
 
     actual override fun applyForeground(theme: Theme) {
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
-        native.children.add(index, view.native)
+        native.appendChild(index, view.native)
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        native.children.removeAt(index)
+        native.removeChild(index)
     }
 
     actual override fun internalClearChildren() {
-        native.children.clear()
+        native.clearChildren()
     }
 }
 
-interface HtmlElementLike {
+typealias HtmlElementLike = FutureElement
+
+expect class FutureElementStyle
+expect class FutureElementAttributes
+
+expect class FutureElement {
+    constructor()
+    var xmlns: String?
     var tag: String
-    val attributes: Record<String>
-    val style: CSSStyleDeclaration
-    val events: Record<(Event)->Unit>
-    val classes: MutableSet<String>
+    val attributes: FutureElementAttributes
+    val style: FutureElementStyle
+    fun setAttribute(key: String, value: String?)
+    fun setStyleProperty(key: String, value: String?)
+    inline fun addEventListener(name: String, crossinline listener: (Event)->Unit)
+    var classes: MutableSet<String>
     var id: String?
     var content: String?
-    val children: MutableList<HtmlElementLike>
-
-    fun render(out: Appendable) {
-        out.append('<')
-        out.append(tag)
-        attributes.forEach { key, value ->
-            out.append(' ')
-            out.append(key)
-            out.append("='")
-            out.append(value)
-            out.append('\'')
-        }
-        out.append(" class='")
-        classes.joinToString(" ")
-        out.append("' style='")
-        style.record.forEach { key, value ->
-            out.append(key)
-            out.append(':')
-            out.append(value.replace('\'', '"'))
-            out.append(';')
-        }
-        out.append("'")
-        if(children.isNotEmpty()) {
-            out.append('>')
-            children.forEach { it.render(out) }
-            out.append("</")
-            out.append(tag)
-            out.append('>')
-        } else if(content != null) {
-            out.append('>')
-            out.appendSafe(content ?: "")
-            out.append("</")
-            out.append(tag)
-            out.append('>')
-        } else {
-            out.append("/>")
-        }
-    }
+    val children: List<FutureElement>
+    fun appendChild(element: FutureElement)
+    fun appendChild(index: Int, element: FutureElement)
+    fun removeChild(index: Int)
+    fun clearChildren()
 }
 
-class FutureElement: HtmlElementLike {
-    override var tag: String = "span"
-    override val attributes: Record<String> = Record()
-    override val style: CSSStyleDeclaration = CSSStyleDeclaration()
-    override val events: Record<(Event) -> Unit> = Record()
-    override var classes: MutableSet<String> = HashSet()
-    override var id: String? = null
-    override var content: String? = null
-    override val children: MutableList<HtmlElementLike> = ArrayList()
-
-    val selfHash get() = tag.hashCode() +
-            attributes.contentHashCode() +
-            style.record.contentHashCode() +
-            events.contentHashCode() +
-            classes.hashCode() +
-            id.hashCode() +
-            content.hashCode()
-}
-
-expect fun RView.create(): HtmlElementLike
-expect fun RView.hydrate(existing: HTMLElement): HtmlElementLike
-expect fun Appendable.appendSafe(html: String)
 expect fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
 )
 
-expect class Record<V>() {
+interface DomValueMap<V> {
     operator fun get(key: String): V?
     operator fun set(key: String, value: V?)
-    fun forEach(action: (String, V)->Unit)
+    fun keysHashCode(): Int
     fun contentHashCode(): Int
-    fun contentEquals(record: Record<V>): Boolean
+    fun contentEquals(record: DomValueMap<V>): Boolean
 }
-
-expect class HTMLElement

@@ -1,12 +1,10 @@
 package com.lightningkite.kiteui.views
 
 import kotlin.jvm.JvmInline
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
 
 @JvmInline
-value class CSSStyleDeclaration(val record: Record<String> = Record()) {}
+value class CSSStyleDeclaration(val record: DomValueMap<String>) {}
 var CSSStyleDeclaration.cssText: String?
     get() = record["text"]
     set(value) { record["text"] = value }
