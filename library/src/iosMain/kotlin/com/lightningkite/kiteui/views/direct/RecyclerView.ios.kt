@@ -525,6 +525,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     fun jump(index: Int, align: Align, animate: Boolean) {
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
+            return
         }
         if (index !in dataDirect.min..dataDirect.max) return
         lock("jump $index $align") {
@@ -703,7 +704,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             if (nextIndex > dataDirect.max) break
             // Get the element to place
             val element: Subview = allSubviews.first().takeIf {
-                (it.startPosition + it.size < viewportOffset - beyondEdgeRendering)
+                (it.startPosition - spacingRaw + it.size < viewportOffset - beyondEdgeRendering)
             }?.also {
                 log.log("populateDown $nextIndex")
                 it.index = nextIndex
@@ -727,7 +728,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             if (nextIndex < dataDirect.min) break
             // Get the element to place
             val element: Subview = allSubviews.last().takeIf {
-                it.startPosition > viewportOffset + viewportSize + beyondEdgeRendering
+                it.startPosition - spacingRaw > viewportOffset + viewportSize + beyondEdgeRendering
             }?.also {
                 log.log("populateUp $nextIndex")
                 it.index = nextIndex
