@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.UIKit.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -9,7 +11,9 @@ actual typealias NTextView = UILabel
 
 @ViewDsl
 actual inline fun ViewWriter.h1Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(2.0.rem.value)
+    extensionTextSize = 2.0.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 2.0.rem * 0.6,
         minHeight = 2.0.rem * 1.5,
@@ -20,14 +24,16 @@ actual inline fun ViewWriter.h1Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.h2Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.6.rem.value)
+    extensionTextSize = 1.6.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.6.rem * 0.6,
         minHeight = 1.6.rem * 1.5,
@@ -38,14 +44,16 @@ actual inline fun ViewWriter.h2Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.h3Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.4.rem.value)
+    extensionTextSize = 1.4.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.4.rem * 0.6,
         minHeight = 1.4.rem * 1.5,
@@ -56,14 +64,16 @@ actual inline fun ViewWriter.h3Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.h4Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.3.rem.value)
+    extensionTextSize = 1.3.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.3.rem * 0.6,
         minHeight = 1.3.rem * 1.5,
@@ -74,14 +84,16 @@ actual inline fun ViewWriter.h4Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.h5Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.2.rem.value)
+    extensionTextSize = 1.2.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.2.rem * 0.6,
         minHeight = 1.2.rem * 1.5,
@@ -99,7 +111,9 @@ actual inline fun ViewWriter.h5Actual(crossinline setup: TextView.() -> Unit): U
 
 @ViewDsl
 actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.1.rem.value)
+    extensionTextSize = 1.1.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.1.rem * 0.6,
         minHeight = 1.1.rem * 1.5,
@@ -110,14 +124,16 @@ actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.title
-            it.title.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(1.0.rem.value)
+    extensionTextSize = 1.0.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 1.0.rem * 0.6,
         minHeight = 1.0.rem * 1.5,
@@ -128,14 +144,16 @@ actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit):
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.body
-            it.body.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
 
 @ViewDsl
 actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Unit): Unit = element(UILabel()) {
-    font = UIFont.systemFontOfSize(0.8.rem.value)
+    extensionTextSize = 0.8.rem
+    updateFont()
+    setContentSizeCategoryChangeListener()
     extensionSizeConstraints = SizeConstraints(
         minWidth = 0.8.rem * 0.6,
         minHeight = 0.8.rem * 1.5,
@@ -146,7 +164,7 @@ actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Uni
         foreground = {
             this.textColor = it.foreground.closestColor().toUiColor()
             this.extensionFontAndStyle = it.body
-            it.body.let { this.font = it.font.get(font.pointSize, it.weight.toUIFontWeight(), it.italic) }
+            updateFont()
         },
     ) { opacity = 0.8; setup(TextView(this)) }
 }
@@ -179,12 +197,16 @@ actual inline var TextView.align: Align
             Align.Stretch -> NSTextAlignmentJustified
         }
     }
+
+private val UILabelTextSize = ExtensionProperty<UILabel, Dimension>()
+var UILabel.extensionTextSize: Dimension? by UILabelTextSize
+
 actual inline var TextView.textSize: Dimension
-    get() = Dimension(native.font.pointSize)
+    get() = native.extensionTextSize ?: Dimension(native.font.pointSize)
     set(value) {
-        native.extensionFontAndStyle?.let {
-            native.font = it.font.get(value.value, it.weight.toUIFontWeight(), it.italic)
-        }
+        native.extensionTextSize = value
+        native.updateFont()
+        native.informParentOfSizeChange()
     }
 actual var TextView.ellipsis: Boolean
     get() = TODO("Not yet implemented")
@@ -196,3 +218,30 @@ actual var TextView.wraps: Boolean
     set(value) {
         native.numberOfLines = if(value) 0 else 1
     }
+
+// Calculated from font sizes shown at https://developer.apple.com/design/human-interface-guidelines/typography#Specifications
+private val dynamicTypeScaleFactors = mapOf(
+    UIContentSizeCategoryUnspecified to 1.0,
+    UIContentSizeCategoryExtraSmall to 0.87,
+    UIContentSizeCategorySmall to 0.91,
+    UIContentSizeCategoryMedium to 0.95,
+    UIContentSizeCategoryLarge to 1.0,
+    UIContentSizeCategoryExtraLarge to 1.11,
+    UIContentSizeCategoryExtraExtraLarge to 1.21,
+    UIContentSizeCategoryExtraExtraExtraLarge to 1.32,
+)
+fun preferredScaleFactor() = dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
+fun UILabel.setContentSizeCategoryChangeListener() {
+    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+        updateFont()
+        informParentOfSizeChange()
+    }
+}
+fun UILabel.updateFont() {
+    val textSize = extensionTextSize ?: return
+    val alignment = textAlignment
+    font = extensionFontAndStyle?.let {
+        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+    } ?: UIFont.systemFontOfSize(textSize.value)
+    textAlignment = alignment
+}

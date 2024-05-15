@@ -4,10 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
-import platform.Foundation.NSAttributedString
-import platform.Foundation.NSAttributedStringMeta
-import platform.Foundation.NSMutableAttributedString
-import platform.Foundation.NSString
+import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
@@ -17,6 +14,7 @@ actual typealias NTextField = UITextField
 @ViewDsl
 actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit): Unit = stack {
     element(UITextField()) {
+        setContentSizeCategoryChangeListener()
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -125,10 +123,29 @@ actual inline var TextField.align: Align
             Align.Stretch -> NSTextAlignmentJustified
         }
     }
+
+private val UILabelTextSize = ExtensionProperty<UITextField, Dimension>()
+var UITextField.extensionTextSize: Dimension? by UILabelTextSize
+
 actual inline var TextField.textSize: Dimension
-    get() = native.font?.pointSize?.let(::Dimension) ?: 1.rem
+    get() = native.extensionTextSize ?: native.font?.pointSize?.let(::Dimension) ?: 1.rem
     set(value) {
-        native.extensionFontAndStyle?.let {
-            native.font = it.font.get(value.value, it.weight.toUIFontWeight(), it.italic)
-        }
+        native.extensionTextSize = value
+        native.updateFont()
+        native.informParentOfSizeChange()
     }
+
+fun UITextField.setContentSizeCategoryChangeListener() {
+    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+        updateFont()
+        informParentOfSizeChange()
+    }
+}
+fun UITextField.updateFont() {
+    val textSize = extensionTextSize ?: return
+    val alignment = textAlignment
+    font = extensionFontAndStyle?.let {
+        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+    } ?: UIFont.systemFontOfSize(textSize.value)
+    textAlignment = alignment
+}

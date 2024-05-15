@@ -10,12 +10,17 @@ import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 import kotlin.math.min
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         setUserInteractionEnabled(false)
+        NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+            informParentOfSizeChange()
+        }
     }
 
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
@@ -63,9 +68,10 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val axisTotalPadding = (extensionPadding ?: 0.0) * 2
+        val scaleFactor = preferredScaleFactor()
         return CGSizeMake(
-            icon?.width?.value?.let { it + axisTotalPadding } ?: 0.0,
-            icon?.height?.value?.let { it + axisTotalPadding } ?: 0.0
+            icon?.width?.value?.let { it * scaleFactor + axisTotalPadding } ?: 0.0,
+            icon?.height?.value?.let { it * scaleFactor + axisTotalPadding } ?: 0.0
         )
     }
 
