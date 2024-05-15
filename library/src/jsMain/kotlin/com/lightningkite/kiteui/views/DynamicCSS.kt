@@ -32,13 +32,17 @@ object DynamicCSS {
 
     init {
         // basis rules
-        style(":root", mapOf(
-            "--usePadding" to "0",
-        ))
-        style("*", mapOf(
-            "box-sizing" to "border-box",
-            "line-height" to "unset"
-        ))
+        style(
+            ":root", mapOf(
+                "--usePadding" to "0",
+            )
+        )
+        style(
+            "*", mapOf(
+                "box-sizing" to "border-box",
+                "line-height" to "unset"
+            )
+        )
         style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
         style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
         style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
@@ -61,21 +65,25 @@ object DynamicCSS {
         style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
         style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
 
-        style(".swapImage", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-            "overflow" to "hidden",
-        ))
-        style(".swapImage > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-            "object-fit" to "contain",
-        ))
+        style(
+            ".swapImage", mapOf(
+                "display" to "grid",
+                "grid-template-columns" to "100%",
+                "grid-template-rows" to "100%",
+                "overflow" to "hidden",
+            )
+        )
+        style(
+            ".swapImage > *", mapOf(
+                "grid-column-start" to "1",
+                "grid-column-end" to "1",
+                "grid-row-start" to "1",
+                "grid-row-end" to "1",
+                "align-self" to "stretch",
+                "justify-self" to "stretch",
+                "object-fit" to "contain",
+            )
+        )
         style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
         style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
@@ -85,12 +93,16 @@ object DynamicCSS {
         style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
         style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
 
-        style(".noInteraction.noInteraction", mapOf(
-            "pointer-events" to "none"
-        ))
-        style(".noInteraction > *", mapOf(
-            "pointer-events" to "auto"
-        ))
+        style(
+            ".noInteraction.noInteraction", mapOf(
+                "pointer-events" to "none"
+            )
+        )
+        style(
+            ".noInteraction > *", mapOf(
+                "pointer-events" to "auto"
+            )
+        )
 
         style(
             "body", mapOf(
@@ -197,19 +209,23 @@ object DynamicCSS {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        style(".kiteui-swap", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-        ))
-        style(".kiteui-swap > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-        ))
+        style(
+            ".kiteui-swap", mapOf(
+                "display" to "grid",
+                "grid-template-columns" to "100%",
+                "grid-template-rows" to "100%",
+            )
+        )
+        style(
+            ".kiteui-swap > *", mapOf(
+                "grid-column-start" to "1",
+                "grid-column-end" to "1",
+                "grid-row-start" to "1",
+                "grid-row-end" to "1",
+                "align-self" to "stretch",
+                "justify-self" to "stretch",
+            )
+        )
 
 
 //        style(
@@ -231,19 +247,23 @@ object DynamicCSS {
 //            )
 //        )
 
-        style(".hidingContainer", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-        ))
-        style(".hidingContainer > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-        ))
+        style(
+            ".hidingContainer", mapOf(
+                "display" to "grid",
+                "grid-template-columns" to "100%",
+                "grid-template-rows" to "100%",
+            )
+        )
+        style(
+            ".hidingContainer > *", mapOf(
+                "grid-column-start" to "1",
+                "grid-column-end" to "1",
+                "grid-row-start" to "1",
+                "grid-row-end" to "1",
+                "align-self" to "stretch",
+                "justify-self" to "stretch",
+            )
+        )
 
         style(
             ".kiteui-stack", mapOf(
@@ -817,66 +837,86 @@ object DynamicCSS {
             )
         )
 //        recyclerView
-        style(".recyclerView", mapOf(
-            "position" to "relative",
-            "padding" to "0 !important"
-        ))
+        style(
+            ".recyclerView", mapOf(
+                "position" to "relative",
+                "padding" to "0 !important"
+            )
+        )
 
-        style(".contentScroll-V::-webkit-scrollbar", mapOf(
-            "display" to "none"
-        ))
-        style(".contentScroll-H::-webkit-scrollbar", mapOf(
-            "display" to "none"
-        ))
-        style(".contentScroll-V",  mapOf(
-            "width" to "100%",
-            "height" to "100%",
-            "position" to "relative",
-            "overflow-y" to "scroll",
-            "overflow-anchor" to "none",
-            "scrollbar-width" to "none",
-        ))
-        style(".contentScroll-H",  mapOf(
-            "width" to "100%",
-            "height" to "100%",
-            "position" to "relative",
-            "overflow-x" to "scroll",
-            "overflow-anchor" to "none",
-            "scrollbar-width" to "none",
-        ))
-        style(".contentScroll-V > *",  mapOf(
-            "position" to "absolute",
-            "max-height" to "unset",
-            "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-            "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "overflow-anchor" to "revert",
-        ))
-        style(".contentScroll-H > *",  mapOf(
-            "max-width" to "unset",
-            "position" to "absolute",
-            "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-            "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "overflow-anchor" to "revert",
-        ))
-        style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
-            "display" to "flex",
-            "flex-direction" to "row",
-            "gap" to "var(--spacing, 0)",
-            "height" to "auto"
-        ))
-        style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
-            "display" to "flex",
-            "flex-direction" to "column",
-            "gap" to "var(--spacing, 0)",
-            "width" to "auto"
-        ))
-        style(".recyclerViewGridSub > *",  mapOf(
-            "flex-grow" to "1",
-            "flex-shrink" to "1",
-            "flex-basis" to "0",
-        ))
+        style(
+            ".contentScroll-V::-webkit-scrollbar", mapOf(
+                "display" to "none"
+            )
+        )
+        style(
+            ".contentScroll-H::-webkit-scrollbar", mapOf(
+                "display" to "none"
+            )
+        )
+        style(
+            ".contentScroll-V", mapOf(
+                "width" to "100%",
+                "height" to "100%",
+                "position" to "relative",
+                "overflow-y" to "scroll",
+                "overflow-anchor" to "none",
+                "scrollbar-width" to "none",
+            )
+        )
+        style(
+            ".contentScroll-H", mapOf(
+                "width" to "100%",
+                "height" to "100%",
+                "position" to "relative",
+                "overflow-x" to "scroll",
+                "overflow-anchor" to "none",
+                "scrollbar-width" to "none",
+            )
+        )
+        style(
+            ".contentScroll-V > *", mapOf(
+                "position" to "absolute",
+                "max-height" to "unset",
+                "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
+                "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "overflow-anchor" to "revert",
+            )
+        )
+        style(
+            ".contentScroll-H > *", mapOf(
+                "max-width" to "unset",
+                "position" to "absolute",
+                "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
+                "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "overflow-anchor" to "revert",
+            )
+        )
+        style(
+            ".contentScroll-V > .recyclerViewGridSub", mapOf(
+                "display" to "flex",
+                "flex-direction" to "row",
+                "gap" to "var(--spacing, 0)",
+                "height" to "auto"
+            )
+        )
+        style(
+            ".contentScroll-H > .recyclerViewGridSub", mapOf(
+                "display" to "flex",
+                "flex-direction" to "column",
+                "gap" to "var(--spacing, 0)",
+                "width" to "auto"
+            )
+        )
+        style(
+            ".recyclerViewGridSub > *", mapOf(
+                "flex-grow" to "1",
+                "flex-shrink" to "1",
+                "flex-basis" to "0",
+            )
+        )
 //        contentScroll
 //        content
 //        barScroll
@@ -885,21 +925,27 @@ object DynamicCSS {
 //            "scroll-snap-type" to "x mandatory",
 //            "scroll-behavior" to "smooth"
 //        ))
-        style(".viewPager > *", mapOf(
-            "width" to "var(--pager-width, 0rem)",
-            "height" to "var(--pager-height, 0rem)",
-            "scroll-snap-align" to "center",
-        ))
-        style(".touchscreenOnly", mapOf(
-            "visibility" to "gone"
-        ))
-        rule("""
+        style(
+            ".viewPager > *", mapOf(
+                "width" to "var(--pager-width, 0rem)",
+                "height" to "var(--pager-height, 0rem)",
+                "scroll-snap-align" to "center",
+            )
+        )
+        style(
+            ".touchscreenOnly", mapOf(
+                "visibility" to "gone"
+            )
+        )
+        rule(
+            """
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
                     visibility: visible
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
         style(
             "progress", mapOf(
                 "height" to "0.5rem",
@@ -918,7 +964,8 @@ object DynamicCSS {
                     "border-radius" to "1rem",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             style(
                 "progress::-moz-progress-bar", mapOf(
@@ -927,21 +974,24 @@ object DynamicCSS {
                     "border-radius" to "1rem",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             style(
                 "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
                     "-webkit-appearance" to "none",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             style(
                 "input[type=number]", mapOf(
                     "-moz-appearance" to "textfield"
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
     }
 
     fun rule(rule: String, index: Int = 0): Int {
@@ -992,7 +1042,7 @@ object DynamicCSS {
 
     private val styleOnces = HashSet<String>()
     fun styleIfMissing(selector: String, map: Map<String, String>) {
-        if(styleOnces.add(selector)) {
+        if (styleOnces.add(selector)) {
             val wrapSelector = selector//":not(.unkiteui) $selector"
             rule(
                 """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }""",
@@ -1007,6 +1057,19 @@ object DynamicCSS {
             """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }""",
             0
         )
+    }
+
+    fun styles(mediaQuery: String? = null, styles: List<Pair<String, CssStyles>>) {
+        if (mediaQuery == null) styles.forEach { style(it.first, it.second) }
+        else {
+            val subrules = styles.sortedBy { it.first }.joinToString(" ") {
+                """${it.first} { ${it.second.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }"""
+            }
+            rule(
+                """@media $mediaQuery { $subrules }""",
+                0
+            )
+        }
     }
 
     fun tempStyle(selector: String, map: Map<String, String>): () -> Unit {
@@ -1064,7 +1127,8 @@ object DynamicCSS {
         theme(
             theme.hover(),
             listOf(".clickable:hover .theme-${theme.id}", ".clickable:hover.theme-${theme.id}"),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.focus(),
@@ -1095,7 +1159,8 @@ object DynamicCSS {
                 "input:checked+.checkResponsive:hover .theme-${theme.id}",
                 "input:checked+.checkResponsive:hover.theme-${theme.id}",
             ),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.selected().focus(),
@@ -1136,7 +1201,8 @@ object DynamicCSS {
                 "input:not(:checked)+.checkResponsive:hover .theme-${theme.id}",
                 "input:not(:checked)+.checkResponsive:hover.theme-${theme.id}",
             ),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.unselected().focus(),
@@ -1166,118 +1232,124 @@ object DynamicCSS {
     fun theme(
         theme: Theme,
         asSelectors: List<String> = listOf(".theme-${theme.id}"),
-        includeMaybeTransition: Boolean = false
+        includeMaybeTransition: Boolean = false,
+        mediaQuery: String? = null,
     ): String {
         val includeSelectors = asSelectors.filter { themeHandled.add(it) }
         if (includeSelectors.isEmpty()) return "theme-${theme.id}"
         fun sel(vararg plus: String): String {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
-        style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"), mapOf(
-                "padding" to "var(--spacing, 0px)",
-                "--usePadding" to "1",
-            )
-        )
-        style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"), mapOf(
-                "--parentSpacing" to theme.spacing.value,
-            )
-        )
-        style(
-            if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
-            when (val it = theme.background) {
-                is Color -> mapOf(
-                    "background-color" to it.toCss(),
-                    "background-image" to "none",
-                )
-                is LinearGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
+        styles(
+            mediaQuery = mediaQuery,
+            styles = listOf(
+                sel(
+                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)",
+                    ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"
+                ) to mapOf(
+                    "padding" to "var(--spacing, 0px)",
+                    "--usePadding" to "1",
+                ),
+                sel(
+                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *",
+                    ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"
+                ) to mapOf(
+                    "--parentSpacing" to theme.spacing.value,
+                ),
+                (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to (when (val it =
+                    theme.background) {
+                    is Color -> mapOf(
+                        "background-color" to it.toCss(),
+                        "background-image" to "none",
+                    )
 
-                is RadialGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-            } + if(theme.backdropFilters.isNotEmpty()) mapOf("backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap()
-        )
-        style(
-            if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
-            mapOf(
-                "outline-width" to theme.outlineWidth.value,
-                "box-shadow" to theme.elevation.toBoxShadow(),
-                "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
-            )
-        )
-        style(
-            sel(".mightTransition", ".swapImage"), mapOf(
-                "border-radius" to when(val it = theme.cornerRadii) {
-                    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
-                    is CornerRadii.ForceConstant -> it.value.value
-                    is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
-                    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
+                    is LinearGradient -> mapOf(
+                        "background-color" to it.closestColor().toCss(),
+                        "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                            joinGradientStops(
+                                it.stops
+                            )
+                        })",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+
+                    is RadialGradient -> mapOf(
+                        "background-color" to it.closestColor().toCss(),
+                        "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+                } + (if (theme.backdropFilters.isNotEmpty()) mapOf(
+                    "backdrop-filter" to theme.backdropFilters.joinToString(
+                        " "
+                    ) { it.toCss() }) else emptyMap())),
+
+                (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to mapOf(
+                    "outline-width" to theme.outlineWidth.value,
+                    "box-shadow" to theme.elevation.toBoxShadow(),
+                    "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
+                ),
+                sel(".mightTransition", ".swapImage") to mapOf(
+                    "border-radius" to when (val it = theme.cornerRadii) {
+                        is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
+                        is CornerRadii.ForceConstant -> it.value.value
+                        is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
+                        is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
+                    },
+                ),
+                sel(".title") to mapOf(
+                    "font-family" to font(theme.title.font),
+                    "font-weight" to theme.title.weight.toString(),
+                    "font-style" to if (theme.title.italic) "italic" else "normal",
+                    "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
+                    "line-height" to theme.title.lineSpacingMultiplier.toString(),
+                    "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
+                ),
+                sel(".icon") to mapOf(
+                    "color" to theme.icon.toCss()
+                ),
+                sel("") to mapOf(
+                    "color" to theme.foreground.toCss(),
+                    "--spacing" to theme.spacing.value,
+                    "--usePadding" to "0",
+                    "gap" to "var(--spacing, 0.0)",
+                    "font-family" to font(theme.body.font),
+                    "font-weight" to theme.body.weight.toString(),
+                    "font-style" to if (theme.body.italic) "italic" else "normal",
+                    "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
+                    "line-height" to theme.body.lineSpacingMultiplier.toString(),
+                    "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
+                    "outline-color" to theme.outline.toCss(),
+                    "transition-duration" to theme.transitionDuration.toCss(),
+                ) + when (val it = theme.foreground) {
+                    is Color -> mapOf("color" to it.toCss())
+                    is LinearGradient, is RadialGradient -> mapOf(
+                        "color" to it.toCss(),
+                        "background" to "-webkit-${it.toCss()}",
+                        "-webkit-background-clip" to "text",
+                        "-webkit-text-fill-color" to "transparent",
+                    )
                 },
-            )
-        )
-        style(
-            sel(".title"), mapOf(
-                "font-family" to font(theme.title.font),
-                "font-weight" to theme.title.weight.toString(),
-                "font-style" to if (theme.title.italic) "italic" else "normal",
-                "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
-                "line-height" to theme.title.lineSpacingMultiplier.toString(),
-                "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
-            )
-        )
-        style(
-            sel(".icon"), mapOf(
-                "color" to theme.icon.toCss()
-            )
-        )
-        style(
-            sel(""), mapOf(
-                "color" to theme.foreground.toCss(),
-                "--spacing" to theme.spacing.value,
-                "--usePadding" to "0",
-                "gap" to "var(--spacing, 0.0)",
-                "font-family" to font(theme.body.font),
-                "font-weight" to theme.body.weight.toString(),
-                "font-style" to if (theme.body.italic) "italic" else "normal",
-                "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
-                "line-height" to theme.body.lineSpacingMultiplier.toString(),
-                "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
-                "outline-color" to theme.outline.toCss(),
-                "transition-duration" to theme.transitionDuration.toCss(),
-            ) + when (val it = theme.foreground) {
-                is Color -> mapOf("color" to it.toCss())
-                is LinearGradient, is RadialGradient -> mapOf(
-                    "color" to it.toCss(),
-                    "background" to "-webkit-${it.toCss()}",
-                    "-webkit-background-clip" to "text",
-                    "-webkit-text-fill-color" to "transparent",
-                )
-            }
-        )
-        style(
-            sel(".dismissBackground"), mapOf(
-                "border-radius" to "0",
-                "outline-width" to "0",
-                "backdrop-filter" to "blur(5px)",
-            ) + when (val it = theme.background.applyAlpha(0.5f)) {
-                is Color -> mapOf("background-color" to it.toCss())
-                is LinearGradient -> mapOf(
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
+                sel(".dismissBackground") to mapOf(
+                    "border-radius" to "0",
+                    "outline-width" to "0",
+                    "backdrop-filter" to "blur(5px)",
+                ) + when (val it = theme.background.applyAlpha(0.5f)) {
+                    is Color -> mapOf("background-color" to it.toCss())
+                    is LinearGradient -> mapOf(
+                        "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                            joinGradientStops(
+                                it.stops
+                            )
+                        })",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
 
-                is RadialGradient -> mapOf(
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-            }
+                    is RadialGradient -> mapOf(
+                        "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+                }
+            )
         )
 
         return "theme-${theme.id}"
@@ -1286,10 +1358,12 @@ object DynamicCSS {
     val rowCollapsingToColumnHandled = HashSet<String>()
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
-        if(rowCollapsingToColumnHandled.add(name)) {
-            style(".$name", mapOf(
-                "display" to "flex"
-            ))
+        if (rowCollapsingToColumnHandled.add(name)) {
+            style(
+                ".$name", mapOf(
+                    "display" to "flex"
+                )
+            )
             rule(
                 """
                     @media (min-width: ${breakpoint.value}) {
@@ -1341,6 +1415,7 @@ object DynamicCSS {
         return name
     }
 }
+typealias CssStyles = Map<String, String>
 
 
 fun js(vararg entries: Pair<String, Any?>): dynamic {
