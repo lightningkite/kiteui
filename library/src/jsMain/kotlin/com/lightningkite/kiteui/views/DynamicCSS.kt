@@ -470,11 +470,6 @@ object DynamicCSS {
             )
         )
 
-        style(
-            ".switch:checked", mapOf(
-                "background-color" to "rgba(236, 72, 153, 1)",
-            )
-        )
 
         style(
             ".switch::before", mapOf(
@@ -1348,7 +1343,9 @@ object DynamicCSS {
                         "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                         "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                     )
-                }
+                },
+                sel(".switch:checked::before") to mapOf("background-color" to theme.foreground.toCss()),
+                sel(".switch:checked") to mapOf("background-color" to theme.foreground.applyAlpha(0.5f).toCss())
             )
         )
 
