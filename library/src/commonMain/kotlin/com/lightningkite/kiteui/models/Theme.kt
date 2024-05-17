@@ -12,6 +12,7 @@ data class Theme(
     val spacing: Dimension = 1.rem,
     val navSpacing: Dimension = 0.rem,
     val foreground: Paint = Color.black,
+    val accent: Color = Color.black,
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
@@ -22,6 +23,11 @@ data class Theme(
     val transitionDuration: Duration = 0.15.seconds,
 
     val card: (Theme.() -> Theme) = { this },
+    val embeddedCard: (Theme.() -> Theme) = {
+        copy(
+            background = background.closestColor().highlight(-0.2f)
+        )
+    },
     val field: (Theme.() -> Theme) = { this },
     val button: (Theme.() -> Theme) = { this },
     val hover: (Theme.() -> Theme) = {
@@ -75,6 +81,11 @@ data class Theme(
             outline = this.foreground.closestColor().highlight(1f)
         )
     },
+    val importantForeground: (Theme.() -> Theme) = {
+        copy(
+            foreground = this.accent
+        )
+    },
     val critical: (Theme.() -> Theme) = { this.important(this).let { it.important(it) } },
     val warning: (Theme.() -> Theme) = {
         copy(
@@ -97,6 +108,8 @@ data class Theme(
             foreground = Color.white
         )
     },
+    val invalid: (Theme.() -> Theme) = { warning() },
+
 ) {
     val icon: Paint get() = iconOverride ?: foreground
 
@@ -138,6 +151,9 @@ data class Theme(
     private var importantCache: Theme? = null
     @JsName("importantDirect")
     fun important() = importantCache ?: important(this).also { importantCache = it }
+    private var importantForegroundCache: Theme? = null
+    @JsName("importantForegroundDirect")
+    fun importantForeground() = importantForegroundCache ?: importantForeground(this).also { importantForegroundCache = it }
     private var criticalCache: Theme? = null
     @JsName("criticalDirect")
     fun critical() = criticalCache ?: critical(this).also { criticalCache = it }
@@ -153,6 +169,12 @@ data class Theme(
     private var affirmativeCache: Theme? = null
     @JsName("affirmativeDirect")
     fun affirmative() = affirmativeCache ?: affirmative(this).also { affirmativeCache = it }
+    private var invalidCache: Theme? = null
+    @JsName("invalidDirect")
+    fun invalid() = invalidCache ?: invalid(this).also { invalidCache = it }
+    private var embeddedCardChache: Theme? = null
+    @JsName("embeddedCardDirect")
+    fun embeddedCard() = embeddedCardChache ?: embeddedCard(this).also { embeddedCardChache = it }
 
     val id: String get() = hashCode().toString()
     private val hashCode: Int = run {
@@ -182,7 +204,8 @@ data class Theme(
                 this.iconOverride == other.iconOverride &&
                 this.outline == other.outline &&
                 this.outlineWidth == other.outlineWidth &&
-                this.background == other.background
+                this.background == other.background &&
+                this.accent == other.accent
     }
 
     companion object {

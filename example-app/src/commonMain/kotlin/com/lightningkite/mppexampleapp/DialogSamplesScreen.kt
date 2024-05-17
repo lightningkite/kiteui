@@ -42,7 +42,7 @@ object DialogSamplesScreen : Screen {
                         onClick { navigator.dismiss() }
                     } in card
                 }
-            }
+            } {}
         }
     }
 }

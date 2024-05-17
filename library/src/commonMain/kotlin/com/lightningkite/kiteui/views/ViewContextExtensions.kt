@@ -56,6 +56,7 @@ var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
     return themeModifier { val e = it(); calculate(e) ?: e }
 }
 @ViewModifierDsl3 val ViewWriter.card: ViewWrapper get() = themeFromLast { it.card() }
+@ViewModifierDsl3 val ViewWriter.embeddedCard: ViewWrapper get() = themeFromLast { it.embeddedCard() }
 @ViewModifierDsl3 val ViewWriter.dialog: ViewWrapper get() = themeFromLast { it.dialog() }
 @ViewModifierDsl3 val ViewWriter.mainContent: ViewWrapper get() = maybeThemeFromLast { it.mainContent() }
 @ViewModifierDsl3 val ViewWriter.fieldTheme: ViewWrapper get() = themeFromLast { it.field() }
@@ -68,10 +69,12 @@ var ViewWriter.navigator by viewWriterAddonLateInit<ScreenStack>()
 @ViewModifierDsl3 val ViewWriter.bar: ViewWrapper get() = maybeThemeFromLast { it.bar() }
 @ViewModifierDsl3 val ViewWriter.nav: ViewWrapper get() = maybeThemeFromLast { it.nav() }
 @ViewModifierDsl3 val ViewWriter.important: ViewWrapper get() = themeFromLast { it.important() }
+@ViewModifierDsl3 val ViewWriter.importantForeground: ViewWrapper get() = themeFromLast { it.importantForeground() }
 @ViewModifierDsl3 val ViewWriter.critical: ViewWrapper get() = themeFromLast { it.critical() }
 @ViewModifierDsl3 val ViewWriter.warning: ViewWrapper get() = themeFromLast { it.warning() }
 @ViewModifierDsl3 val ViewWriter.danger: ViewWrapper get() = themeFromLast { it.danger() }
 @ViewModifierDsl3 val ViewWriter.affirmative: ViewWrapper get() = themeFromLast { it.affirmative() }
+@ViewModifierDsl3 val ViewWriter.invalid: ViewWrapper get() = themeFromLast { it.invalid() }
 @ViewModifierDsl3 val ViewWriter.compact: ViewWrapper get() = tweakTheme { it.copy(spacing = it.spacing / 2) }
 @ViewModifierDsl3 val ViewWriter.bold: ViewWrapper get() = tweakTheme { it.copy(title = it.title.copy(bold = true), body = it.body.copy(bold = true)) }
 @ViewModifierDsl3 val ViewWriter.italic: ViewWrapper get() = tweakTheme { it.copy(title = it.title.copy(italic = true), body = it.body.copy(italic = true)) }
