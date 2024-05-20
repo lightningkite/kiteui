@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.utils
 
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 inline fun numberAutocommaBackspace(
     dirty: String,
@@ -80,8 +81,8 @@ inline fun Double.toStringNoExponential(): String {
     val r = rem(1)
     if(r == 0.0) return preDecimal
     val availableDigits = 12 - preDecimal.length
-    val postDecimal = r.times(10.0.pow(availableDigits)).roundToInt()
-    if(postDecimal == 0) return preDecimal
+    val postDecimal = r.times(10.0.pow(availableDigits)).roundToLong()
+    if(postDecimal == 0L) return preDecimal
     else return preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
 }
 

@@ -12,7 +12,6 @@ data class Theme(
     val spacing: Dimension = 1.rem,
     val navSpacing: Dimension = 0.rem,
     val foreground: Paint = Color.black,
-    val accent: Color = Color.black,
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
@@ -83,7 +82,8 @@ data class Theme(
     },
     val importantForeground: (Theme.() -> Theme) = {
         copy(
-            foreground = this.accent
+            title = title.copy(italic = true),
+            body = body.copy(italic = true),
         )
     },
     val critical: (Theme.() -> Theme) = { this.important(this).let { it.important(it) } },
@@ -204,8 +204,7 @@ data class Theme(
                 this.iconOverride == other.iconOverride &&
                 this.outline == other.outline &&
                 this.outlineWidth == other.outlineWidth &&
-                this.background == other.background &&
-                this.accent == other.accent
+                this.background == other.background
     }
 
     companion object {

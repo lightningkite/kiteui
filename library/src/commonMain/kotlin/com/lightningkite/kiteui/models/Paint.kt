@@ -88,26 +88,6 @@ data class Color(
         alpha = alpha
     )
 
-    fun averageWith(vararg colors: Color, bias: Float = 1f): Color {
-        val numColors = colors.size
-
-        // Oddly, it seems like there's not a builtin Kotlin overload for sumOf that supports Float
-        fun <T> Array<T>.sumOf( selector: (T) -> Float ): Float {
-            var sum: Float = 0f
-            for (element in this) {
-                sum += selector(element)
-            }
-            return sum
-        }
-
-        return Color(
-            alpha = (alpha*bias + colors.sumOf { it.alpha }) / (numColors + bias),
-            red = (red*bias + colors.sumOf { it.red }) / (numColors + bias),
-            green = (green*bias + colors.sumOf { it.green }) / (numColors + bias),
-            blue = (blue*bias + colors.sumOf { it.blue }) / (numColors + bias)
-        )
-    }
-
     companion object {
 
         val transparent = Color()

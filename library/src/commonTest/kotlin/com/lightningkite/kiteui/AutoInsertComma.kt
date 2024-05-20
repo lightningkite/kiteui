@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.utils.*
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
@@ -169,6 +170,7 @@ class AutoInsertComma {
         testCases.forEach { testOnString(it) }
     }
     @Test fun decimalFormat() {
+        assertEquals("32.5", 32.5.toStringNoExponential())
         assertEquals("1224.54", 1224.54.toStringNoExponential())
         assertEquals("1224.542", 1224.542.toStringNoExponential())
         assertEquals("1224.5428", 1224.5428.toStringNoExponential())
@@ -176,5 +178,15 @@ class AutoInsertComma {
         assertEquals("1224.5428713", 1224.5428713.toStringNoExponential())
         assertEquals("1224", 1224.0.toStringNoExponential())
         assertEquals("112348224342", 112348224342.0.toStringNoExponential())
+
+        fun digits() = generateSequence { Random.nextInt(1, 10).toString() }
+        repeat(4) { beforeDecimalMinusOne ->
+            repeat(4) { afterDecimalMinusOne ->
+                repeat(1000) {
+                    val asString = digits().take(beforeDecimalMinusOne + 1).joinToString("") + "." + digits().take(afterDecimalMinusOne + 1).joinToString("")
+                    assertEquals(asString, asString.toDouble().toStringNoExponential())
+                }
+            }
+        }
     }
 }
