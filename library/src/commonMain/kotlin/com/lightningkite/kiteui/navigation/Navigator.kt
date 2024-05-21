@@ -35,6 +35,15 @@ class ScreenStack(private val routesGetter: ()->Routes, dialog: ScreenStack? = n
         stack.value = stack.value.dropLast(1)
         return true
     }
+
+    fun goBackOrClear() {
+        if (stack.value.size <= 1) {
+            stack.value = listOf()
+        } else {
+            stack.value = stack.value.dropLast(1)
+        }
+    }
+
     fun dismiss(): Boolean {
         if(stack.value.isEmpty())
             return false

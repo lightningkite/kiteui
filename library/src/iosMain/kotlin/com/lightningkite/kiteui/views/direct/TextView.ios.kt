@@ -242,9 +242,9 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategorySmall to 0.91,
     UIContentSizeCategoryMedium to 0.95,
     UIContentSizeCategoryLarge to 1.0,
-    UIContentSizeCategoryExtraLarge to 1.11,
-    UIContentSizeCategoryExtraExtraLarge to 1.21,
-    UIContentSizeCategoryExtraExtraExtraLarge to 1.32,
+    UIContentSizeCategoryExtraLarge to 1.21,
+    UIContentSizeCategoryExtraExtraLarge to 1.31,
+    UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
 fun preferredScaleFactor() = dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 fun UILabel.setContentSizeCategoryChangeListener() {
