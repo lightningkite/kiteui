@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.utils.commaString
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
-
 infix fun <T> Writable<T>.equalTo(value: T): Writable<Boolean> = object : Writable<Boolean> {
     override val state: ReadableState<Boolean> get() = this@equalTo.state.map { it == value }
     override fun addListener(listener: () -> Unit): () -> Unit = this@equalTo.addListener(listener)
