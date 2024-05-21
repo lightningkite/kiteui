@@ -36,7 +36,7 @@ actual inline var Video.source: VideoSource?
 actual val Video.time: Writable<Double> get() = native.vprop("timeupdate", { this.currentTime }, { this.currentTime = it })
 actual val Video.playing: Writable<Boolean> get() = native.vprop("timeupdate", { !this.paused }, {
     autoplay = it
-    if (it) play() else pause()
+    if (it) play().catch {  } else pause()
 })
 actual val Video.volume: Writable<Float> get() = native.vprop("volumechange", { this.volume.toFloat() }, {
     this.volume = it.toDouble()

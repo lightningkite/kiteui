@@ -174,6 +174,7 @@ actual fun RecyclerView.scrollToIndex(
     align: Align?,
     animate: Boolean
 ) {
+    if(index !in 0..<(native.adapter?.itemCount ?: 0))
     if (animate) {
         when (val lm = native.layoutManager ?: return) {
             is LinearLayoutManager -> if (align == null) lm.smoothScrollToPosition(
