@@ -6,15 +6,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.sub
-import com.lightningkite.kiteui.views.launch
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.*
 import platform.UIKit.*
-import platform.UniformTypeIdentifiers.UTTypeImage
-import platform.UniformTypeIdentifiers.loadDataRepresentationForContentType
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
@@ -218,6 +215,8 @@ actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.()
 @OptIn(ExperimentalForeignApi::class)
 class MyImageView : UIImageView(CGRectZero.readValue()) {
 
+    private var lastParentSpacing: DimensionRaw = 0.0
+    private var cornerRadius: CornerRadii = CornerRadii.Constant(0.dp)
     var imageSource: ImageSource? = null
     var onImageChange: ((UIImage?) -> Unit)? = null
 
@@ -256,7 +255,19 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
                     mySize.height
                 )
             }
+            updateCorners(cornerRadius, lastParentSpacing)
         }
+    }
+
+    fun setCornerRadiusFromTheme(cornerRadius: CornerRadii, parentSpacing: DimensionRaw) {
+        this.cornerRadius = cornerRadius
+        lastParentSpacing = parentSpacing
+        updateCorners(cornerRadius, parentSpacing)
+    }
+
+    private fun updateCorners(cornerRadius: CornerRadii, parentSpacing: DimensionRaw) {
+        layer.cornerRadius = cornerRadius.toRawCornerRadius(bounds, parentSpacing)
+        layer.masksToBounds = true
     }
 }
 

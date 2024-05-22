@@ -1,8 +1,5 @@
 package com.lightningkite.kiteui.models
 
-import org.w3c.dom.DOMRectReadOnly
-import org.w3c.dom.HTMLElement
-
 actual typealias DimensionRaw = String
 actual val Int.px: Dimension
     get() = Dimension("${this}px")
@@ -23,6 +20,13 @@ actual inline operator fun Dimension.plus(other: Dimension): Dimension = Dimensi
 actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimension("calc(${this.value} - ${other.value})")
 actual inline operator fun Dimension.times(other: Float): Dimension = Dimension("calc(${this.value} * ${other})")
 actual inline operator fun Dimension.div(other: Float): Dimension = Dimension("calc(${this.value} / ${other})")
+
+fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
+    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
+    is CornerRadii.ForceConstant -> value.value
+    is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
+    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
+}
 
 actual data class Font(
     val cssFontFamilyName: String,

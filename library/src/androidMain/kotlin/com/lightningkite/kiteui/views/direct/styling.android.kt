@@ -233,12 +233,7 @@ fun Theme.rippleDrawableOnly(
     } ?: RippleDrawable(rippleColor, null, null).apply { addLayer(null) }
     preparing.setDrawable(0, GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        val cr = when (val it = this@rippleDrawableOnly.cornerRadii) {
-            is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> 10000f
-            is CornerRadii.Constant -> min(parentSpacing, it.value.value)
-            is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
-        }
+        val cr = this@rippleDrawableOnly.cornerRadii.toRawCornerRadius(parentSpacing)
         cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
         colors = intArrayOf(background.applyAlpha(0.01f).colorInt(), background.applyAlpha(0.01f).colorInt())
     })
@@ -253,12 +248,7 @@ fun Theme.backgroundDrawable(
 ): LayerDrawable {
     val formDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        val cr = when (val it = this@backgroundDrawable.cornerRadii) {
-            is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> 10000f
-            is CornerRadii.Constant -> min(parentSpacing, it.value.value)
-            is CornerRadii.RatioOfSpacing -> it.value * parentSpacing
-        }
+        val cr = this@backgroundDrawable.cornerRadii.toRawCornerRadius(parentSpacing)
         cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
         setStroke(outlineWidth.value.toInt(), outline.colorInt())
 
