@@ -41,19 +41,23 @@ actual fun NView.scrollIntoView(
     vertical: Align?,
     animate: Boolean
 ) {
-    generateSequence(this as NView) {
-        it.parent as? NView
-    }.first {
-        when(it) {
-            is ScrollView -> {
-                scrollToView(it, this, animate)
-                true
+    afterTimeout(16) {
+        generateSequence(this as NView) {
+            it.parent as? NView
+        }.firstOrNull {
+            when (it) {
+                is ScrollView -> {
+                    scrollToView(it, this, animate)
+                    true
+                }
+
+                is ScrollingView -> {
+                    // TODO
+                    true
+                }
+
+                else -> false
             }
-            is ScrollingView -> {
-                // TODO
-                true
-            }
-            else -> false
         }
     }
 }

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.utils.commaString
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
@@ -29,7 +30,7 @@ fun List<() -> Unit>.invokeAllSafe() = forEach {
     try {
         it()
     } catch (e: Exception) {
-        e.printStackTrace2()
+        e.report()
     }
 }
 

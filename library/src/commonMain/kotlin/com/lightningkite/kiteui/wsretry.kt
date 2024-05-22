@@ -49,7 +49,6 @@ fun retryWebsocket(
                                 "Server did not respond to three consecutive pings."
                             )
                             lastPong < now - pingTime -> socket.send(" ")
-
                         }
                     }
                 }
@@ -126,6 +125,9 @@ fun retryWebsocket(
 }
 
 interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
+    fun retryNow() {
+
+    }
 }
 
 
@@ -180,7 +182,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
             try {
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
-                e.printStackTrace2()
+                e.report()
             }
         }
     }

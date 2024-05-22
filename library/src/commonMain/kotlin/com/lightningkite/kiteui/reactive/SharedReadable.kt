@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import kotlin.random.Random
 
 class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val action: suspend CalculationContext.() -> T) : Readable<T> {
@@ -56,7 +57,7 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
             try {
                 it()
             } catch (e: Exception) {
-                e.printStackTrace2()
+                e.report()
             }
         }
         state = ReadableState.notReady

@@ -11,9 +11,10 @@ import com.lightningkite.kiteui.views.*
 import java.util.WeakHashMap
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NSwapView(context: Context): SlightlyModifiedFrameLayout(context) {
+actual class NSwapView(context: Context) : SlightlyModifiedFrameLayout(context) {
     lateinit var viewWriter: ViewWriter
     var duration = 0.15.seconds
 }
@@ -47,27 +48,29 @@ actual fun SwapView.swap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> Unit,
 ) {
-    val oldView = this.native.getChildAt(0)
-    native.viewWriter.rootCreated = null
-    animationsEnabled = false
-    try {
-        native.viewWriter.createNewView()
-    } finally {
-        animationsEnabled = true
-    }
-    val newView = native.viewWriter.rootCreated
-    newView?.layoutParams = newView?.layoutParams?.also {
-        it.width = ViewGroup.LayoutParams.MATCH_PARENT
-        it.height = ViewGroup.LayoutParams.MATCH_PARENT
-    } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-    TransitionManager.beginDelayedTransition(native, TransitionSet().apply {
-        newView?.let { transition.enter?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
-        oldView?.let { transition.exit?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
-        transition.exit?.let { addTransition(it) }
-        transition.enter?.let { addTransition(it) }
-    })
-    oldView?.let { oldNN -> native.removeView(oldNN); oldNN.shutdown() }
-    newView?.let { native.addView(it) }
-    if(newView == null) native.visibility = View.GONE
-    else native.visibility = View.VISIBLE
+    measureTime {
+        val oldView = this.native.getChildAt(0)
+        native.viewWriter.rootCreated = null
+        animationsEnabled = false
+        try {
+            native.viewWriter.createNewView()
+        } finally {
+            animationsEnabled = true
+        }
+        val newView = native.viewWriter.rootCreated
+        newView?.layoutParams = newView?.layoutParams?.also {
+            it.width = ViewGroup.LayoutParams.MATCH_PARENT
+            it.height = ViewGroup.LayoutParams.MATCH_PARENT
+        } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        TransitionManager.beginDelayedTransition(native, TransitionSet().apply {
+            newView?.let { transition.enter?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
+            oldView?.let { transition.exit?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
+            transition.exit?.let { addTransition(it) }
+            transition.enter?.let { addTransition(it) }
+        })
+        oldView?.let { oldNN -> native.removeView(oldNN); oldNN.shutdown() }
+        newView?.let { native.addView(it) }
+        if (newView == null) native.visibility = View.GONE
+        else native.visibility = View.VISIBLE
+    }.also { println("Took ${it.inWholeMilliseconds}ms to swap") }
 }

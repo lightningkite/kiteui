@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.lightningkite.kiteuiexample"
+    namespace = "com.lightningkite.kiteuiexample.old"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.lightningkite.kiteuiexample"
+        applicationId = "com.lightningkite.kiteuiexample.old"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
