@@ -4,11 +4,9 @@ package com.lightningkite.kiteui.views.direct
 
 import android.animation.ValueAnimator
 import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.graphics.drawable.*
 import android.os.Build.VERSION
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.Animation
 import android.widget.*
@@ -17,9 +15,7 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
-import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 import android.widget.TextView as AndroidTextView
@@ -65,7 +61,12 @@ fun View.setMarginAll(margin: Int) {
 fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 
 val applyTextColorFromThemeHeader: (Theme, AndroidTextView) -> Unit = { theme, textView ->
-    textView.setTextColor(theme.foreground.colorInt())
+    if (textView is TextViewWithGradient) {
+        textView.kuiPaintForeground = theme.foreground
+    } else {
+        textView.setTextColor(theme.foreground.colorInt())
+    }
+
     textView.setTypeface(
         TypefaceCompat.create(
             textView.context,
@@ -77,8 +78,13 @@ val applyTextColorFromThemeHeader: (Theme, AndroidTextView) -> Unit = { theme, t
     textView.isAllCaps = theme.title.allCaps
 }
 val applyTextColorFromTheme: (Theme, AndroidTextView) -> Unit = { theme, textView ->
-    textView.setTextColor(theme.foreground.colorInt())
-    if(textView is EditText) {
+    if (textView is TextViewWithGradient) {
+        textView.kuiPaintForeground = theme.foreground
+    } else {
+        textView.setTextColor(theme.foreground.colorInt())
+    }
+
+    if (textView is EditText) {
         textView.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
     }
     textView.setTypeface(

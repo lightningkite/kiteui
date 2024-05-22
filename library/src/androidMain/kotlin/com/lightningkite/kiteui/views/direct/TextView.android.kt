@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.graphics.Typeface
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
@@ -8,23 +7,19 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import android.widget.TextView as AndroidTextView
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.addTextChangedListener
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.TextOverflow
-import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.opacity
 
-actual typealias NTextView = AndroidTextView
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+actual typealias NTextView = TextViewWithGradient
 
 inline fun ViewWriter.textElement(textSize: Float, crossinline setup: TextView.() -> Unit) =
-    viewElement(factory = ::AndroidTextView, wrapper = ::TextView) {
+    viewElement(factory = ::TextViewWithGradient, wrapper = ::TextView) {
         val androidText = native
         androidText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
         handleTheme(native, viewLoads = true, foreground = applyTextColorFromTheme) {
@@ -33,7 +28,7 @@ inline fun ViewWriter.textElement(textSize: Float, crossinline setup: TextView.(
     }
 
 inline fun ViewWriter.header(textSize: Float, crossinline setup: TextView.() -> Unit) =
-    viewElement(factory = ::AndroidTextView, wrapper = ::TextView) {
+    viewElement(factory = ::TextViewWithGradient, wrapper = ::TextView) {
         val androidText = native
         androidText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
         handleTheme(native, viewLoads = true, foreground = applyTextColorFromThemeHeader) {
