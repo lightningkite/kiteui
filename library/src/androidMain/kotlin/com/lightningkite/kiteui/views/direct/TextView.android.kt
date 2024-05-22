@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.opacity
 
+@Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NTextView = TextViewWithGradient
 
 inline fun ViewWriter.textElement(textSize: Float, crossinline setup: TextView.() -> Unit) =
