@@ -2,10 +2,11 @@
 
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.KeyValueObserverProtocol
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.await
 import kotlinx.cinterop.BetaInteropApi
@@ -17,12 +18,10 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-fun ViewWriter.todo(name: String) = element(UIView())  {}
-
 class Ref<T>(var target: T?)
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-inline fun UIControl.onEvent(events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
+inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
     val actionHolder = object: NSObject() {
         @ObjCAction
         fun eventHandler() = action()
@@ -138,59 +137,59 @@ class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
     }
 }
 
-inline fun ViewWriter.handleThemeControl(view: UIControl, noinline setup: ()->Unit) {
-    val s = view.stateReadable
-    withThemeGetter({
-        val state = s.await()
-        when {
-            state and UIControlStateDisabled != 0UL -> it().disabled()
-            state and UIControlStateHighlighted != 0UL -> it().down()
-            state and UIControlStateFocused != 0UL -> it().hover()
-            else -> it()
-        }
-    }) {
-        if(transitionNextView == ViewWriter.TransitionNextView.No) {
-            transitionNextView = ViewWriter.TransitionNextView.Maybe {
-                val state = s.await()
-                when {
-                    state and UIControlStateDisabled != 0UL -> true
-                    state and UIControlStateHighlighted != 0UL -> true
-                    state and UIControlStateFocused != 0UL -> true
-                    else -> false
-                }
-            }
-        }
-        handleTheme(view, viewDraws = false, setup = setup)
-    }
-}
-
-inline fun ViewWriter.handleThemeControl(view: UIControl, crossinline checked: suspend ()->Boolean, noinline setup: ()->Unit) {
-    val s = view.stateReadable
-    withThemeGetter({
-        val base = if(checked()) it().selected() else it().unselected()
-        val state = s.await()
-        when {
-            state and UIControlStateDisabled != 0UL -> base.disabled()
-            state and UIControlStateHighlighted != 0UL -> base.down()
-            state and UIControlStateFocused != 0UL -> base.hover()
-            else -> base
-        }
-    }) {
-        if(transitionNextView == ViewWriter.TransitionNextView.No) {
-            transitionNextView = ViewWriter.TransitionNextView.Maybe {
-                if(checked()) return@Maybe true
-                val state = s.await()
-                when {
-                    state and UIControlStateDisabled != 0UL -> true
-                    state and UIControlStateHighlighted != 0UL -> true
-                    state and UIControlStateFocused != 0UL -> true
-                    else -> false
-                }
-            }
-        }
-        handleTheme(view, viewDraws = false, setup = setup)
-    }
-}
+//inline fun ViewWriter.handleThemeControl(view: UIControl, noinline setup: ()->Unit) {
+//    val s = view.stateReadable
+//    withThemeGetter({
+//        val state = s.await()
+//        when {
+//            state and UIControlStateDisabled != 0UL -> it().disabled()
+//            state and UIControlStateHighlighted != 0UL -> it().down()
+//            state and UIControlStateFocused != 0UL -> it().hover()
+//            else -> it()
+//        }
+//    }) {
+//        if(transitionNextView == ViewWriter.TransitionNextView.No) {
+//            transitionNextView = ViewWriter.TransitionNextView.Maybe {
+//                val state = s.await()
+//                when {
+//                    state and UIControlStateDisabled != 0UL -> true
+//                    state and UIControlStateHighlighted != 0UL -> true
+//                    state and UIControlStateFocused != 0UL -> true
+//                    else -> false
+//                }
+//            }
+//        }
+//        handleTheme(view, viewDraws = false, setup = setup)
+//    }
+//}
+//
+//inline fun ViewWriter.handleThemeControl(view: UIControl, crossinline checked: suspend ()->Boolean, noinline setup: ()->Unit) {
+//    val s = view.stateReadable
+//    withThemeGetter({
+//        val base = if(checked()) it().selected() else it().unselected()
+//        val state = s.await()
+//        when {
+//            state and UIControlStateDisabled != 0UL -> base.disabled()
+//            state and UIControlStateHighlighted != 0UL -> base.down()
+//            state and UIControlStateFocused != 0UL -> base.hover()
+//            else -> base
+//        }
+//    }) {
+//        if(transitionNextView == ViewWriter.TransitionNextView.No) {
+//            transitionNextView = ViewWriter.TransitionNextView.Maybe {
+//                if(checked()) return@Maybe true
+//                val state = s.await()
+//                when {
+//                    state and UIControlStateDisabled != 0UL -> true
+//                    state and UIControlStateHighlighted != 0UL -> true
+//                    state and UIControlStateFocused != 0UL -> true
+//                    else -> false
+//                }
+//            }
+//        }
+//        handleTheme(view, viewDraws = false, setup = setup)
+//    }
+//}
 
 //private val UIViewExtensionGravity = ExtensionProperty<UIView, Pair<Align, Align>>()
 //val UIView.extensionGravity by UIViewExtensionGravity

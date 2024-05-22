@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenStack
 import com.lightningkite.kiteui.views.ViewDsl
-import ViewWriter
+
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NLink = NativeLink

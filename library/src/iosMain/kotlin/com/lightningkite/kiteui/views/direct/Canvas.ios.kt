@@ -2,8 +2,10 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import ViewWriter
+
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -11,20 +13,15 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NCanvas = CanvasView
+actual class Canvas actual constructor(context: RContext): RView(context) {
+    override val native = CanvasView()
 
-@ViewDsl
-actual inline fun ViewWriter.canvasActual(crossinline setup: Canvas.() -> Unit): Unit = element(CanvasView()) {
-    setup(Canvas(this))
+    actual var delegate: CanvasDelegate?
+        get() = native.delegate
+        set(value) {
+            native.delegate = value
+        }
 }
-
-
-actual var Canvas.delegate: CanvasDelegate?
-    get() = native.delegate
-    set(value) {
-        native.delegate = value
-    }
 
 actual typealias KeyCode = String
 

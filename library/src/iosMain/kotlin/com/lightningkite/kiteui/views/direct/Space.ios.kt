@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.ViewDsl
-import ViewWriter
+
 import com.lightningkite.kiteui.views.extensionSizeConstraints
 import com.lightningkite.kiteui.views.handleTheme
 import kotlinx.cinterop.CValue

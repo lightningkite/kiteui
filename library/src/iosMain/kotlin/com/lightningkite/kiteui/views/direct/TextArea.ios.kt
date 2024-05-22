@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.models.KeyboardCase
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.KeyboardType

@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewDsl
-import ViewWriter
+
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NExternalLink = NativeLink

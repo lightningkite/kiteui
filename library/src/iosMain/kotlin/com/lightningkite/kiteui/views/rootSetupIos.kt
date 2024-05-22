@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-import ViewWriter
+
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.objc.cgRectValue

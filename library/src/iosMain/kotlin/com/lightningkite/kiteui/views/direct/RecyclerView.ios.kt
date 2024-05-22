@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align

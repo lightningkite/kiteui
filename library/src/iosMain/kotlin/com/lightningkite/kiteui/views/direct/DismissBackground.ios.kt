@@ -1,55 +1,46 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIControlEventTouchUpInside
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NDismissBackground = FrameLayoutButton
 
-@ViewDsl
-actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit): Unit = element(FrameLayoutButton()) {
-    handleTheme(
-        this,
-        foreground = {
-            backgroundColor = it.background.closestColor().copy(alpha = 0.5f).toUiColor()
-        },
-    ) {
-        val d = DismissBackground(this)
-        __dismissBackgroundOtherSetupX(navigator)
-        setup(d)
-        __dismissBackgroundOtherSetup()
-    }
+actual class DismissBackground actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayoutButton()
 
-}
-
-fun FrameLayoutButton.__dismissBackgroundOtherSetupX(navigator: ScreenStack) {
-    DismissBackground(this).onClick {
-        navigator.clear()
-    }
-}
-fun FrameLayoutButton.__dismissBackgroundOtherSetup() {
-    listNViews().forEach {
-        it.userInteractionEnabled = true
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual fun DismissBackground.onClick(action: suspend () -> Unit): Unit {
-    var virtualDisable: Boolean = false
-    native.onEvent(UIControlEventTouchUpInside) {
-        if(!virtualDisable) {
-            native.calculationContext.launchManualCancel {
-                try {
-                    virtualDisable = true
-                    action()
-                } finally {
-                    virtualDisable = false
+    actual fun onClick(action: suspend () -> Unit): Unit {
+        var virtualDisable: Boolean = false
+        native.onEvent(this, UIControlEventTouchUpInside) {
+            if(!virtualDisable) {
+                launchManualCancel {
+                    try {
+                        virtualDisable = true
+                        action()
+                    } finally {
+                        virtualDisable = false
+                    }
                 }
             }
         }
+    }
+
+    override fun postSetup() {
+        super.postSetup()
+        children.forEach { it.native.userInteractionEnabled = true }
+    }
+
+    init {
+        onClick { navigator.clear() }
+    }
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        native.backgroundColor = theme.background.closestColor().copy(alpha = 0.5f).toUiColor()
     }
 }

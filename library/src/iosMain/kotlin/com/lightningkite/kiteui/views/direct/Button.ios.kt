@@ -1,41 +1,51 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
+import platform.Foundation.NSKeyValueObservingOptionNew
+import platform.Foundation.addObserver
 import platform.UIKit.UIControlEventTouchUpInside
+import platform.UIKit.UIView
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NButton = FrameLayoutButton
-
-@ViewDsl
-actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit): Unit = element(FrameLayoutButton()) {
-    val l = iosCalculationContext.loading
-    handleThemeControl(this) {
-        setup(Button(this))
+actual class Button actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayoutButton()
+    init {
         activityIndicator {
-            ::opacity.invoke { if(l.await()) 1.0 else 0.0 }
+            ::opacity.invoke { if(this@Button.working.await()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
     }
-}
 
-actual fun Button.onClick(action: suspend () -> Unit): Unit {
-    native.onEvent(UIControlEventTouchUpInside) {
-        if (enabled) {
-            native.calculationContext.launchManualCancel {
-                enabled = false
-                try { action() } finally { enabled = true }
+    actual fun onClick(action: suspend () -> Unit): Unit {
+        native.onEvent(this, UIControlEventTouchUpInside) {
+            if (enabled) {
+                launchManualCancel {
+                    enabled = false
+                    try { action() } finally { enabled = true }
+                }
             }
         }
     }
-}
 
-actual inline var Button.enabled: Boolean
-    get() = native.enabled
-    set(value) {
-        native.enabled = value
+    actual var enabled: Boolean
+        get() = native.enabled
+        set(value) {
+            native.enabled = value
+        }
+
+    init {
+        onRemove(native.observe("highlighted", { refreshTheming() }))
+        onRemove(native.observe("selected", { refreshTheming() }))
+        onRemove(native.observe("enabled", { refreshTheming() }))
     }
+    override fun getStateThemeChoice() = when {
+        !enabled -> ThemeChoice.Derive { it.disabled() }
+        native.highlighted -> ThemeChoice.Derive { it.down() }
+        native.focused -> ThemeChoice.Derive { it.hover() }
+        else -> null
+    }
+}

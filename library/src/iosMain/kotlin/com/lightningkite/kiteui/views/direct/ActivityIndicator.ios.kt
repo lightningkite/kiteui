@@ -1,26 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
-import ViewWriter
+
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
+import platform.UIKit.UIView
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NActivityIndicator = UIActivityIndicatorView
-
-@ViewDsl
-actual inline fun ViewWriter.activityIndicatorActual(crossinline setup: ActivityIndicator.() -> Unit): Unit =
-    element(UIActivityIndicatorView()) {
+actual class ActivityIndicator actual constructor(context: RContext): RView(context) {
+    override val native = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()
-        handleTheme(
-            this,
-            foreground = {
-                this.color = it.foreground.closestColor().toUiColor()
-            },
-        ) {
-            extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)
-            setup(ActivityIndicator(this))
-        }
+        extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)
     }
+}
