@@ -1289,12 +1289,7 @@ object DynamicCSS {
                     "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
                 ),
                 sel(".mightTransition", ".swapImage") to mapOf(
-                    "border-radius" to when (val it = theme.cornerRadii) {
-                        is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
-                        is CornerRadii.ForceConstant -> it.value.value
-                        is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
-                        is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
-                    },
+                    "border-radius" to theme.cornerRadii.toRawCornerRadius(),
                 ),
                 sel(".title") to mapOf(
                     "font-family" to font(theme.title.font),

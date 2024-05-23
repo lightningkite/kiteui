@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.models
 
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.views.AndroidAppContext
+import kotlin.math.min
 
 actual typealias Font = Typeface
 
@@ -45,3 +45,10 @@ actual sealed class AudioSource actual constructor()
 actual class AudioResource(val resource: Int) : AudioSource()
 
 actual val Dimension.px: Double get() = value.toDouble()
+
+fun CornerRadii.toRawCornerRadius(parentSpacing: DimensionRaw): DimensionRaw = when (this) {
+    is CornerRadii.ForceConstant -> value.value
+    is CornerRadii.RatioOfSize -> 10000f
+    is CornerRadii.Constant -> min(parentSpacing, value.value)
+    is CornerRadii.RatioOfSpacing -> value * parentSpacing
+}

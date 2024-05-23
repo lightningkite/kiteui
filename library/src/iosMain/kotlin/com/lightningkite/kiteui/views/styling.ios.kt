@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.views.direct.MyImageView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -114,6 +115,7 @@ fun ViewWriter.handleTheme(
                     backgroundRemove()
                 }
             }
+            (view as? MyImageView)?.setCornerRadiusFromTheme(theme.cornerRadii, parentSpacing)
             foreground(theme)
         }
         foregroundSkipAnimate(theme)
@@ -240,12 +242,7 @@ class CAGradientLayerResizing: CAGradientLayer {
         }
 
     fun refreshCorners() {
-        val v = when(val d = desiredCornerRadius) {
-            is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
-            is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-        }
+        val v = desiredCornerRadius.toRawCornerRadius(bounds, parentSpacing)
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         cornerRadius = v
     }
@@ -279,12 +276,7 @@ class CALayerResizing: CALayer {
         }
 
     fun refreshCorners() {
-        val v = when(val d = desiredCornerRadius) {
-            is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
-            is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-        }
+        val v = desiredCornerRadius.toRawCornerRadius(bounds, parentSpacing)
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         cornerRadius = v
     }
