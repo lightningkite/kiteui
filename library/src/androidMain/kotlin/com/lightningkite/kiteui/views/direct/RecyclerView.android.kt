@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.reactive.*
@@ -174,25 +175,28 @@ actual fun RecyclerView.scrollToIndex(
     align: Align?,
     animate: Boolean
 ) {
-    if(index !in 0..<(native.adapter?.itemCount ?: 0))
-    if (animate) {
-        when (val lm = native.layoutManager ?: return) {
-            is LinearLayoutManager -> if (align == null) lm.smoothScrollToPosition(
-                native,
-                AndroidRecyclerView.State(),
-                index
-            ) else lm.startSmoothScroll(AlignSmoothScroller(native.context, align).also { it.targetPosition = index })
+    fun scrollto() {
+        if (animate) {
+            when (val lm = native.layoutManager ?: return) {
+                is LinearLayoutManager -> if (align == null) lm.smoothScrollToPosition(
+                    native,
+                    AndroidRecyclerView.State(),
+                    index
+                ) else lm.startSmoothScroll(AlignSmoothScroller(native.context, align).also { it.targetPosition = index })
 
-            else -> lm.smoothScrollToPosition(native, AndroidRecyclerView.State(), index)
-        }
-    } else {
-        when (val lm = native.layoutManager ?: return) {
-            is LinearLayoutManager -> if (align == null) lm.scrollToPosition(index)
-            else lm.scrollToPositionWithOffset(index, native.height / 2)
+                else -> lm.smoothScrollToPosition(native, AndroidRecyclerView.State(), index)
+            }
+        } else {
+            when (val lm = native.layoutManager ?: return) {
+                is LinearLayoutManager -> if (align == null) lm.scrollToPosition(index)
+                else lm.scrollToPositionWithOffset(index, native.height / 2)
 
-            else -> lm.scrollToPosition(index)
+                else -> lm.scrollToPosition(index)
+            }
         }
     }
+    if(index in 0..<(native.adapter?.itemCount ?: 0)) scrollto()
+    else afterTimeout(20) { if(index in 0..<(native.adapter?.itemCount ?: 0)) scrollto() }
 }
 
 
