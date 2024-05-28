@@ -102,6 +102,9 @@ internal suspend fun <T> inBackground(action: ()->T): T {
 actual var ImageView.source: ImageSource?
     get() = native.imageSource
     set(value) {
+        if(value == native.imageSource) return
+        native.imageSource = value
+        // No need to reload the same image
         if(native.bounds.useContents { size.height } == 0.0) {
             afterTimeout(10) {
                 setImageInternal(value)
@@ -116,7 +119,6 @@ private fun ImageView.setImageInternal(value: ImageSource?) {
         native.image = null
         native.informParentOfSizeChange()
     }
-    native.imageSource = value
     when (value) {
         null -> {
             native.animateIfAllowed { native.image = null }

@@ -15,5 +15,5 @@ actual inline fun ViewWriter.labelActual(crossinline setup: Label.() -> Unit): U
 }
 
 actual inline var Label.content: String
-    get() = (native.subviews[0] as UILabel).text ?: ""
-    set(value) { (native.subviews[0] as UILabel).text = value }
+    get() = (native.subviews[0] as UILabelWithGradient).label.text ?: ""
+    set(value) { (native.subviews[0] as UILabelWithGradient).label.text = value }
