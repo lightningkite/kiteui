@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -27,6 +28,7 @@ class FrameLayoutButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverrid
         get() = extensionPadding ?: 0.0
         set(value) { extensionPadding = value }
 
+    var onClick: suspend ()->Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
@@ -45,12 +47,17 @@ class FrameLayoutButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverrid
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
     }
-//    init {
-//        addTarget(this, sel_registerName("test"), UIControlEventTouchUpInside)
-//    }
-//
-//    @ObjCAction
-//    fun test() {
-//        println("test")
-//    }
+    init {
+        addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
+    }
+
+    @ObjCAction
+    fun onclick() {
+        if (enabled) {
+            calculationContext.launchManualCancel {
+                enabled = false
+                try { onClick() } finally { enabled = true }
+            }
+        }
+    }
 }

@@ -38,13 +38,18 @@ import android.widget.ImageView as AImageView
 actual typealias NImageView = AppCompatImageView
 
 actual var ImageView.source: ImageSource?
-    get() = TODO()
+    get() = native.tag as? ImageSource
     set(value) {
+        if(value == native.tag) {
+            println("$this: Skip loading of $value vs ${native.tag}")
+            return
+        }
+        println("$this: Loading $value vs ${native.tag}")
+        native.tag = value
         @Suppress("KotlinConstantConditions")
         if(native is TouchImageView) {
             fun target() = object: SimpleTarget<Drawable>() {
                 override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
-                    println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
                     native.setImageDrawable(p0)
                 }
             }

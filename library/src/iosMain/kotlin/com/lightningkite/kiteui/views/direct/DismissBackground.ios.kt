@@ -38,17 +38,5 @@ fun FrameLayoutButton.__dismissBackgroundOtherSetup() {
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun DismissBackground.onClick(action: suspend () -> Unit): Unit {
-    var virtualDisable: Boolean = false
-    native.onEvent(UIControlEventTouchUpInside) {
-        if(!virtualDisable) {
-            native.calculationContext.launchManualCancel {
-                try {
-                    virtualDisable = true
-                    action()
-                } finally {
-                    virtualDisable = false
-                }
-            }
-        }
-    }
+    native.onClick = action
 }

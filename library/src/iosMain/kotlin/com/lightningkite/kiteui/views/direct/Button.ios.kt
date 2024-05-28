@@ -23,14 +23,7 @@ actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit):
 }
 
 actual fun Button.onClick(action: suspend () -> Unit): Unit {
-    native.onEvent(UIControlEventTouchUpInside) {
-        if (enabled) {
-            native.calculationContext.launchManualCancel {
-                enabled = false
-                try { action() } finally { enabled = true }
-            }
-        }
-    }
+    native.onClick = action
 }
 
 actual inline var Button.enabled: Boolean
