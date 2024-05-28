@@ -1136,6 +1136,11 @@ object DynamicCSS {
             includeMaybeTransition = true
         )
         theme(
+            theme.focus(),
+            listOf(".input:focus .theme-${theme.id}", "input:focus.theme-${theme.id}"),
+            includeMaybeTransition = true
+        )
+        theme(
             theme.disabled(),
             listOf(".clickable:disabled:disabled .theme-${theme.id}", ".clickable:disabled:disabled.theme-${theme.id}"),
             includeMaybeTransition = false
