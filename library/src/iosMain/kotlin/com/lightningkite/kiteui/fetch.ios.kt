@@ -4,17 +4,22 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.cache.*
-import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.util.*
 import io.ktor.websocket.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import platform.Foundation.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
@@ -68,13 +73,10 @@ actual suspend fun fetch(
                         }
 
                         is RequestBodyFile -> {
-                            val mime = body.content.suggestedType
-                                ?: (body.content.provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
-                            // Type is dyn.age8u (null)
-                            println("Type is $mime (${mime.preferredMIMEType})")
-                            contentType(ContentType.parse(mime.preferredMIMEType ?: throw Exception("No mime type found from file")))
+                            val contentType = body.content.defaultType()
+                            contentType(ContentType.parse(contentType.preferredMIMEType ?: "application/octet-stream"))
                             val fileData = suspendCoroutine {
-                                body.content.provider.loadDataRepresentationForContentType(mime) { data, error ->
+                                body.content.provider.loadDataRepresentationForContentType(contentType) { data, error ->
                                     if (error != null) throw Exception(error.description)
                                     val rawData = data?.toByteArray() ?: throw Exception("Data is null")
                                     it.resume(rawData)
@@ -305,12 +307,27 @@ class WebSocketWrapper(val url: String) : WebSocket {
 }
 
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
-actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
+actual class FileReference(val provider: NSItemProvider)
 
+@Serializable(with = StableFileReferenceSerializer::class)
+actual class StableFileReference(val url: NSURL)
 
-actual fun FileReference.mimeType(): String = provider.registeredContentTypes
-    .filterIsInstance<UTType>()
-    .firstNotNullOfOrNull { it.preferredMIMEType() } ?: "application/octet-stream"
+actual object StableFileReferenceSerializer : KSerializer<StableFileReference> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReference", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): StableFileReference {
+        val url = NSURL(string = decoder.decodeString())
+        return StableFileReference(url)
+    }
+
+    override fun serialize(encoder: Encoder, value: StableFileReference) {
+        val absoluteUrl = value.url.absoluteString ?:
+        throw IllegalStateException("Unable to serialize StableFileReference for NSURL that does not resolve to an absolute URL")
+        encoder.encodeString(absoluteUrl)
+    }
+}
+
+actual fun FileReference.mimeType(): String = defaultType().preferredMIMEType ?: "application/octet-stream"
 
 actual fun FileReference.fileName(): String {
     val extension = provider.registeredContentTypes
@@ -318,6 +335,28 @@ actual fun FileReference.fileName(): String {
         .firstNotNullOfOrNull { it.preferredFilenameExtension } ?: ""
     return "${provider.suggestedName ?: ""}.$extension"
 }
+
+fun FileReference.defaultType() = provider.registeredContentTypes
+    .filterIsInstance<UTType>()
+    .firstOrNull() ?: UTTypeData
+
+actual suspend fun FileReference.stable(): StableFileReference = coroutineScope {
+    suspendCoroutine {
+        println("Creating StableFileReference: loading file representation")
+        provider.loadFileRepresentationForContentType(
+            defaultType(),
+            true
+        ) { nsurl: NSURL?, b: Boolean, nsError: NSError? ->
+            println("File representation load callback: nsurl=$nsurl, openInPlace=$b")
+            if (nsError != null || nsurl == null) throw Exception("Error loading file representation for NSItemProvider")
+            launch(Dispatchers.Main) {
+                it.resume(StableFileReference(nsurl))
+            }
+        }
+    }
+}
+
+actual fun StableFileReference.regular(): FileReference = FileReference(NSItemProvider(url))
 
 fun String.nsdata(): NSData? =
     NSString.create(string = this).dataUsingEncoding(NSUTF8StringEncoding)

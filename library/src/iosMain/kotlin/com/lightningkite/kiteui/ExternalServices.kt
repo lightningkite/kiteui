@@ -316,7 +316,7 @@ actual object ExternalServices {
                             error = null
                         )
                         if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
-                            FileReference(NSItemProvider(contentsOfURL = u), UTTypeJPEG)
+                            FileReference(NSItemProvider(contentsOfURL = u))
                         } else {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
                                 cont.resumeWithException(Exception("Failed to write image file to $u"))

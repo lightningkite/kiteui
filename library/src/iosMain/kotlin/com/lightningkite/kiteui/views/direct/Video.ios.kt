@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.defaultType
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
@@ -173,7 +174,7 @@ actual inline var Video.source: VideoSource?
                 native.controller.player = null
                 native.informParentOfSizeChange()
                 value.file.provider.loadFileRepresentationForContentType(
-                    value.file.suggestedType ?: UTTypeVideo,
+                    value.file.defaultType(),
                     openInPlace = true
                 ) { url, b, err ->
                     if (url != null) {
