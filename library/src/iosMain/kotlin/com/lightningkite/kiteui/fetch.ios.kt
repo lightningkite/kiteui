@@ -85,7 +85,7 @@ actual suspend fun fetch(
                                     }
                                     setBody(fileData)
                                 }
-                                is DocumentFile -> {
+                                is NSItemProviderFile -> {
                                     val contentType = file.defaultType()
                                     contentType(ContentType.parse(contentType.preferredMIMEType ?: "application/octet-stream"))
                                     val fileData = suspendCoroutine {
@@ -323,72 +323,62 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
 actual class FileReference(val file: File)
+@Serializable(with = StableFileReference.Companion.StableFileReferenceSerializer::class)
+actual class StableFileReference private constructor(actual val wrapped: FileReference) {
+    actual companion object {
+        actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
+            private const val PHOTOKIT_ASSET_SCHEME = "photokitasset://"
+            override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReferenceiOS", PrimitiveKind.STRING)
 
-actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
-    private val photoKitAssetScheme = "photokitasset://"
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReference", PrimitiveKind.STRING)
+            override fun deserialize(decoder: Decoder): StableFileReference? {
+                val uri = decoder.decodeString()
+                println("Deserializing StableFileReference with $uri")
+                if (uri.isEmpty()) {
+                    return null
+                } else if (uri.startsWith(PHOTOKIT_ASSET_SCHEME)) {
+                    println("Fetching asset from PhotoKit")
+                    val asset = PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.substringAfter(PHOTOKIT_ASSET_SCHEME)), null)
+                        .toList()
+                        .firstOrNull()
+                    return asset?.let { StableFileReference(FileReference(GalleryAssetFile(it))) }
+                } else {
+                    return StableFileReference(FileReference(DocumentFile(NSURL(string = uri))))
+                }
+            }
 
-    override fun deserialize(decoder: Decoder): StableFileReference? {
-        val uri = decoder.decodeString()
-        if (uri.isEmpty()) {
-            return null
-        } else if (uri.startsWith(photoKitAssetScheme)) {
-            val asset = PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.substringAfter(photoKitAssetScheme)), null)
-                .toList()
-                .firstOrNull()
-            return asset?.let { StableFileReference(FileReference(GalleryAssetFile(it))) }
-        } else {
-            return StableFileReference(FileReference(DocumentFile(NSURL(string = uri))))
+            override fun serialize(encoder: Encoder, value: StableFileReference?) {
+                when (val file = value?.wrapped?.file) {
+                    is GalleryAssetFile -> {
+                        encoder.encodeString("$PHOTOKIT_ASSET_SCHEME${file.asset.localIdentifier}")
+                    }
+                    is DirectAccessGalleryAssetFile -> {
+                        encoder.encodeString("$PHOTOKIT_ASSET_SCHEME${file.localAssetIdentifier}")
+                    }
+                    is DocumentFile -> {
+                        val absoluteUrl = file.url.absoluteString ?:
+                        throw IllegalStateException("Unable to serialize StableFileReference for NSURL that does not resolve to an absolute URL")
+                        encoder.encodeString(absoluteUrl)
+                    }
+                    null -> {
+                        encoder.encodeString("")
+                    }
+                }
+            }
         }
-    }
 
-    override fun serialize(encoder: Encoder, value: StableFileReference?) {
-        when (val file = value?.wrapped?.file) {
-            is GalleryAssetFile -> {
-                encoder.encodeString("$photoKitAssetScheme${file.asset.localIdentifier}")
-            }
-            is DocumentFile -> {
-                val absoluteUrl = file.url.absoluteString ?:
-                    throw IllegalStateException("Unable to serialize StableFileReference for NSURL that does not resolve to an absolute URL")
-                encoder.encodeString(absoluteUrl)
-            }
-            else -> {
-                encoder.encodeString("")
-            }
-        }
+        actual fun FileReference.stableOrNull(): StableFileReference? = StableFileReference(this)
     }
 }
 
 actual fun FileReference.mimeType(): String = file.mimeType()
 actual fun FileReference.fileName(): String = file.fileName()
-actual fun FileReference.stable(): StableFileReference? = StableFileReference(this)
 
 sealed class File {
     abstract fun fileName(): String
     abstract fun mimeType(): String
 }
 
-class GalleryAssetFile(val asset: PHAsset) : File() {
-
-    val resource = PHAssetResource.assetResourcesForAsset(asset)
-        .filterIsInstance<PHAssetResource>()
-        .first { it.type in setOf(PHAssetResourceTypeAudio, PHAssetResourceTypePhoto, PHAssetResourceTypeVideo) }
-
-    override fun fileName(): String = resource.originalFilename
-
-    override fun mimeType(): String = UTType.typeWithIdentifier(resource.uniformTypeIdentifier)?.preferredMIMEType
-        ?: "application/octet-stream"
-}
-
-@OptIn(ExperimentalForeignApi::class)
-fun PHFetchResult.toList(): List<PHAsset> {
-    val assets = mutableListOf<PHAsset>()
-    enumerateObjectsUsingBlock { asset, _, _ -> (asset as? PHAsset)?.let(assets::add) }
-    return assets.toList()
-}
-class DocumentFile(val url: NSURL) : File() {
-
-    val provider = NSItemProvider(contentsOfURL = url)
+sealed class NSItemProviderFile(val provider: NSItemProvider) : File() {
 
     override fun fileName(): String {
         val extension = provider.registeredContentTypes
@@ -402,6 +392,29 @@ class DocumentFile(val url: NSURL) : File() {
     fun defaultType() = provider.registeredContentTypes
         .filterIsInstance<UTType>()
         .firstOrNull() ?: UTTypeData
+}
+
+class DirectAccessGalleryAssetFile(val localAssetIdentifier: String, provider: NSItemProvider) : NSItemProviderFile(provider)
+
+class GalleryAssetFile(val asset: PHAsset) : File() {
+
+    val resource = PHAssetResource.assetResourcesForAsset(asset)
+        .filterIsInstance<PHAssetResource>()
+        .first { it.type in setOf(PHAssetResourceTypeAudio, PHAssetResourceTypePhoto, PHAssetResourceTypeVideo) }
+
+    override fun fileName(): String = resource.originalFilename
+
+    override fun mimeType(): String = UTType.typeWithIdentifier(resource.uniformTypeIdentifier)?.preferredMIMEType
+        ?: "application/octet-stream"
+}
+
+class DocumentFile(val url: NSURL) : NSItemProviderFile(NSItemProvider(contentsOfURL = url))
+
+@OptIn(ExperimentalForeignApi::class)
+fun PHFetchResult.toList(): List<PHAsset> {
+    val assets = mutableListOf<PHAsset>()
+    enumerateObjectsUsingBlock { asset, _, _ -> (asset as? PHAsset)?.let(assets::add) }
+    return assets.toList()
 }
 
 fun String.nsdata(): NSData? =

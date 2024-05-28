@@ -1,5 +1,12 @@
 package com.lightningkite.kiteui
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.File
 import java.nio.file.Files
 
@@ -36,6 +43,27 @@ actual class Blob(val file: File, val type: String) {
 
 }
 actual typealias FileReference = File
+
+@Serializable(with = StableFileReference.Companion.StableFileReferenceSerializer::class)
+actual class StableFileReference private constructor(actual val wrapped: FileReference) {
+    actual companion object {
+        actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
+            override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReferenceJVM", PrimitiveKind.STRING)
+
+            override fun deserialize(decoder: Decoder): StableFileReference? {
+                val uri = decoder.decodeString()
+                return if (uri.isEmpty()) null
+                else StableFileReference(File(uri))
+            }
+
+            override fun serialize(encoder: Encoder, value: StableFileReference?) {
+                encoder.encodeString(value?.wrapped?.path ?: "")
+            }
+        }
+
+        actual fun FileReference.stableOrNull(): StableFileReference? = StableFileReference(this)
+    }
+}
 
 actual fun FileReference.mimeType(): String {
     return Files.probeContentType(this.toPath())

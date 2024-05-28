@@ -18,7 +18,6 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
-import platform.Photos.PHAsset
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -66,11 +65,11 @@ actual object ExternalServices {
                     override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                         picker.dismissViewControllerAnimated(true) {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                val localIdentifiers = didFinishPicking
-                                    .mapNotNull { (it as? PHPickerResult)?.assetIdentifier }
-                                val assets = PHAsset.fetchAssetsWithLocalIdentifiers(localIdentifiers, null)
-                                    .toList()
-                                assets.firstOrNull()?.let { FileReference(GalleryAssetFile(it)) }
+                                cont.resume(didFinishPicking.mapNotNull {
+                                    val result = it as? PHPickerResult ?: return@mapNotNull null
+                                    val file = DirectAccessGalleryAssetFile(result.assetIdentifier ?: "", result.itemProvider)
+                                    FileReference(file)
+                                }.firstOrNull())
                             })
                         }
                     }
@@ -166,13 +165,11 @@ actual object ExternalServices {
                         override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                             picker.dismissViewControllerAnimated(true) {
                                 dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                    val localIdentifiers = didFinishPicking
-                                        .mapNotNull { (it as? PHPickerResult)?.assetIdentifier }
-                                    println("Local identifiers for selected images: $localIdentifiers")
-                                    val assets = PHAsset.fetchAssetsWithLocalIdentifiers(localIdentifiers, null)
-                                        .toList()
-                                    println("Creating FileReferences for gallery assets")
-                                    cont.resume(assets.map { FileReference(GalleryAssetFile(it)) })
+                                    cont.resume(didFinishPicking.mapNotNull {
+                                        val result = it as? PHPickerResult ?: return@mapNotNull null
+                                        val file = DirectAccessGalleryAssetFile(result.assetIdentifier ?: "", result.itemProvider)
+                                        FileReference(file)
+                                    })
                                 })
                             }
                         }

@@ -1,5 +1,10 @@
 package com.lightningkite.kiteui
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
@@ -151,6 +156,20 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
 actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
+@Serializable(with = StableFileReference.Companion.StableFileReferenceSerializer::class)
+actual class StableFileReference private constructor(actual val wrapped: FileReference) {
+    actual companion object {
+        actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
+            override val descriptor: SerialDescriptor = unsupported()
+            override fun deserialize(decoder: Decoder): StableFileReference = unsupported()
+            override fun serialize(encoder: Encoder, value: StableFileReference?) = unsupported()
+            private fun unsupported(): Nothing {
+                throw UnsupportedOperationException("StableFileReference is unsupported on web")
+            }
+        }
+        actual fun FileReference.stableOrNull(): StableFileReference? = null
+    }
+}
 
 actual fun FileReference.mimeType(): String {
     return this.type

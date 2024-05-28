@@ -22,6 +22,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.File
 
 
@@ -283,6 +290,26 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
 actual class FileReference(val uri: Uri)
 
+@Serializable(with = StableFileReference.Companion.StableFileReferenceSerializer::class)
+actual class StableFileReference private constructor(actual val wrapped: FileReference) {
+    actual companion object {
+        actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
+            override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReferenceAndroid", PrimitiveKind.STRING)
+
+            override fun deserialize(decoder: Decoder): StableFileReference? {
+                val uri = decoder.decodeString()
+                return if (uri.isEmpty()) null
+                else StableFileReference(FileReference(Uri.parse(uri)))
+            }
+
+            override fun serialize(encoder: Encoder, value: StableFileReference?) {
+                encoder.encodeString(value?.wrapped?.uri?.toString() ?: "")
+            }
+        }
+
+        actual fun FileReference.stableOrNull(): StableFileReference? = StableFileReference(this)
+    }
+}
 
 actual fun FileReference.mimeType() = when(uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
