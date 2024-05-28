@@ -18,6 +18,7 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
+import platform.Photos.PHAsset
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -65,9 +66,11 @@ actual object ExternalServices {
                     override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                         picker.dismissViewControllerAnimated(true) {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-                                    cont.resume(FileReference(result.itemProvider))
-                                } ?: cont.resume(null)
+                                val localIdentifiers = didFinishPicking
+                                    .mapNotNull { (it as? PHPickerResult)?.assetIdentifier }
+                                val assets = PHAsset.fetchAssetsWithLocalIdentifiers(localIdentifiers, null)
+                                    .toList()
+                                assets.firstOrNull()?.let { FileReference(GalleryAssetFile(it)) }
                             })
                         }
                     }
@@ -107,7 +110,7 @@ actual object ExternalServices {
                         controller: UIDocumentPickerViewController,
                         didPickDocumentAtURL: NSURL
                     ) {
-                        cont.resume(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL)))
+                        cont.resume(FileReference(DocumentFile(didPickDocumentAtURL)))
                         controller.dismissViewControllerAnimated(true, {})
                     }
 
@@ -117,7 +120,7 @@ actual object ExternalServices {
                     ) {
                         cont.resume(
                             didPickDocumentsAtURLs.filterIsInstance<NSURL>().firstOrNull()
-                                ?.let { FileReference(NSItemProvider(contentsOfURL = it)) })
+                                ?.let { FileReference(DocumentFile(it)) })
                         controller.dismissViewControllerAnimated(true, {})
                     }
 //                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
@@ -163,9 +166,13 @@ actual object ExternalServices {
                         override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                             picker.dismissViewControllerAnimated(true) {
                                 dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                    didFinishPicking.filterIsInstance<PHPickerResult>()
-                                        .map { result -> FileReference(result.itemProvider) }
-                                        .let { cont.resume(it) }
+                                    val localIdentifiers = didFinishPicking
+                                        .mapNotNull { (it as? PHPickerResult)?.assetIdentifier }
+                                    println("Local identifiers for selected images: $localIdentifiers")
+                                    val assets = PHAsset.fetchAssetsWithLocalIdentifiers(localIdentifiers, null)
+                                        .toList()
+                                    println("Creating FileReferences for gallery assets")
+                                    cont.resume(assets.map { FileReference(GalleryAssetFile(it)) })
                                 })
                             }
                         }
@@ -205,7 +212,7 @@ actual object ExternalServices {
                             controller: UIDocumentPickerViewController,
                             didPickDocumentAtURL: NSURL
                         ) {
-                            cont.resume(listOf(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL))))
+                            cont.resume(listOf(FileReference(DocumentFile(didPickDocumentAtURL))))
                             controller.dismissViewControllerAnimated(true, {})
                         }
 
@@ -215,7 +222,7 @@ actual object ExternalServices {
                         ) {
                             cont.resume(
                                 didPickDocumentsAtURLs.filterIsInstance<NSURL>()
-                                    .map { FileReference(NSItemProvider(contentsOfURL = it)) })
+                                    .map { FileReference(DocumentFile(it)) })
                             controller.dismissViewControllerAnimated(true, {})
                         }
 //                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
@@ -298,7 +305,7 @@ actual object ExternalServices {
 
                     url?.let {
                         dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            cont.resume(FileReference(NSItemProvider(contentsOfURL = it)))
+                            cont.resume(FileReference(DocumentFile(it)))
                         })
                         return
                     }
@@ -316,7 +323,7 @@ actual object ExternalServices {
                             error = null
                         )
                         if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
-                            FileReference(NSItemProvider(contentsOfURL = u))
+                            FileReference(DocumentFile(u))
                         } else {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
                                 cont.resumeWithException(Exception("Failed to write image file to $u"))

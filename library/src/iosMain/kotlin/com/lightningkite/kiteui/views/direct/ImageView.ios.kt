@@ -156,12 +156,14 @@ private fun ImageView.setImageInternal(value: ImageSource?) {
         }
 
         is ImageLocal -> {
+            // TODO: Handle GalleryAssetFile as well
+            val file = value.file.file as? DocumentFile ?: return
             native.startLoad()
             calculationContext.sub().launch {
                 if (native.imageSource != value) return@launch
                 val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
                     suspendCoroutineCancellable { cont ->
-                        loadImageFromProvider(value.file.provider, ) { data, err ->
+                        loadImageFromProvider(file.provider, ) { data, err ->
                             if (err != null) cont.resumeWithException(Exception(err.description))
                             else if (data is UIImage) {
                                 dispatch_async(queue = dispatch_get_main_queue(), block = {

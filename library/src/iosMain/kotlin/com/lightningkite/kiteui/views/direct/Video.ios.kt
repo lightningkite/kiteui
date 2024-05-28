@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.defaultType
+import com.lightningkite.kiteui.DocumentFile
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
@@ -171,10 +171,12 @@ actual inline var Video.source: VideoSource?
             }
 
             is VideoLocal -> {
+                // TODO: Handle GalleryAssetFile as well
+                val file = value.file.file as? DocumentFile ?: return
                 native.controller.player = null
                 native.informParentOfSizeChange()
-                value.file.provider.loadFileRepresentationForContentType(
-                    value.file.defaultType(),
+                file.provider.loadFileRepresentationForContentType(
+                    file.defaultType(),
                     openInPlace = true
                 ) { url, b, err ->
                     if (url != null) {

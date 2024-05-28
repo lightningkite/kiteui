@@ -21,6 +21,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import platform.Foundation.*
+import platform.Photos.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
 import kotlin.coroutines.resume
@@ -73,16 +74,30 @@ actual suspend fun fetch(
                         }
 
                         is RequestBodyFile -> {
-                            val contentType = body.content.defaultType()
-                            contentType(ContentType.parse(contentType.preferredMIMEType ?: "application/octet-stream"))
-                            val fileData = suspendCoroutine {
-                                body.content.provider.loadDataRepresentationForContentType(contentType) { data, error ->
-                                    if (error != null) throw Exception(error.description)
-                                    val rawData = data?.toByteArray() ?: throw Exception("Data is null")
-                                    it.resume(rawData)
+                            when (val file = body.content.file) {
+                                is GalleryAssetFile -> {
+                                    contentType(ContentType.parse(file.mimeType()))
+                                    val fileData = suspendCoroutine {
+                                        PHImageManager.defaultManager().requestImageDataAndOrientationForAsset(file.asset, null) {
+                                             imageData, _, _, _ ->
+                                            it.resume(imageData?.toByteArray() ?: throw Exception("Data is null"))
+                                        }
+                                    }
+                                    setBody(fileData)
+                                }
+                                is DocumentFile -> {
+                                    val contentType = file.defaultType()
+                                    contentType(ContentType.parse(contentType.preferredMIMEType ?: "application/octet-stream"))
+                                    val fileData = suspendCoroutine {
+                                        file.provider.loadDataRepresentationForContentType(contentType) { data, error ->
+                                            if (error != null) throw Exception(error.description)
+                                            val rawData = data?.toByteArray() ?: throw Exception("Data is null")
+                                            it.resume(rawData)
+                                        }
+                                    }
+                                    setBody(fileData)
                                 }
                             }
-                            setBody(fileData)
                         }
 
                         is RequestBodyText -> {
@@ -307,56 +322,87 @@ class WebSocketWrapper(val url: String) : WebSocket {
 }
 
 actual class Blob(val data: NSData, val type: String = "application/octet-stream")
-actual class FileReference(val provider: NSItemProvider)
+actual class FileReference(val file: File)
 
-@Serializable(with = StableFileReferenceSerializer::class)
-actual class StableFileReference(val url: NSURL)
-
-actual object StableFileReferenceSerializer : KSerializer<StableFileReference> {
+actual object StableFileReferenceSerializer : KSerializer<StableFileReference?> {
+    private val photoKitAssetScheme = "photokitasset://"
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StableFileReference", PrimitiveKind.STRING)
 
-    override fun deserialize(decoder: Decoder): StableFileReference {
-        val url = NSURL(string = decoder.decodeString())
-        return StableFileReference(url)
+    override fun deserialize(decoder: Decoder): StableFileReference? {
+        val uri = decoder.decodeString()
+        if (uri.isEmpty()) {
+            return null
+        } else if (uri.startsWith(photoKitAssetScheme)) {
+            val asset = PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.substringAfter(photoKitAssetScheme)), null)
+                .toList()
+                .firstOrNull()
+            return asset?.let { StableFileReference(FileReference(GalleryAssetFile(it))) }
+        } else {
+            return StableFileReference(FileReference(DocumentFile(NSURL(string = uri))))
+        }
     }
 
-    override fun serialize(encoder: Encoder, value: StableFileReference) {
-        val absoluteUrl = value.url.absoluteString ?:
-        throw IllegalStateException("Unable to serialize StableFileReference for NSURL that does not resolve to an absolute URL")
-        encoder.encodeString(absoluteUrl)
-    }
-}
-
-actual fun FileReference.mimeType(): String = defaultType().preferredMIMEType ?: "application/octet-stream"
-
-actual fun FileReference.fileName(): String {
-    val extension = provider.registeredContentTypes
-        .filterIsInstance<UTType>()
-        .firstNotNullOfOrNull { it.preferredFilenameExtension } ?: ""
-    return "${provider.suggestedName ?: ""}.$extension"
-}
-
-fun FileReference.defaultType() = provider.registeredContentTypes
-    .filterIsInstance<UTType>()
-    .firstOrNull() ?: UTTypeData
-
-actual suspend fun FileReference.stable(): StableFileReference = coroutineScope {
-    suspendCoroutine {
-        println("Creating StableFileReference: loading file representation")
-        provider.loadFileRepresentationForContentType(
-            defaultType(),
-            true
-        ) { nsurl: NSURL?, b: Boolean, nsError: NSError? ->
-            println("File representation load callback: nsurl=$nsurl, openInPlace=$b")
-            if (nsError != null || nsurl == null) throw Exception("Error loading file representation for NSItemProvider")
-            launch(Dispatchers.Main) {
-                it.resume(StableFileReference(nsurl))
+    override fun serialize(encoder: Encoder, value: StableFileReference?) {
+        when (val file = value?.wrapped?.file) {
+            is GalleryAssetFile -> {
+                encoder.encodeString("$photoKitAssetScheme${file.asset.localIdentifier}")
+            }
+            is DocumentFile -> {
+                val absoluteUrl = file.url.absoluteString ?:
+                    throw IllegalStateException("Unable to serialize StableFileReference for NSURL that does not resolve to an absolute URL")
+                encoder.encodeString(absoluteUrl)
+            }
+            else -> {
+                encoder.encodeString("")
             }
         }
     }
 }
 
-actual fun StableFileReference.regular(): FileReference = FileReference(NSItemProvider(url))
+actual fun FileReference.mimeType(): String = file.mimeType()
+actual fun FileReference.fileName(): String = file.fileName()
+actual fun FileReference.stable(): StableFileReference? = StableFileReference(this)
+
+sealed class File {
+    abstract fun fileName(): String
+    abstract fun mimeType(): String
+}
+
+class GalleryAssetFile(val asset: PHAsset) : File() {
+
+    val resource = PHAssetResource.assetResourcesForAsset(asset)
+        .filterIsInstance<PHAssetResource>()
+        .first { it.type in setOf(PHAssetResourceTypeAudio, PHAssetResourceTypePhoto, PHAssetResourceTypeVideo) }
+
+    override fun fileName(): String = resource.originalFilename
+
+    override fun mimeType(): String = UTType.typeWithIdentifier(resource.uniformTypeIdentifier)?.preferredMIMEType
+        ?: "application/octet-stream"
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun PHFetchResult.toList(): List<PHAsset> {
+    val assets = mutableListOf<PHAsset>()
+    enumerateObjectsUsingBlock { asset, _, _ -> (asset as? PHAsset)?.let(assets::add) }
+    return assets.toList()
+}
+class DocumentFile(val url: NSURL) : File() {
+
+    val provider = NSItemProvider(contentsOfURL = url)
+
+    override fun fileName(): String {
+        val extension = provider.registeredContentTypes
+            .filterIsInstance<UTType>()
+            .firstNotNullOfOrNull { it.preferredFilenameExtension } ?: ""
+        return "${provider.suggestedName ?: ""}.$extension"
+    }
+
+    override fun mimeType(): String = defaultType().preferredMIMEType ?: "application/octet-stream"
+
+    fun defaultType() = provider.registeredContentTypes
+        .filterIsInstance<UTType>()
+        .firstOrNull() ?: UTTypeData
+}
 
 fun String.nsdata(): NSData? =
     NSString.create(string = this).dataUsingEncoding(NSUTF8StringEncoding)

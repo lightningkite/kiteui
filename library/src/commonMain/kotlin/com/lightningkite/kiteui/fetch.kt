@@ -59,13 +59,12 @@ expect class RequestResponse {
 expect class Blob
 expect class FileReference
 @Serializable(with = StableFileReferenceSerializer::class)
-expect class StableFileReference
-expect object StableFileReferenceSerializer : KSerializer<StableFileReference>
+class StableFileReference(val wrapped: FileReference)
+expect object StableFileReferenceSerializer : KSerializer<StableFileReference?>
 
 expect fun FileReference.mimeType():String
 expect fun FileReference.fileName():String
-expect suspend fun FileReference.stable(): StableFileReference
-expect fun StableFileReference.regular(): FileReference
+expect fun FileReference.stable(): StableFileReference?
 
 sealed interface RequestBody
 data class RequestBodyText(val content: String, val type: String): RequestBody
