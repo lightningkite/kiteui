@@ -12,8 +12,8 @@ expect object ExternalServices {
     suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
     fun setClipboardText(value: String)
     @JsName("downloadBlob")
-    fun download(name: String, blob: Blob)
-    fun download(name: String, url: String)
+    fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean = false)
+    fun download(name: String, url: String, preferPlatformMediaStorage: Boolean = false)
     fun share(title: String, message: String? = null, url: String? = null)
     fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)

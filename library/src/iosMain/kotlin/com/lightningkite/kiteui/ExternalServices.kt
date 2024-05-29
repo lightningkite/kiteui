@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.extensionStrongRef
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
+import kotlinx.cinterop.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -18,6 +17,7 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
+import platform.Photos.PHAssetChangeRequest
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -347,41 +347,42 @@ actual object ExternalServices {
         UIPasteboard.generalPasteboard.string = value
     }
     @OptIn(ExperimentalForeignApi::class)
-    actual fun download(name: String, url: String) {
-        val url = NSURL(string = url)
+    actual fun download(name: String, url: String, preferPlatformMediaStorage: Boolean) {
+        val remoteUrl = NSURL(string = url)
+        val task = NSURLSession.sharedSession.downloadTaskWithURL(remoteUrl) { localURL, _, _ ->
+            if (localURL == null) return@downloadTaskWithURL
+            val destination = getTemporaryDestinationPath(name)
+            val copySuccess = NSFileManager.defaultManager.copyItemAtURL(localURL, destination, null)
 
-        val destination = getDownloadUrl(name)
-
-        val task = NSURLSession.sharedSession.downloadTaskWithURL(url) { localURL, urlResponse, error ->
-            if(localURL == null) return@downloadTaskWithURL
-            if(destination == null) return@downloadTaskWithURL
-            NSFileManager.defaultManager.copyItemAtURL(localURL, destination, null)
-            afterTimeout(1) {
-                val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
-                ac.popoverPresentationController?.sourceView = rootView
-                ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
-                currentPresenter(ac)
+            if (copySuccess) {
+                if (!preferPlatformMediaStorage) {
+                    afterTimeout(1) {
+                        val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
+                        ac.popoverPresentationController?.sourceView = rootView
+                        ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
+                        currentPresenter(ac)
+                    }
+                } else {
+                    PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                        val creationRequest = PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(destination)
+                    }) { success, error ->
+                        println("Save to camera roll success: $success, error: $error")
+                    }
+                }
             }
         }
-
         task.resume()
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    private fun getDownloadUrl(name: String): NSURL {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
-        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL ?: throw IllegalStateException("No download directory")
-        while(true) {
-            val destinationFileUrl =  documentsUrl.URLByAppendingPathComponent(name)!!
-            if(!NSFileManager.defaultManager.isReadableFileAtPath(destinationFileUrl.path!!))
-                return destinationFileUrl
-        }
+    private fun getTemporaryDestinationPath(name: String): NSURL {
+        if (!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
+        return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name) ?: throw IllegalStateException("Unable to find a temporary path for file")
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual fun download(name: String, blob: Blob) {
-        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL
-        val destination = getDownloadUrl(name)
+    actual fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean) {
+        val destination = getTemporaryDestinationPath(name)
 
         val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
         ac.popoverPresentationController?.sourceView = rootView

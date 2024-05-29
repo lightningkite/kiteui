@@ -139,7 +139,7 @@ actual object ExternalServices {
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
     @SuppressLint("MissingPermission")
-    actual fun download(name: String, url: String) {
+    actual fun download(name: String, url: String, preferPlatformMediaStorage: Boolean) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         if(VERSION.SDK_INT < VERSION_CODES.Q) {
             AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
@@ -165,7 +165,7 @@ actual object ExternalServices {
     }
 
     @SuppressLint("MissingPermission")
-    actual fun download(name: String, blob: Blob) {
+    actual fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
             if(it.accepted) {

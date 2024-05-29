@@ -17,10 +17,10 @@ actual object ExternalServices {
 
     }
 
-    actual fun download(name: String, blob: Blob) {
+    actual fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean) {
     }
 
-    actual fun download(name: String, url: String) {
+    actual fun download(name: String, url: String, preferPlatformMediaStorage: Boolean) {
     }
 
     actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
