@@ -78,7 +78,8 @@ actual suspend fun fetch(
                                 is GalleryAssetFile -> {
                                     contentType(ContentType.parse(file.mimeType()))
                                     val fileData = suspendCoroutine {
-                                        PHImageManager.defaultManager().requestImageDataAndOrientationForAsset(file.asset, null) {
+                                        val asset = file.asset ?: throw Exception("Asset is null")
+                                        PHImageManager.defaultManager().requestImageDataAndOrientationForAsset(asset, null) {
                                              imageData, _, _, _ ->
                                             it.resume(imageData?.toByteArray() ?: throw Exception("Data is null"))
                                         }
@@ -336,11 +337,7 @@ actual class StableFileReference private constructor(actual val wrapped: FileRef
                 if (uri.isEmpty()) {
                     return null
                 } else if (uri.startsWith(PHOTOKIT_ASSET_SCHEME)) {
-                    println("Fetching asset from PhotoKit")
-                    val asset = PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.substringAfter(PHOTOKIT_ASSET_SCHEME)), null)
-                        .toList()
-                        .firstOrNull()
-                    return asset?.let { StableFileReference(FileReference(GalleryAssetFile(it))) }
+                    return StableFileReference(FileReference(GalleryAssetFile(uri.substringAfter(PHOTOKIT_ASSET_SCHEME))))
                 } else {
                     return StableFileReference(FileReference(DocumentFile(NSURL(string = uri))))
                 }
@@ -349,7 +346,7 @@ actual class StableFileReference private constructor(actual val wrapped: FileRef
             override fun serialize(encoder: Encoder, value: StableFileReference?) {
                 when (val file = value?.wrapped?.file) {
                     is GalleryAssetFile -> {
-                        encoder.encodeString("$PHOTOKIT_ASSET_SCHEME${file.asset.localIdentifier}")
+                        encoder.encodeString("$PHOTOKIT_ASSET_SCHEME${file.localAssetIdentifier}")
                     }
                     is DirectAccessGalleryAssetFile -> {
                         encoder.encodeString("$PHOTOKIT_ASSET_SCHEME${file.localAssetIdentifier}")
@@ -396,15 +393,33 @@ sealed class NSItemProviderFile(val provider: NSItemProvider) : File() {
 
 class DirectAccessGalleryAssetFile(val localAssetIdentifier: String, provider: NSItemProvider) : NSItemProviderFile(provider)
 
-class GalleryAssetFile(val asset: PHAsset) : File() {
+class GalleryAssetFile(val localAssetIdentifier: String) : File() {
 
-    val resource = PHAssetResource.assetResourcesForAsset(asset)
-        .filterIsInstance<PHAssetResource>()
-        .first { it.type in setOf(PHAssetResourceTypeAudio, PHAssetResourceTypePhoto, PHAssetResourceTypeVideo) }
+    var asset: PHAsset? = null
+        private set
+        get() {
+            if (field != null) return field
+            field = PHAsset.fetchAssetsWithLocalIdentifiers(listOf(localAssetIdentifier), null)
+                .toList()
+                .firstOrNull()
+            return field
+        }
 
-    override fun fileName(): String = resource.originalFilename
+    var resource: PHAssetResource? = null
+        private set
+        get() {
+            if (field != null) return field
+            field = asset?.let {
+                PHAssetResource.assetResourcesForAsset(it)
+                    .filterIsInstance<PHAssetResource>()
+                    .first { it.type in setOf(PHAssetResourceTypeAudio, PHAssetResourceTypePhoto, PHAssetResourceTypeVideo) }
+            }
+            return field
+        }
 
-    override fun mimeType(): String = UTType.typeWithIdentifier(resource.uniformTypeIdentifier)?.preferredMIMEType
+    override fun fileName(): String = resource?.originalFilename ?: ""
+
+    override fun mimeType(): String = resource?.uniformTypeIdentifier?.let { UTType.typeWithIdentifier(it)?.preferredMIMEType }
         ?: "application/octet-stream"
 }
 
