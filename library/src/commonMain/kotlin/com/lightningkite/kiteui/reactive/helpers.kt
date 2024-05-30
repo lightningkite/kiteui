@@ -3,10 +3,10 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.utils.commaString
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
-
 
 infix fun <T> Writable<T>.equalTo(value: T): Writable<Boolean> = object : Writable<Boolean> {
     override val state: ReadableState<Boolean> get() = this@equalTo.state.map { it == value }
@@ -30,7 +30,7 @@ fun List<() -> Unit>.invokeAllSafe() = forEach {
     try {
         it()
     } catch (e: Exception) {
-        e.printStackTrace2()
+        e.report()
     }
 }
 

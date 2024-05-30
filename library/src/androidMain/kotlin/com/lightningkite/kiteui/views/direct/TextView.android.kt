@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.RView
 
 actual abstract class TextView actual constructor(context: RContext) :
     RView(context) {
-    override abstract val native: android.widget.TextView
+    override abstract val native: TextViewWithGradient
     actual var content: String
         get() {
             return native.text.toString()
@@ -87,7 +87,7 @@ object TextSizes {
 }
 
 actual class HeaderView actual constructor(context: RContext, level: Int) : TextView(context) {
-    override val native: android.widget.TextView = android.widget.TextView(context.activity).apply {
+    override val native = TextViewWithGradient(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.h[level - 1])
     }
 
@@ -107,7 +107,7 @@ actual class HeaderView actual constructor(context: RContext, level: Int) : Text
 }
 
 actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
-    override val native: android.widget.TextView = android.widget.TextView(context.activity).apply {
+    override val native = TextViewWithGradient(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.body)
     }
 
@@ -127,7 +127,7 @@ actual class BodyTextView actual constructor(context: RContext) : TextView(conte
 }
 
 actual class SubTextView actual constructor(context: RContext) : TextView(context) {
-    override val native: android.widget.TextView = android.widget.TextView(context.activity).apply {
+    override val native = TextViewWithGradient(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.subtext)
     }
 

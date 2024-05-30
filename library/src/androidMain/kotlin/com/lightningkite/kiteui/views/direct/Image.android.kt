@@ -38,9 +38,10 @@ import android.widget.ImageView as AImageView
 actual class ImageView actual constructor(context: RContext): RView(context) {
     override val native = AppCompatImageView(context.activity)
 
-    actual var source: ImageSource?
-        get() = TODO()
+    actual var source: ImageSource? = null
         set(value) {
+            if(value == field) return
+            field = value
             @Suppress("KotlinConstantConditions")
             if (native is TouchImageView) {
                 fun target() = object : SimpleTarget<Drawable>() {

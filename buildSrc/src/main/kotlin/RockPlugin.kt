@@ -33,6 +33,7 @@ class KiteUiPlugin : Plugin<Project> {
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
                 doLast {
+                    var usesBlob = false
                     val lines = resourceFolder.resources()
                         .entries
                         .sortedBy { it.key }
@@ -42,15 +43,20 @@ class KiteUiPlugin : Plugin<Project> {
                                 is Resource.Image -> "val ${r.name}: ImageResource"
                                 is Resource.Video -> "val ${r.name}: VideoResource"
                                 is Resource.Audio -> "val ${r.name}: AudioResource"
-                                is Resource.Binary -> "suspend fun ${r.name}(): Blob"
+                                is Resource.Binary -> { usesBlob = true; "suspend fun ${r.name}(): Blob" }
                                 else -> ""
                             }
                         }
+
+                    val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
+                        .also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+                        .joinToString("\n")
+
                     out.writeText(
                         """
 package ${ext.packageName}
 
-import com.lightningkite.kiteui.models.*
+$imports
 
 expect object Resources {
     $lines
@@ -75,6 +81,7 @@ expect object Resources {
                 val resourceFolder = project.file("src/commonMain/resources")
                 inputs.files(resourceFolder)
                 doLast {
+                    var usesBlob = false
                     gitIgnore.writeText("*\n")
                     val lines = resourceFolder.resources()
                         .entries
@@ -99,18 +106,28 @@ expect object Resources {
                                     r.relativeFile.toString().replace(File.separatorChar, '/')
                                 }\")"
 
-                                is Resource.Binary -> "actual suspend fun ${r.name}(): Blob = fetch(\"common/${
+                                is Resource.Binary -> { usesBlob = true; "actual suspend fun ${r.name}(): Blob = fetch(\"common/${
                                     r.relativeFile.toString().replace(File.separatorChar, '/')
-                                }\").blob()"
+                                }\").blob()" }
 
                                 else -> ""
                             }
                         }
+
+                    val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
+                        .also {
+                            if (usesBlob) {
+                                it.add("import com.lightningkite.kiteui.Blob")
+                                it.add("import com.lightningkite.kiteui.fetch")
+                            }
+                        }
+                        .joinToString("\n")
+
                     out.writeText(
                         """
 package ${ext.packageName}
 
-import com.lightningkite.kiteui.models.*
+$imports
 
 actual object Resources {
     $lines
@@ -238,6 +255,7 @@ actual object Resources {
                         }
                     }
 
+                    var usesBlob = false
                     val lines = resources
                         .joinToString("\n    ") {
                             when (val r = it.value) {
@@ -250,15 +268,20 @@ actual object Resources {
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"${it.key}\")"
                                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
                                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"${it.key}\", \"${r.source.extension}\")"
-                                is Resource.Binary -> "actual suspend fun ${r.name}(): Blob = TODO()"
+                                is Resource.Binary -> { usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()" }
                                 else -> ""
                             }
                         }
+
+                    val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
+                        .also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+                        .joinToString("\n")
+
                     outKt.writeText(
                         """
 package ${ext.packageName}
 
-import com.lightningkite.kiteui.models.*
+$imports
 
 actual object Resources {
     $lines
@@ -340,6 +363,7 @@ ${variants.joinToString("\n")}
                     """.trim()
                         )
                     }
+                    var usesBlob = false
                     val lines = resources
                         .joinToString("\n    ") {
                             when (val r = it.value) {
@@ -347,16 +371,22 @@ ${variants.joinToString("\n")}
                                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
                                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
                                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
-                                is Resource.Binary -> "actual suspend fun ${r.name}(): Blob = TODO()"
+                                is Resource.Binary -> { usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()" }
                                 else -> ""
                             }
                         }
+
+                    val imports = mutableListOf(
+                        "import com.lightningkite.kiteui.models.*",
+                        "import com.lightningkite.kiteui.views.AndroidAppContext"
+                    ).also { if (usesBlob) it.add("import com.lightningkite.kiteui.Blob") }
+                        .joinToString("\n")
+
                     outKt.writeText(
                         """
 package ${ext.packageName}
 
-import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.AndroidAppContext
+$imports
 
 actual object Resources {
     $lines
@@ -495,7 +525,7 @@ fun File.resources(): Map<String, Resource> {
             .camelCase()
             .filter { it.isLetterOrDigit() }
         when (relativeFile.extension) {
-            "png", "jpg" -> out[name] = Resource.Image(name, file, relativeFile)
+            "png", "jpg", "webp" -> out[name] = Resource.Image(name, file, relativeFile)
             "mp4" -> out[name] = Resource.Video(name, file, relativeFile)
             "mp3", "ogg", "wav" -> out[name] = Resource.Audio(name, file, relativeFile)
             "otf", "ttf" -> {

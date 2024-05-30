@@ -1,23 +1,51 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ThemeChoice
 import com.lightningkite.kiteui.views.ViewDsl
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.UIKit.UIView
 
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NToggleButton = FrameLayoutToggleButton
+@OptIn(ExperimentalForeignApi::class)
+actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+    override val native: FrameLayoutButton = FrameLayoutButton()
+    actual inline var enabled: Boolean
+        get() = native.enabled
+        set(value) {
+            native.enabled = value
+        }
+    private val _checked = Property(false)
+    actual val checked: Writable<Boolean> get() = _checked
 
-@ViewDsl
-actual inline fun ViewWriter.toggleButtonActual(crossinline setup: ToggleButton.() -> Unit): Unit = element(FrameLayoutToggleButton()) {
-    handleThemeControl(this, { checkedWritable.await() }) {
-        setup(ToggleButton(this))
+    init {
+        onRemove(native.observe("highlighted", { refreshTheming() }))
+        onRemove(native.observe("selected", { refreshTheming() }))
+        onRemove(native.observe("enabled", { refreshTheming() }))
+        _checked.addListener { refreshTheming() }
+        native.onClick = {
+            _checked.value = !_checked.value
+        }
+    }
+    override fun getStateThemeChoice(): ThemeChoice? {
+        return if(_checked.value) {
+            when {
+                !enabled -> ThemeChoice.Derive { it.selected().disabled() }
+                native.highlighted -> ThemeChoice.Derive { it.selected().down() }
+                native.focused -> ThemeChoice.Derive { it.selected().hover() }
+                else -> ThemeChoice.Derive { it.selected() }
+            }
+        } else {
+            when {
+                !enabled -> ThemeChoice.Derive { it.unselected().disabled() }
+                native.highlighted -> ThemeChoice.Derive { it.unselected().down() }
+                native.focused -> ThemeChoice.Derive { it.unselected().hover() }
+                else -> ThemeChoice.Derive { it.unselected() }
+            }
+        }
     }
 }
-
-actual inline var ToggleButton.enabled: Boolean
-    get() = native.enabled
-    set(value) {
-        native.enabled = value
-    }
-actual val ToggleButton.checked: Writable<Boolean> get() = native.checkedWritable

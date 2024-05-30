@@ -35,6 +35,7 @@ class ScreenStack(private val routesGetter: ()->Routes, dialog: ScreenStack? = n
         stack.value = stack.value.dropLast(1)
         return true
     }
+
     fun dismiss(): Boolean {
         if(stack.value.isEmpty())
             return false

@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.AndroidAppContext
+import com.lightningkite.mppexampleapp.old.R
 
 actual object Resources {
     actual val audioTaunt: AudioResource = AudioResource(R.raw.audio_taunt)

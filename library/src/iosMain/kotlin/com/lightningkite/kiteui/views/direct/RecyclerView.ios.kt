@@ -16,85 +16,50 @@ import platform.CoreGraphics.*
 import platform.UIKit.*
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalForeignApi::class)
-@ViewDsl
-actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit = element(
-    NRecyclerView(true, newViews())
-) {
-    calculationContext.onRemove {
-        extensionStrongRef = null
-    }
-    backgroundColor = UIColor.clearColor
-    handleTheme(
-        this, viewDraws = false,
-        foreground = {
-            spacing = spacingOverride?.value ?: it.spacing
-        },
-    ) {
-        extensionViewWriter = newViews()
-        setup(RecyclerView(this))
-    }
-}
+actual class RecyclerView actual constructor(context: RContext) : RView(context) {
+    val newViews = NewViewWriter(context)
+    override val native = NRecyclerView(newViews = newViews)
 
-@OptIn(ExperimentalForeignApi::class)
-@ViewDsl
-actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit = element(
-    NRecyclerView(false, newViews())
-) {
-    calculationContext.onRemove {
-        extensionStrongRef = null
-    }
-    backgroundColor = UIColor.clearColor
-    handleTheme(
-        this, viewDraws = false,
-        foreground = {
-            spacing = spacingOverride?.value ?: it.spacing
-        },
-    ) {
-        extensionViewWriter = newViews()
-        setup(RecyclerView(this))
-    }
-}
-
-actual fun <T> RecyclerView.children(
-    items: Readable<List<T>>,
-    render: ViewWriter.(value: Readable<T>) -> Unit
-): Unit {
-    native.renderer = ItemRenderer<T>(
-        create = { parent, value ->
-            val prop = Property(value)
-            render(native.newViews, prop)
-            native.newViews.rootCreated!!.also {
-                it.extensionProp = prop
+    actual fun <T> children(
+        items: Readable<List<T>>,
+        render: ViewWriter.(value: Readable<T>) -> Unit
+    ): Unit {
+        native.renderer = ItemRenderer<T>(
+            create = { parent, value ->
+                val prop = Property(value)
+                render(native.newViews, prop)
+                newView!!.also {
+                    it.extensionProp = prop
+                }
+            },
+            update = { parent, element, value ->
+                @Suppress("UNCHECKED_CAST")
+                (element.extensionProp as Property<T>).value = value
             }
-        },
-        update = { parent, element, value ->
-            @Suppress("UNCHECKED_CAST")
-            (element.extensionProp as Property<T>).value = value
+        )
+        calculationContext.reactiveScope {
+            native.data = items.await().asIndexed()
         }
-    )
-    calculationContext.reactiveScope {
-        native.data = items.await().asIndexed()
     }
+
+    actual var columns: Int
+        get() = native.columns
+        set(value) { native.columns = value }
+
+    actual fun scrollToIndex(
+        index: Int,
+        align: Align?,
+        animate: Boolean
+    ) {
+        native.jump(index, align ?: Align.Center, animate)
+    }
+
+    actual val firstVisibleIndex: Readable<Int>
+        get() = native.firstVisible
+
+    actual val lastVisibleIndex: Readable<Int>
+        get() = native.lastVisible
 }
-
-actual var RecyclerView.columns: Int
-    get() = native.columns
-    set(value) { native.columns = value }
-
-actual fun RecyclerView.scrollToIndex(
-    index: Int,
-    align: Align?,
-    animate: Boolean
-) {
-    native.jump(index, align ?: Align.Center, animate)
-}
-
-actual val RecyclerView.firstVisibleIndex: Readable<Int>
-    get() = native.firstVisible
-
-actual val RecyclerView.lastVisibleIndex: Readable<Int>
-    get() = native.lastVisible
 
 interface Indexed<out T> {
     val min: Int
@@ -203,7 +168,7 @@ fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<I
 private val reservedScrollingSpace: CGFloat = 50000.0
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWriter): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIScrollViewDelegateProtocol,
+actual class NRecyclerView(val vertical: Boolean = true, val newViews: NewViewWriter): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIScrollViewDelegateProtocol,
     UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     val firstVisible = Property(0)
     val centerVisible = Property(0)
@@ -526,6 +491,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
     fun jump(index: Int, align: Align, animate: Boolean) {
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
+            return
         }
         if (index !in dataDirect.min..dataDirect.max) return
         lock("jump $index $align") {
@@ -704,7 +670,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             if (nextIndex > dataDirect.max) break
             // Get the element to place
             val element: Subview = allSubviews.first().takeIf {
-                (it.startPosition + it.size < viewportOffset - beyondEdgeRendering)
+                (it.startPosition - spacingRaw + it.size < viewportOffset - beyondEdgeRendering)
             }?.also {
                 log.log("populateDown $nextIndex")
                 it.index = nextIndex
@@ -728,7 +694,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             if (nextIndex < dataDirect.min) break
             // Get the element to place
             val element: Subview = allSubviews.last().takeIf {
-                it.startPosition > viewportOffset + viewportSize + beyondEdgeRendering
+                it.startPosition - spacingRaw > viewportOffset + viewportSize + beyondEdgeRendering
             }?.also {
                 log.log("populateUp $nextIndex")
                 it.index = nextIndex

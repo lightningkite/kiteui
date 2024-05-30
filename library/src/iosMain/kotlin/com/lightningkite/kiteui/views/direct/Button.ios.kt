@@ -6,29 +6,28 @@ import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSKeyValueObservingOptionNew
 import platform.Foundation.addObserver
 import platform.UIKit.UIControlEventTouchUpInside
 import platform.UIKit.UIView
+import platform.objc.sel_registerName
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.WeakReference
 
+@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class Button actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
     init {
         activityIndicator {
-            ::opacity.invoke { if(this@Button.working.await()) 1.0 else 0.0 }
+            ::opacity.invoke { if (this@Button.working.await()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
+        native.calculationContext = this
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {
-        native.onEvent(this, UIControlEventTouchUpInside) {
-            if (enabled) {
-                launchManualCancel {
-                    enabled = false
-                    try { action() } finally { enabled = true }
-                }
-            }
-        }
+        native.onClick = action
     }
 
     actual var enabled: Boolean

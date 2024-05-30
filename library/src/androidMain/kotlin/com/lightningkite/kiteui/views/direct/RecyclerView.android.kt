@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -46,6 +47,18 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 }
             }
         })
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalClearChildren() {
+         // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
     }
 
     actual fun <T> children(
@@ -116,7 +129,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                     get() = recyclerView.context
 
                 override fun addChild(view: RView) {
-                    view.parent = recyclerView
+                    recyclerView.addChild(view)
                     newView = view
                 }
             }
@@ -152,20 +165,19 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         }
     }
 
-    actual fun scrollToIndex(
-        index: Int,
-        align: Align?,
-        animate: Boolean
-    ) {
+actual fun scrollToIndex(
+    index: Int,
+    align: Align?,
+    animate: Boolean
+) {
+    fun scrollto() {
         if (animate) {
             when (val lm = native.layoutManager ?: return) {
                 is LinearLayoutManager -> if (align == null) lm.smoothScrollToPosition(
                     native,
                     AndroidRecyclerView.State(),
                     index
-                ) else lm.startSmoothScroll(AlignSmoothScroller(native.context, align).also {
-                    it.targetPosition = index
-                })
+                ) else lm.startSmoothScroll(AlignSmoothScroller(native.context, align).also { it.targetPosition = index })
 
                 else -> lm.smoothScrollToPosition(native, AndroidRecyclerView.State(), index)
             }
@@ -178,6 +190,9 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             }
         }
     }
+    if(index in 0..<(native.adapter?.itemCount ?: 0)) scrollto()
+    else afterTimeout(20) { if(index in 0..<(native.adapter?.itemCount ?: 0)) scrollto() }
+}
 
 
     private class AlignSmoothScroller(context: Context, val align: Align?) : LinearSmoothScroller(context) {

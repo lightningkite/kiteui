@@ -198,7 +198,7 @@ fun launchGlobal(action: suspend () -> Unit): Cancellable {
             result.onFailure { ex : Throwable ->
                 if(ex !is CancelledException) {
                     ConsoleRoot.error("launchGlobal $action experienced an exception:")
-                    ex.printStackTrace2()
+                    ex.report()
                 }
             }
         }

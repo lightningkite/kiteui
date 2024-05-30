@@ -3,8 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.inBackground
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.AVFAudio.AVAudioPlayer
-import platform.AVFAudio.AVAudioPlayerDelegateProtocol
+import platform.AVFAudio.*
 import platform.AVFoundation.AVFileTypeMPEG4
 import platform.AVFoundation.AVFileTypeMPEGLayer3
 import platform.AVFoundation.AVFileTypeWAVE
@@ -35,6 +34,8 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
 
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun AudioSource.load(): PlayableAudio {
+    AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, null)
+    AVAudioSession.sharedInstance().setActive(true, null)
     val player = inBackground {
         when (val value = this) {
             is AudioLocal -> TODO()
@@ -52,7 +53,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
 
             is AudioResource -> AVAudioPlayer(
                 contentsOfURL = NSBundle.mainBundle.URLForResource(value.name, value.extension)
-                    ?: throw Exception("Could not find the video in the bundle ${value.name} / ${value.extension}"),
+                    ?: throw Exception("Could not find the audio in the bundle ${value.name} / ${value.extension}"),
                 fileTypeHint = when (value.extension) {
                     "mp3" -> AVFileTypeMPEGLayer3
                     "m4a" -> AVFileTypeMPEG4

@@ -8,13 +8,14 @@
 
     <application
             android:allowBackup="true"
-            android:name=".MainApplication"
+            android:name="com.lightningkite.kiteuiexample.MainApplication"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:supportsRtl="true"
+            android:authorities="com.lightningkite.kiteui.old"
             android:theme="@style/Theme.Mppexample">
         <activity
-                android:name=".MainActivity"
+                android:name="com.lightningkite.kiteuiexample.MainActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -23,7 +24,7 @@
         </activity>
         <provider
                 android:name="androidx.core.content.FileProvider"
-                android:authorities="com.lightningkite.kiteuiexample.fileprovider"
+                android:authorities="com.lightningkite.kiteuiexample.old.fileprovider"
                 android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data

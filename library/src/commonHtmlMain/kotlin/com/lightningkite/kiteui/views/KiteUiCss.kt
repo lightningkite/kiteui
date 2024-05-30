@@ -894,7 +894,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "border-radius" to "1rem",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             dynamicCss.style(
                 "progress::-moz-progress-bar", mapOf(
@@ -903,21 +904,24 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "border-radius" to "1rem",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             dynamicCss.style(
                 "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
                     "-webkit-appearance" to "none",
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
         try {
             dynamicCss.style(
                 "input[type=number]", mapOf(
                     "-moz-appearance" to "textfield"
                 )
             )
-        } catch(e: Throwable) { /*squish*/ }
+        } catch (e: Throwable) { /*squish*/
+        }
     }
 
     private val transitionHandled = HashSet<String>()
@@ -978,7 +982,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme(
             theme.hover(),
             listOf(".clickable:hover .theme-${theme.id}", ".clickable:hover.theme-${theme.id}"),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.focus(),
@@ -1009,7 +1014,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "input:checked+.checkResponsive:hover .theme-${theme.id}",
                 "input:checked+.checkResponsive:hover.theme-${theme.id}",
             ),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.selected().focus(),
@@ -1050,7 +1056,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "input:not(:checked)+.checkResponsive:hover .theme-${theme.id}",
                 "input:not(:checked)+.checkResponsive:hover.theme-${theme.id}",
             ),
-            includeMaybeTransition = true
+            includeMaybeTransition = true,
+            mediaQuery = "(hover: hover)"
         )
         theme(
             theme.unselected().focus(),
@@ -1080,112 +1087,112 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     fun theme(
         theme: Theme,
         asSelectors: List<String> = listOf(".theme-${theme.id}"),
-        includeMaybeTransition: Boolean = false
+        includeMaybeTransition: Boolean = false,
+        mediaQuery: String? = null,
     ): String {
         val includeSelectors = asSelectors.filter { themeHandled.add(it) }
         if (includeSelectors.isEmpty()) return "theme-${theme.id}"
         fun sel(vararg plus: String): String {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
-        dynamicCss.style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"), mapOf(
-                "padding" to "var(--spacing, 0px)",
-                "--usePadding" to "1",
-            )
-        )
-        dynamicCss.style(
-            sel(".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *", ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"), mapOf(
-                "--parentSpacing" to theme.spacing.value,
-            )
-        )
-        dynamicCss.style(
-            if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
-            when (val it = theme.background) {
-                is Color -> mapOf(
-                    "background-color" to it.toCss(),
-                    "background-image" to "none",
-                )
-                is LinearGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
+        dynamicCss.styles(
+            mediaQuery = mediaQuery,
+            styles = listOf(
+                sel(
+                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *)",
+                    ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"
+                ) to mapOf(
+                    "padding" to "var(--spacing, 0px)",
+                    "--usePadding" to "1",
+                ),
+                sel(
+                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *",
+                    ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"
+                ) to mapOf(
+                    "--parentSpacing" to theme.spacing.value,
+                ),
+                (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to (when (val it =
+                    theme.background) {
+                    is Color -> mapOf(
+                        "background-color" to it.toCss(),
+                        "background-image" to "none",
+                    )
 
-                is RadialGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-            } + if(theme.backdropFilters.isNotEmpty()) mapOf("backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap()
-        )
-        dynamicCss.style(
-            if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"),
-            mapOf(
-                "outline-width" to theme.outlineWidth.value,
-                "box-shadow" to theme.elevation.toBoxShadow(),
-                "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
-            )
-        )
-        dynamicCss.style(
-            sel(".mightTransition", ".swapImage"), mapOf(
-                "border-radius" to when(val it = theme.cornerRadii) {
-                    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${it.value.value}))"
-                    is CornerRadii.ForceConstant -> it.value.value
-                    is CornerRadii.RatioOfSize -> "${it.ratio.times(100).toInt()}%"
-                    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${it.value})"
+                    is LinearGradient -> mapOf(
+                        "background-color" to it.closestColor().toCss(),
+                        "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                            joinGradientStops(
+                                it.stops
+                            )
+                        })",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+
+                    is RadialGradient -> mapOf(
+                        "background-color" to it.closestColor().toCss(),
+                        "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+                } + (if (theme.backdropFilters.isNotEmpty()) mapOf(
+                    "backdrop-filter" to theme.backdropFilters.joinToString(
+                        " "
+                    ) { it.toCss() }) else emptyMap())),
+
+                (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to mapOf(
+                    "outline-width" to theme.outlineWidth.value,
+                    "box-shadow" to theme.elevation.toBoxShadow(),
+                    "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
+                ),
+                sel(".mightTransition", ".swapImage") to mapOf(
+                    "border-radius" to theme.cornerRadii.toRawCornerRadius(),
+                ),
+                sel(".title") to mapOf(
+                    "font-family" to font(theme.title.font),
+                    "font-weight" to theme.title.weight.toString(),
+                    "font-style" to if (theme.title.italic) "italic" else "normal",
+                    "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
+                    "line-height" to theme.title.lineSpacingMultiplier.toString(),
+                    "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
+                ),
+                sel(".icon") to mapOf(
+                    "color" to theme.icon.toCss()
+                ),
+                sel("") to mapOf(
+                    "color" to theme.foreground.toCss(),
+                    "--spacing" to theme.spacing.value,
+                    "--usePadding" to "0",
+                    "gap" to "var(--spacing, 0.0)",
+                    "font-family" to font(theme.body.font),
+                    "font-weight" to theme.body.weight.toString(),
+                    "font-style" to if (theme.body.italic) "italic" else "normal",
+                    "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
+                    "line-height" to theme.body.lineSpacingMultiplier.toString(),
+                    "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
+                    "outline-color" to theme.outline.toCss(),
+                    "transition-duration" to theme.transitionDuration.toCss(),
+                ) + when (val it = theme.foreground) {
+                    is Color -> mapOf("color" to it.toCss())
+                    is LinearGradient, is RadialGradient -> mapOf(
+                        "color" to it.toCss(),
+                        "background" to "-webkit-${it.toCss()}",
+                        "-webkit-background-clip" to "text",
+                        "-webkit-text-fill-color" to "transparent",
+                    )
                 },
-            )
-        )
-        dynamicCss.style(
-            sel(".title"), mapOf(
-                "font-family" to dynamicCss.font(theme.title.font),
-                "font-weight" to theme.title.weight.toString(),
-                "font-style" to if (theme.title.italic) "italic" else "normal",
-                "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
-                "line-height" to theme.title.lineSpacingMultiplier.toString(),
-                "letter-spacing" to theme.title.additionalLetterSpacing.toString(),
-            )
-        )
-        dynamicCss.style(
-            sel(".icon"), mapOf(
-                "color" to theme.icon.toCss()
-            )
-        )
-        dynamicCss.style(
-            sel(""), mapOf(
-                "color" to theme.foreground.toCss(),
-                "--spacing" to theme.spacing.value,
-                "--usePadding" to "0",
-                "gap" to "var(--spacing, 0.0)",
-                "font-family" to dynamicCss.font(theme.body.font),
-                "font-weight" to theme.body.weight.toString(),
-                "font-style" to if (theme.body.italic) "italic" else "normal",
-                "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
-                "line-height" to theme.body.lineSpacingMultiplier.toString(),
-                "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
-                "outline-color" to theme.outline.toCss(),
-                "transition-duration" to theme.transitionDuration.toCss(),
-            ) + when (val it = theme.foreground) {
-                is Color -> mapOf("color" to it.toCss())
-                is LinearGradient, is RadialGradient -> mapOf(
-                    "color" to it.toCss(),
-                    "background" to "-webkit-${it.toCss()}",
-                    "-webkit-background-clip" to "text",
-                    "-webkit-text-fill-color" to "transparent",
-                )
-            }
-        )
-        dynamicCss.style(
-            sel(".dismissBackground"), mapOf(
-                "border-radius" to "0",
-                "outline-width" to "0",
-                "backdrop-filter" to "blur(5px)",
-            ) + when (val it = theme.background.applyAlpha(0.5f)) {
-                is Color -> mapOf("background-color" to it.toCss())
-                is LinearGradient -> mapOf(
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
+                sel(".dismissBackground") to mapOf(
+                    "border-radius" to "0",
+                    "outline-width" to "0",
+                    "backdrop-filter" to "blur(5px)",
+                ) + when (val it = theme.background.applyAlpha(0.5f)) {
+                    is Color -> mapOf("background-color" to it.toCss())
+                    is LinearGradient -> mapOf(
+                        "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                            joinGradientStops(
+                                it.stops
+                            )
+                        })",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
 
                 is RadialGradient -> mapOf(
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",

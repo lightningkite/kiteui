@@ -8,6 +8,8 @@ expect fun gc(): GCInfo
 expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()
+var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
+fun Throwable.report(context: String = "") = Throwable_report(this, context)
 
 var viewDebugTarget: RView? = null
 

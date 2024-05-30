@@ -1,28 +1,50 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.views.*
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIControlEventTouchUpInside
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.WeakReference
 
-
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NExternalLink = NativeLink
-
-@ViewDsl
-actual inline fun ViewWriter.externalLinkActual(crossinline setup: ExternalLink.() -> Unit): Unit = element(NativeLink()) {
-    handleThemeControl(this) {
-        setup(ExternalLink(this))
+actual class ExternalLink actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayoutButton()
+    init {
+        native.calculationContext = this
+        native.onClick = {
+            to?.let { UIApplication.sharedApplication.openURL(NSURL(string = it)) }
+            onNavigate()
+        }
     }
-}
 
-actual inline var ExternalLink.to: String
-    get() = native.toUrl ?: ""
-    set(value) {
-        native.toUrl = value
+
+    actual var to: String = ""
+    actual var newTab: Boolean = false
+    private var onNavigate: suspend () -> Unit = {}
+    actual fun onNavigate(action: suspend () -> Unit): Unit {
+        onNavigate = action
     }
-actual inline var ExternalLink.newTab: Boolean
-    get() = native.newTab
-    set(value) {
-        native.newTab = value
+
+    var enabled: Boolean
+        get() = native.enabled
+        set(value) {
+            native.enabled = value
+        }
+
+    init {
+        onRemove(native.observe("highlighted", { refreshTheming() }))
+        onRemove(native.observe("selected", { refreshTheming() }))
+        onRemove(native.observe("enabled", { refreshTheming() }))
     }
-actual fun ExternalLink.onNavigate(action: suspend () -> Unit): Unit {
-    native.onNavigate = action
+    override fun getStateThemeChoice() = when {
+        !enabled -> ThemeChoice.Derive { it.disabled() }
+        native.highlighted -> ThemeChoice.Derive { it.down() }
+        native.focused -> ThemeChoice.Derive { it.hover() }
+        else -> null
+    }
 }

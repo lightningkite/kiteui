@@ -25,6 +25,10 @@ import kotlin.time.DurationUnit
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
 
+    var sizeConstraints: SizeConstraints?
+        get() = native.extensionSizeConstraints
+        set(value) { native.extensionSizeConstraints = value }
+
     protected actual override fun opacitySet(value: Double) {
         native.animateIfAllowed {
             native.alpha = value

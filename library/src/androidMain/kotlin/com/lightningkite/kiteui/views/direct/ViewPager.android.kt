@@ -16,6 +16,17 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         })
     }
 
+    override fun internalAddChild(index: Int, view: RView) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalClearChildren() {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
 
     actual val index: Writable<Int> get() = page
 

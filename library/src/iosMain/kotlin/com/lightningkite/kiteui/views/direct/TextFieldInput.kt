@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -12,7 +13,7 @@ import platform.objc.sel_registerName
 import com.lightningkite.kiteui.reactive.Property
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class TextFieldInput: UITextField(CGRectZero.readValue()) {
+class TextFieldInput(val calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
 
     val toolbar = UIToolbar().apply {
         barStyle = UIBarStyleDefault
@@ -25,11 +26,10 @@ class TextFieldInput: UITextField(CGRectZero.readValue()) {
     }
     init {
         inputAccessoryView = toolbar
-        onEvent(UIControlEventTouchUpInside) {
+        onEvent(calculationContext, UIControlEventTouchUpInside) {
             becomeFirstResponder()
         }
     }
-
     @ObjCAction
     fun done() {
         resignFirstResponder()

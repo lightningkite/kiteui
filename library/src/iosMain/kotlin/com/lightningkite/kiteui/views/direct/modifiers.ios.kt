@@ -10,63 +10,12 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.toast
 import kotlinx.cinterop.*
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
+import platform.UIKit.UIView
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-
-
-//@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NLocalTimeField = UIDatePicker
-//
-//@ViewDsl
-//actual inline fun ViewWriter.localTimeFieldActual(crossinline setup: LocalTimeField.() -> Unit): Unit = stack {
-//    element(UIDatePicker()){
-//        setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleCompact)
-////        handleTheme(this) { this. = it.foreground.closestColor().toUiColor() }
-//        datePickerMode = UIDatePickerMode.UIDatePickerModeTime
-//    }
-//}
-//
-//actual var LocalTimeField.action: Action?
-//    get() = TODO()
-//    set(value) {}
-//actual val LocalTimeField.content: Writable<LocalTime?> get() = object: Writable<LocalTime?> {
-//    override suspend fun set(value: LocalTime?) {
-//        native.date = value?.atDate(1970, 1, 1)?.toNSDateComponents()?.date() ?: NSDate()
-//    }
-//
-//    override suspend fun awaitRaw(): LocalTime? = native.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault()).time
-//
-//    override fun addListener(listener: () -> Unit): () -> Unit {
-//        return native.onEvent(UIControlEventValueChanged, listener)
-//    }
-//
-//}
-//actual inline var LocalTimeField.range: ClosedRange<LocalTime>?
-//    get() = TODO()
-//    set(value) {
-//    }
-
-//@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NAutoCompleteTextField = UIView
-//
-//@ViewDsl
-//actual inline fun ViewWriter.autoCompleteTextFieldActual(crossinline setup: AutoCompleteTextField.() -> Unit): Unit =
-//    todo("autoCompleteTextField")
-//
-//actual val AutoCompleteTextField.content: Writable<String> get() = Property("")
-//actual inline var AutoCompleteTextField.keyboardHints: KeyboardHints
-//    get() = TODO()
-//    set(value) {}
-//actual var AutoCompleteTextField.action: Action?
-//    get() = TODO()
-//    set(value) {}
-//actual inline var AutoCompleteTextField.suggestions: List<String>
-//    get() = TODO()
-//    set(value) {}
 
 @OptIn(ExperimentalForeignApi::class)
 @ViewModifierDsl3
@@ -76,18 +25,21 @@ actual fun ViewWriter.hintPopover(
 ): ViewWrapper {
     beforeNextElementSetup {
         fun openDialog() {
-            toast(inner = setup)
+            // TODO
+//            toast(inner = setup)
         }
+
         val actionHolder = object : NSObject() {
             @ObjCAction
             fun eventHandler() = openDialog()
         }
         val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-        addGestureRecognizer(rec)
+        native.addGestureRecognizer(rec)
     }
     return ViewWrapper
 }
 
+@OptIn(ExperimentalForeignApi::class)
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -106,6 +58,7 @@ actual fun ViewWriter.hasPopover(
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
                                         get() = this@beforeNextElementSetup.calculationContext
+
                                     override fun close() {
                                         navigator.dialog.dismiss()
                                     }
@@ -116,15 +69,15 @@ actual fun ViewWriter.hasPopover(
                 }
             })
         }
-        if(this is NButton) {
-            Button(this).onClick { openDialog() }
+        if (this is Button) {
+            onClick { openDialog() }
         } else {
             val actionHolder = object : NSObject() {
                 @ObjCAction
                 fun eventHandler() = openDialog()
             }
             val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-            addGestureRecognizer(rec)
+            native.addGestureRecognizer(rec)
         }
     }
     return ViewWrapper
@@ -136,24 +89,26 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     this.beforeNextElementSetup {
-        this.extensionWeight = amount
+        native.extensionWeight = amount
     }
     return ViewWrapper
 }
+
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
     this.beforeNextElementSetup {
         calculationContext.reactiveScope {
-            this.extensionWeight = amount()
+            native.extensionWeight = amount()
         }
     }
     return ViewWrapper
 }
+
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
-        extensionHorizontalAlign = horizontal
-        extensionVerticalAlign = vertical
+        native.extensionHorizontalAlign = horizontal
+        native.extensionVerticalAlign = vertical
     }
     return ViewWrapper
 }
@@ -161,46 +116,36 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual val ViewWriter.scrolls: ViewWrapper
     get() {
-        wrapNext(ScrollLayout()) {
-            horizontal = false
-        }
+        wrapNextIn(object : RView(context) {
+            override val native = ScrollLayout()
+
+            init {
+                native.horizontal = false
+            }
+        })
         return ViewWrapper
     }
 
 @ViewModifierDsl3
 actual val ViewWriter.scrollsHorizontally: ViewWrapper
     get() {
-        wrapNext(ScrollLayout()) {
-            horizontal = true
-        }
+        wrapNextIn(object : RView(context) {
+            override val native = ScrollLayout()
+
+            init {
+                native.horizontal = true
+            }
+        })
         return ViewWrapper
     }
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
-        extensionSizeConstraints = constraints
+        native.extensionSizeConstraints = constraints
     }
     return ViewWrapper
 }
-
-@ViewModifierDsl3
-actual val ViewWriter.padded: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            extensionForcePadding = true
-        }
-        return ViewWrapper
-    }
-
-@ViewModifierDsl3
-actual val ViewWriter.unpadded: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            extensionForcePadding = false
-        }
-        return ViewWrapper
-    }
 
 // End
 @ViewModifierDsl3

@@ -48,3 +48,10 @@ abstract class ViewWriter {
         return view
     }
 }
+
+class NewViewWriter(override val context: RContext): ViewWriter() {
+    var newView: RView? = null
+    override fun addChild(view: RView) {
+        newView = view
+    }
+}

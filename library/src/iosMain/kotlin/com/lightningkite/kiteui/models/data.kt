@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.views.toUIFontWeight
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.UIKit.*
 import kotlin.math.abs
+import kotlin.math.min
 
 actual typealias DimensionRaw = Double
 actual val Int.px: Dimension
@@ -28,6 +30,14 @@ actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimens
 actual inline operator fun Dimension.times(other: Float): Dimension = Dimension(this.value.times(other))
 actual inline operator fun Dimension.div(other: Float): Dimension = Dimension(this.value.div(other))
 actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
+
+@OptIn(ExperimentalForeignApi::class)
+fun CornerRadii.toRawCornerRadius(bounds: CValue<CGRect>, parentSpacing: DimensionRaw): DimensionRaw = when(this) {
+    is CornerRadii.Constant -> value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+    is CornerRadii.ForceConstant -> value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+    is CornerRadii.RatioOfSize -> ratio * bounds.useContents { min(size.width, size.height) }
+    is CornerRadii.RatioOfSpacing -> parentSpacing.times(value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+}
 
 actual data class Font(val get: (size: CGFloat, weight: UIFontWeight, italic: Boolean)->UIFont)
 fun fontFromFamilyInfo(

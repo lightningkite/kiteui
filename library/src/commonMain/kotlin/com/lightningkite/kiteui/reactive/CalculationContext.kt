@@ -15,7 +15,7 @@ interface CalculationContext {
     fun notifyComplete(result: Result<Unit>) {
         result.onFailure {
             if(it !is CancelledException) {
-                it.printStackTrace2()
+                it.report()
             }
         }
     }
