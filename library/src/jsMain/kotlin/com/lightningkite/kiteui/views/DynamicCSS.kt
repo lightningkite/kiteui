@@ -471,8 +471,9 @@ object DynamicCSS {
         )
 
         style(
-            ".switch:checked", mapOf(
-                "background-color" to "rgba(236, 72, 153, 1)",
+            ".switch:not(:checked)", mapOf(
+                "background-color" to "rgb(204, 204, 204) !important",
+                "background-image" to "none !important",
             )
         )
 
@@ -497,21 +498,8 @@ object DynamicCSS {
         )
 
         style(
-            ".switch:hover::before", mapOf(
-                "box-shadow" to "0 0 0px 8px rgba(0, 0, 0, .15)"
-            )
-        )
-
-        style(
-            ".switch:checked:hover::before", mapOf(
-                "box-shadow" to "0 0 0px 8px rgba(236, 72, 153, .15)"
-            )
-        )
-
-        style(
             ".switch:checked:before", mapOf(
                 "left" to "calc(3rem - 1.6rem)",
-                "border-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
