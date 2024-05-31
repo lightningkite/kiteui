@@ -14,11 +14,6 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -138,34 +133,43 @@ actual object ExternalServices {
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
+    actual suspend fun download(
+        name: String,
+        url: String,
+        preferPlatformMediaStorage: Boolean,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) = downloadMultiple(mapOf(url to name), preferPlatformMediaStorage, onDownloadProgress)
+
     @SuppressLint("MissingPermission")
-    actual fun download(name: String, url: String, preferPlatformMediaStorage: Boolean) {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+    actual suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
         if(VERSION.SDK_INT < VERSION_CODES.Q) {
             AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
                 if(it.accepted) {
-                    downloadContinued(name, url)
+                    downloadContinued(urlToNames)
                 }
             }
         } else {
-            downloadContinued(name, url)
+            downloadContinued(urlToNames)
         }
     }
-    private fun downloadContinued(name: String, url: String) {
-        val request = DownloadManager.Request(Uri.parse(url)) // 5.
-            .setNotificationVisibility( // 6.
-                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir( // 7.
-                Environment.DIRECTORY_DOWNLOADS, name)
-        request.allowScanningByMediaScanner()
-        (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request) // 8.
+    private fun downloadContinued(urlToNames: Map<String, String>) {
+        for ((url, name) in urlToNames) {
+            if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+            val request = DownloadManager.Request(Uri.parse(url)) // 5.
+                .setNotificationVisibility( // 6.
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalPublicDir( // 7.
+                    Environment.DIRECTORY_DOWNLOADS, name)
+            request.allowScanningByMediaScanner()
+            (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request) // 8.
+        }
         Toast.makeText( // 9.
             AndroidAppContext.activityCtx!!, "Download started", Toast.LENGTH_SHORT
         ).show()
     }
 
     @SuppressLint("MissingPermission")
-    actual fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean) {
+    actual suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
             if(it.accepted) {
@@ -198,6 +202,10 @@ actual object ExternalServices {
         i.putExtra(Intent.EXTRA_TITLE, title)
         listOfNotNull(message, url).joinToString("\n").let { i.putExtra(Intent.EXTRA_TEXT, it) }
         AndroidAppContext.startActivityForResult(Intent.createChooser(i, title)) { _, _ -> }
+    }
+
+    actual suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)?) {
+        TODO()
     }
 
     actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {

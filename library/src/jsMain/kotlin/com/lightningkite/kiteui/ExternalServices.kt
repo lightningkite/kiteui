@@ -42,16 +42,24 @@ actual object ExternalServices {
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    actual fun download(name: String, url: String, preferPlatformMediaStorage: Boolean) {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
-        val a = document.createElement("a") as HTMLAnchorElement
-        a.href = url
-        a.download = name
-        a.target = "_blank"
-        a.click()
+    actual suspend fun download(
+        name: String,
+        url: String,
+        preferPlatformMediaStorage: Boolean,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) = downloadMultiple(mapOf(url to name), preferPlatformMediaStorage, onDownloadProgress)
+    actual suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
+        for ((url, name) in urlToNames) {
+            if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+            val a = document.createElement("a") as HTMLAnchorElement
+            a.href = url
+            a.download = name
+            a.target = "_blank"
+            a.click()
+        }
     }
     @JsName("downloadBlob")
-    actual fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean) {
+    actual suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         val url = URL.Companion.createObjectURL(blob)
@@ -75,6 +83,10 @@ actual object ExternalServices {
         } else {
             innerShare(title, message, url)
         }
+    }
+
+    actual suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)?) {
+        TODO()
     }
 
     private fun innerShare(title: String, message: String?, url: String?) {

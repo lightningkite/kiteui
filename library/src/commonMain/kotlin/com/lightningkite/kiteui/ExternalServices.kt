@@ -12,9 +12,12 @@ expect object ExternalServices {
     suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
     fun setClipboardText(value: String)
     @JsName("downloadBlob")
-    fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean = false)
-    fun download(name: String, url: String, preferPlatformMediaStorage: Boolean = false)
+    suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+    suspend fun download(name: String, url: String, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+
+    suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
     fun share(title: String, message: String? = null, url: String? = null)
+    suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)? = null)
     fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)
 //    fun download(blob: Blob)
