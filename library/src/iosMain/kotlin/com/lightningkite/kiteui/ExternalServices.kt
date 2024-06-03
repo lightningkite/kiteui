@@ -485,7 +485,10 @@ actual object ExternalServices {
         ) {
             val percent = (totalBytesWritten / totalBytesExpectedToWrite).toFloat()
             progressOfTasks[downloadTask]?.progress = percent
-            onDownloadProgress?.invoke(progressOfTasks.values.map { it.progress }.reduce { acc, progress -> acc + progress } / progressOfTasks.size)
+            dispatch_async(dispatch_get_main_queue()) {
+                onDownloadProgress?.invoke(progressOfTasks.values.map { it.progress }
+                    .reduce { acc, progress -> acc + progress } / progressOfTasks.size)
+            }
         }
     }
 

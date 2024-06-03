@@ -26,7 +26,7 @@ actual inline fun ViewWriter.h1Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -48,7 +48,7 @@ actual inline fun ViewWriter.h2Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -70,7 +70,7 @@ actual inline fun ViewWriter.h3Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -92,7 +92,7 @@ actual inline fun ViewWriter.h4Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -114,7 +114,7 @@ actual inline fun ViewWriter.h5Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -136,7 +136,7 @@ actual inline fun ViewWriter.h6Actual(crossinline setup: TextView.() -> Unit): U
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.title
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -158,7 +158,7 @@ actual inline fun ViewWriter.textActual(crossinline setup: TextView.() -> Unit):
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.body
-            label.updateFont()
+            updateFont()
         },
     ) { setup(TextView(this)) }
 }
@@ -180,7 +180,7 @@ actual inline fun ViewWriter.subtextActual(crossinline setup: TextView.() -> Uni
         foreground = {
             foreground = it.foreground
             label.extensionFontAndStyle = it.body
-            label.updateFont()
+            updateFont()
         },
     ) { opacity = 0.8; setup(TextView(this)) }
 }
@@ -221,7 +221,7 @@ actual inline var TextView.textSize: Dimension
     get() = native.label.extensionTextSize ?: Dimension(native.label.font.pointSize)
     set(value) {
         native.label.extensionTextSize = value
-        native.label.updateFont()
+        native.updateFont()
         native.informParentOfSizeChange()
     }
 actual var TextView.ellipsis: Boolean
@@ -246,18 +246,27 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
+const val ENABLE_DYNAMIC_TYPE = false
 fun preferredScaleFactor() = dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
-fun UILabel.setContentSizeCategoryChangeListener() {
-    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
-        updateFont()
-        informParentOfSizeChange()
+fun UILabelWithGradient.setContentSizeCategoryChangeListener() {
+    if (ENABLE_DYNAMIC_TYPE) {
+        NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+            updateFont()
+            informParentOfSizeChange()
+        }
     }
 }
-fun UILabel.updateFont() {
+fun UILabelWithGradient.updateFont() = label.run {
     val textSize = extensionTextSize ?: return
     val alignment = textAlignment
     font = extensionFontAndStyle?.let {
-        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        it.font.get(textSize.value.let {
+            if (ENABLE_DYNAMIC_TYPE) {
+                it * preferredScaleFactor()
+            } else {
+                it
+            }
+        }, it.weight.toUIFontWeight(), it.italic)
     } ?: UIFont.systemFontOfSize(textSize.value)
     textAlignment = alignment
 }
