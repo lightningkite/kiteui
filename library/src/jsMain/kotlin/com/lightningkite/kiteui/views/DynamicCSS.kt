@@ -176,7 +176,7 @@ object DynamicCSS {
 //        )
 
         style(
-            "input:focus textarea:focus", mapOf(
+            "input:focus, textarea:focus", mapOf(
                 "outline" to "none",
             )
         )
