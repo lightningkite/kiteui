@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.RContext
 
@@ -12,5 +13,5 @@ import kotlin.contracts.*
 expect class RadioToggleButton(context: RContext) : RView {
 
     var enabled: Boolean
-    val checked: Writable<Boolean>
+    val checked: ImmediateWritable<Boolean>
 }

@@ -3,10 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
-import androidx.appcompat.widget.AppCompatToggleButton
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
@@ -18,7 +18,7 @@ actual class RadioToggleButton actual constructor(context: RContext): RView(cont
         setOnClickListener { checkedProp.value = true }
     }
     private val checkedProp = Property(false)
-    actual val checked: Writable<Boolean> get() = checkedProp
+    actual val checked: ImmediateWritable<Boolean> get() = checkedProp
 
     init {
         checked.addListener { refreshTheming() }
@@ -31,7 +31,7 @@ actual class RadioToggleButton actual constructor(context: RContext): RView(cont
             refreshTheming()
         }
 
-    override fun getStateThemeChoice() = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
+    override fun getStateThemeChoice(): ThemeChoice? = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
             if(enabled) null else ThemeChoice.Derive { it.disabled() }
 
     init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }

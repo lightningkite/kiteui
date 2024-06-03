@@ -16,7 +16,6 @@ fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : Read
         thisRef.context.addons.getOrPut(property.name) { init } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        println("RContext ${thisRef.context} set ${property.name} to $value")
         thisRef.context.addons[property.name] = value
     }
 }
@@ -27,7 +26,6 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
         thisRef.context.addons.getOrPut(property.name) { throw IllegalStateException("${property.name} has not been initialized. ${thisRef.context}") } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        println("RContext ${thisRef.context} set ${property.name} to $value")
         thisRef.context.addons[property.name] = value
     }
 }

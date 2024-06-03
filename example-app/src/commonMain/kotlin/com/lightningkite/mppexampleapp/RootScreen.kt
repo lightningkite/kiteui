@@ -54,6 +54,7 @@ object RootScreen : Screen {
                 linkScreen { VideoElementScreen }
                 linkScreen { ViewPagerElementScreen }
                 linkScreen { ThemesScreen }
+                linkScreen { ControlPerformanceTesting }
                 linkScreen { ControlsScreen }
                 linkScreen { FormsScreen }
                 linkScreen { NavigationTestScreen }

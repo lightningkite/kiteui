@@ -6,17 +6,21 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import com.lightningkite.kiteui.reactive.*
 
-fun EditText.contentProperty(): Writable<String> = object : Writable<String>, BaseListenable(), TextWatcher {
+fun EditText.contentProperty(): ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable(), TextWatcher {
     override fun afterTextChanged(s: Editable?) { invokeAll() }
     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-    override val state get() = ReadableState(text?.toString() ?: "")
-    override suspend fun set(value: String) { setText(value) }
+    override var value: String
+        get() = text?.toString() ?: ""
+        set(value) {  setText(value) }
+    override suspend fun set(value: String) { this.value = value }
     init { addTextChangedListener(this) }
 }
-fun CompoundButton.contentProperty(): Writable<Boolean> = object : Writable<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
+fun CompoundButton.contentProperty(): ImmediateWritable<Boolean> = object : ImmediateWritable<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) { invokeAll() }
-    override val state get() = ReadableState(isChecked)
+    override var value: Boolean
+        get() = isChecked
+        set(value) { isChecked = value }
     override suspend fun set(value: Boolean) { isChecked = value }
     init { setOnCheckedChangeListener(this) }
 }

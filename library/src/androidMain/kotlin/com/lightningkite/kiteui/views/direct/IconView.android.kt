@@ -20,11 +20,10 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.ProgressBar
-import androidx.appcompat.widget.AppCompatImageView
 import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(context: Context) : AppCompatImageView(context) {
+actual class NIconView(context: Context) : ImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }

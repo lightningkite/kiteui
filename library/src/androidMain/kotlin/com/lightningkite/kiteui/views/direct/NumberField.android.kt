@@ -15,6 +15,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.asDouble
@@ -60,7 +61,7 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         )
         native.isAllCaps = theme.body.allCaps
     }
-    actual val content: Writable<Double?> = native.contentProperty().asDouble()
+    actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()
     actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints

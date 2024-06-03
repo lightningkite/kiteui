@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
@@ -15,7 +16,7 @@ actual class ToggleButton actual constructor(context: RContext): RView(context) 
         setOnClickListener { checkedProp.value = !checkedProp.value }
     }
     private val checkedProp = Property(false)
-    actual val checked: Writable<Boolean> get() = checkedProp
+    actual val checked: ImmediateWritable<Boolean> get() = checkedProp
 
     init {
         checked.addListener { refreshTheming() }
@@ -28,7 +29,7 @@ actual class ToggleButton actual constructor(context: RContext): RView(context) 
             refreshTheming()
         }
 
-    override fun getStateThemeChoice() = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
+    override fun getStateThemeChoice(): ThemeChoice? = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
             if(enabled) null else ThemeChoice.Derive { it.disabled() }
 
     init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }

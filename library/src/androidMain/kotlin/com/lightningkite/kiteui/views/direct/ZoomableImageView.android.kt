@@ -19,7 +19,6 @@ import android.view.View
 import android.view.Window
 import android.widget.FrameLayout
 import androidx.annotation.Nullable
-import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.children
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request

@@ -43,7 +43,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice() = when {
+    override fun getStateThemeChoice(): ThemeChoice? = when {
         !enabled -> ThemeChoice.Derive { it.disabled() }
         else -> null
     }

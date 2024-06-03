@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.RContext
 
@@ -15,7 +16,7 @@ import kotlin.contracts.*
 
 expect class NumberField(context: RContext) : RView {
 
-    val content: Writable<Double?>
+    val content: ImmediateWritable<Double?>
     var keyboardHints: KeyboardHints
     var action: Action?
     var hint: String

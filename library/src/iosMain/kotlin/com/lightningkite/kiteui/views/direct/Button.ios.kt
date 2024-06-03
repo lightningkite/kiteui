@@ -41,7 +41,7 @@ actual class Button actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
     }
-    override fun getStateThemeChoice() = when {
+    override fun getStateThemeChoice(): ThemeChoice? = when {
         !enabled -> ThemeChoice.Derive { it.disabled() }
         native.highlighted -> ThemeChoice.Derive { it.down() }
         native.focused -> ThemeChoice.Derive { it.hover() }

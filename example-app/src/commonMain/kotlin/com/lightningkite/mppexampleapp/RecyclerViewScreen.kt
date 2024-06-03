@@ -51,6 +51,7 @@ object RecyclerViewScreen : Screen {
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
                     col {
+                        useBackground = UseBackground.IfChanged
                         ::themeChoice { if (it() == 50) ThemeChoice.Derive { it.important() } else if (it() % 7 == 0) ThemeChoice.Derive { it.hover() } else null }
                         row {
                             expanding - centered - text { ::content { "Item ${it.await()}" } }

@@ -13,6 +13,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
@@ -35,7 +36,7 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
         )
         native.isAllCaps = theme.body.allCaps
     }
-    actual val content: Writable<String> = native.contentProperty()
+    actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
@@ -77,6 +77,12 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     companion object {
         var animationsEnabled: Boolean = true
+        val performanceRefreshTheme = PerformanceInfo("refreshTheme")
+        val performanceApplyTheme = PerformanceInfo("applyTheme")
+        val performanceApplyTheme_applyElevation = PerformanceInfo("applyTheme_applyElevation", performanceApplyTheme)
+        val performanceApplyTheme_applyPadding = PerformanceInfo("applyTheme_applyPadding", performanceApplyTheme)
+        val performanceApplyTheme_applyForeground = PerformanceInfo("applyTheme_applyForeground", performanceApplyTheme)
+        val performanceApplyTheme_applyBackground = PerformanceInfo("applyTheme_applyBackground", performanceApplyTheme)
     }
 
 
@@ -97,13 +103,15 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         private set(value) {
             if (value != field) {
                 field = value
-                applyElevation(if (actuallyUseBackground) theme.elevation else 0.px)
-                applyPadding(
-                    if (forcePadding ?: (useBackground != UseBackground.No)) (spacing
-                        ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else null
-                )
-                applyForeground(value)
-                applyBackground(value, actuallyUseBackground)
+                performanceApplyTheme_applyElevation { applyElevation(if (actuallyUseBackground) theme.elevation else 0.px) }
+                performanceApplyTheme_applyPadding {
+                    applyPadding(
+                        if (forcePadding ?: (useBackground != UseBackground.No)) (spacing
+                            ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else null
+                    )
+                }
+                performanceApplyTheme_applyForeground { applyForeground(value) }
+                performanceApplyTheme_applyBackground { applyBackground(value, actuallyUseBackground) }
                 for (child in internalChildren) {
                     if (child.themeChoice !is ThemeChoice.Set)
                         child.refreshTheming()
@@ -111,32 +119,36 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
             }
         }
 
-    protected val parentSpacing: Dimension get() = (parent?.spacing ?: (if(parent?.useNavSpacing == true) parent?.theme?.navSpacing else parent?.theme?.spacing) ?: 0.px)
+    protected val parentSpacing: Dimension
+        get() = (parent?.spacing
+            ?: (if (parent?.useNavSpacing == true) parent?.theme?.navSpacing else parent?.theme?.spacing) ?: 0.px)
     protected var fullyStarted = false
     open fun getStateThemeChoice(): ThemeChoice? = null
     protected fun refreshTheming() {
         if (!fullyStarted) return
         if (parent?.fullyStarted == false) return
-        val stateThemeChoice = getStateThemeChoice()
-        var changed = true
-        val futureTheme = when (val t = themeChoice + stateThemeChoice) {
-            is ThemeChoice.Derive -> {
-                val p = parent?.theme ?: Theme()
-                t.derivation(p) ?: run {
-                    changed = false
-                    p
+        performanceRefreshTheme {
+            val stateThemeChoice = getStateThemeChoice()
+            var changed = true
+            val futureTheme = when (val t = themeChoice + stateThemeChoice) {
+                is ThemeChoice.Derive -> {
+                    val p = parent?.theme ?: Theme()
+                    t.derivation(p) ?: run {
+                        changed = false
+                        p
+                    }
                 }
-            }
 
-            is ThemeChoice.Set -> t.theme
-            null -> parent?.theme ?: Theme()
+                is ThemeChoice.Set -> t.theme
+                null -> parent?.theme ?: Theme()
+            }
+            actuallyUseBackground = when (useBackground) {
+                UseBackground.No -> false
+                UseBackground.Yes -> true
+                UseBackground.IfChanged -> changed
+            }
+            theme = futureTheme
         }
-        actuallyUseBackground = when (useBackground) {
-            UseBackground.No -> false
-            UseBackground.Yes -> true
-            UseBackground.IfChanged -> changed
-        }
-        theme = futureTheme
     }
 
     abstract fun applyElevation(dimension: Dimension)
@@ -154,8 +166,12 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     private val internalChildren = ArrayList<RView>()
     val children: List<RView> get() = internalChildren
-    fun addChild(index: Int, view: RView) {
+    override fun willAddChild(view: RView) {
         view.parent = this as RView
+    }
+
+    fun addChild(index: Int, view: RView) {
+        if (view.parent != this) view.parent = this as RView
         internalAddChild(index, view)
         internalChildren.add(index, view)
     }

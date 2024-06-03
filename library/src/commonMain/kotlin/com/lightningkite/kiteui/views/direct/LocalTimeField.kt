@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.RContext
 
@@ -15,7 +16,7 @@ import kotlin.contracts.*
 
 expect class LocalTimeField(context: RContext) : RView {
 
-    val content: Writable<LocalTime?>
+    val content: ImmediateWritable<LocalTime?>
     var action: Action?
     var range: ClosedRange<LocalTime>?
 

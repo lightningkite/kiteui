@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.reactive.CalculationContextStack
+import com.lightningkite.kiteui.reactive.CalculationContextStack.end
+import com.lightningkite.kiteui.reactive.CalculationContextStack.start
 
 abstract class ViewWriter {
     abstract val context: RContext
+    open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
     fun split(): ViewWriter = object: ViewWriter() {
@@ -34,16 +36,28 @@ abstract class ViewWriter {
         view.postSetup()
     }
 
-    inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
-        (_wrapElement ?: this).addChild(view)
+    fun <T: RView> writePre(p: ViewWriter, view: T) {
+//        p.willAddChild(view)
+        p.addChild(view)
         _wrapElement = null
-        CalculationContextStack.useIn(view) {
-            beforeNextElementSetup?.invoke(view)
-            beforeNextElementSetup = null
+        beforeNextElementSetup?.invoke(view)
+        beforeNextElementSetup = null
+    }
+    fun <T: RView> writePost(p: ViewWriter, view: T) {
+        view.postSetup()
+        afterNextElementSetup?.invoke(view)
+        afterNextElementSetup = null
+    }
+
+    inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
+        val p = _wrapElement ?: this
+        start(view)
+        try {
+            writePre(p, view)
             setup(view)
-            view.postSetup()
-            afterNextElementSetup?.invoke(view)
-            afterNextElementSetup = null
+            writePost(p, view)
+        } finally {
+            end(view)
         }
         return view
     }

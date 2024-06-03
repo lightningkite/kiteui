@@ -1,21 +1,20 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.content.Context
+import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
 actual abstract class TextView actual constructor(context: RContext) :
     RView(context) {
-    override abstract val native: TextViewWithGradient
+    override abstract val native: android.widget.TextView
     actual var content: String
         get() {
             return native.text.toString()
@@ -86,48 +85,44 @@ object TextSizes {
     val subtext: Float get() = 0.8.rem.value
 }
 
+private val typefaceCache = HashMap<FontAndStyle, Typeface>()
+fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
+    TypefaceCompat.create(
+        context,
+        this.font,
+        this.weight,
+        this.italic
+    )
+}
+
 actual class HeaderView actual constructor(context: RContext, level: Int) : TextView(context) {
-    override val native = TextViewWithGradient(context.activity).apply {
+    override val native = android.widget.TextView(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.h[level - 1])
     }
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
-        native.setTypeface(
-            TypefaceCompat.create(
-                native.context,
-                theme.title.font,
-                theme.title.weight,
-                theme.title.italic
-            )
-        )
+        native.setTypeface(theme.title.typeface(context.activity))
         native.isAllCaps = theme.title.allCaps
     }
 }
 
 actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
-    override val native = TextViewWithGradient(context.activity).apply {
+    override val native = android.widget.TextView(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.body)
     }
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
-        native.setTypeface(
-            TypefaceCompat.create(
-                native.context,
-                theme.body.font,
-                theme.body.weight,
-                theme.body.italic
-            )
-        )
+        native.setTypeface(theme.body.typeface(context.activity))
         native.isAllCaps = theme.body.allCaps
     }
 }
 
 actual class SubTextView actual constructor(context: RContext) : TextView(context) {
-    override val native = TextViewWithGradient(context.activity).apply {
+    override val native = android.widget.TextView(context.activity).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.subtext)
     }
 

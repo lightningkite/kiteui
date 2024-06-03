@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.math.roundToInt
 import androidx.recyclerview.widget.RecyclerView as AndroidRecyclerView
 
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {
@@ -47,6 +50,20 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 }
             }
         })
+    }
+
+    val spacingDecor = SpacingItemDecoration(0).apply {
+        native.addItemDecoration(this)
+    }
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        spacingDecor.spacing = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.requestLayout()
+    }
+    override fun spacingSet(value: Dimension?) {
+        super.spacingSet(value)
+        spacingDecor.spacing = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.requestLayout()
     }
 
     override fun internalAddChild(index: Int, view: RView) {

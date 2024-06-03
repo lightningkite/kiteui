@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.ValueAnimator
 import android.annotation.TargetApi
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
@@ -11,7 +12,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.lightningkite.kiteui.models.Dimension
@@ -23,7 +23,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import timber.log.Timber
 
-abstract class KiteUiActivity : AppCompatActivity() {
+abstract class KiteUiActivity : Activity() {
     open val theme: suspend () -> Theme get() = { Theme() }
     var savedInstanceState: Bundle? = null
 
@@ -89,13 +89,11 @@ abstract class KiteUiActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(this, ungranted.toTypedArray(), requestCode)
     }
 
-    @TargetApi(23)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-            onPermissions[requestCode]?.invoke(PermissionResult(permissions.indices.associate { permissions[it] to grantResults[it] }))
-            onPermissions.remove(requestCode)
-        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        onPermissions[requestCode]?.invoke(PermissionResult(permissions.indices.associate { permissions[it] to grantResults[it] }))
+        onPermissions.remove(requestCode)
+
     }
 
     private var animator: ValueAnimator? = null

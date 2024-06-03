@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.invoke
@@ -15,7 +16,7 @@ import kotlinx.datetime.*
 actual class LocalDateTimeField actual constructor(context: RContext) :
     RView(context) {
     private val property: Property<LocalDateTime?> = Property(null)
-    actual val content: Writable<LocalDateTime?> = property
+    actual val content: ImmediateWritable<LocalDateTime?> = property
     actual var action: Action? = null
     actual var range: ClosedRange<LocalDateTime>? = null
 
@@ -51,7 +52,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) :
             refreshTheming()
         }
 
-    override fun getStateThemeChoice() = when {
+    override fun getStateThemeChoice(): ThemeChoice? = when {
         !enabled -> ThemeChoice.Derive { it.disabled() }
         else -> null
     }

@@ -19,7 +19,6 @@ import android.view.View
 import android.view.Window
 import android.widget.FrameLayout
 import androidx.annotation.Nullable
-import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.children
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
@@ -36,7 +35,7 @@ import android.widget.ImageView as AImageView
 
 
 actual class ImageView actual constructor(context: RContext): RView(context) {
-    override val native = AppCompatImageView(context.activity)
+    override val native = android.widget.ImageView(context.activity)
 
     actual var source: ImageSource? = null
         set(value) {

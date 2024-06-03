@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
 import kotlin.time.Duration.Companion.seconds
 
-val appTheme = Property<Theme>(Theme.flat(Angle(0.10f)).copy(
+val appTheme = Property<Theme>(Theme.flat(Angle(0.65f)).copy(
     body = FontAndStyle(Resources.fontsOpensans),
     title = FontAndStyle(Resources.fontsOpensans, bold = true),
     transitionDuration = 0.25.seconds,

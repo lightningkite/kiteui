@@ -10,6 +10,7 @@ import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -17,7 +18,7 @@ import com.lightningkite.kiteui.views.*
 
 actual class AutoCompleteTextField actual constructor(context: RContext): RView(context) {
     override val native = AndroidAutocompleteTextView(context.activity)
-    actual val content: Writable<String> = native.contentProperty()
+    actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints

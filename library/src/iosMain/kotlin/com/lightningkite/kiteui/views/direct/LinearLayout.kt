@@ -3,6 +3,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.PerformanceInfo
+import com.lightningkite.kiteui.linearCalcSizes
+import com.lightningkite.kiteui.linearLayout
+import com.lightningkite.kiteui.linearMeasure
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.SizeConstraints

@@ -48,7 +48,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
     actual var navigator: ScreenStack = ScreenStack.main
     actual var resetsStack: Boolean = false
 
-    override fun getStateThemeChoice() = when {
+    override fun getStateThemeChoice(): ThemeChoice? = when {
         !enabled -> ThemeChoice.Derive { it.disabled() }
         else -> null
     }
