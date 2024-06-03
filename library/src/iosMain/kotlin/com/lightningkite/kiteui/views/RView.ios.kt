@@ -60,9 +60,6 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
     protected actual override fun spacingSet(value: Dimension?) {
         native.spacingOverride?.value = value
-        if (useBackground != UseBackground.No) {
-            native.extensionPadding = value?.value
-        }
         val spacing = mySpacing.value
         for (child in children) {
             child.native.layoutLayers(spacing)
@@ -78,7 +75,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             }
             val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
             native.addGestureRecognizer(rec)
-            calculationContext.onRemove {
+            onRemove {
                 // Retain the sleeve until disposed
                 rec.enabled
                 actionHolder.description
@@ -172,7 +169,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                         }
                     }
                     zPosition = -99999.0
-                    parentSpacing = parentSpacing
+                    parentSpacing = (parent?.mySpacing ?: theme.spacing).value
 
                     borderWidth = theme.outlineWidth.value
                     borderColor = theme.outline.closestColor().toUiColor().CGColor

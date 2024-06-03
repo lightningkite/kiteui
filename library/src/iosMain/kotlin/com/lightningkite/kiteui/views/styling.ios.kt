@@ -77,7 +77,6 @@ class CAGradientLayerResizing: CAGradientLayer {
         }
 
     fun refreshCorners() {
-        println("Refreshing corners from $desiredCornerRadius.  Spacing: ${parentSpacing}  Bounds: ${bounds.useContents { "${origin.x},${origin.y} ${size.width}x${size.height}" }}")
         val v = when(val d = desiredCornerRadius) {
             is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
