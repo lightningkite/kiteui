@@ -48,29 +48,27 @@ actual fun SwapView.swap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> Unit,
 ) {
-    measureTime {
-        val oldView = this.native.getChildAt(0)
-        native.viewWriter.rootCreated = null
-        animationsEnabled = false
-        try {
-            native.viewWriter.createNewView()
-        } finally {
-            animationsEnabled = true
-        }
-        val newView = native.viewWriter.rootCreated
-        newView?.layoutParams = newView?.layoutParams?.also {
-            it.width = ViewGroup.LayoutParams.MATCH_PARENT
-            it.height = ViewGroup.LayoutParams.MATCH_PARENT
-        } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        TransitionManager.beginDelayedTransition(native, TransitionSet().apply {
-            newView?.let { transition.enter?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
-            oldView?.let { transition.exit?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
-            transition.exit?.let { addTransition(it) }
-            transition.enter?.let { addTransition(it) }
-        })
-        oldView?.let { oldNN -> native.removeView(oldNN); oldNN.shutdown() }
-        newView?.let { native.addView(it) }
-        if (newView == null) native.visibility = View.GONE
-        else native.visibility = View.VISIBLE
-    }.also { println("Took ${it.inWholeMilliseconds}ms to swap") }
+    val oldView = this.native.getChildAt(0)
+    native.viewWriter.rootCreated = null
+    animationsEnabled = false
+    try {
+        native.viewWriter.createNewView()
+    } finally {
+        animationsEnabled = true
+    }
+    val newView = native.viewWriter.rootCreated
+    newView?.layoutParams = newView?.layoutParams?.also {
+        it.width = ViewGroup.LayoutParams.MATCH_PARENT
+        it.height = ViewGroup.LayoutParams.MATCH_PARENT
+    } ?: FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+    TransitionManager.beginDelayedTransition(native, TransitionSet().apply {
+        newView?.let { transition.enter?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
+        oldView?.let { transition.exit?.setDuration(native.duration.inWholeMilliseconds)?.addTarget(it) }
+        transition.exit?.let { addTransition(it) }
+        transition.enter?.let { addTransition(it) }
+    })
+    oldView?.let { oldNN -> native.removeView(oldNN); oldNN.shutdown() }
+    newView?.let { native.addView(it) }
+    if (newView == null) native.visibility = View.GONE
+    else native.visibility = View.VISIBLE
 }

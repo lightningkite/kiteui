@@ -26,11 +26,12 @@ actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit) 
 }
 
 actual fun Button.onClick(action: suspend () -> Unit) {
+    var virtualEnable = true
     native.setOnClickListener { view ->
-        if (enabled) {
+        if (enabled && virtualEnable) {
             view.calculationContext.launchManualCancel {
-                enabled = false
-                try { action() } finally { enabled = true }
+                virtualEnable = false
+                try { action() } finally { virtualEnable = true }
             }
         }
     }

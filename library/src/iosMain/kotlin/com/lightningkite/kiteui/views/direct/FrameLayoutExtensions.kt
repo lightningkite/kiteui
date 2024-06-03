@@ -24,26 +24,38 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
         subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
             view as UIView
             if (view.hidden) return@zip
-            val h = view.extensionHorizontalAlign ?: Align.Stretch
-            val v = view.extensionVerticalAlign ?: Align.Stretch
-            val offsetH = when (h) {
-                Align.Start -> padding
-                Align.Stretch -> padding
-                Align.End -> mySize.width - padding - size.width
-                Align.Center -> (mySize.width - size.width) / 2
-            }
-            val offsetV = when (v) {
-                Align.Start -> padding
-                Align.Stretch -> padding
-                Align.End -> mySize.height - padding - size.height
-                Align.Center -> (mySize.height - size.height) / 2
-            }
-            val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
-            val heightSize =
-                if (v == Align.Stretch) mySize.height - padding * 2 else size.height
-            val oldSize = view.bounds.useContents { this.size.width to this.size.height }
-            if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
-                view.withoutAnimation {
+            PerformanceInfo.frameLayoutPart {
+                val h = view.extensionHorizontalAlign ?: Align.Stretch
+                val v = view.extensionVerticalAlign ?: Align.Stretch
+                val offsetH = when (h) {
+                    Align.Start -> padding
+                    Align.Stretch -> padding
+                    Align.End -> mySize.width - padding - size.width
+                    Align.Center -> (mySize.width - size.width) / 2
+                }
+                val offsetV = when (v) {
+                    Align.Start -> padding
+                    Align.Stretch -> padding
+                    Align.End -> mySize.height - padding - size.height
+                    Align.Center -> (mySize.height - size.height) / 2
+                }
+                val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
+                val heightSize =
+                    if (v == Align.Stretch) mySize.height - padding * 2 else size.height
+                val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+                if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
+                    view.withoutAnimation {
+                        view.setPsuedoframe(
+                            offsetH,
+                            offsetV,
+                            widthSize,
+                            heightSize,
+                        )
+                        if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                            view.layoutSubviewsAndLayers()
+                        }
+                    }
+                } else {
                     view.setPsuedoframe(
                         offsetH,
                         offsetV,
@@ -53,16 +65,6 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
                     if (oldSize.first != widthSize || oldSize.second != heightSize) {
                         view.layoutSubviewsAndLayers()
                     }
-                }
-            } else {
-                view.setPsuedoframe(
-                    offsetH,
-                    offsetV,
-                    widthSize,
-                    heightSize,
-                )
-                if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                    view.layoutSubviewsAndLayers()
                 }
             }
             Unit

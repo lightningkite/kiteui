@@ -29,6 +29,8 @@ actual inline operator fun Dimension.plus(other: Dimension): Dimension = Dimensi
 actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimension(this.value.minus(other.value))
 actual inline operator fun Dimension.times(other: Float): Dimension = Dimension(this.value.times(other))
 actual inline operator fun Dimension.div(other: Float): Dimension = Dimension(this.value.div(other))
+actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension(this.value.coerceAtMost(other.value))
+actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
 
 @OptIn(ExperimentalForeignApi::class)

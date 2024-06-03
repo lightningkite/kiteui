@@ -20,6 +20,8 @@ actual inline operator fun Dimension.plus(other: Dimension): Dimension = Dimensi
 actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimension("calc(${this.value} - ${other.value})")
 actual inline operator fun Dimension.times(other: Float): Dimension = Dimension("calc(${this.value} * ${other})")
 actual inline operator fun Dimension.div(other: Float): Dimension = Dimension("calc(${this.value} / ${other})")
+actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension("calc(min(${this.value}, ${other.value}))")
+actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension("calc(max(${this.value}, ${other.value}))")
 
 fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"

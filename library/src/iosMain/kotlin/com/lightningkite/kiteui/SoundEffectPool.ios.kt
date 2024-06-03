@@ -8,6 +8,7 @@ import platform.AVFoundation.AVFileTypeMPEG4
 import platform.AVFoundation.AVFileTypeMPEGLayer3
 import platform.AVFoundation.AVFileTypeWAVE
 import platform.Foundation.NSBundle
+import platform.Foundation.NSError
 import platform.Foundation.NSURL
 import platform.darwin.NSObject
 
@@ -67,21 +68,36 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
     }
     return object : PlayableAudio {
+        val playableAudio = this
         var onCompleteHandler: (()->Unit)? = null
         val dg = object: NSObject(), AVAudioPlayerDelegateProtocol {
             override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
                 onCompleteHandler?.invoke()
+//                println("keepAlive.remove($playableAudio)")
+                keepAlive.remove(playableAudio)
             }
-            init {
-                player.delegate = this
+
+            override fun audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
+//                println("keepAlive.remove($playableAudio)")
+                keepAlive.remove(playableAudio)
             }
+        }
+        init {
+            player.delegate = dg
         }
         val native = player
         override var isPlaying: Boolean
             get() = native.rate > 0.0
             set(value) {
-                if(value) native.play()
-                else native.pause()
+                if(value) {
+//                    println("keepAlive.add($playableAudio)")
+                    keepAlive.add(playableAudio)
+                    native.play()
+                } else {
+//                    println("keepAlive.remove($playableAudio)")
+                    keepAlive.remove(playableAudio)
+                    native.pause()
+                }
             }
         override var volume: Float
             get() = native.volume
@@ -89,6 +105,8 @@ actual suspend fun AudioSource.load(): PlayableAudio {
 
         override fun stop() {
             native.stop()
+//            println("keepAlive.remove($playableAudio)")
+            keepAlive.remove(playableAudio)
         }
 
         override fun onComplete(action: () -> Unit) {
@@ -96,3 +114,5 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
     }
 }
+
+private val keepAlive = HashSet<Any?>()
