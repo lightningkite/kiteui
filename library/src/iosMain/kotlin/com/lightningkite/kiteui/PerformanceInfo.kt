@@ -24,7 +24,7 @@ class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
         val now = clockMillis()
         if(now - lastReport > 5000) {
             lastReport = now
-//            println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
+            println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
             reset()
         }
     }
@@ -41,6 +41,7 @@ class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
         val layout = PerformanceInfo("layout")
         val linearLayout = PerformanceInfo("linearLayout", layout)
         val frameLayout = PerformanceInfo("frameLayout", layout)
+        val frameLayoutPart = PerformanceInfo("frameLayoutPart", null)
         val measure = PerformanceInfo("measure")
         val linearMeasure = PerformanceInfo("linearMeasure", measure)
         val frameMeasure = PerformanceInfo("frameMeasure", measure)

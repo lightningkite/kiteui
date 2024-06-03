@@ -51,12 +51,13 @@ class FrameLayoutButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverrid
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
 
+    var virtualEnable = true
     @ObjCAction
     fun onclick() {
-        if (enabled) {
+        if (enabled && virtualEnable) {
             calculationContext.launchManualCancel {
-                enabled = false
-                try { onClick() } finally { enabled = true }
+                virtualEnable = false
+                try { onClick() } finally { virtualEnable = true }
             }
         }
     }

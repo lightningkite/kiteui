@@ -593,5 +593,7 @@ inline operator fun Dimension.times(other: Double): Dimension = this * other.toF
 expect inline operator fun Dimension.div(other: Float): Dimension
 inline operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
 inline operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
+expect inline fun Dimension.coerceAtMost(other: Dimension): Dimension
+expect inline fun Dimension.coerceAtLeast(other: Dimension): Dimension
 
 data class WidgetOption(val key: String, val display: String)

@@ -26,7 +26,7 @@ actual object AnimationFrame: Listenable {
     }
 }
 @OptIn(ExperimentalForeignApi::class)
-actual object WindowInfo: Readable<WindowStatistics> by Property(
+actual object WindowInfo: ImmediateReadable<WindowStatistics> by Property(
     WindowStatistics(
         width = Dimension(UIScreen.mainScreen.bounds.useContents { size.width }),
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),
@@ -34,4 +34,4 @@ actual object WindowInfo: Readable<WindowStatistics> by Property(
     )
 )
 internal val InForegroundProperty = Property(true)
-actual object InForeground: Readable<Boolean> by InForegroundProperty
+actual object InForeground: ImmediateReadable<Boolean> by InForegroundProperty
