@@ -27,6 +27,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class MenuButton actual constructor(context: RContext): RView(context) {
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override val native = FrameLayoutButton(this)
 
     actual fun opensMenu(action: ViewWriter.() -> Unit) {

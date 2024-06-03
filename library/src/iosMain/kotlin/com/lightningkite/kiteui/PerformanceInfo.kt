@@ -7,7 +7,7 @@ import kotlin.time.measureTime
 class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
     var sum: Duration = Duration.ZERO
     var count: Int = 0
-    val average get() = sum / count
+    val average get() = sum / count.coerceAtLeast(1)
     inline operator fun <T> invoke(crossinline action: ()->T): T {
         val result: T
         this += measureTime {
@@ -21,12 +21,7 @@ class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
         sum += measureTime
         count++
         parent?.plusAssign(measureTime)
-        val now = clockMillis()
-        if(now - lastReport > 5000) {
-            lastReport = now
-//            println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
-            reset()
-        }
+        reportIfNeeded()
     }
 
     fun reset() {
@@ -34,7 +29,26 @@ class PerformanceInfo(val key: String, val parent: PerformanceInfo? = null) {
         count = 0
     }
 
+    fun print() {
+        println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
+        reset()
+    }
+
+    init {
+        all.add(this)
+    }
+
     companion object {
+        val all = ArrayList<PerformanceInfo>()
+        var lastReport = clockMillis()
+        fun reportIfNeeded() {
+            val now = clockMillis()
+            if(now - lastReport > 5000) {
+                lastReport = now
+                all.forEach { it.print() }
+            }
+        }
+
         val calcSizes = PerformanceInfo("calcSizes")
         val linearCalcSizes = PerformanceInfo("linearCalcSizes", calcSizes)
         val frameCalcSizes = PerformanceInfo("frameCalcSizes", calcSizes)

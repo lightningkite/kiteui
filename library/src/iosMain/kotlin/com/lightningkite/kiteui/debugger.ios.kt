@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ExtensionProperty
-import com.lightningkite.kiteui.views.NViewCalculationContext
 import platform.Foundation.NSThread
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference

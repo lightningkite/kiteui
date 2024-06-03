@@ -85,5 +85,3 @@ var UIView.extensionProp: Property<*>? by UIViewProp
 
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
 var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder
-
-val UIViewCalcContext = ExtensionProperty<UIView, NViewCalculationContext>()

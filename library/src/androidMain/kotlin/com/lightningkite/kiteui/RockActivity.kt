@@ -28,8 +28,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     var savedInstanceState: Bundle? = null
 
     val viewWriter = object: ViewWriter() {
-        override val context: RContext
-            get() = RContext(this@KiteUiActivity)
+        override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
             setContentView(view.native)
         }

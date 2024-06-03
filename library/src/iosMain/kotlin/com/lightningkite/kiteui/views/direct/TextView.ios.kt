@@ -24,6 +24,7 @@ actual abstract class TextView actual constructor(context: RContext): RView(cont
     val withGradient = UILabelWithGradient()
     val label get() = withGradient.label
     init {
+        label.numberOfLines = 0
         native.addSubview(label)
     }
 
@@ -125,6 +126,10 @@ actual class HeaderView actual constructor(context: RContext, level: Int) : Text
             minHeight = textSize * 1.5,
         )
     }
+    override fun applyForeground(theme: Theme) {
+        fontAndStyle = theme.title
+        withGradient.foreground = theme.foreground
+    }
 }
 
 actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
@@ -135,6 +140,10 @@ actual class BodyTextView actual constructor(context: RContext) : TextView(conte
             minHeight = textSize * 1.5,
         )
     }
+    override fun applyForeground(theme: Theme) {
+        fontAndStyle = theme.body
+        withGradient.foreground = theme.foreground
+    }
 }
 
 actual class SubTextView actual constructor(context: RContext) : TextView(context) {
@@ -144,6 +153,10 @@ actual class SubTextView actual constructor(context: RContext) : TextView(contex
             minWidth = textSize * 0.6,
             minHeight = textSize * 1.5,
         )
+    }
+    override fun applyForeground(theme: Theme) {
+        fontAndStyle = theme.body
+        withGradient.foreground = theme.foreground
     }
 }
 

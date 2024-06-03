@@ -35,6 +35,11 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
         }
     }
 
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.body
+    }
+
     fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
@@ -50,7 +55,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
 //        textField.attributedPlaceholder = hint
     }
 
-    actual var textSize: Dimension = 1.rem
+    var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
@@ -129,12 +134,12 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
                 else -> UIReturnKeyType.UIReturnKeyDone
             }
         }
-    actual var hint: String = ""
+    var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
-    actual inline var align: Align
+    inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center

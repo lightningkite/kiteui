@@ -13,7 +13,7 @@ import platform.UIKit.UIControlEventTouchUpInside
 
 
 actual class DismissBackground actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton()
+    override val native = FrameLayoutButton(this)
 
     actual fun onClick(action: suspend () -> Unit): Unit {
         var virtualDisable: Boolean = false

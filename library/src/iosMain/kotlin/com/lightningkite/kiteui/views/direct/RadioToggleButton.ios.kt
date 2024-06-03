@@ -3,13 +3,11 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ThemeChoice
-import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton()
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {

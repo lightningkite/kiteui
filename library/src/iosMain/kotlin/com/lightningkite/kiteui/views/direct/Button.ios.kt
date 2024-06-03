@@ -17,13 +17,13 @@ import kotlin.native.ref.WeakReference
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class Button actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton()
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override val native = FrameLayoutButton(this)
     init {
         activityIndicator {
             ::opacity.invoke { if (this@Button.working.await()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
-        native.calculationContext = this
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {

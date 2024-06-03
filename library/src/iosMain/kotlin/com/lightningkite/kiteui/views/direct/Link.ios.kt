@@ -3,18 +3,15 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ThemeChoice
-import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.kiteui.views.*
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton()
+    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override val native = FrameLayoutButton(this)
     init {
-        native.calculationContext = this
         native.onClick = {
             to().let {
                 if(resetsStack) {

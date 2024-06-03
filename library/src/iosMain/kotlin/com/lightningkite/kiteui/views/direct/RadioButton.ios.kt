@@ -12,7 +12,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton()
+    init { useBackground = UseBackground.Yes }
+    override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {

@@ -10,12 +10,24 @@ import platform.UIKit.*
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NViewPager = NRecyclerView
 actual class ViewPager actual constructor(context: RContext): RView(context) {
-    override val native = NRecyclerView(false, object: ViewWriter() {
-
-    }).apply {
-        backgroundColor = UIColor.clearColor
+    override val native = NRecyclerView().apply {
+        vertical = false
         forceCentering = true
         elementsMatchSize = true
+    }
+    val newViews = NewViewWriter(context)
+
+
+    override fun internalAddChild(index: Int, view: RView) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalClearChildren() {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -23,24 +35,29 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         get() = native.centerVisible
             .withWrite { native.jump(it, Align.Center, animationsEnabled) }
 
+
     actual fun <T> children(
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit
-    )  {
+    ): Unit {
         native.renderer = ItemRenderer<T>(
-            create = { _, value ->
+            create = { parent, value ->
                 val prop = Property(value)
-                render(native.newViews, prop)
-                native.newViews.rootCreated!!.also {
-                    it.extensionProp = prop
-                }
+                render(newViews, prop)
+                val new = newViews.newView!!
+                addChild(new)
+                new.tag = prop
+                new.native
             },
-            update = { _, element, value ->
+            update = { parent, element, value ->
                 @Suppress("UNCHECKED_CAST")
-                (element.extensionProp as Property<T>).value = value
+                (children.find { it.native === element }?.tag as? Property<T>)?.value = value
+            },
+            shutdown = { parent, element ->
+                removeChild(children.indexOfFirst { it.native === element })
             }
         )
-        calculationContext.reactiveScope {
+        reactiveScope {
             native.data = items.await().asIndexed()
         }
     }

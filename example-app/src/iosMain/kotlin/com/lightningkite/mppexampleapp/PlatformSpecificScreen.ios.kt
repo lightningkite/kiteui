@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import ViewWriter
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.cinterop.*
 

@@ -47,7 +47,6 @@ actual class AutoCompleteTextField actual constructor(context: RContext): RView(
         }
 
     override fun applyForeground(theme: Theme) {
-        TODO()
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {

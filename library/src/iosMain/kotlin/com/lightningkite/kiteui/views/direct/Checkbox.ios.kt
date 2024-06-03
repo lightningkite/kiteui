@@ -14,6 +14,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 actual class Checkbox actual constructor(context: RContext) : RView(context) {
+    init { useBackground = UseBackground.Yes }
     override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean
         get() = native.enabled

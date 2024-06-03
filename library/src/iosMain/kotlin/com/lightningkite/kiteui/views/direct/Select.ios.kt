@@ -19,7 +19,7 @@ import platform.darwin.NSObject
 @OptIn(ExperimentalForeignApi::class)
 actual class Select actual constructor(context: RContext): RView(context) {
     override val native = WrapperView()
-    val textField = TextFieldInput()
+    val textField = TextFieldInput(this)
     init {
         native.addSubview(textField)
         textField.inputView = UIPickerView()

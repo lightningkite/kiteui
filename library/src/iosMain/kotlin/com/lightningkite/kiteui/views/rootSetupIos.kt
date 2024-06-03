@@ -3,7 +3,10 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.objc.cgRectValue
+import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
 import platform.Foundation.NSNotification
@@ -15,11 +18,27 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
+fun UIViewController.setup(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
+    setup({ theme() }, app)
+}
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(app: ViewWriter.()->Unit) {
+fun UIViewController.setup(theme: suspend ()-> Theme, app: ViewWriter.()->Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
-    val writer = ViewWriter(this.view, context = this)
+
+    val writer = object: ViewWriter() {
+        override val context: RContext = RContext(this@setup)
+        override fun addChild(view: RView) {
+            this@setup.view.addSubview(view.native)
+        }
+        init {
+            beforeNextElementSetup {
+                useBackground = UseBackground.Yes
+                ::themeChoice { ThemeChoice.Set(theme()) }
+            }
+        }
+    }
     writer.app()
+
     val subview = view.subviews.first() as UIView
     subview.translatesAutoresizingMaskIntoConstraints = false
     subview.topAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)

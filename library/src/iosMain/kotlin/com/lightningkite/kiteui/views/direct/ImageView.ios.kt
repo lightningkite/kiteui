@@ -17,6 +17,7 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
+import platform.posix.QOS_CLASS_DEFAULT
 import platform.posix.QOS_CLASS_USER_INITIATED
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -187,7 +188,7 @@ object ImageCache {
 
 internal suspend fun <T> inBackground(action: ()->T): T {
     return suspendCoroutineCancellable<T> { cont ->
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED.toLong(), 0UL)) {
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT.toLong(), 0UL)) {
             try {
                 val result = action()
                 dispatch_async(dispatch_get_main_queue(), { cont.resume(result) })

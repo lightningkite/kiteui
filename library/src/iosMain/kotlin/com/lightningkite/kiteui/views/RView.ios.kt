@@ -24,10 +24,13 @@ import kotlin.time.DurationUnit
 @OptIn(ExperimentalForeignApi::class)
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
+    var tag: Any? = null
 
     var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
-        set(value) { native.extensionSizeConstraints = value }
+        set(value) {
+            native.extensionSizeConstraints = value
+        }
 
     protected actual override fun opacitySet(value: Double) {
         native.animateIfAllowed {
@@ -54,15 +57,20 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         }
     }
 
+    private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
     protected actual override fun spacingSet(value: Dimension?) {
         native.spacingOverride?.value = value
-        if(useBackground != UseBackground.No) {
+        if (useBackground != UseBackground.No) {
             native.extensionPadding = value?.value
+        }
+        val spacing = mySpacing.value
+        for (child in children) {
+            child.native.layoutLayers(spacing)
         }
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
-        if(value) {
+        if (value) {
             val actionHolder = object : NSObject() {
                 @ObjCAction
                 fun eventHandler() {
@@ -99,7 +107,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun applyElevation(dimension: Dimension) {
-        if(dimension.value == 0.0) native.layer.apply {
+        if (dimension.value == 0.0) native.layer.apply {
             shadowColor = null
             shadowOpacity = 0f
             shadowOffset = CGSizeMake(0.0, 0.0)
@@ -116,10 +124,63 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         native.extensionPadding = dimension?.value
     }
 
+    var backgroundLayer: CAGradientLayerResizing? = null
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         native.animateIfAllowed {
-            native.clearOldLayers()
-            if(fullyApply) applyThemeBackground(theme, native, parent?.spacing?.value ?: 0.0)
+//            native.clearOldLayers()
+//            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.spacing)
+//            native.layoutLayers()
+            if (!fullyApply) {
+                backgroundLayer?.removeFromSuperlayer()
+                backgroundLayer = null
+            } else {
+                val layer = backgroundLayer ?: run {
+                    val newLayer = CAGradientLayerResizing()
+                    backgroundLayer = newLayer
+                    native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+                    newLayer
+                }
+                with(layer) {
+                    when (val b = theme.background) {
+                        is Color -> {
+                            val c = b.toUiColor().CGColor!!
+                            this.type = kCAGradientLayerAxial
+                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                            this.colors = listOf(c, c).map { it.toObjcId() }
+                            this.startPoint = CGPointMake(0.0, 0.0)
+                            this.endPoint = CGPointMake(1.0, 1.0)
+                        }
+
+                        is LinearGradient -> {
+                            this.type = kCAGradientLayerAxial
+                            this.locations = b.stops.map {
+                                NSNumber.numberWithFloat(it.ratio)
+                            }
+                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                            this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
+                            this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
+                        }
+
+                        is RadialGradient -> {
+                            this.type = kCAGradientLayerRadial
+                            this.locations = b.stops.map {
+                                NSNumber.numberWithFloat(it.ratio)
+                            }
+                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                            this.startPoint = CGPointMake(0.5, 0.5)
+                            this.endPoint = CGPointMake(0.0, 0.0)
+                        }
+                    }
+                    zPosition = -99999.0
+                    parentSpacing = parentSpacing
+
+                    borderWidth = theme.outlineWidth.value
+                    borderColor = theme.outline.closestColor().toUiColor().CGColor
+                    desiredCornerRadius = theme.cornerRadii
+
+                    matchParentSize("insert")
+                }
+            }
         }
     }
 
@@ -169,6 +230,31 @@ actual inline fun RView.withoutAnimation(action: () -> Unit) {
     }
 }
 
+inline fun UIView.withoutAnimation(action: () -> Unit) {
+    if (!animationsEnabled) {
+        CATransaction.begin()
+        CATransaction.disableActions()
+        try {
+            action()
+        } finally {
+            CATransaction.commit()
+        }
+        return
+    }
+    try {
+        animationsEnabled = false
+        CATransaction.begin()
+        CATransaction.disableActions()
+        try {
+            action()
+        } finally {
+            CATransaction.commit()
+        }
+    } finally {
+        animationsEnabled = true
+    }
+}
+
 inline fun NView.animateIfAllowed(crossinline animations: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(extensionAnimationDuration ?: 0.15) {
         animations()
@@ -177,7 +263,10 @@ inline fun NView.animateIfAllowed(crossinline animations: () -> Unit) {
     }
 }
 
-inline fun NView.animateIfAllowedWithComplete(crossinline animations: () -> Unit, crossinline completion: () -> Unit, ) {
+inline fun NView.animateIfAllowedWithComplete(
+    crossinline animations: () -> Unit,
+    crossinline completion: () -> Unit,
+) {
     if (animationsEnabled) UIView.animateWithDuration(duration = extensionAnimationDuration ?: 0.15, animations = {
         animations()
     }, completion = { completion() }) else {

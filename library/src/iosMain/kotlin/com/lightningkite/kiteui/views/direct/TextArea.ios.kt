@@ -36,6 +36,10 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
             native.informParentOfSizeChange()
         }
     }
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.body
+    }
 
     fun updateFont() {
         val textSize = textSize

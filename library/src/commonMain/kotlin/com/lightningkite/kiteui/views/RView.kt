@@ -169,10 +169,11 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     fun removeChild(index: Int) {
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
-        internalChildren.removeAt(index).parent = null
+        internalChildren.removeAt(index).also { it.shutdown() }.parent = null
     }
 
     fun removeChild(view: RView) {
+        view.shutdown()
         val i = children.indexOf(view)
         if (i != -1) removeChild(i)
     }
