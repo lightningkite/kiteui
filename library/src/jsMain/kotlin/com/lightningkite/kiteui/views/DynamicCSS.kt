@@ -177,7 +177,7 @@ object DynamicCSS {
 
         style(
             "input:focus textarea:focus", mapOf(
-                "outline" to "inherit",
+                "outline" to "none",
             )
         )
 
@@ -1120,12 +1120,12 @@ object DynamicCSS {
         )
         theme(
             theme.focus(),
-            listOf(".clickable:focus-visible .theme-${theme.id}", ".clickable:focus-visible.theme-${theme.id}"),
-            includeMaybeTransition = true
-        )
-        theme(
-            theme.focus(),
-            listOf(".input:focus .theme-${theme.id}", "input:focus.theme-${theme.id}"),
+            listOf(
+                ".clickable:focus-visible .theme-${theme.id}",
+                ".clickable:focus-visible.theme-${theme.id}",
+                "input:focus.theme-${theme.id}",
+                ".theme-${theme.id}:has(> input:focus-visible:not(.mightTransition))",
+            ),
             includeMaybeTransition = true
         )
         theme(
