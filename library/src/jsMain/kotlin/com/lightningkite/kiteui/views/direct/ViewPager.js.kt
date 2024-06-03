@@ -36,6 +36,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
             native.addClass("touchscreenOnly")
             native.style.run {
                 position = "absolute"
+                zIndex = "2"
                 left = "0"
                 top = "50%"
                 transform = "translateY(-50%)"
@@ -51,6 +52,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
             native.addClass("touchscreenOnly")
             native.style.run {
                 position = "absolute"
+                zIndex = "2"
                 right = "0"
                 top = "50%"
                 transform = "translateY(-50%)"

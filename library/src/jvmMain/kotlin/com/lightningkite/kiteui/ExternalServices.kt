@@ -17,10 +17,21 @@ actual object ExternalServices {
 
     }
 
-    actual fun download(name: String, blob: Blob) {
+    actual suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
     }
 
-    actual fun download(name: String, url: String) {
+    actual suspend fun download(
+        name: String,
+        url: String,
+        preferPlatformMediaStorage: Boolean,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) = downloadMultiple(mapOf(url to name), preferPlatformMediaStorage, onDownloadProgress)
+
+    actual suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
+    }
+
+    actual suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)?) {
+
     }
 
     actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
