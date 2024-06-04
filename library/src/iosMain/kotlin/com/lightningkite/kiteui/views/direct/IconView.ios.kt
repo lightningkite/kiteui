@@ -18,8 +18,10 @@ import platform.Foundation.NSOperationQueue
 actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         setUserInteractionEnabled(false)
-        NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
-            informParentOfSizeChange()
+        if (ENABLE_DYNAMIC_TYPE) {
+            NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+                informParentOfSizeChange()
+            }
         }
     }
 

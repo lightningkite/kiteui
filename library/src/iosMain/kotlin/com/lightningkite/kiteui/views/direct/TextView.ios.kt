@@ -247,7 +247,11 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
 const val ENABLE_DYNAMIC_TYPE = false
-fun preferredScaleFactor() = dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
+fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
+    dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
+} else {
+    1.0
+}
 fun UILabelWithGradient.setContentSizeCategoryChangeListener() {
     if (ENABLE_DYNAMIC_TYPE) {
         NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
@@ -260,13 +264,7 @@ fun UILabelWithGradient.updateFont() = label.run {
     val textSize = extensionTextSize ?: return
     val alignment = textAlignment
     font = extensionFontAndStyle?.let {
-        it.font.get(textSize.value.let {
-            if (ENABLE_DYNAMIC_TYPE) {
-                it * preferredScaleFactor()
-            } else {
-                it
-            }
-        }, it.weight.toUIFontWeight(), it.italic)
+        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
     } ?: UIFont.systemFontOfSize(textSize.value)
     textAlignment = alignment
 }
