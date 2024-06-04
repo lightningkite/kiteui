@@ -48,7 +48,7 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
-    if(((native.lastElementChild as? HTMLImageElement)?.src?.substringBefore('?') ?: "") == url.substringBefore('?')) {
+    if(((native.lastElementChild as? HTMLImageElement)?.src ?: "") == url) {
         (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
         return
     }
