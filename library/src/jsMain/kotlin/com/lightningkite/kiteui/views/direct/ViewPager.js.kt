@@ -32,7 +32,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
         rc.forceCentering = true
         this.asDynamic().__ROCK__controller = rc
 
-        button {
+        buttonTheme - button {
             native.addClass("touchscreenOnly")
             native.style.run {
                 position = "absolute"
@@ -40,6 +40,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
                 left = "0"
                 top = "50%"
                 transform = "translateY(-50%)"
+                margin = "0.5rem"
             }
             icon {
                 source = Icon.chevronLeft
@@ -48,7 +49,9 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
                 rc.jump(rc.centerVisible.value - 1, Align.Center, true)
             }
         }
-        button {
+
+
+        buttonTheme - button {
             native.addClass("touchscreenOnly")
             native.style.run {
                 position = "absolute"
@@ -56,6 +59,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
                 right = "0"
                 top = "50%"
                 transform = "translateY(-50%)"
+                margin = "0.5rem"
             }
             icon {
                 source = Icon.chevronRight

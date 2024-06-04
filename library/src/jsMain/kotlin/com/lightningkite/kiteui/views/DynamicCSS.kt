@@ -1321,6 +1321,7 @@ object DynamicCSS {
                     "border-radius" to "0",
                     "outline-width" to "0",
                     "backdrop-filter" to "blur(5px)",
+                    "-webkit-backdrop-filter" to "blur(5px)",
                 ) + when (val it = theme.background.applyAlpha(0.5f)) {
                     is Color -> mapOf("background-color" to it.toCss())
                     is LinearGradient -> mapOf(
