@@ -60,6 +60,8 @@ fun ViewWriter.sizeConstraints(
     height = height
 ))
 @ViewModifierDsl3
+expect fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper
+@ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.")
 val ViewWriter.marginless: ViewWrapper get() = ViewWrapper
 @ViewModifierDsl3

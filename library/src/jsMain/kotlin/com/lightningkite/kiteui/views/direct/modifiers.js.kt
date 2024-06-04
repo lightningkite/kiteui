@@ -366,30 +366,43 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
         return ViewWrapper
     }
 
+private fun NView.applySizeConstraints(constraints: SizeConstraints) {
+    if (constraints.minHeight == null) style.removeProperty("minHeight")
+    else style.minHeight = constraints.minHeight.value
+
+    if (constraints.maxHeight == null) style.removeProperty("maxHeight")
+    else style.maxHeight = constraints.maxHeight.value
+
+    if (constraints.minWidth == null) style.removeProperty("minWidth")
+    else style.minWidth = constraints.minWidth.value
+
+    if (constraints.maxWidth == null) style.removeProperty("maxWidth")
+    else style.maxWidth = constraints.maxWidth.value
+
+    if (constraints.aspectRatio == null) style.removeProperty("aspect-ratio")
+    else style.setProperty("aspect-ratio", "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}")
+
+    if (constraints.width == null) style.removeProperty("width")
+    else style.width = constraints.width.value
+
+    if (constraints.height == null) style.removeProperty("height")
+    else style.height = constraints.height.value
+}
+
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
+        applySizeConstraints(constraints)
+    }
+    return ViewWrapper
+}
 
-        if (constraints.minHeight == null) style.removeProperty("minHeight")
-        else style.minHeight = constraints.minHeight.value
-
-        if (constraints.maxHeight == null) style.removeProperty("maxHeight")
-        else style.maxHeight = constraints.maxHeight.value
-
-        if (constraints.minWidth == null) style.removeProperty("minWidth")
-        else style.minWidth = constraints.minWidth.value
-
-        if (constraints.maxWidth == null) style.removeProperty("maxWidth")
-        else style.maxWidth = constraints.maxWidth.value
-
-        if (constraints.aspectRatio == null) style.removeProperty("aspect-ratio")
-        else style.setProperty("aspect-ratio", "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}")
-
-        if (constraints.width == null) style.removeProperty("width")
-        else style.width = constraints.width.value
-
-        if (constraints.height == null) style.removeProperty("height")
-        else style.height = constraints.height.value
+@ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+    beforeNextElementSetup {
+        calculationContext.reactiveScope {
+            applySizeConstraints(constraints())
+        }
     }
     return ViewWrapper
 }

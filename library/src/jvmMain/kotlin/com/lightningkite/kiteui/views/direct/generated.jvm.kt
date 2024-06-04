@@ -422,6 +422,9 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper get() = TODO()
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper = TODO()
 
 @ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper = TODO()
+
+@ViewModifierDsl3
 actual val ViewWriter.padded: ViewWrapper get() = TODO()
 
 @ViewModifierDsl3
