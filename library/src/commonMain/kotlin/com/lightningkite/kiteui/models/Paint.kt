@@ -7,6 +7,8 @@ import kotlin.math.sqrt
 sealed interface Paint {
     fun closestColor(): Color
     fun applyAlpha(alpha: Float): Paint
+    fun lighten(ratio: Float): Paint
+    fun darken(ratio: Float): Paint
 }
 
 data class GradientStop(val ratio: Float, val color: Color)
@@ -33,8 +35,8 @@ data class LinearGradient(
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
 
     fun toGrayscale() = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
-    fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
-    fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
+    override fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
+    override fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
     fun toWhite(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
     fun toBlack(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
     fun highlight(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
@@ -50,6 +52,8 @@ data class RadialGradient(
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
+    override fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
+    override fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
 }
 
 data class Color(
@@ -76,11 +80,11 @@ data class Color(
         )
     }
 
-    fun darken(ratio: Float): Color = copy(
+    override fun darken(ratio: Float): Color = copy(
         red = red * (1f - ratio), green = green * (1f - ratio), blue = blue * (1f - ratio)
     )
 
-    fun lighten(ratio: Float): Color = copy(
+    override fun lighten(ratio: Float): Color = copy(
         red = red + (1f - red) * ratio, green = green + (1f - green) * ratio, blue = blue + (1f - blue) * ratio
     )
 

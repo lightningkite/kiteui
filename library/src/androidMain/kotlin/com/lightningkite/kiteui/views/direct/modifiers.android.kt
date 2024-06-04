@@ -174,6 +174,16 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     return ViewWrapper
 }
 
+@ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+    wrapNext(DesiredSizeView(this.context)) {
+        calculationContext.reactiveScope {
+            this.constraints = constraints()
+        }
+    }
+    return ViewWrapper
+}
+
 interface MaxSizeLayoutParams {
     var maxWidth: Int
     var maxHeight: Int

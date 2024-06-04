@@ -1321,7 +1321,7 @@ object DynamicCSS {
                     "border-radius" to "0",
                     "outline-width" to "0",
                     "backdrop-filter" to "blur(5px)",
-                ) + when (val it = theme.background.applyAlpha(0.5f)) {
+                ) + when (val it = theme.background.darken(0.5f).applyAlpha(0.5f)) {
                     is Color -> mapOf("background-color" to it.toCss())
                     is LinearGradient -> mapOf(
                         "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${

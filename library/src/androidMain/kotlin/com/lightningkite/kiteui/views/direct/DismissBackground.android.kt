@@ -18,7 +18,7 @@ actual typealias NDismissBackground = ViewGroup
 @ViewDsl
 actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit) = element(SlightlyModifiedFrameLayout(context)) {
     handleTheme(this, foreground = { it, view ->
-        view.setBackgroundColor(it.background.closestColor().copy(alpha = 0.5f).toInt())
+        view.setBackgroundColor(it.background.closestColor().darken(0.5f).applyAlpha(alpha = 0.5f).toInt())
     }) {
         setOnClickListener {
             navigator.clear()

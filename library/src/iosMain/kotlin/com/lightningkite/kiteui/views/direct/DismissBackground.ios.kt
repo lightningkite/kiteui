@@ -14,7 +14,7 @@ actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissB
     handleTheme(
         this,
         foreground = {
-            backgroundColor = it.background.closestColor().copy(alpha = 0.5f).toUiColor()
+            backgroundColor = it.background.closestColor().darken(0.5f).applyAlpha(alpha = 0.5f).toUiColor()
         },
     ) {
         val d = DismissBackground(this)
