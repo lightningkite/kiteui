@@ -33,6 +33,8 @@ import java.util.WeakHashMap
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A native view in the underlying view system.
@@ -63,6 +65,11 @@ object AndroidAppContext {
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
+    suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCoroutine { continuation ->
+        requestPermissions(*permissions) {
+            continuation.resume(it)
+        }
+    }
 }
 
 private val ViewCalculationContexts = WeakHashMap<View, NViewCalculationContext>()

@@ -16,6 +16,8 @@ expect object ExternalServices {
     suspend fun download(name: String, url: String, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
 
     suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+    @JsName("shareBlob")
+    suspend fun share(title: String, blob: Blob)
     fun share(title: String, message: String? = null, url: String? = null)
     suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)? = null)
     fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)

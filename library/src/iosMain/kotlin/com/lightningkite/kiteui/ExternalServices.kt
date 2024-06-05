@@ -2,10 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.extensionStrongRef
 import kotlinx.cinterop.*
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toNSDate
+import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.EventKit.EKEntityType
@@ -396,14 +393,39 @@ actual object ExternalServices {
         return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name) ?: throw IllegalStateException("Unable to find a temporary path for file")
     }
 
+    @OptIn(ExperimentalForeignApi::class)
+    private fun Blob.saveToTemporaryFile(): NSURL {
+        val type = UTType.typeWithMIMEType(type)
+        val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("${Clock.System.now().epochSeconds}.${type?.preferredFilenameExtension ?: "tmp"}")!!
+        val persistSuccess = data.writeToURL(tmpFile, 0u, null)
+        if (!persistSuccess) throw Exception("Unable to copy in-memory Blob to disk")
+        return tmpFile
+    }
+
     actual suspend fun download(
         name: String,
         blob: Blob,
         preferPlatformMediaStorage: Boolean,
         onDownloadProgress: ((progress: Float) -> Unit)?
     ) {
-        TODO()
+        val temporaryFiles = listOf(blob.saveToTemporaryFile())
+        if (!preferPlatformMediaStorage) {
+            afterTimeout(1) {
+                showShareSheet(*(temporaryFiles.toTypedArray()))
+            }
+        } else {
+            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                temporaryFiles.forEach {
+                    PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+                }
+            }) { success, error ->
+                println("Save to camera roll success: $success, error: $error")
+            }
+        }
     }
+
+    actual suspend fun share(title: String, blob: Blob) = showShareSheet(blob.saveToTemporaryFile())
+
     actual fun share(title: String, message: String?, url: String?) =
         showShareSheet(message, url?.let { NSURL(string = it) })
 

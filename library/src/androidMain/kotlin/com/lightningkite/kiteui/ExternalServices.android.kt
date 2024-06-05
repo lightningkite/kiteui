@@ -14,10 +14,13 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import java.io.File
+import java.net.URI
 import kotlin.coroutines.resume
 
 actual object ExternalServices {
@@ -171,15 +174,13 @@ actual object ExternalServices {
     @SuppressLint("MissingPermission")
     actual suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
-        AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-            if(it.accepted) {
-                downloadContinued(name, blob)
-            }
+        val permissionResult = AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (permissionResult.accepted) {
+            val base = AndroidAppContext.applicationCtx.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS).firstOrNull() ?: throw Exception("No external download directory; unable to download file")
+            downloadContinued(name, blob, base)
         }
     }
-    private fun downloadContinued(name: String, blob: Blob) {
-        val base = AndroidAppContext.applicationCtx.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS).firstOrNull() ?: return
-
+    private suspend fun downloadContinued(name: String, blob: Blob, base: File): URI {
         val nameWithoutExt = name.substringBeforeLast('.')
         val nameExt = name.substringAfterLast('.', "").takeUnless { it.isBlank() } ?: MimeTypeMap.getSingleton().getExtensionFromMimeType(blob.type) ?: when(blob.type) {
             "audio/mp4" -> "mp4"
@@ -191,9 +192,15 @@ actual object ExternalServices {
         while(out.exists()) {
             out = base.resolve("$nameWithoutExt-$num.$nameExt")
         }
-        Thread {
+        withContext(Dispatchers.IO) {
             out.writeBytes(blob.data)
-        }.start()
+        }
+        return out.toURI()
+    }
+
+    actual suspend fun share(title: String, blob: Blob) {
+        // Sharing actual files will likely require configuration of a FileProvider
+        TODO()
     }
 
     actual fun share(title: String, message: String?, url: String?) {

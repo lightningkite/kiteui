@@ -72,6 +72,11 @@ actual object ExternalServices {
         }
     }
 
+    @JsName("shareBlob")
+    actual suspend fun share(title: String, blob: Blob) {
+        TODO()
+    }
+
     actual fun share(title: String, message: String?, url: String?) {
         val navigator = window.navigator.asDynamic()
         if (navigator.canShare == undefined || navigator.share == undefined) {

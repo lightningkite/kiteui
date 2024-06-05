@@ -10,6 +10,9 @@ actual object ExternalServices {
     actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? = TODO()
     actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? = TODO()
     actual fun setClipboardText(value: String) : Unit = TODO()
+    actual suspend fun share(title: String, blob: Blob) {
+
+    }
     actual fun share(title: String, message: String?, url: String?){
 
     }
