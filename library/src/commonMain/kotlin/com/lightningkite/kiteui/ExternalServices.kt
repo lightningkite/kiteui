@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlin.js.JsName
 
+enum class DownloadLocation { Downloads, Pictures }
 expect object ExternalServices {
     fun openTab(url: String)
     suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
@@ -12,14 +13,11 @@ expect object ExternalServices {
     suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
     fun setClipboardText(value: String)
     @JsName("downloadBlob")
-    suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
-    suspend fun download(name: String, url: String, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
-
-    suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean = false, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+    suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads)
+    suspend fun download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null)
     @JsName("shareBlob")
-    suspend fun share(title: String, blob: Blob)
+    suspend fun share(namesToBlobs: List<Pair<String, Blob>>)
     fun share(title: String, message: String? = null, url: String? = null)
-    suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)? = null)
     fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
     fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)
 //    fun download(blob: Blob)

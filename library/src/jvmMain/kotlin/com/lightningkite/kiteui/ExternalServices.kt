@@ -10,7 +10,7 @@ actual object ExternalServices {
     actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? = TODO()
     actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? = TODO()
     actual fun setClipboardText(value: String) : Unit = TODO()
-    actual suspend fun share(title: String, blob: Blob) {
+    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
 
     }
     actual fun share(title: String, message: String?, url: String?){
@@ -20,20 +20,15 @@ actual object ExternalServices {
 
     }
 
-    actual suspend fun download(name: String, blob: Blob, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
+    actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
     }
 
     actual suspend fun download(
         name: String,
         url: String,
-        preferPlatformMediaStorage: Boolean,
+        preferredDestination: DownloadLocation,
         onDownloadProgress: ((progress: Float) -> Unit)?
-    ) = downloadMultiple(mapOf(url to name), preferPlatformMediaStorage, onDownloadProgress)
-
-    actual suspend fun downloadMultiple(urlToNames: Map<String, String>, preferPlatformMediaStorage: Boolean, onDownloadProgress: ((progress: Float) -> Unit)?) {
-    }
-
-    actual suspend fun downloadAndShare(urlToNames: Map<String, String>, onDownloadProgress: ((progress: Float) -> Unit)?) {
+    ) {
 
     }
 

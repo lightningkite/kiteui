@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.extensionStrongRef
 import kotlinx.cinterop.*
+import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreLocation.CLLocationCoordinate2DMake
@@ -14,7 +15,9 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
+import platform.Photos.PHAccessLevelAddOnly
 import platform.Photos.PHAssetChangeRequest
+import platform.Photos.PHAuthorizationStatusAuthorized
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -349,42 +352,53 @@ actual object ExternalServices {
     actual suspend fun download(
         name: String,
         url: String,
-        preferPlatformMediaStorage: Boolean,
+        preferredDestination: DownloadLocation,
         onDownloadProgress: ((progress: Float) -> Unit)?
-    ) = downloadMultiple(mapOf(url to name), preferPlatformMediaStorage, onDownloadProgress)
+    ) = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
 
-    actual suspend fun downloadMultiple(
+    suspend fun downloadMultiple(
         urlToNames: Map<String, String>,
-        preferPlatformMediaStorage: Boolean,
+        preferredDestination: DownloadLocation,
         onDownloadProgress: ((progress: Float) -> Unit)?
-    ) = suspendCoroutine {
-        val delegate = NSURLDownloadAndCopyDelegate(
-            { temporaryFiles ->
-                if (!preferPlatformMediaStorage) {
-                    afterTimeout(1) {
-                        showShareSheet(*(temporaryFiles.toTypedArray()))
-                    }
-                } else {
-                    PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-                        temporaryFiles.forEach {
-                            PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+    ) {
+        coroutineScope {
+            val temporaryFiles = suspendCoroutine {
+                var updateProgressJob: Job? = null
+                val delegate = NSURLDownloadAndCopyDelegate(
+                    { temporaryFiles -> it.resume(temporaryFiles) }
+                ) { progress ->
+                    onDownloadProgress?.let { updateProgressCallback ->
+                        updateProgressJob?.cancel()
+                        updateProgressJob = launch(Dispatchers.Main) {
+                            updateProgressCallback(progress)
                         }
-                    }) { success, error ->
-                        println("Save to camera roll success: $success, error: $error")
                     }
                 }
-                it.resume(Unit)
-            },
-            onDownloadProgress
-        )
 
-        val session = NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration, delegate, null)
-        for ((url, name) in urlToNames) {
-            val task = session.downloadTaskWithURL(NSURL(string = url))
-            delegate.setFilenameForDownloadTask(task, name)
-            task.resume()
+                val session = NSURLSession.sessionWithConfiguration(
+                    NSURLSessionConfiguration.defaultSessionConfiguration,
+                    delegate,
+                    null
+                )
+                for ((url, name) in urlToNames) {
+                    val task = session.downloadTaskWithURL(NSURL(string = url))
+                    delegate.setFilenameForDownloadTask(task, name)
+                    task.resume()
+                }
+                session.finishTasksAndInvalidate()
+            }
+
+            when (preferredDestination) {
+                DownloadLocation.Downloads -> {
+                    afterTimeout(1) {
+                        showShareSheet(items = temporaryFiles)
+                    }
+                }
+                DownloadLocation.Pictures -> {
+                    copyFilesToCameraRoll(temporaryFiles)
+                }
+            }
         }
-        session.finishTasksAndInvalidate()
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
@@ -394,65 +408,73 @@ actual object ExternalServices {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun Blob.saveToTemporaryFile(): NSURL {
+    private fun Blob.saveToTemporaryFile(name: String): NSURL {
         val type = UTType.typeWithMIMEType(type)
-        val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("${Clock.System.now().epochSeconds}.${type?.preferredFilenameExtension ?: "tmp"}")!!
+        val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("$name.${type?.preferredFilenameExtension ?: "tmp"}")!!
         val persistSuccess = data.writeToURL(tmpFile, 0u, null)
         if (!persistSuccess) throw Exception("Unable to copy in-memory Blob to disk")
         return tmpFile
     }
 
+    private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
+        val hasPermission = PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelAddOnly) == PHAuthorizationStatusAuthorized
+        if (!hasPermission) {
+            println("Lacking Camera Roll add access")
+            val newPermission = withContext(Dispatchers.Main) {
+                suspendCoroutine { continuation ->
+                    PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) {
+                        continuation.resume(it)
+                    }
+                }
+            }
+
+            if (newPermission != PHAuthorizationStatusAuthorized) throw Exception("User rejected Camera Roll add permission")
+        }
+
+        return suspendCoroutine {
+            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                files.forEach {
+                    PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+                }
+            }) { success, _ ->
+                dispatch_async(dispatch_get_main_queue()) {
+                    if (success) {
+                        it.resume(Unit)
+                    } else {
+                        it.resumeWithException(Exception("Unable to make changes to shared photo library"))
+                    }
+                }
+            }
+        }
+    }
+
     actual suspend fun download(
         name: String,
         blob: Blob,
-        preferPlatformMediaStorage: Boolean,
-        onDownloadProgress: ((progress: Float) -> Unit)?
+        preferredDestination: DownloadLocation
     ) {
-        val temporaryFiles = listOf(blob.saveToTemporaryFile())
-        if (!preferPlatformMediaStorage) {
-            afterTimeout(1) {
-                showShareSheet(*(temporaryFiles.toTypedArray()))
-            }
-        } else {
-            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-                temporaryFiles.forEach {
-                    PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+        val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
+        when (preferredDestination) {
+            DownloadLocation.Downloads -> {
+                withContext(Dispatchers.Main) {
+                    showShareSheet(items = temporaryFiles)
                 }
-            }) { success, error ->
-                println("Save to camera roll success: $success, error: $error")
+            }
+            DownloadLocation.Pictures -> {
+                copyFilesToCameraRoll(temporaryFiles)
             }
         }
     }
 
-    actual suspend fun share(title: String, blob: Blob) = showShareSheet(blob.saveToTemporaryFile())
+    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
+        showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
 
     actual fun share(title: String, message: String?, url: String?) =
-        showShareSheet(message, url?.let { NSURL(string = it) })
-
-    actual suspend fun downloadAndShare(
-        urlToNames: Map<String, String>,
-        onDownloadProgress: ((progress: Float) -> Unit)?
-    ) = suspendCoroutine {
-        val delegate = NSURLDownloadAndCopyDelegate(
-            { temporaryFiles ->
-                showShareSheet(*temporaryFiles.toTypedArray())
-                it.resume(Unit)
-            },
-            onDownloadProgress
-        )
-
-        val session = NSURLSession.sessionWithConfiguration(NSURLSessionConfiguration.defaultSessionConfiguration, delegate, null)
-        for ((url, name) in urlToNames) {
-            val task = session.downloadTaskWithURL(NSURL(string = url))
-            delegate.setFilenameForDownloadTask(task, name)
-            task.resume()
-        }
-        session.finishTasksAndInvalidate()
-    }
+        showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun showShareSheet(vararg items: Any?) {
-        currentPresenter(UIActivityViewController(listOfNotNull(*items), null).apply {
+    private fun showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
+        currentPresenter(UIActivityViewController(messages + items, null).apply {
             popoverPresentationController?.sourceView = rootView
             popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
         })
