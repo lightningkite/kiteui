@@ -166,7 +166,16 @@ actual object ExternalServices {
                             picker.dismissViewControllerAnimated(true) {
                                 dispatch_async(queue = dispatch_get_main_queue(), block = {
                                     didFinishPicking.filterIsInstance<PHPickerResult>()
-                                        .map { result -> FileReference(result.itemProvider) }
+                                        .map { result ->
+                                            val suggestedType = result.itemProvider.registeredContentTypes
+                                                .filterIsInstance<UTType>()
+                                                .first { type ->
+                                                    mimeTypes.any { mimeType ->
+                                                        type.matchesMimeType(mimeType)
+                                                    }
+                                                }
+                                            FileReference(result.itemProvider, suggestedType)
+                                        }
                                         .let { cont.resume(it) }
                                 })
                             }
@@ -241,6 +250,14 @@ actual object ExternalServices {
                 }
             }
         }
+
+    private fun UTType.matchesMimeType(mimeType: String): Boolean {
+        val a = mimeType.split("/", limit = 2)
+        val b = preferredMIMEType?.split("/", limit = 2) ?: return false
+        if (a[0] != b[0] && a[0] != "*" && b[0] != "*") return false
+        if (a[1] != b[1] && a[1] != "*" && b[1] != "*") return false
+        return true
+    }
 
     actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) {
