@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.RContext
@@ -18,17 +19,16 @@ actual class Switch actual constructor(context: RContext): RView(context) {
         set(value) {
             native.enabled = value
         }
-    actual val checked: Writable<Boolean>
+    actual val checked: ImmediateWritable<Boolean>
         get() {
-            return object : Writable<Boolean> {
-                override val state: ReadableState<Boolean> get() = ReadableState(native.on)
+            return object : ImmediateWritable<Boolean> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
                     return native.onEvent(this@Switch, UIControlEventValueChanged) { listener() }
                 }
 
-                override suspend fun set(value: Boolean) {
-                    native.on = value
-                }
+                override var value: Boolean
+                    get() = native.on
+                    set(value) { native.on = value }
             }
         }
 }

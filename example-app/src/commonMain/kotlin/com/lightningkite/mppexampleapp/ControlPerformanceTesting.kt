@@ -40,7 +40,7 @@ object ControlPerformanceTesting : Screen {
             }
         }
     }
-    infix inline fun <V> ImmediateWritable<V>.bind(master: ImmediateWritable<V>) {
+    infix fun <V> ImmediateWritable<V>.bind(master: ImmediateWritable<V>) {
         when(bindMode.value) {
             BindMode.None -> {}
             BindMode.Instant -> {

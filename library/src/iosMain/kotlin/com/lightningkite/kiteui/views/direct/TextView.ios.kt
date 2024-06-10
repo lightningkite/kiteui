@@ -156,7 +156,7 @@ actual class SubTextView actual constructor(context: RContext) : TextView(contex
     }
     override fun applyForeground(theme: Theme) {
         fontAndStyle = theme.body
-        withGradient.foreground = theme.foreground
+        withGradient.foreground = theme.foreground.applyAlpha(0.5f)
     }
 }
 

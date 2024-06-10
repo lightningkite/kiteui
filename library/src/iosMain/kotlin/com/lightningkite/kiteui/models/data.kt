@@ -61,9 +61,9 @@ fun fontFromFamilyInfo(
 ) = Font { size, weight, getItalic ->
     val fn = if(getItalic) {
         italics.entries.minByOrNull { abs(weight - it.key.toUIFontWeight()) }?.value
-        normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }?.value
+            ?: normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }.value
     } else {
-        normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }?.value
+        normal.entries.minBy { abs(weight - it.key.toUIFontWeight()) }.value
     }
     UIFont.fontWithName(fn, size) ?: systemDefaultFont.get(size, weight, getItalic)
 }

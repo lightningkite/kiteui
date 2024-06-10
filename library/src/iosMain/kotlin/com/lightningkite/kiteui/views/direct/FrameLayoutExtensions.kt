@@ -1,9 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.PerformanceInfo
-import com.lightningkite.kiteui.frameCalcSizes
-import com.lightningkite.kiteui.frameLayout
-import com.lightningkite.kiteui.frameMeasure
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
@@ -20,44 +17,33 @@ import kotlin.math.max
 
 
 @OptIn(ExperimentalForeignApi::class)
-fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit =
-    PerformanceInfo.frameLayout {
-        val mySize = bounds.useContents { size.local }
-        var padding = extensionPadding ?: 0.0
-        subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
-            view as UIView
-            if (view.hidden) return@zip
-            val h = view.extensionHorizontalAlign ?: Align.Stretch
-            val v = view.extensionVerticalAlign ?: Align.Stretch
-            val offsetH = when (h) {
-                Align.Start -> padding
-                Align.Stretch -> padding
-                Align.End -> mySize.width - padding - size.width
-                Align.Center -> (mySize.width - size.width) / 2
-            }
-            val offsetV = when (v) {
-                Align.Start -> padding
-                Align.Stretch -> padding
-                Align.End -> mySize.height - padding - size.height
-                Align.Center -> (mySize.height - size.height) / 2
-            }
-            val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
-            val heightSize =
-                if (v == Align.Stretch) mySize.height - padding * 2 else size.height
-            val oldSize = view.bounds.useContents { this.size.width to this.size.height }
-            if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
-                view.withoutAnimation {
-                    view.setPsuedoframe(
-                        offsetH,
-                        offsetV,
-                        widthSize,
-                        heightSize,
-                    )
-                    if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                        view.layoutSubviewsAndLayers()
-                    }
-                }
-            } else {
+fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
+    val mySize = bounds.useContents { size.local }
+    var padding = extensionPadding ?: 0.0
+    subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
+        view as UIView
+        if (view.hidden) return@zip
+        val h = view.extensionHorizontalAlign ?: Align.Stretch
+        val v = view.extensionVerticalAlign ?: Align.Stretch
+        val offsetH = when (h) {
+            Align.Start -> padding
+            Align.Stretch -> padding
+            Align.End -> mySize.width - padding - size.width
+            Align.Center -> (mySize.width - size.width) / 2
+        }
+        val offsetV = when (v) {
+            Align.Start -> padding
+            Align.Stretch -> padding
+            Align.End -> mySize.height - padding - size.height
+            Align.Center -> (mySize.height - size.height) / 2
+        }
+        val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
+        val heightSize =
+            if (v == Align.Stretch) mySize.height - padding * 2 else size.height
+        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+
+        if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
+            view.withoutAnimation {
                 view.setPsuedoframe(
                     offsetH,
                     offsetV,
@@ -68,9 +54,20 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
                     view.layoutSubviewsAndLayers()
                 }
             }
-            Unit
+        } else {
+            view.setPsuedoframe(
+                offsetH,
+                offsetV,
+                widthSize,
+                heightSize,
+            )
+            if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                view.layoutSubviewsAndLayers()
+            }
         }
+        Unit
     }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
@@ -104,7 +101,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
 fun UIView.frameLayoutSizeThatFits(
     size: CValue<CGSize>,
     childSizeCache: ArrayList<HashMap<Size, Size>>
-): CValue<CGSize> = PerformanceInfo.frameMeasure {
+): CValue<CGSize> {
     val size = size.local
     val measuredSize = Size()
 
@@ -115,43 +112,44 @@ fun UIView.frameLayoutSizeThatFits(
         measuredSize.height = max(measuredSize.height, size.height + padding * 2)
     }
 
-    measuredSize.objc
+    return measuredSize.objc
 }
 
 @OptIn(ExperimentalForeignApi::class)
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
-    return PerformanceInfo.frameCalcSizes {
-        val padding = extensionPadding ?: 0.0
+    var t = PerformanceInfo.trace("calcSizeFrame")
+    val padding = extensionPadding ?: 0.0
 //        let size = padding.shrinkSize(size)
 //    val remaining = size.copy()
-        val remaining = size.copy(width = size.width - 2 * padding, height = size.height - 2 * padding)
+    val remaining = size.copy(width = size.width - 2 * padding, height = size.height - 2 * padding)
 
-        subviews.mapIndexed { index: Int, it: Any? ->
-            it as UIView
-            if (it.hidden) return@mapIndexed Size(0.0, 0.0)
-            val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
-            val required = childSizeCache[index].getOrPut(measureInput) {
-                it.sizeThatFits2(
-                    measureInput.objc,
-                    it.extensionSizeConstraints
-                ).local
-            }
-            it.extensionSizeConstraints?.let {
-                it.maxWidth?.let { required.width = required.width.coerceAtMost(it.value) }
-                it.maxHeight?.let { required.height = required.height.coerceAtMost(it.value) }
-                it.minWidth?.let { required.width = required.width.coerceAtLeast(it.value) }
-                it.minHeight?.let { required.height = required.height.coerceAtLeast(it.value) }
-                it.width?.let { required.width = it.value.coerceAtMost(remaining.width) }
-                it.height?.let { required.height = it.value.coerceAtMost(remaining.height) }
-            }
-            required.width = required.width.coerceAtLeast(0.0)//.coerceAtMost(size.width - 2 * m)
-            required.height = required.height.coerceAtLeast(0.0)//.coerceAtMost(size.height - 2 * m)
-
-            remaining.width = remaining.width.coerceAtLeast(required.width)
-            remaining.height = remaining.height.coerceAtLeast(required.height)
-            required
+    return subviews.mapIndexed { index: Int, it: Any? ->
+        it as UIView
+        if (it.hidden) return@mapIndexed Size(0.0, 0.0)
+        val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
+        t.pause()
+        val required = childSizeCache[index].getOrPut(measureInput) {
+            it.sizeThatFits2(
+                measureInput.objc,
+                it.extensionSizeConstraints
+            ).local
         }
-    }
+        t.resume()
+        it.extensionSizeConstraints?.let {
+            it.maxWidth?.let { required.width = required.width.coerceAtMost(it.value) }
+            it.maxHeight?.let { required.height = required.height.coerceAtMost(it.value) }
+            it.minWidth?.let { required.width = required.width.coerceAtLeast(it.value) }
+            it.minHeight?.let { required.height = required.height.coerceAtLeast(it.value) }
+            it.width?.let { required.width = it.value.coerceAtMost(remaining.width) }
+            it.height?.let { required.height = it.value.coerceAtMost(remaining.height) }
+        }
+        required.width = required.width.coerceAtLeast(0.0)//.coerceAtMost(size.width - 2 * m)
+        required.height = required.height.coerceAtLeast(0.0)//.coerceAtMost(size.height - 2 * m)
+
+        remaining.width = remaining.width.coerceAtLeast(required.width)
+        remaining.height = remaining.height.coerceAtLeast(required.height)
+        required
+    }.also { t.cancel() }
 }
 
 fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCache: ArrayList<HashMap<Size, Size>>) {

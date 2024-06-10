@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.invokeAllSafe
@@ -69,18 +70,16 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
             native.informParentOfSizeChange()
         }
 
-    actual val content: Writable<String> = object : Writable<String> {
-        override val state get() = ReadableState(textField.text)
+    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+        override var value: String
+            get() = textField.text
+            set(value) { textField.text = value }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)
             return {
                 val i = delegate.listeners.indexOf(listener)
                 if (i != -1) delegate.listeners.removeAt(i)
             }
-        }
-
-        override suspend fun set(value: String) {
-            textField.text = value
         }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()

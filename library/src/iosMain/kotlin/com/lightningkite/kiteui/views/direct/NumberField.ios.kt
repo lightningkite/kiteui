@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.utils.commaString
@@ -89,16 +90,14 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
             native.informParentOfSizeChange()
         }
 
-    actual val content: Writable<Double?> = object : Writable<Double?> {
-        override val state get() = ReadableState((textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull())
+    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?> {
+        override var value: Double?
+            get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
+            set(value) { textField.text = value?.commaString() ?: "" }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
                 listener()
             }
-        }
-
-        override suspend fun set(value: Double?) {
-            textField.text = value?.commaString() ?: ""
         }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()

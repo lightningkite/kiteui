@@ -78,11 +78,10 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     companion object {
         var animationsEnabled: Boolean = true
         val performanceRefreshTheme = PerformanceInfo("refreshTheme")
-        val performanceApplyTheme = PerformanceInfo("applyTheme")
-        val performanceApplyTheme_applyElevation = PerformanceInfo("applyTheme_applyElevation", performanceApplyTheme)
-        val performanceApplyTheme_applyPadding = PerformanceInfo("applyTheme_applyPadding", performanceApplyTheme)
-        val performanceApplyTheme_applyForeground = PerformanceInfo("applyTheme_applyForeground", performanceApplyTheme)
-        val performanceApplyTheme_applyBackground = PerformanceInfo("applyTheme_applyBackground", performanceApplyTheme)
+        val performanceApplyTheme_applyElevation = PerformanceInfo("applyTheme_applyElevation")
+        val performanceApplyTheme_applyPadding = PerformanceInfo("applyTheme_applyPadding")
+        val performanceApplyTheme_applyForeground = PerformanceInfo("applyTheme_applyForeground")
+        val performanceApplyTheme_applyBackground = PerformanceInfo("applyTheme_applyBackground")
     }
 
 

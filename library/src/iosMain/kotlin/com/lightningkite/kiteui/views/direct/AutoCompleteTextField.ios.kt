@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -69,16 +70,14 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.informParentOfSizeChange()
         }
 
-    actual val content: Writable<String> = object : Writable<String> {
-        override val state get() = ReadableState(textField.text ?: "")
+    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+        override var value: String
+            get() = textField.text ?: ""
+            set(value) { textField.text = value }
         override fun addListener(listener: () -> Unit): () -> Unit {
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged) {
                 listener()
             }
-        }
-
-        override suspend fun set(value: String) {
-            textField.text = value
         }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()

@@ -23,7 +23,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDate?>(null)
-    actual val content: Writable<LocalDate?> get() = _content
+    actual val content: ImmediateWritable<LocalDate?> get() = _content
     actual var action: Action?
         get() = textField.action
         set(value) {
@@ -54,7 +54,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalTime?>(null)
-    actual val content: Writable<LocalTime?> get() = _content
+    actual val content: ImmediateWritable<LocalTime?> get() = _content
     actual var action: Action?
         get() = textField.action
         set(value) {
@@ -85,7 +85,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDateTime?>(null)
-    actual val content: Writable<LocalDateTime?> get() = _content
+    actual val content: ImmediateWritable<LocalDateTime?> get() = _content
     actual var action: Action?
         get() = textField.action
         set(value) {

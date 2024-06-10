@@ -1,10 +1,7 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.delay
-import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
@@ -30,7 +27,7 @@ object ControlsScreen : Screen {
                 val ratio = Property(0.5f)
                 launch {
                     while (true) {
-                        delay(20L)
+                        delay(100L)
                         ratio.value += 0.01f
                         if (ratio.value > 1f) {
                             ratio.value = 0f

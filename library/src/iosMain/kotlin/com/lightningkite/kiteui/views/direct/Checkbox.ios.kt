@@ -4,10 +4,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.dp
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -22,7 +19,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
             native.enabled = value
         }
     private val _checked = Property(false)
-    actual val checked: Writable<Boolean> get() = _checked
+    actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
         useBackground = UseBackground.Yes

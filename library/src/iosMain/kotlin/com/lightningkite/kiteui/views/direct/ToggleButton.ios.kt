@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
@@ -18,7 +19,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
             native.enabled = value
         }
     private val _checked = Property(false)
-    actual val checked: Writable<Boolean> get() = _checked
+    actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
         onRemove(native.observe("highlighted", { refreshTheming() }))

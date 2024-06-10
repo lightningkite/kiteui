@@ -1,3 +1,5 @@
+import java.util.*
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -17,13 +19,38 @@ android {
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
 
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+    val props = project.rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { stream ->
+        Properties().apply { load(stream) }
+    }
+    if (props != null && props.getProperty("appSigningKeystore") != null) {
+        signingConfigs {
+            this.create("release") {
+                storeFile = project.rootProject.file(props.getProperty("appSigningKeystore"))
+                storePassword = props.getProperty("appSigningPassword")
+                keyAlias = props.getProperty("appSigningAlias")
+                keyPassword = props.getProperty("appSigningAliasPassword")
+            }
+            this.getByName("debug") {
+                storeFile = project.rootProject.file(props.getProperty("appSigningKeystore"))
+                storePassword = props.getProperty("appSigningPassword")
+                keyAlias = props.getProperty("appSigningAlias")
+                keyPassword = props.getProperty("appSigningAliasPassword")
+            }
+        }
+        buildTypes {
+            this.getByName("release") {
+                this.isMinifyEnabled = false
+                this.proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+                this.signingConfig = signingConfigs.getByName("release")
+            }
+        }
     }
 }
 
