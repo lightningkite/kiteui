@@ -3,8 +3,9 @@ package com.lightningkite.kiteui.views
 import cnames.structs.objc_method
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.objc.cgRectValue
-import com.lightningkite.kiteui.reactive.SoftInputOpen
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
 import kotlinx.cinterop.CPointer
@@ -17,8 +18,14 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
+fun UIViewController.setup(theme: Theme, app: ViewWriter.()->Unit) {
+    setup({theme}, app)
+}
+fun UIViewController.setup(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
+    setup({theme.invoke()}, app)
+}
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(app: ViewWriter.()->Unit) {
+fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
     val writer = ViewWriter(this.view, context = this)
     writer.app()
@@ -29,6 +36,10 @@ fun UIViewController.setup(app: ViewWriter.()->Unit) {
     subview.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
+
+    CalculationContext.NeverEnds.reactiveScope {
+        view.backgroundColor = theme().let { it.bar() ?: it }.background.closestColor().toUiColor()
+    }
 
     ExternalServices.rootView = subview
 

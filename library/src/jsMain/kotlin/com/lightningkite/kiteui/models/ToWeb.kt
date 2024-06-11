@@ -16,7 +16,7 @@ import kotlin.contracts.contract
 fun ImageVector.toWeb(): String {
     return "data:image/svg+xml;utf8," + encodeURIComponent(buildString {
         append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.value}\" height=\"${height.value}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")
+        append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.px.toInt()}\" height=\"${height.px.toInt()}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")
         append("<defs>")
         paths.forEachIndexed { index: Int, path: ImageVector.Path ->
             when(val p = path.fillColor) {

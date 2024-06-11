@@ -537,6 +537,9 @@ actual object ExternalServices {
             }
         }
 
+        override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
+        }
+
         override fun URLSession(
             session: NSURLSession,
             downloadTask: NSURLSessionDownloadTask,

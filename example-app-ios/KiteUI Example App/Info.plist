@@ -4,7 +4,33 @@
 <dict>
 	<key>LSMinimumSystemVersion</key>
 	<string>12.0</string>
-	<key>UIAppFonts</key><array><string>fontsGoldman-normal.ttf</string><string>fontsGoldman-bold.ttf</string><string>fontsMontserrat-normal.ttf</string><string>fontsMontserrat-bold.ttf</string><string>fontsMontserrat-italic.ttf</string><string>fontsMontserrat-bold-italic.ttf</string><string>fontsOpensans-OpenSans-SemiBold.ttf</string><string>fontsOpensans-OpenSans-Light.ttf</string><string>fontsOpensans-OpenSans-ExtraBold.ttf</string><string>fontsOpensans-OpenSans-Bold.ttf</string><string>fontsOpensans-OpenSans-Medium.ttf</string><string>fontsOpensans-OpenSans-Regular.ttf</string><string>fontsOpensans-OpenSans-Italic.ttf</string><string>fontsOpensans-OpenSans-MediumItalic.ttf</string><string>fontsOpensans-OpenSans-LightItalic.ttf</string><string>fontsOpensans-OpenSans-SemiBoldItalic.ttf</string><string>fontsOpensans-OpenSans-ExtraBoldItalic.ttf</string><string>fontsOpensans-OpenSans-BoldItalic.ttf</string><string>fontsRoboto-light.ttf</string><string>fontsRoboto-normal.ttf</string><string>fontsRoboto-bold.ttf</string><string>fontsRoboto-italic.ttf</string><string>fontsRoboto-light-Italic.ttf</string><string>fontsRoboto-bold-italic.ttf</string></array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>fontsGoldman-normal.ttf</string>
+		<string>fontsGoldman-bold.ttf</string>
+		<string>fontsMontserrat-normal.ttf</string>
+		<string>fontsMontserrat-bold.ttf</string>
+		<string>fontsMontserrat-italic.ttf</string>
+		<string>fontsMontserrat-bold-italic.ttf</string>
+		<string>fontsOpensans-OpenSans-SemiBold.ttf</string>
+		<string>fontsOpensans-OpenSans-Light.ttf</string>
+		<string>fontsOpensans-OpenSans-ExtraBold.ttf</string>
+		<string>fontsOpensans-OpenSans-Bold.ttf</string>
+		<string>fontsOpensans-OpenSans-Medium.ttf</string>
+		<string>fontsOpensans-OpenSans-Regular.ttf</string>
+		<string>fontsOpensans-OpenSans-Italic.ttf</string>
+		<string>fontsOpensans-OpenSans-MediumItalic.ttf</string>
+		<string>fontsOpensans-OpenSans-LightItalic.ttf</string>
+		<string>fontsOpensans-OpenSans-SemiBoldItalic.ttf</string>
+		<string>fontsOpensans-OpenSans-ExtraBoldItalic.ttf</string>
+		<string>fontsOpensans-OpenSans-BoldItalic.ttf</string>
+		<string>fontsRoboto-light.ttf</string>
+		<string>fontsRoboto-normal.ttf</string>
+		<string>fontsRoboto-bold.ttf</string>
+		<string>fontsRoboto-italic.ttf</string>
+		<string>fontsRoboto-light-Italic.ttf</string>
+		<string>fontsRoboto-bold-italic.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

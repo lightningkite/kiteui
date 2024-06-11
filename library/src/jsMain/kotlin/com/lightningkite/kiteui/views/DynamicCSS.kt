@@ -1124,7 +1124,11 @@ object DynamicCSS {
                 ".clickable:focus-visible .theme-${theme.id}",
                 ".clickable:focus-visible.theme-${theme.id}",
                 "input:focus.theme-${theme.id}",
+                "textarea:focus.theme-${theme.id}",
+                "select:focus.theme-${theme.id}",
                 ".theme-${theme.id}:has(> input:focus-visible:not(.mightTransition))",
+                ".theme-${theme.id}:has(> textarea:focus-visible:not(.mightTransition))",
+                ".theme-${theme.id}:has(> select:focus-visible:not(.mightTransition))",
             ),
             includeMaybeTransition = true
         )
