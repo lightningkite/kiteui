@@ -104,6 +104,9 @@ actual var ImageView.description: String?
     set(value) {
         native.contentDescription = value
     }
+actual var ImageView.naturalSize: Boolean
+    get() = false
+    set(value) {}
 
 @ViewDsl
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit) {

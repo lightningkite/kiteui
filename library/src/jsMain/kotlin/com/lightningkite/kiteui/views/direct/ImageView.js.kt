@@ -110,6 +110,9 @@ actual inline var ImageView.description: String?
     set(value) {
         native.setAttribute("aria-label", value ?: "")
     }
+actual var ImageView.naturalSize: Boolean
+    get() = false
+    set(value) {}
 
 @ViewDsl
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) {

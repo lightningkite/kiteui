@@ -75,6 +75,9 @@ actual inline var ImageView.scaleType: ImageScaleType
 actual inline var ImageView.description: String?
     get() = TODO()
     set(value) {}
+actual var ImageView.naturalSize: Boolean
+    get() = TODO()
+    set(value) {}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NTextView = HTMLElement
