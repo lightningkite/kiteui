@@ -7,7 +7,6 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewParent
 import androidx.core.view.children
 import com.lightningkite.kiteui.Cancellable
 import com.lightningkite.kiteui.KiteUiActivity
@@ -20,13 +19,10 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.HasSpacingMultiplier
-import com.lightningkite.kiteui.views.direct.KiteUiLayoutTransition
-import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.http.*
 import java.lang.RuntimeException
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
@@ -157,6 +153,7 @@ actual var NView.exists: Boolean
         visibility = if (value) {
             View.VISIBLE
         } else {
+            clearAnimation()
             View.GONE
         }
         (parent as? DesiredSizeView)?.apply {
