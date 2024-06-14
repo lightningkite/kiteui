@@ -32,6 +32,7 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.views.*
 import com.ortiz.touchview.TouchImageView
+import java.util.WeakHashMap
 import android.widget.ImageView as AImageView
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -40,11 +41,9 @@ actual typealias NImageView = AppCompatImageView
 actual var ImageView.source: ImageSource?
     get() = native.tag as? ImageSource
     set(value) {
-        if(value == native.tag) {
-            println("$this: Skip loading of $value vs ${native.tag}")
-            return
-        }
-        println("$this: Loading $value vs ${native.tag}")
+        if(refreshOnParamChange && value is ImageRemote) {
+            if(value.url == (native.tag as? ImageRemote)?.url) return
+        } else if(value == native.tag) return
         native.tag = value
         @Suppress("KotlinConstantConditions")
         if(native is TouchImageView) {
@@ -104,6 +103,11 @@ actual var ImageView.description: String?
     set(value) {
         native.contentDescription = value
     }
+
+private val refreshOnParamChangeMap = WeakHashMap<ImageView, Boolean>()
+actual var ImageView.refreshOnParamChange: Boolean
+    get() = refreshOnParamChangeMap[this] ?: false
+    set(value) { refreshOnParamChangeMap[this] = value }
 
 @ViewDsl
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit) {

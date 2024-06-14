@@ -20,6 +20,7 @@ expect fun ViewWriter.imageActual(setup: ImageView.()->Unit = {}): Unit
 expect var ImageView.source: ImageSource?
 expect var ImageView.scaleType: ImageScaleType
 expect var ImageView.description: String?
+expect var ImageView.refreshOnParamChange: Boolean
 
 @ViewDsl
 expect fun ViewWriter.zoomableImageActual(setup: ImageView.()->Unit = {}): Unit

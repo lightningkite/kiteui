@@ -409,7 +409,12 @@ data class ImageVector(
     )
 }
 
-data class ImageRemote(val url: String) : ImageSource()
+data class ImageRemote(val url: String) : ImageSource() {
+    private val before = url.substringBefore('?')
+    override fun hashCode(): Int = before.hashCode()
+    override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
+    override fun toString(): String = "ImageRemote($url)"
+}
 data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource

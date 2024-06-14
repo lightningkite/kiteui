@@ -12,10 +12,10 @@ actual suspend fun fetch(
     onUploadProgress: ((Int, Int) -> Unit)?,
     onDownloadProgress: ((Int, Int) -> Unit)?,
 ): RequestResponse = TODO()
-actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders = TODO()
-actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders =  TODO()
-actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = TODO()
-actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = TODO()
+actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders()
+actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders =  HttpHeaders()
+actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders()
+actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders()
 actual class HttpHeaders {
     actual fun append(name: String, value: String): Unit = TODO()
     actual fun delete(name: String): Unit = TODO()

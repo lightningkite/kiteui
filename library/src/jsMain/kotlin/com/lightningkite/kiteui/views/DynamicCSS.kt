@@ -33,14 +33,10 @@ object DynamicCSS {
     init {
         // basis rules
         style(
-            ":root", mapOf(
-                "--usePadding" to "0",
-            )
-        )
-        style(
             "*", mapOf(
                 "box-sizing" to "border-box",
-                "line-height" to "unset"
+                "line-height" to "unset",
+                "--parentPadding" to "0px",
             )
         )
         style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
@@ -65,25 +61,8 @@ object DynamicCSS {
         style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
         style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
 
-        style(
-            ".swapImage", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-                "overflow" to "hidden",
-            )
-        )
-        style(
-            ".swapImage > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-                "object-fit" to "contain",
-            )
-        )
+        style(".swapImage", mapOf("overflow" to "hidden"))
+        style(".swapImage > img", mapOf("object-fit" to "contain"))
         style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
         style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
@@ -209,201 +188,219 @@ object DynamicCSS {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        style(
-            ".kiteui-swap", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
-        style(
-            ".kiteui-swap > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
 
 
-//        style(
-//            ".kiteui-swap", mapOf(
-//                "display" to "block",
-//                "position" to "relative",
-//            )
-//        )
-//
-//        style(
-//            ".kiteui-swap > *", mapOf(
-//                "position" to "absolute",
-//                "top" to "0",
-//                "left" to "0",
-//                "right" to "0",
-//                "bottom" to "0",
-//                "max-width" to "100%",
-//                "max-height" to "100%",
-//            )
-//        )
+        val rowForceFlex = ".kiteui-row"
+//        val rowForceFlex = ".childHasWeight"
+        """
+    .kiteui-col:not(.childHasWeight) > .kiteui-col.childHasWeight,
+    .kiteui-col:not(.childHasWeight) > .kiteui-row$rowForceFlex,
+    .kiteui-col:not(.childHasWeight) > .kiteui-label,
+    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> .vCenter:only-child),
+    .kiteui-col:not(.childHasWeight) > .rowCollapsing {
+        display: block flex;
+    }
+    .kiteui-row:not($rowForceFlex) > .kiteui-col.childHasWeight,
+    .kiteui-row:not($rowForceFlex) > .kiteui-row$rowForceFlex,
+    .kiteui-row:not($rowForceFlex) > .kiteui-label,
+    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> .vCenter:only-child),
+    .kiteui-row:not($rowForceFlex) > .rowCollapsing {
+        display: inline-flex;
+    }
+    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> :not(:only-child)) {
+        display: block grid;
+    }
+    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> :not(:only-child)) {
+        display: inline-grid;
+    }
 
-        style(
-            ".hidingContainer", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
-        style(
-            ".hidingContainer > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
 
-        style(
-            ".kiteui-stack", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
+    .kiteui-col.childHasWeight > .hEnd {
+        align-self: end;
+    }
+    .kiteui-col.childHasWeight > .hStretch {
+        align-self: stretch;
+    }
+    .kiteui-col.childHasWeight > .hCenter {
+        align-self: center;
+    }
+    .kiteui-col.childHasWeight > .hStart {
+        align-self: start;
+    }
+    .kiteui-col.childHasWeight {
+        display: flex;
+        flex-direction: column;
+    }
 
-        style(
-            ".kiteui-stack > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
 
-        style(
-            ".kiteui-stack > .hStart", mapOf(
-                "justify-self" to "start",
-            )
-        )
 
-        style(
-            ".kiteui-stack > .hCenter", mapOf(
-                "justify-self" to "center",
-            )
-        )
+    .kiteui-col:not(.childHasWeight) > * {
+        display: block;
+        width: calc(100%);
+    }
+    .kiteui-col:not(.childHasWeight) > :not(:last-child) {
+        margin-bottom: var(--parentSpacing, 0);
+    }
+    .kiteui-col:not(.childHasWeight) > .hEnd {
+        width: fit-content;
+        margin-left: auto;
+    }
+    .kiteui-col:not(.childHasWeight) > .hCenter {
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .kiteui-col:not(.childHasWeight) > .hStart {
+        width: fit-content;
+        margin-right: auto;
+    }
 
-        style(
-            ".kiteui-stack > .hStretch", mapOf(
-                "justify-self" to "stretch",
-            )
-        )
 
-        style(
-            ".kiteui-stack > .hEnd", mapOf(
-                "justify-self" to "end",
-            )
-        )
+    .kiteui-row:not($rowForceFlex) > * {
+        display: inline-block;
+        height: calc(100% - var(--parentPadding, 0) * 2);
+        vertical-align: top;
+    }
+    .kiteui-row:not($rowForceFlex) > :not(:last-child) {
+        margin-right: var(--parentSpacing, 0);
+    }
+    .kiteui-row:not($rowForceFlex) {
+        white-space: nowrap;
+    }
+    .kiteui-row:not($rowForceFlex)::before {
+      content: "\200B";
+      display: inline-block;
+      height: 100%; 
+      vertical-align: middle;
+    }
+    .kiteui-row:not($rowForceFlex) > .vEnd {
+        vertical-align: bottom;
+        height: fit-content;
+    }
+    .kiteui-row:not($rowForceFlex) > .vCenter {
+        vertical-align: middle;
+        height: fit-content;
+    }
+    .kiteui-row:not($rowForceFlex) > .vStart {
+        vertical-align: top;
+        height: fit-content;
+    }
 
-        style(
-            ".kiteui-stack > .vStart", mapOf(
-                "align-self" to "start",
-            )
-        )
 
-        style(
-            ".kiteui-stack > .vCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
+    .kiteui-row$rowForceFlex > .vEnd {
+        align-self: end;
+    }
+    .kiteui-row$rowForceFlex > .vStretch {
+        align-self: stretch;
+    }
+    .kiteui-row$rowForceFlex > .vCenter {
+        align-self: center;
+    }
+    .kiteui-row$rowForceFlex > .vStart {
+        align-self: start;
+    }
+    .kiteui-row$rowForceFlex {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    
+    .kiteui-stack > .vEnd:not(:only-child) {
+        align-self: end;
+    }
 
-        style(
-            ".kiteui-stack > .vStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
+    .kiteui-stack > .vStretch:not(:only-child) {
+        align-self: stretch;
+    }
 
-        style(
-            ".kiteui-stack > .vEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
+    .kiteui-stack > .vCenter:not(:only-child) {
+        align-self: center;
+    }
 
-        style(
-            ".kiteui-row", mapOf(
-                "display" to "flex",
-                "flex-direction" to "row",
-            )
-        )
-//        style(
-//            ".kiteui-row > *", mapOf(
-//                "max-width" to "unset",
-//            )
-//        )
+    .kiteui-stack > .vStart:not(:only-child) {
+        align-self: start;
+    }
 
-        style(
-            ".kiteui-row > .vStart", mapOf(
-                "align-self" to "start",
-            )
-        )
+    .kiteui-stack > .hEnd:not(:only-child) {
+        justify-self: end;
+    }
 
-        style(
-            ".kiteui-row > .vCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
+    .kiteui-stack > .hStretch:not(:only-child) {
+        justify-self: stretch;
+    }
 
-        style(
-            ".kiteui-row > .vStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
+    .kiteui-stack > .hCenter:not(:only-child) {
+        justify-self: center;
+    }
 
-        style(
-            ".kiteui-row > .vEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
+    .kiteui-stack > .hStart:not(:only-child) {
+        justify-self: start;
+    }
 
-        style(
-            ".kiteui-col", mapOf(
-                "display" to "flex",
-                "flex-direction" to "column",
-            )
-        )
 
-//        style(
-//            ".kiteui-col > *", mapOf(
-//                "max-height" to "unset",
-//            )
-//        )
 
-        style(
-            ".kiteui-col > .hStart", mapOf(
-                "align-self" to "start",
-            )
-        )
+    .kiteui-stack > :not(:only-child) {
+        grid-column-start: 1;
+        grid-column-end: 1;
+        grid-row-start: 1;
+        grid-row-end: 1;
+        align-self: stretch;
+        justify-self: stretch;
+    }
 
-        style(
-            ".kiteui-col > .hCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
+    .kiteui-stack:has(> :not(:only-child)) {
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 100%;
+    }
 
-        style(
-            ".kiteui-col > .hStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
+    .kiteui-stack:has(> :only-child) {
+        line-height: 0px !important;
+    }
 
-        style(
-            ".kiteui-col > .hEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
+    .kiteui-stack > :only-child {
+        height: 100%;
+        width: 100%;
+        vertical-align: top;
+    }
+
+    .kiteui-stack > .vEnd:only-child {
+        height: unset;
+        vertical-align: top;
+    }
+
+    .kiteui-stack > .vStart:only-child {
+        height: unset;
+        vertical-align: bottom;
+    }
+
+    .kiteui-stack > .hEnd:only-child {
+        width: unset;
+        margin-left: auto;
+    }
+
+    .kiteui-stack > .hCenter:only-child {
+        width: unset;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .kiteui-stack > .hStart:only-child {
+        width: unset;
+        margin-right: auto;
+    }
+    
+    .kiteui-stack:has(> .vCenter:only-child) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+    }
+    .kiteui-stack > .vCenter:only-child {
+        height: fit-content;
+    }
+    
+        """.trimIndent().split('}').filter { it.isNotBlank() }.forEach { rule("$it}") }
+
 
         style(
             "img", mapOf(
@@ -641,25 +638,6 @@ object DynamicCSS {
         )
 
         style(
-            ".icon", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
-
-        style(
-            ".icon > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
-
-        style(
             ".recycler", mapOf(
                 "overflow-y" to "auto"
             )
@@ -866,9 +844,9 @@ object DynamicCSS {
             ".contentScroll-V > *", mapOf(
                 "position" to "absolute",
                 "max-height" to "unset",
-                "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-                "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "width" to "calc(100% - var(--parentPadding, 0px) * 2)",
+                "margin-left" to "calc(var(--parentPadding, 0px))",
+                "margin-right" to "calc(var(--parentPadding, 0px))",
                 "overflow-anchor" to "revert",
             )
         )
@@ -876,9 +854,9 @@ object DynamicCSS {
             ".contentScroll-H > *", mapOf(
                 "max-width" to "unset",
                 "position" to "absolute",
-                "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-                "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "height" to "calc(100% - var(--parentPadding, 0px) * 2)",
+                "margin-top" to "calc(var(--parentPadding, 0px))",
+                "margin-bottom" to "calc(var(--parentPadding, 0px))",
                 "overflow-anchor" to "revert",
             )
         )
@@ -1107,11 +1085,11 @@ object DynamicCSS {
 
 
     fun themeInteractive(theme: Theme): String {
-        theme(
-            theme.down(),
-            listOf(".clickable:active .theme-${theme.id}", ".clickable:active.theme-${theme.id}"),
-            includeMaybeTransition = true
-        )
+//        theme(
+//            theme.down(),
+//            listOf(".clickable:active .theme-${theme.id}", ".clickable:active.theme-${theme.id}"),
+//            includeMaybeTransition = true
+//        )
         theme(
             theme.hover(),
             listOf(".clickable:hover .theme-${theme.id}", ".clickable:hover.theme-${theme.id}"),
@@ -1245,11 +1223,15 @@ object DynamicCSS {
                     ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"
                 ) to mapOf(
                     "padding" to "var(--spacing, 0px)",
-                    "--usePadding" to "1",
                 ),
                 sel(
                     ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *",
                     ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"
+                ) to mapOf(
+                    "--parentPadding" to theme.spacing.value,
+                ),
+                sel(
+                    " > *",
                 ) to mapOf(
                     "--parentSpacing" to theme.spacing.value,
                 ),
@@ -1302,7 +1284,6 @@ object DynamicCSS {
                 sel("") to mapOf(
                     "color" to theme.foreground.toCss(),
                     "--spacing" to theme.spacing.value,
-                    "--usePadding" to "0",
                     "gap" to "var(--spacing, 0.0)",
                     "font-family" to font(theme.body.font),
                     "font-weight" to theme.body.weight.toString(),

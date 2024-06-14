@@ -22,7 +22,7 @@ actual inline fun ViewWriter.iconActual(crossinline setup: IconView.() -> Unit):
     themedElement<NIconView>("div") {
         this.setAttribute("role", "img")
         addClass("viewDraws")
-        addClass("icon")
+        addClass("kiteui-stack")
         setup(IconView(this))
     }
 

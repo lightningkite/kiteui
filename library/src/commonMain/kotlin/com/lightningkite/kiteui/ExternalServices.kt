@@ -15,6 +15,7 @@ expect object ExternalServices {
     @JsName("downloadBlob")
     suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads)
     suspend fun download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+
     @JsName("shareBlob")
     suspend fun share(namesToBlobs: List<Pair<String, Blob>>)
     fun share(title: String, message: String? = null, url: String? = null)

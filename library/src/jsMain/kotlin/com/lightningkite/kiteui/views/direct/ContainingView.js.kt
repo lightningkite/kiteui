@@ -34,7 +34,7 @@ actual fun ViewWriter.rowCollapsingToColumnActual(
     breakpoint: Dimension,
     setup: ContainingView.() -> Unit
 ) = themedElementBackIfChanged<HTMLDivElement>("div") {
-    classList.add(DynamicCSS.rowCollapsingToColumn(breakpoint))
+    classList.add(DynamicCSS.rowCollapsingToColumn(breakpoint), "rowCollapsing")
     setup(ContainingView(this))
 }
 
