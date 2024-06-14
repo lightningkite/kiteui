@@ -30,7 +30,7 @@ fun UIView.sizeThatFits2(size: CValue<CGSize>, sizeConstraints: SizeConstraints?
         it.height?.let { h = it.value }
         CGSizeMake(w, h)
     } ?: size
-    return if(this is UIImageView) {
+    return if(this is NImageView) {
         if (sizeConstraints?.aspectRatio != null) return newSize
         this.image?.size?.useContents {
             val original = this
@@ -38,9 +38,11 @@ fun UIView.sizeThatFits2(size: CValue<CGSize>, sizeConstraints: SizeConstraints?
                 val max = this
                 val smallerRatio = (max.width / original.width)
                     .coerceAtMost(max.height / original.height)
+                val imageScale = smallerRatio
+                    .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
                 CGSizeMake(
-                    (original.width * smallerRatio.coerceAtMost(1 / UIScreen.mainScreen.scale)),
-                    (original.height * smallerRatio.coerceAtMost(1 / UIScreen.mainScreen.scale))
+                    original.width * imageScale,
+                    original.height * imageScale
                 )
             }
         } ?: CGSizeMake(0.0, 0.0)

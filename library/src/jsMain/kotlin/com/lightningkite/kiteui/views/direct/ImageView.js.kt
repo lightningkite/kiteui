@@ -124,6 +124,9 @@ actual inline var ImageView.refreshOnParamChange: Boolean
     set(value) {
         native.asDynamic().__KITEUI__refreshOnParamChange = value
     }
+actual var ImageView.naturalSize: Boolean
+    get() = false
+    set(value) {}
 
 @ViewDsl
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) {

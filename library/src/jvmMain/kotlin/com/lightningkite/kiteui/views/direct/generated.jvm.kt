@@ -78,6 +78,9 @@ actual inline var ImageView.description: String?
 actual inline var ImageView.refreshOnParamChange: Boolean
     get() = false
     set(value) {}
+actual var ImageView.naturalSize: Boolean
+    get() = TODO()
+    set(value) {}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NTextView = HTMLElement

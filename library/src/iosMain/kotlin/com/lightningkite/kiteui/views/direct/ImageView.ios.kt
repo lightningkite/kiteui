@@ -219,8 +219,14 @@ actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.()
         }
     }
 
+actual var ImageView.naturalSize: Boolean
+    get() = native.naturalSize
+    set(value) {
+        native.naturalSize = value
+    }
+
 @OptIn(ExperimentalForeignApi::class)
-class MyImageView : UIImageView(CGRectZero.readValue()) {
+class MyImageView(var naturalSize: Boolean = false) : UIImageView(CGRectZero.readValue()) {
 
     var refreshOnParamChange: Boolean = false
 

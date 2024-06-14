@@ -22,6 +22,13 @@ expect var ImageView.scaleType: ImageScaleType
 expect var ImageView.description: String?
 expect var ImageView.refreshOnParamChange: Boolean
 
+/**
+ * When true, images are dimensioned according to the platform logical coordinate space as opposed to the physical
+ * coordinate space. This will cause images to appear closer to their natural size on supported platforms with high
+ * density screens.
+ */
+expect var ImageView.naturalSize: Boolean
+
 @ViewDsl
 expect fun ViewWriter.zoomableImageActual(setup: ImageView.()->Unit = {}): Unit
 @OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.zoomableImage(noinline setup: ImageView.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; zoomableImageActual(setup) }

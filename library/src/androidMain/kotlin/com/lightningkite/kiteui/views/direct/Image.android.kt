@@ -103,6 +103,9 @@ actual var ImageView.description: String?
     set(value) {
         native.contentDescription = value
     }
+actual var ImageView.naturalSize: Boolean
+    get() = false
+    set(value) {}
 
 private val refreshOnParamChangeMap = WeakHashMap<ImageView, Boolean>()
 actual var ImageView.refreshOnParamChange: Boolean
