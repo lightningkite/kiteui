@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BaseListenable
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
@@ -20,16 +21,16 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
         native.attributes.type = "datetime-local"
         native.classes.add("editable")
     }
-    actual val content: Writable<LocalDateTime?> = object : Writable<LocalDateTime?>, BaseListenable() {
+    actual val content: ImmediateWritable<LocalDateTime?> = object : ImmediateWritable<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAll()
             }
         }
-        override val state: ReadableState<LocalDateTime?> get() = ReadableState(native.attributes.valueString?.let { LocalDateTime.parse(it) })
-        override suspend fun set(value: LocalDateTime?) {
-            native.attributes.valueString = value?.toString()?.take(charCount)
-        }
+
+        override var value: LocalDateTime?
+            get() = native.attributes.valueString?.let { LocalDateTime.parse(it) }
+            set(value) { native.attributes.valueString = value?.toString()?.take(charCount) }
     }
     actual var action: Action? = null
         set(value) {
@@ -86,16 +87,18 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
         native.attributes.type = "date"
         native.classes.add("editable")
     }
-    actual val content: Writable<LocalDate?> = object : Writable<LocalDate?>, BaseListenable() {
+    actual val content: ImmediateWritable<LocalDate?> = object : ImmediateWritable<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAll()
             }
         }
-        override val state: ReadableState<LocalDate?> get() = ReadableState(native.attributes.valueString?.let { LocalDate.parse(it) })
-        override suspend fun set(value: LocalDate?) {
-            native.attributes.valueString = value?.toString()?.take(charCount)
-        }
+
+        override var value: LocalDate?
+            get() = native.attributes.valueString?.let { LocalDate.parse(it) }
+            set(value) {
+                native.attributes.valueString = value?.toString()?.take(charCount)
+            }
     }
     actual var action: Action? = null
         set(value) {
@@ -151,16 +154,18 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
         native.attributes.type = "time"
         native.classes.add("editable")
     }
-    actual val content: Writable<LocalTime?> = object : Writable<LocalTime?>, BaseListenable() {
+
+    actual val content: ImmediateWritable<LocalTime?> = object : ImmediateWritable<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAll()
             }
         }
-        override val state: ReadableState<LocalTime?> get() = ReadableState(native.attributes.valueString?.let { LocalTime.parse(it) })
-        override suspend fun set(value: LocalTime?) {
-            native.attributes.valueString = value?.toString()?.take(charCount)
-        }
+        override var value: LocalTime?
+            get() = native.attributes.valueString?.let { LocalTime.parse(it) }
+            set(value) {
+                native.attributes.valueString = value?.toString()?.take(charCount)
+            }
     }
     actual var action: Action? = null
         set(value) {

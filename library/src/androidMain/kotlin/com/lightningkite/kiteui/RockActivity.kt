@@ -42,7 +42,7 @@ abstract class KiteUiActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowInfo.value = WindowStatistics(
+        _WindowInfo.value = WindowStatistics(
             Dimension(resources.displayMetrics.widthPixels.toFloat()),
             Dimension(resources.displayMetrics.heightPixels.toFloat()),
             resources.displayMetrics.density,
@@ -65,10 +65,14 @@ abstract class KiteUiActivity : Activity() {
 
     private var currentNum = 0
     private val onResults = HashMap<Int, (Int, Intent?)->Unit>()
-    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) {
+    fun cancelOnResult(requestCode: Int) {
+        onResults.remove(requestCode)
+    }
+    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
         val requestCode = currentNum++
         onResults[requestCode] = onResult
         ActivityCompat.startActivityForResult(this, intent, requestCode, options)
+        return requestCode
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         onResults[requestCode]?.invoke(resultCode, data)
@@ -76,17 +80,24 @@ abstract class KiteUiActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
     private val onPermissions = HashMap<Int, (PermissionResult)->Unit>()
+    fun cancelOnPermissions(requestCode: Int) {
+        onPermissions.remove(requestCode)
+    }
     data class PermissionResult(val map: Map<String, Int>) {
         val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
-    fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit) {
+    fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-        if(ungranted.isEmpty()) return onResult(PermissionResult(mapOf()))
+        if(ungranted.isEmpty()) {
+            onResult(PermissionResult(mapOf()))
+            return -1
+        }
         val requestCode = currentNum++
         onPermissions[requestCode] = onResult
         ActivityCompat.requestPermissions(this, ungranted.toTypedArray(), requestCode)
+        return requestCode
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -104,12 +115,12 @@ abstract class KiteUiActivity : Activity() {
         val keyboardHeight = resources.displayMetrics.heightPixels - rect.bottom
         if (keyboardHeight.toFloat() > resources.displayMetrics.heightPixels * 0.15f) {
             suppressKeyboardChange = true
-            SoftInputOpen.value = true
+            _SoftInputOpen.value = true
             suppressKeyboardChange = false
         } else {
             afterTimeout(30L) {
                 suppressKeyboardChange = true
-                SoftInputOpen.value = false
+                _SoftInputOpen.value = false
                 suppressKeyboardChange = false
             }
         }

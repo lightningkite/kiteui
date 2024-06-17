@@ -10,7 +10,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
         native.tag = "div"
         native.setAttribute("role", "img")
         native.classes.add("viewDraws")
-        native.classes.add("icon")
+        native.classes.add("kiteui-stack")
     }
 
     actual var source: Icon? = null

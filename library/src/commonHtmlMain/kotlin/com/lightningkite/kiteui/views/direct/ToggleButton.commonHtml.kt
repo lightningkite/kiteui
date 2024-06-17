@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
 
@@ -47,7 +48,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         useBackground = UseBackground.Yes
     }
 
-    actual val checked: Writable<Boolean> = input.vprop(
+    actual val checked: ImmediateWritable<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

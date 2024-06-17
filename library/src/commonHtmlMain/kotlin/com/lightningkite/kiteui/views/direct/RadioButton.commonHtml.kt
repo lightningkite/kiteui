@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -17,7 +18,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         useBackground = UseBackground.Yes
     }
 
-    actual val checked: Writable<Boolean> = native.vprop(
+    actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

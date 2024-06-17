@@ -12,7 +12,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
-        native.classes.add("swapImage")
+        native.classes.add("kiteui-stack")
     }
 
 
@@ -58,6 +58,14 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             field = value
             native.setAttribute("aria-label", value)
         }
+    actual var refreshOnParamChange: Boolean = false
+
+    /**
+     * When true, images are dimensioned according to the platform logical coordinate space as opposed to the physical
+     * coordinate space. This will cause images to appear closer to their natural size on supported platforms with high
+     * density screens.
+     */
+    actual var naturalSize: Boolean = false
 }
 
 @JsName("createObjectURLBlob")

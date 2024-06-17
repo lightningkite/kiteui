@@ -39,7 +39,9 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
 
     actual var source: ImageSource? = null
         set(value) {
-            if(value == field) return
+            if(refreshOnParamChange && value is ImageRemote) {
+                if(value.url == (field as? ImageRemote)?.url) return
+            } else if(value == field) return
             field = value
             @Suppress("KotlinConstantConditions")
             if (native is TouchImageView) {
@@ -104,6 +106,15 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         super.applyBackground(theme, true)
     }
+
+    actual var refreshOnParamChange: Boolean = false
+
+    /**
+     * When true, images are dimensioned according to the platform logical coordinate space as opposed to the physical
+     * coordinate space. This will cause images to appear closer to their natural size on supported platforms with high
+     * density screens.
+     */
+    actual var naturalSize: Boolean = true
 }
 
 //@ViewDsl

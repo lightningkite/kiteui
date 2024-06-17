@@ -3,10 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.BaseListenable
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.asDouble
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
@@ -16,7 +13,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: Writable<Double?> = object : Writable<Double?>, BaseListenable() {
+    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(
@@ -31,10 +28,10 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
                 invokeAll()
             }
         }
-        override val state: ReadableState<Double?> get() = ReadableState(native.attributes.valueString?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull())
-        override suspend fun set(value: Double?) {
-            native.attributes.valueString = value?.commaString()
-        }
+
+        override var value: Double?
+            get() = native.attributes.valueString?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()
+            set(value) { native.attributes.valueString = value?.commaString() }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {

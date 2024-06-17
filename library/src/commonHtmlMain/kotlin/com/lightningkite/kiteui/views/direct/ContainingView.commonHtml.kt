@@ -35,5 +35,6 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoint))
+        native.classes.add("rowCollapsing")
     }
 }

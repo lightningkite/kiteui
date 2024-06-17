@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
 
@@ -11,7 +12,7 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
         native.classes.add("switch")
         native.classes.add("checkResponsive")
     }
-    actual val checked: Writable<Boolean> = native.vprop(
+    actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

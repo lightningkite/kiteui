@@ -9,7 +9,7 @@ import kotlin.time.Duration
 actual class SwapView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
-        native.classes.add("kiteui-swap")
+        native.classes.add("kiteui-stack")
     }
     var previousLast: RView? = null
     actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {

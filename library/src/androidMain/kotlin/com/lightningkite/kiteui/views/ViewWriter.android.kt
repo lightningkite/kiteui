@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invokeAllSafe
+import com.lightningkite.kiteui.suspendCoroutineCancellable
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
@@ -31,6 +32,8 @@ import java.util.WeakHashMap
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 object AndroidAppContext {
     lateinit var applicationCtx: Context
@@ -56,4 +59,12 @@ object AndroidAppContext {
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
+    suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCoroutineCancellable { continuation ->
+        val code = requestPermissions(*permissions) {
+            continuation.resume(it)
+        }
+        return@suspendCoroutineCancellable {
+            code?.let { c -> activityCtx?.cancelOnPermissions(c) }
+        }
+    }
 }

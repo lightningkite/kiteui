@@ -42,16 +42,18 @@ actual fun ViewWriter.hasPopover(
 ): ViewWrapper {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
-        floating.menuGenerator = { setup(this, object: PopoverContext {
-            override val calculationContext: CalculationContext
-                get() = this@beforeNextElementSetup
+        floating.menuGenerator = {
+            setup(this, object : PopoverContext {
+                override val calculationContext: CalculationContext
+                    get() = this@beforeNextElementSetup
 
-            override fun close() {
-                popoverClosers.invokeAllSafe()
-            }
-        }) }
+                override fun close() {
+                    popoverClosers.invokeAllSafe()
+                }
+            })
+        }
         floating.preferredDirection = preferredDirection
-        if(this is Button || requiresClick)
+        if (this is Button || requiresClick)
             native.addEventListener("click") {
                 floating.open()
             }
@@ -81,15 +83,17 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         native.style.flexGrow = "$amount"
         native.style.flexShrink = "$amount"
         native.style.flexBasis = "0"
+        parent?.native?.classes?.add("childHasWeight")
     }
     return ViewWrapper
 }
+
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
-            if(amount != 0f) {
+            if (amount != 0f) {
                 native.style.flexGrow = "$amount"
                 native.style.flexShrink = "$amount"
                 native.style.flexBasis = "0"
@@ -98,6 +102,7 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
                 native.style.flexShrink = "0"
                 native.style.flexBasis = "auto"
             }
+            parent?.native?.classes?.add("childHasWeight")
         }
     }
     return ViewWrapper
@@ -147,7 +152,10 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         else native.style.maxWidth = constraints.maxWidth.value
 
         if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
-        else native.setStyleProperty("aspect-ratio", "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}")
+        else native.setStyleProperty(
+            "aspect-ratio",
+            "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}"
+        )
 
         if (constraints.width == null) native.style.width = null
         else native.style.width = constraints.width.value
@@ -158,6 +166,39 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     return ViewWrapper
 }
 
+@ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+    beforeNextElementSetup {
+
+        reactiveScope {
+            val constraints = constraints()
+            if (constraints.minHeight == null) native.style.minHeight = null
+            else native.style.minHeight = constraints.minHeight.value
+
+            if (constraints.maxHeight == null) native.style.maxHeight = null
+            else native.style.maxHeight = constraints.maxHeight.value
+
+            if (constraints.minWidth == null) native.style.minWidth = null
+            else native.style.minWidth = constraints.minWidth.value
+
+            if (constraints.maxWidth == null) native.style.maxWidth = null
+            else native.style.maxWidth = constraints.maxWidth.value
+
+            if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
+            else native.setStyleProperty(
+                "aspect-ratio",
+                "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}"
+            )
+
+            if (constraints.width == null) native.style.width = null
+            else native.style.width = constraints.width.value
+
+            if (constraints.height == null) native.style.height = null
+            else native.style.height = constraints.height.value
+        }
+    }
+    return ViewWrapper
+}
 
 // End
 

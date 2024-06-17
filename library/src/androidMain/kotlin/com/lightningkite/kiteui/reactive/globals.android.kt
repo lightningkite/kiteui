@@ -15,11 +15,11 @@ actual object AnimationFrame : Listenable {
     }
 }
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual object WindowInfo: BaseImmediateReadable<WindowStatistics>(WindowStatistics(Dimension(1920f), Dimension(1080f), 1f))
+actual object WindowInfo: ImmediateReadable<WindowStatistics> by _WindowInfo
+internal val _WindowInfo = Property(WindowStatistics(Dimension(1920f), Dimension(1080f), 1f))
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual object InForeground: BaseImmediateReadable<Boolean>(true)
+actual object InForeground: ImmediateReadable<Boolean> by _InForeground
+internal val _InForeground = Property(true)
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual object SoftInputOpen : BaseImmediateReadable<Boolean>(false)
+actual object SoftInputOpen : ImmediateReadable<Boolean> by _SoftInputOpen
+internal val _SoftInputOpen = Property(false)

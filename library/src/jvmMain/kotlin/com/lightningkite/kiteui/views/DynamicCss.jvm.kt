@@ -2,9 +2,8 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Font
 
-actual object DynamicCss {
-    actual val basePath: String
-        get() = TODO("Not yet implemented")
+actual class DynamicCss actual constructor(basePath: String) {
+    actual val basePath: String = basePath
 
     actual fun font(font: Font): String {
         TODO("Not yet implemented")
@@ -25,5 +24,11 @@ actual object DynamicCss {
         map: Map<String, String>
     ): () -> Unit {
         TODO("Not yet implemented")
+    }
+
+    actual fun styles(
+        mediaQuery: String?,
+        styles: List<Pair<String, Map<String, String>>>
+    ) {
     }
 }

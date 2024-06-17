@@ -31,6 +31,11 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                     "--parentSpacing" to value.value
                 )
             )
+            context.dynamicCss.styleIfMissing(
+                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > .hidingContainer > *", mapOf(
+                    "--parentPadding" to value.value
+                )
+            )
             native.classes.add("spacingOf")
         }
     }

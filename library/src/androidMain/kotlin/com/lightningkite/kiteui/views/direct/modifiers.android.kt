@@ -173,11 +173,13 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
-    wrapNext(DesiredSizeView(this.context)) {
-        calculationContext.reactiveScope {
-            this.constraints = constraints()
+    wrapNextIn(object : RView(context) {
+        override val native: View = DesiredSizeView(context.activity).apply {
+            reactiveScope {
+                this.constraints = constraints()
+            }
         }
-    }
+    })
     return ViewWrapper
 }
 

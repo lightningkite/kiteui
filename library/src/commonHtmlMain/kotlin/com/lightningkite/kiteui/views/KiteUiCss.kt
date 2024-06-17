@@ -7,11 +7,13 @@ import kotlin.time.DurationUnit
 class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
-        dynamicCss.style("*", mapOf(
-            "box-sizing" to "border-box",
-            "line-height" to "unset",
-            "--parentPadding" to "0px",
-        ))
+        dynamicCss.style(
+            "*", mapOf(
+                "box-sizing" to "border-box",
+                "line-height" to "unset",
+                "--parentPadding" to "0px",
+            )
+        )
         dynamicCss.style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
         dynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
         dynamicCss.style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
@@ -33,7 +35,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
         dynamicCss.style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
         dynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
-        dynamicCss.style(".kiteui-space", mapOf("min-width" to "calc(var(--space-multiplier, 1.0) * var(--spacing, 0px))"))
+        dynamicCss.style(
+            ".kiteui-space",
+            mapOf("min-width" to "calc(var(--space-multiplier, 1.0) * var(--spacing, 0px))")
+        )
 
         dynamicCss.style(".swapImage", mapOf("overflow" to "hidden"))
         dynamicCss.style(".swapImage > img", mapOf("object-fit" to "contain"))
@@ -46,12 +51,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         dynamicCss.style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
         dynamicCss.style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
 
-        dynamicCss.style(".noInteraction.noInteraction", mapOf(
-            "pointer-events" to "none"
-        ))
-        dynamicCss.style(".noInteraction > *", mapOf(
-            "pointer-events" to "auto"
-        ))
+        dynamicCss.style(
+            ".noInteraction.noInteraction", mapOf(
+                "pointer-events" to "none"
+            )
+        )
+        dynamicCss.style(
+            ".noInteraction > *", mapOf(
+                "pointer-events" to "auto"
+            )
+        )
 
         dynamicCss.style(
             "body", mapOf(
@@ -158,7 +167,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-
 
 
         val rowForceFlex = ".kiteui-row"
@@ -771,66 +779,86 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         )
 //        recyclerView
-        dynamicCss.style(".recyclerView", mapOf(
-            "position" to "relative",
-            "padding" to "0 !important"
-        ))
+        dynamicCss.style(
+            ".recyclerView", mapOf(
+                "position" to "relative",
+                "padding" to "0 !important"
+            )
+        )
 
-        dynamicCss.style(".contentScroll-V::-webkit-scrollbar", mapOf(
-            "display" to "none"
-        ))
-        dynamicCss.style(".contentScroll-H::-webkit-scrollbar", mapOf(
-            "display" to "none"
-        ))
-        dynamicCss.style(".contentScroll-V",  mapOf(
-            "width" to "100%",
-            "height" to "100%",
-            "position" to "relative",
-            "overflow-y" to "scroll",
-            "overflow-anchor" to "none",
-            "scrollbar-width" to "none",
-        ))
-        dynamicCss.style(".contentScroll-H",  mapOf(
-            "width" to "100%",
-            "height" to "100%",
-            "position" to "relative",
-            "overflow-x" to "scroll",
-            "overflow-anchor" to "none",
-            "scrollbar-width" to "none",
-        ))
-        dynamicCss.style(".contentScroll-V > *",  mapOf(
-            "position" to "absolute",
-            "max-height" to "unset",
-            "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-            "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "overflow-anchor" to "revert",
-        ))
-        dynamicCss.style(".contentScroll-H > *",  mapOf(
-            "max-width" to "unset",
-            "position" to "absolute",
-            "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-            "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-            "overflow-anchor" to "revert",
-        ))
-        dynamicCss.style(".contentScroll-V > .recyclerViewGridSub",  mapOf(
-            "display" to "flex",
-            "flex-direction" to "row",
-            "gap" to "var(--spacing, 0)",
-            "height" to "auto"
-        ))
-        dynamicCss.style(".contentScroll-H > .recyclerViewGridSub",  mapOf(
-            "display" to "flex",
-            "flex-direction" to "column",
-            "gap" to "var(--spacing, 0)",
-            "width" to "auto"
-        ))
-        dynamicCss.style(".recyclerViewGridSub > *",  mapOf(
-            "flex-grow" to "1",
-            "flex-shrink" to "1",
-            "flex-basis" to "0",
-        ))
+        dynamicCss.style(
+            ".contentScroll-V::-webkit-scrollbar", mapOf(
+                "display" to "none"
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-H::-webkit-scrollbar", mapOf(
+                "display" to "none"
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-V", mapOf(
+                "width" to "100%",
+                "height" to "100%",
+                "position" to "relative",
+                "overflow-y" to "scroll",
+                "overflow-anchor" to "none",
+                "scrollbar-width" to "none",
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-H", mapOf(
+                "width" to "100%",
+                "height" to "100%",
+                "position" to "relative",
+                "overflow-x" to "scroll",
+                "overflow-anchor" to "none",
+                "scrollbar-width" to "none",
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-V > *", mapOf(
+                "position" to "absolute",
+                "max-height" to "unset",
+                "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
+                "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "overflow-anchor" to "revert",
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-H > *", mapOf(
+                "max-width" to "unset",
+                "position" to "absolute",
+                "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
+                "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
+                "overflow-anchor" to "revert",
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-V > .recyclerViewGridSub", mapOf(
+                "display" to "flex",
+                "flex-direction" to "row",
+                "gap" to "var(--spacing, 0)",
+                "height" to "auto"
+            )
+        )
+        dynamicCss.style(
+            ".contentScroll-H > .recyclerViewGridSub", mapOf(
+                "display" to "flex",
+                "flex-direction" to "column",
+                "gap" to "var(--spacing, 0)",
+                "width" to "auto"
+            )
+        )
+        dynamicCss.style(
+            ".recyclerViewGridSub > *", mapOf(
+                "flex-grow" to "1",
+                "flex-shrink" to "1",
+                "flex-basis" to "0",
+            )
+        )
 //        contentScroll
 //        content
 //        barScroll
@@ -839,21 +867,27 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 //            "scroll-snap-type" to "x mandatory",
 //            "scroll-behavior" to "smooth"
 //        ))
-        dynamicCss.style(".viewPager > *", mapOf(
-            "width" to "var(--pager-width, 0rem)",
-            "height" to "var(--pager-height, 0rem)",
-            "scroll-snap-align" to "center",
-        ))
-        dynamicCss.style(".touchscreenOnly", mapOf(
-            "visibility" to "gone"
-        ))
-        dynamicCss.rule("""
+        dynamicCss.style(
+            ".viewPager > *", mapOf(
+                "width" to "var(--pager-width, 0rem)",
+                "height" to "var(--pager-height, 0rem)",
+                "scroll-snap-align" to "center",
+            )
+        )
+        dynamicCss.style(
+            ".touchscreenOnly", mapOf(
+                "visibility" to "gone"
+            )
+        )
+        dynamicCss.rule(
+            """
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
                     visibility: visible
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
         dynamicCss.style(
             "progress", mapOf(
                 "height" to "0.5rem",
@@ -1138,7 +1172,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "border-radius" to theme.cornerRadii.toRawCornerRadius(),
                 ),
                 sel(".title") to mapOf(
-                    "font-family" to font(theme.title.font),
+                    "font-family" to dynamicCss.font(theme.title.font),
                     "font-weight" to theme.title.weight.toString(),
                     "font-style" to if (theme.title.italic) "italic" else "normal",
                     "text-transform" to if (theme.title.allCaps) "uppercase" else "none",
@@ -1152,7 +1186,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "color" to theme.foreground.toCss(),
                     "--spacing" to theme.spacing.value,
                     "gap" to "var(--spacing, 0.0)",
-                    "font-family" to font(theme.body.font),
+                    "font-family" to dynamicCss.font(theme.body.font),
                     "font-weight" to theme.body.weight.toString(),
                     "font-style" to if (theme.body.italic) "italic" else "normal",
                     "text-transform" to if (theme.body.allCaps) "uppercase" else "none",
@@ -1185,11 +1219,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                     )
 
-                is RadialGradient -> mapOf(
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-            }
+                    is RadialGradient -> mapOf(
+                        "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
+                        "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
+                    )
+                }
+            )
         )
 
         return "theme-${theme.id}"
@@ -1198,10 +1233,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     val rowCollapsingToColumnHandled = HashSet<String>()
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
-        if(rowCollapsingToColumnHandled.add(name)) {
-            dynamicCss.style(".$name", mapOf(
-                "display" to "flex"
-            ))
+        if (rowCollapsingToColumnHandled.add(name)) {
+            dynamicCss.style(
+                ".$name", mapOf(
+                    "display" to "flex"
+                )
+            )
             dynamicCss.rule(
                 """
                     @media (min-width: ${breakpoint.value}) {

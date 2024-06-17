@@ -12,7 +12,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
-        native.classes.add("swapImage")
+        native.classes.add("kiteui-stack")
     }
 
 

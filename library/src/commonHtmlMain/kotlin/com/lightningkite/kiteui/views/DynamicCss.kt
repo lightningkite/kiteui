@@ -9,4 +9,8 @@ expect class DynamicCss(basePath: String) {
     fun styleIfMissing(selector: String, map: Map<String, String>)
     fun style(selector: String, map: Map<String, String>)
     fun tempStyle(selector: String, map: Map<String, String>): () -> Unit
+    fun styles(
+        mediaQuery: String? = null,
+        styles: List<Pair<String, Map<String, String>>>
+    )
 }
