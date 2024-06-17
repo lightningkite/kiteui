@@ -1,12 +1,9 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.extensionStrongRef
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toNSDate
+import kotlinx.cinterop.*
+import kotlinx.coroutines.*
+import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.EventKit.EKEntityType
@@ -18,6 +15,9 @@ import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.*
 import platform.MapKit.MKMapItem
 import platform.MapKit.MKPlacemark
+import platform.Photos.PHAccessLevelAddOnly
+import platform.Photos.PHAssetChangeRequest
+import platform.Photos.PHAuthorizationStatusAuthorized
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.*
@@ -25,8 +25,10 @@ import platform.UniformTypeIdentifiers.*
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
+import platform.posix.int64_t
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 actual object ExternalServices {
     actual fun openTab(url: String) {
@@ -164,7 +166,16 @@ actual object ExternalServices {
                             picker.dismissViewControllerAnimated(true) {
                                 dispatch_async(queue = dispatch_get_main_queue(), block = {
                                     didFinishPicking.filterIsInstance<PHPickerResult>()
-                                        .map { result -> FileReference(result.itemProvider) }
+                                        .map { result ->
+                                            val suggestedType = result.itemProvider.registeredContentTypes
+                                                .filterIsInstance<UTType>()
+                                                .first { type ->
+                                                    mimeTypes.any { mimeType ->
+                                                        type.matchesMimeType(mimeType)
+                                                    }
+                                                }
+                                            FileReference(result.itemProvider, suggestedType)
+                                        }
                                         .let { cont.resume(it) }
                                 })
                             }
@@ -239,6 +250,14 @@ actual object ExternalServices {
                 }
             }
         }
+
+    private fun UTType.matchesMimeType(mimeType: String): Boolean {
+        val a = mimeType.split("/", limit = 2)
+        val b = preferredMIMEType?.split("/", limit = 2) ?: return false
+        if (a[0] != b[0] && a[0] != "*" && b[0] != "*") return false
+        if (a[1] != b[1] && a[1] != "*" && b[1] != "*") return false
+        return true
+    }
 
     actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) {
@@ -346,58 +365,201 @@ actual object ExternalServices {
     actual fun setClipboardText(value: String) {
         UIPasteboard.generalPasteboard.string = value
     }
-    @OptIn(ExperimentalForeignApi::class)
-    actual fun download(name: String, url: String) {
-        val url = NSURL(string = url)
 
-        val destination = getDownloadUrl(name)
+    actual suspend fun download(
+        name: String,
+        url: String,
+        preferredDestination: DownloadLocation,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
 
-        val task = NSURLSession.sharedSession.downloadTaskWithURL(url) { localURL, urlResponse, error ->
-            if(localURL == null) return@downloadTaskWithURL
-            if(destination == null) return@downloadTaskWithURL
-            NSFileManager.defaultManager.copyItemAtURL(localURL, destination, null)
-            afterTimeout(1) {
-                val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
-                ac.popoverPresentationController?.sourceView = rootView
-                ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
-                currentPresenter(ac)
+    suspend fun downloadMultiple(
+        urlToNames: Map<String, String>,
+        preferredDestination: DownloadLocation,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) {
+        coroutineScope {
+            val temporaryFiles = suspendCoroutine {
+                var updateProgressJob: Job? = null
+                val delegate = NSURLDownloadAndCopyDelegate(
+                    { temporaryFiles -> it.resume(temporaryFiles) }
+                ) { progress ->
+                    onDownloadProgress?.let { updateProgressCallback ->
+                        updateProgressJob?.cancel()
+                        updateProgressJob = launch(Dispatchers.Main) {
+                            updateProgressCallback(progress)
+                        }
+                    }
+                }
+
+                val session = NSURLSession.sessionWithConfiguration(
+                    NSURLSessionConfiguration.defaultSessionConfiguration,
+                    delegate,
+                    null
+                )
+                for ((url, name) in urlToNames) {
+                    val task = session.downloadTaskWithURL(NSURL(string = url))
+                    delegate.setFilenameForDownloadTask(task, name)
+                    task.resume()
+                }
+                session.finishTasksAndInvalidate()
+            }
+
+            when (preferredDestination) {
+                DownloadLocation.Downloads -> {
+                    afterTimeout(1) {
+                        showShareSheet(items = temporaryFiles)
+                    }
+                }
+                DownloadLocation.Pictures -> {
+                    copyFilesToCameraRoll(temporaryFiles)
+                }
             }
         }
-
-        task.resume()
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    private fun getDownloadUrl(name: String): NSURL {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
-        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL ?: throw IllegalStateException("No download directory")
-        while(true) {
-            val destinationFileUrl =  documentsUrl.URLByAppendingPathComponent(name)!!
-            if(!NSFileManager.defaultManager.isReadableFileAtPath(destinationFileUrl.path!!))
-                return destinationFileUrl
+    private fun getTemporaryDestinationPath(name: String): NSURL {
+        if (!name.matches(validDownloadName)) throw IllegalArgumentException("Illegal download name $name")
+        return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name) ?: throw IllegalStateException("Unable to find a temporary path for file")
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    private fun Blob.saveToTemporaryFile(name: String): NSURL {
+        val type = UTType.typeWithMIMEType(type)
+        val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("$name.${type?.preferredFilenameExtension ?: "tmp"}")!!
+        val persistSuccess = data.writeToURL(tmpFile, 0u, null)
+        if (!persistSuccess) throw Exception("Unable to copy in-memory Blob to disk")
+        return tmpFile
+    }
+
+    private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
+        val hasPermission = PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelAddOnly) == PHAuthorizationStatusAuthorized
+        if (!hasPermission) {
+            println("Lacking Camera Roll add access")
+            val newPermission = withContext(Dispatchers.Main) {
+                suspendCoroutine { continuation ->
+                    PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) {
+                        continuation.resume(it)
+                    }
+                }
+            }
+
+            if (newPermission != PHAuthorizationStatusAuthorized) throw Exception("User rejected Camera Roll add permission")
+        }
+
+        return suspendCoroutine {
+            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                files.forEach {
+                    PHAssetChangeRequest.creationRequestForAssetFromImageAtFileURL(it)
+                }
+            }) { success, _ ->
+                dispatch_async(dispatch_get_main_queue()) {
+                    if (success) {
+                        it.resume(Unit)
+                    } else {
+                        it.resumeWithException(Exception("Unable to make changes to shared photo library"))
+                    }
+                }
+            }
         }
     }
 
-    @OptIn(ExperimentalForeignApi::class)
-    actual fun download(name: String, blob: Blob) {
-        val documentsUrl = NSFileManager.defaultManager.URLsForDirectory(NSDownloadsDirectory, NSUserDomainMask).firstOrNull() as? NSURL
-        val destination = getDownloadUrl(name)
-
-        val ac = UIActivityViewController(activityItems = listOf(destination), applicationActivities = null)
-        ac.popoverPresentationController?.sourceView = rootView
-        ac.popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
-        currentPresenter(ac)
+    actual suspend fun download(
+        name: String,
+        blob: Blob,
+        preferredDestination: DownloadLocation
+    ) {
+        val temporaryFiles = listOf(blob.saveToTemporaryFile(name))
+        when (preferredDestination) {
+            DownloadLocation.Downloads -> {
+                withContext(Dispatchers.Main) {
+                    showShareSheet(items = temporaryFiles)
+                }
+            }
+            DownloadLocation.Pictures -> {
+                copyFilesToCameraRoll(temporaryFiles)
+            }
+        }
     }
+
+    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
+        showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
+
+    actual fun share(title: String, message: String?, url: String?) =
+        showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
+
     @OptIn(ExperimentalForeignApi::class)
-    actual fun share(title: String, message: String?, url: String?){
-        currentPresenter(UIActivityViewController(
-            listOfNotNull(message, url?.let { NSURL(string = it) }),
-            null
-        ).apply {
+    private fun showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
+        currentPresenter(UIActivityViewController(messages + items, null).apply {
             popoverPresentationController?.sourceView = rootView
             popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
         })
     }
+
+    private class NSURLDownloadAndCopyDelegate(
+        private val onDownloadComplete: (temporaryFiles: List<NSURL>) -> Unit,
+        private val onDownloadProgress: ((progress: Float) -> Unit)?
+    ) : NSObject(), NSURLSessionDelegateProtocol, NSURLSessionDownloadDelegateProtocol {
+
+        private class DownloadTaskState(val filename: String, var progress: Float)
+
+        private val progressOfTasks = mutableMapOf<NSURLSessionDownloadTask, DownloadTaskState>()
+        private val temporaryFiles = mutableListOf<NSURL>()
+
+        fun setFilenameForDownloadTask(task: NSURLSessionDownloadTask, filename: String) {
+            progressOfTasks[task] = DownloadTaskState(filename, 0f)
+        }
+
+        @OptIn(ExperimentalForeignApi::class)
+        override fun URLSession(
+            session: NSURLSession,
+            downloadTask: NSURLSessionDownloadTask,
+            didFinishDownloadingToURL: NSURL
+        ) {
+            val destination = getTemporaryDestinationPath(progressOfTasks[downloadTask]!!.filename)
+            if (destination.path?.let { NSFileManager.defaultManager.fileExistsAtPath(it) } != false) {
+                NSFileManager.defaultManager.removeItemAtURL(destination, null)
+            }
+            val copySuccess = NSFileManager.defaultManager.copyItemAtURL(didFinishDownloadingToURL, destination, null)
+
+            if (copySuccess) {
+                temporaryFiles.add(destination)
+            }
+        }
+
+        override fun URLSession(
+            session: NSURLSession,
+            didBecomeInvalidWithError: NSError?
+        ) {
+            dispatch_async(dispatch_get_main_queue()) {
+                onDownloadComplete(temporaryFiles)
+            }
+        }
+
+        override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
+        }
+
+        override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
+
+        }
+
+        override fun URLSession(
+            session: NSURLSession,
+            downloadTask: NSURLSessionDownloadTask,
+            didWriteData: int64_t,
+            totalBytesWritten: int64_t,
+            totalBytesExpectedToWrite: int64_t
+        ) {
+            val percent = (totalBytesWritten / totalBytesExpectedToWrite).toFloat()
+            progressOfTasks[downloadTask]?.progress = percent
+            dispatch_async(dispatch_get_main_queue()) {
+                onDownloadProgress?.invoke(progressOfTasks.values.map { it.progress }
+                    .reduce { acc, progress -> acc + progress } / progressOfTasks.size)
+            }
+        }
+    }
+
     actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
         val store = EKEventStore()
         store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->

@@ -47,6 +47,19 @@ object LayoutExamplesScreen : Screen {
             }
 
             card - col {
+                h2 { content = "Row Gravity" }
+                row {
+                    val aligns = listOf(Align.Start, Align.Center, Align.End)
+                    for (v in aligns) {
+                        gravity(Align.Stretch, v) - text { content = "$v" }
+                    }
+                    for (v in aligns) {
+                        gravity(Align.Stretch, v) - text { content = "$v" }
+                    }
+                } in sizedBox(SizeConstraints(minHeight = 200.px))
+            }
+
+            card - col {
                 h2 { content = "Row Gravity / Weight" }
                 row {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)

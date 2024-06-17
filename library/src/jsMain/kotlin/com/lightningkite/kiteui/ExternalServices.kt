@@ -42,7 +42,7 @@ actual object ExternalServices {
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    actual fun download(name: String, url: String) {
+    actual suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         a.href = url
@@ -51,7 +51,7 @@ actual object ExternalServices {
         a.click()
     }
     @JsName("downloadBlob")
-    actual fun download(name: String, blob: Blob) {
+    actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         val url = URL.Companion.createObjectURL(blob)
@@ -62,6 +62,11 @@ actual object ExternalServices {
         afterTimeout(60_000) {
             URL.Companion.revokeObjectURL(url)
         }
+    }
+
+    @JsName("shareBlob")
+    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
+        TODO()
     }
 
     actual fun share(title: String, message: String?, url: String?) {

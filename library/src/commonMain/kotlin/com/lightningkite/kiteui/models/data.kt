@@ -409,7 +409,7 @@ data class ImageVector(
     )
 }
 
-class ImageRemote(val url: String) : ImageSource() {
+data class ImageRemote(val url: String) : ImageSource() {
     private val before = url.substringBefore('?')
     override fun hashCode(): Int = before.hashCode()
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
@@ -593,5 +593,7 @@ inline operator fun Dimension.times(other: Double): Dimension = this * other.toF
 expect inline operator fun Dimension.div(other: Float): Dimension
 inline operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
 inline operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
+expect inline fun Dimension.coerceAtMost(other: Dimension): Dimension
+expect inline fun Dimension.coerceAtLeast(other: Dimension): Dimension
 
 data class WidgetOption(val key: String, val display: String)

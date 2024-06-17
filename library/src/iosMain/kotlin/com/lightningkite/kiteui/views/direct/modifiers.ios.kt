@@ -147,6 +147,17 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     return ViewWrapper
 }
 
+@ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+    beforeNextElementSetup {
+        reactiveScope {
+            native.extensionSizeConstraints = constraints()
+            native.informParentOfSizeChange()
+        }
+    }
+    return ViewWrapper
+}
+
 // End
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {

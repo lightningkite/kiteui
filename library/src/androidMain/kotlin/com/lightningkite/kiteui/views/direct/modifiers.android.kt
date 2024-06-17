@@ -20,6 +20,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.utils.fitInsideBox
 import com.lightningkite.kiteui.views.*
 
 @ViewModifierDsl3
@@ -147,7 +148,7 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
-    if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null) {
+    if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
         wrapNextIn(object : RView(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
@@ -165,6 +166,16 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
             }
             constraints.minWidth?.let { native.minimumWidth = it.value.toInt() }
             constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
+        }
+    }
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
+actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+    wrapNext(DesiredSizeView(this.context)) {
+        calculationContext.reactiveScope {
+            this.constraints = constraints()
         }
     }
     return ViewWrapper
@@ -290,22 +301,33 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             }
             return MeasureSpec.makeMeasureSpec(outSize, outMode)
         }
-        setMeasuredDimension(
-            postprocess(
-                widthMeasureSpec,
-                f.measuredWidth,
-                constraints.minWidth?.value?.toInt(),
-                constraints.maxWidth?.value?.toInt(),
-                constraints.width?.value?.toInt()
-            ),
-            postprocess(
-                heightMeasureSpec,
-                f.measuredHeight,
-                constraints.minHeight?.value?.toInt(),
-                constraints.maxHeight?.value?.toInt(),
-                constraints.height?.value?.toInt()
-            )
+
+        var processedWidthSpec = postprocess(
+            widthMeasureSpec,
+            f.measuredWidth,
+            constraints.minWidth?.value?.toInt(),
+            constraints.maxWidth?.value?.toInt(),
+            constraints.width?.value?.toInt()
         )
+        var processedHeightSpec = postprocess(
+            heightMeasureSpec,
+            f.measuredHeight,
+            constraints.minHeight?.value?.toInt(),
+            constraints.maxHeight?.value?.toInt(),
+            constraints.height?.value?.toInt()
+        )
+
+        constraints.aspectRatio?.let { aspectRatio ->
+            aspectRatio.fitInsideBox(
+                MeasureSpec.getSize(processedWidthSpec).toDouble(),
+                MeasureSpec.getSize(processedHeightSpec).toDouble(),
+            ).let { innerBox ->
+                processedWidthSpec = MeasureSpec.makeMeasureSpec(innerBox.first.toInt(), MeasureSpec.EXACTLY)
+                processedHeightSpec = MeasureSpec.makeMeasureSpec(innerBox.second.toInt(), MeasureSpec.EXACTLY)
+            }
+        }
+
+        setMeasuredDimension(processedWidthSpec, processedHeightSpec)
     }
 }
 

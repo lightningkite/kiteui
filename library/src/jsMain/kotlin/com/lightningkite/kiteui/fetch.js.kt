@@ -141,9 +141,9 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
             }
     }
     actual val headers: HttpHeaders by lazy {
-        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").flatMap {
-            val s = it.split(": ")
-            s[1].splitToSequence(';').map { s[0] to it }
+        httpHeaders(wraps.getAllResponseHeaders().splitToSequence("\r\n").filter { it.contains(':') }.flatMap {
+            val s = it.split(":")
+            s[1].trim().splitToSequence(';').map { s[0].trim() to it }
         })
     }
 }

@@ -171,4 +171,23 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
-fun preferredScaleFactor() = dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
+const val ENABLE_DYNAMIC_TYPE = false
+fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
+    dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
+} else {
+    1.0
+}
+fun UILabel.setContentSizeCategoryChangeListener() {
+    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
+        updateFont()
+        informParentOfSizeChange()
+    }
+}
+fun UILabel.updateFont() {
+    val textSize = extensionTextSize ?: return
+    val alignment = textAlignment
+    font = extensionFontAndStyle?.let {
+        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+    } ?: UIFont.systemFontOfSize(textSize.value)
+    textAlignment = alignment
+}

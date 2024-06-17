@@ -44,9 +44,11 @@ fun UIView.sizeThatFits2(
                     val max = this
                     val smallerRatio = (max.width / original.width)
                         .coerceAtMost(max.height / original.height)
+                    val imageScale = smallerRatio
+                        .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
                     CGSizeMake(
-                        (original.width * smallerRatio.coerceAtMost(1 / UIScreen.mainScreen.scale)),
-                        (original.height * smallerRatio.coerceAtMost(1 / UIScreen.mainScreen.scale))
+                        original.width * imageScale,
+                        original.height * imageScale
                     )
                 }
             } ?: CGSizeMake(0.0, 0.0)

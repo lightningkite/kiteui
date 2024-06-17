@@ -780,7 +780,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App-Old";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "KiteUI Example App/KiteUI Example App-Bridging-Header.h";
@@ -812,7 +812,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App-Old";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "KiteUI Example App/KiteUI Example App-Bridging-Header.h";

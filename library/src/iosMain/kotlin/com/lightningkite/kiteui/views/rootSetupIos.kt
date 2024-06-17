@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
 import platform.Foundation.NSNotification
@@ -18,11 +19,14 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
+fun UIViewController.setup(theme: Theme, app: ViewWriter.()->Unit) {
+    setup({theme}, app)
+}
 fun UIViewController.setup(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
-    setup({ theme() }, app)
+    setup({theme.invoke()}, app)
 }
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(theme: suspend ()-> Theme, app: ViewWriter.()->Unit) {
+fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
 
     val writer = object: ViewWriter() {
@@ -46,6 +50,10 @@ fun UIViewController.setup(theme: suspend ()-> Theme, app: ViewWriter.()->Unit) 
     subview.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
+
+    CalculationContext.NeverEnds.reactiveScope {
+        view.backgroundColor = theme().let { it.bar() ?: it }.background.closestColor().toUiColor()
+    }
 
     ExternalServices.rootView = subview
 

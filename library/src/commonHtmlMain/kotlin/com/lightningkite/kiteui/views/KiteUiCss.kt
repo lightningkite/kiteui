@@ -7,12 +7,10 @@ import kotlin.time.DurationUnit
 class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
-        dynamicCss.style(":root", mapOf(
-            "--usePadding" to "0",
-        ))
         dynamicCss.style("*", mapOf(
             "box-sizing" to "border-box",
-            "line-height" to "unset"
+            "line-height" to "unset",
+            "--parentPadding" to "0px",
         ))
         dynamicCss.style("h1", mapOf("font-size" to "2rem", "whitespace" to "pre-wrap"))
         dynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
@@ -37,21 +35,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         dynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
         dynamicCss.style(".kiteui-space", mapOf("min-width" to "calc(var(--space-multiplier, 1.0) * var(--spacing, 0px))"))
 
-        dynamicCss.style(".swapImage", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-            "overflow" to "hidden",
-        ))
-        dynamicCss.style(".swapImage > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-            "object-fit" to "contain",
-        ))
+        dynamicCss.style(".swapImage", mapOf("overflow" to "hidden"))
+        dynamicCss.style(".swapImage > img", mapOf("object-fit" to "contain"))
         dynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
         dynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         dynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
@@ -140,8 +125,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 //        )
 
         dynamicCss.style(
-            "input:focus textarea:focus", mapOf(
-                "outline" to "inherit",
+            "input:focus, textarea:focus", mapOf(
+                "outline" to "none",
             )
         )
 
@@ -173,193 +158,216 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "animation" to "spin 2s infinite linear !important",
             )
         )
-        dynamicCss.style(".kiteui-swap", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-        ))
-        dynamicCss.style(".kiteui-swap > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-        ))
 
 
-//        DynamicCss.style(
-//            ".kiteui-swap", mapOf(
-//                "display" to "block",
-//                "position" to "relative",
-//            )
-//        )
-//
-//        DynamicCss.style(
-//            ".kiteui-swap > *", mapOf(
-//                "position" to "absolute",
-//                "top" to "0",
-//                "left" to "0",
-//                "right" to "0",
-//                "bottom" to "0",
-//                "max-width" to "100%",
-//                "max-height" to "100%",
-//            )
-//        )
 
-        dynamicCss.style(".hidingContainer", mapOf(
-            "display" to "grid",
-            "grid-template-columns" to "100%",
-            "grid-template-rows" to "100%",
-        ))
-        dynamicCss.style(".hidingContainer > *", mapOf(
-            "grid-column-start" to "1",
-            "grid-column-end" to "1",
-            "grid-row-start" to "1",
-            "grid-row-end" to "1",
-            "align-self" to "stretch",
-            "justify-self" to "stretch",
-        ))
+        val rowForceFlex = ".kiteui-row"
+//        val rowForceFlex = ".childHasWeight"
+        """
+    .kiteui-col:not(.childHasWeight) > .kiteui-col.childHasWeight,
+    .kiteui-col:not(.childHasWeight) > .kiteui-row$rowForceFlex,
+    .kiteui-col:not(.childHasWeight) > .kiteui-label,
+    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> .vCenter:only-child),
+    .kiteui-col:not(.childHasWeight) > .rowCollapsing {
+        display: block flex;
+    }
+    .kiteui-row:not($rowForceFlex) > .kiteui-col.childHasWeight,
+    .kiteui-row:not($rowForceFlex) > .kiteui-row$rowForceFlex,
+    .kiteui-row:not($rowForceFlex) > .kiteui-label,
+    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> .vCenter:only-child),
+    .kiteui-row:not($rowForceFlex) > .rowCollapsing {
+        display: inline-flex;
+    }
+    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> :not(:only-child)) {
+        display: block grid;
+    }
+    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> :not(:only-child)) {
+        display: inline-grid;
+    }
 
-        dynamicCss.style(
-            ".kiteui-stack", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-stack > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
+    .kiteui-col.childHasWeight > .hEnd {
+        align-self: end;
+    }
+    .kiteui-col.childHasWeight > .hStretch {
+        align-self: stretch;
+    }
+    .kiteui-col.childHasWeight > .hCenter {
+        align-self: center;
+    }
+    .kiteui-col.childHasWeight > .hStart {
+        align-self: start;
+    }
+    .kiteui-col.childHasWeight {
+        display: flex;
+        flex-direction: column;
+    }
 
-        dynamicCss.style(
-            ".kiteui-stack > .hStart", mapOf(
-                "justify-self" to "start",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-stack > .hCenter", mapOf(
-                "justify-self" to "center",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-stack > .hStretch", mapOf(
-                "justify-self" to "stretch",
-            )
-        )
+    .kiteui-col:not(.childHasWeight) > * {
+        display: block;
+        width: calc(100%);
+    }
+    .kiteui-col:not(.childHasWeight) > :not(:last-child) {
+        margin-bottom: var(--parentSpacing, 0);
+    }
+    .kiteui-col:not(.childHasWeight) > .hEnd {
+        width: fit-content;
+        margin-left: auto;
+    }
+    .kiteui-col:not(.childHasWeight) > .hCenter {
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .kiteui-col:not(.childHasWeight) > .hStart {
+        width: fit-content;
+        margin-right: auto;
+    }
 
-        dynamicCss.style(
-            ".kiteui-stack > .hEnd", mapOf(
-                "justify-self" to "end",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-stack > .vStart", mapOf(
-                "align-self" to "start",
-            )
-        )
+    .kiteui-row:not($rowForceFlex) > * {
+        display: inline-block;
+        height: calc(100% - var(--parentPadding, 0) * 2);
+        vertical-align: top;
+    }
+    .kiteui-row:not($rowForceFlex) > :not(:last-child) {
+        margin-right: var(--parentSpacing, 0);
+    }
+    .kiteui-row:not($rowForceFlex) {
+        white-space: nowrap;
+    }
+    .kiteui-row:not($rowForceFlex)::before {
+      content: "\200B";
+      display: inline-block;
+      height: 100%; 
+      vertical-align: middle;
+    }
+    .kiteui-row:not($rowForceFlex) > .vEnd {
+        vertical-align: bottom;
+        height: fit-content;
+    }
+    .kiteui-row:not($rowForceFlex) > .vCenter {
+        vertical-align: middle;
+        height: fit-content;
+    }
+    .kiteui-row:not($rowForceFlex) > .vStart {
+        vertical-align: top;
+        height: fit-content;
+    }
 
-        dynamicCss.style(
-            ".kiteui-stack > .vCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-stack > .vStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
+    .kiteui-row$rowForceFlex > .vEnd {
+        align-self: end;
+    }
+    .kiteui-row$rowForceFlex > .vStretch {
+        align-self: stretch;
+    }
+    .kiteui-row$rowForceFlex > .vCenter {
+        align-self: center;
+    }
+    .kiteui-row$rowForceFlex > .vStart {
+        align-self: start;
+    }
+    .kiteui-row$rowForceFlex {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    
+    .kiteui-stack > .vEnd:not(:only-child) {
+        align-self: end;
+    }
 
-        dynamicCss.style(
-            ".kiteui-stack > .vEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
+    .kiteui-stack > .vStretch:not(:only-child) {
+        align-self: stretch;
+    }
 
-        dynamicCss.style(
-            ".kiteui-row", mapOf(
-                "display" to "flex",
-                "flex-direction" to "row",
-            )
-        )
-//        DynamicCss.style(
-//            ".kiteui-row > *", mapOf(
-//                "max-width" to "unset",
-//            )
-//        )
+    .kiteui-stack > .vCenter:not(:only-child) {
+        align-self: center;
+    }
+    .kiteui-stack > .vStart:not(:only-child) {
+        align-self: start;
+    }
+    .kiteui-stack > .hEnd:not(:only-child) {
+        justify-self: end;
+    }
+    .kiteui-stack > .hStretch:not(:only-child) {
+        justify-self: stretch;
+    }
 
-        dynamicCss.style(
-            ".kiteui-row > .vStart", mapOf(
-                "align-self" to "start",
-            )
-        )
+    .kiteui-stack > .hCenter:not(:only-child) {
+        justify-self: center;
+    }
 
-        dynamicCss.style(
-            ".kiteui-row > .vCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
+    .kiteui-stack > .hStart:not(:only-child) {
+        justify-self: start;
+    }
 
-        dynamicCss.style(
-            ".kiteui-row > .vStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-row > .vEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
 
-        dynamicCss.style(
-            ".kiteui-col", mapOf(
-                "display" to "flex",
-                "flex-direction" to "column",
-            )
-        )
+    .kiteui-stack > :not(:only-child) {
+        grid-column-start: 1;
+        grid-column-end: 1;
+        grid-row-start: 1;
+        grid-row-end: 1;
+        align-self: stretch;
+        justify-self: stretch;
+    }
 
-//        DynamicCss.style(
-//            ".kiteui-col > *", mapOf(
-//                "max-height" to "unset",
-//            )
-//        )
+    .kiteui-stack:has(> :not(:only-child)) {
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 100%;
+    }
 
-        dynamicCss.style(
-            ".kiteui-col > .hStart", mapOf(
-                "align-self" to "start",
-            )
-        )
+    .kiteui-stack:has(> :only-child) {
+        line-height: 0px !important;
+    }
 
-        dynamicCss.style(
-            ".kiteui-col > .hCenter", mapOf(
-                "align-self" to "center",
-            )
-        )
+    .kiteui-stack > :only-child {
+        height: 100%;
+        width: 100%;
+        vertical-align: top;
+    }
 
-        dynamicCss.style(
-            ".kiteui-col > .hStretch", mapOf(
-                "align-self" to "stretch",
-            )
-        )
+    .kiteui-stack > .vEnd:only-child {
+        height: unset;
+        vertical-align: top;
+    }
 
-        dynamicCss.style(
-            ".kiteui-col > .hEnd", mapOf(
-                "align-self" to "end",
-            )
-        )
+    .kiteui-stack > .vStart:only-child {
+        height: unset;
+        vertical-align: bottom;
+    }
+
+    .kiteui-stack > .hEnd:only-child {
+        width: unset;
+        margin-left: auto;
+    }
+
+    .kiteui-stack > .hCenter:only-child {
+        width: unset;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .kiteui-stack > .hStart:only-child {
+        width: unset;
+        margin-right: auto;
+    }
+    
+    .kiteui-stack:has(> .vCenter:only-child) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+    }
+    .kiteui-stack > .vCenter:only-child {
+        height: fit-content;
+    }
+    
+        """.trimIndent().split('}').filter { it.isNotBlank() }.forEach { dynamicCss.rule("$it}") }
 
         dynamicCss.style(
             "img", mapOf(
@@ -427,8 +435,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
 
         dynamicCss.style(
-            ".switch:checked", mapOf(
-                "background-color" to "rgba(236, 72, 153, 1)",
+            ".switch:not(:checked)", mapOf(
+                "background-color" to "rgb(204, 204, 204) !important",
+                "background-image" to "none !important",
             )
         )
 
@@ -453,21 +462,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
 
         dynamicCss.style(
-            ".switch:hover::before", mapOf(
-                "box-shadow" to "0 0 0px 8px rgba(0, 0, 0, .15)"
-            )
-        )
-
-        dynamicCss.style(
-            ".switch:checked:hover::before", mapOf(
-                "box-shadow" to "0 0 0px 8px rgba(236, 72, 153, .15)"
-            )
-        )
-
-        dynamicCss.style(
             ".switch:checked:before", mapOf(
                 "left" to "calc(3rem - 1.6rem)",
-                "border-color" to "rgba(236, 72, 153, 1)",
             )
         )
 
@@ -608,24 +604,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         )
 
-        dynamicCss.style(
-            ".icon", mapOf(
-                "display" to "grid",
-                "grid-template-columns" to "100%",
-                "grid-template-rows" to "100%",
-            )
-        )
-
-        dynamicCss.style(
-            ".icon > *", mapOf(
-                "grid-column-start" to "1",
-                "grid-column-end" to "1",
-                "grid-row-start" to "1",
-                "grid-row-end" to "1",
-                "align-self" to "stretch",
-                "justify-self" to "stretch",
-            )
-        )
 
         dynamicCss.style(
             ".recycler", mapOf(
@@ -987,7 +965,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
         theme(
             theme.focus(),
-            listOf(".clickable:focus-visible .theme-${theme.id}", ".clickable:focus-visible.theme-${theme.id}"),
+            listOf(
+                ".clickable:focus-visible .theme-${theme.id}",
+                ".clickable:focus-visible.theme-${theme.id}",
+                "input:focus.theme-${theme.id}",
+                "textarea:focus.theme-${theme.id}",
+                "select:focus.theme-${theme.id}",
+                ".theme-${theme.id}:has(> input:focus-visible:not(.mightTransition))",
+                ".theme-${theme.id}:has(> textarea:focus-visible:not(.mightTransition))",
+                ".theme-${theme.id}:has(> select:focus-visible:not(.mightTransition))",
+            ),
             includeMaybeTransition = true
         )
         theme(
@@ -1103,11 +1090,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)"
                 ) to mapOf(
                     "padding" to "var(--spacing, 0px)",
-                    "--usePadding" to "1",
                 ),
                 sel(
                     ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *",
                     ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"
+                ) to mapOf(
+                    "--parentPadding" to theme.spacing.value,
+                ),
+                sel(
+                    " > *",
                 ) to mapOf(
                     "--parentSpacing" to theme.spacing.value,
                 ),
@@ -1160,7 +1151,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 sel("") to mapOf(
                     "color" to theme.foreground.toCss(),
                     "--spacing" to theme.spacing.value,
-                    "--usePadding" to "0",
                     "gap" to "var(--spacing, 0.0)",
                     "font-family" to font(theme.body.font),
                     "font-weight" to theme.body.weight.toString(),
@@ -1183,7 +1173,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "border-radius" to "0",
                     "outline-width" to "0",
                     "backdrop-filter" to "blur(5px)",
-                ) + when (val it = theme.background.applyAlpha(0.5f)) {
+                    "-webkit-backdrop-filter" to "blur(5px)",
+                ) + when (val it = theme.background.darken(0.5f).applyAlpha(0.5f)) {
                     is Color -> mapOf("background-color" to it.toCss())
                     is LinearGradient -> mapOf(
                         "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${

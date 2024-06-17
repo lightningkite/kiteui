@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ExtensionProperty
-import platform.Foundation.NSThread
+import platform.Foundation.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 import kotlin.native.runtime.GC
@@ -30,6 +30,7 @@ actual fun gc(): GCInfo {
         println("${it.key.qualifiedName}.alive = ${it.value}")
     }
     GC.collect()
+    NSRunLoop.currentRunLoop().runMode(mode = NSDefaultRunLoopMode, beforeDate = NSDate.dateWithTimeIntervalSinceNow(0.1))
     println("ExtensionProperty.storage.size = ${ExtensionProperty.storage.size}")
     ObjCountTrackers.alive.entries.forEach {
         println("${it.key.qualifiedName}.alive = ${it.value}")
