@@ -59,6 +59,12 @@ data class Theme(
             outline = this.outline.applyAlpha(alpha = 0.25f),
         )
     },
+    val invalid: (Theme.() -> Theme) = {
+        copy(
+            outline = Color.red,
+            outlineWidth = 2.px,
+        )
+    },
     val mainContent: (Theme.() -> Theme?) = { null },
     val bar: (Theme.() -> Theme?) = {
         copy(
@@ -133,6 +139,9 @@ data class Theme(
     private var disabledCache: Theme? = null
     @JsName("disabledDirect")
     fun disabled() = disabledCache ?: disabled(this).also { disabledCache = it }
+    private var invalidCache: Theme? = null
+    @JsName("invalidDirect")
+    fun invalid() = invalidCache ?: invalid(this).also { invalidCache = it }
     @JsName("barDirect")
     inline fun bar() = bar(this)
     private var importantCache: Theme? = null
