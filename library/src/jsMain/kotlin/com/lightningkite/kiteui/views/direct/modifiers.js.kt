@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.dom.addClass
 import org.w3c.dom.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -318,6 +319,8 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         style.flexGrow = "$amount"
         style.flexShrink = "$amount"
         style.flexBasis = "0"
+        (this.parentElement as? HTMLElement)?.classList?.add("childHasWeight")
+//        this.addClass("hasWeight")
     }
     return ViewWrapper
 }
@@ -330,10 +333,14 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
                 style.flexGrow = "$amount"
                 style.flexShrink = "$amount"
                 style.flexBasis = "0"
+                (this.parentElement as? HTMLElement)?.classList?.add("childHasWeight")
+//                this.addClass("hasWeight")
             } else {
                 style.flexGrow = "0"
                 style.flexShrink = "0"
                 style.flexBasis = "auto"
+                (this.parentElement as? HTMLElement)?.classList?.add("childHasWeight")
+//                this.addClass("hasWeight")
             }
         }
     }
@@ -367,6 +374,8 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
     }
 
 private fun NView.applySizeConstraints(constraints: SizeConstraints) {
+//    if(constraints.minWidth != null || constraints.maxHeight != null) addClass("unnaturalHeight")
+
     if (constraints.minHeight == null) style.removeProperty("minHeight")
     else style.minHeight = constraints.minHeight.value
 
@@ -386,7 +395,10 @@ private fun NView.applySizeConstraints(constraints: SizeConstraints) {
     else style.width = constraints.width.value
 
     if (constraints.height == null) style.removeProperty("height")
-    else style.height = constraints.height.value
+    else {
+        style.height = constraints.height.value
+//        addClass("forcedHeight")
+    }
 }
 
 @ViewModifierDsl3
@@ -431,7 +443,7 @@ actual val ViewWriter.unpadded: ViewWrapper
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
     wrapNext(document.createElement("div") as HTMLDivElement) {
-        classList.add("hidingContainer")
+        classList.add("kiteui-stack")
         hidden = !default
         var last = !default
         calculationContext.reactiveScope {

@@ -15,14 +15,14 @@ actual typealias NSwapView = HTMLDivElement
 
 @ViewDsl
 actual inline fun ViewWriter.swapViewActual(crossinline setup: SwapView.() -> Unit): Unit = themedElement<NSwapView>("div") {
-    classList.add("kiteui-swap")
+    classList.add("kiteui-stack")
     this.asDynamic().__ROCK_ViewWriter__ = split()
     setup(SwapView(this))
 }
 
 @ViewDsl
 actual inline fun ViewWriter.swapViewDialogActual(crossinline setup: SwapView.() -> Unit): Unit = themedElement<NSwapView>("div") {
-    classList.add("kiteui-swap")
+    classList.add("kiteui-stack")
     classList.add("dialog")
     this.asDynamic().__ROCK_ViewWriter__ = split()
     hidden = true

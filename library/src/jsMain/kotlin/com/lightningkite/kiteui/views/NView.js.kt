@@ -84,7 +84,10 @@ actual var NView.spacing: Dimension
         style.setProperty("--spacing", value.value)
         val cn = "spacingOf${value.value.replace(".", "_").filter { it.isLetterOrDigit() || it == '_' }}"
         DynamicCSS.styleIfMissing(".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
-            "--parentSpacing" to value.value
+            "--parentSpacing" to value.value,
+        ))
+        DynamicCSS.styleIfMissing(".mightTransition.$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .mightTransition.$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
+            "--parentPadding" to value.value,
         ))
         className = className.split(' ').filter { !it.startsWith("spacingOf") }.plus(cn).joinToString(" ")
     }

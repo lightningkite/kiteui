@@ -102,7 +102,9 @@ internal suspend fun <T> inBackground(action: ()->T): T {
 actual var ImageView.source: ImageSource?
     get() = native.imageSource
     set(value) {
-        if(value == native.imageSource) return
+        if(native.refreshOnParamChange && value is ImageRemote) {
+            if(value.url == (native.imageSource as? ImageRemote)?.url) return
+        } else if(value == native.imageSource) return
         native.imageSource = value
         // No need to reload the same image
         if(native.bounds.useContents { size.height } == 0.0) {
@@ -204,6 +206,9 @@ actual inline var ImageView.description: String?
     set(value) {
         native.accessibilityLabel = value
     }
+actual inline var ImageView.refreshOnParamChange: Boolean
+    get() = native.refreshOnParamChange
+    set(value) { native.refreshOnParamChange = value }
 
 @ViewDsl
 actual inline fun ViewWriter.zoomableImageActual(crossinline setup: ImageView.() -> Unit) =
@@ -222,6 +227,8 @@ actual var ImageView.naturalSize: Boolean
 
 @OptIn(ExperimentalForeignApi::class)
 class MyImageView(var naturalSize: Boolean = false) : UIImageView(CGRectZero.readValue()) {
+
+    var refreshOnParamChange: Boolean = false
 
     private var lastParentSpacing: DimensionRaw = 0.0
     private var cornerRadius: CornerRadii = CornerRadii.Constant(0.dp)

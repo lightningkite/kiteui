@@ -20,7 +20,7 @@ actual typealias NImageView = HTMLDivElement
 @ViewDsl
 actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit): Unit =
     themedElement<HTMLDivElement>("div") {
-        addClass("viewDraws", "swapImage")
+        addClass("viewDraws", "kiteui-stack", "swapImage")
         setup(ImageView(this))
     }
 
@@ -48,9 +48,18 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
-    if(((native.lastElementChild as? HTMLImageElement)?.src ?: "") == url) {
-        (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
-        return
+    if(refreshOnParamChange) {
+        if (((native.lastElementChild as? HTMLImageElement)?.src?.substringBefore('?')
+                ?: "") == url.substringBefore('?')
+        ) {
+            (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
+            return
+        }
+    } else {
+        if (((native.lastElementChild as? HTMLImageElement)?.src ?: "") == url) {
+            (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
+            return
+        }
     }
     if(!animationsEnabled) {
         native.innerHTML = ""
@@ -109,6 +118,11 @@ actual inline var ImageView.description: String?
     get() = native.getAttribute("aria-label")
     set(value) {
         native.setAttribute("aria-label", value ?: "")
+    }
+actual inline var ImageView.refreshOnParamChange: Boolean
+    get() = (native.asDynamic().__KITEUI__refreshOnParamChange as? Boolean) ?: false
+    set(value) {
+        native.asDynamic().__KITEUI__refreshOnParamChange = value
     }
 actual var ImageView.naturalSize: Boolean
     get() = false
