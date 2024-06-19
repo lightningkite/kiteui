@@ -13,6 +13,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URL
+import kotlin.time.measureTime
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NImageView = HTMLDivElement

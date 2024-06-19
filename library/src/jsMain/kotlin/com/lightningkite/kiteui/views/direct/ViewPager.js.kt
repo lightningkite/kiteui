@@ -29,6 +29,7 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
         ).apply {
             this.contentHolder.classList.add("viewPager")
         }
+        println() /* Don't remove this. If you're tempted to do so, talk to Joseph or Wesley first. */
         rc.forceCentering = true
         this.asDynamic().__ROCK__controller = rc
 
