@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.seconds
 val appTheme = Property<Theme>(Theme.flat(Angle(0.55f)).copy(
     body = FontAndStyle(Resources.fontsOpensans),
     title = FontAndStyle(Resources.fontsOpensans, bold = true),
-    transitionDuration = 0.25.seconds,
+    transitionDuration = 2.seconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
     dialogTransitions = ScreenTransitions.FadeResize,
 ))

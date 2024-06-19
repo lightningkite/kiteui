@@ -2,6 +2,8 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.ImageScaleType
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
@@ -10,6 +12,7 @@ import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating
+import com.lightningkite.kiteui.views.minus
 
 @Routable("arguments-example/{id}")
 class ArgumentsExampleScreen(val id: String): Screen {
@@ -21,8 +24,12 @@ class ArgumentsExampleScreen(val id: String): Screen {
     val list = Property(listOf("sample"))
 
     override fun ViewWriter.render() = col {
+        transitionId = id
         h1 { content = "Hello world!" }
-        text { content = "My item ID is ${id}" }
+        text {
+            content = "My item ID is ${id}"
+            transitionId = "itemid"
+        }
         text { content = "This is a demonstration of how you can use classes and properties to navigate to different views." }
         link {
             text { content = "Append '-plus'" }
@@ -51,6 +58,14 @@ class ArgumentsExampleScreen(val id: String): Screen {
                 list.value += toAdd.value
                 toAdd.value = ""
             }
+        }
+        sizeConstraints(height = 10.rem) - image {
+            source = when(id.hashCode() % 2) {
+                0 -> Resources.imagesSolera
+                else -> Resources.imagesMammoth
+            }
+            scaleType = ImageScaleType.Crop
+            transitionId = "Sample"
         }
     }
 }

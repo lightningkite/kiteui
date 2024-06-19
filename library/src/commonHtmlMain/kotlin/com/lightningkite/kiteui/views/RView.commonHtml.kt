@@ -36,7 +36,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                     "--parentPadding" to value.value
                 )
             )
-            native.classes.add("spacingOf")
+            native.classes.add(cn)
         }
     }
 

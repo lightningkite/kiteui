@@ -535,7 +535,7 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     }
 }
 
-private object TypedValueAnimator {
+internal object TypedValueAnimator {
 
     /**
      * A value animator that animates between [Int] values.

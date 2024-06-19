@@ -69,6 +69,13 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
 
     protected abstract fun forcePaddingSet(value: Boolean?)
+    var transitionId: String? = null
+        set(value) {
+            field = value
+            transitionIdSet(value)
+        }
+
+    protected open fun transitionIdSet(value: String?) {}
 
     var useNavSpacing: Boolean = false
 

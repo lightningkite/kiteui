@@ -76,7 +76,7 @@ actual fun RView.nativeSetSrc(url: String?) {
         for (index in 0..<myIndex) {
             val it = children[index] as? HTMLElement ?: continue
             window.setTimeout({
-                if (it.parentElement == element && it.style.opacity == "0") {
+                if (it.parentElement == element) {
                     element.removeChild(it)
                 }
             }, 150)

@@ -66,6 +66,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     actual override fun forcePaddingSet(value: Boolean?) {
     }
 
+    override fun transitionIdSet(value: String?) {
+        native.transitionName = value
+    }
+
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
         generateSequence(native) {
             it.parent as? View

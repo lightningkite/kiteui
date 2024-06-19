@@ -72,7 +72,20 @@ object RootScreen : Screen {
                 linkScreen { FullExampleScreen() }
                 linkScreen { RecyclerViewScreen }
                 linkScreen { PerformanceTestScreen }
-                linkScreen { ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" } }
+                run {
+                    val screen = { ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" } }
+                    link {
+                        to = screen
+                        row {
+                            text {
+                                ::content{ screen().title.await() }
+//                            content  = screen.toString()
+                            } in weight(1f)
+                            icon(Icon.chevronRight, "Open")
+                        }
+                        transitionId = "test-id"
+                    } in card
+                }
 
                 button {
                     text { content = "GC" }
