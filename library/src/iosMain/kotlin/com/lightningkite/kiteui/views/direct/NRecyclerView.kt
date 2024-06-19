@@ -346,6 +346,12 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                 populate()
             }
         }
+    fun shutdown() {
+        allSubviews.forEach {
+            rendererDirect.shutdown(this, it.element)
+            it.element.removeFromSuperview()
+        }
+    }
     var dataDirect: Indexed<*> = Indexed.EMPTY
         set(value) {
             field = value

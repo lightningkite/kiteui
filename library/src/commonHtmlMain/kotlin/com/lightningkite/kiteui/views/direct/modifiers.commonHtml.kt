@@ -204,12 +204,22 @@ actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeCon
 
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
-    // TODO: include old animation code
-    beforeNextElementSetup {
-        ::exists.invoke(condition)
-    }
+//    // TODO: include old animation code
+//    beforeNextElementSetup {
+//        ::exists.invoke(condition)
+//    }
+    wrapNextIn(object: RView(context) {
+        init {
+            native.tag = "div"
+            native.classes.add("hidingContainer")
+            native.classes.add("kiteui-stack")
+            nativeAnimateHideBinding(default, condition)
+        }
+    })
     return ViewWrapper
 }
+
+internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: suspend () -> Boolean)
 //@ViewModifierDsl3
 //actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
 //    wrapNext(document.createElement("div") as HTMLDivElement) {

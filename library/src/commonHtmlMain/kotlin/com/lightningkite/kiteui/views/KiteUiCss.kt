@@ -386,7 +386,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         dynamicCss.style(
             "p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack)",
             mapOf(
-                "min-height" to "1em",
+                "min-height" to "1.4em",
                 "background" to "color-mix(in srgb, currentColor, transparent 70%) !important",
                 "animation" to "flickerAnimation 2s infinite !important",
                 "animation-timing-function" to "linear",

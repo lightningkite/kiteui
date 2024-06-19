@@ -98,6 +98,13 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     actual override fun internalClearChildren() {
         native.clearChildren()
     }
+
+    init {
+        this.working.addListener {
+            if(working.value) native.classes.add("loading")
+            else native.classes.remove("loading")
+        }
+    }
 }
 
 typealias HtmlElementLike = FutureElement

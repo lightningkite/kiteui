@@ -13,6 +13,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.tag = "div"
         native.classes.add("viewDraws")
         native.classes.add("kiteui-stack")
+        native.classes.add("swapImage")
     }
 
 

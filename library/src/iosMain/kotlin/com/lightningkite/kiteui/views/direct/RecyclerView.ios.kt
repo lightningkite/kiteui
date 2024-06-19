@@ -84,4 +84,10 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
     actual var vertical: Boolean
         get() = native.vertical
         set(value) { native.vertical = value }
+    
+    init {
+        onRemove {
+            native.shutdown()
+        }
+    }
 }
