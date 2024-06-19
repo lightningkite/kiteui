@@ -40,6 +40,7 @@ actual typealias FileReference = File
 actual fun FileReference.mimeType(): String {
     return Files.probeContentType(this.toPath())
 }
+actual fun Blob.mimeType(): String = type
 actual fun FileReference.fileName(): String {
     return this.name
 }
