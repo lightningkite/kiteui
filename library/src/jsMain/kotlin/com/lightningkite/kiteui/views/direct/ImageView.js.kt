@@ -100,7 +100,7 @@ fun ImageView.setSrc(url: String) {
         for(index in 0..<myIndex) {
             val it = children[index] as? HTMLElement ?: continue
             window.setTimeout({
-                if(it.parentElement == native && it.style.opacity == "0") {
+                if(it.parentElement == native) {
                     native.removeChild(it)
                 }
             }, 150)
