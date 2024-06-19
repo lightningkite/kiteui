@@ -284,6 +284,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class FileReference(val uri: Uri)
 
 
+actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = when(uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
     ContentResolver.SCHEME_FILE ->

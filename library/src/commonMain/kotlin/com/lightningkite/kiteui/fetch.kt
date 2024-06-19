@@ -56,13 +56,20 @@ expect class RequestResponse {
 expect class Blob
 expect class FileReference
 
+expect fun Blob.mimeType(): String
 expect fun FileReference.mimeType():String
 expect fun FileReference.fileName():String
 
-sealed interface RequestBody
-data class RequestBodyText(val content: String, val type: String): RequestBody
-data class RequestBodyBlob(val content: Blob): RequestBody
-data class RequestBodyFile(val content: FileReference): RequestBody
+sealed interface RequestBody {
+    val type: String
+}
+data class RequestBodyText(val content: String, override val type: String): RequestBody
+data class RequestBodyBlob(val content: Blob): RequestBody {
+    override val type: String get() = content.mimeType()
+}
+data class RequestBodyFile(val content: FileReference): RequestBody {
+    override val type: String get() = content.mimeType()
+}
 
 expect fun websocket(url: String): WebSocket
 

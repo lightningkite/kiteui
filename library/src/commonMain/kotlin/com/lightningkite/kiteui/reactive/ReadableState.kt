@@ -6,10 +6,10 @@ import kotlin.jvm.JvmInline
 value class ReadableState<out T>(val raw: T) {
     inline val ready: Boolean get() = raw !is NotReady
     inline val success: Boolean get() = ready && raw !is ThrownException
-    inline fun onSuccess(action: (T)->Unit) {
-        if(raw is NotReady) return
-        if(raw is ThrownException) return
-        action(raw)
+    inline fun <R> onSuccess(action: (T)->R): R? {
+        if(raw is NotReady) return null
+        if(raw is ThrownException) return null
+        return action(raw)
     }
     inline val exception: Exception? get() = (raw as? ThrownException)?.exception
     inline fun get(): T {

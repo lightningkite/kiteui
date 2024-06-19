@@ -152,6 +152,9 @@ actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
 
+actual fun Blob.mimeType(): String {
+    return this.type
+}
 actual fun FileReference.mimeType(): String {
     return this.type
 }

@@ -308,6 +308,7 @@ actual class Blob(val data: NSData, val type: String = "application/octet-stream
 actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
 
+actual fun Blob.mimeType(): String = type
 actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
 
 actual fun FileReference.fileName(): String {
