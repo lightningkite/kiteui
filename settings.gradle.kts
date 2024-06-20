@@ -7,13 +7,16 @@ pluginManagement {
         mavenCentral()
         maven("https://jitpack.io")
     }
-    val kotlinVersion: String by settings
-    val kspVersion: String by settings
 
-    plugins {
-        kotlin("plugin.serialization") version kotlinVersion
-        id("com.google.devtools.ksp") version kspVersion
-        id("com.lightningkite.kiteui") version "main-SNAPSHOT"
+    dependencyResolutionManagement {
+        repositories {
+            mavenLocal()
+            google()
+            mavenCentral()
+            maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
+            maven("https://jitpack.io")
+        }
     }
 }
 
