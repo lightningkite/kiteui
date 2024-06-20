@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
@@ -13,7 +12,6 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URL
-import kotlin.time.measureTime
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NImageView = HTMLDivElement
@@ -83,6 +81,12 @@ fun ImageView.setSrc(url: String) {
     val newElement = document.createElement("img") as HTMLImageElement
     newElement.style.opacity = "0"
     val now = clockMillis()
+    newElement.addEventListener("error", {
+        if(newElement.parentElement === native) {
+            native.removeChild(newElement)
+        }
+    })
+    newElement.addEventListener("", {})
     newElement.onload = label@{
 //        native.style.setProperty("aspect-ratio",
 //            (newElement.naturalWidth.toDouble() / newElement.naturalHeight).toString()
