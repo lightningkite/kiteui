@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import cnames.structs.objc_method
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Theme
@@ -8,7 +7,6 @@ import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
-import kotlinx.cinterop.CPointer
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNumber
@@ -16,16 +14,15 @@ import platform.Foundation.NSValue
 import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
-import platform.objc.*
 
 fun UIViewController.setup(theme: Theme, app: ViewWriter.()->Unit) {
     setup({theme}, app)
 }
-fun UIViewController.setup(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
-    setup({theme.invoke()}, app)
+fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.()->Unit) {
+    setup({themeReadable.invoke()}, app)
 }
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit) {
+fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWriter.()->Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
     val writer = ViewWriter(this.view, context = this)
     writer.app()
@@ -38,7 +35,7 @@ fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit)
     bottom.setActive(true)
 
     CalculationContext.NeverEnds.reactiveScope {
-        view.backgroundColor = theme().let { it.bar() ?: it }.background.closestColor().toUiColor()
+        view.backgroundColor = themeCalculation().let { it.bar() ?: it }.background.closestColor().toUiColor()
     }
 
     ExternalServices.rootView = subview

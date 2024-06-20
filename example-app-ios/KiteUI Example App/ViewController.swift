@@ -12,7 +12,7 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        RootSetupIosKt.setup(self, app: { $0.app() })
+        RootSetupIosKt.setup(self, themeReadable: AppKt.appTheme, app: { $0.app() })
         print("UIFontWeight light \(UIFont.Weight.light)")
         print("UIFontWeight medium \(UIFont.Weight.medium)")
         print("UIFontWeight regular \(UIFont.Weight.regular)")
