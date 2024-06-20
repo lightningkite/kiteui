@@ -65,7 +65,7 @@ actual inline fun NView.withoutAnimation(action: () -> Unit) {
 actual typealias NView = HTMLElement
 
 actual var NView.exists: Boolean
-    get() = throw NotImplementedError()
+    get() = !hidden
     set(value) {
         hidden = !value
     }
