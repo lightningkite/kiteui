@@ -16,7 +16,7 @@ actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit) 
         val l = native.androidCalculationContext.loading
         handleThemeControl(frame) {
             setup(Button(frame))
-            activityIndicator {
+            centered - activityIndicator {
                 ::exists.invoke { l.await() }
                 native.minimumWidth = 0
                 native.minimumHeight = 0
@@ -26,12 +26,10 @@ actual inline fun ViewWriter.buttonActual(crossinline setup: Button.() -> Unit) 
 }
 
 actual fun Button.onClick(action: suspend () -> Unit) {
-    var virtualEnable = true
     native.setOnClickListener { view ->
-        if (enabled && virtualEnable) {
+        if (enabled) {
             view.calculationContext.launchManualCancel {
-                virtualEnable = false
-                try { action() } finally { virtualEnable = true }
+                action()
             }
         }
     }
@@ -39,9 +37,8 @@ actual fun Button.onClick(action: suspend () -> Unit) {
 
 actual var Button.enabled: Boolean
     get() {
-        return native.isEnabled
+        return native.androidCalculationContext.enabledWhenNotLoading
     }
     set(value) {
-        native.isEnabled = value
-        native.maybeCalculationContext?.enabledListeners?.value = value
+        native.androidCalculationContext.enabledWhenNotLoading = value
     }

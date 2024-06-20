@@ -5,21 +5,17 @@ import android.content.res.ColorStateList
 import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.maybeCalculationContext
-import com.lightningkite.kiteui.views.reactiveScope
+import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NRadioButton = AppCompatRadioButton
 
 actual var RadioButton.enabled: Boolean
     get() {
-        return native.isEnabled
+        return native.androidCalculationContext.enabledWhenNotLoading
     }
     set(value) {
-        native.isEnabled = value
-        native.maybeCalculationContext?.enabledListeners?.value = value
+        native.androidCalculationContext.enabledWhenNotLoading = value
     }
 actual val RadioButton.checked: Writable<Boolean>
     get() {

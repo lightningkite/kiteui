@@ -57,11 +57,10 @@ actual fun MenuButton.opensMenu(action: ViewWriter.() -> Unit) {
 
 actual var MenuButton.enabled: Boolean
     get() {
-        return native.isEnabled
+        return native.androidCalculationContext.enabledWhenNotLoading
     }
     set(value) {
-        native.isEnabled = value
-        native.maybeCalculationContext?.enabledListeners?.value = value
+        native.androidCalculationContext.enabledWhenNotLoading = value
     }
 actual var MenuButton.requireClick: Boolean
     get() = true

@@ -5,22 +5,17 @@ import android.content.res.ColorStateList
 import androidx.core.widget.CompoundButtonCompat
 import android.widget.CheckBox as AndroidCheckBox
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.maybeCalculationContext
-import com.lightningkite.kiteui.views.reactiveScope
+import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NCheckbox = AndroidCheckBox
 
 actual var Checkbox.enabled: Boolean
     get() {
-        return native.isEnabled
+        return native.androidCalculationContext.enabledWhenNotLoading
     }
     set(value) {
-        native.isEnabled = value
-        native.maybeCalculationContext?.enabledListeners?.value = value
+        native.androidCalculationContext.enabledWhenNotLoading = value
     }
 actual val Checkbox.checked: Writable<Boolean>
     get() {

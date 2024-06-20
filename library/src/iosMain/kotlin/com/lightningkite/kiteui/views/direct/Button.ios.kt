@@ -27,7 +27,7 @@ actual fun Button.onClick(action: suspend () -> Unit): Unit {
 }
 
 actual inline var Button.enabled: Boolean
-    get() = native.enabled
+    get() = native.enabledWhenNotClicked
     set(value) {
-        native.enabled = value
+        native.enabledWhenNotClicked = value
     }

@@ -30,6 +30,16 @@ class FrameLayoutButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverrid
 
     var onClick: suspend ()->Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    var enabledWhenNotClicked = true
+        set(value) {
+            field = value
+            enabled = virtualEnable && enabledWhenNotClicked
+        }
+    private var virtualEnable = true
+        set(value) {
+            field = value
+            enabled = virtualEnable && enabledWhenNotClicked
+        }
     override fun getSpacingOverrideProperty() = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
@@ -51,10 +61,9 @@ class FrameLayoutButton: UIButton(CGRectZero.readValue()), UIViewWithSizeOverrid
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
 
-    var virtualEnable = true
     @ObjCAction
     fun onclick() {
-        if (enabled && virtualEnable) {
+        if (enabled) {
             calculationContext.launchManualCancel {
                 virtualEnable = false
                 try { onClick() } finally { virtualEnable = true }

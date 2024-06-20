@@ -82,6 +82,18 @@ fun View.shutdown() {
 }
 
 data class NViewCalculationContext(val native: View): CalculationContext.WithLoadTracking(), Cancellable {
+    var enabledWhenNotLoading = true
+        set(value) {
+            field = value
+            native.isEnabled = enabledWhenNotLoading && virtualEnable
+            enabledListeners.value = enabledWhenNotLoading && virtualEnable
+        }
+    private var virtualEnable = true
+        set(value) {
+            field = value
+            native.isEnabled = enabledWhenNotLoading && virtualEnable
+            enabledListeners.value = enabledWhenNotLoading && virtualEnable
+        }
     val enabledListeners by lazy {
         Property(native.isEnabled)
     }
@@ -97,10 +109,12 @@ data class NViewCalculationContext(val native: View): CalculationContext.WithLoa
     val loading = Property(false)
     override fun hideLoad() {
         loading.value = false
+        virtualEnable = true
     }
 
     override fun showLoad() {
         loading.value = true
+        virtualEnable = false
     }
 }
 
