@@ -135,6 +135,12 @@ actual inline var TextField.textSize: Dimension
         native.informParentOfSizeChange()
     }
 
+actual inline var TextField.enabled: Boolean
+    get() = native.enabled
+    set(value) {
+        native.enabled = value
+    }
+
 fun UITextField.setContentSizeCategoryChangeListener() {
     NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
         updateFont()

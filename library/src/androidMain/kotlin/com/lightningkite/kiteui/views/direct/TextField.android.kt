@@ -161,6 +161,12 @@ actual var TextField.textSize: Dimension
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
     }
 
+actual inline var TextField.enabled: Boolean
+    get() = native.isEnabled
+    set(value) {
+        native.isEnabled = value
+    }
+
 @ViewDsl
 actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit) {
     return viewElement(factory = ::EditText, wrapper = ::TextField) {

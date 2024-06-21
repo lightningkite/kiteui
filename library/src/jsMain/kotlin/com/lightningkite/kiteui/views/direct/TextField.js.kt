@@ -98,3 +98,8 @@ actual inline var TextField.textSize: Dimension
     set(value) {
         native.style.fontSize = value.value
     }
+actual inline var TextField.enabled: Boolean
+    get() = !native.readOnly
+    set(value) {
+        native.readOnly = !value
+    }

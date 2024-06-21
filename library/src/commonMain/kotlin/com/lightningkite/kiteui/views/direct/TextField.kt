@@ -26,3 +26,4 @@ expect var TextField.action: Action?
 expect var TextField.hint: String
 expect var TextField.align: Align
 expect var TextField.textSize: Dimension
+expect var TextField.enabled: Boolean

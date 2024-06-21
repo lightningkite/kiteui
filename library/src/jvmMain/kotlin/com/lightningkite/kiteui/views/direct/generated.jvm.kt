@@ -278,6 +278,9 @@ actual var TextField.align: Align
 actual var TextField.textSize: Dimension
     get() = TODO()
     set(value) {}
+actual var TextField.enabled: Boolean
+    get() = TODO()
+    set(value) {}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NNumberField = HTMLElement
