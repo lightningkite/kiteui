@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
 
@@ -9,7 +10,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         native.tag = "div"
         native.classes.add("dismissBackground")
         native.classes.add("kiteui-stack")
-        native.addEventListener("click") { navigator.clear() }
+        native.addEventListener("click") { screenNavigator.clear() }
         // TODO
         //native.listNViews().forEach { it.onclick = { ev -> ev.stopImmediatePropagation() } }
     }

@@ -2,12 +2,10 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.ValueAnimator
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
@@ -17,8 +15,8 @@ import androidx.core.content.ContextCompat
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.WindowStatistics
-import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import timber.log.Timber
@@ -26,6 +24,8 @@ import timber.log.Timber
 abstract class KiteUiActivity : Activity() {
     open val theme: suspend () -> Theme get() = { Theme() }
     var savedInstanceState: Bundle? = null
+
+    abstract val mainNavigator : ScreenNavigator
 
     val viewWriter = object: ViewWriter() {
         override val context: RContext = RContext(this@KiteUiActivity)
@@ -55,12 +55,18 @@ abstract class KiteUiActivity : Activity() {
         CalculationContext.NeverEnds.reactiveScope {
             window?.statusBarColor = theme().let { it.bar() ?: it }.background.closestColor().darken(0.3f).toInt()
         }
+
+        savedInstanceState?.getStringArray("navStack")?.let {
+            mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
+        } ?: run {
+            mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
+        }
         this.savedInstanceState = savedInstanceState
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putStringArray("navStack", ScreenStack.main.stack.value.mapNotNull { ScreenStack.mainRoutes.render(it)?.urlLikePath?.render() }.toTypedArray())
+        outState.putStringArray("navStack", mainNavigator.stack.value.mapNotNull { mainNavigator.routes.render(it)?.urlLikePath?.render() }.toTypedArray())
     }
 
     private var currentNum = 0
@@ -171,7 +177,7 @@ abstract class KiteUiActivity : Activity() {
     }
 
     override fun onBackPressed() {
-        if(!PlatformNavigator.goBack()) {
+        if(!mainNavigator.goBack()) {
             super.onBackPressed()
         }
     }

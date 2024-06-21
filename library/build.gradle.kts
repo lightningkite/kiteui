@@ -23,7 +23,11 @@ kotlin {
             }
         }
         dependencies {
-            api("androidx.transition:transition:1.4.1")
+            api("androidx.appcompat:appcompat:1.6.1")
+            api("androidx.recyclerview:recyclerview:1.3.2")
+            api("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+            api("com.google.android.material:material:1.12.0")
+            api("androidx.transition:transition:1.5.0")
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
             api("com.github.bumptech.glide:glide:5.0.0-rc01")
@@ -31,9 +35,9 @@ kotlin {
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")
-            api("androidx.media3:media3-exoplayer:1.2.1")
-            api("androidx.media3:media3-ui:1.2.1")
-            api("androidx.media3:media3-common:1.2.1")
+            api("androidx.media3:media3-exoplayer:1.3.1")
+            api("androidx.media3:media3-ui:1.3.1")
+            api("androidx.media3:media3-common:1.3.1")
         }
     }
     jvm()
@@ -73,9 +77,6 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.recyclerview:recyclerview:1.3.2")
-                api("com.google.android.material:material:1.11.0")
             }
         }
 

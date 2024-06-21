@@ -18,6 +18,8 @@ import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.utils.fitInsideBox
@@ -356,7 +358,7 @@ actual fun ViewWriter.hasPopover(
 ): ViewWrapper {
     beforeNextElementSetup {
         native.setOnClickListener {
-            navigator.dialog.navigate(object : Screen {
+            dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - stack {
@@ -365,7 +367,7 @@ actual fun ViewWriter.hasPopover(
                                     get() = this@beforeNextElementSetup
 
                                 override fun close() {
-                                    navigator.dialog.dismiss()
+                                    dialogScreenNavigator.dismiss()
                                 }
                             })
                         }

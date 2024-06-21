@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.Path.PathDrawable
 import timber.log.Timber
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -20,7 +21,11 @@ import android.view.Window
 import android.widget.FrameLayout
 import androidx.annotation.Nullable
 import androidx.core.view.children
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
@@ -34,44 +39,31 @@ import com.ortiz.touchview.TouchImageView
 import android.widget.ImageView as AImageView
 
 
-actual class ImageView actual constructor(context: RContext): RView(context) {
+actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = android.widget.ImageView(context.activity)
+
+    //    var placeholder = ColorDrawable(0xFFFF0000.toInt())
+    var placeholder = CircularProgressDrawable(context.activity).apply {
+        strokeWidth = 5f
+        centerRadius = 30f
+        start()
+    }
 
     actual var source: ImageSource? = null
         set(value) {
-            if(refreshOnParamChange && value is ImageRemote) {
-                if(value.url == (field as? ImageRemote)?.url) return
-            } else if(value == field) return
+            if (refreshOnParamChange && value is ImageRemote) {
+                if (value.url == (field as? ImageRemote)?.url) return
+            } else if (value == field) return
             field = value
             @Suppress("KotlinConstantConditions")
-            if (native is TouchImageView) {
-                fun target() = object : SimpleTarget<Drawable>() {
-                    override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
-                        println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
-                        native.setImageDrawable(p0)
-                    }
-                }
-                when (value) {
-                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(target())
-                    is ImageRaw -> Glide.with(native).load(value.data).into(target())
-                    is ImageRemote -> Glide.with(native).load(value.url).into(target())
-                    is ImageResource -> native.setImageResource(value.resource)
-//                    is ImageResource -> Glide.with(native).load(value.resource).into(target())
-                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                    null -> native.setImageDrawable(null)
-                    else -> TODO()
-                }
-            } else {
-                when (value) {
-                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(native)
-                    is ImageRaw -> Glide.with(native).load(value.data).into(native)
-                    is ImageRemote -> Glide.with(native).load(value.url).into(native)
-                    is ImageResource -> native.setImageResource(value.resource)
-//                    is ImageResource -> Glide.with(native).load(value.resource).into(native)
-                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                    null -> native.setImageDrawable(null)
-                    else -> TODO()
-                }
+            when (value) {
+                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
+                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
+                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
+                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
+                is ImageVector -> native.setImageDrawable(PathDrawable(value))
+                null -> native.setImageDrawable(null)
+                else -> TODO()
             }
         }
     actual var scaleType: ImageScaleType
@@ -117,6 +109,17 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
      * density screens.
      */
     actual var naturalSize: Boolean = true
+
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        (placeholder as? CircularProgressDrawable)?.let {
+            it.setColorSchemeColors(
+                theme.icon.closestColor().colorInt(),
+//                theme.icon.closestColor().withAlpha(0.5f).colorInt(),
+//                theme.icon.closestColor().withAlpha(0f).colorInt(),
+            )
+        }
+    }
 }
 
 //@ViewDsl

@@ -6,47 +6,49 @@ import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
 @ViewDsl
-inline fun RView.h1(crossinline setup: HeaderView.()->Unit = {}) = header(1, setup)
+inline fun ViewWriter.h1(crossinline setup: HeaderView.()->Unit = {}) = header(1, setup)
 @ViewDsl
-inline fun RView.h2(crossinline setup: HeaderView.()->Unit = {}) = header(2, setup)
+inline fun ViewWriter.h2(crossinline setup: HeaderView.()->Unit = {}) = header(2, setup)
 @ViewDsl
-inline fun RView.h3(crossinline setup: HeaderView.()->Unit = {}) = header(3, setup)
+inline fun ViewWriter.h3(crossinline setup: HeaderView.()->Unit = {}) = header(3, setup)
 @ViewDsl
-inline fun RView.h4(crossinline setup: HeaderView.()->Unit = {}) = header(4, setup)
+inline fun ViewWriter.h4(crossinline setup: HeaderView.()->Unit = {}) = header(4, setup)
 @ViewDsl
-inline fun RView.h5(crossinline setup: HeaderView.()->Unit = {}) = header(5, setup)
+inline fun ViewWriter.h5(crossinline setup: HeaderView.()->Unit = {}) = header(5, setup)
 @ViewDsl
-inline fun RView.h6(crossinline setup: HeaderView.()->Unit = {}) = header(6, setup)
+inline fun ViewWriter.h6(crossinline setup: HeaderView.()->Unit = {}) = header(6, setup)
 @ViewDsl
-fun RView.h1(text: String) = h1 { content = text }
+fun ViewWriter.h1(text: String) = h1 { content = text }
 @ViewDsl
-fun RView.h2(text: String) = h2 { content = text }
+fun ViewWriter.h2(text: String) = h2 { content = text }
 @ViewDsl
-fun RView.h3(text: String) = h3 { content = text }
+fun ViewWriter.h3(text: String) = h3 { content = text }
 @ViewDsl
-fun RView.h4(text: String) = h4 { content = text }
+fun ViewWriter.h4(text: String) = h4 { content = text }
 @ViewDsl
-fun RView.h5(text: String) = h5 { content = text }
+fun ViewWriter.h5(text: String) = h5 { content = text }
 @ViewDsl
-fun RView.h6(text: String) = h6 { content = text }
+fun ViewWriter.h6(text: String) = h6 { content = text }
 @ViewDsl
-fun RView.text(text: String) = text { content = text }
+fun ViewWriter.text(text: String) = text { content = text }
 @ViewDsl
-fun RView.subtext(text: String) = subtext { content = text }
+fun ViewWriter.subtext(text: String) = subtext { content = text }
 
 // TODO: Button with working indicator
 
-fun RView.confirmDanger(
+fun ViewWriter.confirmDanger(
     title: String,
     body: String,
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    navigator.dialog.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {
@@ -57,14 +59,14 @@ fun RView.confirmDanger(
                         button {
                             h6("Cancel")
                             onClick {
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         }
                         button {
                             h6(actionName)
                             onClick {
                                 action()
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         } in danger
                     }
@@ -73,11 +75,11 @@ fun RView.confirmDanger(
         }
     })
 }
-fun RView.alert(
+fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    navigator.dialog.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {
@@ -89,7 +91,7 @@ fun RView.alert(
                         button {
                             h6("OK")
                             onClick {
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         } in danger
                     }

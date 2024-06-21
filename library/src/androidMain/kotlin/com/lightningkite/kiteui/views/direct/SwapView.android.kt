@@ -3,7 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorFilter
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.views.ViewWriter
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +15,7 @@ import android.widget.ImageView
 import androidx.core.animation.addListener
 import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
@@ -30,6 +34,8 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         transition: ScreenTransition,
         createNewView: ViewWriter.() -> Unit,
     ) {
+
+        native.visibility = View.VISIBLE
         val oldView = this.children.firstOrNull()
         var newViewHolder: RView? = null
         val writer = object : ViewWriter() {
@@ -74,23 +80,39 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
                         intersecting.forEach {
                             val o = old[it]!!.native
                             val n = new[it]!!.native
-//                        exit?.excludeTarget(o, true)
-//                        exit?.excludeTarget(n, true)
-//                        enter?.excludeTarget(o, true)
-//                        enter?.excludeTarget(n, true)
                             shared.addTarget(o)
                             shared.addTarget(n)
                         }
                         addTransition(shared)
                     }
                 }
+                val start = Scene(native)
                 exit?.let { addTransition(it) }
                 enter?.let { addTransition(it) }
+                this.addListener(object: Transition.TransitionListener {
+                    override fun onTransitionStart(p0: Transition) {
+                    }
+
+                    override fun onTransitionEnd(p0: Transition) {
+                        if (newView == null) native.visibility = View.GONE
+                    }
+
+                    override fun onTransitionCancel(p0: Transition) {
+                        if (newView == null) native.visibility = View.GONE
+                    }
+
+                    override fun onTransitionPause(p0: Transition) {
+                    }
+
+                    override fun onTransitionResume(p0: Transition) {
+                    }
+
+                })
             })
+//            val startScene = Scene(native)
+//            TransitionManager.go()
             oldView?.let { oldNN -> removeChild(oldNN) }
             newView?.let { addChild(it) }
-            if (newView == null) native.visibility = View.GONE
-            else native.visibility = View.VISIBLE
         }
     }
 }
@@ -118,15 +140,21 @@ private class CustomTransition(val fromRoot: ViewGroup): Transition() {
         endValues: TransitionValues?
     ): Animator? {
         val startDummy = startValues?.view?.toBitmapDrawable() ?: return null
-        val endDummy = endValues?.view?.toBitmapDrawable() ?: return null
         val startRect = (startValues?.values?.get("relativeToRoot") as? android.graphics.Rect) ?: return null
         val endRect = (endValues?.values?.get("relativeToRoot") as? android.graphics.Rect) ?: return null
         startDummy.setBounds(startRect)
-        endDummy.setBounds(startRect)
         sceneRoot.overlay.add(startDummy)
-        sceneRoot.overlay.add(endDummy)
         startValues.view.visibility = View.INVISIBLE
         endValues.view.visibility = View.INVISIBLE
+
+        var endDummy: BitmapDrawable? = null
+        afterTimeout(30) {
+            val endDummy2 = endValues?.view?.toBitmapDrawable() ?: return@afterTimeout
+            endDummy2.setBounds(startRect)
+            sceneRoot.overlay.add(endDummy2)
+            endDummy = endDummy2
+        }
+
         return TypedValueAnimator.FloatAnimator(0f, 1f).apply {
             val midRect = android.graphics.Rect()
             onUpdate {
@@ -138,60 +166,21 @@ private class CustomTransition(val fromRoot: ViewGroup): Transition() {
                 )
                 startDummy.setBounds(midRect)
                 startDummy.alpha = ((1f - it) * 0xFF).toInt()
-                endDummy.alpha = (it * 0xFF).toInt()
-                endDummy.setBounds(midRect)
+                endDummy?.alpha = (it * 0xFF).toInt()
+                endDummy?.setBounds(midRect)
             }
             addListener(onEnd = {
                 sceneRoot.overlay.remove(startDummy)
-                sceneRoot.overlay.remove(endDummy)
+                endDummy?.let { sceneRoot.overlay.remove(it) }
                 endValues.view.visibility = View.VISIBLE
             })
         }
     }
 }
 
-private class OverlayChangeBounds : ChangeBounds() {
-
-    override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
-        if (startValues == null || endValues == null) return super.createAnimator(sceneRoot, startValues, endValues)
-
-        val startView = startValues.view
-        val endView = endValues.view
-
-        if (endView.id in targetIds || targetNames?.contains(endView.transitionName) == true) {
-            startView.visibility = View.INVISIBLE
-            endView.visibility = View.INVISIBLE
-
-            endValues.view = startValues.view.toImageView()
-            sceneRoot.overlay.add(endValues.view)
-
-            return super.createAnimator(sceneRoot, startValues, endValues)?.apply {
-                addListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        endView.visibility = View.VISIBLE
-                        sceneRoot.overlay.remove(endValues.view)
-                    }
-                })
-            }
-        }
-
-        return super.createAnimator(sceneRoot, startValues, endValues)
-    }
-}
-
-private fun View.toImageView(): android.widget.ImageView {
-    val v = this
-    val drawable = toBitmapDrawable()
-    return android.widget.ImageView(context).apply {
-        setImageDrawable(drawable)
-        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
-        layout(v.left, v.top, v.right, v.bottom)
-    }
-}
-
 private fun View.toBitmapDrawable(): BitmapDrawable {
-    println("Bitmapifying $this, ${(this as? ImageView)?.drawable}")
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//    b.eraseColor(0xFFFF0000.toInt())
     draw(android.graphics.Canvas(b))
     return BitmapDrawable(resources, b)
 }

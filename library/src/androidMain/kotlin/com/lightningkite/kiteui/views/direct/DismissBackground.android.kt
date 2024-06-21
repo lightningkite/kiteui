@@ -1,20 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.content.Context
-import android.content.res.ColorStateList
-import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ProgressBar
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
 
 actual class DismissBackground actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
         setOnClickListener {
-            navigator.clear()
+            dialogScreenNavigator.clear()
         }
     }
     actual fun onClick(action: suspend () -> Unit) {

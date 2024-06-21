@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -48,8 +50,8 @@ val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> 
     )
 )
 
-fun ViewWriter.appNav(routes: Routes, setup: AppNav.() -> Unit) {
-    appBase(routes) {
+fun ViewWriter.appNav(main: ScreenNavigator, dialog: ScreenNavigator? = null, setup: AppNav.() -> Unit) {
+    appBase(main, dialog) {
         swapView {
             swapping(
                 current = { appNavFactory.await() },
@@ -71,11 +73,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             }
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -86,7 +88,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             ::exists { appNav.existsProperty.await() }
         }
         expanding - navSpacing { appNav.existsProperty.await() } - stack {
-            navigatorView(navigator)
+            navigatorView(screenNavigator)
             atStart - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - stack {
                 scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                     spacing = 0.px
@@ -105,11 +107,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -122,7 +124,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             centered - navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navigatorView(navigator)
+        expanding - navigatorView(screenNavigator)
     }
 }
 
@@ -134,11 +136,11 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -148,7 +150,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navigatorView(navigator)
+        expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
             ::exists { appNav.existsProperty.await() && !SoftInputOpen.await() }
@@ -164,11 +166,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -184,7 +186,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
             navSpacing { appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
-            expanding - navigatorView(navigator)
+            expanding - navigatorView(screenNavigator)
         } in weight(1f)
     }
 }

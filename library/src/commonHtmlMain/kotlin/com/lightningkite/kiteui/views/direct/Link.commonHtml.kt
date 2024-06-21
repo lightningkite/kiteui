@@ -14,9 +14,9 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         native.addEventListener("click") {
             it.preventDefault()
             if(resetsStack) {
-                navigator.reset(to())
+                onNavigator.reset(to())
             } else {
-                navigator.navigate(to())
+                onNavigator.navigate(to())
             }
             onNavigate?.let {
                 launchManualCancel(it)
@@ -26,11 +26,11 @@ actual class Link actual constructor(context: RContext) : RView(context) {
 
     init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
 
-    actual var navigator: KiteUiNavigator = (this as RView).navigator
+    actual var onNavigator: KiteUiNavigator = (this as RView).screenNavigator
     actual var to: ()->Screen = { Screen.Empty }
         set(value) {
             field = value
-            navigator.routes.render(value())?.let {
+            onNavigator.routes.render(value())?.let {
                 native.attributes.href = context.basePath + it.urlLikePath.render()
             }
         }

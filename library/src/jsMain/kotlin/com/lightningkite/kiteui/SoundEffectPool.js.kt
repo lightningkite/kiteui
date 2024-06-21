@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import kotlinx.browser.document
 import kotlinx.browser.window

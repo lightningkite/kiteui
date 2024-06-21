@@ -5,6 +5,8 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
@@ -12,20 +14,16 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         isClickable = true
     }
 
-    actual fun opensMenu(action: ViewWriter.() -> Unit) {
+    actual fun opensMenu(createMenu: ViewWriter.() -> Unit) {
         native.setOnClickListener { view ->
-            val originalNavigator = navigator
-            navigator.dialog.navigate(object : Screen {
+            dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {
-                    val dialogNavigator = navigator
                     dismissBackground {
                         centered - card - stack {
-                            popoverClosers.add {
-                                dialogNavigator.dismiss()
-                            }
-                            navigator = originalNavigator
-                            action()
-                            navigator = dialogNavigator
+                            popoverLayer(
+                                closer = { dialogScreenNavigator.dismiss() },
+                                createPopover = createMenu
+                            )
                         }
                     }
                 }

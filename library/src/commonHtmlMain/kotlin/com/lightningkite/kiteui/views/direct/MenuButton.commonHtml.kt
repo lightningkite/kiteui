@@ -27,8 +27,8 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         }
     actual var requireClick: Boolean = false
     actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
-    actual fun opensMenu(action: ViewWriter.() -> Unit) {
-        floating.menuGenerator = action
+    actual fun opensMenu(createMenu: ViewWriter.() -> Unit) {
+        floating.menuGenerator = createMenu
     }
 }
 

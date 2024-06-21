@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -24,7 +25,7 @@ object DialogSamplesScreen : Screen {
             button {
                 h6 { content = "Launch Test Dialog" }
                 onClick {
-                    navigator.dialog.navigate(DialogSampleScreen1)
+                    dialogScreenNavigator.navigate(DialogSampleScreen1)
                 }
             }
         }
@@ -40,7 +41,7 @@ object DialogSamplesScreen : Screen {
                 row {
                     button {
                         text { content = "OK" }
-                        onClick { navigator.dismiss() }
+                        onClick { dialogScreenNavigator.dismiss() }
                     } in card
                 }
             }

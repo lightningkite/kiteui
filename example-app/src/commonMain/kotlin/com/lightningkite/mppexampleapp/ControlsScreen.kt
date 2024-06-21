@@ -149,9 +149,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A") }
-                                            button { text("B") }
-                                            button { text("C") }
+                                            button { text("A"); onClick { closeThisPopover() } }
+                                            button { text("B"); onClick { closeThisPopover() } }
+                                            button { text("C"); onClick { closeThisPopover() } }
                                         }
                                     }
                                 }
@@ -160,9 +160,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A") }
-                                            button { text("B") }
-                                            button { text("C") }
+                                            button { text("A"); onClick { closeThisPopover() } }
+                                            button { text("B"); onClick { closeThisPopover() } }
+                                            button { text("C"); onClick { closeThisPopover() } }
                                         }
                                     }
                                 }
@@ -171,9 +171,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A") }
-                                            button { text("B") }
-                                            button { text("C") }
+                                            button { text("A"); onClick { closeThisPopover() } }
+                                            button { text("B"); onClick { closeThisPopover() } }
+                                            button { text("C"); onClick { closeThisPopover() } }
                                         }
                                     }
                                 }
@@ -184,9 +184,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A") }
-                                button { text("B") }
-                                button { text("C") }
+                                button { text("A"); onClick { closeThisPopover() } }
+                                button { text("B"); onClick { closeThisPopover() } }
+                                button { text("C"); onClick { closeThisPopover() } }
                             }
                         }
                     } in card
@@ -194,9 +194,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A") }
-                                button { text("B") }
-                                button { text("C") }
+                                button { text("A"); onClick { closeThisPopover() } }
+                                button { text("B"); onClick { closeThisPopover() } }
+                                button { text("C"); onClick { closeThisPopover() } }
                             }
                         }
                     } in important
@@ -204,9 +204,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A") }
-                                button { text("B") }
-                                button { text("C") }
+                                button { text("A"); onClick { closeThisPopover() } }
+                                button { text("B"); onClick { closeThisPopover() } }
+                                button { text("C"); onClick { closeThisPopover() } }
                             }
                         }
                     } in critical

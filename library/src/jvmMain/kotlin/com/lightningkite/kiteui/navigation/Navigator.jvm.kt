@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.views.NContext
+import com.lightningkite.kiteui.views.RContext
 
-actual fun ScreenStack.bindToPlatform(context: NContext) {
+actual fun ScreenStack.bindToPlatform(context: RContext) {
 }

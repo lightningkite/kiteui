@@ -48,7 +48,7 @@ actual fun ViewWriter.hasPopover(
                     get() = this@beforeNextElementSetup
 
                 override fun close() {
-                    popoverClosers.invokeAllSafe()
+                    closeThisPopover()
                 }
             })
         }

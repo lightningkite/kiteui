@@ -9,7 +9,7 @@ import kotlinx.browser.window
 import org.w3c.dom.*
 import kotlin.math.min
 
-actual fun ScreenStack.bindToPlatform(context: RContext) {
+actual fun ScreenNavigator.bindToPlatform(context: RContext) {
     val log = ConsoleRoot.tag("ScreenStack.bindToPlatform")
     val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 

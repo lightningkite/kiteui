@@ -1,15 +1,13 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-fun RView.navigatorView(navigator: ScreenStack) {
+fun RView.navigatorView(navigator: ScreenNavigator) {
     val n = navigator
     this.swapView {
         var lastStack = n.stack.value
@@ -26,7 +24,7 @@ fun RView.navigatorView(navigator: ScreenStack) {
             current = { n.currentScreen.await() },
             views = { screen ->
                 with(split()) {
-                    this.navigator = n
+                    this.screenNavigator = n
                     if (screen != null)
                         with(screen) { mainContent - padded; render() }
                 }
@@ -36,7 +34,7 @@ fun RView.navigatorView(navigator: ScreenStack) {
 }
 
 fun RView.navigatorViewDialog() {
-    val n = navigator.dialog
+    val n = dialogScreenNavigator
     this.swapView {
         ignoreInteraction = true
         var lastStack = n.stack.value
@@ -53,7 +51,7 @@ fun RView.navigatorViewDialog() {
             current = { n.currentScreen.await() },
             views = { screen ->
                 with(split()) {
-                    this.navigator = n
+                    this.screenNavigator = n
                     if (screen != null)
                         with(screen) { padded; render() }
                 }

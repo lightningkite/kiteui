@@ -1,18 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.KiteUiActivity
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.views.*
-import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
@@ -25,9 +19,9 @@ actual class Link actual constructor(context: RContext): RView(context) {
             field = value
             native.setOnClickListener { view ->
                 if(resetsStack) {
-                    navigator.reset(value())
+                    onNavigator.reset(value())
                 } else {
-                    navigator.navigate(value())
+                    onNavigator.navigate(value())
                 }
                 launchManualCancel { onNavigate() }
             }
@@ -45,7 +39,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    actual var navigator: ScreenStack = ScreenStack.main
+    actual var onNavigator: ScreenNavigator = mainScreenNavigator
     actual var resetsStack: Boolean = false
 
     override fun getStateThemeChoice(): ThemeChoice? = when {

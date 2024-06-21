@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
@@ -38,7 +39,7 @@ fun main() {
 //            }
 //        }
 
-        app()
+        app(ScreenNavigator { AutoRoutes }, ScreenNavigator { AutoRoutes })
 //        icon { source = Icon.star }
 
 //        col {

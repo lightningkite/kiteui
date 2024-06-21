@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -70,6 +71,6 @@ object SampleLogInScreen : Screen {
 
     private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
         fetch("fake-login/${email.await()}")
-        navigator.navigate(ControlsScreen)
+        screenNavigator.navigate(ControlsScreen)
     }
 }

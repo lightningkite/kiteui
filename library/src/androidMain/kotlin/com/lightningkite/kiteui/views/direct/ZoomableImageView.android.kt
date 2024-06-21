@@ -20,6 +20,7 @@ import android.view.Window
 import android.widget.FrameLayout
 import androidx.annotation.Nullable
 import androidx.core.view.children
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.target.ImageViewTarget
@@ -36,37 +37,25 @@ import android.widget.ImageView as AImageView
 
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
     override val native = TouchImageView(context.activity)
+    var placeholder = CircularProgressDrawable(context.activity)
 
     actual var source: ImageSource?
         get() = TODO()
         set(value) {
-            @Suppress("KotlinConstantConditions")
-            if (native is TouchImageView) {
-                fun target() = object : SimpleTarget<Drawable>() {
-                    override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
-                        println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
-                        native.setImageDrawable(p0)
-                    }
+            fun target() = object : SimpleTarget<Drawable>() {
+                override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
+                    println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
+                    native.setImageDrawable(p0)
                 }
-                when (value) {
-                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(target())
-                    is ImageRaw -> Glide.with(native).load(value.data).into(target())
-                    is ImageRemote -> Glide.with(native).load(value.url).into(target())
-                    is ImageResource -> Glide.with(native).load(value.resource).into(target())
-                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                    null -> native.setImageDrawable(null)
-                    else -> TODO()
-                }
-            } else {
-                when (value) {
-                    is ImageLocal -> Glide.with(native).load(value.file.uri).into(native)
-                    is ImageRaw -> Glide.with(native).load(value.data).into(native)
-                    is ImageRemote -> Glide.with(native).load(value.url).into(native)
-                    is ImageResource -> Glide.with(native).load(value.resource).into(native)
-                    is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                    null -> native.setImageDrawable(null)
-                    else -> TODO()
-                }
+            }
+            when (value) {
+                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(target())
+                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(target())
+                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(target())
+                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(target())
+                is ImageVector -> native.setImageDrawable(PathDrawable(value))
+                null -> native.setImageDrawable(null)
+                else -> TODO()
             }
         }
     actual var scaleType: ImageScaleType
@@ -102,5 +91,15 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         super.applyBackground(theme, true)
+    }
+
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        (placeholder as? CircularProgressDrawable)?.let {
+            it.setColorSchemeColors(
+                theme.icon.closestColor().withAlpha(0.5f).colorInt(),
+                theme.icon.closestColor().withAlpha(0f).colorInt(),
+            )
+        }
     }
 }

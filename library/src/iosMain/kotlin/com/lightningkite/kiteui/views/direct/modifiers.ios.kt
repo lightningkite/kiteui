@@ -6,6 +6,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
@@ -13,7 +15,6 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
-import platform.UIKit.UIView
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
@@ -47,20 +48,20 @@ actual fun ViewWriter.hasPopover(
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
     beforeNextElementSetup {
-        val originalNavigator = navigator
+        val originalNavigator = screenNavigator
         fun openDialog() {
-            navigator.dialog.navigate(object : Screen {
+            dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - stack {
                             with(split()) {
-                                navigator = originalNavigator
+                                screenNavigator = originalNavigator
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
                                         get() = this@beforeNextElementSetup.calculationContext
 
                                     override fun close() {
-                                        navigator.dialog.dismiss()
+                                        dialogScreenNavigator.dismiss()
                                     }
                                 })
                             }
