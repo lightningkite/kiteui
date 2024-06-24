@@ -313,3 +313,15 @@ val webSocketClient: HttpClient by lazy {
         }
     }
 }
+
+actual fun Blob.bytes(): Long = data.size.toLong()
+actual fun FileReference.bytes(): Long {
+    return AndroidAppContext.applicationCtx.contentResolver
+        .query(uri, null, null, null, null)
+        ?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+            cursor.moveToFirst()
+            cursor.getLong(nameIndex)
+        }
+        ?: return -1L
+}

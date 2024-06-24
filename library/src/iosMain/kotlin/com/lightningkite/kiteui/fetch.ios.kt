@@ -336,3 +336,6 @@ fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt())
         memcpy(it.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)
     }
 }
+
+actual fun Blob.bytes(): Long = this.data.length.toLong()
+actual fun FileReference.bytes(): Long = -1L

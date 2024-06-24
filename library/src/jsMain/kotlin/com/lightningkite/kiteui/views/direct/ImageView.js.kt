@@ -24,8 +24,13 @@ actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit
     }
 
 actual inline var ImageView.source: ImageSource?
-    get() = TODO()
+    get() = native.asDynamic().__ROCK__source as? ImageSource
     set(value) {
+        val last = native.asDynamic().__ROCK__source
+        if(refreshOnParamChange && value is ImageRemote) {
+            if(value.url == (last as? ImageRemote)?.url) return
+        } else if(value == last) return
+        native.asDynamic().__ROCK__source = value
         when (value) {
             null -> setSrc("")
             is ImageRemote -> {
@@ -47,19 +52,6 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
-    if(refreshOnParamChange) {
-        if (((native.lastElementChild as? HTMLImageElement)?.src?.substringBefore('?')
-                ?: "") == url.substringBefore('?')
-        ) {
-            (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
-            return
-        }
-    } else {
-        if (((native.lastElementChild as? HTMLImageElement)?.src ?: "") == url) {
-            (native.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
-            return
-        }
-    }
     if(!animationsEnabled) {
         native.innerHTML = ""
     }
@@ -79,7 +71,7 @@ fun ImageView.setSrc(url: String) {
     }
 
     val newElement = document.createElement("img") as HTMLImageElement
-    newElement.style.opacity = "0"
+    newElement.style.opacity = "0.01"
     val now = clockMillis()
     newElement.addEventListener("error", {
         if(newElement.parentElement === native) {
@@ -97,10 +89,10 @@ fun ImageView.setSrc(url: String) {
         if((clockMillis() - now) < 32) {
             // disable animations and get it done; no reason to show the user an animation
             newElement.withoutAnimation {
-                newElement.style.opacity = "1"
+                newElement.style.opacity = "0.8"
             }
         } else {
-            newElement.style.opacity = "1"
+            newElement.style.opacity = "0.99"
         }
         for(index in 0..<myIndex) {
             val it = children[index] as? HTMLElement ?: continue

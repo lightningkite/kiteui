@@ -46,3 +46,5 @@ actual fun FileReference.fileName(): String {
 }
 
 actual fun websocket(url: String): WebSocket = TODO()
+actual fun Blob.bytes(): Long = -1L
+actual fun FileReference.bytes(): Long = -1L
