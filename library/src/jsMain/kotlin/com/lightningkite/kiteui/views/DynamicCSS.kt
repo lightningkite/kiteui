@@ -62,7 +62,7 @@ object DynamicCSS {
         style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
 
         style(".swapImage", mapOf("overflow" to "hidden"))
-        style(".swapImage > img", mapOf("object-fit" to "contain"))
+        style(".swapImage > img", mapOf("object-fit" to "contain", "transition-duration" to "var(--transition-duration, 0.25s)"))
         style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
         style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
@@ -1293,6 +1293,7 @@ object DynamicCSS {
                     "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
                     "outline-color" to theme.outline.toCss(),
                     "transition-duration" to theme.transitionDuration.toCss(),
+                    "--transition-duration" to theme.transitionDuration.toCss(),
                 ) + when (val it = theme.foreground) {
                     is Color -> mapOf("color" to it.toCss())
                     is LinearGradient, is RadialGradient -> mapOf(

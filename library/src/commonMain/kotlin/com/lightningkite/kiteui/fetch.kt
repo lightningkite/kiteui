@@ -57,18 +57,25 @@ expect class Blob
 expect class FileReference
 
 expect fun Blob.mimeType(): String
+expect fun Blob.bytes(): Long
 expect fun FileReference.mimeType():String
+expect fun FileReference.bytes():Long
 expect fun FileReference.fileName():String
 
 sealed interface RequestBody {
     val type: String
+    val bytes: Long
 }
-data class RequestBodyText(val content: String, override val type: String): RequestBody
+data class RequestBodyText(val content: String, override val type: String): RequestBody {
+    override val bytes: Long get() = content.encodeToByteArray().size.toLong()
+}
 data class RequestBodyBlob(val content: Blob): RequestBody {
     override val type: String get() = content.mimeType()
+    override val bytes: Long get() = content.bytes()
 }
 data class RequestBodyFile(val content: FileReference): RequestBody {
     override val type: String get() = content.mimeType()
+    override val bytes: Long get() = content.bytes()
 }
 
 expect fun websocket(url: String): WebSocket
