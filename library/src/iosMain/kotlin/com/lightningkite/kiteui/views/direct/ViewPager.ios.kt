@@ -7,17 +7,17 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NViewPager = NRecyclerView
+actual typealias NViewPager = ViewPagerScrollviewWrapper
 
 actual fun <T> ViewPager.children(
     items: Readable<List<T>>,
     render: ViewWriter.(value: Readable<T>) -> Unit
 )  {
-    native.renderer = ItemRenderer<T>(
+    native.pagingRecyclerView.renderer = ItemRenderer<T>(
         create = { _, value ->
             val prop = Property(value)
-            render(native.newViews, prop)
-            native.newViews.rootCreated!!.also {
+            render(native.pagingRecyclerView.newViews, prop)
+            native.pagingRecyclerView.newViews.rootCreated!!.also {
                 it.extensionProp = prop
             }
         },
@@ -27,14 +27,14 @@ actual fun <T> ViewPager.children(
         }
     )
     calculationContext.reactiveScope {
-        native.data = items.await().asIndexed()
+        native.pagingRecyclerView.data = items.await().asIndexed()
     }
 }
 
 @OptIn(ExperimentalForeignApi::class)
 @ViewDsl
 actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> Unit) = element(
-    NRecyclerView(false, newViews())
+    ViewPagerScrollviewWrapper(newViews())
 ) {
     calculationContext.onRemove {
         extensionStrongRef = null
@@ -43,11 +43,9 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
     handleTheme(
         this, viewDraws = false,
         foregroundSkipAnimate = {
-            spacing = spacingOverride() ?: it.spacing
+            spacing = getSpacingOverrideProperty().await() ?: it.spacing
         },
     ) {
-        forceCentering = true
-        elementsMatchSize = true
         extensionViewWriter = newViews()
         setup(ViewPager(this))
     }
@@ -55,5 +53,5 @@ actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> 
 
 @OptIn(ExperimentalForeignApi::class)
 actual val ViewPager.index: Writable<Int>
-    get() = native.centerVisible
-        .withWrite { native.jump(it, Align.Center, animationsEnabled) }
+    get() = native.pagingRecyclerView.centerVisible
+        .withWrite { native.pagingRecyclerView.jump(it, Align.Center, animationsEnabled) }

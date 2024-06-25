@@ -231,7 +231,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
 
     private var lastForceCenteringDismiss: Int = -1
 
-    var forceCentering = false
+    val forceCentering get() = superview is ViewPagerScrollviewWrapper
     var elementsMatchSize: Boolean = false
         set(value) {
             field = value
@@ -307,7 +307,7 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             }
         var size: CGFloat = -1.0
             get() {
-                return if (forceCentering) viewportSize
+                return if (forceCentering) viewportSize - spacingRaw
                 else {
                     if (needsLayout) measure()
                     field
@@ -320,21 +320,21 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             val p = extensionPadding ?: 0.0
             if(elementsMatchSize) {
                 if(vertical) {
-                    size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.height }
+                    size = this@NRecyclerView.bounds.useContents { size.height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
                     element.layoutSubviewsAndLayers()
                 } else {
-                    size = if(forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.width }
+                    size = this@NRecyclerView.bounds.useContents { size.width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
                     element.layoutSubviewsAndLayers()
                 }
             } else {
                 if(vertical) {
-                    size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(this@NRecyclerView.bounds.useContents { size.width }, 10000.0)).useContents { height }
+                    size = element.sizeThatFits(CGSizeMake(this@NRecyclerView.bounds.useContents { size.width }, 10000.0)).useContents { height }
                     element.setFrame(CGRectMake(p, startPosition, this@NRecyclerView.bounds.useContents { size.width - p * 2 }, size))
                     element.layoutSubviewsAndLayers()
                 } else {
-                    size = if(forceCentering) viewportSize else element.sizeThatFits(CGSizeMake(10000.0, this@NRecyclerView.bounds.useContents { size.height })).useContents { width }
+                    size = element.sizeThatFits(CGSizeMake(10000.0, this@NRecyclerView.bounds.useContents { size.height })).useContents { width }
                     element.setFrame(CGRectMake(startPosition, p, size, this@NRecyclerView.bounds.useContents { size.height - p * 2 }))
                     element.layoutSubviewsAndLayers()
                 }
@@ -799,26 +799,6 @@ actual class NRecyclerView(val vertical: Boolean = true, val newViews: ViewWrite
             return
         }
         onScrollStop()
-    }
-
-    override fun scrollViewWillEndDragging(
-        scrollView: UIScrollView,
-        withVelocity: CValue<CGPoint>,
-        targetContentOffset: CPointer<CGPoint>?
-    ) {
-        if(targetContentOffset != null) {
-            if (forceCentering) {
-                if (vertical) {
-                    val c = targetContentOffset.pointed.y
-                    val closestToTarget = allSubviews.minBy { ((it.startPosition + it.size / 2) - (c + viewportSize / 2)).absoluteValue }
-                    targetContentOffset.pointed.y = closestToTarget.let { it.startPosition + it.size / 2  } - viewportSize / 2
-                } else {
-                    val c = targetContentOffset.pointed.x
-                    val closestToTarget = allSubviews.minBy { ((it.startPosition + it.size / 2) - (c + viewportSize / 2)).absoluteValue }
-                    targetContentOffset.pointed.x = closestToTarget.let { it.startPosition + it.size / 2  } - viewportSize / 2
-                }
-            }
-        }
     }
 
     val fakeScrollIndicator = UIView(CGRectMake(0.0,0.0,0.0,0.0)).also {
