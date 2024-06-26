@@ -26,10 +26,19 @@ actual inline fun ViewWriter.imageActual(crossinline setup: ImageView.() -> Unit
 actual inline var ImageView.source: ImageSource?
     get() = native.asDynamic().__ROCK__source as? ImageSource
     set(value) {
+//        println("Setting source to $value")
         val last = native.asDynamic().__ROCK__source
         if(refreshOnParamChange && value is ImageRemote) {
-            if(value.url == (last as? ImageRemote)?.url) return
-        } else if(value == last) return
+            if(value.url == (last as? ImageRemote)?.url) {
+//                println("Store PFQ $value")
+                native.asDynamic().__ROCK__source_pfq = value
+                return
+            }
+        } else if(value == last) {
+//            println("Store PFQ $value")
+            native.asDynamic().__ROCK__source_pfq = value
+            return
+        }
         native.asDynamic().__ROCK__source = value
         when (value) {
             null -> setSrc("")
@@ -75,7 +84,12 @@ fun ImageView.setSrc(url: String) {
     val now = clockMillis()
     newElement.addEventListener("error", {
         if(newElement.parentElement === native) {
-            native.removeChild(newElement)
+            native.asDynamic().__ROCK__source = null
+            (native.asDynamic().__ROCK__source_pfq as? ImageSource)?.let {
+//                println("Load PFQ $it")
+                native.asDynamic().__ROCK__source_pfq = null
+                source = it
+            }
         }
     })
     newElement.addEventListener("", {})
