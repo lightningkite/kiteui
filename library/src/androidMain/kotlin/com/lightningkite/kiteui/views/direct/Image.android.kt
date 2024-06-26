@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.app.Activity
 import android.graphics.drawable.BitmapDrawable
 import android.os.Handler
 import android.os.Looper
@@ -41,6 +42,7 @@ actual typealias NImageView = AppCompatImageView
 actual var ImageView.source: ImageSource?
     get() = native.tag as? ImageSource
     set(value) {
+        if((native.context as? Activity)?.isDestroyed == true) return
         if(refreshOnParamChange && value is ImageRemote) {
             if(value.url == (native.tag as? ImageRemote)?.url) return
         } else if(value == native.tag) return

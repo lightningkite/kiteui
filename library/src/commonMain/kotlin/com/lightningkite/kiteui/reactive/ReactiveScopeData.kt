@@ -20,7 +20,11 @@ class ReactiveScopeData(
                 if(value != null) {
                     calculationContext.notifyLongComplete(value)
                 } else {
-                    onLoad?.invoke()
+//                    try {
+                        onLoad?.invoke()
+//                    } catch(e: Exception) {
+//                        e.printStackTrace2()
+//                    }
                     calculationContext.notifyStart()
                 }
             } else if(value != null) {
