@@ -21,12 +21,13 @@ actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.
     themedElement<HTMLDivElement>("div", viewDraws = false) {
         classList.add("recyclerView")
         val newViews: ViewWriter = newViews()
-        this.asDynamic().__ROCK__controller = RecyclerController2(
+        val ctrl = RecyclerController2(
             root = this,
             newViews = newViews,
             vertical = true
         )
-        setup(RecyclerView(this))
+        this.asDynamic().__ROCK__controller = ctrl
+        setup(RecyclerView(this).also { it.calculationContext.onRemove { ctrl.ready = false } })
     }
 }
 
@@ -35,12 +36,13 @@ actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: Rec
     themedElement<HTMLDivElement>("div", viewDraws = false) {
         classList.add("recyclerView")
         val newViews: ViewWriter = newViews()
-        this.asDynamic().__ROCK__controller = RecyclerController2(
+        val ctrl = RecyclerController2(
             root = this,
             newViews = newViews,
             vertical = false
         )
-        setup(RecyclerView(this))
+        this.asDynamic().__ROCK__controller = ctrl
+        setup(RecyclerView(this).also { it.calculationContext.onRemove { ctrl.ready = false } })
     }
 }
 
@@ -268,8 +270,9 @@ class RecyclerController2(
         root.addNView(fakeScroll)
         contentHolder.addNView(capView)
         ResizeObserver { entries, obs ->
+            if(!ready) return@ResizeObserver
             val newSize = root.clientSize
-            if (viewportSize != newSize) {
+            if (viewportSize != newSize && newSize != 0) {
                 viewportSize = newSize
                 nonEmergencyEdges()
             }
@@ -489,6 +492,7 @@ class RecyclerController2(
 
     init {
         contentHolder.onscroll = event@{ ev ->
+            if(!ready) return@event Unit
             if (suppressTrueScroll) {
                 suppressTrueScroll = false
                 suppressTrueScrollEnd = true
@@ -507,6 +511,7 @@ class RecyclerController2(
             Unit
         }
         fakeScroll.onscroll = event@{ ev ->
+            if(!ready) return@event Unit
             if (suppressFakeScroll) {
                 suppressFakeScroll = false
                 suppressFakeScrollEnd = true
@@ -554,6 +559,7 @@ class RecyclerController2(
             Unit
         }
         contentHolder.addEventListener("scrollend", event@{
+            if(!ready) return@event Unit
             if (suppressTrueScrollEnd) {
                 suppressTrueScrollEnd = false
                 return@event Unit
@@ -562,6 +568,7 @@ class RecyclerController2(
             onScrollStop()
         })
         fakeScroll.addEventListener("scrollend", event@{
+            if(!ready) return@event Unit
             if (suppressFakeScrollEnd) {
                 suppressFakeScrollEnd = false
                 return@event Unit
@@ -647,6 +654,8 @@ class RecyclerController2(
             startCreatingViewsAt = index to align
         }
         if (index !in dataDirect.min..dataDirect.max) return
+        if (!ready) return
+        if (allSubviews.isEmpty()) return
         lock("jump $index $align") {
             val rowIndex = index / columns
             allSubviews.find { it.index == rowIndex }?.let {
