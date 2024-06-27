@@ -123,7 +123,7 @@ inline fun <T : NView> ViewWriter.handleTheme(
     val hp = (view as? HasSpacingMultiplier)?.spacingOverride
     lastSpacing = { hp?.await() ?: currentTheme().spacing }
 
-    view.calculationContext.reactiveScope {
+    view.calculationContext.sub().reactiveScope {
         val theme = currentTheme()
 
         val shouldTransition = when (transition) {
