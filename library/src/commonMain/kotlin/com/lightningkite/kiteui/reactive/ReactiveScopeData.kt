@@ -16,7 +16,9 @@ class ReactiveScopeData(
 
     var runningLong: Result<Unit>? = Result.success(Unit)
         set(value) {
-            if((field == null) != (value == null)) {
+            val previous = field
+            field = value
+            if((previous == null) != (value == null)) {
                 if(value != null) {
                     calculationContext.notifyLongComplete(value)
                 } else {
@@ -30,7 +32,6 @@ class ReactiveScopeData(
             } else if(value != null) {
                 calculationContext.notifyComplete(value)
             }
-            field = value
         }
 
     internal fun setLoading() {
