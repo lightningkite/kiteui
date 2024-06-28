@@ -79,7 +79,7 @@ inline fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
     if(r == 0.0) return preDecimal
-    val availableDigits = 12 - preDecimal.length
+    val availableDigits = 10 - preDecimal.length
     val postDecimal = r.times(10.0.pow(availableDigits)).roundToInt()
     if(postDecimal == 0) return preDecimal
     else return preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
