@@ -171,6 +171,7 @@ object DynamicCSS {
             ".toggle-button > span", mapOf(
                 "flex-grow" to "1",
                 "flex-shrink" to "1",
+                "display" to "block",
             )
         )
 
@@ -362,6 +363,7 @@ object DynamicCSS {
         height: 100%;
         width: 100%;
         vertical-align: top;
+        display: block;
     }
 
     .kiteui-stack > .vEnd:only-child {
