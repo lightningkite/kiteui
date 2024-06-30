@@ -3,31 +3,32 @@ import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.*
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
-    kotlin("native.cocoapods")
-    id("com.android.library")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.androidLibrary)
 }
+
 apply<KiteUiPlugin>()
 
 group = "com.lightningkite"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
     applyDefaultHierarchyTemplate()
-
     jvm()
-    androidTarget()
+    androidTarget {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -144,17 +145,19 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 31
 
-    defaultConfig {
-        minSdk = 26
-    }
     compileOptions {
         // Flag to enable support for the new language APIs
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+        coreLibraryDesugaring(libs.jdkDesugar)
+    }
+
+    defaultConfig {
+        minSdk = 26
     }
 }
 

@@ -2,16 +2,14 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    kotlin("native.cocoapods")
-    id("com.android.library")
-    id("org.jetbrains.dokka")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.kotlinCocoapods)
     id("maven-publish")
     id("signing")
 }
-
-val ktorVersion = "2.3.7"
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
@@ -23,17 +21,17 @@ kotlin {
             }
         }
         dependencies {
-            api("androidx.transition:transition:1.4.1")
-            api("androidx.cardview:cardview:1.0.0")
-            api("com.jakewharton.timber:timber:5.0.1")
-            api("com.github.bumptech.glide:glide:5.0.0-rc01")
-            api("com.github.MikeOrtiz:TouchImageView:3.6")
-            api("io.ktor:ktor-client-core:$ktorVersion")
-            api("io.ktor:ktor-client-cio:$ktorVersion")
-            api("io.ktor:ktor-client-websockets:$ktorVersion")
-            api("androidx.media3:media3-exoplayer:1.2.1")
-            api("androidx.media3:media3-ui:1.2.1")
-            api("androidx.media3:media3-common:1.2.1")
+            api(libs.transition)
+            api(libs.cardView)
+            api(libs.timber)
+            api(libs.glide)
+            api(libs.touchImageView)
+            api(libs.ktorClientCore)
+            api(libs.ktorClientCio)
+            api(libs.ktorClientWebsockets)
+            api(libs.androidxMedia3Common)
+            api(libs.androidxMedia3ExoPLayer)
+            api(libs.androidxMedia3UI)
         }
     }
     jvm()
@@ -61,21 +59,21 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                api(libs.kotlinxJson)
+                api(libs.kotlinxProperties)
+                api(libs.kotlinxDateTime)
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
+                implementation(libs.kotlinTest)
             }
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.recyclerview:recyclerview:1.3.2")
-                api("com.google.android.material:material:1.11.0")
+                api(libs.appCompat)
+                api(libs.recyclerView)
+                api(libs.material)
             }
         }
 
@@ -85,15 +83,15 @@ kotlin {
 
         val iosMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.7")
-                implementation("io.ktor:ktor-client-websockets:2.3.7")
+                implementation(libs.ktorClientDarwin)
+                implementation(libs.ktorClientWebsockets)
             }
         }
 
         val jvmMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
-                api("org.apache.commons:commons-lang3:3.12.0")
+                api(libs.apacheCommonsLang)
             }
         }
         val jsMain by getting {
@@ -155,7 +153,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+        coreLibraryDesugaring(libs.jdkDesugar)
     }
 }
 
