@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.TextOverflow
+import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.NView
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
@@ -44,3 +44,4 @@ expect var TextView.align: Align
 expect var TextView.textSize: Dimension
 expect var TextView.ellipsis: Boolean
 expect var TextView.wraps: Boolean
+expect var TextView.wordBreak: WordBreak

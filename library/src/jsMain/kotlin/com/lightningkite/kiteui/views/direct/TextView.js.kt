@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.TextOverflow
+import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlinx.browser.window
@@ -80,4 +81,9 @@ actual var TextView.wraps: Boolean
         println("text-wrap <- ${if(value) "wrap" else "nowrap" }")
         native.style.setProperty("text-wrap-mode", if(value) "wrap" else "nowrap")
         println("text-wrap-mode <- ${if(value) "wrap" else "nowrap" }")
+    }
+actual var TextView.wordBreak: WordBreak
+    get() = TODO("Not yet implemented")
+    set(value) {
+        native.style.setProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
     }
