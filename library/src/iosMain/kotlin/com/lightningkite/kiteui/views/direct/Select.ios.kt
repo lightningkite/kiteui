@@ -62,3 +62,9 @@ actual fun <T> Select.bind(
     picker.setDelegate(source)
     native.extensionStrongRef = source
 }
+
+actual var Select.enabled: Boolean
+    get() = native.enabled
+    set(value) {
+        native.enabled = value
+    }

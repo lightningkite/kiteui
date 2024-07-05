@@ -43,3 +43,9 @@ actual inline var TextArea.keyboardHints: KeyboardHints
 actual inline var TextArea.hint: String
     get() = TODO()
     set(value) {}
+
+actual inline var TextArea.enabled: Boolean
+    get() = !native.readOnly
+    set(value) {
+        native.readOnly = !value
+    }

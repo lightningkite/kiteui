@@ -52,3 +52,9 @@ actual fun <T> Select.bind(
         }
     }
 }
+
+actual inline var Select.enabled: Boolean
+    get() = !native.disabled
+    set(value) {
+        native.disabled = !value
+    }

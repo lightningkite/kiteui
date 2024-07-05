@@ -319,6 +319,9 @@ actual inline var TextArea.keyboardHints: KeyboardHints
 actual inline var TextArea.hint: String
     get() = TODO()
     set(value) {}
+actual inline var TextArea.enabled: Boolean
+    get() = TODO()
+    set(value) {}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NSelect = HTMLElement
@@ -331,6 +334,9 @@ actual fun <T> Select.bind(
     render: (T) -> String
 ) {
 }
+actual inline var Select.enabled: Boolean
+    get() = TODO()
+    set(value) {}
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NAutoCompleteTextField = HTMLElement

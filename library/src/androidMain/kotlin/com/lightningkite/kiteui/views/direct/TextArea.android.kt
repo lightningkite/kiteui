@@ -29,6 +29,12 @@ actual var TextArea.hint: String
         this@hint.native.hint = value
     }
 
+actual var TextArea.enabled: Boolean
+    get() = native.isEnabled
+    set(value) {
+        native.isEnabled = value
+    }
+
 @ViewDsl
 actual inline fun ViewWriter.textAreaActual(crossinline setup: TextArea.() -> Unit) {
     return viewElement(factory = ::EditText, wrapper = ::TextArea, setup = {
