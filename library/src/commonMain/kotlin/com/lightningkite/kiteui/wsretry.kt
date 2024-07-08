@@ -3,35 +3,67 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+
+suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { com.lightningkite.kiteui.delay(it) }) {
+    suspendCoroutineCancellable<Unit> {
+        onOpen {
+            launchGlobal {
+                delay(1000L)
+                it.resume(Unit)
+            }
+        }
+        onClose { code ->
+            it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
+        }
+        return@suspendCoroutineCancellable {}
+    }
+}
 
 fun retryWebsocket(
-    url: String,
-    pingTime:Long,
+    underlyingSocket: () -> WebSocket,
+    pingTime: Long,
+    gate: ConnectivityGate = connectivityFetchGate,
+    log: Console? = null
 ): RetryWebsocket {
+    log?.log("Creating")
     val baseDelay = 1000L
     var currentDelay = baseDelay
     var lastConnect = 0.0
-    val connected = Property(false)
+    val connected = Property(false).also {
+        it.addListener {
+            log?.log("connected: ${it.value}")
+        }
+    }
     var currentWebSocket: WebSocket? = null
     val onOpenList = ArrayList<() -> Unit>()
     val onMessageList = ArrayList<(String) -> Unit>()
     val onBinaryMessageList = ArrayList<(Blob) -> Unit>()
     val onCloseList = ArrayList<(Short) -> Unit>()
     var lastPong = clockMillis()
+    var instanceCount: Int = 0
+    var currentWebSocketId = -1
     fun reset() {
-        currentWebSocket = websocket(url).also { socket ->
+        val id = instanceCount++
+        currentWebSocketId = id
+        currentWebSocket = underlyingSocket().also { socket ->
             var pings: Cancellable? = null
             socket.onOpen {
+                log?.log("$id onOpen")
                 onOpenList.toList().forEach { l -> l() }
             }
             socket.onMessage {
+                log?.log("$id onMessage $it")
                 lastPong = clockMillis()
                 if (it.isNotBlank()) onMessageList.toList().forEach { l -> l(it) }
             }
             socket.onBinaryMessage {
+                log?.log("$id onBinaryMessage $it")
                 onBinaryMessageList.toList().forEach { l -> l(it) }
             }
             socket.onClose {
+                log?.log("$id onClose $it")
                 onCloseList.toList().forEach { l -> l(it) }
             }
             socket.onOpen {
@@ -48,7 +80,8 @@ fun retryWebsocket(
                                 3000,
                                 "Server did not respond to three consecutive pings."
                             )
-                            lastPong < now - pingTime -> socket.send(" ")
+
+                            lastPong < now - pingTime.times(0.8) -> socket.send(" ")
                         }
                     }
                 }
@@ -59,7 +92,6 @@ fun retryWebsocket(
                 if (connected.value && clockMillis() - lastConnect > (pingTime * 2)) currentDelay = baseDelay
                 connected.value = false
             }
-
         }
     }
 
@@ -67,22 +99,35 @@ fun retryWebsocket(
 
         override val connected: Readable<Boolean>
             get() = connected
-        val shouldBeOn = Property(0)
+        var listenerCounter = 0
+        val shouldBeOn = Property(false)
 
         override fun start(): () -> Unit {
-            shouldBeOn.value++
+            if(listenerCounter++ == 0) shouldBeOn.value = true
             return {
-                shouldBeOn.value--
+                if(--listenerCounter == 0) shouldBeOn.value = false
             }
         }
 
         init {
+            var starting = false
             reactiveScope {
-                val shouldBeOn = shouldBeOn.await() > 0
+                val shouldBeOn = shouldBeOn.await()
                 val isOn = connected.await()
-                delay(currentDelay)
-                if (shouldBeOn && !isOn) {
-                    reset()
+                if (shouldBeOn && !isOn && !starting) {
+                    starting = true
+                    try {
+                        gate.run("WS") {
+                            log?.log("starting")
+                            reset()
+                            currentWebSocket?.waitUntilConnect(gate.delay)
+                            log?.log("started A")
+                        }
+                    } catch(e: Exception) {
+                        log?.log("start fail: $e")
+                        e.printStackTrace2()
+                        starting = false
+                    }
                 } else if (!shouldBeOn && isOn) {
                     currentWebSocket?.close(1000, "OK")
                 }
@@ -90,15 +135,19 @@ fun retryWebsocket(
         }
 
         override fun close(code: Short, reason: String) {
+            log?.log("close $code")
             currentWebSocket?.close(code, reason)
             currentWebSocket = null
+            currentWebSocketId = -1
         }
 
         override fun send(data: Blob) {
+            log?.log("$currentWebSocketId send $data")
             currentWebSocket?.send(data)
         }
 
         override fun send(data: String) {
+            log?.log("$currentWebSocketId send $data")
             currentWebSocket?.send(data)
         }
 
@@ -124,47 +173,6 @@ fun retryWebsocket(
     }
 }
 
-interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
-    fun retryNow() {
-
-    }
-}
-
-
-interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
-    val connected: Readable<Boolean>
-
-    fun close(code: Short, reason: String)
-    fun send(data: SEND)
-    fun onOpen(action: () -> Unit)
-    fun onMessage(action: (RECEIVE) -> Unit)
-    fun onClose(action: (Short) -> Unit)
-}
-
-val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
-    get() = object : Readable<RECEIVE?> {
-        var value: RECEIVE? = null
-            private set
-
-        val listeners = ArrayList<() -> Unit>()
-
-        init {
-            onMessage {
-                value = it
-                listeners.invokeAllSafe()
-            }
-        }
-
-        override val state: ReadableState<RECEIVE?> get() = ReadableState(value)
-
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            listeners.add(listener)
-            val parent = this@mostRecentMessage.start()
-            return { listeners.remove(listener); parent() }
-        }
-    }
-
-
 fun <SEND, RECEIVE> RetryWebsocket.typed(
     json: Json,
     send: KSerializer<SEND>,
@@ -182,7 +190,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
             try {
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
-                e.report()
+                Exception("Failed to decode message; expected a ${receive.descriptor.serialName} but got '${it.take(150)}'", e).report()
             }
         }
     }
@@ -190,4 +198,22 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
     override fun send(data: SEND) {
         this@typed.send(json.encodeToString(send, data))
     }
+}
+
+interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
+    fun retryNow() {
+
+    }
+}
+
+
+
+interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
+    val connected: Readable<Boolean>
+
+    fun close(code: Short, reason: String)
+    fun send(data: SEND)
+    fun onOpen(action: () -> Unit)
+    fun onMessage(action: (RECEIVE) -> Unit)
+    fun onClose(action: (Short) -> Unit)
 }
