@@ -126,3 +126,9 @@ actual fun ViewWriter.selectActual(setup: Select.() -> Unit) {
         }
     })
 }
+
+actual var Select.enabled: Boolean
+    get() = native.isEnabled
+    set(value) {
+        native.isEnabled = value
+    }

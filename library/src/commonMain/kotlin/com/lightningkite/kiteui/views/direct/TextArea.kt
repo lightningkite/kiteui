@@ -20,3 +20,4 @@ expect fun ViewWriter.textAreaActual(setup: TextArea.()->Unit = {}): Unit
 expect val TextArea.content: Writable<String>
 expect var TextArea.keyboardHints: KeyboardHints
 expect var TextArea.hint: String
+expect var TextArea.enabled: Boolean

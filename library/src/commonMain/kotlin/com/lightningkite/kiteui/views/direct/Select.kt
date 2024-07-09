@@ -18,3 +18,5 @@ value class Select(override val native: NSelect) : RView<NSelect>
 expect fun ViewWriter.selectActual(setup: Select.()->Unit = {}): Unit
 @OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.select(noinline setup: Select.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; selectActual(setup) }
 expect fun <T> Select.bind(edits: Writable<T>, data: Readable<List<T>>, render: (T)->String)
+
+expect var Select.enabled: Boolean
