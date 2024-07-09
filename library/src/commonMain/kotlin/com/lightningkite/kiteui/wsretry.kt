@@ -22,6 +22,17 @@ suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { com.lig
 }
 
 fun retryWebsocket(
+    url: String,
+    pingTime: Long,
+    gate: ConnectivityGate = connectivityFetchGate,
+    log: Console? = null
+): RetryWebsocket = retryWebsocket(
+    underlyingSocket = { websocket(url) },
+    pingTime = pingTime,
+    gate = gate,
+    log = log
+)
+fun retryWebsocket(
     underlyingSocket: () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = connectivityFetchGate,
