@@ -350,6 +350,14 @@ actual object ExternalServices {
                         })
                     }
                 }
+
+                override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
+                    picker.dismissViewControllerAnimated(true) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            cont.resume(null)
+                        })
+                    }
+                }
             }
         controller.delegate = delegate
         controller.extensionStrongRef = delegate

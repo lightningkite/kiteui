@@ -196,6 +196,20 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             requestLayout()
         }
 
+    private var clickListenerForChild: OnClickListener? = null
+    override fun setOnClickListener(l: OnClickListener?) {
+        clickListenerForChild = l
+        getChildAt(0)?.let {
+            it.setOnClickListener(l)
+            clickListenerForChild = null
+        }
+    }
+
+    override fun onViewAdded(child: View?) {
+        super.onViewAdded(child)
+        setOnClickListener(clickListenerForChild)
+    }
+
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l, MeasureSpec.EXACTLY),
