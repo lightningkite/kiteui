@@ -21,6 +21,13 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
     private val listeners = ArrayList<() -> Unit>()
     private var iterating = false
 
+    private fun notifyListeners() {
+        iterating = true
+        debug?.log("Informing ${listeners.size} listeners of new state $state...")
+        listeners.invokeAllSafe()
+        iterating = false
+    }
+
     private fun startupIfNeeded() {
         if (listening) return
         debug?.log("Starting up...")
@@ -36,14 +43,12 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
             }catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
-            iterating = true
-            debug?.log("Informing ${listeners.size} listeners of new state $state...")
-            listeners.invokeAllSafe()
-            iterating = false
+            notifyListeners()
             shutdownIfNotNeeded()
         }, onLoad = {
             if(!useLastWhileLoading) {
                 state = ReadableState.notReady
+                notifyListeners()
             }
         }, debug = debug)
     }
