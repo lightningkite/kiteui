@@ -132,7 +132,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
                 }
 
             override fun onComplete(action: () -> Unit) {
-                native.onended = { action }
+                native.onended = { action() }
             }
 
             override fun stop() {
