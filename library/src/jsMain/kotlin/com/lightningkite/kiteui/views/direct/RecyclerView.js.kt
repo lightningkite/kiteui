@@ -254,6 +254,7 @@ class RecyclerController2(
         style.size = "1px"
         style.start = "${reservedScrollingSpace}px"
         style.backgroundColor = "rbga(1, 1, 1, 0.01)"
+        className = "recyclerViewCap"
     }
     var capViewAtBottom: Boolean = false
         set(value) {
@@ -270,7 +271,7 @@ class RecyclerController2(
         root.addNView(fakeScroll)
         contentHolder.addNView(capView)
         ResizeObserver { entries, obs ->
-            if(!ready) return@ResizeObserver
+            if (!ready) return@ResizeObserver
             val newSize = root.clientSize
             if (viewportSize != newSize && newSize != 0) {
                 viewportSize = newSize
@@ -387,7 +388,7 @@ class RecyclerController2(
                         }
                         if (shift > 0) {
                             // Force to top
-                            if(allSubviews.first().startPosition < 0) {
+                            if (allSubviews.first().startPosition < 0) {
                                 offsetWholeSystem(-allSubviews.first().startPosition)
                             } else {
                                 viewportOffset = allSubviews.first().startPosition
@@ -433,7 +434,7 @@ class RecyclerController2(
     var viewportOffset: Int
         get() = _viewportOffsetField
         set(value) {
-            if(value < 0) IllegalStateException("Offset cannot be $value").printStackTrace2()
+            if (value < 0) IllegalStateException("Offset cannot be $value").printStackTrace2()
             _viewportOffsetField = value
             suppressTrueScroll = true
             contentHolder.scrollStart = value.toDouble()
@@ -467,6 +468,7 @@ class RecyclerController2(
             }
         }
     }
+
     fun nonEmergencyEdges() {
         if (allSubviews.isNotEmpty()) {
             if (allSubviews.first().index <= dataDirect.min) {
@@ -485,6 +487,7 @@ class RecyclerController2(
         }
         Unit
     }
+
     var forceCentering = false
     var suppressFakeScrollEnd = false
     var suppressTrueScrollEnd = false
@@ -492,7 +495,7 @@ class RecyclerController2(
 
     init {
         contentHolder.onscroll = event@{ ev ->
-            if(!ready) return@event Unit
+            if (!ready) return@event Unit
             if (suppressTrueScroll) {
                 suppressTrueScroll = false
                 suppressTrueScrollEnd = true
@@ -511,7 +514,7 @@ class RecyclerController2(
             Unit
         }
         fakeScroll.onscroll = event@{ ev ->
-            if(!ready) return@event Unit
+            if (!ready) return@event Unit
             if (suppressFakeScroll) {
                 suppressFakeScroll = false
                 suppressFakeScrollEnd = true
@@ -519,8 +522,8 @@ class RecyclerController2(
             }
             suppressFakeScrollEnd = false
             lock("fakescroll") {
-                window.clearTimeout(lastForceCenteringDismiss)
-                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
+//                window.clearTimeout(lastForceCenteringDismiss)
+//                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
                 if (allSubviews.isEmpty()) return@event Unit
 
                 val centerElementPartialIndex = (fakeScroll.scrollStart / viewportSize * 2 + 1) / 2
@@ -558,24 +561,24 @@ class RecyclerController2(
             }
             Unit
         }
-        contentHolder.addEventListener("scrollend", event@{
-            if(!ready) return@event Unit
-            if (suppressTrueScrollEnd) {
-                suppressTrueScrollEnd = false
-                return@event Unit
-            }
-            window.clearTimeout(lastForceCenteringDismiss)
-            onScrollStop()
-        })
-        fakeScroll.addEventListener("scrollend", event@{
-            if(!ready) return@event Unit
-            if (suppressFakeScrollEnd) {
-                suppressFakeScrollEnd = false
-                return@event Unit
-            }
-            window.clearTimeout(lastForceCenteringDismiss)
-            onScrollStop()
-        })
+//        contentHolder.addEventListener("scrollend", event@{
+//            if (!ready) return@event Unit
+//            if (suppressTrueScrollEnd) {
+//                suppressTrueScrollEnd = false
+//                return@event Unit
+//            }
+//            window.clearTimeout(lastForceCenteringDismiss)
+//            onScrollStop()
+//        })
+//        fakeScroll.addEventListener("scrollend", event@{
+//            if (!ready) return@event Unit
+//            if (suppressFakeScrollEnd) {
+//                suppressFakeScrollEnd = false
+//                return@event Unit
+//            }
+//            window.clearTimeout(lastForceCenteringDismiss)
+//            onScrollStop()
+//        })
         window.setTimeout({
             lock("ready") {
                 viewportSize = root.clientSize
@@ -666,7 +669,7 @@ class RecyclerController2(
                 }
                 return
             }
-            if(onlyIfNear) return@lock
+            if (onlyIfNear) return@lock
             if (animate) {
                 fun move() {
                     val existingTop = allSubviews.first().index
@@ -763,11 +766,15 @@ class RecyclerController2(
         var index: Int = index
             set(value) {
                 field = value
-                element.className = element.className.split(' ').filter { !it.startsWith("index-") }.plus("index-$index").joinToString(" ")
+                element.className =
+                    element.className.split(' ').filter { !it.startsWith("index-") }.plus("index-$index")
+                        .joinToString(" ")
             }
+
         init {
             element.classList.add("index-$index")
         }
+
         var startPosition: Int = 0
             set(value) {
                 field = value
@@ -831,7 +838,7 @@ class RecyclerController2(
         viewportOffset = reservedScrollingSpace / 2
         val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
-        element.startPosition = when(startCreatingViewsAt.second) {
+        element.startPosition = when (startCreatingViewsAt.second) {
             Align.Start -> viewportOffset + padding
             Align.End -> viewportOffset + viewportSize - padding - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
@@ -894,7 +901,7 @@ class RecyclerController2(
         var top = anchor.startPosition
         while ((top > viewportOffset - beyondEdgeRendering).also {
 //            println("populateUp ($top > $viewportOffset - $beyondEdgeRendering)")
-        }) {
+            }) {
             val nextIndex = anchor.index - 1
             if (nextIndex < dataDirect.min) break
             // Get the element to place

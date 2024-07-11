@@ -889,15 +889,15 @@ object DynamicCSS {
 //        content
 //        barScroll
 //        barContent
-//        style(".viewPager", mapOf(
-//            "scroll-snap-type" to "x mandatory",
-//            "scroll-behavior" to "smooth"
-//        ))
+        style(".viewPager", mapOf(
+            "scroll-snap-type" to "x mandatory"
+        ))
         style(
-            ".viewPager > *", mapOf(
+            ".viewPager > :not(.recyclerViewCap)", mapOf(
                 "width" to "var(--pager-width, 0rem)",
                 "height" to "var(--pager-height, 0rem)",
                 "scroll-snap-align" to "center",
+                "scroll-snap-stop" to "always",
             )
         )
         style(

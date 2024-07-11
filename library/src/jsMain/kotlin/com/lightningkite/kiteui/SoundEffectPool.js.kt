@@ -118,7 +118,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCoroutineCancellable { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
-        native.preload = "all"
         val obj = object : PlayableAudio {
             override var volume: Float
                 get() = native.volume.toFloat()
@@ -148,7 +147,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             done = true
             Unit
         }
-        native.load()
         when (val value = this) {
             null -> native.src = ""
             is AudioRemote -> native.src = value.url
@@ -157,6 +155,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
             else -> {}
         }
+        native.load()
         return@suspendCoroutineCancellable {
             println("Cancelled loading of ${this@load}.")
             native.src = ""
