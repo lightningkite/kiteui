@@ -277,6 +277,15 @@ class ReactivityTests {
 
         }
     }
+
+    @Test fun dumbtest() {
+        val listItem = LateInitProperty<Int>()
+        val selected = Property<Int>(0)
+        testContext {
+            reactiveScope { println(listItem() == selected()) }
+            listItem.value = 1
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {

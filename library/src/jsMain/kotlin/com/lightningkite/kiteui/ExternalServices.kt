@@ -8,6 +8,9 @@ import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
 import org.w3c.dom.url.URL
+import org.w3c.files.File
+import org.w3c.files.FileList
+import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.js.json
 
@@ -42,17 +45,23 @@ actual object ExternalServices {
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    actual suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+    actual suspend fun download(
+        name: String,
+        url: String,
+        preferredDestination: DownloadLocation,
+        onDownloadProgress: ((progress: Float) -> Unit)?
+    ) {
+        if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         a.href = url
         a.download = name
         a.target = "_blank"
         a.click()
     }
+
     @JsName("downloadBlob")
     actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
-        if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
+        if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         val url = URL.Companion.createObjectURL(blob)
         a.href = url
@@ -66,7 +75,24 @@ actual object ExternalServices {
 
     @JsName("shareBlob")
     actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
-        TODO()
+        val files = namesToBlobs.map {
+            val name = it.first
+            val blob = it.second
+
+            val type = blob.type.split("/").lastOrNull() ?: "png"
+            val fileName = if (name.endsWith(".$type")) name else "${name}.${type}"
+
+            File(
+                fileBits = arrayOf(blob),
+                fileName = fileName,
+                options = FilePropertyBag(type = blob.type)
+            )
+        }
+
+        window.navigator.asDynamic().share(
+            json("files" to files.toTypedArray())
+        )
+
     }
 
     actual fun share(title: String, message: String?, url: String?) {
@@ -101,7 +127,7 @@ actual object ExternalServices {
         zone: TimeZone
     ) {
         fun LocalDateTime.format() = buildString {
-            if(zone.id != "SYSTEM") {
+            if (zone.id != "SYSTEM") {
                 append("TZID=")
                 append(zone.id)
                 append(':')
@@ -114,7 +140,9 @@ actual object ExternalServices {
             append(minute.toString().padStart(2, '0'))
             append(second.toString().padStart(2, '0'))
         }
-        var calText = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nPRODID:adamgibbons/ics\nMETHOD:PUBLISH\nBEGIN:VEVENT\n";
+
+        var calText =
+            "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nPRODID:adamgibbons/ics\nMETHOD:PUBLISH\nBEGIN:VEVENT\n";
         calText += "UID:" + window.asDynamic().crypto.randomUUID() + "\n";
         calText += "SUMMARY:" + title + "\n";
         calText += "DTSTART:" + start.format() + "\n";

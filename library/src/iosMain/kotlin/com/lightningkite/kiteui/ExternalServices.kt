@@ -350,6 +350,14 @@ actual object ExternalServices {
                         })
                     }
                 }
+
+                override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
+                    picker.dismissViewControllerAnimated(true) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            cont.resume(null)
+                        })
+                    }
+                }
             }
         controller.delegate = delegate
         controller.extensionStrongRef = delegate
@@ -538,10 +546,6 @@ actual object ExternalServices {
         }
 
         override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
-        }
-
-        override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
-
         }
 
         override fun URLSession(

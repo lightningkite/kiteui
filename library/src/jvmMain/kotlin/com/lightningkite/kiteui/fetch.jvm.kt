@@ -40,8 +40,11 @@ actual typealias FileReference = File
 actual fun FileReference.mimeType(): String {
     return Files.probeContentType(this.toPath())
 }
+actual fun Blob.mimeType(): String = type
 actual fun FileReference.fileName(): String {
     return this.name
 }
 
 actual fun websocket(url: String): WebSocket = TODO()
+actual fun Blob.bytes(): Long = -1L
+actual fun FileReference.bytes(): Long = -1L

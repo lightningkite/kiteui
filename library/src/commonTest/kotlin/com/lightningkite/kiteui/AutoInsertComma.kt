@@ -169,11 +169,12 @@ class AutoInsertComma {
         testCases.forEach { testOnString(it) }
     }
     @Test fun decimalFormat() {
+        assertEquals("5.99", 5.99.toStringNoExponential())
         assertEquals("1224.54", 1224.54.toStringNoExponential())
         assertEquals("1224.542", 1224.542.toStringNoExponential())
         assertEquals("1224.5428", 1224.5428.toStringNoExponential())
         assertEquals("1224.54287", 1224.54287.toStringNoExponential())
-        assertEquals("1224.5428713", 1224.5428713.toStringNoExponential())
+        assertEquals("1224.542871", 1224.5428713.toStringNoExponential())
         assertEquals("1224", 1224.0.toStringNoExponential())
         assertEquals("112348224342", 112348224342.0.toStringNoExponential())
     }

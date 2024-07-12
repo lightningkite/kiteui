@@ -450,6 +450,8 @@ enum class TextOverflow {
     Ellipsis
 }
 
+enum class WordBreak { Normal, BreakAll  }
+
 data class PopoverPreferredDirection(
     val horizontal: Boolean = false,
     val after: Boolean = true,

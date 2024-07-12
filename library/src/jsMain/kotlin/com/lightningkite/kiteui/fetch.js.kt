@@ -152,6 +152,9 @@ actual typealias Blob = org.w3c.files.Blob
 actual typealias FileReference = File
 
 
+actual fun Blob.mimeType(): String {
+    return this.type
+}
 actual fun FileReference.mimeType(): String {
     return this.type
 }
@@ -185,3 +188,6 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
         native.addEventListener("close", { action((it as CloseEvent).code) })
     }
 }
+
+actual fun Blob.bytes(): Long = size.toLong()
+actual fun FileReference.bytes(): Long = size.toLong()

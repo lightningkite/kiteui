@@ -284,6 +284,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
 actual class FileReference(val uri: Uri)
 
 
+actual fun Blob.mimeType() = type
 actual fun FileReference.mimeType() = when(uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
     ContentResolver.SCHEME_FILE ->
@@ -311,4 +312,16 @@ val webSocketClient: HttpClient by lazy {
             pingInterval = 20_000
         }
     }
+}
+
+actual fun Blob.bytes(): Long = data.size.toLong()
+actual fun FileReference.bytes(): Long {
+    return AndroidAppContext.applicationCtx.contentResolver
+        .query(uri, null, null, null, null)
+        ?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+            cursor.moveToFirst()
+            cursor.getLong(nameIndex)
+        }
+        ?: return -1L
 }
