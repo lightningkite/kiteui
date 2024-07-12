@@ -66,4 +66,22 @@ actual class Select actual constructor(context: RContext): RView(context) {
         super.applyForeground(theme)
 //        textField.apply(theme)
     }
+
+    actual var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun getStateThemeChoice(): ThemeChoice? = when {
+        !textField.enabled -> ThemeChoice.Derive { it.disabled() }
+        textField.highlighted -> ThemeChoice.Derive { it.down() }
+        textField.focused -> ThemeChoice.Derive { it.hover() }
+        else -> null
+    }
 }

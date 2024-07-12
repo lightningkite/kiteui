@@ -13,6 +13,7 @@ import kotlin.contracts.*
 
 expect class TextArea(context: RContext) : RView {
 
+    var enabled: Boolean
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
     var hint: String

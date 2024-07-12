@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.app.Activity
 import android.graphics.drawable.BitmapDrawable
 import android.os.Handler
 import android.os.Looper
@@ -38,10 +39,14 @@ import android.widget.ImageView as AImageView
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
     override val native = TouchImageView(context.activity)
     var placeholder = CircularProgressDrawable(context.activity)
+    actual var refreshOnParamChange: Boolean = false
 
-    actual var source: ImageSource?
-        get() = TODO()
+    actual var source: ImageSource? = null
         set(value) {
+            if((native.context as? Activity)?.isDestroyed == true) return
+            if (refreshOnParamChange && value is ImageRemote) {
+                if (value.url == (field as? ImageRemote)?.url) return
+            } else if (value == field) return
             fun target() = object : SimpleTarget<Drawable>() {
                 override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
                     println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")

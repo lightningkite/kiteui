@@ -89,4 +89,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
             field = value
             native.style.fontSize = value.value
         }
+    actual var enabled: Boolean
+        get() = !(native.attributes.disabled ?: false)
+        set(value) { native.attributes.disabled = !value }
 }

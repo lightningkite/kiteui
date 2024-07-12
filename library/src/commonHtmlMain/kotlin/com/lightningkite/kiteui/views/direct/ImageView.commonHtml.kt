@@ -19,6 +19,9 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
     actual var source: ImageSource? = null
         set(value) {
+            if(refreshOnParamChange && value is ImageRemote) {
+                if(value.url == (field as? ImageRemote)?.url) return
+            } else if(value == field) return
             field = value
             when (value) {
                 null -> setSrc("")

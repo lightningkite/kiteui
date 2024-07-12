@@ -44,6 +44,12 @@ actual class TextField actual constructor(context: RContext): RView(context) {
         native.isAllCaps = theme.body.allCaps
     }
     actual val content: ImmediateWritable<String> = native.contentProperty()
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
+        }
 
     actual var keyboardHints: KeyboardHints
         get() {

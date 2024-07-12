@@ -26,6 +26,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             val controller = RecyclerController2(it as HTMLDivElement, vertical)
             this.controller = controller
             onController.forEach { it(controller) }
+            onRemove { controller.ready = false }
             onController.clear()
         }
     }
@@ -357,6 +358,7 @@ class RecyclerController2(
         style.size = "1px"
         style.start = "${reservedScrollingSpace}px"
         style.backgroundColor = "rbga(1, 1, 1, 0.01)"
+        className = "recyclerViewCap"
     }
     var capViewAtBottom: Boolean = false
         set(value) {
@@ -544,31 +546,6 @@ class RecyclerController2(
     var suppressFakeScroll = true
 
     private var lastForceCenteringDismiss: Int = -1
-    fun onScrollStop() {
-        nonEmergencyEdges()
-        if (forceCentering) {
-            val scrollCenter = viewportOffset + viewportSize / 2
-            allSubviews.map { it.startPosition + it.size / 2 - scrollCenter }.minBy { it.absoluteValue }.let {
-                if (it.absoluteValue > 10) {
-                    if (vertical) {
-                        contentHolder.scrollBy(
-                            ScrollToOptions(
-                                top = it.toDouble(),
-                                behavior = ScrollBehavior.SMOOTH
-                            )
-                        )
-                    } else {
-                        contentHolder.scrollBy(
-                            ScrollToOptions(
-                                left = it.toDouble(),
-                                behavior = ScrollBehavior.SMOOTH
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
     fun nonEmergencyEdges() {
         if (allSubviews.isNotEmpty()) {
             if (allSubviews.first().index <= dataDirect.min) {
@@ -602,7 +579,7 @@ class RecyclerController2(
             suppressTrueScrollEnd = false
             lock("onscroll") {
                 window.clearTimeout(lastForceCenteringDismiss)
-                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
+                lastForceCenteringDismiss = window.setTimeout(::nonEmergencyEdges, 1000)
 
                 _viewportOffsetField = contentHolder.scrollStart.toInt()
                 populate()
@@ -620,7 +597,7 @@ class RecyclerController2(
             suppressFakeScrollEnd = false
             lock("fakescroll") {
                 window.clearTimeout(lastForceCenteringDismiss)
-                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
+                lastForceCenteringDismiss = window.setTimeout(::nonEmergencyEdges, 1000)
                 if (allSubviews.isEmpty()) return@event Unit
 
                 val centerElementPartialIndex = (fakeScroll.scrollStart / viewportSize * 2 + 1) / 2
@@ -664,7 +641,7 @@ class RecyclerController2(
                 return@event Unit
             }
             window.clearTimeout(lastForceCenteringDismiss)
-            onScrollStop()
+            nonEmergencyEdges()
         })
         fakeScroll.addEventListener("scrollend", event@{
             if (suppressFakeScrollEnd) {
@@ -672,7 +649,7 @@ class RecyclerController2(
                 return@event Unit
             }
             window.clearTimeout(lastForceCenteringDismiss)
-            onScrollStop()
+            nonEmergencyEdges()
         })
         window.setTimeout({
             lock("ready") {
@@ -752,6 +729,8 @@ class RecyclerController2(
             startCreatingViewsAt = index to align
         }
         if (index !in dataDirect.min..dataDirect.max) return
+        if (!ready) return
+        if (allSubviews.isEmpty()) return
         lock("jump $index $align") {
             val rowIndex = index / columns
             allSubviews.find { it.index == rowIndex }?.let {
@@ -1045,8 +1024,9 @@ class RecyclerController2(
     init {
 
         ResizeObserver { entries, obs ->
+            if (!ready) return@ResizeObserver
             val newSize = root.clientSize
-            if (viewportSize != newSize) {
+            if (viewportSize != newSize && newSize != 0) {
                 viewportSize = newSize
                 nonEmergencyEdges()
             }

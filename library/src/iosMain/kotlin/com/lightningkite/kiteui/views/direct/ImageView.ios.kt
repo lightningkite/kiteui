@@ -35,6 +35,9 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
     actual var source: ImageSource?
         get() = native.imageSource
         set(value) {
+            if(refreshOnParamChange && value is ImageRemote) {
+                if(value.url == (native.imageSource as? ImageRemote)?.url) return
+            } else if(value == native.imageSource) return
             if(native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
                     setImageInternal(value)
@@ -139,6 +142,15 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         super.applyBackground(theme, true)
     }
+
+    actual var refreshOnParamChange: Boolean = false
+
+    /**
+     * When true, images are dimensioned according to the platform logical coordinate space as opposed to the physical
+     * coordinate space. This will cause images to appear closer to their natural size on supported platforms with high
+     * density screens.
+     */
+    actual var naturalSize: Boolean = false
 }
 
 
@@ -410,6 +422,7 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
                 ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
             }
         }
+    actual var refreshOnParamChange: Boolean = false
     actual inline var description: String?
         get() = TODO()
         set(value) {

@@ -28,7 +28,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         native.setPopupBackgroundDrawable(theme.backgroundDrawableWithoutCorners(null).apply { cornerRadius = 8.dp.value })
     }
 
-    var enabled: Boolean
+    actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value

@@ -133,6 +133,22 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
+    actual var enabled: Boolean
+        get() = textField.editable
+        set(value) {
+            textField.editable = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun getStateThemeChoice(): ThemeChoice? = when {
+        !textField.editable -> ThemeChoice.Derive { it.disabled() }
+        textField.focused -> ThemeChoice.Derive { it.hover() }
+        else -> null
+    }
 }
 
 private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {

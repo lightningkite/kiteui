@@ -22,11 +22,11 @@ import platform.objc.*
 fun UIViewController.setup(theme: Theme, app: ViewWriter.()->Unit) {
     setup({theme}, app)
 }
-fun UIViewController.setup(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
-    setup({theme.invoke()}, app)
+fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.()->Unit) {
+    setup({themeReadable.invoke()}, app)
 }
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit) {
+fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWriter.()->Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
 
     val writer = object: ViewWriter() {
@@ -37,7 +37,7 @@ fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit)
         init {
             beforeNextElementSetup {
                 useBackground = UseBackground.Yes
-                ::themeChoice { ThemeChoice.Set(theme()) }
+                ::themeChoice { ThemeChoice.Set(themeCalculation()) }
             }
         }
     }
@@ -52,7 +52,7 @@ fun UIViewController.setup(theme: suspend () -> Theme, app: ViewWriter.()->Unit)
     bottom.setActive(true)
 
     CalculationContext.NeverEnds.reactiveScope {
-        view.backgroundColor = theme().let { it.bar() ?: it }.background.closestColor().toUiColor()
+        view.backgroundColor = themeCalculation().let { it.bar() ?: it }.background.closestColor().toUiColor()
     }
 
     ExternalServices.rootView = subview

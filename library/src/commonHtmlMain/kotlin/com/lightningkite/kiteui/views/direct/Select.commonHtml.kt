@@ -52,6 +52,10 @@ actual class Select actual constructor(context: RContext) : RView(context) {
             }
         }
     }
+
+    actual var enabled: Boolean
+        get() = !(native.attributes.disabled ?: false)
+        set(value) { native.attributes.disabled = !value }
 }
 
 //fun HTMLElement.__resetContentToOptionList(options: List<WidgetOption>, selected: String) {

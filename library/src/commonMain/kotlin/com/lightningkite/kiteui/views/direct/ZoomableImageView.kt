@@ -15,5 +15,6 @@ expect class ZoomableImageView(context: RContext) : RView {
     var source: ImageSource?
     var scaleType: ImageScaleType
     var description: String?
+    var refreshOnParamChange: Boolean
 
 }

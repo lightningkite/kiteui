@@ -96,6 +96,14 @@ actual abstract class TextView actual constructor(context: RContext): RView(cont
         } ?: UIFont.systemFontOfSize(textSize.value)
         label.textAlignment = alignment
     }
+
+    actual var wordBreak: WordBreak = WordBreak.Normal
+        set(value) {
+            label.lineBreakMode = when(value) {
+                WordBreak.Normal -> NSLineBreakByWordWrapping
+                WordBreak.BreakAll -> NSLineBreakByCharWrapping
+            }
+        }
 }
 
 
@@ -187,7 +195,7 @@ fun UILabel.updateFont() {
     val textSize = extensionTextSize ?: return
     val alignment = textAlignment
     font = extensionFontAndStyle?.let {
-        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-    } ?: UIFont.systemFontOfSize(textSize.value)
+        it.font.get(textSize * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+    } ?: UIFont.systemFontOfSize(textSize)
     textAlignment = alignment
 }

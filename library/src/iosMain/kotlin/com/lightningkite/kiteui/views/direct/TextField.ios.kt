@@ -160,5 +160,21 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
+    actual var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun getStateThemeChoice(): ThemeChoice? = when {
+        !textField.enabled -> ThemeChoice.Derive { it.disabled() }
+        textField.focused -> ThemeChoice.Derive { it.hover() }
+        else -> null
+    }
 }
 

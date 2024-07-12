@@ -41,7 +41,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
 
         dynamicCss.style(".swapImage", mapOf("overflow" to "hidden"))
-        dynamicCss.style(".swapImage > img", mapOf("object-fit" to "contain"))
+        dynamicCss.style(".swapImage > img", mapOf("object-fit" to "contain", "transition-duration" to "var(--transition-duration, 0.25s)"))
         dynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
         dynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
         dynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
@@ -150,6 +150,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ".toggle-button > span", mapOf(
                 "flex-grow" to "1",
                 "flex-shrink" to "1",
+                "display" to "block",
             )
         )
 
@@ -338,6 +339,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         height: 100%;
         width: 100%;
         vertical-align: top;
+        display: block;
     }
 
     .kiteui-stack > .vEnd:only-child {
@@ -863,15 +865,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 //        content
 //        barScroll
 //        barContent
-//        DynamicCss.style(".viewPager", mapOf(
-//            "scroll-snap-type" to "x mandatory",
-//            "scroll-behavior" to "smooth"
-//        ))
+        dynamicCss.style(".viewPager", mapOf(
+            "scroll-snap-type" to "x mandatory"
+        ))
         dynamicCss.style(
-            ".viewPager > *", mapOf(
+            ".viewPager > :not(.recyclerViewCap)", mapOf(
                 "width" to "var(--pager-width, 0rem)",
                 "height" to "var(--pager-height, 0rem)",
                 "scroll-snap-align" to "center",
+                "scroll-snap-stop" to "always",
             )
         )
         dynamicCss.style(
@@ -1194,7 +1196,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "letter-spacing" to theme.body.additionalLetterSpacing.toString(),
                     "outline-color" to theme.outline.toCss(),
                     "transition-duration" to theme.transitionDuration.toCss(),
-                ) + when (val it = theme.foreground) {
+                    "--transition-duration" to theme.transitionDuration.toCss(),
+                    ) + when (val it = theme.foreground) {
                     is Color -> mapOf("color" to it.toCss())
                     is LinearGradient, is RadialGradient -> mapOf(
                         "color" to it.toCss(),

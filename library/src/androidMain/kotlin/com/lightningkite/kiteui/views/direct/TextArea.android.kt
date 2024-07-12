@@ -36,6 +36,12 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
         )
         native.isAllCaps = theme.body.allCaps
     }
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
+        }
     actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints
         get() {

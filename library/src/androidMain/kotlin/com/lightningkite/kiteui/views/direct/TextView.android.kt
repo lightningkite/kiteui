@@ -2,6 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.text.LineBreakConfig
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
+import android.text.Layout
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
@@ -63,6 +67,16 @@ actual abstract class TextView actual constructor(context: RContext) :
         set(value) {
             field = value
             native.maxLines = if (value) Integer.MAX_VALUE else 1
+        }
+    actual var wordBreak: WordBreak = WordBreak.Normal
+        set(value) {
+            field = value
+            if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+                when (value) {
+                    WordBreak.Normal -> native.lineBreakStyle = LineBreakConfig.LINE_BREAK_STYLE_NORMAL
+                    WordBreak.BreakAll -> native.lineBreakStyle = LineBreakConfig.LINE_BREAK_STYLE_NONE
+                }
+            }
         }
 }
 

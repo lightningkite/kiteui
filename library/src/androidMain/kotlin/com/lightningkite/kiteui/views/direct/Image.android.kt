@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.app.Activity
 import android.graphics.drawable.BitmapDrawable
 import android.os.Handler
 import android.os.Looper
@@ -51,6 +52,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
     actual var source: ImageSource? = null
         set(value) {
+            if((native.context as? Activity)?.isDestroyed == true) return
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return

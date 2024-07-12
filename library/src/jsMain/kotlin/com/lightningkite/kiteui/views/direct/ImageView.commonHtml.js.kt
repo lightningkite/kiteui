@@ -46,7 +46,7 @@ actual fun RView.nativeSetSrc(url: String?) {
             children.filterIsInstance<HTMLElement>().forEach {
                 it.style.opacity = "0"
                 window.setTimeout({
-                    if (it.parentElement == element && it.style.opacity == "0") {
+                    if (it.parentElement == element) {
                         element.removeChild(it)
                     }
                 }, 150)

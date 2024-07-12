@@ -39,4 +39,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         }
     actual var hint: String = ""
         set(value) { field = value }
+    actual var enabled: Boolean
+        get() = !(native.attributes.disabled ?: false)
+        set(value) { native.attributes.disabled = !value }
 }

@@ -16,6 +16,7 @@ import kotlin.contracts.*
 
 expect class TextField(context: RContext) : RView {
 
+    var enabled: Boolean
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
     var action: Action?
