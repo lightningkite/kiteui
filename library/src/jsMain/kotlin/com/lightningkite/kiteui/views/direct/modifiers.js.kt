@@ -247,7 +247,10 @@ actual fun ViewWriter.hasPopover(
 //                        existingElement?.style?.transform = "scale(0,0)"
                         existingDismisser?.style?.opacity = "0"
                         window.setTimeout({
-                            existingElement?.let { it.parentElement?.removeChild(it) }
+                            existingElement?.let {
+                                it.shutdown()
+                                it.parentElement?.removeChild(it)
+                            }
                             existingElement = null
                             existingDismisser?.let { it.parentElement?.removeChild(it) }
                             existingDismisser = null
