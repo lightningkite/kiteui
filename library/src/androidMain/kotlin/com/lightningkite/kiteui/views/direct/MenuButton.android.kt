@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
+import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.views.*
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
@@ -20,10 +21,18 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - card - stack {
-                            popoverLayer(
-                                closer = { dialogScreenNavigator.dismiss() },
-                                createPopover = createMenu
-                            )
+                           object: ViewWriter() {
+                               override val context: RContext = this@stack.context.split().also {
+                                   popoverClosers = BasicListenable().also {
+                                       it.addListener {
+                                           dialogScreenNavigator.dismiss()
+                                       }
+                                   }
+                               }
+                               override fun addChild(view: RView) {
+                                   this@stack.addChild(view)
+                               }
+                           }
                         }
                     }
                 }

@@ -20,4 +20,10 @@ interface Console {
     fun info(vararg entries: Any?)
     fun warn(vararg entries: Any?)
 }
-expect object ConsoleRoot: Console
+expect object ConsoleRoot: Console {
+    override fun tag(tag: String): Console
+    override fun log(vararg entries: Any?)
+    override fun error(vararg entries: Any?)
+    override fun info(vararg entries: Any?)
+    override fun warn(vararg entries: Any?)
+}

@@ -36,24 +36,6 @@ fun UIView.sizeThatFits2(
         CGSizeMake(w, h)
     } ?: size
     return when (this) {
-        is UIImageView -> PerformanceInfo["nativeSizeThatFits"] label@{
-            if (sizeConstraints?.aspectRatio != null) return@label newSize
-            this.image?.size?.useContents {
-                val original = this
-                newSize.useContents {
-                    val max = this
-                    val smallerRatio = (max.width / original.width)
-                        .coerceAtMost(max.height / original.height)
-                    val imageScale = smallerRatio
-                        .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
-                    CGSizeMake(
-                        original.width * imageScale,
-                        original.height * imageScale
-                    )
-                }
-            } ?: CGSizeMake(0.0, 0.0)
-        }
-
         is LinearLayout,
         is FrameLayout,
         is FrameLayoutButton -> sizeThatFits(newSize)

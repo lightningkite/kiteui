@@ -10,6 +10,6 @@ actual class RContext(
 ) : RContextHelper() {
     val id = Random.nextInt()
     actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons.putAll(this@RContext.addons) }
-    override val darkMode: Boolean? get() = null
+    actual override val darkMode: Boolean? get() = null
     override fun toString(): String = "RContext@$id"
 }

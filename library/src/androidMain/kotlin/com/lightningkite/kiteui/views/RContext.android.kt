@@ -4,7 +4,7 @@ import android.content.res.Configuration
 import com.lightningkite.kiteui.KiteUiActivity
 
 actual class RContext(val activity: KiteUiActivity): RContextHelper() {
-    override val darkMode: Boolean?
+    actual override val darkMode: Boolean?
         get() = when(activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
             Configuration.UI_MODE_NIGHT_NO -> false
             Configuration.UI_MODE_NIGHT_YES -> true

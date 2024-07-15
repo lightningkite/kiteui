@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.reactive.sub
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
+import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.*
 import platform.UIKit.*
@@ -150,7 +151,7 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
      * coordinate space. This will cause images to appear closer to their natural size on supported platforms with high
      * density screens.
      */
-    actual var naturalSize: Boolean = false
+    actual var naturalSize: Boolean by native::naturalSize
 }
 
 
@@ -260,6 +261,25 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
             }
         }
     }
+
+    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        return this.image?.size?.useContents {
+            val original = this
+            size.useContents {
+                val max = this
+                val smallerRatio = (max.width / original.width)
+                    .coerceAtMost(max.height / original.height)
+                val imageScale = smallerRatio
+                    .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
+                CGSizeMake(
+                    original.width * imageScale,
+                    original.height * imageScale
+                )
+            }
+        } ?: CGSizeMake(0.0, 0.0)
+    }
+
+    var naturalSize: Boolean = false
 }
 
 @OptIn(ExperimentalForeignApi::class)

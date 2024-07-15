@@ -42,7 +42,7 @@ abstract class KiteUiActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _WindowInfo.value = WindowStatistics(
+        AppState._windowInfo.value = WindowStatistics(
             Dimension(resources.displayMetrics.widthPixels.toFloat()),
             Dimension(resources.displayMetrics.heightPixels.toFloat()),
             resources.displayMetrics.density,
@@ -121,12 +121,12 @@ abstract class KiteUiActivity : Activity() {
         val keyboardHeight = resources.displayMetrics.heightPixels - rect.bottom
         if (keyboardHeight.toFloat() > resources.displayMetrics.heightPixels * 0.15f) {
             suppressKeyboardChange = true
-            _SoftInputOpen.value = true
+            AppState._softInputOpen.value = true
             suppressKeyboardChange = false
         } else {
             afterTimeout(30L) {
                 suppressKeyboardChange = true
-                _SoftInputOpen.value = false
+                AppState._softInputOpen.value = false
                 suppressKeyboardChange = false
             }
         }
@@ -142,7 +142,7 @@ abstract class KiteUiActivity : Activity() {
             repeatMode = ValueAnimator.RESTART
             var last = System.currentTimeMillis()
             addUpdateListener {
-                AnimationFrame.frame()
+                AppState._animationFrame.invokeAll()
             }
             start()
         }

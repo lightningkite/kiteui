@@ -1,11 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Blob
-import com.lightningkite.kiteui.FileReference
-import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
-import kotlin.js.JsName
 
 
 actual class ZoomableImageView actual constructor(context: RContext) : RView(context) {
@@ -41,7 +37,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
                 }
 
                 is ImageVector -> {
-                    setSrc(value.toWeb())
+                    setSrc(value.vectorToSvgDataUrl())
                 }
 
                 else -> {}
