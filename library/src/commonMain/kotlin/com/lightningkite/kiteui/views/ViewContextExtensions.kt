@@ -3,8 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.invokeAllSafe
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 import kotlin.properties.ReadWriteProperty
@@ -15,6 +14,15 @@ import kotlin.reflect.KProperty
 fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
     override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
         thisRef.context.addons.getOrPut(property.name) { init } as T
+
+    override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
+        thisRef.context.addons[property.name] = value
+    }
+}
+@Suppress("UNCHECKED_CAST")
+fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
+    override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
+        thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
 
     override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
         thisRef.context.addons[property.name] = value
@@ -37,50 +45,53 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
 )
 val ViewWriter.navigator by ViewWriter::screenNavigator
 
+var ViewWriter.rootPopoverCloser by rContextAddon(BasicListenable())
+var ViewWriter.popoverClosers by rContextAddonGenerate { rootPopoverCloser }
+fun ViewWriter.closePopovers() { rootPopoverCloser.invokeAll() }
+fun ViewWriter.closeSiblingPopovers() { popoverClosers.invokeAll() }
 
-// PopoverV2
-private var ViewWriter.popoverStack by rContextAddon(ArrayList<ArrayList<()->Unit>>())
-fun
-
-var ViewWriter.parentPopoverClosers by rContextAddon<ArrayList<() -> Unit>>(ArrayList())
-var ViewWriter.popoverClosers by rContextAddon<ArrayList<() -> Unit>>(ArrayList())
-var ViewWriter.popoverClosersId by rContextAddon<Int>(0)
-fun ViewWriter.closeThisPopover() {
-    parentPopoverClosers.invokeAllSafe(); parentPopoverClosers.clear()
-}
-
-fun ViewWriter.closePopovers() {
-    val copy = popoverClosers.toList()
-    popoverClosers.clear()
-    copy.forEach {
-        it()
-    }
-}
-
-fun ViewWriter.onPopoverClose(action: () -> Unit) {
-    popoverClosers.add(action)
-}
-
-fun ViewWriter.popoverLayer(): ViewWriter {
-    val x = split()
-    x.parentPopoverClosers = popoverClosers
-    x.popoverClosers = ArrayList()
-    x.popoverClosersId = popoverClosersId + 1
-    println("Closer id for layer is ${x.popoverClosersId}")
-    return x
-}
-
-inline fun ViewWriter.popoverLayer(noinline closer: () -> Unit, createPopover: ViewWriter.() -> Unit) {
-    println("New layer opening for ${popoverClosersId}")
-    closePopovers()
-    onPopoverClose(closer)
-    val newLayer = popoverLayer()
-    onPopoverClose {
-        newLayer.closePopovers()
-    }
-    with(newLayer, createPopover)
-}
-//var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
+//// PopoverV2
+//private var ViewWriter.popoverStack by rContextAddon(ArrayList<ArrayList<()->Unit>>())
+//
+//var ViewWriter.parentPopoverClosers by rContextAddon<ArrayList<() -> Unit>>(ArrayList())
+//var ViewWriter.popoverClosers by rContextAddon<ArrayList<() -> Unit>>(ArrayList())
+//var ViewWriter.popoverClosersId by rContextAddon<Int>(0)
+//fun ViewWriter.closeThisPopover() {
+//    parentPopoverClosers.invokeAllSafe(); parentPopoverClosers.clear()
+//}
+//
+//fun ViewWriter.closePopovers() {
+//    val copy = popoverClosers.toList()
+//    popoverClosers.clear()
+//    copy.forEach {
+//        it()
+//    }
+//}
+//
+//fun ViewWriter.onPopoverClose(action: () -> Unit) {
+//    popoverClosers.add(action)
+//}
+//
+//fun ViewWriter.popoverLayer(): ViewWriter {
+//    val x = split()
+//    x.parentPopoverClosers = popoverClosers
+//    x.popoverClosers = ArrayList()
+//    x.popoverClosersId = popoverClosersId + 1
+//    println("Closer id for layer is ${x.popoverClosersId}")
+//    return x
+//}
+//
+//inline fun ViewWriter.popoverLayer(noinline closer: () -> Unit, createPopover: ViewWriter.() -> Unit) {
+//    println("New layer opening for ${popoverClosersId}")
+//    closePopovers()
+//    onPopoverClose(closer)
+//    val newLayer = popoverLayer()
+//    onPopoverClose {
+//        newLayer.closePopovers()
+//    }
+//    with(newLayer, createPopover)
+//}
+////var ViewContext.screenTransitions by viewContextAddon(ScreenTransitions.HorizontalSlide)
 
 @ViewModifierDsl3
 val ViewWriter.debugNext: ViewWrapper

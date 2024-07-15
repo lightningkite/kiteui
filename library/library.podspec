@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'library'
-    spec.version                  = 'no-vw-refactor-SNAPSHOT'
+    spec.version                  = 'main-SNAPSHOT'
     spec.homepage                 = ''
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
@@ -22,10 +22,6 @@ Pod::Spec.new do |spec|
         Alternatively, proper pod installation is performed during Gradle sync in the IDE (if Podfile location is set)"
     end
                 
-    spec.xcconfig = {
-        'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO',
-    }
-                
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':library',
         'PRODUCT_MODULE_NAME' => 'library',
@@ -43,7 +39,7 @@ Pod::Spec.new do |spec|
                 fi
                 set -ev
                 REPO_ROOT="$PODS_TARGET_SRCROOT"
-                "$REPO_ROOT/../gradlew" -p "$REPO_ROOT" $KOTLIN_PROJECT_PATH:syncFramework \
+                "$REPO_ROOT/../../picme-frontend/gradlew" -p "$REPO_ROOT" $KOTLIN_PROJECT_PATH:syncFramework \
                     -Pkotlin.native.cocoapods.platform=$PLATFORM_NAME \
                     -Pkotlin.native.cocoapods.archs="$ARCHS" \
                     -Pkotlin.native.cocoapods.configuration="$CONFIGURATION"

@@ -149,9 +149,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closeThisPopover() } }
-                                            button { text("B"); onClick { closeThisPopover() } }
-                                            button { text("C"); onClick { closeThisPopover() } }
+                                            button { text("A"); onClick { closePopovers() } }
+                                            button { text("B"); onClick { closePopovers() } }
+                                            button { text("C"); onClick { closePopovers() } }
                                         }
                                     }
                                 }
@@ -160,9 +160,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closeThisPopover() } }
-                                            button { text("B"); onClick { closeThisPopover() } }
-                                            button { text("C"); onClick { closeThisPopover() } }
+                                            button { text("A"); onClick { closePopovers() } }
+                                            button { text("B"); onClick { closePopovers() } }
+                                            button { text("C"); onClick { closePopovers() } }
                                         }
                                     }
                                 }
@@ -171,9 +171,9 @@ object ControlsScreen : Screen {
                                     preferredDirection = PopoverPreferredDirection.rightTop
                                     opensMenu {
                                         col {
-                                            button { text("A"); onClick { closeThisPopover() } }
-                                            button { text("B"); onClick { closeThisPopover() } }
-                                            button { text("C"); onClick { closeThisPopover() } }
+                                            button { text("A"); onClick { closePopovers() } }
+                                            button { text("B"); onClick { closePopovers() } }
+                                            button { text("C"); onClick { closePopovers() } }
                                         }
                                     }
                                 }
@@ -184,9 +184,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closeThisPopover() } }
-                                button { text("B"); onClick { closeThisPopover() } }
-                                button { text("C"); onClick { closeThisPopover() } }
+                                button { text("A"); onClick { closePopovers() } }
+                                button { text("B"); onClick { closePopovers() } }
+                                button { text("C"); onClick { closePopovers() } }
                             }
                         }
                     } in card
@@ -194,9 +194,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closeThisPopover() } }
-                                button { text("B"); onClick { closeThisPopover() } }
-                                button { text("C"); onClick { closeThisPopover() } }
+                                button { text("A"); onClick { closePopovers() } }
+                                button { text("B"); onClick { closePopovers() } }
+                                button { text("C"); onClick { closePopovers() } }
                             }
                         }
                     } in important
@@ -204,9 +204,9 @@ object ControlsScreen : Screen {
                         text("Menu")
                         opensMenu {
                             col {
-                                button { text("A"); onClick { closeThisPopover() } }
-                                button { text("B"); onClick { closeThisPopover() } }
-                                button { text("C"); onClick { closeThisPopover() } }
+                                button { text("A"); onClick { closePopovers() } }
+                                button { text("B"); onClick { closePopovers() } }
+                                button { text("C"); onClick { closePopovers() } }
                             }
                         }
                     } in critical

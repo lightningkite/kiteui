@@ -185,7 +185,7 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
                 ::exists {it.hidden?.invoke() != true}
                 preferredDirection = PopoverPreferredDirection.belowRight
                 opensMenu {
-                    navGroupColumn(shared { it.children() }, { closeThisPopover() })
+                    navGroupColumn(shared { it.children() }, { closePopovers() })
                 }
                 text { ::content { it.title() } }
             }
@@ -269,7 +269,7 @@ fun RView.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingVi
                     display(it)
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        navGroupColumn(shared { it.children() }, { closeThisPopover() })
+                        navGroupColumn(shared { it.children() }, { closePopovers() })
                     }
                 }
 

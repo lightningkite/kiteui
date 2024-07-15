@@ -324,9 +324,12 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual var source: ImageSource?
-        get() = native.imageView.imageSource
+    actual var source: ImageSource? = null
         set(value) {
+            if (refreshOnParamChange && value is ImageRemote) {
+                if (value.url == (field as? ImageRemote)?.url) return
+            } else if (value == field) return
+            field = value
             if(native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
                     setImageInternal(value)

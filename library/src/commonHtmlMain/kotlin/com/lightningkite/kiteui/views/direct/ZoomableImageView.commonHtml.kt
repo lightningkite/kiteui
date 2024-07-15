@@ -18,6 +18,9 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
     actual var source: ImageSource? = null
         set(value) {
+            if (refreshOnParamChange && value is ImageRemote) {
+                if (value.url == (field as? ImageRemote)?.url) return
+            } else if (value == field) return
             field = value
             when (value) {
                 null -> setSrc("")
@@ -58,5 +61,6 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
             field = value
             native.setAttribute("aria-label", value)
         }
+    actual var refreshOnParamChange: Boolean = false
 }
 
