@@ -19,15 +19,17 @@ fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : Read
         thisRef.context.addons[property.name] = value
     }
 }
-@Suppress("UNCHECKED_CAST")
-fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
-    override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
-        thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
 
-    override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
-        thisRef.context.addons[property.name] = value
+@Suppress("UNCHECKED_CAST")
+fun <T> rContextAddonGenerate(init: ViewWriter.() -> T): ReadWriteProperty<ViewWriter, T> =
+    object : ReadWriteProperty<ViewWriter, T> {
+        override fun getValue(thisRef: ViewWriter, property: KProperty<*>): T =
+            thisRef.context.addons.getOrPut(property.name) { init(thisRef) } as T
+
+        override fun setValue(thisRef: ViewWriter, property: KProperty<*>, value: T) {
+            thisRef.context.addons[property.name] = value
+        }
     }
-}
 
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
@@ -47,8 +49,13 @@ val ViewWriter.navigator by ViewWriter::screenNavigator
 
 var ViewWriter.rootPopoverCloser by rContextAddon(BasicListenable())
 var ViewWriter.popoverClosers by rContextAddonGenerate { rootPopoverCloser }
-fun ViewWriter.closePopovers() { rootPopoverCloser.invokeAll() }
-fun ViewWriter.closeSiblingPopovers() { popoverClosers.invokeAll() }
+fun ViewWriter.closePopovers() {
+    rootPopoverCloser.invokeAll()
+}
+
+fun ViewWriter.closeSiblingPopovers() {
+    popoverClosers.invokeAll()
+}
 
 //// PopoverV2
 //private var ViewWriter.popoverStack by rContextAddon(ArrayList<ArrayList<()->Unit>>())
@@ -194,12 +201,19 @@ val ViewWriter.danger: ViewWrapper get() = themeFromLast { it.danger() }
 val ViewWriter.affirmative: ViewWrapper get() = themeFromLast { it.affirmative() }
 
 @ViewModifierDsl3
-val ViewWriter.compact: ViewWrapper get() = tweakTheme { it.copy(spacing = it.spacing / 2) }
+val ViewWriter.compact: ViewWrapper
+    get() = tweakTheme {
+        it.copy(
+            id = "compact",
+            spacing = it.spacing / 2
+        )
+    }
 
 @ViewModifierDsl3
 val ViewWriter.bold: ViewWrapper
     get() = tweakTheme {
         it.copy(
+            id = "bold",
             title = it.title.copy(bold = true),
             body = it.body.copy(bold = true)
         )
@@ -209,6 +223,7 @@ val ViewWriter.bold: ViewWrapper
 val ViewWriter.italic: ViewWrapper
     get() = tweakTheme {
         it.copy(
+            id = "italic",
             title = it.title.copy(italic = true),
             body = it.body.copy(italic = true)
         )
@@ -218,6 +233,7 @@ val ViewWriter.italic: ViewWrapper
 val ViewWriter.allCaps: ViewWrapper
     get() = tweakTheme {
         it.copy(
+            id = "allCaps",
             title = it.title.copy(allCaps = true),
             body = it.body.copy(allCaps = true)
         )

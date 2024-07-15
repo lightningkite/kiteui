@@ -751,7 +751,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ":not(.unkiteui)", mapOf(
                 "transition-timing-function" to "linear",
                 "transition-delay" to "0s",
-                "transition-property" to "color, background-image, background-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter",
+                "transition-property" to "color, background-image, background-color, border-color outline-color, box-shadow, border-radius, opacity, backdrop-filter",
             )
         )
 
@@ -990,52 +990,52 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     fun themeInteractive(theme: Theme): String {
         theme(
             theme.down(),
-            listOf(".clickable:active .theme-${theme.id}", ".clickable:active.theme-${theme.id}"),
+            listOf(".clickable:active .t-${theme.id}", ".clickable:active.t-${theme.id}"),
             includeMaybeTransition = true
         )
         theme(
             theme.hover(),
-            listOf(".clickable:hover .theme-${theme.id}", ".clickable:hover.theme-${theme.id}"),
+            listOf(".clickable:hover .t-${theme.id}", ".clickable:hover.t-${theme.id}"),
             includeMaybeTransition = true,
             mediaQuery = "(hover: hover)"
         )
         theme(
             theme.focus(),
             listOf(
-                ".clickable:focus-visible .theme-${theme.id}",
-                ".clickable:focus-visible.theme-${theme.id}",
-                "input:focus.theme-${theme.id}",
-                "textarea:focus.theme-${theme.id}",
-                "select:focus.theme-${theme.id}",
-                ".theme-${theme.id}:has(> input:focus-visible:not(.mightTransition))",
-                ".theme-${theme.id}:has(> textarea:focus-visible:not(.mightTransition))",
-                ".theme-${theme.id}:has(> select:focus-visible:not(.mightTransition))",
+                ".clickable:focus-visible .t-${theme.id}",
+                ".clickable:focus-visible.t-${theme.id}",
+                "input:focus.t-${theme.id}",
+                "textarea:focus.t-${theme.id}",
+                "select:focus.t-${theme.id}",
+                ".t-${theme.id}:has(> input:focus-visible:not(.mightTransition))",
+                ".t-${theme.id}:has(> textarea:focus-visible:not(.mightTransition))",
+                ".t-${theme.id}:has(> select:focus-visible:not(.mightTransition))",
             ),
             includeMaybeTransition = true
         )
         theme(
             theme.disabled(),
-            listOf(".clickable:disabled:disabled .theme-${theme.id}", ".clickable:disabled:disabled.theme-${theme.id}"),
+            listOf(".clickable:disabled:disabled .t-${theme.id}", ".clickable:disabled:disabled.t-${theme.id}"),
             includeMaybeTransition = false
         )
 
         theme(
             theme.selected(),
             listOf(
-                "input:checked.checkResponsive .theme-${theme.id}",
-                "input:checked.checkResponsive.theme-${theme.id}",
-                "input:checked+.checkResponsive .theme-${theme.id}",
-                "input:checked+.checkResponsive.theme-${theme.id}",
+                "input:checked.checkResponsive .t-${theme.id}",
+                "input:checked.checkResponsive.t-${theme.id}",
+                "input:checked+.checkResponsive .t-${theme.id}",
+                "input:checked+.checkResponsive.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
         theme(
             theme.selected().hover(),
             listOf(
-                "input:checked.checkResponsive:hover .theme-${theme.id}",
-                "input:checked.checkResponsive:hover.theme-${theme.id}",
-                "input:checked+.checkResponsive:hover .theme-${theme.id}",
-                "input:checked+.checkResponsive:hover.theme-${theme.id}",
+                "input:checked.checkResponsive:hover .t-${theme.id}",
+                "input:checked.checkResponsive:hover.t-${theme.id}",
+                "input:checked+.checkResponsive:hover .t-${theme.id}",
+                "input:checked+.checkResponsive:hover.t-${theme.id}",
             ),
             includeMaybeTransition = true,
             mediaQuery = "(hover: hover)"
@@ -1043,20 +1043,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme(
             theme.selected().focus(),
             listOf(
-                "input:checked.checkResponsive:focus-visible .theme-${theme.id}",
-                "input:checked.checkResponsive:focus-visible.theme-${theme.id}",
-                "input:checked+.checkResponsive:focus-visible .theme-${theme.id}",
-                "input:checked+.checkResponsive:focus-visible.theme-${theme.id}",
+                "input:checked.checkResponsive:focus-visible .t-${theme.id}",
+                "input:checked.checkResponsive:focus-visible.t-${theme.id}",
+                "input:checked+.checkResponsive:focus-visible .t-${theme.id}",
+                "input:checked+.checkResponsive:focus-visible.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
         theme(
             theme.selected().disabled(),
             listOf(
-                "input:checked.checkResponsive:disabled .theme-${theme.id}",
-                "input:checked.checkResponsive:disabled.theme-${theme.id}",
-                "input:checked+.checkResponsive:disabled .theme-${theme.id}",
-                "input:checked+.checkResponsive:disabled.theme-${theme.id}",
+                "input:checked.checkResponsive:disabled .t-${theme.id}",
+                "input:checked.checkResponsive:disabled.t-${theme.id}",
+                "input:checked+.checkResponsive:disabled .t-${theme.id}",
+                "input:checked+.checkResponsive:disabled.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
@@ -1064,20 +1064,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme(
             theme.unselected(),
             listOf(
-                "input:not(:checked).checkResponsive .theme-${theme.id}",
-                "input:not(:checked).checkResponsive.theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive .theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive.theme-${theme.id}",
+                "input:not(:checked).checkResponsive .t-${theme.id}",
+                "input:not(:checked).checkResponsive.t-${theme.id}",
+                "input:not(:checked)+.checkResponsive .t-${theme.id}",
+                "input:not(:checked)+.checkResponsive.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
         theme(
             theme.unselected().hover(),
             listOf(
-                "input:not(:checked).checkResponsive:hover .theme-${theme.id}",
-                "input:not(:checked).checkResponsive:hover.theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:hover .theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:hover.theme-${theme.id}",
+                "input:not(:checked).checkResponsive:hover .t-${theme.id}",
+                "input:not(:checked).checkResponsive:hover.t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:hover .t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:hover.t-${theme.id}",
             ),
             includeMaybeTransition = true,
             mediaQuery = "(hover: hover)"
@@ -1085,20 +1085,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme(
             theme.unselected().focus(),
             listOf(
-                "input:not(:checked).checkResponsive:focus-visible .theme-${theme.id}",
-                "input:not(:checked).checkResponsive:focus-visible.theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:focus-visible .theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:focus-visible.theme-${theme.id}",
+                "input:not(:checked).checkResponsive:focus-visible .t-${theme.id}",
+                "input:not(:checked).checkResponsive:focus-visible.t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:focus-visible .t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:focus-visible.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
         theme(
             theme.unselected().disabled(),
             listOf(
-                "input:not(:checked).checkResponsive:disabled .theme-${theme.id}",
-                "input:not(:checked).checkResponsive:disabled.theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:disabled .theme-${theme.id}",
-                "input:not(:checked)+.checkResponsive:disabled.theme-${theme.id}",
+                "input:not(:checked).checkResponsive:disabled .t-${theme.id}",
+                "input:not(:checked).checkResponsive:disabled.t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:disabled .t-${theme.id}",
+                "input:not(:checked)+.checkResponsive:disabled.t-${theme.id}",
             ),
             includeMaybeTransition = true
         )
@@ -1109,12 +1109,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private val themeHandled = HashSet<String>()
     fun theme(
         theme: Theme,
-        asSelectors: List<String> = listOf(".theme-${theme.id}"),
+        asSelectors: List<String> = listOf(".t-${theme.id}"),
         includeMaybeTransition: Boolean = false,
         mediaQuery: String? = null,
     ): String {
         val includeSelectors = asSelectors.filter { themeHandled.add(it) }
-        if (includeSelectors.isEmpty()) return "theme-${theme.id}"
+        if (includeSelectors.isEmpty()) return "t-${theme.id}"
         fun sel(vararg plus: String): String {
             return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
@@ -1137,6 +1137,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     " > *",
                 ) to mapOf(
                     "--parentSpacing" to theme.spacing.value,
+                ),
+                sel(
+                    ".useNavSpacing > *",
+                ) to mapOf(
+                    "--parentSpacing" to theme.navSpacing.value,
                 ),
                 (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to (when (val it =
                     theme.background) {
@@ -1167,10 +1172,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
                 (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to mapOf(
                     "outline-width" to theme.outlineWidth.value,
+                    "outline-offset" to "-" + theme.outlineWidth.value,
                     "box-shadow" to theme.elevation.toBoxShadow(),
                     "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
                 ),
-                sel(".mightTransition", ".swapImage") to mapOf(
+                sel(".mightTransition", ".transition", ".swapImage") to mapOf(
                     "border-radius" to theme.cornerRadii.toRawCornerRadius(),
                 ),
                 sel(".title") to mapOf(
@@ -1206,6 +1212,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         "-webkit-text-fill-color" to "transparent",
                     )
                 },
+                sel(".useNavSpacing") to mapOf(
+                    "--spacing" to theme.navSpacing.value,
+                    "gap" to "var(--spacing, 0.0)",
+                ),
                 sel(".dismissBackground") to mapOf(
                     "border-radius" to "0",
                     "outline-width" to "0",
@@ -1230,7 +1240,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         )
 
-        return "theme-${theme.id}"
+        return "t-${theme.id}"
     }
 
     val rowCollapsingToColumnHandled = HashSet<String>()

@@ -21,7 +21,7 @@ object ThemesScreen : Screen {
                     text { content = "Sample" } in padded
                     text { content = "Card" } in card
                     text { content = "Important" } in hasPopover {
-                        card - col {
+                        col {
                             text {
                                 content = "Pop over!"
                             }
@@ -77,7 +77,7 @@ object ThemesScreen : Screen {
                     h6 { content = "Flat Light" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
+                        appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
                             .copy(
                                 cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
                             )
@@ -88,7 +88,7 @@ object ThemesScreen : Screen {
                     h6 { content = "Flat Dark" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
+                        appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
                             .copy(
                                 cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
                             )

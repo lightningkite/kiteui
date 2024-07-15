@@ -29,6 +29,7 @@ object SampleLogInScreen : Screen {
                 expanding - space()
                 centered - sizeConstraints(maxWidth = 50.rem) - themeFromLast {
                     it.copy(
+                        id = "orange-test",
                         background = Color.orange.withAlpha(0.25f),
                         backdropFilters = listOf(BackdropFilter.Blur(1.rem)),
                         card = { it }

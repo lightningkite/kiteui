@@ -4,7 +4,8 @@ import kotlin.js.JsName
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-data class Theme(
+class Theme(
+    val id: String,
     val title: FontAndStyle = FontAndStyle(systemDefaultFont),
     val body: FontAndStyle = FontAndStyle(systemDefaultFont),
     val elevation: Dimension = 1.px,
@@ -26,6 +27,7 @@ data class Theme(
     val button: (Theme.() -> Theme) = { this },
     val hover: (Theme.() -> Theme) = {
         copy(
+            id = "hov",
             background = this.background.closestColor().highlight(0.2f),
             outline = this.background.closestColor().highlight(0.2f).highlight(0.1f),
             elevation = this.elevation * 2f,
@@ -33,11 +35,13 @@ data class Theme(
     },
     val focus: (Theme.() -> Theme) = {
         copy(
+            id = "fcs",
             outlineWidth = outlineWidth + 2.dp
         )
     },
     val dialog: (Theme.() -> Theme) = {
         copy(
+            id = "dlg",
             background = this.background.closestColor().lighten(0.1f),
             outline = this.outline.closestColor().lighten(0.1f),
             elevation = this.elevation * 2f,
@@ -45,6 +49,7 @@ data class Theme(
     },
     val down: (Theme.() -> Theme) = {
         copy(
+            id = "dwn",
             background = this.background.closestColor().highlight(0.3f),
             outline = this.background.closestColor().highlight(0.3f).highlight(0.1f),
             elevation = this.elevation / 2f,
@@ -54,6 +59,7 @@ data class Theme(
     val selected: (Theme.() -> Theme) = { this.down(this) },
     val disabled: (Theme.() -> Theme) = {
         copy(
+            id = "dis",
             foreground = this.foreground.applyAlpha(alpha = 0.25f),
             background = this.background.applyAlpha(alpha = 0.5f),
             outline = this.outline.applyAlpha(alpha = 0.25f),
@@ -61,6 +67,7 @@ data class Theme(
     },
     val invalid: (Theme.() -> Theme) = {
         copy(
+            id = "inv",
             outline = Color.red,
             outlineWidth = 2.px,
         )
@@ -68,6 +75,7 @@ data class Theme(
     val mainContent: (Theme.() -> Theme?) = { null },
     val bar: (Theme.() -> Theme?) = {
         copy(
+            id = "bar",
             foreground = this.background,
             background = this.foreground,
             outline = this.foreground.closestColor().highlight(1f)
@@ -76,6 +84,7 @@ data class Theme(
     val nav: (Theme.() -> Theme?) = bar,
     val important: (Theme.() -> Theme) = {
         copy(
+            id = "imp",
             foreground = this.background,
             background = this.foreground,
             outline = this.foreground.closestColor().highlight(1f)
@@ -84,6 +93,7 @@ data class Theme(
     val critical: (Theme.() -> Theme) = { this.important(this).let { it.important(it) } },
     val warning: (Theme.() -> Theme) = {
         copy(
+            id = "wrn",
             background = Color.fromHex(0xFFe36e24.toInt()),
             outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
             foreground = Color.white
@@ -91,6 +101,7 @@ data class Theme(
     },
     val danger: (Theme.() -> Theme) = {
         copy(
+            id = "dgr",
             background = Color.fromHex(0xFFB00020.toInt()),
             outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
             foreground = Color.white
@@ -98,6 +109,7 @@ data class Theme(
     },
     val affirmative: (Theme.() -> Theme) = {
         copy(
+            id = "afr",
             background = Color.fromHex(0xFF20a020.toInt()),
             outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
             foreground = Color.white
@@ -163,41 +175,159 @@ data class Theme(
     @JsName("affirmativeDirect")
     fun affirmative() = affirmativeCache ?: affirmative(this).also { affirmativeCache = it }
 
-    val id: String get() = hashCode().toString()
-    private val hashCode: Int = run {
-        var out = 0
-        out = out * 31 + title.hashCode()
-        out = out * 31 + body.hashCode()
-        out = out * 31 + elevation.hashCode()
-        out = out * 31 + cornerRadii.hashCode()
-        out = out * 31 + spacing.hashCode()
-        out = out * 31 + foreground.hashCode()
-        out = out * 31 + iconOverride.hashCode()
-        out = out * 31 + outline.hashCode()
-        out = out * 31 + outlineWidth.hashCode()
-        out = out * 31 + background.hashCode()
-        out
-    }
-
-    override fun hashCode(): Int = hashCode
-
+    override fun hashCode(): Int = id.hashCode()
     override fun equals(other: Any?): Boolean {
-        return other is Theme &&
-                this.hashCode == other.hashCode &&
-                this.title == other.title &&
-                this.body == other.body &&
-                this.elevation == other.elevation &&
-                this.cornerRadii == other.cornerRadii &&
-                this.spacing == other.spacing &&
-                this.foreground == other.foreground &&
-                this.iconOverride == other.iconOverride &&
-                this.outline == other.outline &&
-                this.outlineWidth == other.outlineWidth &&
-                this.background == other.background
+        return other is Theme && this.id == other.id
     }
+
+    fun copy(
+        id: String,
+        title: FontAndStyle = this.title,
+        body: FontAndStyle = this.body,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        navSpacing: Dimension = this.navSpacing,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        backdropFilters: List<BackdropFilter> = this.backdropFilters,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        card: (Theme.() -> Theme) = this.card,
+        field: (Theme.() -> Theme) = this.field,
+        button: (Theme.() -> Theme) = this.button,
+        hover: (Theme.() -> Theme) = this.hover,
+        focus: (Theme.() -> Theme) = this.focus,
+        dialog: (Theme.() -> Theme) = this.dialog,
+        down: (Theme.() -> Theme) = this.down,
+        unselected: (Theme.() -> Theme) = this.unselected,
+        selected: (Theme.() -> Theme) = this.selected,
+        disabled: (Theme.() -> Theme) = this.disabled,
+        mainContent: (Theme.() -> Theme?) = this.mainContent,
+        bar: (Theme.() -> Theme?) = this.bar,
+        nav: (Theme.() -> Theme?) = this.nav,
+        important: (Theme.() -> Theme) = this.important,
+        critical: (Theme.() -> Theme) = this.critical,
+        warning: (Theme.() -> Theme) = this.warning,
+        danger: (Theme.() -> Theme) = this.danger,
+        affirmative: (Theme.() -> Theme) = this.affirmative,
+    ): Theme = Theme(
+        id = "${this.id}-$id",
+        title = title,
+        body = body,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        navSpacing = navSpacing,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        backdropFilters = backdropFilters,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        card = card,
+        field = field,
+        button = button,
+        hover = hover,
+        focus = focus,
+        dialog = dialog,
+        down = down,
+        unselected = unselected,
+        selected = selected,
+        disabled = disabled,
+        mainContent = mainContent,
+        bar = bar,
+        nav = nav,
+        important = important,
+        critical = critical,
+        warning = warning,
+        danger = danger,
+        affirmative = affirmative,
+    )
+
+    fun copy(
+        title: FontAndStyle = this.title,
+        body: FontAndStyle = this.body,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        navSpacing: Dimension = this.navSpacing,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        backdropFilters: List<BackdropFilter> = this.backdropFilters,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+    ): Theme = Theme(
+        id = "cp${
+            run {
+                var out = 0
+                out = out * 31 + title.hashCode()
+                out = out * 31 + body.hashCode()
+                out = out * 31 + elevation.hashCode()
+                out = out * 31 + cornerRadii.hashCode()
+                out = out * 31 + spacing.hashCode()
+                out = out * 31 + foreground.hashCode()
+                out = out * 31 + iconOverride.hashCode()
+                out = out * 31 + outline.hashCode()
+                out = out * 31 + outlineWidth.hashCode()
+                out = out * 31 + background.hashCode()
+                out
+                buildString {
+                    append(((out shr 12).mod(64)).let { shortCodeChars[it] })
+                    append(((out shr 6).mod(64)).let { shortCodeChars[it] })
+                    append((out.mod(64)).let { shortCodeChars[it] })
+                }
+            }
+        }",
+        title = title,
+        body = body,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        navSpacing = navSpacing,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        backdropFilters = backdropFilters,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        card = card,
+        field = field,
+        button = button,
+        hover = hover,
+        focus = focus,
+        dialog = dialog,
+        down = down,
+        unselected = unselected,
+        selected = selected,
+        disabled = disabled,
+        mainContent = mainContent,
+        bar = bar,
+        nav = nav,
+        important = important,
+        critical = critical,
+        warning = warning,
+        danger = danger,
+        affirmative = affirmative,
+    )
 
     companion object {
-        val placeholder = Theme()
+        val placeholder = Theme("placeholder")
+        val shortCodeChars = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm-_"
     }
 }
 

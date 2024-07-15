@@ -138,7 +138,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
             var changed = true
             val futureTheme = when (val t = themeChoice + stateThemeChoice) {
                 is ThemeChoice.Derive -> {
-                    val p = parent?.theme ?: Theme()
+                    val p = parent?.theme ?: Theme.placeholder
                     t.derivation(p) ?: run {
                         changed = false
                         p
@@ -146,7 +146,10 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
                 }
 
                 is ThemeChoice.Set -> t.theme
-                null -> parent?.theme ?: Theme()
+                null -> {
+                    changed = false
+                    parent?.theme ?: Theme.placeholder
+                }
             }
             actuallyUseBackground = when (useBackground) {
                 UseBackground.No -> false
