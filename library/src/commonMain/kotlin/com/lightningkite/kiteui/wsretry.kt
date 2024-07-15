@@ -228,3 +228,27 @@ interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
     fun onMessage(action: (RECEIVE) -> Unit)
     fun onClose(action: (Short) -> Unit)
 }
+
+
+val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
+    get() = object : Readable<RECEIVE?> {
+        var value: RECEIVE? = null
+            private set
+
+        val listeners = ArrayList<() -> Unit>()
+
+        init {
+            onMessage {
+                value = it
+                listeners.invokeAllSafe()
+            }
+        }
+
+        override val state: ReadableState<RECEIVE?> get() = ReadableState(value)
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            listeners.add(listener)
+            val parent = this@mostRecentMessage.start()
+            return { listeners.remove(listener); parent() }
+        }
+    }

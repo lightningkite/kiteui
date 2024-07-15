@@ -61,6 +61,7 @@ actual inline var ImageView.source: ImageSource?
         }
     }
 fun ImageView.setSrc(url: String) {
+    val animating = animationsEnabled
     if(!animationsEnabled) {
         native.innerHTML = ""
     }
@@ -100,13 +101,13 @@ fun ImageView.setSrc(url: String) {
         val children = (0..<native.children.length).mapNotNull { native.children[it] }
         val myIndex = children.indexOf(newElement)
         if(myIndex == -1) return@label Unit
-        if((clockMillis() - now) < 32) {
+        if((clockMillis() - now) < 32 && !animating) {
             // disable animations and get it done; no reason to show the user an animation
             newElement.withoutAnimation {
-                newElement.style.opacity = "0.8"
+                newElement.style.opacity = "1"
             }
         } else {
-            newElement.style.opacity = "0.99"
+            newElement.style.opacity = "1"
         }
         for(index in 0..<myIndex) {
             val it = children[index] as? HTMLElement ?: continue
