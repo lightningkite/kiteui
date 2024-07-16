@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Icon
@@ -10,19 +9,46 @@ import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @ViewDsl
-inline fun ViewWriter.h1(crossinline setup: HeaderView.()->Unit = {}) = header(1, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h1(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(1, setup)
+}
 @ViewDsl
-inline fun ViewWriter.h2(crossinline setup: HeaderView.()->Unit = {}) = header(2, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h2(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(2, setup)
+}
 @ViewDsl
-inline fun ViewWriter.h3(crossinline setup: HeaderView.()->Unit = {}) = header(3, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h3(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(3, setup)
+}
 @ViewDsl
-inline fun ViewWriter.h4(crossinline setup: HeaderView.()->Unit = {}) = header(4, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h4(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(4, setup)
+}
 @ViewDsl
-inline fun ViewWriter.h5(crossinline setup: HeaderView.()->Unit = {}) = header(5, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h5(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(5, setup)
+}
 @ViewDsl
-inline fun ViewWriter.h6(crossinline setup: HeaderView.()->Unit = {}) = header(6, setup)
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h6(crossinline setup: HeaderView.()->Unit = {}) {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    header(6, setup)
+}
 @ViewDsl
 fun ViewWriter.h1(text: String) = h1 { content = text }
 @ViewDsl

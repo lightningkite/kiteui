@@ -43,6 +43,10 @@ actual class FutureElement actual constructor() {
         childrenBack.clear()
     }
 
+    actual fun click() {}
+    actual fun focus() {}
+    actual fun blur() {}
+
     actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
     actual val style: FutureElementStyle = FutureElementStyle(HashMap())
     actual fun setAttribute(key: String, value: String?) {

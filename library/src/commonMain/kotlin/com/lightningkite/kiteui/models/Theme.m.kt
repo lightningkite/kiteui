@@ -28,7 +28,7 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    dialog = {
+    dialog = themeDeriver {
         copy(
             id = "dlg",
             background = this.background.closestColor().darken(0.1f),
@@ -36,13 +36,13 @@ fun Theme.Companion.material(
             elevation = this.elevation * 2f,
         )
     },
-    important = {
+    important = themeDeriver {
         copy(
             id = "imp",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
-            important = {
+            important = themeDeriver {
                 copy(
                     id = "imp2",
                     foreground = secondaryForeground,
@@ -52,13 +52,13 @@ fun Theme.Companion.material(
             }
         )
     },
-    bar = {
+    bar = themeDeriver {
         copy(
             id = "bar",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
-            important = {
+            important = themeDeriver {
                 copy(
                     id = "barimp",
                     foreground = secondaryForeground,
@@ -68,7 +68,7 @@ fun Theme.Companion.material(
             }
         )
     },
-    critical = {
+    critical = themeDeriver {
         copy(
             id = "crt",
             foreground = secondaryForeground,

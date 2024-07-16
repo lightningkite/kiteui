@@ -8,6 +8,9 @@ import com.lightningkite.kiteui.models.px
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
+    var outerElement: FutureElement = native
+    var styleElement: FutureElement = native
+    var innerElement: FutureElement = native
 
     protected actual override fun opacitySet(value: Double) {
         native.style.opacity = value.toString()
@@ -131,6 +134,9 @@ expect class FutureElement {
     fun appendChild(index: Int, element: FutureElement)
     fun removeChild(index: Int)
     fun clearChildren()
+    fun click()
+    fun focus()
+    fun blur()
 }
 
 expect fun RView.nativeScrollIntoView(

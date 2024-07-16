@@ -22,6 +22,7 @@ actual fun createObjectURL(fileReference: FileReference): String {
 }
 
 actual fun RView.nativeSetSrc(url: String?) {
+    val animating = RViewHelper.animationsEnabled
     val urlOrBlank = url ?: ""
     val element = native.element
     if(element == null){
@@ -37,11 +38,11 @@ actual fun RView.nativeSetSrc(url: String?) {
         (element.lastElementChild as? HTMLImageElement)?.style?.opacity = "1"
         return
     }
-    if (!RViewHelper.animationsEnabled) {
+    if (!animating) {
         element.innerHTML = ""
     }
     if (urlOrBlank.isBlank()) {
-        if (RViewHelper.animationsEnabled) {
+        if (animating) {
             val children = (0..<element.children.length).mapNotNull { element.children[it] }
             children.filterIsInstance<HTMLElement>().forEach {
                 it.style.opacity = "0"

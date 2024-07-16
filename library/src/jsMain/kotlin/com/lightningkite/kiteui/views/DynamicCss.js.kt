@@ -59,12 +59,18 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         return customStyleSheet.insertRule(rule, index)
     }
 
+    var themeRuleCount: Int = 0
+        set(value) {
+            field = value
+            println("themeRuleCount: $themeRuleCount")
+        }
     actual fun styles(mediaQuery: String?, styles: List<Pair<String, Map<String, String>>>) {
         if (mediaQuery == null) styles.forEach { style(it.first, it.second) }
         else {
             val subrules = styles.sortedBy { it.first }.joinToString(" ") {
                 """${it.first} { ${it.second.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }"""
             }
+            themeRuleCount += styles.size
             rule(
                 """@media $mediaQuery { $subrules }""",
                 0

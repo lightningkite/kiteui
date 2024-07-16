@@ -14,32 +14,27 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         attributes.hidden = true
         style.display = "none"
     }
-    val mainSpan = FutureElement().apply {
-        tag = "span"
-        classes.add("kiteui-stack")
-        attributes.tabIndex = 0
-        addEventListener("keydown", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                ev.preventDefault()
-            }
-        })
-        addEventListener("keyup", { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
-                input.attributes.checked = true
-                ev.preventDefault()
-            }
-        })
-    }
 
     init {
         native.tag = "label"
-        native.classes.add("toggle-button")
+        native.classes.add("kiteui-stack")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
+        native.attributes.tabIndex = 0
+        native.addEventListener("keydown", { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
+                ev.preventDefault()
+            }
+        })
+        native.addEventListener("keyup", { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.space || ev.code == KeyCodes.enter) {
+                input.click()
+                ev.preventDefault()
+            }
+        })
         native.appendChild(input)
-        native.appendChild(mainSpan)
     }
 
     init {

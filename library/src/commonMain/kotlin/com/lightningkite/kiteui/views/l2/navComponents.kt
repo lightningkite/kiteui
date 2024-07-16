@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*

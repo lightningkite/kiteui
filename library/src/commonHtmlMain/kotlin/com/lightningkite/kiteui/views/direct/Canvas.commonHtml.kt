@@ -99,7 +99,7 @@ actual object KeyCodes {
     actual fun letter(char: Char): KeyCode = "Key" + char.uppercase()
     actual fun num(digit: Int): KeyCode = "Digit$digit"
     actual fun numpad(digit: Int): KeyCode = "Numpad$digit"
-    actual val space: KeyCode get() = " "
+    actual val space: KeyCode get() = "Space"
     actual val enter: KeyCode get() = "Enter"
     actual val tab: KeyCode get() = "Tab"
     actual val escape: KeyCode get() = "Escape"

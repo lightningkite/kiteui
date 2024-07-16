@@ -4,6 +4,10 @@ import kotlin.js.JsName
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+typealias ThemeDeriver = (Theme) -> Theme?
+
+inline fun themeDeriver(noinline received: Theme.() -> Theme?): ThemeDeriver = received
+
 class Theme(
     val id: String,
     val title: FontAndStyle = FontAndStyle(systemDefaultFont),
@@ -22,93 +26,93 @@ class Theme(
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val transitionDuration: Duration = 0.15.seconds,
 
-    val card: (Theme.() -> Theme) = { this },
-    val field: (Theme.() -> Theme) = { this },
-    val button: (Theme.() -> Theme) = { this },
-    val hover: (Theme.() -> Theme) = {
-        copy(
+    val card: ThemeDeriver = { it },
+    val field: ThemeDeriver = { null },
+    val button: ThemeDeriver = { null },
+    val hover: ThemeDeriver = {
+        it.copy(
             id = "hov",
-            background = this.background.closestColor().highlight(0.2f),
-            outline = this.background.closestColor().highlight(0.2f).highlight(0.1f),
-            elevation = this.elevation * 2f,
+            background = it.background.closestColor().highlight(0.2f),
+            outline = it.background.closestColor().highlight(0.2f).highlight(0.1f),
+            elevation = it.elevation * 2f,
         )
     },
-    val focus: (Theme.() -> Theme) = {
-        copy(
+    val focus: ThemeDeriver = {
+        it.copy(
             id = "fcs",
             outlineWidth = outlineWidth + 2.dp
         )
     },
-    val dialog: (Theme.() -> Theme) = {
-        copy(
+    val dialog: ThemeDeriver = {
+        it.copy(
             id = "dlg",
-            background = this.background.closestColor().lighten(0.1f),
-            outline = this.outline.closestColor().lighten(0.1f),
-            elevation = this.elevation * 2f,
+            background = it.background.closestColor().lighten(0.1f),
+            outline = it.outline.closestColor().lighten(0.1f),
+            elevation = it.elevation * 2f,
         )
     },
-    val down: (Theme.() -> Theme) = {
-        copy(
+    val down: ThemeDeriver = {
+        it.copy(
             id = "dwn",
-            background = this.background.closestColor().highlight(0.3f),
-            outline = this.background.closestColor().highlight(0.3f).highlight(0.1f),
-            elevation = this.elevation / 2f,
+            background = it.background.closestColor().highlight(0.3f),
+            outline = it.background.closestColor().highlight(0.3f).highlight(0.1f),
+            elevation = it.elevation / 2f,
         )
     },
-    val unselected: (Theme.() -> Theme) = { this },
-    val selected: (Theme.() -> Theme) = { this.down(this) },
-    val disabled: (Theme.() -> Theme) = {
-        copy(
+    val unselected: ThemeDeriver = { it },
+    val selected: ThemeDeriver = { it.down(it) },
+    val disabled: ThemeDeriver = {
+        it.copy(
             id = "dis",
-            foreground = this.foreground.applyAlpha(alpha = 0.25f),
-            background = this.background.applyAlpha(alpha = 0.5f),
-            outline = this.outline.applyAlpha(alpha = 0.25f),
+            foreground = it.foreground.applyAlpha(alpha = 0.25f),
+            background = it.background.applyAlpha(alpha = 0.5f),
+            outline = it.outline.applyAlpha(alpha = 0.25f),
         )
     },
-    val invalid: (Theme.() -> Theme) = {
-        copy(
+    val invalid: ThemeDeriver = {
+        it.copy(
             id = "inv",
             outline = Color.red,
             outlineWidth = 2.px,
         )
     },
-    val mainContent: (Theme.() -> Theme?) = { null },
-    val bar: (Theme.() -> Theme?) = {
-        copy(
+    val mainContent: ThemeDeriver = { null },
+    val bar: ThemeDeriver = {
+        it.copy(
             id = "bar",
-            foreground = this.background,
-            background = this.foreground,
-            outline = this.foreground.closestColor().highlight(1f)
+            foreground = it.background,
+            background = it.foreground,
+            outline = it.foreground.closestColor().highlight(1f)
         )
     },
-    val nav: (Theme.() -> Theme?) = bar,
-    val important: (Theme.() -> Theme) = {
-        copy(
+    val nav: ThemeDeriver = bar,
+    val important: ThemeDeriver = {
+        it.copy(
             id = "imp",
-            foreground = this.background,
-            background = this.foreground,
-            outline = this.foreground.closestColor().highlight(1f)
+            foreground = it.background,
+            background = it.foreground,
+            outline = it.foreground.closestColor().highlight(1f)
         )
     },
-    val critical: (Theme.() -> Theme) = { this.important(this).let { it.important(it) } },
-    val warning: (Theme.() -> Theme) = {
-        copy(
+    val critical: ThemeDeriver = { it.important(it)?.let { it.important(it) } },
+    val warning: ThemeDeriver = {
+        it.copy(
             id = "wrn",
             background = Color.fromHex(0xFFe36e24.toInt()),
             outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
             foreground = Color.white
         )
     },
-    val danger: (Theme.() -> Theme) = {
-        copy(
+    val danger: ThemeDeriver = {
+        it.copy(
             id = "dgr",
             background = Color.fromHex(0xFFB00020.toInt()),
             outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
             foreground = Color.white
         )
     },
-    val affirmative: (Theme.() -> Theme) = {
-        copy(
+    val affirmative: ThemeDeriver = {
+        it.copy(
             id = "afr",
             background = Color.fromHex(0xFF20a020.toInt()),
             outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
@@ -119,59 +123,78 @@ class Theme(
     val icon: Paint get() = iconOverride ?: foreground
 
     private var mainContentCache: Theme? = null
+
     @JsName("mainContentDirect")
     fun mainContent() = mainContentCache ?: mainContent(this).also { mainContentCache = it }
     private var cardCache: Theme? = null
+
     @JsName("cardDirect")
     fun card() = cardCache ?: card(this).also { cardCache = it }
     private var dialogCache: Theme? = null
+
     @JsName("dialogDirect")
     fun dialog() = dialogCache ?: dialog(this).also { dialogCache = it }
     private var fieldCache: Theme? = null
+
     @JsName("fieldDirect")
     fun field() = fieldCache ?: field(this).also { fieldCache = it }
     private var buttonCache: Theme? = null
+
     @JsName("buttonDirect")
     fun button() = buttonCache ?: button(this).also { buttonCache = it }
     private var hoverCache: Theme? = null
+
     @JsName("hoverDirect")
     fun hover() = hoverCache ?: hover(this).also { hoverCache = it }
     private var focusCache: Theme? = null
+
     @JsName("focusDirect")
     fun focus() = focusCache ?: focus(this).also { focusCache = it }
     private var downCache: Theme? = null
+
     @JsName("downDirect")
     fun down() = downCache ?: down(this).also { downCache = it }
     private var selectedCache: Theme? = null
+
     @JsName("selectedDirect")
     fun selected() = selectedCache ?: selected(this).also { selectedCache = it }
     private var unselectedCache: Theme? = null
+
     @JsName("unselectedDirect")
     fun unselected() = unselectedCache ?: unselected(this).also { unselectedCache = it }
     private var disabledCache: Theme? = null
+
     @JsName("disabledDirect")
     fun disabled() = disabledCache ?: disabled(this).also { disabledCache = it }
     private var invalidCache: Theme? = null
+
     @JsName("invalidDirect")
     fun invalid() = invalidCache ?: invalid(this).also { invalidCache = it }
+
     @JsName("barDirect")
     inline fun bar() = bar(this)
     private var importantCache: Theme? = null
+
     @JsName("importantDirect")
     fun important() = importantCache ?: important(this).also { importantCache = it }
     private var criticalCache: Theme? = null
+
     @JsName("criticalDirect")
     fun critical() = criticalCache ?: critical(this).also { criticalCache = it }
     private var navCache: Theme? = null
+
     @JsName("navDirect")
     fun nav() = navCache ?: nav(this).also { navCache = it }
     private var warningCache: Theme? = null
+
     @JsName("warningDirect")
     fun warning() = warningCache ?: warning(this).also { warningCache = it }
     private var dangerCache: Theme? = null
+
     @JsName("dangerDirect")
     fun danger() = dangerCache ?: danger(this).also { dangerCache = it }
     private var affirmativeCache: Theme? = null
+
     @JsName("affirmativeDirect")
     fun affirmative() = affirmativeCache ?: affirmative(this).also { affirmativeCache = it }
 
@@ -197,24 +220,24 @@ class Theme(
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
-        card: (Theme.() -> Theme) = this.card,
-        field: (Theme.() -> Theme) = this.field,
-        button: (Theme.() -> Theme) = this.button,
-        hover: (Theme.() -> Theme) = this.hover,
-        focus: (Theme.() -> Theme) = this.focus,
-        dialog: (Theme.() -> Theme) = this.dialog,
-        down: (Theme.() -> Theme) = this.down,
-        unselected: (Theme.() -> Theme) = this.unselected,
-        selected: (Theme.() -> Theme) = this.selected,
-        disabled: (Theme.() -> Theme) = this.disabled,
-        mainContent: (Theme.() -> Theme?) = this.mainContent,
-        bar: (Theme.() -> Theme?) = this.bar,
-        nav: (Theme.() -> Theme?) = this.nav,
-        important: (Theme.() -> Theme) = this.important,
-        critical: (Theme.() -> Theme) = this.critical,
-        warning: (Theme.() -> Theme) = this.warning,
-        danger: (Theme.() -> Theme) = this.danger,
-        affirmative: (Theme.() -> Theme) = this.affirmative,
+        card: ThemeDeriver = this.card,
+        field: ThemeDeriver = this.field,
+        button: ThemeDeriver = this.button,
+        hover: ThemeDeriver = this.hover,
+        focus: ThemeDeriver = this.focus,
+        dialog: ThemeDeriver = this.dialog,
+        down: ThemeDeriver = this.down,
+        unselected: ThemeDeriver = this.unselected,
+        selected: ThemeDeriver = this.selected,
+        disabled: ThemeDeriver = this.disabled,
+        mainContent: ThemeDeriver = this.mainContent,
+        bar: ThemeDeriver = this.bar,
+        nav: ThemeDeriver = this.nav,
+        important: ThemeDeriver = this.important,
+        critical: ThemeDeriver = this.critical,
+        warning: ThemeDeriver = this.warning,
+        danger: ThemeDeriver = this.danger,
+        affirmative: ThemeDeriver = this.affirmative,
     ): Theme = Theme(
         id = "${this.id}-$id",
         title = title,
@@ -282,7 +305,6 @@ class Theme(
                 out = out * 31 + outline.hashCode()
                 out = out * 31 + outlineWidth.hashCode()
                 out = out * 31 + background.hashCode()
-                out
                 buildString {
                     append(((out shr 12).mod(64)).let { shortCodeChars[it] })
                     append(((out shr 6).mod(64)).let { shortCodeChars[it] })

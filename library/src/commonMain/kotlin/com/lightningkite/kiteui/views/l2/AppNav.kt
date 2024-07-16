@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Routes

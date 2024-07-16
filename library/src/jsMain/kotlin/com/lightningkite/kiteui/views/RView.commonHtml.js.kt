@@ -59,6 +59,10 @@ actual class FutureElement actual constructor() {
         return e
     }
 
+    actual fun click() { onElement { (it as HTMLElement).click() } }
+    actual fun focus() { onElement { (it as HTMLElement).focus() } }
+    actual fun blur() { onElement { (it as HTMLElement).blur() } }
+
     actual var xmlns: String? = null
     actual var tag: String = "tag"
     val attributesBack = json()

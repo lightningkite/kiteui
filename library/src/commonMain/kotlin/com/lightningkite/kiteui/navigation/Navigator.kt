@@ -49,6 +49,17 @@ class ScreenNavigator(private val routesGetter: ()->Routes) {
         stack.value = listOf()
     }
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
+
+    companion object {
+        @Deprecated("Use navigator properly", ReplaceWith("screenNavigator.routes", "com.lightningkite.kiteui.navigation.screenNavigator"), level = DeprecationLevel.ERROR)
+        val mainRoutes: Routes get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("screenNavigator", "com.lightningkite.kiteui.navigation.screenNavigator"), level = DeprecationLevel.ERROR)
+        val main: ScreenNavigator get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
+        val dialog: ScreenNavigator get() = TODO()
+    }
+    @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
+    val dialog: ScreenNavigator get() = TODO()
 }
 
 expect fun ScreenNavigator.bindToPlatform(context: RContext)

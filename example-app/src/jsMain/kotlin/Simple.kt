@@ -1,12 +1,11 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeChoice
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 

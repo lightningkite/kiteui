@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
 
 class AnimationId
@@ -560,9 +561,9 @@ data class NavCustom(
     override val icon: suspend () -> Icon = { Icon.moreHoriz },
     override val count: (suspend () -> Int?)? = null,
     override val hidden: (suspend () -> Boolean)? = { false },
-    val square: RView.() -> Unit,
-    val long: RView.() -> Unit = square,
-    val tall: RView.() -> Unit = square,
+    val square: ViewWriter.() -> Unit,
+    val long: ViewWriter.() -> Unit = square,
+    val tall: ViewWriter.() -> Unit = square,
 ) : NavElement
 
 data class Action(
