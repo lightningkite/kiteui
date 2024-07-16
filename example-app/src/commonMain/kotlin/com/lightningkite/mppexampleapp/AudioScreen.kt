@@ -32,37 +32,7 @@ object AudioScreen : Screen {
                 text("Background sound")
             }
 
-            val backgroundAudioShared = shared {
-                Resources.audioTaunt.load().apply { volume = 0.1f }
-            }
-            // Loop and cancel the background sound
-            reactiveScope {
-                if (backgroundSoundPlaying()) {
-                    val backgroundAudio = backgroundAudioShared()
-                    suspendCoroutineCancellable<Unit> {
-                        backgroundAudio.onComplete {
-                            backgroundAudio.play()
-                        }
-                        return@suspendCoroutineCancellable {
-                            backgroundAudio.stop()
-                        }
-                    }
-                }
-            }
-            // Trigger the background sound once every five seconds until it successfully starts
-            reactiveScope {
-                if (backgroundSoundPlaying()) {
-                    val backgroundAudio = backgroundAudioShared()
-                    while (true) {
-                        if (!backgroundAudio.isPlaying) {
-                            backgroundAudio.play()
-                            delay(5000)
-                        } else {
-                            break
-                        }
-                    }
-                }
-            }
+            backgroundAudio(Resources.audioTaunt) { backgroundSoundPlaying() }
         }
     }
 
