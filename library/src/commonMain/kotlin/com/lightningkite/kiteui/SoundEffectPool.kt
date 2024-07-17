@@ -31,7 +31,7 @@ interface PlayableAudio {
     }
 }
 
-fun RView<*>.backgroundAudio(audio: AudioResource, playBackgroundAudio: suspend () -> Boolean) {
+fun RView.backgroundAudio(audio: AudioResource, playBackgroundAudio: suspend () -> Boolean) {
     val backgroundAudioShared = shared {
         audio.load().apply { volume = 0.1f }
     }
