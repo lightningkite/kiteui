@@ -30,8 +30,8 @@ private fun UIView.scrollRectToVisibleClimb(x: Double, y: Double, width: Double,
         val mySize = frame.useContents { size.width to size.height }
         val contentSize = contentSize.useContents { width to height }
         setContentOffset(CGPointMake(
-            x = (x + (width - mySize.first) / 2).coerceIn(0.0, contentSize.first - mySize.first),
-            y = (y + (height - mySize.second) / 2).coerceIn(0.0, contentSize.second - mySize.second),
+            x = (x + (width - mySize.first) / 2).coerceIn(0.0, (contentSize.first - mySize.first).coerceAtLeast(0.01)),
+            y = (y + (height - mySize.second) / 2).coerceIn(0.0, (contentSize.second - mySize.second).coerceAtLeast(0.01)),
         ), animated = animated)
     } else superview?.scrollRectToVisibleClimb(
         x = x + this.frame.useContents { origin.x },

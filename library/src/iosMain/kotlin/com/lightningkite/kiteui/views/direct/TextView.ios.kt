@@ -25,7 +25,7 @@ actual class TextView actual constructor(context: RContext): RView(context) {
     val label get() = withGradient.label
     init {
         label.numberOfLines = 0
-        native.addSubview(label)
+        native.addSubview(withGradient)
     }
 
     init {
