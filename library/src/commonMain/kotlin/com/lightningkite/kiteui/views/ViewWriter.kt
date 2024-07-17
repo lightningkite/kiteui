@@ -114,22 +114,22 @@ abstract class ViewWriter {
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: RView): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
 
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: RView): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
 
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: RView): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWriter): Boolean { return true }
 
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: RView): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
 }
 
 class NewViewWriter(override val context: RContext) : ViewWriter() {
