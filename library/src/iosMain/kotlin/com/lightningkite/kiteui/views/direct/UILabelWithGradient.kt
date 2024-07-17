@@ -24,9 +24,11 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         userInteractionEnabled = false
     }
 
+    private val uiViewWithLabelMask = UIView(bounds).also(::addSubview)
+
     val label = UILabel().also {
-        addSubview(it)
-        maskView = it
+        uiViewWithLabelMask.addSubview(it)
+        uiViewWithLabelMask.maskView = it
     }
 
     private var gradientLayer: CALayer? = null
@@ -34,7 +36,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             field?.removeFromSuperlayer()
             value?.let {
                 it.frame = this@UILabelWithGradient.bounds
-                layer.insertSublayer(it, atIndex = 0.toUInt())
+                uiViewWithLabelMask.layer.insertSublayer(it, atIndex = 0.toUInt())
             }
             field = value
         }
@@ -44,7 +46,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             when (f) {
                 is Color -> {
                     gradientLayer = null
-                    backgroundColor = f.toUiColor()
+                    uiViewWithLabelMask.backgroundColor = f.toUiColor()
                 }
                 is LinearGradient -> gradientLayer = CAGradientLayer().apply {
                     this.type = kCAGradientLayerAxial
@@ -73,12 +75,14 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         super.layoutSubviews()
         gradientLayer?.frame = bounds
         bounds.useContents {
-            label.setFrame(cValue<CGRect> {
+            val childFrame = cValue<CGRect> {
                 origin.x = 0.0
                 origin.y = 0.0
                 size.width = this@useContents.size.width
                 size.height = this@useContents.size.height
-            })
+            }
+            uiViewWithLabelMask.setFrame(childFrame)
+            label.setFrame(childFrame)
         }
     }
 }
