@@ -24,7 +24,7 @@ actual class Separator actual constructor(context: RContext): RView(context) {
         val size = theme.outlineWidth.value.coerceAtLeast(1f).toInt()
         v.thickness = size
         (v.parent as? SimplifiedLinearLayout)?.let {
-            v.lparams.run {
+            lparams.run {
                 width = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) size else ViewGroup.LayoutParams.MATCH_PARENT
                 height = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) ViewGroup.LayoutParams.MATCH_PARENT else size
             }

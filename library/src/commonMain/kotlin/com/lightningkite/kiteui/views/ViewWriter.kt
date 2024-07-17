@@ -41,8 +41,7 @@ abstract class ViewWriter {
     }
 
     fun <T : RView> writePre(p: ViewWriter, view: T) {
-//        p.willAddChild(view)
-        p.addChild(view)
+        p.willAddChild(view)
         _wrapElement = null
         beforeNextElementSetup?.invoke(view)
         beforeNextElementSetup = null
@@ -52,6 +51,7 @@ abstract class ViewWriter {
         view.postSetup()
         afterNextElementSetup?.invoke(view)
         afterNextElementSetup = null
+        p.addChild(view)
     }
 
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {

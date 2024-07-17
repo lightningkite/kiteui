@@ -29,15 +29,15 @@ import com.lightningkite.kiteui.views.*
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
         try {
-            val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
+            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             lp.weight = amount
-            if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                 lp.width = 0
             } else {
                 lp.height = 0
             }
         } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
         }
 
     }
@@ -49,28 +49,28 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
     afterNextElementSetup {
         val originalSize = try {
-            val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
-            if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                 lp.width
             } else {
                 lp.height
             }
         } catch (ex: Throwable) {
-            RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
             WRAP_CONTENT
         }
 
         reactiveScope {
             try {
-                val lp = (native.lparams as SimplifiedLinearLayoutLayoutParams)
+                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
                 lp.weight = amount()
-                if ((native.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                     lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
                     lp.height = if (lp.weight != 0f) 0 else originalSize
                 }
             } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${native.parent?.let { it::class.simpleName }}").printStackTrace()
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
             }
         }
 
@@ -81,7 +81,7 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
     afterNextElementSetup {
-        val params = native.lparams
+        val params = lparams
         val horizontalGravity = when (horizontal) {
             Align.Start -> Gravity.START
             Align.Center -> Gravity.CENTER_HORIZONTAL
@@ -100,12 +100,12 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
             params.gravity = horizontalGravity or verticalGravity
         else
             println("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (horizontal == Align.Stretch && (this.parent as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
             params.width = ViewGroup.LayoutParams.WRAP_CONTENT
         }
-        if (vertical == Align.Stretch && (this.parent as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
             params.height = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -121,6 +121,9 @@ actual val ViewWriter.scrolls: ViewWrapper
             override val native: View = NestedScrollView(context.activity).apply {
                 isFillViewport = true
             }
+
+            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
             override fun applyForeground(theme: Theme) { /*Do nothing*/
             }
@@ -138,6 +141,9 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
             override val native: View = HorizontalScrollView(context.activity).apply {
                 isFillViewport = true
             }
+
+            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
             override fun applyForeground(theme: Theme) { /*Do nothing*/
             }
@@ -158,13 +164,13 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         })
     } else {
         beforeNextElementSetup {
-            constraints.width?.let { it: Dimension -> native.lparams.width = it.value.toInt() }
-            constraints.height?.let { it: Dimension -> native.lparams.height = it.value.toInt() }
+            constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
+            constraints.height?.let { it: Dimension -> lparams.height = it.value.toInt() }
             constraints.maxWidth?.let { it: Dimension ->
-                (native.lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt()
+                (lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt()
             }
             constraints.maxHeight?.let { it: Dimension ->
-                (native.lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt()
+                (lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt()
             }
             constraints.minWidth?.let { native.minimumWidth = it.value.toInt() }
             constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
@@ -196,20 +202,6 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             field = value
             requestLayout()
         }
-
-    private var clickListenerForChild: OnClickListener? = null
-    override fun setOnClickListener(l: OnClickListener?) {
-        clickListenerForChild = l
-        getChildAt(0)?.let {
-            it.setOnClickListener(l)
-            clickListenerForChild = null
-        }
-    }
-
-    override fun onViewAdded(child: View?) {
-        super.onViewAdded(child)
-        setOnClickListener(clickListenerForChild)
-    }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         getChildAt(0).measure(
@@ -503,7 +495,6 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                println("ENDING, set to $toHeight")
                 layoutParams.height = toHeight
             }
         })

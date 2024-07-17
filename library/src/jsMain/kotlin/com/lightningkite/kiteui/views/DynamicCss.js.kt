@@ -63,13 +63,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         }
     }
 
-    var themeRuleCount: Int = 0
-        set(value) {
-            field = value
-            println("themeRuleCount: $themeRuleCount")
-        }
     actual fun styles(mediaQuery: String?, styles: Map<String, Map<String, String>>) {
-        themeRuleCount += styles.size
         if (mediaQuery == null) {
             styles.forEach { style(it.key, it.value) }
         } else {

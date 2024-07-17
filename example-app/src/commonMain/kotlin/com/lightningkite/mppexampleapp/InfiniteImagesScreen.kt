@@ -55,7 +55,6 @@ object InfiniteImagesScreen : Screen {
                     sizeConstraints(height = 16.rem) - image {
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }
-//                            source = Resources.imagesSolera
                     }
                     onClick {
                         dialogScreenNavigator.navigate(ImageViewPager(it.await()))
@@ -79,7 +78,7 @@ class ImageViewPager(val initialIndex: Int) : Screen {
                     stack {
                         ::transitionId { currImage().toString() }
                         spacing = 0.25.rem
-                        image {
+                        zoomableImage {
                             reactiveScope {
                                 renders.value++
                                 val index = currImage.await()

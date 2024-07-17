@@ -19,11 +19,14 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         render: (T) -> String
     ) {
         var list: List<T> = listOf()
+        println("BIND STARTED")
         reactiveScope {
             list = data.await()
             val v = edits.await()
+            println("We've got $list and $v")
             native.clearChildren()
             list.mapIndexed { index, it ->
+                println("appending child")
                 native.appendChild(FutureElement().apply {
                     tag = "option"
                     attributes.valueString = index.toString()

@@ -7,6 +7,8 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
+import android.widget.FrameLayout
 import android.widget.ScrollView
 import androidx.core.view.ScrollingView
 import com.lightningkite.kiteui.afterTimeout
@@ -19,6 +21,8 @@ import kotlin.math.roundToInt
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: View
+
+    open fun defaultLayoutParams(): LayoutParams = FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override fun opacitySet(value: Double) {
         if (animationsEnabled) {

@@ -19,10 +19,17 @@ import kotlin.math.roundToInt
 
 actual class Stack actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity)
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        SimplifiedLinearLayout.LayoutParams(
+            if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
+            if (vertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT,
+        )
     actual var vertical: Boolean
         get() = native.orientation == SimplifiedLinearLayout.VERTICAL
         set(value) {
@@ -41,6 +48,8 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoint: Dimension) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
+    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+        SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
     init {
         native.orientation = SimplifiedLinearLayout.VERTICAL

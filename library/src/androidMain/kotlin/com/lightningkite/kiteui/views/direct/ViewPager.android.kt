@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
 actual class ViewPager actual constructor(context: RContext): RView(context) {
-    val page = Property(0)
     override val native = ViewPager2(context.activity).apply {
         registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -14,6 +13,11 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 page.value = position
             }
         })
+    }
+    val page: Property<Int> = Property(0).apply {
+        addListener {
+            native.setCurrentItem(value, animationsEnabled)
+        }
     }
 
     override fun internalAddChild(index: Int, view: RView) {

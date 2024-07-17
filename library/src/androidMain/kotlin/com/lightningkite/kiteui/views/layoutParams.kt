@@ -8,23 +8,19 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
+import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
+import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
 
-val View.lparams: ViewGroup.LayoutParams get() {
-    val parent = parent
-    if(parent is DesiredSizeView) return parent.lparams
-    if(layoutParams != null) return layoutParams
-    val newParams = when(parent) {
-        is LinearLayout -> LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        is FrameLayout -> FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        is NestedScrollView -> FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        is ScrollView -> FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        is HorizontalScrollView -> FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        null -> {
+val RView.lparams: ViewGroup.LayoutParams
+    get() {
+        val parent = parent
+        val parentElement = parent?.native
+        if (parentElement is DesiredSizeView) return this.parent!!.lparams
+        if (native.layoutParams != null) return native.layoutParams
+        val newParams = parent?.defaultLayoutParams() ?: run {
             println("No parent to identify LayoutParams type for a ${this::class.qualifiedName}")
             ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
-        else -> throw Exception("Unknown parent type ${parent::class.qualifiedName}")
+        native.layoutParams = newParams
+        return newParams
     }
-    layoutParams = newParams
-    return newParams
-}
