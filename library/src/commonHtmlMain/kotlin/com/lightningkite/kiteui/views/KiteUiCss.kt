@@ -143,21 +143,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         )
 
         dynamicCss.style(
-            ".toggle-button", mapOf(
-                "display" to "flex",
-                "align-items" to "stretch",
-            )
-        )
-
-        dynamicCss.style(
-            ".toggle-button > span", mapOf(
-                "flex-grow" to "1",
-                "flex-shrink" to "1",
-                "display" to "block",
-            )
-        )
-
-        dynamicCss.style(
             ".spinner", mapOf(
                 "width" to "32px !important",
                 "height" to "32px !important",
@@ -942,7 +927,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         } catch (e: Throwable) { /*squish*/
         }
         dynamicCss.style(
-            ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *), .padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage)",
+            ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded), .padded:not(.unpadded):not(.swapImage)",
             mapOf(
                 "padding" to "var(--spacing, 0px)",
             )
@@ -1071,26 +1056,26 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
 
         fun l(theme: Theme) = listOf(
-//            sel(
-//                ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded):not(.toggle-button.unpadded > *) > *",
-//                ".padded:not(.unpadded):not(.toggle-button.unpadded > *):not(.swapImage) > *"
-//            ) to mapOf(
-//                "--parentPadding" to theme.spacing.value,
-//            ),
-//            sel(
-//                " > *",
-//            ) to mapOf(
-//                "--parentSpacing" to theme.spacing.value,
-//            ),
+            sel(
+                ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *",
+                ".padded:not(.unpadded):not(.swapImage) > *"
+            ) to mapOf(
+                "--parentPadding" to theme.spacing.value,
+            ),
+            sel(
+                " > *",
+            ) to mapOf(
+                "--parentSpacing" to theme.spacing.value,
+            ),
             sel(".useNavSpacing") to mapOf(
                 "--spacing" to theme.navSpacing.value,
                 "gap" to "var(--spacing, 0.0)",
             ),
-//            sel(
-//                ".useNavSpacing > *",
-//            ) to mapOf(
-//                "--parentSpacing" to theme.navSpacing.value,
-//            ),
+            sel(
+                ".useNavSpacing > *",
+            ) to mapOf(
+                "--parentSpacing" to theme.navSpacing.value,
+            ),
             sel(".mightTransition", ".transition", ".swapImage") to mapOf(
                 "border-radius" to theme.cornerRadii.toRawCornerRadius(),
             ),
