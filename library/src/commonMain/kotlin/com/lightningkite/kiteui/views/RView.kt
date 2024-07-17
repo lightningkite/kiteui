@@ -174,6 +174,10 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         view.shutdown()
         val i = children.indexOf(view)
         if (i != -1) removeChild(i)
+        else {
+            println("WARNING: $view is not a child of $this!")
+            throw IllegalStateException("$view is not a child of $this!")
+        }
     }
 
     fun clearChildren() {

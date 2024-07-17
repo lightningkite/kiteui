@@ -11,6 +11,9 @@ actual class FloatingInfoHolder actual constructor(source: RView) {
     actual fun open() {
     }
 
+    actual fun block() {
+    }
+
     actual fun close() {
     }
 }

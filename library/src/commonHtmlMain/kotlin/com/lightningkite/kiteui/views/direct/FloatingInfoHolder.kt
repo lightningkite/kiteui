@@ -8,5 +8,6 @@ expect class FloatingInfoHolder(source: RView) {
     var preferredDirection: PopoverPreferredDirection
     var menuGenerator: ViewWriter.() -> Unit
     fun open()
+    fun block()
     fun close()
 }

@@ -143,29 +143,45 @@ actual class FutureElement actual constructor() {
         }
 
     actual fun appendChild(element: FutureElement) {
+        assertSizeMatch()
         lastChildren.add(element)
         this.element?.let {
             it.appendChild(element.create())
         }
+        assertSizeMatch()
     }
     actual fun appendChild(index: Int, element: FutureElement) {
-        if (index <= lastChildren.size) lastChildren.add(index, element)
+        assertSizeMatch()
+        if (index > lastChildren.size) throw IllegalStateException()
+        lastChildren.add(index, element)
         this.element?.let {
             it.children.item(index)?.let { before ->
                 it.insertBefore(element.create(), before)
             } ?: it.appendChild(element.create())
         }
+        assertSizeMatch()
     }
 
     actual fun removeChild(index: Int) {
+        assertSizeMatch()
+        lastChildren.removeAt(index)
         element?.let {
             it.children.item(index)?.let { v -> it.removeChild(v) }
-        } ?: lastChildren.removeAt(index)
+        }
+        assertSizeMatch()
     }
 
     actual fun clearChildren() {
+        assertSizeMatch()
         lastChildren.clear()
         this.element?.innerHTML = ""
+        assertSizeMatch()
+    }
+
+    private fun assertSizeMatch() {
+        this.element?.let {
+            if(it.childElementCount != lastChildren.size) throw IllegalStateException("Size mismatch - ${it.childElementCount} vs ${lastChildren.size}")
+        }
     }
 
     inner class ClassSet : MutableSet<String> {

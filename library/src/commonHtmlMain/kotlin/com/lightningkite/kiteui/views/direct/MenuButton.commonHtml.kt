@@ -12,9 +12,12 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         native.classes.add("clickable")
         native.addEventListener("click") {
             floating.open()
+            floating.block()
         }
         native.addEventListener("mouseenter") {
-            floating.open()
+            if(!requireClick) {
+                floating.open()
+            }
         }
     }
 

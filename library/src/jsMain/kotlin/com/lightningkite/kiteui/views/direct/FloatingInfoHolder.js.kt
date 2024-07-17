@@ -1,35 +1,58 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.reactive.BasicListenable
-import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
 import kotlin.math.min
+import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 actual class FloatingInfoHolder actual constructor(val source: RView) {
     val theme get() = source.theme
-    var existingElement: Element? = null
-    var existingDismisser: Element? = null
     val maxDist = 32
-    var stayOpen = false
+    var blockView: RView? = null
+    var existingView: RView? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     actual var menuGenerator: ViewWriter.() -> Unit = { space() }
 
+    actual fun block() {
+        if(blockView != null) return
+        val o = source.overlayStack ?: return
+        val v = existingView ?: return
+        o.addChild(
+            o.children.indexOf(v),
+            object: RView(o.context) {
+                init {
+                    native.tag = "div"
+                    native.addEventListener("click") {
+                        close()
+                    }
+                    native.style.position = "absolute"
+                    native.style.left = "0"
+                    native.style.right = "0"
+                    native.style.bottom = "0"
+                    native.style.top = "0"
+                    native.style.opacity = "0"
+                    native.style.zIndex = "998"
+                    native.classes.add("active-${Random.nextInt()}")
+                    blockView = this
+                }
+            }
+        )
+    }
+
     actual fun open() {
-        if (existingElement != null) return
+        if (existingView != null) return
         val writer = object : ViewWriter() {
             override val context: RContext = source.context.split()
             override fun addChild(view: RView) = source.overlayStack!!.addChild(view)
@@ -41,6 +64,10 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         fun close() {
             stopListeningToCloser()
             closeCurrent()
+            blockView?.let {
+                source.overlayStack!!.removeChild(it)
+            }
+            blockView = null
         }
         stopListeningToCloser = source.popoverClosers.addListener {
             childCloser.invokeAll()
@@ -49,7 +76,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         writer.popoverClosers = childCloser
         with(writer) {
             stack {
-                native.onElement { existingElement = it }
+                existingView = this
                 themeChoice = DialogSemantic
                 native.onElement {
                     it as HTMLElement
@@ -171,7 +198,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
 
                 val mouseMove = { it: Event ->
                     it as MouseEvent
-                    if (!stayOpen) {
+                    if (blockView == null) {
                         val clientRect = (source.native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
                         if (min(
@@ -190,26 +217,25 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         ) close()
                     }
                 }
-                window.removeEventListener("mousemove", mouseMove)
                 window.addEventListener("mousemove", mouseMove)
 
                 closeCurrent = {
+                    window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
                         this.shutdown()
                         (e as HTMLElement)
                         window.getComputedStyle(e).getPropertyValue("transition-duration")
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
                             .let { window.setTimeout({
-                                e.parentNode?.removeChild(e)
+                                source.overlayStack!!.removeChild(this)
                             }, it.inWholeMilliseconds.toInt()) }
                         e.style.opacity = "0"
                     }
-                    existingElement = null
+                    existingView = null
                 }
             }
         }
     }
-
 
     actual fun close() {
         source.closePopovers()
