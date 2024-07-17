@@ -80,6 +80,10 @@ class ReactiveScopeData(
         onLoad = {}
         removers.forEach { it.value() }
         removers.clear()
+        previousContext?.let {
+            previousContext = null
+            it.cancel()
+        }
         latestPass.clear()
     }
 

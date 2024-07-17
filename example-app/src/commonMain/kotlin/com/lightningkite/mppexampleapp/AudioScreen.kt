@@ -1,18 +1,17 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.AudioLocal
-import com.lightningkite.kiteui.models.AudioRemote
 import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.awaitNotNull
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("audio")
 object AudioScreen : Screen {
+
+    val backgroundSoundPlaying = PersistentProperty("backgroundNoisePlaying", false)
+
     override fun ViewWriter.render() {
         val soundEffectPool = SoundEffectPool()
         col {
@@ -27,6 +26,13 @@ object AudioScreen : Screen {
 //            withPool("CantinaBand3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav")
 //            withPool("StarWars3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav")
             withPool("Taunt", Resources.audioTaunt)
+
+            toggleButton {
+                checked bind backgroundSoundPlaying
+                text("Background sound")
+            }
+
+            backgroundAudio(Resources.audioTaunt) { backgroundSoundPlaying() }
         }
     }
 
