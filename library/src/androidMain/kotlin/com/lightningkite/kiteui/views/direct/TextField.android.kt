@@ -36,12 +36,13 @@ actual class TextField actual constructor(context: RContext): RView(context) {
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.body.font,
-                theme.body.weight,
-                theme.body.italic
+                theme.font.font,
+                theme.font.weight,
+                theme.font.italic
             )
         )
-        native.isAllCaps = theme.body.allCaps
+        native.isAllCaps = theme.font.allCaps
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
     actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var enabled: Boolean
@@ -50,6 +51,11 @@ actual class TextField actual constructor(context: RContext): RView(context) {
             native.isEnabled = value
             refreshTheming()
         }
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
 
     actual var keyboardHints: KeyboardHints
         get() {
@@ -99,13 +105,6 @@ actual class TextField actual constructor(context: RContext): RView(context) {
                     }
                 }
             }
-        }
-    actual var textSize: Dimension
-        get() {
-            return Dimension(native.textSize)
-        }
-        set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
         }
 }
 

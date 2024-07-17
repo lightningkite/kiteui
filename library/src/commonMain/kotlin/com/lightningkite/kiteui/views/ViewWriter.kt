@@ -1,13 +1,9 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeDeriver
-import com.lightningkite.kiteui.models.div
-import com.lightningkite.kiteui.models.times
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
 import com.lightningkite.kiteui.reactive.CalculationContextStack.start
-import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 
@@ -16,7 +12,7 @@ abstract class ViewWriter {
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
-    fun split(): ViewWriter = object: ViewWriter() {
+    fun split(): ViewWriter = object : ViewWriter() {
         override val context: RContext = this@ViewWriter.context.split()
         override fun addChild(view: RView) {
             this@ViewWriter.addChild(view)
@@ -44,14 +40,15 @@ abstract class ViewWriter {
         view.postSetup()
     }
 
-    fun <T: RView> writePre(p: ViewWriter, view: T) {
+    fun <T : RView> writePre(p: ViewWriter, view: T) {
 //        p.willAddChild(view)
         p.addChild(view)
         _wrapElement = null
         beforeNextElementSetup?.invoke(view)
         beforeNextElementSetup = null
     }
-    fun <T: RView> writePost(p: ViewWriter, view: T) {
+
+    fun <T : RView> writePost(p: ViewWriter, view: T) {
         view.postSetup()
         afterNextElementSetup?.invoke(view)
         afterNextElementSetup = null
@@ -70,180 +67,72 @@ abstract class ViewWriter {
         return view
     }
 
-    @Deprecated("Use UseBackground instead", ReplaceWith("UseBackground", "com.lightningkite.kiteui.views.UseBackground"))
+    @Deprecated(
+        "Use UseBackground instead",
+        ReplaceWith("UseBackground", "com.lightningkite.kiteui.views.UseBackground")
+    )
     object TransitionNextView {
-        @Deprecated("Use UseBackground.Yes instead", ReplaceWith("UseBackground.Yes", "com.lightningkite.kiteui.views.UseBackground")) val Yes = UseBackground.Yes
-        @Deprecated("Use UseBackground.No instead", ReplaceWith("UseBackground.No", "com.lightningkite.kiteui.views.UseBackground")) val No = UseBackground.No
+        @Deprecated(
+            "Use UseBackground.Yes instead",
+            ReplaceWith("UseBackground.Yes", "com.lightningkite.kiteui.views.UseBackground")
+        )
+        val Yes = Unit
+        @Deprecated(
+            "Use UseBackground.No instead",
+            ReplaceWith("UseBackground.No", "com.lightningkite.kiteui.views.UseBackground")
+        )
+        val No = Unit
     }
 
     @Deprecated("Use UseBackground on the element itself")
-    var transitionNextView: UseBackground
-        get() = TODO()
+    var transitionNextView: Unit
+        get() = Unit
         set(value) {
-            afterNextElementSetup { useBackground = value }
+//            afterNextElementSetup { useBackground = value }
         }
 
-
     @ViewModifierDsl3
-    inline operator fun ViewWrapper.contains(view: RView): Boolean { return true }
-    @ViewModifierDsl3
-    inline operator fun ViewWrapper.contains(unit: Unit): Boolean { return true }
-    @ViewModifierDsl3
-    inline operator fun ViewWrapper.contains(boolean: Boolean): Boolean { return true }
-    @ViewModifierDsl3
-    inline operator fun ViewWrapper.contains(noinline themeDeriver: ThemeDeriver): Boolean {
+    val Theme.onNext: ViewWrapper get() {
         beforeNextElementSetup {
-            themeChoice = ThemeChoice.Derive(themeDeriver)
-            useBackground = UseBackground.Yes
-        }
-        return true 
-    }
-
-    @ViewModifierDsl3
-    operator inline fun ViewWrapper.minus(view: RView) = Unit
-    @ViewModifierDsl3
-    operator inline fun ViewWrapper.minus(unit: Unit) = Unit
-    @ViewModifierDsl3
-    operator inline fun ViewWrapper.minus(wrapper: ViewWrapper) = ViewWrapper
-    @ViewModifierDsl3
-    operator inline fun ViewWrapper.minus(noinline themeDeriver: ThemeDeriver): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice = ThemeChoice.Derive(themeDeriver)
-            useBackground = UseBackground.Yes
+            themeChoice = ThemeDerivation { this@onNext.withBack }
         }
         return ViewWrapper
     }
 
     @ViewModifierDsl3
-    operator fun Theme.minus(other: RView): ViewWrapper {
-        other.themeChoice += ThemeChoice.Set(this)
-        other.useBackground = UseBackground.Yes
-        return ViewWrapper
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.minus(other: RView): ViewWrapper {
-        other.themeChoice += ThemeChoice.Derive(this)
-        other.useBackground = UseBackground.Yes
-        return ViewWrapper
-    }
-
-    @ViewModifierDsl3
-    operator fun Theme.contains(other: RView): Boolean {
-        other.themeChoice += ThemeChoice.Set(this)
-        other.useBackground = UseBackground.Yes
-        return true
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.contains(other: RView): Boolean {
-        other.themeChoice += ThemeChoice.Derive(this)
-        other.useBackground = UseBackground.Yes
-        return true
-    }
-
-    @ViewModifierDsl3
-    operator fun Theme.minus(other: ViewWrapper): ViewWrapper {
+    val ThemeDerivation.onNext: ViewWrapper get() {
         beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@minus)
-            useBackground = UseBackground.Yes
-        }
-        return ViewWrapper
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.minus(other: ViewWrapper): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@minus)
-            useBackground = UseBackground.Yes
+            val old = themeChoice
+            themeChoice = old + this@onNext
         }
         return ViewWrapper
     }
 
-    @ViewModifierDsl3
-    operator fun Theme.minus(other: Boolean): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@minus)
-            useBackground = UseBackground.Yes
-        }
-        return ViewWrapper
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.minus(other: Boolean): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@minus)
-            useBackground = UseBackground.Yes
-        }
-        return ViewWrapper
-    }
+    // Theme, ViewWrapper, ThemeDerivation, Boolean
+    // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
+    // contains / minus
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: RView): ViewWrapper { return ViewWrapper }
 
-    @ViewModifierDsl3
-    operator fun Theme.minus(other: Unit): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@minus)
-            useBackground = UseBackground.Yes
-        }
-        return ViewWrapper
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.minus(other: Unit): ViewWrapper {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@minus)
-            useBackground = UseBackground.Yes
-        }
-        return ViewWrapper
-    }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: RView): ViewWrapper { return ViewWrapper }
 
-    @ViewModifierDsl3
-    operator fun Theme.contains(other: ViewWrapper): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.contains(other: ViewWrapper): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: RView): Boolean { return true }
 
-    @ViewModifierDsl3
-    operator fun Theme.contains(other: Boolean): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.contains(other: Boolean): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
-
-    @ViewModifierDsl3
-    operator fun Theme.contains(other: Unit): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Set(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
-    @ViewModifierDsl3
-    operator fun ThemeDeriver.contains(other: Unit): Boolean {
-        beforeNextElementSetup {
-            themeChoice += ThemeChoice.Derive(this@contains)
-            useBackground = UseBackground.Yes
-        }
-        return true
-    }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: RView): Boolean { return true }
 }
 
-class NewViewWriter(override val context: RContext): ViewWriter() {
+class NewViewWriter(override val context: RContext) : ViewWriter() {
     var newView: RView? = null
     override fun addChild(view: RView) {
         newView = view
@@ -251,7 +140,7 @@ class NewViewWriter(override val context: RContext): ViewWriter() {
 }
 
 operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
-operator fun ViewWrapper.contains(other: ViewWrapper) : Boolean = true
+operator fun ViewWrapper.contains(other: ViewWrapper): Boolean = true
 
 
 @ViewModifierDsl3
@@ -268,50 +157,65 @@ val ViewWriter.debugNext: ViewWrapper
 
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme?): ViewWrapper {
+fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWrapper {
     beforeNextElementSetup {
-        useBackground = UseBackground.Yes
-        themeChoice += ThemeChoice.Derive(calculate)
+        themeChoice += ThemeDerivation { calculate(it).withBack }
     }
     return ViewWrapper
 }
 
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-fun ViewWriter.maybeThemeFromLast(calculate: (Theme) -> Theme?): ViewWrapper {
+inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ViewWrapper {
     beforeNextElementSetup {
-        useBackground = UseBackground.IfChanged
-        themeChoice += ThemeChoice.Derive(calculate)
+        themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack }
     }
     return ViewWrapper
 }
 
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-fun ViewWriter.tweakTheme(calculate: (Theme) -> Theme?): ViewWrapper {
+inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewWrapper {
     beforeNextElementSetup {
-        themeChoice += ThemeChoice.Derive(calculate)
+        themeChoice += ThemeDerivation { calculate(it).withoutBack }
     }
     return ViewWrapper
 }
 
-@ViewModifierDsl3 val ViewWriter.card: ThemeDeriver get() = Theme::card
-@ViewModifierDsl3 val ViewWriter.dialog: ThemeDeriver get() = Theme::dialog
-@ViewModifierDsl3 val ViewWriter.mainContent: ThemeDeriver get() = Theme::mainContent
-@ViewModifierDsl3 val ViewWriter.fieldTheme: ThemeDeriver get() = Theme::field
-@ViewModifierDsl3 val ViewWriter.buttonTheme: ThemeDeriver get() = Theme::button
-@ViewModifierDsl3 val ViewWriter.hover: ThemeDeriver get() = Theme::hover
-@ViewModifierDsl3 val ViewWriter.down: ThemeDeriver get() = Theme::down
-@ViewModifierDsl3 val ViewWriter.selected: ThemeDeriver get() = Theme::selected
-@ViewModifierDsl3 val ViewWriter.unselected: ThemeDeriver get() = Theme::unselected
-@ViewModifierDsl3 val ViewWriter.disabled: ThemeDeriver get() = Theme::disabled
-@ViewModifierDsl3 val ViewWriter.bar: ThemeDeriver get() = Theme::bar
-@ViewModifierDsl3 val ViewWriter.nav: ThemeDeriver get() = Theme::nav
-@ViewModifierDsl3 val ViewWriter.important: ThemeDeriver get() = Theme::important
-@ViewModifierDsl3 val ViewWriter.critical: ThemeDeriver get() = Theme::critical
-@ViewModifierDsl3 val ViewWriter.warning: ThemeDeriver get() = Theme::warning
-@ViewModifierDsl3 val ViewWriter.danger: ThemeDeriver get() = Theme::danger
-@ViewModifierDsl3 val ViewWriter.affirmative: ThemeDeriver get() = Theme::affirmative
+@ViewModifierDsl3
+val ViewWriter.card: ViewWrapper get() = CardSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.dialog: ViewWrapper get() = DialogSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.mainContent: ViewWrapper get() = MainContentSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.fieldTheme: ViewWrapper get() = FieldSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.buttonTheme: ViewWrapper get() = ButtonSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.hover: ViewWrapper get() = HoverSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.down: ViewWrapper get() = DownSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.selected: ViewWrapper get() = SelectedSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.disabled: ViewWrapper get() = DisabledSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.bar: ViewWrapper get() = BarSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.nav: ViewWrapper get() = NavSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.important: ViewWrapper get() = ImportantSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.critical: ViewWrapper get() = CriticalSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.warning: ViewWrapper get() = WarningSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.danger: ViewWrapper get() = DangerSemantic.onNext
+@ViewModifierDsl3
+val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNext
 
 @ViewModifierDsl3
 val ViewWriter.compact: ViewWrapper
@@ -327,18 +231,23 @@ val ViewWriter.bold: ViewWrapper
     get() = tweakTheme {
         it.copy(
             id = "bold",
-            title = it.title.copy(bold = true),
-            body = it.body.copy(bold = true)
+            font = it.font.copy(bold = true)
         )
     }
+
+@ViewModifierDsl3
+fun ViewWriter.textSize(size: Dimension): ViewWrapper = tweakTheme {
+    it.copy(
+        font = it.font.copy(size = size)
+    )
+}
 
 @ViewModifierDsl3
 val ViewWriter.italic: ViewWrapper
     get() = tweakTheme {
         it.copy(
             id = "italic",
-            title = it.title.copy(italic = true),
-            body = it.body.copy(italic = true)
+            font = it.font.copy(italic = true)
         )
     }
 
@@ -347,8 +256,7 @@ val ViewWriter.allCaps: ViewWrapper
     get() = tweakTheme {
         it.copy(
             id = "allCaps",
-            title = it.title.copy(allCaps = true),
-            body = it.body.copy(allCaps = true)
+            font = it.font.copy(allCaps = true)
         )
     }
 
@@ -364,22 +272,11 @@ val ViewWriter.navSpacing: ViewWrapper
         return ViewWrapper
     }
 
-@ViewModifierDsl3
-operator fun ThemeDeriver.minus(other: ThemeDeriver): ThemeDeriver {
-    return { other(this(it) ?: it) }
-}
 
-fun RView.dynamicTheme(calculate: suspend () -> ThemeDeriver?) {
+fun RView.dynamicTheme(calculate: suspend () -> ThemeDerivation?) {
     val existing = themeChoice
     reactiveScope {
-        useBackground = UseBackground.Yes
-        themeChoice = existing + calculate()?.let { ThemeChoice.Derive(it) }
-    }
-}
-fun RView.dynamicTweak(calculate: suspend () -> ThemeDeriver?) {
-    val existing = themeChoice
-    reactiveScope {
-        themeChoice = existing + calculate()?.let { ThemeChoice.Derive(it) }
+        themeChoice = existing + (calculate() ?: ThemeDerivation.none)
     }
 }
 

@@ -22,5 +22,4 @@ expect class TextField(context: RContext) : RView {
     var action: Action?
     var hint: String
     var align: Align
-    var textSize: Dimension
 }

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.card
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake

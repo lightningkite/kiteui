@@ -33,7 +33,6 @@ var ViewWriter.overlayStack by rContextAddon<Stack?>(null)
 
 fun ViewWriter.appBase(main: ScreenNavigator, dialog: ScreenNavigator? = null, mainLayout: ContainingView.() -> Unit) {
     stack {
-        useBackground = UseBackground.Yes
         spacing = 0.px
         mainScreenNavigator = main
         dialog?.let {

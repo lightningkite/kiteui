@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -176,6 +177,11 @@ data class Color(
         green = (green * other.green),
         blue = (blue * other.blue),
     )
+
+    infix fun channelDifferenceSum(other: Color): Float = abs(red - other.red) +
+            abs(green - other.green) +
+            abs(blue - other.blue) +
+            abs(alpha - other.alpha)
 
     fun toWhite(ratio: Float) = interpolate(this, white, ratio)
     fun toBlack(ratio: Float) = interpolate(this, black, ratio)

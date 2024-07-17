@@ -3,7 +3,8 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.ThemeChoice
+import com.lightningkite.kiteui.models.HoverSemantic
+import com.lightningkite.kiteui.models.ImportantSemantic
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
@@ -52,8 +53,11 @@ object RecyclerViewScreen : Screen {
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
                     col {
-                        useBackground = UseBackground.IfChanged
-                        ::themeChoice { if (it() == 50) ThemeChoice.Derive { it.important() } else if (it() % 7 == 0) ThemeChoice.Derive { it.hover() } else null }
+                        dynamicTheme {
+                            if (it() == 50) ImportantSemantic
+                            else if (it() % 7 == 0) HoverSemantic
+                            else null
+                        }
                         row {
                             expanding - centered - text { ::content { "Item ${it.await()}" } }
                             centered - button {

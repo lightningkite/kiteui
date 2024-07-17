@@ -15,9 +15,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
         native.classes.add("clickable")
     }
 
-    init {
-        useBackground = UseBackground.Yes
-    }
+    override fun hasAlternateBackedStates(): Boolean = true
 
     actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",

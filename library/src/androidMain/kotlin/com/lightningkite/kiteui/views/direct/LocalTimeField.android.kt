@@ -3,15 +3,15 @@ package com.lightningkite.kiteui.views.direct
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ThemeChoice
-import com.lightningkite.kiteui.views.UseBackground
 import kotlinx.datetime.*
 
 actual class LocalTimeField actual constructor(context: RContext) :
@@ -47,11 +47,12 @@ actual class LocalTimeField actual constructor(context: RContext) :
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

@@ -39,7 +39,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     }
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.body
+        fontAndStyle = theme.font
     }
 
     fun updateFont() {
@@ -144,10 +144,11 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !textField.editable -> ThemeChoice.Derive { it.disabled() }
-        textField.focused -> ThemeChoice.Derive { it.hover() }
-        else -> null
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!textField.editable) t = t[DisabledSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }
 

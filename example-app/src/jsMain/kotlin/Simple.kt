@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeChoice
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.invoke
@@ -13,7 +13,7 @@ fun main() {
     var created: RView? = null
     window.onerror = { a, b, c, d, e ->
         println("ON ERROR HANDLER $a $b $c $d $e")
-        if(e is Exception) e.printStackTrace2()
+        if (e is Exception) e.printStackTrace2()
     }
     object : ViewWriter() {
         override val context: RContext = RContext("/")
@@ -27,8 +27,7 @@ fun main() {
 
         init {
             beforeNextElementSetup {
-                useBackground = UseBackground.Yes
-                ::themeChoice { ThemeChoice.Set(theme()) }
+                ::themeChoice { ThemeDerivation(theme()) }
             }
         }
     }.run {

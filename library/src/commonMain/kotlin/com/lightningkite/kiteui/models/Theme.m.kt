@@ -28,7 +28,7 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    dialog = themeDeriver {
+    dialog = {
         copy(
             id = "dlg",
             background = this.background.closestColor().darken(0.1f),
@@ -36,13 +36,13 @@ fun Theme.Companion.material(
             elevation = this.elevation * 2f,
         )
     },
-    important = themeDeriver {
+    important = {
         copy(
             id = "imp",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
-            important = themeDeriver {
+            important = {
                 copy(
                     id = "imp2",
                     foreground = secondaryForeground,
@@ -52,13 +52,13 @@ fun Theme.Companion.material(
             }
         )
     },
-    bar = themeDeriver {
+    bar = {
         copy(
             id = "bar",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
-            important = themeDeriver {
+            important = {
                 copy(
                     id = "barimp",
                     foreground = secondaryForeground,
@@ -68,7 +68,7 @@ fun Theme.Companion.material(
             }
         )
     },
-    critical = themeDeriver {
+    critical = {
         copy(
             id = "crt",
             foreground = secondaryForeground,
@@ -141,10 +141,17 @@ object MaterialLikeTheme {
 
 fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
-    title = title.copy(
-        font = systemDefaultFont,
-        weight = if (Random.nextBoolean()) 700 else 500,
-        allCaps = Random.nextBoolean()
+    derivations = mapOf(
+        HeaderSemantic to {
+            val old = this.derivations[HeaderSemantic]?.invoke(it) ?: HeaderSemantic.default(it)
+            old.theme.copy(
+                font = font.copy(
+                    font = systemDefaultFont,
+                    weight = if (Random.nextBoolean()) 700 else 500,
+                    allCaps = Random.nextBoolean()
+                )
+            ).withoutBack
+        }
     )
 )
 

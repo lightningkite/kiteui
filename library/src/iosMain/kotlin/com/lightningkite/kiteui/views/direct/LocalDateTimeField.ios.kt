@@ -17,7 +17,7 @@ import platform.UIKit.UIDatePickerStyle
 
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalDateField actual constructor(context: RContext) : RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -48,7 +48,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
 }
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalTimeField actual constructor(context: RContext) : RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -79,7 +79,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
 }
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalDateTimeField actual constructor(context: RContext) : RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }

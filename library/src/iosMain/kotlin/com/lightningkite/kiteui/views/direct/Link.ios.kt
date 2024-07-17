@@ -1,5 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.DownSemantic
+import com.lightningkite.kiteui.models.FocusSemantic
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
@@ -7,7 +11,6 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override val native = FrameLayoutButton(this)
     init {
         native.onClick = {
@@ -43,11 +46,14 @@ actual class Link actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
     }
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        native.highlighted -> ThemeChoice.Derive { it.down() }
-        native.focused -> ThemeChoice.Derive { it.hover() }
-        else -> null
+
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }
 

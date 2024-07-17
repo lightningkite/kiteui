@@ -28,7 +28,7 @@ actual class DynamicCss actual constructor(basePath: String) {
 
     actual fun styles(
         mediaQuery: String?,
-        styles: List<Pair<String, Map<String, String>>>
+        styles: Map<String, Map<String, String>>
     ) {
     }
 }

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
@@ -7,7 +8,6 @@ import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean
         get() = native.enabled
@@ -26,21 +26,15 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
             _checked.value = true
         }
     }
-    override fun getStateThemeChoice(): ThemeChoice? {
-        return if(_checked.value) {
-            when {
-                !enabled -> ThemeChoice.Derive { it.selected().disabled() }
-                native.highlighted -> ThemeChoice.Derive { it.selected().down() }
-                native.focused -> ThemeChoice.Derive { it.selected().hover() }
-                else -> ThemeChoice.Derive { it.selected() }
-            }
-        } else {
-            when {
-                !enabled -> ThemeChoice.Derive { it.unselected().disabled() }
-                native.highlighted -> ThemeChoice.Derive { it.unselected().down() }
-                native.focused -> ThemeChoice.Derive { it.unselected().hover() }
-                else -> ThemeChoice.Derive { it.unselected() }
-            }
-        }
+
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(_checked.value) t = t[SelectedSemantic]
+        else t = t[UnselectedSemantic]
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }

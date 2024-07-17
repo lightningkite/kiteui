@@ -29,7 +29,7 @@ fun Theme.Companion.material3(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    hover = themeDeriver {
+    hover = {
         copy(
             id = "hov",
             background = this.background.closestColor().highlight(0.2f),
@@ -37,7 +37,7 @@ fun Theme.Companion.material3(
             elevation = this.elevation * 2f,
         )
     },
-    down = themeDeriver {
+    down = {
         copy(
             id = "dwn",
             background = this.background.closestColor().highlight(0.3f),
@@ -45,14 +45,13 @@ fun Theme.Companion.material3(
             elevation = this.elevation / 2f,
         )
     },
-    bar = themeDeriver { null },
-    important = themeDeriver {
+    important = {
         copy(
             id = "imp",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
-            important = themeDeriver {
+            important = {
                 copy(
                     id = "imp2",
                     foreground = secondaryForeground,
@@ -62,7 +61,7 @@ fun Theme.Companion.material3(
             }
         )
     },
-    critical = themeDeriver {
+    critical = {
         copy(
             id = "crt",
             foreground = secondaryForeground,

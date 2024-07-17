@@ -52,9 +52,6 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun spacingSet(value: Dimension?) {
-        if(useBackground != UseBackground.No) {
-            native.setPaddingAll((value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt())
-        }
         for(child in children) child.updateCorners()
     }
 

@@ -19,7 +19,7 @@ import platform.UIKit.*
 
 
 @OptIn(ExperimentalForeignApi::class)
-actual abstract class TextView actual constructor(context: RContext): RView(context) {
+actual class TextView actual constructor(context: RContext): RView(context) {
     override val native = WrapperView()
     val withGradient = UILabelWithGradient()
     val label get() = withGradient.label
@@ -64,12 +64,6 @@ actual abstract class TextView actual constructor(context: RContext): RView(cont
             }
         }
 
-    actual var textSize: Dimension = 1.rem
-        set(value) {
-            field = value
-            updateFont()
-            native.informParentOfSizeChange()
-        }
     actual var ellipsis: Boolean
         get() = label.lineBreakMode == NSLineBreakByTruncatingTail
         set(value) {
@@ -89,11 +83,10 @@ actual abstract class TextView actual constructor(context: RContext): RView(cont
         }
 
     private fun updateFont() {
-        val textSize = textSize ?: return
         val alignment = label.textAlignment
         label.font = fontAndStyle?.let {
-            it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-        } ?: UIFont.systemFontOfSize(textSize.value)
+            it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(12.0)
         label.textAlignment = alignment
     }
 
@@ -104,67 +97,14 @@ actual abstract class TextView actual constructor(context: RContext): RView(cont
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
         }
-}
 
-
-object TextSizes {
-    val h1 get() = 2.rem
-    val h2 get() = 1.6.rem
-    val h3 get() = 1.4.rem
-    val h4 get() = 1.3.rem
-    val h5 get() = 1.2.rem
-    val h6 get() = 1.1.rem
-    val h = arrayOf(
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-    )
-    val body get() = 1.rem
-    val subtext get() = 0.8.rem
-}
-
-actual class HeaderView actual constructor(context: RContext, level: Int) : TextView(context) {
-    init {
-        textSize = TextSizes.h[level - 1]
-        sizeConstraints = SizeConstraints(
-            minWidth = textSize * 0.6,
-            minHeight = textSize * 1.5,
-        )
-    }
     override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.title
+        fontAndStyle = theme.font
         withGradient.foreground = theme.foreground
-    }
-}
-
-actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
-    init {
-        textSize = TextSizes.body
         sizeConstraints = SizeConstraints(
-            minWidth = textSize * 0.6,
-            minHeight = textSize * 1.5,
+            minWidth = theme.font.size * 0.6,
+            minHeight = theme.font.size * 1.5,
         )
-    }
-    override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.body
-        withGradient.foreground = theme.foreground
-    }
-}
-
-actual class SubTextView actual constructor(context: RContext) : TextView(context) {
-    init {
-        textSize = TextSizes.subtext
-        sizeConstraints = SizeConstraints(
-            minWidth = textSize * 0.6,
-            minHeight = textSize * 1.5,
-        )
-    }
-    override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.body
-        withGradient.foreground = theme.foreground.applyAlpha(0.5f)
     }
 }
 

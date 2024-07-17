@@ -8,7 +8,9 @@ import android.widget.CompoundButton
 import android.widget.CompoundButton.OnCheckedChangeListener
 import android.widget.ProgressBar
 import androidx.core.widget.CompoundButtonCompat
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import android.widget.CheckBox as AndroidCheckBox
@@ -36,9 +38,10 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
     actual val checked: ImmediateWritable<Boolean> = native.contentProperty()

@@ -5,7 +5,9 @@ import android.content.res.ColorStateList
 import android.widget.CheckBox
 import android.widget.RadioButton
 import androidx.core.widget.CompoundButtonCompat
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -29,9 +31,10 @@ actual class RadioButton actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
     actual val checked: ImmediateWritable<Boolean> = native.contentProperty()

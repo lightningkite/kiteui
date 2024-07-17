@@ -4,14 +4,243 @@ import kotlin.js.JsName
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-typealias ThemeDeriver = (Theme) -> Theme?
+data class ThemeAndBack(val theme: Theme, val useBackground: Boolean) {
+    operator fun get(semantic: Semantic): ThemeAndBack {
+        val b = theme[semantic]
+        return if (useBackground) b.theme.withBack
+        else b
+    }
+}
 
-inline fun themeDeriver(noinline received: Theme.() -> Theme?): ThemeDeriver = received
+interface ThemeDerivation {
+    operator fun invoke(theme: Theme): ThemeAndBack
+
+    //    ThemeDerivation
+    companion object {
+        inline operator fun invoke(crossinline action: (Theme) -> ThemeAndBack): ThemeDerivation {
+            return object : ThemeDerivation {
+                override fun invoke(theme: Theme): ThemeAndBack = action(theme)
+            }
+        }
+
+        inline fun selfBackground(crossinline action: Theme.() -> Theme): ThemeDerivation {
+            return object : ThemeDerivation {
+                override fun invoke(theme: Theme): ThemeAndBack = action(theme).withBack
+            }
+        }
+
+        inline operator fun invoke(theme: Theme): ThemeDerivation = Set(theme)
+        val none = ThemeDerivation.None
+    }
+
+    data object None : ThemeDerivation {
+        override fun invoke(theme: Theme): ThemeAndBack = theme.withoutBack
+        override fun plus(other: ThemeDerivation): ThemeDerivation = other
+    }
+
+    data class Set(val theme: Theme) : ThemeDerivation {
+        override fun invoke(theme: Theme): ThemeAndBack = this.theme.withBack
+    }
+
+    open operator fun plus(other: ThemeDerivation): ThemeDerivation {
+        return ThemeDerivation {
+            if (other is Set) return@ThemeDerivation other.theme.withBack
+            val a = this(it)
+            val b = other(a.theme)
+            if (a.useBackground) b.theme.withBack
+            else b
+        }
+    }
+}
+
+interface Semantic : ThemeDerivation {
+    val key: String
+    fun default(theme: Theme): ThemeAndBack
+    override fun invoke(theme: Theme): ThemeAndBack = theme[this]
+}
+
+data object CardSemantic : Semantic {
+    override val key: String = "crd"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object FieldSemantic : Semantic {
+    override val key: String = "fld"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "fld",
+        outlineWidth = 1.px
+    ).withBack
+}
+
+data object ButtonSemantic : Semantic {
+    override val key: String = "btn"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "btn",
+        font = theme.font.copy(allCaps = true, bold = true)
+    ).withBack
+}
+
+data object HoverSemantic : Semantic {
+    override val key: String = "hov"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "hov",
+        background = theme.background.closestColor().highlight(0.2f),
+        outline = theme.background.closestColor().highlight(0.2f).highlight(0.1f),
+        elevation = theme.elevation * 2f,
+    ).withBack
+}
+
+data object DownSemantic : Semantic {
+    override val key: String = "dwn"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "dwn",
+        background = theme.background.closestColor().highlight(0.3f),
+        outline = theme.background.closestColor().highlight(0.3f).highlight(0.1f),
+        elevation = theme.elevation / 2f,
+    ).withBack
+}
+
+data object FocusSemantic : Semantic {
+    override val key: String = "fcs"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "fcs",
+        outlineWidth = theme.outlineWidth + 2.dp,
+        outline = theme.outline.closestColor().highlight(1f),
+    ).withBack
+}
+
+data object DisabledSemantic : Semantic {
+    override val key: String = "dis"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "dis",
+        foreground = theme.foreground.applyAlpha(alpha = 0.25f),
+        background = theme.background.applyAlpha(alpha = 0.5f),
+        outline = theme.outline.applyAlpha(alpha = 0.25f),
+    ).withBack
+}
+
+data object SelectedSemantic : Semantic {
+    override val key: String = "sel"
+    override fun default(theme: Theme): ThemeAndBack = theme[DownSemantic]
+}
+
+data object UnselectedSemantic : Semantic {
+    override val key: String = "uns"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "uns",
+        background = theme.background.applyAlpha(alpha = 0f),
+        outline = theme.background,
+        outlineWidth = 2.dp
+    ).withBack
+}
+
+data object MainContentSemantic : Semantic {
+    override val key: String = "cnt"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object BarSemantic : Semantic {
+    override val key: String = "bar"
+    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+}
+
+data object NavSemantic : Semantic {
+    override val key: String = "nav"
+    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+}
+
+data object DialogSemantic : Semantic {
+    override val key: String = "dlg"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object ImportantSemantic : Semantic {
+    override val key: String = "imp"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        background = theme.foreground,
+        outline = theme.foreground,
+        foreground = theme.background,
+    ).withBack
+}
+
+data object CriticalSemantic : Semantic {
+    override val key: String = "crt"
+    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic][ImportantSemantic]
+}
+
+data object WarningSemantic : Semantic {
+    override val key: String = "wrn"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "wrn",
+        background = Color.fromHex(0xFFe36e24.toInt()),
+        outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
+        foreground = Color.white
+    ).withBack
+}
+
+data object DangerSemantic : Semantic {
+    override val key: String = "dgr"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "dgr",
+        background = Color.fromHex(0xFFB00020.toInt()),
+        outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
+        foreground = Color.white
+    ).withBack
+}
+
+data object AffirmativeSemantic : Semantic {
+    override val key: String = "afr"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = "afr",
+        background = Color.fromHex(0xFF20a020.toInt()),
+        outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
+        foreground = Color.white
+    ).withBack
+}
+
+data object HeaderSemantic : Semantic {
+    override val key: String = "hed"
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
+}
+
+data class HeaderSizeSemantic(val level: Int) : Semantic {
+    override val key: String = "h$level"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        font = theme.font.copy(size = lookup[level - 1]),
+    ).withoutBack
+
+    companion object {
+        val lookup = arrayOf(
+            2.rem,
+            1.6.rem,
+            1.4.rem,
+            1.3.rem,
+            1.2.rem,
+            1.1.rem,
+        )
+    }
+}
+
+data object SubtextSemantic : Semantic {
+    override val key: String = "sub"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        font = theme.font.copy(size = 0.8.rem),
+        foreground = theme.foreground.applyAlpha(0.7f)
+    ).withoutBack
+}
+
+val H1Semantic = HeaderSizeSemantic(1)
+val H2Semantic = HeaderSizeSemantic(2)
+val H3Semantic = HeaderSizeSemantic(3)
+val H4Semantic = HeaderSizeSemantic(4)
+val H5Semantic = HeaderSizeSemantic(5)
+val H6Semantic = HeaderSizeSemantic(6)
 
 class Theme(
     val id: String,
-    val title: FontAndStyle = FontAndStyle(systemDefaultFont),
-    val body: FontAndStyle = FontAndStyle(systemDefaultFont),
+    val font: FontAndStyle = FontAndStyle(systemDefaultFont),
     val elevation: Dimension = 1.px,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     val spacing: Dimension = 1.rem,
@@ -26,222 +255,69 @@ class Theme(
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val transitionDuration: Duration = 0.15.seconds,
 
-    val card: ThemeDeriver = { it },
-    val field: ThemeDeriver = { null },
-    val button: ThemeDeriver = { null },
-    val hover: ThemeDeriver = {
-        it.copy(
-            id = "hov",
-            background = it.background.closestColor().highlight(0.2f),
-            outline = it.background.closestColor().highlight(0.2f).highlight(0.1f),
-            elevation = it.elevation * 2f,
-        )
-    },
-    val focus: ThemeDeriver = {
-        it.copy(
-            id = "fcs",
-            outlineWidth = outlineWidth + 2.dp
-        )
-    },
-    val dialog: ThemeDeriver = {
-        it.copy(
-            id = "dlg",
-            background = it.background.closestColor().lighten(0.1f),
-            outline = it.outline.closestColor().lighten(0.1f),
-            elevation = it.elevation * 2f,
-        )
-    },
-    val down: ThemeDeriver = {
-        it.copy(
-            id = "dwn",
-            background = it.background.closestColor().highlight(0.3f),
-            outline = it.background.closestColor().highlight(0.3f).highlight(0.1f),
-            elevation = it.elevation / 2f,
-        )
-    },
-    val unselected: ThemeDeriver = { it },
-    val selected: ThemeDeriver = { it.down(it) },
-    val disabled: ThemeDeriver = {
-        it.copy(
-            id = "dis",
-            foreground = it.foreground.applyAlpha(alpha = 0.25f),
-            background = it.background.applyAlpha(alpha = 0.5f),
-            outline = it.outline.applyAlpha(alpha = 0.25f),
-        )
-    },
-    val invalid: ThemeDeriver = {
-        it.copy(
-            id = "inv",
-            outline = Color.red,
-            outlineWidth = 2.px,
-        )
-    },
-    val mainContent: ThemeDeriver = { null },
-    val bar: ThemeDeriver = {
-        it.copy(
-            id = "bar",
-            foreground = it.background,
-            background = it.foreground,
-            outline = it.foreground.closestColor().highlight(1f)
-        )
-    },
-    val nav: ThemeDeriver = bar,
-    val important: ThemeDeriver = {
-        it.copy(
-            id = "imp",
-            foreground = it.background,
-            background = it.foreground,
-            outline = it.foreground.closestColor().highlight(1f)
-        )
-    },
-    val critical: ThemeDeriver = { it.important(it)?.let { it.important(it) } },
-    val warning: ThemeDeriver = {
-        it.copy(
-            id = "wrn",
-            background = Color.fromHex(0xFFe36e24.toInt()),
-            outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
-            foreground = Color.white
-        )
-    },
-    val danger: ThemeDeriver = {
-        it.copy(
-            id = "dgr",
-            background = Color.fromHex(0xFFB00020.toInt()),
-            outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
-            foreground = Color.white
-        )
-    },
-    val affirmative: ThemeDeriver = {
-        it.copy(
-            id = "afr",
-            background = Color.fromHex(0xFF20a020.toInt()),
-            outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
-            foreground = Color.white
-        )
-    },
+    val derivedFrom: Theme? = null,
+    val derivationId: String? = null,
+    val revert: Theme? = null,
+
+    val derivations: Map<Semantic, (theme: Theme) -> ThemeAndBack> = mapOf(),
 ) {
     val icon: Paint get() = iconOverride ?: foreground
+    val withBack = ThemeAndBack(this, true)
+    val withoutBack = ThemeAndBack(this, false)
 
-    private var mainContentCache: Theme? = null
-
-    @JsName("mainContentDirect")
-    fun mainContent() = mainContentCache ?: mainContent(this).also { mainContentCache = it }
-    private var cardCache: Theme? = null
-
-    @JsName("cardDirect")
-    fun card() = cardCache ?: card(this).also { cardCache = it }
-    private var dialogCache: Theme? = null
-
-    @JsName("dialogDirect")
-    fun dialog() = dialogCache ?: dialog(this).also { dialogCache = it }
-    private var fieldCache: Theme? = null
-
-    @JsName("fieldDirect")
-    fun field() = fieldCache ?: field(this).also { fieldCache = it }
-    private var buttonCache: Theme? = null
-
-    @JsName("buttonDirect")
-    fun button() = buttonCache ?: button(this).also { buttonCache = it }
-    private var hoverCache: Theme? = null
-
-    @JsName("hoverDirect")
-    fun hover() = hoverCache ?: hover(this).also { hoverCache = it }
-    private var focusCache: Theme? = null
-
-    @JsName("focusDirect")
-    fun focus() = focusCache ?: focus(this).also { focusCache = it }
-    private var downCache: Theme? = null
-
-    @JsName("downDirect")
-    fun down() = downCache ?: down(this).also { downCache = it }
-    private var selectedCache: Theme? = null
-
-    @JsName("selectedDirect")
-    fun selected() = selectedCache ?: selected(this).also { selectedCache = it }
-    private var unselectedCache: Theme? = null
-
-    @JsName("unselectedDirect")
-    fun unselected() = unselectedCache ?: unselected(this).also { unselectedCache = it }
-    private var disabledCache: Theme? = null
-
-    @JsName("disabledDirect")
-    fun disabled() = disabledCache ?: disabled(this).also { disabledCache = it }
-    private var invalidCache: Theme? = null
-
-    @JsName("invalidDirect")
-    fun invalid() = invalidCache ?: invalid(this).also { invalidCache = it }
-
-    @JsName("barDirect")
-    inline fun bar() = bar(this)
-    private var importantCache: Theme? = null
-
-    @JsName("importantDirect")
-    fun important() = importantCache ?: important(this).also { importantCache = it }
-    private var criticalCache: Theme? = null
-
-    @JsName("criticalDirect")
-    fun critical() = criticalCache ?: critical(this).also { criticalCache = it }
-    private var navCache: Theme? = null
-
-    @JsName("navDirect")
-    fun nav() = navCache ?: nav(this).also { navCache = it }
-    private var warningCache: Theme? = null
-
-    @JsName("warningDirect")
-    fun warning() = warningCache ?: warning(this).also { warningCache = it }
-    private var dangerCache: Theme? = null
-
-    @JsName("dangerDirect")
-    fun danger() = dangerCache ?: danger(this).also { dangerCache = it }
-    private var affirmativeCache: Theme? = null
-
-    @JsName("affirmativeDirect")
-    fun affirmative() = affirmativeCache ?: affirmative(this).also { affirmativeCache = it }
+    private val themeCache = HashMap<Semantic, ThemeAndBack>()
+    operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {
+        derivations[semantic]?.invoke(this) ?: semantic.default(this)
+    }
 
     override fun hashCode(): Int = id.hashCode()
     override fun equals(other: Any?): Boolean {
         return other is Theme && this.id == other.id
     }
 
-    fun copy(
+    constructor(
         id: String,
-        title: FontAndStyle = this.title,
-        body: FontAndStyle = this.body,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
-        navSpacing: Dimension = this.navSpacing,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        background: Paint = this.background,
-        backdropFilters: List<BackdropFilter> = this.backdropFilters,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        card: ThemeDeriver = this.card,
-        field: ThemeDeriver = this.field,
-        button: ThemeDeriver = this.button,
-        hover: ThemeDeriver = this.hover,
-        focus: ThemeDeriver = this.focus,
-        dialog: ThemeDeriver = this.dialog,
-        down: ThemeDeriver = this.down,
-        unselected: ThemeDeriver = this.unselected,
-        selected: ThemeDeriver = this.selected,
-        disabled: ThemeDeriver = this.disabled,
-        mainContent: ThemeDeriver = this.mainContent,
-        bar: ThemeDeriver = this.bar,
-        nav: ThemeDeriver = this.nav,
-        important: ThemeDeriver = this.important,
-        critical: ThemeDeriver = this.critical,
-        warning: ThemeDeriver = this.warning,
-        danger: ThemeDeriver = this.danger,
-        affirmative: ThemeDeriver = this.affirmative,
-    ): Theme = Theme(
-        id = "${this.id}-$id",
-        title = title,
-        body = body,
+        body: FontAndStyle = FontAndStyle(systemDefaultFont),
+        title: FontAndStyle = FontAndStyle(systemDefaultFont),
+        elevation: Dimension = 1.px,
+        cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
+        spacing: Dimension = 1.rem,
+        navSpacing: Dimension = 0.rem,
+        foreground: Paint = Color.black,
+        iconOverride: Paint? = null,
+        outline: Paint = Color.black,
+        outlineWidth: Dimension = 0.px,
+        background: Paint = Color.white,
+        backdropFilters: List<BackdropFilter> = listOf(),
+        bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
+        dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
+        transitionDuration: Duration = 0.15.seconds,
+
+        derivedFrom: Theme? = null,
+        derivationId: String? = null,
+        revert: Theme? = null,
+
+        card: (Theme.() -> Theme?)? = null,
+        field: (Theme.() -> Theme?)? = null,
+        button: (Theme.() -> Theme?)? = null,
+        hover: (Theme.() -> Theme?)? = null,
+        focus: (Theme.() -> Theme?)? = null,
+        dialog: (Theme.() -> Theme?)? = null,
+        down: (Theme.() -> Theme?)? = null,
+        unselected: (Theme.() -> Theme?)? = null,
+        selected: (Theme.() -> Theme?)? = null,
+        disabled: (Theme.() -> Theme?)? = null,
+        mainContent: (Theme.() -> Theme?)? = null,
+        bar: (Theme.() -> Theme?)? = null,
+        nav: (Theme.() -> Theme?)? = null,
+        important: (Theme.() -> Theme?)? = null,
+        critical: (Theme.() -> Theme?)? = null,
+        warning: (Theme.() -> Theme?)? = null,
+        danger: (Theme.() -> Theme?)? = null,
+        affirmative: (Theme.() -> Theme?)? = null,
+    ) : this(
+        id = id,
+        font = body,
         elevation = elevation,
         cornerRadii = cornerRadii,
         spacing = spacing,
@@ -255,29 +331,40 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        card = card,
-        field = field,
-        button = button,
-        hover = hover,
-        focus = focus,
-        dialog = dialog,
-        down = down,
-        unselected = unselected,
-        selected = selected,
-        disabled = disabled,
-        mainContent = mainContent,
-        bar = bar,
-        nav = nav,
-        important = important,
-        critical = critical,
-        warning = warning,
-        danger = danger,
-        affirmative = affirmative,
+        derivedFrom = derivedFrom,
+        derivationId = derivationId,
+        revert = revert,
+        derivations = buildMap<Semantic, (Theme) -> ThemeAndBack> {
+            put(HeaderSemantic) {
+                it.copy(
+                    id = "hed",
+                    font = title,
+                ).withoutBack
+            }
+            card?.let { put(CardSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            field?.let { put(FieldSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            button?.let { put(ButtonSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            hover?.let { put(HoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            focus?.let { put(FocusSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            dialog?.let { put(DialogSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            down?.let { put(DownSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            unselected?.let { put(UnselectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            selected?.let { put(SelectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            disabled?.let { put(DisabledSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            mainContent?.let { put(MainContentSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            bar?.let { put(BarSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            nav?.let { put(NavSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            important?.let { put(ImportantSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            critical?.let { put(CriticalSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            warning?.let { put(WarningSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            danger?.let { put(DangerSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            affirmative?.let { put(AffirmativeSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+        }
     )
 
     fun copy(
-        title: FontAndStyle = this.title,
-        body: FontAndStyle = this.body,
+        id: String,
+        font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
@@ -291,12 +378,167 @@ class Theme(
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
+        revert: Boolean = false,
+        card: (Theme.() -> Theme?)? = null,
+        field: (Theme.() -> Theme?)? = null,
+        button: (Theme.() -> Theme?)? = null,
+        hover: (Theme.() -> Theme?)? = null,
+        focus: (Theme.() -> Theme?)? = null,
+        dialog: (Theme.() -> Theme?)? = null,
+        down: (Theme.() -> Theme?)? = null,
+        unselected: (Theme.() -> Theme?)? = null,
+        selected: (Theme.() -> Theme?)? = null,
+        disabled: (Theme.() -> Theme?)? = null,
+        mainContent: (Theme.() -> Theme?)? = null,
+        bar: (Theme.() -> Theme?)? = null,
+        nav: (Theme.() -> Theme?)? = null,
+        important: (Theme.() -> Theme?)? = null,
+        critical: (Theme.() -> Theme?)? = null,
+        warning: (Theme.() -> Theme?)? = null,
+        danger: (Theme.() -> Theme?)? = null,
+        affirmative: (Theme.() -> Theme?)? = null,
     ): Theme = Theme(
-        id = "cp${
+        id = "${this.id}-$id",
+        derivedFrom = this,
+        derivationId = id,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        navSpacing = navSpacing,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        backdropFilters = backdropFilters,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        revert = if (revert) this else this.revert,
+        derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
+            card?.let { put(CardSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            field?.let { put(FieldSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            button?.let { put(ButtonSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            hover?.let { put(HoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            focus?.let { put(FocusSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            dialog?.let { put(DialogSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            down?.let { put(DownSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            unselected?.let { put(UnselectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            selected?.let { put(SelectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            disabled?.let { put(DisabledSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            mainContent?.let { put(MainContentSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            bar?.let { put(BarSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            nav?.let { put(NavSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            important?.let { put(ImportantSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            critical?.let { put(CriticalSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            warning?.let { put(WarningSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            danger?.let { put(DangerSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            affirmative?.let { put(AffirmativeSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+        }
+    )
+
+    fun customize(
+        newId: String,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        navSpacing: Dimension = this.navSpacing,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        backdropFilters: List<BackdropFilter> = this.backdropFilters,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        revert: Boolean = false,
+        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf()
+    ): Theme = Theme(
+        id = newId,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        navSpacing = navSpacing,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        backdropFilters = backdropFilters,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        revert = if (revert) this else this.revert,
+        derivations = this.derivations + derivations
+    )
+
+    fun copy(
+        id: String,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        navSpacing: Dimension = this.navSpacing,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        backdropFilters: List<BackdropFilter> = this.backdropFilters,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        revert: Boolean = false,
+        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf()
+    ): Theme = Theme(
+        id = "${this.id}-$id",
+        derivedFrom = this,
+        derivationId = id,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        navSpacing = navSpacing,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        backdropFilters = backdropFilters,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        revert = if (revert) this else this.revert,
+        derivations = this.derivations + derivations
+    )
+
+    fun copy(
+        font: FontAndStyle = this.font,
+        title: FontAndStyle? = null,
+        body: FontAndStyle? = null,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        navSpacing: Dimension = this.navSpacing,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        backdropFilters: List<BackdropFilter> = this.backdropFilters,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        revert: Boolean = false,
+    ): Theme {
+        val addedId = "cp${
             run {
                 var out = 0
-                out = out * 31 + title.hashCode()
-                out = out * 31 + body.hashCode()
+                out = out * 31 + font.hashCode()
                 out = out * 31 + elevation.hashCode()
                 out = out * 31 + cornerRadii.hashCode()
                 out = out * 31 + spacing.hashCode()
@@ -311,45 +553,98 @@ class Theme(
                     append((out.mod(64)).let { shortCodeChars[it] })
                 }
             }
-        }",
-        title = title,
-        body = body,
-        elevation = elevation,
-        cornerRadii = cornerRadii,
-        spacing = spacing,
-        navSpacing = navSpacing,
-        foreground = foreground,
-        iconOverride = iconOverride,
-        outline = outline,
-        outlineWidth = outlineWidth,
-        background = background,
-        backdropFilters = backdropFilters,
-        bodyTransitions = bodyTransitions,
-        dialogTransitions = dialogTransitions,
-        transitionDuration = transitionDuration,
-        card = card,
-        field = field,
-        button = button,
-        hover = hover,
-        focus = focus,
-        dialog = dialog,
-        down = down,
-        unselected = unselected,
-        selected = selected,
-        disabled = disabled,
-        mainContent = mainContent,
-        bar = bar,
-        nav = nav,
-        important = important,
-        critical = critical,
-        warning = warning,
-        danger = danger,
-        affirmative = affirmative,
-    )
+        }"
+        return Theme(
+            id = "${this.id}-$addedId",
+            derivedFrom = this,
+            derivationId = addedId,
+            font = body ?: font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            spacing = spacing,
+            navSpacing = navSpacing,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            background = background,
+            backdropFilters = backdropFilters,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            revert = if (revert) this else this.revert,
+            derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
+                title?.let { title ->
+                    put(HeaderSemantic) {
+                        it.copy(
+                            id = "hed",
+                            font = title,
+                        ).withoutBack
+                    }
+                }
+            },
+        )
+    }
 
     companion object {
         val placeholder = Theme("placeholder")
         val shortCodeChars = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm-_"
     }
+
+    override fun toString(): String = id
 }
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.card() = this[CardSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.field() = this[FieldSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.button() = this[ButtonSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.hover() = this[HoverSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.focus() = this[FocusSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.dialog() = this[DialogSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.down() = this[DownSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.unselected() = this[UnselectedSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.selected() = this[SelectedSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.disabled() = this[DisabledSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.mainContent() = this[MainContentSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.bar() = this[BarSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.nav() = this[NavSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.important() = this[ImportantSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.critical() = this[CriticalSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.warning() = this[WarningSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.danger() = this[DangerSemantic].theme
+
+@Deprecated("Use the new theme derivation system")
+fun Theme.affirmative() = this[AffirmativeSemantic].theme
 

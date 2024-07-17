@@ -8,7 +8,10 @@ import com.lightningkite.kiteui.views.*
 
 
 
-actual abstract class TextView actual constructor(context: RContext) : RView(context) {
+actual class TextView actual constructor(context: RContext) : RView(context) {
+    init {
+        native.tag = "p"
+    }
     actual inline var content: String
         get() = native.content ?: ""
         set(value) {
@@ -22,11 +25,6 @@ actual abstract class TextView actual constructor(context: RContext) : RView(con
                 Align.End -> "end"
                 Align.Stretch -> "justify"
             }
-        }
-    actual var textSize: Dimension = 1.rem  // Minor: real retrieval
-        set(value) {
-            field = value
-            native.style.fontSize = value.value
         }
     actual var ellipsis: Boolean = true
         set(value) {
@@ -50,20 +48,3 @@ actual abstract class TextView actual constructor(context: RContext) : RView(con
         }
 }
 
-actual class HeaderView actual constructor(context: RContext, level: Int) : TextView(context) {
-    init {
-        native.tag = "h${level}"
-        native.classes.add("title")
-    }
-}
-actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
-    init {
-        native.tag = "p"
-    }
-}
-actual class SubTextView actual constructor(context: RContext) : TextView(context) {
-    init {
-        native.tag = "span"
-        native.classes.add("subtext")
-    }
-}

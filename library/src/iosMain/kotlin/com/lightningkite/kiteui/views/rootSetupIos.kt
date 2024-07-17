@@ -4,6 +4,8 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.models.bar
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.invoke
@@ -36,8 +38,7 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
         }
         init {
             beforeNextElementSetup {
-                useBackground = UseBackground.Yes
-                ::themeChoice { ThemeChoice.Set(themeCalculation()) }
+                ::themeChoice { ThemeDerivation.Set(themeCalculation()) }
             }
         }
     }
@@ -52,7 +53,7 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
     bottom.setActive(true)
 
     CalculationContext.NeverEnds.reactiveScope {
-        view.backgroundColor = themeCalculation().let { it.bar() ?: it }.background.closestColor().toUiColor()
+        view.backgroundColor = themeCalculation().let { it.bar() }.background.closestColor().toUiColor()
     }
 
     ExternalServices.rootView = subview

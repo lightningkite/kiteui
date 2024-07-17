@@ -9,7 +9,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
-    init { useBackground = UseBackground.Yes }
     override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean
         get() = native.enabled
@@ -20,16 +19,18 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
     actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
-        useBackground = UseBackground.Yes
-        themeChoice = ThemeChoice.Derive {
+        themeChoice = ThemeDerivation {
             it.copy(
+                id = "rad",
                 outline = it.foreground,
                 outlineWidth = maxOf(it.outlineWidth, 1.dp),
                 spacing = it.spacing / 4,
                 cornerRadii = CornerRadii.RatioOfSize(0.5f),
-                selected = { this },
-                unselected = { this },
-            )
+                derivations = mapOf(
+                    SelectedSemantic to { it.withBack },
+                    UnselectedSemantic to { it.withBack },
+                )
+            ).withBack
         }
         icon(Icon.done, "") {
             ::visible.invoke { checked.await() }
@@ -46,21 +47,13 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         }
     }
 
-    override fun getStateThemeChoice(): ThemeChoice? {
-        return if (_checked.value) {
-            when {
-                !enabled -> ThemeChoice.Derive { it.selected().disabled() }
-                native.highlighted -> ThemeChoice.Derive { it.selected().down() }
-                native.focused -> ThemeChoice.Derive { it.selected().hover() }
-                else -> ThemeChoice.Derive { it.selected() }
-            }
-        } else {
-            when {
-                !enabled -> ThemeChoice.Derive { it.unselected().disabled() }
-                native.highlighted -> ThemeChoice.Derive { it.unselected().down() }
-                native.focused -> ThemeChoice.Derive { it.unselected().hover() }
-                else -> ThemeChoice.Derive { it.unselected() }
-            }
-        }
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(_checked.value) t = t[SelectedSemantic]
+        else t = t[UnselectedSemantic]
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }

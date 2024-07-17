@@ -5,12 +5,10 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.viewDebugTarget
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
-    var outerElement: FutureElement = native
-    var styleElement: FutureElement = native
-    var innerElement: FutureElement = native
 
     protected actual override fun opacitySet(value: Double) {
         native.style.opacity = value.toString()
@@ -44,10 +42,8 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
-        if(value)
-            native.classes.add("noInteraction")
-        else
-            native.classes.remove("noInteraction")
+        if(value) native.classes.add("noInteraction")
+        else native.classes.remove("noInteraction")
     }
 
     protected actual override fun forcePaddingSet(value: Boolean?) {
@@ -86,7 +82,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         else native.classes.remove("transition")
 
         native.classes.removeAll { it.startsWith("t-") }
-        native.classes.add(context.kiteUiCss.themeInteractive(theme))
+        native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
     }
 
     actual override fun applyForeground(theme: Theme) {

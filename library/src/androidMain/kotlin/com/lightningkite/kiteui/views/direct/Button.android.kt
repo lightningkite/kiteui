@@ -5,7 +5,9 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
@@ -50,11 +52,12 @@ actual class Button actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

@@ -2,8 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
@@ -50,11 +52,12 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

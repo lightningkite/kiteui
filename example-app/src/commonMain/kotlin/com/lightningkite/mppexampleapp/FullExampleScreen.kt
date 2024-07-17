@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.debugNext
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.setTheme
 
 @Routable("full-screen")
 class FullExampleScreen: Screen, UseFullScreen {
@@ -20,7 +19,7 @@ class FullExampleScreen: Screen, UseFullScreen {
                 text { content = "Go back to root" }
                 to = { RootScreen }
             }
-        } in setTheme { MaterialLikeTheme.randomDark() }
+        }
     }
 }
 interface UseFullScreen

@@ -55,7 +55,7 @@ object TextElementScreen : DocScreen {
                 """.trimIndent()
             ) {
                 col {
-                    tweakTheme { it.copy(body = it.body.copy(bold = true)) } - text("Bold Text")
+                    tweakTheme { it.copy(body = it.font.copy(bold = true)) } - text("Bold Text")
                     tweakTheme { it.copy(foreground = Color.red) } - text("Red Text")
                 }
             }
@@ -87,7 +87,7 @@ object TextElementScreen : DocScreen {
             ) {
                 col {
                     for(weight in 900 downTo 100 step 100) {
-                        tweakTheme { it.copy(body = it.body.copy(weight = weight)) } - text("Weight $weight")
+                        tweakTheme { it.copy(font = it.font.copy(weight = weight)) } - text("Weight $weight")
                     }
                 }
             }

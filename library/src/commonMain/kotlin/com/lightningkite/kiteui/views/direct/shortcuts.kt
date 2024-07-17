@@ -2,8 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
@@ -15,39 +14,66 @@ import kotlin.contracts.contract
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h1(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.subtext(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(1, setup)
+    return text {
+        themeChoice += SubtextSemantic
+        setup(this)
+    }
 }
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h2(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.h1(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(2, setup)
+    return text {
+        themeChoice += H1Semantic
+        setup(this)
+    }
 }
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h3(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.h2(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(3, setup)
+    return text {
+        themeChoice += H2Semantic
+        setup(this)
+    }
 }
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h4(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.h3(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(4, setup)
+    return text {
+        themeChoice += H3Semantic
+        setup(this)
+    }
 }
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h5(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.h4(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(5, setup)
+    return text {
+        themeChoice += H4Semantic
+        setup(this)
+    }
 }
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h6(crossinline setup: HeaderView.()->Unit = {}) {
+inline fun ViewWriter.h5(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    header(6, setup)
+    return text {
+        themeChoice += H5Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h6(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += H6Semantic
+        setup(this)
+    }
 }
 @ViewDsl
 fun ViewWriter.h1(text: String) = h1 { content = text }

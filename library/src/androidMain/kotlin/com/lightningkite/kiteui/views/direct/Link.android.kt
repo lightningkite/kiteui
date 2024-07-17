@@ -2,7 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
@@ -42,12 +44,13 @@ actual class Link actual constructor(context: RContext): RView(context) {
     actual var onNavigator: ScreenNavigator = mainScreenNavigator
     actual var resetsStack: Boolean = false
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }
 

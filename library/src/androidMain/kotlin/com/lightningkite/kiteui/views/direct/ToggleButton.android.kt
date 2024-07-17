@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
@@ -29,9 +29,14 @@ actual class ToggleButton actual constructor(context: RContext): RView(context) 
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = (if(checkedProp.value) ThemeChoice.Derive { it.selected() } else ThemeChoice.Derive { it.unselected() }) +
-            if(enabled) null else ThemeChoice.Derive { it.disabled() }
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(checkedProp.value) t = t[SelectedSemantic]
+        else t = t[UnselectedSemantic]
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

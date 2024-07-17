@@ -181,4 +181,23 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
             }
         }
     actual var range: ClosedRange<Double>? = null
+
+    actual var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!textField.enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
+    }
 }

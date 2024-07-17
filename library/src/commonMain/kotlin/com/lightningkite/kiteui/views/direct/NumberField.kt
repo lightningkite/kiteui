@@ -16,6 +16,7 @@ import kotlin.contracts.*
 
 expect class NumberField(context: RContext) : RView {
 
+    var enabled: Boolean
     val content: ImmediateWritable<Double?>
     var keyboardHints: KeyboardHints
     var action: Action?

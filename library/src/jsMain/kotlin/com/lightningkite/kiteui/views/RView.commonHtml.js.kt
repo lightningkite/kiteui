@@ -188,8 +188,8 @@ actual class FutureElement actual constructor() {
                 override fun hasNext(): Boolean = index < list.length
                 lateinit var last: String
                 override fun next(): String {
-                    index++
                     last = list.item(index) ?: ""
+                    index++
                     return last
                 }
 

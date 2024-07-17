@@ -12,18 +12,11 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect abstract class TextView(context: RContext) : RView {
+expect class TextView(context: RContext) : RView {
 
     var content: String
     var align: Align
-    var textSize: Dimension
     var ellipsis: Boolean
     var wraps: Boolean
     var wordBreak: WordBreak
-}
-expect class HeaderView(context: RContext, level: Int) : TextView {
-}
-expect class BodyTextView(context: RContext) : TextView {
-}
-expect class SubTextView(context: RContext) : TextView {
 }

@@ -37,9 +37,7 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         native.appendChild(input)
     }
 
-    init {
-        useBackground = UseBackground.Yes
-    }
+    override fun hasAlternateBackedStates(): Boolean = true
 
     actual val checked: ImmediateWritable<Boolean> = input.vprop(
         "input",

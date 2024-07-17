@@ -119,6 +119,10 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
                 native.attributes.maxDouble = null
             }
         }
+
+    actual var enabled: Boolean
+        get() = !(native.attributes.disabled ?: false)
+        set(value) { native.attributes.disabled = !value }
 }
 
 expect val NumberField.selectionStart: Int?

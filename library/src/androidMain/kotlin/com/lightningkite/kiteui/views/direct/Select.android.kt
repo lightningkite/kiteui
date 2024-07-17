@@ -13,8 +13,7 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.dp
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
@@ -35,9 +34,11 @@ actual class Select actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {

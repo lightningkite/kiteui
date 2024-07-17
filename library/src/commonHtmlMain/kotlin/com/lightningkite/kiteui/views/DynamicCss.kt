@@ -11,6 +11,6 @@ expect class DynamicCss(basePath: String) {
     fun tempStyle(selector: String, map: Map<String, String>): () -> Unit
     fun styles(
         mediaQuery: String? = null,
-        styles: List<Pair<String, Map<String, String>>>
+        styles: Map<String, Map<String, String>>
     )
 }

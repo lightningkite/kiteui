@@ -1,11 +1,9 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.PerformanceInfo
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
     override fun opacitySet(value: Double)
@@ -94,69 +92,44 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     // Theming
 
-    var useBackground: UseBackground = UseBackground.No
+    private val id = Random.nextInt()
+    var themeChoice: ThemeDerivation = ThemeDerivation.none
         set(value) {
             field = value
             refreshTheming()
         }
-    private var actuallyUseBackground: Boolean = false
-    var themeChoice: ThemeChoice? = null
-        set(value) {
-            field = value
-            refreshTheming()
-        }
-    var theme: Theme = Theme.placeholder
+    val theme: Theme get() = themeAndBack.theme
+    var themeAndBack: ThemeAndBack = Theme.placeholder.withBack
         private set(value) {
             if (value != field) {
                 field = value
-                performanceApplyTheme_applyElevation { applyElevation(if (actuallyUseBackground) theme.elevation else 0.px) }
+                performanceApplyTheme_applyElevation { applyElevation(if (value.useBackground) value.theme.elevation else 0.px) }
                 performanceApplyTheme_applyPadding {
                     applyPadding(
-                        if (forcePadding ?: (useBackground != UseBackground.No)) (spacing
-                            ?: if (useNavSpacing) theme.navSpacing else theme.spacing) else null
+                        if (forcePadding ?: (value.useBackground || hasAlternateBackedStates())) (spacing
+                            ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
                     )
                 }
-                performanceApplyTheme_applyForeground { applyForeground(value) }
-                performanceApplyTheme_applyBackground { applyBackground(value, actuallyUseBackground) }
+                performanceApplyTheme_applyForeground { applyForeground(value.theme) }
+                performanceApplyTheme_applyBackground { applyBackground(value.theme, value.useBackground) }
                 for (child in internalChildren) {
-                    if (child.themeChoice !is ThemeChoice.Set)
-                        child.refreshTheming()
+//                    if (child.themeChoice !is ThemeChoice.Set)
+                    child.refreshTheming()
                 }
             }
         }
 
     protected val parentSpacing: Dimension
         get() = (parent?.spacing
-            ?: (if (parent?.useNavSpacing == true) parent?.theme?.navSpacing else parent?.theme?.spacing) ?: 0.px)
+            ?: (if (parent?.useNavSpacing == true) parent?.themeAndBack?.theme?.navSpacing else parent?.themeAndBack?.theme?.spacing) ?: 0.px)
     protected var fullyStarted = false
-    open fun getStateThemeChoice(): ThemeChoice? = null
+    open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
+    open fun hasAlternateBackedStates(): Boolean = false
     protected fun refreshTheming() {
         if (!fullyStarted) return
         if (parent?.fullyStarted == false) return
         performanceRefreshTheme {
-            val stateThemeChoice = getStateThemeChoice()
-            var changed = true
-            val futureTheme = when (val t = themeChoice + stateThemeChoice) {
-                is ThemeChoice.Derive -> {
-                    val p = parent?.theme ?: Theme.placeholder
-                    t.derivation(p) ?: run {
-                        changed = false
-                        p
-                    }
-                }
-
-                is ThemeChoice.Set -> t.theme
-                null -> {
-                    changed = false
-                    parent?.theme ?: Theme.placeholder
-                }
-            }
-            actuallyUseBackground = when (useBackground) {
-                UseBackground.No -> false
-                UseBackground.Yes -> true
-                UseBackground.IfChanged -> changed
-            }
-            theme = futureTheme
+            themeAndBack = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
         }
     }
 

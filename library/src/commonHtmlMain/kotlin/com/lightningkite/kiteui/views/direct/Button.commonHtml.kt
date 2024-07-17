@@ -11,7 +11,7 @@ actual class Button actual constructor(context: RContext): RView(context) {
         native.classes.add("clickable")
     }
 
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
+    override fun hasAlternateBackedStates(): Boolean = true
 
     actual fun onClick(action: suspend () -> Unit): Unit {
         var virtualDisable: Boolean = false

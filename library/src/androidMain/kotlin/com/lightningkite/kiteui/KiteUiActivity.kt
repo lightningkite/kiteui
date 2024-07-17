@@ -12,9 +12,7 @@ import android.view.ViewTreeObserver
 import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.WindowStatistics
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
@@ -22,7 +20,7 @@ import com.lightningkite.kiteui.views.*
 import timber.log.Timber
 
 abstract class KiteUiActivity : Activity() {
-    open val theme: suspend () -> Theme get() = { Theme() }
+    open val theme: suspend () -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
     abstract val mainNavigator : ScreenNavigator
@@ -34,8 +32,7 @@ abstract class KiteUiActivity : Activity() {
         }
         init {
             beforeNextElementSetup {
-                useBackground = UseBackground.Yes
-                ::themeChoice { ThemeChoice.Set(theme()) }
+                ::themeChoice { ThemeDerivation.Set(theme()) }
             }
         }
     }
@@ -53,7 +50,7 @@ abstract class KiteUiActivity : Activity() {
         Timber.plant(Timber.DebugTree())
 
         CalculationContext.NeverEnds.reactiveScope {
-            window?.statusBarColor = theme().let { it.bar() ?: it }.background.closestColor().darken(0.3f).toInt()
+            window?.statusBarColor = theme().let { it.bar() }.background.closestColor().darken(0.3f).toInt()
         }
 
         savedInstanceState?.getStringArray("navStack")?.let {

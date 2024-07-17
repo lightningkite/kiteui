@@ -29,12 +29,13 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.body.font,
-                theme.body.weight,
-                theme.body.italic
+                theme.font.font,
+                theme.font.weight,
+                theme.font.italic
             )
         )
-        native.isAllCaps = theme.body.allCaps
+        native.isAllCaps = theme.font.allCaps
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
     actual var enabled: Boolean
         get() = native.isEnabled
@@ -50,6 +51,13 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
         set(value) {
             native.keyboardHints = value
         }
+
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
+
     var action: Action? = null
         set(value) {
             field = value

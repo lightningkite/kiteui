@@ -38,7 +38,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
 
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
-        fontAndStyle = theme.body
+        fontAndStyle = theme.font
     }
 
     fun updateFont() {

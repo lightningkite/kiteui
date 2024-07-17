@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
@@ -11,7 +11,6 @@ import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class MenuButton actual constructor(context: RContext): RView(context) {
-    init { if(useBackground == UseBackground.No) useBackground = UseBackground.IfChanged }
     override val native = FrameLayoutButton(this)
 
     actual fun opensMenu(createMenu: ViewWriter.() -> Unit) {
@@ -51,10 +50,12 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
     }
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !enabled -> ThemeChoice.Derive { it.disabled() }
-        native.highlighted -> ThemeChoice.Derive { it.down() }
-        native.focused -> ThemeChoice.Derive { it.hover() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }

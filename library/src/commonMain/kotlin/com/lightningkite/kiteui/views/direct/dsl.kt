@@ -241,26 +241,12 @@ inline fun ViewWriter.textField(setup: TextField.() -> Unit = {}): TextField {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(perfTextField { TextField(context) }, setup)
 }
-val perfHeaderView = PerformanceInfo("HeaderView")
+val perfBodyTextView = PerformanceInfo("TextView")
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.header(level: Int, setup: HeaderView.() -> Unit = {}): HeaderView {
+inline fun ViewWriter.text(setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(perfHeaderView { HeaderView(context, level ) }, setup)
-}
-val perfBodyTextView = PerformanceInfo("BodyTextView")
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
-inline fun ViewWriter.text(setup: BodyTextView.() -> Unit = {}): BodyTextView {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(perfBodyTextView { BodyTextView(context) }, setup)
-}
-val perfSubTextView = PerformanceInfo("SubTextView")
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
-inline fun ViewWriter.subtext(setup: SubTextView.() -> Unit = {}): SubTextView {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(perfSubTextView { SubTextView(context) }, setup)
+    return write(perfBodyTextView { TextView(context) }, setup)
 }
 val perfToggleButton = PerformanceInfo("ToggleButton")
 @OptIn(ExperimentalContracts::class)

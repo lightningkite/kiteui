@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.WindowInfo
@@ -49,8 +50,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         with(writer) {
             stack {
                 native.onElement { existingElement = it }
-                themeChoice = ThemeChoice.Derive { it.dialog() }
-                useBackground = UseBackground.Yes
+                themeChoice = DialogSemantic
                 native.onElement {
                     it as HTMLElement
                     it.style.position = "absolute"

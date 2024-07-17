@@ -95,9 +95,8 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
                 exists = false
                 ::exists { count() != null }
                 space(0.01)
-                centered - text {
+                centered - subtext {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
-                    textSize = 0.75.rem
                 }
             }
         }
@@ -210,9 +209,8 @@ fun RView.navElementIconAndCount(navElement: NavElement) {
                 exists = false
                 ::exists { count() != null }
                 space(0.01)
-                centered - text {
+                centered - subtext {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
-                    textSize = 0.75.rem
                 }
             }
         }

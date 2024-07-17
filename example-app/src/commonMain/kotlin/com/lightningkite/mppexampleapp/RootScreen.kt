@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
+import com.lightningkite.kiteui.views.debugNext
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.minus
@@ -46,6 +47,9 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                beforeNextElementSetup {
+                    viewDebugTarget = this
+                }
                 linkScreen { ExperimentScreen }
                 linkScreen { AudioScreen }
                 linkScreen { HorizontalRecyclerViewScreen }
@@ -91,6 +95,8 @@ object RootScreen : Screen {
                     text { content = "GC" }
                     onClick { gc() }
                 }
+
+                println("Debug is ${viewDebugTarget}")
 
                 calculationContext.onRemove {
                     println("Left root screen")

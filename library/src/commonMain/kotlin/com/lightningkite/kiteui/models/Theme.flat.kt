@@ -24,7 +24,7 @@ fun Theme.Companion.flat(
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
-    important = themeDeriver {
+    important = {
         val existing = background.closestColor().toHSP()
         if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
             val b = existing.copy(brightness = 0.5f).toRGB()
@@ -45,15 +45,15 @@ fun Theme.Companion.flat(
             )
         }
     },
-    dialog = themeDeriver { card() },
-    card = themeDeriver {
+    dialog = { card() },
+    card = {
         copy(id = "crd", background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
         }.toRGB(), outline = this.outline.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
         }.toRGB() )
     },
-    unselected = themeDeriver {
+    unselected = {
         val existing = background.closestColor().toHSP()
         if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
             null
@@ -61,25 +61,26 @@ fun Theme.Companion.flat(
             copy(
                 id = "uns",
                 background = background.closestColor().copy(alpha = 0f),
+                foreground = outline.closestColor(),
                 outlineWidth = 1.dp
             )
         }
     },
-    selected = themeDeriver {
+    selected = {
         copy(id = "sel", background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep * 2)
         }.toRGB(), outline = this.outline.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep * 2)
         }.toRGB(), outlineWidth = outlineWidth * 2)
     },
-    hover = themeDeriver {
+    hover = {
         copy(id = "hov", background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
         }.toRGB(), outline = this.outline.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
         }.toRGB(), outlineWidth = outlineWidth * 2)
     },
-    focus = themeDeriver {
+    focus = {
         val o = outline.closestColor()
         val b = background.closestColor()
         if(b.alpha == 0f || abs(o.perceivedBrightness - b.perceivedBrightness) > 0.4) {
@@ -95,7 +96,7 @@ fun Theme.Companion.flat(
             )
         }
     },
-    down = themeDeriver {
+    down = {
         copy(id = "dwn", background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep * 3)
         }.toRGB(), outline = this.outline.closestColor().toHSP().let {
@@ -103,16 +104,16 @@ fun Theme.Companion.flat(
         }.toRGB(), outlineWidth = outlineWidth * 2)
     },
 
-    field = themeDeriver {
+    field = {
         copy(
             id = "fld",
             outlineWidth = 1.px,
             background = background.closestColor(),
         )
     },
-    bar = themeDeriver { null },
-    nav = themeDeriver { card() },
-    mainContent = themeDeriver {
+    bar = { null },
+    nav = { card() },
+    mainContent = {
         copy(
             id = "con",
             background = RadialGradient(

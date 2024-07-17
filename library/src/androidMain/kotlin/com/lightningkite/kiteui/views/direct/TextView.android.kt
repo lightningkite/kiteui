@@ -16,9 +16,9 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
-actual abstract class TextView actual constructor(context: RContext) :
+actual class TextView actual constructor(context: RContext) :
     RView(context) {
-    override abstract val native: android.widget.TextView
+    override val native: android.widget.TextView = android.widget.TextView(context.activity)
     actual var content: String
         get() {
             return native.text.toString()
@@ -50,13 +50,6 @@ actual abstract class TextView actual constructor(context: RContext) :
                 }
             }
         }
-    actual var textSize: Dimension
-        get() {
-            return Dimension(native.textSize)
-        }
-        set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
-        }
 
     actual var ellipsis: Boolean = true
         set(value) {
@@ -78,26 +71,15 @@ actual abstract class TextView actual constructor(context: RContext) :
                 }
             }
         }
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        native.setTextColor(theme.foreground.colorInt())
+        native.setTypeface(theme.font.typeface(context.activity))
+        native.isAllCaps = theme.font.allCaps
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
+    }
 }
 
-object TextSizes {
-    val h1: Float get() = 2.rem.value
-    val h2: Float get() = 1.6.rem.value
-    val h3: Float get() = 1.4.rem.value
-    val h4: Float get() = 1.3.rem.value
-    val h5: Float get() = 1.2.rem.value
-    val h6: Float get() = 1.1.rem.value
-    val h = floatArrayOf(
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-    )
-    val body: Float get() = 1.rem.value
-    val subtext: Float get() = 0.8.rem.value
-}
 
 private val typefaceCache = HashMap<FontAndStyle, Typeface>()
 fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
@@ -107,50 +89,4 @@ fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
         this.weight,
         this.italic
     )
-}
-
-actual class HeaderView actual constructor(context: RContext, level: Int) : TextView(context) {
-    override val native = android.widget.TextView(context.activity).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.h[level - 1])
-    }
-
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.setTextColor(theme.foreground.colorInt())
-        native.setTypeface(theme.title.typeface(context.activity))
-        native.isAllCaps = theme.title.allCaps
-    }
-}
-
-actual class BodyTextView actual constructor(context: RContext) : TextView(context) {
-    override val native = android.widget.TextView(context.activity).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.body)
-    }
-
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.setTextColor(theme.foreground.colorInt())
-        native.setTypeface(theme.body.typeface(context.activity))
-        native.isAllCaps = theme.body.allCaps
-    }
-}
-
-actual class SubTextView actual constructor(context: RContext) : TextView(context) {
-    override val native = android.widget.TextView(context.activity).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, TextSizes.subtext)
-    }
-
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.setTextColor(theme.foreground.colorInt())
-        native.setTypeface(
-            TypefaceCompat.create(
-                native.context,
-                theme.body.font,
-                theme.body.weight,
-                theme.body.italic
-            )
-        )
-        native.isAllCaps = theme.body.allCaps
-    }
 }

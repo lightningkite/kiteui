@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
@@ -78,10 +78,12 @@ actual class Select actual constructor(context: RContext): RView(context) {
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-    override fun getStateThemeChoice(): ThemeChoice? = when {
-        !textField.enabled -> ThemeChoice.Derive { it.disabled() }
-        textField.highlighted -> ThemeChoice.Derive { it.down() }
-        textField.focused -> ThemeChoice.Derive { it.hover() }
-        else -> null
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
     }
 }

@@ -47,19 +47,32 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         }
     }
 
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
+        }
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
+
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,
-                theme.body.font,
-                theme.body.weight,
-                theme.body.italic
+                theme.font.font,
+                theme.font.weight,
+                theme.font.italic
             )
         )
-        native.isAllCaps = theme.body.allCaps
+        native.isAllCaps = theme.font.allCaps
     }
     actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()
     actual var keyboardHints: KeyboardHints
