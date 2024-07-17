@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.dom.HTMLElement
 import com.lightningkite.kiteui.dom.CSSStyleDeclaration
 import com.lightningkite.kiteui.models.Align
@@ -492,10 +493,16 @@ class RecyclerController2(
     var suppressFakeScrollEnd = false
     var suppressTrueScrollEnd = false
     var printing = false
+        var startupTime: Double = 0.0
 
     init {
         contentHolder.onscroll = event@{ ev ->
             if (!ready) return@event Unit
+            if (clockMillis() < startupTime + 200) {
+                // Safari... my old nemesis
+                contentHolder.scrollStart = _viewportOffsetField.toDouble()
+                return@event Unit
+            }
             if (suppressTrueScroll) {
                 suppressTrueScroll = false
                 suppressTrueScrollEnd = true
@@ -585,6 +592,7 @@ class RecyclerController2(
                 spacing = window.getComputedStyle(root).columnGap.removeSuffix("px").toDouble().toInt()
                 padding = window.getComputedStyle(root).paddingTop.removeSuffix("px").toDouble().toInt()
                 ready = true
+                startupTime = clockMillis()
                 populate()
                 nonEmergencyEdges()
             }
