@@ -932,6 +932,18 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "padding" to "var(--spacing, 0px)",
             )
         )
+        dynamicCss.style(".dismissBackground", mapOf(
+            "border-radius" to "0",
+            "outline-width" to "0",
+            "background-color" to "color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent)"
+        ))
+        dynamicCss.style(".icon", mapOf(
+            "color" to "var(--icon-color, black)"
+        ))
+        dynamicCss.style(".useNavSpacing", mapOf(
+            "--spacing" to "var(--navSpacing, 0px)",
+            "gap" to "var(--spacing, 0.0)",
+        ))
     }
 
     private val transitionHandled = HashSet<String>()
@@ -1067,21 +1079,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ) to mapOf(
                 "--parentSpacing" to theme.spacing.value,
             ),
-            sel(".useNavSpacing") to mapOf(
-                "--spacing" to theme.navSpacing.value,
-                "gap" to "var(--spacing, 0.0)",
-            ),
-            sel(
-                ".useNavSpacing > *",
-            ) to mapOf(
+            sel(".useNavSpacing > *",) to mapOf(
                 "--parentSpacing" to theme.navSpacing.value,
             ),
-            sel(".mightTransition", ".transition", ".swapImage") to mapOf(
-                "border-radius" to theme.cornerRadii.toRawCornerRadius(),
-            ),
-            sel(".icon") to mapOf(
-                "color" to theme.icon.toCss()
-            ),
+
             (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to (when (val it =
                 theme.background) {
                 is Color -> mapOf(
@@ -1092,9 +1093,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 is LinearGradient -> mapOf(
                     "background-color" to it.closestColor().toCss(),
                     "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
-                        joinGradientStops(
-                            it.stops
-                        )
+                        joinGradientStops(it.stops)
                     })",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
@@ -1104,8 +1103,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
-            } + (if (theme.backdropFilters.isNotEmpty()) mapOf(
-                "backdrop-filter" to theme.backdropFilters.joinToString(" ") { it.toCss() }) else emptyMap())),
+            }),
 
             (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to mapOf(
                 "outline-width" to theme.outlineWidth.value,
@@ -1115,7 +1113,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ),
             sel("") to mapOf(
                 "color" to theme.foreground.toCss(),
+                "--icon-color" to theme.icon.toCss(),
                 "--spacing" to theme.spacing.value,
+                "--navSpacing" to theme.navSpacing.value,
                 "gap" to "var(--spacing, 0.0)",
                 "font-size" to theme.font.size.value,
                 "font-family" to dynamicCss.font(theme.font.font),
@@ -1127,6 +1127,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "outline-color" to theme.outline.toCss(),
                 "transition-duration" to theme.transitionDuration.toCss(),
                 "--transition-duration" to theme.transitionDuration.toCss(),
+                "--nearest-background-color" to theme.background.closestColor().toCss(),
+                "border-radius" to theme.cornerRadii.toRawCornerRadius(),
             ) + when (val it = theme.foreground) {
                 is Color -> mapOf("color" to it.toCss())
                 is LinearGradient, is RadialGradient -> mapOf(
@@ -1134,27 +1136,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "background" to "-webkit-${it.toCss()}",
                     "-webkit-background-clip" to "text",
                     "-webkit-text-fill-color" to "transparent",
-                )
-            },
-            sel(".dismissBackground") to mapOf(
-                "border-radius" to "0",
-                "outline-width" to "0",
-                "backdrop-filter" to "blur(5px)",
-                "-webkit-backdrop-filter" to "blur(5px)",
-            ) + when (val it = theme.background.darken(0.5f).applyAlpha(0.5f)) {
-                is Color -> mapOf("background-color" to it.toCss())
-                is LinearGradient -> mapOf(
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
-                        joinGradientStops(
-                            it.stops
-                        )
-                    })",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-
-                is RadialGradient -> mapOf(
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
             }
         )

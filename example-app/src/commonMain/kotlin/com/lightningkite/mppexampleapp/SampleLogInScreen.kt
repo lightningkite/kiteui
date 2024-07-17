@@ -27,14 +27,7 @@ object SampleLogInScreen : Screen {
             }
             padded - scrolls - col {
                 expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - themeFromLast {
-                    it.copy(
-                        id = "orange-test",
-                        background = Color.orange.withAlpha(0.25f),
-                        backdropFilters = listOf(BackdropFilter.Blur(1.rem)),
-                        card = { it }
-                    )
-                } - col {
+                centered - sizeConstraints(maxWidth = 50.rem) - col {
                     h1 { content = "My App" }
                     label {
                         content = "Email"
