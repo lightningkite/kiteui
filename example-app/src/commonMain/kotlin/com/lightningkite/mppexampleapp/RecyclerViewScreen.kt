@@ -66,7 +66,7 @@ object RecyclerViewScreen : Screen {
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
-                                    scrollIntoView(null, Align.Start, true)
+//                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }

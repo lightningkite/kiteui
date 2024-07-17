@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.clockMillis
+import com.lightningkite.kiteui.debugger
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
@@ -10,15 +13,19 @@ import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {
     private var controller: RecyclerController2? = null
-    private var onController = ArrayList<(RecyclerController2)->Unit>()
-    private fun onController(action: (RecyclerController2)->Unit) {
+    private var onController = ArrayList<(RecyclerController2) -> Unit>()
+    private fun onController(action: (RecyclerController2) -> Unit) {
         controller?.let(action) ?: onController.add(action)
     }
+
     private val newViews = NewViewWriter(context)
+
     init {
         native.tag = "div"
         native.classes.add("recyclerView")
@@ -60,7 +67,8 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 },
                 update = { element, value ->
                     @Suppress("UNCHECKED_CAST")
-                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value = value
+                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value =
+                        value
                 },
                 shutdown = { element ->
                     removeChild(children.indexOfFirst { it.native.element === element })
@@ -88,11 +96,17 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
 
     private val _firstVisibleIndex = Property(0)
     actual val firstVisibleIndex: Readable<Int> = _firstVisibleIndex
-    init { onController { it.firstVisible.addListener { _firstVisibleIndex.value = it.firstVisible.value } } }
+
+    init {
+        onController { it.firstVisible.addListener { _firstVisibleIndex.value = it.firstVisible.value } }
+    }
 
     private val _lastVisibleIndex = Property(0)
     actual val lastVisibleIndex: Readable<Int> = _lastVisibleIndex
-    init { onController { it.lastVisible.addListener { _lastVisibleIndex.value = it.lastVisible.value } } }
+
+    init {
+        onController { it.lastVisible.addListener { _lastVisibleIndex.value = it.lastVisible.value } }
+    }
 
     actual var vertical: Boolean = true
         set(value) {
@@ -307,7 +321,7 @@ class RecyclerController2(
                     KeyCodes.left -> {
                         scrollBy(
                             ScrollToOptions(
-                                -(clientWidth.toDouble() - this@RecyclerController2.spacing),
+                                -(clientWidth.toDouble() + this@RecyclerController2.spacing),
                                 behavior = ScrollBehavior.SMOOTH
                             )
                         )
@@ -317,7 +331,7 @@ class RecyclerController2(
                     KeyCodes.right -> {
                         scrollBy(
                             ScrollToOptions(
-                                (clientWidth.toDouble() - this@RecyclerController2.spacing),
+                                (clientWidth.toDouble() + this@RecyclerController2.spacing),
                                 behavior = ScrollBehavior.SMOOTH
                             )
                         )
@@ -430,7 +444,8 @@ class RecyclerController2(
                 dataDirect = value.columned(columns)
             }
         }
-    var renderer: ItemRenderer<*> = ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> }, {})
+    var renderer: ItemRenderer<*> =
+        ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> }, {})
         set(value) {
             field = value
             data = Indexed.EMPTY
@@ -455,12 +470,14 @@ class RecyclerController2(
                 populate()
             }
         }
+
     fun shutdown() {
         allSubviews.forEach {
             contentHolder.removeChild(it.element)
             rendererDirect.shutdown(it.element)
         }
     }
+
     var dataDirect: Indexed<*> = Indexed.EMPTY
         set(value) {
             field = value
@@ -486,12 +503,11 @@ class RecyclerController2(
                             } else {
                                 contentHolder.removeChild(it.element)
                                 allSubviews.remove(it)
-//                                println("Removing ${it.index} due to out of bounds")
                             }
                         }
                         if (shift > 0) {
                             // Force to top
-                            if(allSubviews.first().startPosition < 0) {
+                            if (allSubviews.first().startPosition < 0) {
                                 offsetWholeSystem(-allSubviews.first().startPosition)
                             } else {
                                 viewportOffset = allSubviews.first().startPosition
@@ -510,7 +526,8 @@ class RecyclerController2(
                 }
             }
         }
-    var spacing: Int = window.getComputedStyle(root).columnGap.removeSuffix("px").let { it.toDoubleOrNull() ?: 0.0 }.toInt()
+    var spacing: Int =
+        window.getComputedStyle(root).columnGap.removeSuffix("px").let { it.toDoubleOrNull() ?: 0.0 }.toInt()
         set(value) {
             if (value != field) {
                 field = value
@@ -530,14 +547,13 @@ class RecyclerController2(
     var viewportSize: Int = 0
         set(value) {
             field = value
-//            println("viewportSize: $value")
             relayout()
         }
     private var _viewportOffsetField: Int = 0
     var viewportOffset: Int
         get() = _viewportOffsetField
         set(value) {
-            if(value < 0) IllegalStateException("Offset cannot be $value").printStackTrace2()
+            if (value < 0) IllegalStateException("Offset cannot be $value").printStackTrace2()
             _viewportOffsetField = value
             suppressTrueScroll = true
             contentHolder.scrollStart = value.toDouble()
@@ -548,29 +564,36 @@ class RecyclerController2(
     private var lastForceCenteringDismiss: Int = -1
     fun nonEmergencyEdges() {
         if (allSubviews.isNotEmpty()) {
-            if (allSubviews.first().index <= dataDirect.min) {
+            if (allSubviews.first()
+                    .let { it.index <= dataDirect.min && it.startPosition >= viewportOffset + padding }
+            ) {
                 // shift and attach to top
                 if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
                     offsetWholeSystem(-allSubviews.first().startPosition + padding)
                 }
             } else {
                 if (viewportOffset > reservedScrollingSpace * 7 / 8) {
-                    offsetWholeSystem(3 * reservedScrollingSpace / -8)
+                    offsetWholeSystem(reservedScrollingSpace / -2)
                 } else if (viewportOffset < reservedScrollingSpace / 8) {
-                    offsetWholeSystem(3 * reservedScrollingSpace / 8)
+                    offsetWholeSystem(reservedScrollingSpace / 2)
                 }
             }
             capViewAtBottom = allSubviews.last().index >= dataDirect.max
         }
-        Unit
     }
+
     var forceCentering = false
     var suppressFakeScrollEnd = false
     var suppressTrueScrollEnd = false
-    var printing = false
 
     init {
+        var startupTime: Double = 0.0
         contentHolder.onscroll = event@{ ev ->
+            if (clockMillis() < startupTime + 200) {
+                // Safari... my old nemesis
+                contentHolder.scrollStart = _viewportOffsetField.toDouble()
+                return@event Unit
+            }
             if (suppressTrueScroll) {
                 suppressTrueScroll = false
                 suppressTrueScrollEnd = true
@@ -654,9 +677,12 @@ class RecyclerController2(
         window.setTimeout({
             lock("ready") {
                 viewportSize = root.clientSize
-                spacing = window.getComputedStyle(root).columnGap.removeSuffix("px").let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail B $it") }.toInt()
-                padding = window.getComputedStyle(root).paddingTop.removeSuffix("px").let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail C $it") }.toInt()
+                spacing = window.getComputedStyle(root).columnGap.removeSuffix("px")
+                    .let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail B $it") }.toInt()
+                padding = window.getComputedStyle(root).paddingTop.removeSuffix("px")
+                    .let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail C $it") }.toInt()
                 ready = true
+                startupTime = clockMillis()
                 populate()
                 nonEmergencyEdges()
             }
@@ -666,7 +692,6 @@ class RecyclerController2(
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-//            println("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -687,7 +712,6 @@ class RecyclerController2(
             ) {
                 // shift and attach to top
                 if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
-//                    println("Attach to top - ${allSubviews.first().startPosition} -> offset ${-allSubviews.first().startPosition + padding} ")
                     offsetWholeSystem(-allSubviews.first().startPosition + padding)
                     populate()
                 }
@@ -724,7 +748,6 @@ class RecyclerController2(
 
     var startCreatingViewsAt: Pair<Int, Align> = 0 to Align.Start
     fun jump(index: Int, align: Align, animate: Boolean, onlyIfNear: Boolean = false) {
-//        println("Jump $index")
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
         }
@@ -741,7 +764,7 @@ class RecyclerController2(
                 }
                 return
             }
-            if(onlyIfNear) return@lock
+            if (onlyIfNear) return@lock
             if (animate) {
                 fun move() {
                     val existingTop = allSubviews.first().index
@@ -760,7 +783,6 @@ class RecyclerController2(
                         } else {
                             contentHolder.removeChild(it.element)
                             allSubviews.remove(it)
-//                            println("Removing ${it.index} due to out of bounds")
                         }
                     }
                 }
@@ -776,7 +798,6 @@ class RecyclerController2(
                         else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
                     }
                 }
-//                    ?: println("Wha?!")
             } else {
                 val existingIndex = when (align) {
                     Align.Start -> allSubviews.first().index
@@ -797,7 +818,6 @@ class RecyclerController2(
                     } else {
                         contentHolder.removeChild(it.element)
                         allSubviews.remove(it)
-//                        println("Removing ${it.index} due to out of bounds")
                     }
                 }
                 viewportOffset = when (align) {
@@ -806,7 +826,6 @@ class RecyclerController2(
                     else -> target?.let { it.startPosition + it.size / 2 - viewportSize / 2 }
                         ?: (allSubviews.first().startPosition - padding)
                 }
-//                println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
@@ -838,11 +857,15 @@ class RecyclerController2(
         var index: Int = index
             set(value) {
                 field = value
-                element.className = element.className.split(' ').filter { !it.startsWith("index-") }.plus("index-$index").joinToString(" ")
+                element.className =
+                    element.className.split(' ').filter { !it.startsWith("index-") }.plus("index-$index")
+                        .joinToString(" ")
             }
+
         init {
             element.classList.add("index-$index")
         }
+
         var startPosition: Int = 0
             set(value) {
                 field = value
@@ -885,7 +908,6 @@ class RecyclerController2(
 
     fun offsetWholeSystem(by: Int) {
         val byFiltered = by.coerceAtLeast(-viewportOffset)
-//        if(byFiltered != by) println("You're trying to offset too much!  $by -> $byFiltered viewportOffset: $viewportOffset")
         for (view in allSubviews) {
             view.startPosition += by
         }
@@ -906,12 +928,26 @@ class RecyclerController2(
         viewportOffset = reservedScrollingSpace / 2
         val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
-        element.startPosition = when(startCreatingViewsAt.second) {
+        element.startPosition = when (startCreatingViewsAt.second) {
             Align.Start -> viewportOffset + padding
             Align.End -> viewportOffset + viewportSize - padding - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
+        }.also {
+        }
+        repeat(100) {
+            afterTimeout(it * 10L) {
+            }
         }
         return element
+    }
+
+    private inline fun preventAnchoring(action: ()->Unit) {
+        val before = contentHolder.scrollStart
+        action()
+        val after = contentHolder.scrollStart
+        if(before != after) {
+            contentHolder.scrollStart = before
+        }
     }
 
     fun populate() {
@@ -942,7 +978,6 @@ class RecyclerController2(
         var anchor = allSubviews.lastOrNull() ?: makeFirst() ?: return
         var bottom = anchor.startPosition + anchor.size
         while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering).also {
-//            println("populateDown ($bottom < $viewportSize + $viewportOffset + $beyondEdgeRendering)")
             }) {
             val nextIndex = anchor.index + 1
             if (nextIndex > dataDirect.max) break
@@ -961,14 +996,12 @@ class RecyclerController2(
             bottom = element.placeAfter(bottom)
             anchor = element
         }
-//        println("populateDown complete")
     }
 
     fun populateUp() {
         var anchor = allSubviews.firstOrNull() ?: makeFirst() ?: return
         var top = anchor.startPosition
         while ((top > viewportOffset - beyondEdgeRendering).also {
-//            println("populateUp ($top > $viewportOffset - $beyondEdgeRendering)")
             }) {
             val nextIndex = anchor.index - 1
             if (nextIndex < dataDirect.min) break
@@ -987,7 +1020,6 @@ class RecyclerController2(
             top = element.placeBefore(top)
             anchor = element
         }
-//        println("populateUp complete")
     }
 
     val anchorPosition: Align = Align.Start
@@ -1050,20 +1082,23 @@ class ItemRenderer<T>(
 }
 
 
-external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver)->Unit) {
+external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver) -> Unit) {
     fun disconnect()
     fun observe(target: Element, options: ResizeObserverOptions = definedExternally)
     fun unobserve(target: Element)
 }
+
 external interface ResizeObserverOptions {
     val box: String
 }
+
 external interface ResizeObserverEntry {
     val target: Element
     val contentRect: DOMRectReadOnly
     val contentBoxSize: ResizeObserverEntryBoxSize
     val borderBoxSize: ResizeObserverEntryBoxSize
 }
+
 external interface ResizeObserverEntryBoxSize {
     val blockSize: Double
     val inlineSize: Double

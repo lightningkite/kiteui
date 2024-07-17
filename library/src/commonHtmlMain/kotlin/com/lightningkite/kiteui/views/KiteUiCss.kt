@@ -604,40 +604,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
 
         dynamicCss.style(
-            ".recycler", mapOf(
-                "overflow-y" to "auto"
-            )
-        )
-
-        dynamicCss.style(
-            ".recycler > *", mapOf(
-                "max-height" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            ".recycler-horz", mapOf(
-                "display" to "flex",
-                "flex-direction" to "row",
-                "overflow-x" to "auto",
-            )
-        )
-
-        dynamicCss.style(
-            ".recycler-horz > *", mapOf(
-                "max-width" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            ".recycler-grid", mapOf(
-                "display" to "flex",
-                "flex-direction" to "row",
-                "overflow-x" to "auto",
-            )
-        )
-
-        dynamicCss.style(
             ".scroll-vertical > *", mapOf(
                 "max-height" to "unset",
             )
@@ -739,7 +705,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ":not(.unkiteui)", mapOf(
                 "transition-timing-function" to "linear",
                 "transition-delay" to "0s",
-                "transition-property" to "color, background-image, background-color, border-color outline-color, box-shadow, border-radius, opacity, backdrop-filter",
+                "transition-property" to "color, background-image, background-color, border-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter",
             )
         )
 
@@ -768,14 +734,25 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "z-index" to "999",
             )
         )
-//        recyclerView
+
         dynamicCss.style(
             ".recyclerView", mapOf(
                 "position" to "relative",
-                "padding" to "0 !important"
+                "padding" to "0 !important",
+                "scroll-behavior" to "auto",
             )
         )
-
+        dynamicCss.style(
+            ".recyclerView > *", mapOf(
+                "overflow-anchor" to "none",
+                "scroll-behavior" to "auto !important;",
+            )
+        )
+        dynamicCss.style(
+            ".recyclerView > * > *", mapOf(
+                "overflow-anchor" to "none",
+            )
+        )
         dynamicCss.style(
             ".contentScroll-V::-webkit-scrollbar", mapOf(
                 "display" to "none"
@@ -849,10 +826,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "flex-basis" to "0",
             )
         )
-//        contentScroll
-//        content
-//        barScroll
-//        barContent
         dynamicCss.style(
             ".viewPager", mapOf(
                 "scroll-snap-type" to "x mandatory"
