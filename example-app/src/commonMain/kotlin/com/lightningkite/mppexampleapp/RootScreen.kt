@@ -55,6 +55,7 @@ object RootScreen : Screen {
                 linkScreen { ViewPagerElementScreen }
                 linkScreen { TwoPaneTestScreen }
                 linkScreen { ThemesScreen }
+                linkScreen { ControlPerformanceTesting }
                 linkScreen { ControlsScreen }
                 linkScreen { FormsScreen }
                 linkScreen { NavigationTestScreen }
