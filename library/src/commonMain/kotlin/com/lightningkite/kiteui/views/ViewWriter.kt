@@ -108,6 +108,19 @@ abstract class ViewWriter {
         return ViewWrapper
     }
 
+    @ViewModifierDsl3
+    val ThemeDerivation.onOnlyNext: ViewWrapper get() {
+        lateinit var old: ThemeDerivation
+        beforeNextElementSetup {
+            old = themeChoice
+            themeChoice = old + this@onOnlyNext
+        }
+        afterNextElementSetup {
+            themeChoice = old
+        }
+        return ViewWrapper
+    }
+
     // Theme, ViewWrapper, ThemeDerivation, Boolean
     // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
     // contains / minus
