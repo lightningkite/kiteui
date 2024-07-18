@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.lightningkite.kiteui.models.*
@@ -19,7 +20,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import timber.log.Timber
 
-abstract class KiteUiActivity : Activity() {
+abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: suspend () -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 

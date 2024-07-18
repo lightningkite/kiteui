@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 
 expect class MenuButton(context: RContext) : RView {
 
-    fun opensMenu(createMenu: ViewWriter.() -> Unit)
+    fun opensMenu(createMenu: Stack.() -> Unit)
     var enabled: Boolean
     var requireClick: Boolean
     var preferredDirection: PopoverPreferredDirection

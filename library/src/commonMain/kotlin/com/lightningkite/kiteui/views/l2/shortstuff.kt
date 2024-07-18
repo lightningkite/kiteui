@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @ViewDsl
-fun RView.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
+fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
     icon {
         source = icon
         this.description = description
@@ -17,7 +17,7 @@ fun RView.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
 }
 
 @ViewDsl
-fun RView.lazyExpanding(visible: Readable<Boolean>, sub: RView.()->Unit) {
+fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Unit) {
     col {
         var noViewCreated = true
         var view: RView? = null

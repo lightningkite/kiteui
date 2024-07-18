@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
 import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.reflect.KClass
 
 class Routes(
@@ -49,5 +50,5 @@ data class UrlLikePath(
 
 }
 
-fun Screen.render(RView: RView) = with(RView) { render() }
+fun Screen.render(writer: ViewWriter): Unit = with(writer) { render() }
 

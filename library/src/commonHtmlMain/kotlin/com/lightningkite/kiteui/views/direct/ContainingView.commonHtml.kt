@@ -1,15 +1,19 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.KiteUiCss
-import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.*
 
 actual class Stack actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        native.children.forEachIndexed { index, futureElement ->
+            futureElement.style.zIndex = index.toString()
+        }
     }
 }
 

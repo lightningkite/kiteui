@@ -17,7 +17,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         isClickable = true
     }
 
-    actual fun opensMenu(createMenu: ViewWriter.() -> Unit) {
+    actual fun opensMenu(createMenu: Stack.() -> Unit) {
         native.setOnClickListener { view ->
             dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {

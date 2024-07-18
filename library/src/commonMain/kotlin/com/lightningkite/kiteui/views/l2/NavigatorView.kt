@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-fun RView.navigatorView(navigator: ScreenNavigator) {
+fun ViewWriter.navigatorView(navigator: ScreenNavigator) {
     val n = navigator
     this.swapView {
         var lastStack = n.stack.value
@@ -33,7 +33,7 @@ fun RView.navigatorView(navigator: ScreenNavigator) {
     }
 }
 
-fun RView.navigatorViewDialog() {
+fun ViewWriter.navigatorViewDialog() {
     val n = dialogScreenNavigator
     this.swapView {
         ignoreInteraction = true

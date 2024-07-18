@@ -13,7 +13,7 @@ import kotlin.experimental.ExperimentalNativeApi
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton(this)
 
-    actual fun opensMenu(createMenu: ViewWriter.() -> Unit) {
+    actual fun opensMenu(createMenu: Stack.() -> Unit) {
         native.onClick = {
             dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {

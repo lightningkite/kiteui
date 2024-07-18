@@ -67,3 +67,6 @@ expect fun ScreenNavigator.bindToPlatform(context: RContext)
 var ViewWriter.screenNavigator by rContextAddonInit<ScreenNavigator>()
 var ViewWriter.mainScreenNavigator by rContextAddonInit<ScreenNavigator>()
 var ViewWriter.dialogScreenNavigator by rContextAddonInit<ScreenNavigator>()
+
+@Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
+val PlatformNavigator: ScreenNavigator get() = TODO()

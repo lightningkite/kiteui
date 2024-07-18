@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 
-fun RView.navGroupColumn(elements: Readable<List<NavElement>>, onNavigate: suspend ()->Unit = {}, setup: ContainingView.()->Unit = {}) {
+fun ViewWriter.navGroupColumn(elements: Readable<List<NavElement>>, onNavigate: suspend ()->Unit = {}, setup: ContainingView.()->Unit = {}) {
     col {
         navGroupColumnInner(elements, onNavigate)
         setup()
@@ -14,7 +14,7 @@ fun RView.navGroupColumn(elements: Readable<List<NavElement>>, onNavigate: suspe
 }
 private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNavigate: suspend ()->Unit = {}) {
     forEach(readable) {
-        fun RView.display(navElement: NavElement) {
+        fun ViewWriter.display(navElement: NavElement) {
             row {
                 centered - navElementIconAndCountHorizontal(navElement)
                 text { ::content { navElement.title() } } in gravity(Align.Center, Align.Center)
@@ -77,14 +77,14 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
     }
 }
 
-fun RView.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.()->Unit = {}) {
+fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.()->Unit = {}) {
      row {
         navGroupActionsInner(elements)
         setup()
     }
 }
 private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
-    fun RView.navElementIconAndCount(navElement: NavElement) {
+    fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
         padded - stack {
             icon {
                 ::source { navElement.icon() }
@@ -147,7 +147,7 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun RView.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.()->Unit = {}) {
+fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.()->Unit = {}) {
     row {
         navGroupTopInner(readable)
         setup()
@@ -199,7 +199,7 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun RView.navElementIconAndCount(navElement: NavElement) {
+fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
     stack {
         icon {
             ::source { navElement.icon() }
@@ -217,7 +217,7 @@ fun RView.navElementIconAndCount(navElement: NavElement) {
     }
 }
 
-fun RView.navElementIconAndCountHorizontal(navElement: NavElement) {
+fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement) {
     row {
         centered - icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
@@ -235,10 +235,10 @@ fun RView.navElementIconAndCountHorizontal(navElement: NavElement) {
     }
 }
 
-fun RView.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.()->Unit) {
+fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.()->Unit) {
     navSpacing - nav - unpadded - row {
         setup()
-        fun RView.display(navElement: NavElement) {
+        fun ViewWriter.display(navElement: NavElement) {
                 compact - col {
                     centered - navElementIconAndCount(navElement)
                     subtext { ::content { navElement.title() } } in gravity(Align.Center, Align.Center)

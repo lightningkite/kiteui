@@ -23,7 +23,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     var existingView: RView? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
-    actual var menuGenerator: ViewWriter.() -> Unit = { space() }
+    actual var menuGenerator: Stack.() -> Unit = { space() }
 
     actual fun block() {
         if(blockView != null) return

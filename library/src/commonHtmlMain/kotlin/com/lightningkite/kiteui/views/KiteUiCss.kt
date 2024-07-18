@@ -105,37 +105,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         )
 
-//        DynamicCss.style(
-//            "input.sameThemeText, textarea.sameThemeText", mapOf(
-//                "border-bottom-style" to "solid",
-//                "border-bottom-width" to "1px",
-//                "border-radius" to "0",
-//            )
-//        )
-//
-//        DynamicCss.style(
-//            "input.sameThemeText:focus, textarea.sameThemeText:focus", mapOf(
-//                "border-radius" to "0",
-//            )
-//        )
-//
-//        DynamicCss.style(
-//            "input:not(.mightTransition).editable.editable, textarea:not(.mightTransition).editable.editable, select:not(.mightTransition).editable.editable", mapOf(
-//                "border-bottom-color" to "currentColor",
-//                "border-bottom-width" to "1px",
-//                "border-bottom-style" to "solid",
-//            )
-//        )
-//
-//        DynamicCss.style(
-//            "input:not(.mightTransition).editable.editable:focus, textarea:not(.mightTransition).editable.editable:focus, select:not(.mightTransition).editable.editable:focus", mapOf(
-//                "border-bottom-color" to "currentColor",
-//                "border-bottom-width" to "2px",
-//                "border-bottom-style" to "solid",
-//                "outline" to "none",
-//            )
-//        )
-
         dynamicCss.style(
             "input:focus, textarea:focus", mapOf(
                 "outline" to "none",

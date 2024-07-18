@@ -9,11 +9,11 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-//fun RView.toast(text: String, duration: Duration = 3.seconds) {
+//fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
 //    toast(duration) { text(text) }
 //}
 //
-//fun RView.toast(duration: Duration = 3.seconds, inner: RView.()->Unit) {
+//fun ViewWriter.toast(duration: Duration = 3.seconds, inner: ViewWriter.()->Unit) {
 //    baseStackWriter?.let {
 //        baseStack?.native?.let { s ->
 //            var toast: NView? = null
