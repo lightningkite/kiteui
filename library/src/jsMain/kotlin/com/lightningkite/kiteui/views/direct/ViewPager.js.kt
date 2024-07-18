@@ -33,7 +33,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 native.appendChild(view.native)
             }
         }) {
-            button {
+            buttonTheme - button {
                 native.classes.add("touchscreenOnly")
                 native.style.run {
                     position = "absolute"
@@ -49,7 +49,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                     onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
                 }
             }
-            button {
+            buttonTheme - button {
                 native.classes.add("touchscreenOnly")
                 native.style.run {
                     position = "absolute"
