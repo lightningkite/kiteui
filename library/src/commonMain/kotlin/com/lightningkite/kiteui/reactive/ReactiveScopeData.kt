@@ -205,7 +205,4 @@ suspend fun <T> Readable<T>.awaitOnce(): T {
     }
 }
 
-fun <T> Readable<Readable<T>>.flatten(): Readable<T> {
-    val first = shared { this@flatten.await() }
-    return shared { first.await().await() }
-}
+
