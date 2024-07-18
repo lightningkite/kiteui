@@ -31,9 +31,9 @@ interface PlayableAudio {
     }
 }
 
-fun RView.backgroundAudio(audio: AudioResource, playBackgroundAudio: suspend () -> Boolean) {
+fun RView.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
     val backgroundAudioShared = shared {
-        audio.load().apply { volume = 0.1f }
+        audio.load().apply { volume = backgroundVolume }
     }
     // Loop and cancel the background sound
     reactiveScope {

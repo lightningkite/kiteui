@@ -33,7 +33,7 @@ object AudioScreen : Screen {
                 text("Background sound")
             }
 
-            backgroundAudio(Resources.audioTaunt) { backgroundSoundPlaying() }
+            backgroundAudio(Resources.audioTaunt, 0.1f) { backgroundSoundPlaying() }
         }
     }
 

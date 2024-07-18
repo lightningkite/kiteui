@@ -60,10 +60,12 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
                 native.informParentOfSizeChange()
             }
 
-            is ImageRaw -> {
+        is ImageRaw -> {
+            try {
                 native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
                 native.informParentOfSizeChange()
-            }
+            } catch (_: Exception) { }
+        }
 
             is ImageRemote -> {
                 native.startLoad()
