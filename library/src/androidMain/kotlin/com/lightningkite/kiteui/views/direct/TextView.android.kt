@@ -152,7 +152,5 @@ actual var TextView.wraps: Boolean
         native.maxLines = if(value) Integer.MAX_VALUE else 1
     }
 actual var TextView.wordBreak: WordBreak
-    get() = TODO("Not yet implemented")
-    set(value) {
-        TODO("Not yet implemented")
-    }
+    get() = WordBreak.BreakAll
+    set(value) { }
