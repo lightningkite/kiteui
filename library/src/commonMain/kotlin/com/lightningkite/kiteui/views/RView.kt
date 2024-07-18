@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import kotlin.random.Random
+import kotlin.reflect.KMutableProperty0
 
 expect abstract class RView : RViewHelper {
     override fun opacitySet(value: Double)
@@ -24,6 +25,17 @@ expect abstract class RView : RViewHelper {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
+
+@ReactiveB
+inline operator fun KMutableProperty0<ThemeDerivation>.invoke(
+    crossinline calculateDerivation: suspend (previous: ThemeDerivation) -> ThemeDerivation
+) {
+    val previous = get()
+    CalculationContextStack.current().reactiveScope {
+        this@invoke.set(calculateDerivation(previous))
+    }
+}
+
 abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
     var opacity: Double = 1.0
         set(value) {
