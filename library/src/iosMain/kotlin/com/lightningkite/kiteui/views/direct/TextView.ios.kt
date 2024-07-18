@@ -234,11 +234,11 @@ actual var TextView.wraps: Boolean
     set(value) {
         native.label.numberOfLines = if(value) 0 else 1
     }
+// iOS UILabel does have a lineBreakMode property but there is effectively no difference between either currently
+// supported WordBreak option
 actual var TextView.wordBreak: WordBreak
-    get() = TODO("Not yet implemented")
-    set(value) {
-        TODO("Not yet implemented")
-    }
+    get() = WordBreak.BreakAll
+    set(value) { }
 
 // Calculated from font sizes shown at https://developer.apple.com/design/human-interface-guidelines/typography#Specifications
 private val dynamicTypeScaleFactors = mapOf(

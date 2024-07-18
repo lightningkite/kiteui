@@ -128,8 +128,10 @@ private fun ImageView.setImageInternal(value: ImageSource?) {
         }
 
         is ImageRaw -> {
-            native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
-            native.informParentOfSizeChange()
+            try {
+                native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
+                native.informParentOfSizeChange()
+            } catch (_: Exception) { }
         }
 
         is ImageRemote -> {
