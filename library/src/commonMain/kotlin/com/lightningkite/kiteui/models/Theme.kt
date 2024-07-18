@@ -238,6 +238,31 @@ val H4Semantic = HeaderSizeSemantic(4)
 val H5Semantic = HeaderSizeSemantic(5)
 val H6Semantic = HeaderSizeSemantic(6)
 
+data object InvalidSemantic: Semantic {
+    override val key: String = "ivd"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        outlineWidth = 1.px,
+        outline = Color.red
+    ).withBack
+}
+
+data object EmphasizedSemantic: Semantic {
+    override val key: String = "emf"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        font = theme.font.copy(italic = true)
+    ).withoutBack
+}
+
+data object EmbeddedSemantic: Semantic {
+    override val key: String = "ebd"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = theme.background.closestColor().highlight(-0.1f)
+    ).withBack
+}
+
 class Theme(
     val id: String,
     val font: FontAndStyle = FontAndStyle(systemDefaultFont),
