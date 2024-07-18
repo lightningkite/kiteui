@@ -27,34 +27,43 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         }
 
 
-        button {
-            native.classes.add("touchscreenOnly")
-            native.style.run {
-                position = "absolute"
-                left = "0"
-                top = "50%"
-                transform = "translateY(-50%)"
+        with(object: ViewWriter() {
+            override val context: RContext = context
+            override fun addChild(view: RView) {
+                native.appendChild(view.native)
             }
-            icon {
-                source = Icon.chevronLeft
+        }) {
+            buttonTheme - button {
+                native.classes.add("touchscreenOnly")
+                native.style.run {
+                    position = "absolute"
+                    left = "0"
+                    top = "50%"
+                    transform = "translateY(-50%)"
+                    zIndex = "99"
+                }
+                icon {
+                    source = Icon.chevronLeft
+                }
+                onClick {
+                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
+                }
             }
-            onClick {
-                onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
-            }
-        }
-        button {
-            native.classes.add("touchscreenOnly")
-            native.style.run {
-                position = "absolute"
-                right = "0"
-                top = "50%"
-                transform = "translateY(-50%)"
-            }
-            icon {
-                source = Icon.chevronRight
-            }
-            onClick {
-                onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
+            buttonTheme - button {
+                native.classes.add("touchscreenOnly")
+                native.style.run {
+                    position = "absolute"
+                    right = "0"
+                    top = "50%"
+                    transform = "translateY(-50%)"
+                    zIndex = "99"
+                }
+                icon {
+                    source = Icon.chevronRight
+                }
+                onClick {
+                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
+                }
             }
         }
     }
