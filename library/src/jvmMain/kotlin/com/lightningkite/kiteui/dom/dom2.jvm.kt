@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.dom
 actual abstract class EventTarget
 actual open class Event {
     actual fun preventDefault(){}
+    actual fun stopPropagation(){}
+    actual fun stopImmediatePropagation(){}
     actual open val target: EventTarget? = null
 }
 actual open class UIEvent: Event() {

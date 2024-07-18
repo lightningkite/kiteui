@@ -11,8 +11,11 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         native.classes.add("dismissBackground")
         native.classes.add("kiteui-stack")
         native.addEventListener("click") { screenNavigator.clear() }
-        // TODO
-        //native.listNViews().forEach { it.onclick = { ev -> ev.stopImmediatePropagation() } }
+    }
+
+    override fun addChild(view: RView) {
+        super.addChild(view)
+        view.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {

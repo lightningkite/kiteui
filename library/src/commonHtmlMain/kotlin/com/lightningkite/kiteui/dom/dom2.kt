@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.dom
 expect abstract class EventTarget
 expect open class Event {
     fun preventDefault()
+    fun stopPropagation()
+    fun stopImmediatePropagation()
     open val target: EventTarget?
 }
 expect open class UIEvent: Event {
