@@ -70,6 +70,13 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
         }
     }
 
+fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
+    object : Writable<T>, Readable<T> by this {
+        override suspend fun set(value: T) {
+            action(this@interceptWrite, value)
+        }
+    }
+
 fun <T : Any> Writable<T>.nullable(): Writable<T?> = shared { this@nullable.await() }
     .withWrite { it?.let { this@nullable set it } }
 
