@@ -13,7 +13,7 @@ expect class DynamicCss(basePath: String) {
 //        mediaQuery: String? = null,
 //        styles: Map<String, Map<String, String>>
 //    )
-//    fun emit()
+    fun emit(): String
     fun add(selector: String, key: String, value: String, media: String = "")
     fun flush()
 }

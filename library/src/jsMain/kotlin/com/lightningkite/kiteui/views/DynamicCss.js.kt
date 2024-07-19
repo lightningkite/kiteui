@@ -86,11 +86,48 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     actual fun add(selector: String, key: String, value: String, media: String) {
         queue.subObj(media).subObj(selector).set(key, value)
     }
+    actual fun emit(): String {
+        return customStyleSheet.cssRules.let {
+            (0..<it.length).asSequence().mapNotNull { i -> it.get(i) }.joinToString("\n") { it.cssText }
+        }
+    }
 
     var flushTotal: Duration = 0.seconds
     var ruleTotal = 0
     actual fun flush() {
         measureTime {
+//            val map = HashMap<String, HashMap<String, HashMap<String, String>>>()
+//            jsonForEach(queue) { media, it ->
+//                jsonForEach(it as Json) { selector, it ->
+//                    jsonForEach(it as Json) { key, value ->
+//                        map.getOrPut(media) { HashMap() }.getOrPut(selector) { HashMap() }.put(key, value as String)
+//                    }
+//                }
+//            }
+//
+//            val merged = map.mapValues {
+//                val merg = it.value.entries.groupBy { it.value }.values
+//                merg.associate { it.map { it.key }.joinToString() to it.first().value }
+//            }
+//
+//            merged.forEach { (media, it) ->
+//                var str = "@media $media {"
+//                it.forEach { (selector, it) ->
+//                    str += selector
+//                    str += "{"
+//                    it.forEach { (key, value) ->
+//                        str += key
+//                        str += ":"
+//                        str += value
+//                        str += ";"
+//                    }
+//                    str += "}"
+//                    ruleTotal++
+//                }
+//                str += "}"
+//                rule(str, 0)
+//            }
+//            queue = json()
             jsonForEach(queue) { media, it ->
                 var str = "@media $media {"
                 jsonForEach(it as Json) { selector, it ->
@@ -220,9 +257,4 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //        }
 //    }
 //
-//    actual fun emit() {
-//        customStyleSheet.cssRules.let {
-//            (0..<it.length).asSequence().mapNotNull { i -> it.get(i) }.joinToString("\n") { it.cssText }
-//        }.let(::println)
-//    }
 //}

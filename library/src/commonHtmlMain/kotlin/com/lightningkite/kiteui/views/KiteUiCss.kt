@@ -770,7 +770,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 --parentPadding: 0px;
             }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
         try {
             dynamicCss.rule(
                 """progress::-webkit-progress-value {
@@ -872,57 +873,78 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         measureTime {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
-            val cs = theme.classSelectorWithTerminator
-            fun sub(subtheme: Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
-                if(theme != subtheme) {
+            val cs = theme.classSelector
+            fun sub(subthemeGen: (Theme) -> Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
+                val subtheme = subthemeGen(theme)
+                if (theme != subtheme) {
                     theme(
                         subtheme,
+                        diff = theme.derivedFrom?.let { subthemeGen(it) },
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
                         includeMaybeTransition = includeMaybeTransition
                     )
                 }
-                theme(subtheme.down(), asSelectors = asSelectors.flatMap {
-                    listOf(
-                        ":where(.clickable):active$it $cs",
-                        ":where(.clickable):active$it$cs",
-                    )
-                }, includeMaybeTransition = true)
-                theme(subtheme.hover(), asSelectors = asSelectors.flatMap {
-                    listOf(
-                        ":where(.clickable):hover$it $cs",
-                        ":where(.clickable):hover$it$cs",
-                    )
-                }, includeMaybeTransition = true)
-                theme(subtheme.focus(), asSelectors = asSelectors.flatMap {
-                    listOf(
-                        ":where(.clickable):focus-visible$it $cs",
-                        ":where(.clickable):focus-visible$it$cs",
-                        "input:focus$it$cs",
-                        "textarea:focus$it$cs",
-                        "select:focus$it$cs",
-                        ":has(> input:focus-visible:not(.mightTransition))$it$cs",
-                        ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
-                        ":has(> select:focus-visible:not(.mightTransition))$it$cs",
-                        ":has(> input:focus-visible:not(.mightTransition))$it $cs",
-                        ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
-                        ":has(> select:focus-visible:not(.mightTransition))$it $cs",
-                    )
-                }, includeMaybeTransition = true)
-                theme(subtheme.disabled(), asSelectors = asSelectors.flatMap {
-                    listOf(
-                        ":where(.clickable):disabled$it $cs",
-                        ":where(.clickable):disabled$it$cs",
-                    )
-                })
+                theme(
+                    subtheme.down(),
+                    diff = theme.derivedFrom?.let { subthemeGen(it).down() },
+                    asSelectors = asSelectors.flatMap {
+                        listOf(
+                            ":where(.clickable):active$it $cs",
+                            ":where(.clickable):active$it$cs",
+                        )
+                    },
+                    includeMaybeTransition = true
+                )
+                theme(
+                    subtheme.hover(),
+                    diff = theme.derivedFrom?.let { subthemeGen(it).hover() },
+                    asSelectors = asSelectors.flatMap {
+                        listOf(
+                            ":where(.clickable):hover$it $cs",
+                            ":where(.clickable):hover$it$cs",
+                        )
+                    },
+                    includeMaybeTransition = true
+                )
+                theme(
+                    subtheme.focus(),
+                    diff = theme.derivedFrom?.let { subthemeGen(it).focus() },
+                    asSelectors = asSelectors.flatMap {
+                        listOf(
+                            ":where(.clickable):focus-visible$it $cs",
+                            ":where(.clickable):focus-visible$it$cs",
+                            "input:focus$it$cs",
+                            "textarea:focus$it$cs",
+                            "select:focus$it$cs",
+                            ":has(> input:focus-visible:not(.mightTransition))$it$cs",
+                            ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
+                            ":has(> select:focus-visible:not(.mightTransition))$it$cs",
+                            ":has(> input:focus-visible:not(.mightTransition))$it $cs",
+                            ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
+                            ":has(> select:focus-visible:not(.mightTransition))$it $cs",
+                        )
+                    },
+                    includeMaybeTransition = true
+                )
+                theme(
+                    subtheme.disabled(),
+                    diff = theme.derivedFrom?.let { subthemeGen(it).disabled() },
+                    asSelectors = asSelectors.flatMap {
+                        listOf(
+                            ":where(.clickable):disabled$it $cs",
+                            ":where(.clickable):disabled$it$cs",
+                        )
+                    }
+                )
             }
-            sub(theme, asSelectors = listOf(""), includeMaybeTransition = false)
+            sub({ it }, asSelectors = listOf(""), includeMaybeTransition = false)
             sub(
-                theme.selected(),
+                { it.selected() },
                 asSelectors = listOf(":has(> input:checked).checkResponsive"),
                 includeMaybeTransition = true
             )
             sub(
-                theme.unselected(),
+                { it.unselected() },
                 asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"),
                 includeMaybeTransition = true
             )
@@ -940,18 +962,18 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 .toList()
                 .reversed()
                 .map { t -> (t.derivationId ?: t.id) }
-                .plus("term")
                 .forEachIndexed { index, t ->
                     add("t-$index$t")
                 }
         }
-    private val Theme.classSelector get() = classes.dropLast(1).joinToString("") { ".$it" }
-    private val Theme.classSelectorWithTerminator get() = classes.joinToString("") { ".$it" }
+    private val Theme.classSelector get() = classes.joinToString("") { ".$it" }
 
-    private inline fun <T> Theme.diff(getter: Theme.()->T): T? = getter().takeUnless { derivedFrom?.getter() == it }
+    private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
+        getter().takeUnless { diff?.getter() == it }
 
     fun theme(
         theme: Theme,
+        diff: Theme? = theme.derivedFrom,
         asSelectors: List<String> = listOf(theme.classSelector),
         includeMaybeTransition: Boolean = false,
         mediaQuery: String? = null,
@@ -962,7 +984,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             return asSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
 
-        theme.diff { spacing }?.let {
+        theme.diff(diff) { spacing }?.let {
             dynamicCss.add(
                 selector = sel(
                     ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *",
@@ -979,7 +1001,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 value = it.value
             )
         }
-        theme.diff { navSpacing }?.let {
+        theme.diff(diff) { navSpacing }?.let {
             dynamicCss.add(
                 selector = sel(
                     ".useNavSpacing > *",
@@ -990,7 +1012,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
-        theme.diff { background }?.let {
+        theme.diff(diff) { background }?.let {
             when (it) {
                 is Color -> {
                     dynamicCss.add(backSel, "background-color", it.toCss())
@@ -999,53 +1021,62 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
                 is LinearGradient -> {
                     dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
-                    dynamicCss.add(backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
-                        joinGradientStops(it.stops)
-                    })")
+                    dynamicCss.add(
+                        backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                            joinGradientStops(it.stops)
+                        })"
+                    )
                     dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
 
                 is RadialGradient -> {
                     dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
-                    dynamicCss.add(backSel, "background-image", "radial-gradient(circle at center, ${
-                        joinGradientStops(it.stops)
-                    })")
+                    dynamicCss.add(
+                        backSel, "background-image", "radial-gradient(circle at center, ${
+                            joinGradientStops(it.stops)
+                        })"
+                    )
                     dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
             }
         }
 
-        theme.diff { outlineWidth }?.let {
+        theme.diff(diff) { outlineWidth }?.let {
             dynamicCss.add(backSel, "outline-width", it.value)
             dynamicCss.add(backSel, "outline-style", if (it != 0.px) "solid" else "none")
             dynamicCss.add(backSel, "outline-offset", it.times(-1).value)
         }
-        theme.diff { elevation }?.let {
+        theme.diff(diff) { elevation }?.let {
             dynamicCss.add(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
         val directSel = sel("")
-        theme.diff { foreground }?.let { dynamicCss.add(directSel, "color",it.toCss()) }
-        theme.diff { icon }?.let { dynamicCss.add(directSel, "--icon-color",it.toCss()) }
-        theme.diff { spacing }?.let { dynamicCss.add(directSel, "--spacing",it.value) }
-        theme.diff { navSpacing }?.let { dynamicCss.add(directSel, "--navSpacing",it.value) }
-        theme.diff { font.size }?.let { dynamicCss.add(directSel, "font-size",it.value) }
-        theme.diff { font.font }?.let { dynamicCss.add(directSel, "font-family",it.let { dynamicCss.font(it) }) }
-        theme.diff { font.weight }?.let { dynamicCss.add(directSel, "font-weight",it.toString()) }
-        theme.diff { font.italic }?.let { dynamicCss.add(directSel, "font-style",it.let { if (it) "italic" else "normal" }) }
-        theme.diff { font.allCaps }?.let { dynamicCss.add(directSel, "text-transform",it.let { if (it) "uppercase" else "none" }) }
-        theme.diff { font.lineSpacingMultiplier }?.let { dynamicCss.add(directSel, "line-height",it.toString()) }
-        theme.diff { font.additionalLetterSpacing }?.let { dynamicCss.add(directSel, "letter-spacing",it.toString()) }
-        theme.diff { outline }?.let { dynamicCss.add(directSel, "outline-color",it.toCss()) }
-        theme.diff { transitionDuration }?.let { dynamicCss.add(directSel, "transition-duration",it.toCss()) }
-        theme.diff { transitionDuration }?.let { dynamicCss.add(directSel, "--transition-duration",it.toCss()) }
-        theme.diff { background }?.let { dynamicCss.add(directSel, "--nearest-background-color",it.closestColor().toCss()) }
-        theme.diff { cornerRadii }?.let { dynamicCss.add(directSel, "border-radius",it.toRawCornerRadius()) }
-        theme.diff { foreground }?.let {
+        theme.diff(diff) { foreground }?.let { dynamicCss.add(directSel, "color", it.toCss()) }
+        theme.diff(diff) { icon }?.let { dynamicCss.add(directSel, "--icon-color", it.toCss()) }
+        theme.diff(diff) { spacing }?.let { dynamicCss.add(directSel, "--spacing", it.value) }
+        theme.diff(diff) { navSpacing }?.let { dynamicCss.add(directSel, "--navSpacing", it.value) }
+        theme.diff(diff) { font.size }?.let { dynamicCss.add(directSel, "font-size", it.value) }
+        theme.diff(diff) { font.font }?.let { dynamicCss.add(directSel, "font-family", it.let { dynamicCss.font(it) }) }
+        theme.diff(diff) { font.weight }?.let { dynamicCss.add(directSel, "font-weight", it.toString()) }
+        theme.diff(diff) { font.italic }
+            ?.let { dynamicCss.add(directSel, "font-style", it.let { if (it) "italic" else "normal" }) }
+        theme.diff(diff) { font.allCaps }
+            ?.let { dynamicCss.add(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
+        theme.diff(diff) { font.lineSpacingMultiplier }?.let { dynamicCss.add(directSel, "line-height", it.toString()) }
+        theme.diff(diff) { font.additionalLetterSpacing }
+            ?.let { dynamicCss.add(directSel, "letter-spacing", it.toString()) }
+        theme.diff(diff) { outline }?.let { dynamicCss.add(directSel, "outline-color", it.toCss()) }
+        theme.diff(diff) { transitionDuration }?.let { dynamicCss.add(directSel, "transition-duration", it.toCss()) }
+        theme.diff(diff) { transitionDuration }?.let { dynamicCss.add(directSel, "--transition-duration", it.toCss()) }
+        theme.diff(diff) { background }
+            ?.let { dynamicCss.add(directSel, "--nearest-background-color", it.closestColor().toCss()) }
+        theme.diff(diff) { cornerRadii }?.let { dynamicCss.add(directSel, "border-radius", it.toRawCornerRadius()) }
+        theme.diff(diff) { foreground }?.let {
             when (it) {
                 is Color -> {
                     dynamicCss.add(directSel, "color", it.toCss())
                 }
+
                 is LinearGradient, is RadialGradient -> {
                     dynamicCss.add(directSel, "color", it.toCss())
                     dynamicCss.add(directSel, "background", "-webkit-${it.toCss()}")
@@ -1062,9 +1093,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
-            dynamicCss.rule("""
+            dynamicCss.rule(
+                """
                 .$name { display: flex }
-            """)
+            """
+            )
             dynamicCss.rule(
                 """
                     @media (min-width: ${breakpoint.value}) {
