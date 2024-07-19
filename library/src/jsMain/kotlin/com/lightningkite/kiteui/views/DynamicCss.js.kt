@@ -64,6 +64,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     }
 
     actual fun styles(mediaQuery: String?, styles: Map<String, Map<String, String>>) {
+        styles.keys.forEach { println("style: $it") }
         if (mediaQuery == null) {
             styles.forEach { style(it.key, it.value) }
         } else {

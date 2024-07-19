@@ -64,12 +64,22 @@ internal actual fun RView.nativeAnimateHideBinding(
                 myElement.hidden = false
                 fullWidth = myStyle.width
                 fullHeight = myStyle.height
-                gap = parentStyle.columnGap
+                gap = when {
+                    parentStyle.display == "flex" -> parentStyle.columnGap
+                    parentStyle.display.contains("block") -> myStyle.marginBottom
+                    parentStyle.display.contains("inline") -> myStyle.marginRight
+                    else -> "0px"
+                }
                 myElement.hidden = true
             } else {
                 fullWidth = myStyle.width
                 fullHeight = myStyle.height
-                gap = parentStyle.columnGap
+                gap = when {
+                    parentStyle.display == "flex" -> parentStyle.columnGap
+                    parentStyle.display.contains("block") -> myStyle.marginBottom
+                    parentStyle.display.contains("inline") -> myStyle.marginRight
+                    else -> "0px"
+                }
             }
             child.style.width = myStyle.width
             child.style.maxWidth = "unset"

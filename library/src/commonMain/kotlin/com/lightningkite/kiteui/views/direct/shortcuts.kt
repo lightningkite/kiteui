@@ -26,7 +26,7 @@ inline fun ViewWriter.subtext(crossinline setup: TextView.()->Unit = {}): TextVi
 inline fun ViewWriter.h1(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H1Semantic
+        themeChoice += HeaderSemantic + H1Semantic
         setup(this)
     }
 }
@@ -35,7 +35,7 @@ inline fun ViewWriter.h1(crossinline setup: TextView.()->Unit = {}): TextView {
 inline fun ViewWriter.h2(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H2Semantic
+        themeChoice += HeaderSemantic + H2Semantic
         setup(this)
     }
 }
@@ -44,7 +44,7 @@ inline fun ViewWriter.h2(crossinline setup: TextView.()->Unit = {}): TextView {
 inline fun ViewWriter.h3(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H3Semantic
+        themeChoice += HeaderSemantic + H3Semantic
         setup(this)
     }
 }
@@ -53,7 +53,7 @@ inline fun ViewWriter.h3(crossinline setup: TextView.()->Unit = {}): TextView {
 inline fun ViewWriter.h4(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H4Semantic
+        themeChoice += HeaderSemantic + H4Semantic
         setup(this)
     }
 }
@@ -62,7 +62,7 @@ inline fun ViewWriter.h4(crossinline setup: TextView.()->Unit = {}): TextView {
 inline fun ViewWriter.h5(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H5Semantic
+        themeChoice += HeaderSemantic + H5Semantic
         setup(this)
     }
 }
@@ -71,7 +71,7 @@ inline fun ViewWriter.h5(crossinline setup: TextView.()->Unit = {}): TextView {
 inline fun ViewWriter.h6(crossinline setup: TextView.()->Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
-        themeChoice += H6Semantic
+        themeChoice += HeaderSemantic + H6Semantic
         setup(this)
     }
 }
