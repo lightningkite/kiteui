@@ -74,7 +74,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             
             * {
                 gap: var(--spacing, 0);
-        }       
+            }       
 
             .touchscreenOnly {
             }
@@ -658,7 +658,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 animation: 2s linear infinite spin !important;
             }
 
-            input:focus, textarea:focus {
+            input:focus:not(.transition), select:focus:not(.transition), textarea:focus:not(.transition) {
                 outline: none;
             }
 
@@ -768,6 +768,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 box-sizing: border-box;
                 line-height: unset;
                 --parentPadding: 0px;
+            }
+            
+            .mightTransition, .transition {
+                background-color: var(--k-background-color, transparent);
+                background-image: var(--k-background-image, none);
+                background-attachment: var(--k-background-attachment, scroll);
+                outline-width: var(--k-outline-width, 0px);
+                outline-style: var(--k-outline-style, none);
+                outline-offset: calc(var(--k-outline-width, 0px) * -1);
+                box-shadow: var(--k-box-shadow, none);
             }
             }
         """.trimIndent()
@@ -916,12 +926,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             "input:focus$it$cs",
                             "textarea:focus$it$cs",
                             "select:focus$it$cs",
-                            ":has(> input:focus-visible:not(.mightTransition))$it$cs",
-                            ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
-                            ":has(> select:focus-visible:not(.mightTransition))$it$cs",
-                            ":has(> input:focus-visible:not(.mightTransition))$it $cs",
-                            ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
-                            ":has(> select:focus-visible:not(.mightTransition))$it $cs",
+                            ":has(> :is(input, textarea, select):focus-visible:not(.mightTransition))$it$cs",
                         )
                     },
                     includeMaybeTransition = true
@@ -940,12 +945,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             sub({ it }, asSelectors = listOf(""), includeMaybeTransition = false)
             sub(
                 { it.selected() },
-                asSelectors = listOf(":has(> input:checked).checkResponsive"),
+                asSelectors = listOf(".checked.checkResponsive"),
                 includeMaybeTransition = true
             )
             sub(
                 { it.unselected() },
-                asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"),
+                asSelectors = listOf(".checkResponsive"),
                 includeMaybeTransition = true
             )
         }.also {
@@ -1010,47 +1015,47 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 value = it.value
             )
         }
-
-        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
+        val directSel = sel("")
+//
+//        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
         theme.diff(diff) { background }?.let {
             when (it) {
                 is Color -> {
-                    dynamicCss.add(backSel, "background-color", it.toCss())
-                    dynamicCss.add(backSel, "background-image", "none")
+                    dynamicCss.add(directSel, "--k-background-color", it.toCss())
+                    dynamicCss.add(directSel, "--k-background-image", "none")
                 }
 
                 is LinearGradient -> {
-                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
+                    dynamicCss.add(directSel, "--k-background-color", it.closestColor().toCss())
                     dynamicCss.add(
-                        backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                        directSel, "--k-background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    dynamicCss.add(directSel, "--k-background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
 
                 is RadialGradient -> {
-                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
+                    dynamicCss.add(directSel, "--k-background-color", it.closestColor().toCss())
                     dynamicCss.add(
-                        backSel, "background-image", "radial-gradient(circle at center, ${
+                        directSel, "--k-background-image", "radial-gradient(circle at center, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    dynamicCss.add(directSel, "--k-background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
             }
         }
 
         theme.diff(diff) { outlineWidth }?.let {
-            dynamicCss.add(backSel, "outline-width", it.value)
-            dynamicCss.add(backSel, "outline-style", if (it != 0.px) "solid" else "none")
-            dynamicCss.add(backSel, "outline-offset", it.times(-1).value)
+            dynamicCss.add(directSel, "--k-outline-width", it.value)
+            dynamicCss.add(directSel, "--k-outline-style", if (it != 0.px) "solid" else "none")
+            dynamicCss.add(directSel, "--k-outline-offset", it.times(-1).value)
         }
         theme.diff(diff) { elevation }?.let {
-            dynamicCss.add(backSel, "box-shadow", theme.elevation.toBoxShadow())
+            dynamicCss.add(directSel, "--k-box-shadow", theme.elevation.toBoxShadow())
         }
 
-        val directSel = sel("")
         theme.diff(diff) { foreground }?.let { dynamicCss.add(directSel, "color", it.toCss()) }
         theme.diff(diff) { icon }?.let { dynamicCss.add(directSel, "--icon-color", it.toCss()) }
         theme.diff(diff) { spacing }?.let { dynamicCss.add(directSel, "--spacing", it.value) }

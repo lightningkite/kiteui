@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
@@ -43,6 +44,15 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })
+
+    init {
+        checked.addListener {
+            if(checked.value)
+                native.classes.add("checked")
+            else
+                native.classes.remove("checked")
+        }
+    }
 
     actual inline var enabled: Boolean
         get() = input.attributes.disabled != true

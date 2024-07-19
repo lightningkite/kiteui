@@ -43,6 +43,14 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })
+    init {
+        checked.addListener {
+            if(checked.value)
+                native.classes.add("checked")
+            else
+                native.classes.remove("checked")
+        }
+    }
 
     actual inline var enabled: Boolean
         get() = input.attributes.disabled != true

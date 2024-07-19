@@ -75,7 +75,8 @@ actual class FutureElement actual constructor() {
         crossinline listener: (Event) -> Unit
     ) {
         element?.addEventListener(name, { it:Event -> listener(it) }) ?: run {
-            eventsBack["on$name"] = { it:Event -> listener(it) }
+            val old = eventsBack["on$name"] as? (Event)->Unit
+            eventsBack["on$name"] = { it:Event -> old?.invoke(it);  listener(it) }
         }
     }
     val futureStyles = HashMap<String, String>()
