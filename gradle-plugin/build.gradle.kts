@@ -8,20 +8,7 @@ plugins {
     `kotlin-dsl`
     signing
     `maven-publish`
-    id("org.jetbrains.dokka")
-}
-
-buildscript {
-    repositories {
-        mavenLocal()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.lightningkite:deploy-helpers:master-SNAPSHOT")
-    }
+    alias(libs.plugins.dokka)
 }
 
 gradlePlugin {
@@ -37,7 +24,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.apache.pdfbox:fontbox:2.0.27")
+    implementation(libs.fontBox)
 }
 tasks.validatePlugins {
     enableStricterValidation.set(true)
