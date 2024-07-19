@@ -895,17 +895,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     )
                 }
                 theme(
-                    subtheme.down(),
-                    diff = theme.derivedFrom?.let { subthemeGen(it).down() },
-                    asSelectors = asSelectors.flatMap {
-                        listOf(
-                            ":where(.clickable):active$it $cs",
-                            ":where(.clickable):active$it$cs",
-                        )
-                    },
-                    includeMaybeTransition = true
-                )
-                theme(
                     subtheme.hover(),
                     diff = theme.derivedFrom?.let { subthemeGen(it).hover() },
                     asSelectors = asSelectors.flatMap {
@@ -927,6 +916,17 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             "textarea:focus$it$cs",
                             "select:focus$it$cs",
                             ":has(> :is(input, textarea, select):focus-visible:not(.mightTransition))$it$cs",
+                        )
+                    },
+                    includeMaybeTransition = true
+                )
+                theme(
+                    subtheme.down(),
+                    diff = theme.derivedFrom?.let { subthemeGen(it).down() },
+                    asSelectors = asSelectors.flatMap {
+                        listOf(
+                            ":where(.clickable):active$it $cs",
+                            ":where(.clickable):active$it$cs",
                         )
                     },
                     includeMaybeTransition = true
