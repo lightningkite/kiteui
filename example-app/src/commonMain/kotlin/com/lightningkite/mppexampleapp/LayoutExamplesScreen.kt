@@ -34,6 +34,11 @@ object LayoutExamplesScreen : Screen {
                     expanding - important - stack { centered - text("B") }
                     expanding - critical - stack { centered - text("C") }
                 }
+                rowCollapsingToColumn(30.rem, 40.rem, 50.rem) {
+                    expanding - card - stack { centered - text("A") }
+                    expanding - important - stack { centered - text("B") }
+                    expanding - critical - stack { centered - text("C") }
+                }
             }
 
             card - col {

@@ -2,12 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 import platform.UIKit.UIView
+import kotlin.math.absoluteValue
 
 
 actual class RowOrCol actual constructor(context: RContext): RView(context) {
@@ -29,11 +31,12 @@ actual class RowOrCol actual constructor(context: RContext): RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoint: Dimension): RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>): RView(context) {
     override val native = LinearLayout()
     init {
         reactiveScope {
-            if(WindowInfo().width < breakpoint) {
+            val w = AppState.windowInfo().width
+            if (breakpoints.indexOfFirst { it > w }.rem(2).absoluteValue == 1) {
                 native.horizontal = false
                 native.ignoreWeights = true
             } else {

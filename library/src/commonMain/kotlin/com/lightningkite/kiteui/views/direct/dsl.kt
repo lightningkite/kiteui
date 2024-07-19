@@ -177,7 +177,19 @@ val perfRowCollapsingToColumn = PerformanceInfo("RowCollapsingToColumn")
 @ViewDsl
 inline fun ViewWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(perfRowCollapsingToColumn { RowCollapsingToColumn(context, breakpoint) }, setup)
+    return write(perfRowCollapsingToColumn { RowCollapsingToColumn(context, listOf(breakpoint)) }, setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(perfRowCollapsingToColumn { RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter)) }, setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.rowCollapsingToColumn(verticalBefore: Dimension, verticalAfter: Dimension, horizontalAgainAfter: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(perfRowCollapsingToColumn { RowCollapsingToColumn(context, listOf(verticalBefore, verticalAfter, horizontalAgainAfter)) }, setup)
 }
 val perfSelect = PerformanceInfo("Select")
 @OptIn(ExperimentalContracts::class)

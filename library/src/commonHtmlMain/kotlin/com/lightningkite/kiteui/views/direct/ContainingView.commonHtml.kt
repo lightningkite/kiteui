@@ -35,10 +35,10 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoint: Dimension) : RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     init {
         native.tag = "div"
-        native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoint))
+        native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))
         native.classes.add("rowCollapsing")
     }
 }

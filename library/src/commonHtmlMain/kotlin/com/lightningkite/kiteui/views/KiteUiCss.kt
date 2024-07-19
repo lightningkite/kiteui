@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
+import kotlin.math.absoluteValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -1095,38 +1096,27 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     val rowCollapsingToColumnHandled = HashSet<String>()
-    fun rowCollapsingToColumn(breakpoint: Dimension): String {
-        val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
+    fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
+        val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.filter { it.isLetterOrDigit() } }}"
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
                 """
                 .$name { display: flex }
             """
             )
-            dynamicCss.rule(
-                """
-                    @media (min-width: ${breakpoint.value}) {
-                        .$name {
-                            flex-direction: row;
-                        }
-                        .$name > .vStart {
-                            align-self: start;
-                        }
-                        .$name > .vCenter {
-                            align-self: center;
-                        }
-                        .$name > .vStretch {
-                            align-self: stretch;
-                        }
-                        .$name > .vEnd {
-                            align-self: end;
-                        }
-                    }
-                """.trimIndent()
-            )
-            dynamicCss.rule(
-                """
-                    @media (max-width: ${breakpoint.value}) {
+            (-1..breakpoints.size-1).forEach { index ->
+                val mediaQuery = listOfNotNull(
+                    breakpoints.getOrNull(index)?.let {
+                        "(min-width: ${it.value})"
+                    },
+                    breakpoints.getOrNull(index + 1)?.let {
+                        "(max-width: ${it.value})"
+                    },
+                ).joinToString(" and ")
+                if(index.rem(2).absoluteValue == 1) {
+                    dynamicCss.rule(
+                        """
+                    @media $mediaQuery {
                         .$name {
                             flex-direction: column;
                         }
@@ -1149,7 +1139,31 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         }
                     }
                 """.trimIndent()
-            )
+                    )
+                } else {
+                    dynamicCss.rule(
+                        """
+                    @media $mediaQuery {
+                        .$name {
+                            flex-direction: row;
+                        }
+                        .$name > .vStart {
+                            align-self: start;
+                        }
+                        .$name > .vCenter {
+                            align-self: center;
+                        }
+                        .$name > .vStretch {
+                            align-self: stretch;
+                        }
+                        .$name > .vEnd {
+                            align-self: end;
+                        }
+                    }
+                """.trimIndent()
+                    )
+                }
+            }
         }
         return name
     }

@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
@@ -46,7 +47,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoint: Dimension) : RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -55,7 +56,8 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
         native.orientation = SimplifiedLinearLayout.VERTICAL
         native.gravity = Gravity.CENTER_HORIZONTAL
         reactiveScope {
-            if (WindowInfo().width < breakpoint) {
+            val w = AppState.windowInfo().width
+            if (breakpoints.indexOfFirst { it > w }.rem(2).absoluteValue == 1) {
                 native.orientation = SimplifiedLinearLayout.VERTICAL
                 native.gravity = Gravity.CENTER_HORIZONTAL
                 native.ignoreWeights = true
