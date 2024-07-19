@@ -844,6 +844,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.style(
+                "progress::-webkit-progress-bar", mapOf(
+                    "border-radius"  to "100px",
+                )
+            )
+        } catch (e: Throwable) { /*squish*/
+        }
+        try {
+            dynamicCss.style(
                 "progress::-moz-progress-bar", mapOf(
                     "height" to "100%",
                     "background-color" to "currentColor",
