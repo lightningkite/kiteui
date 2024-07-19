@@ -157,6 +157,7 @@ object LayoutExamplesScreen : Screen {
                     checkbox { checked bind showExtra }
                     text("Show extra view")
                 }
+                onlyWhen { showExtra.await() } - text("Showing an extra view!")
                 card - row {
                     spacing = 0.rem
                     text("0.0")

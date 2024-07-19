@@ -7,6 +7,7 @@ import kotlin.math.sqrt
 
 sealed interface Paint {
     fun closestColor(): Color
+    fun map(mapper: (Color)->Color): Paint
     fun applyAlpha(alpha: Float): Paint
     fun lighten(ratio: Float): Paint
     fun darken(ratio: Float): Paint
@@ -21,6 +22,7 @@ data class LinearGradient(
     val angle: Angle = Angle.zero,
     val screenStatic: Boolean = false,
 ) : Paint {
+    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
         return stops.map { it.color.toHSV() }.let {
@@ -48,6 +50,7 @@ data class RadialGradient(
     val stops: List<GradientStop>,
     val screenStatic: Boolean = false,
 ) : Paint {
+    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
         return stops.maxByOrNull { it.ratio }?.color ?: Color.transparent
     }
@@ -61,6 +64,7 @@ data class Color(
     val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
+    override fun map(mapper: (Color) -> Color): Paint = let(mapper)
     override fun closestColor(): Color = this
     override fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
 

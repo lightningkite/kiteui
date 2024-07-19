@@ -874,18 +874,23 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 "padding" to "var(--spacing, 0px)",
             )
         )
-        dynamicCss.style(".dismissBackground", mapOf(
-            "border-radius" to "0",
-            "outline-width" to "0",
-            "background-color" to "color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent)"
-        ))
-        dynamicCss.style(".icon", mapOf(
-            "color" to "var(--icon-color, black)"
-        ))
-        dynamicCss.style(".useNavSpacing", mapOf(
-            "--spacing" to "var(--navSpacing, 0px)",
-            "gap" to "var(--spacing, 0.0)",
-        ))
+        dynamicCss.style(
+            ".dismissBackground", mapOf(
+                "border-radius" to "0",
+                "outline-width" to "0",
+                "background-color" to "color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent)"
+            )
+        )
+        dynamicCss.style(
+            ".icon", mapOf(
+                "color" to "var(--icon-color, black)"
+            )
+        )
+        dynamicCss.style(
+            ".useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing", mapOf(
+                "--spacing" to "var(--navSpacing, 0px)",
+            )
+        )
     }
 
     private val transitionHandled = HashSet<String>()
@@ -937,49 +942,60 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     fun themeInteractive(theme: Theme): List<String> {
-        var current = theme.derivedFrom
-        while (current != null) {
-            theme(current)
-            current = current.derivedFrom
-        }
-        val cs = theme.classSelector
+        theme.derivedFrom?.let { themeInteractive(it) }
+        val cs = theme.classSelectorWithTerminator
         theme(theme)
-        fun sub(subtheme: Theme, asSelectors: List<String>) {
-            theme(subtheme, asSelectors = asSelectors.map { "$it$cs" })
+        fun sub(subtheme: Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
+            theme(
+                subtheme,
+                asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs").map { it.trim() }.distinct() },
+                includeMaybeTransition = includeMaybeTransition
+            )
             theme(subtheme.down(), asSelectors = asSelectors.flatMap {
                 listOf(
-                    ".clickable:active $it$cs",
-                    ".clickable:active$it$cs",
+                    ":where(.clickable):active$it $cs",
+                    ":where(.clickable):active$it$cs",
                 )
             }, includeMaybeTransition = true)
             theme(subtheme.hover(), asSelectors = asSelectors.flatMap {
                 listOf(
-                    ".clickable:hover $it$cs",
-                    ".clickable:hover$it$cs",
+                    ":where(.clickable):hover$it $cs",
+                    ":where(.clickable):hover$it$cs",
                 )
             }, includeMaybeTransition = true)
             theme(subtheme.focus(), asSelectors = asSelectors.flatMap {
                 listOf(
-                    ".clickable:focus-visible $it$cs",
-                    ".clickable:focus-visible$it$cs",
+                    ":where(.clickable):focus-visible$it $cs",
+                    ":where(.clickable):focus-visible$it$cs",
                     "input:focus$it$cs",
                     "textarea:focus$it$cs",
                     "select:focus$it$cs",
-                    "$it:has(> input:focus-visible:not(.mightTransition))$cs",
-                    "$it:has(> textarea:focus-visible:not(.mightTransition))$cs",
-                    "$it:has(> select:focus-visible:not(.mightTransition))$cs",
+                    ":has(> input:focus-visible:not(.mightTransition))$it$cs",
+                    ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
+                    ":has(> select:focus-visible:not(.mightTransition))$it$cs",
+                    ":has(> input:focus-visible:not(.mightTransition))$it $cs",
+                    ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
+                    ":has(> select:focus-visible:not(.mightTransition))$it $cs",
                 )
             }, includeMaybeTransition = true)
             theme(subtheme.disabled(), asSelectors = asSelectors.flatMap {
                 listOf(
-                    ".clickable:disabled $it$cs",
-                    ".clickable:disabled$it$cs",
+                    ":where(.clickable):disabled$it $cs",
+                    ":where(.clickable):disabled$it$cs",
                 )
             })
         }
-        sub(theme, asSelectors = listOf(""))
-        sub(theme.selected(), asSelectors = listOf(":has(> input:checked).checkResponsive"))
-        sub(theme.unselected(), asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"))
+        sub(theme, asSelectors = listOf(""), includeMaybeTransition = false)
+        sub(
+            theme.selected(),
+            asSelectors = listOf(":has(> input:checked).checkResponsive"),
+            includeMaybeTransition = true
+        )
+        sub(
+            theme.unselected(),
+            asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"),
+            includeMaybeTransition = true
+        )
         return theme.classes
     }
 
@@ -988,11 +1004,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             generateSequence(this@classes) { it.derivedFrom }
                 .toList()
                 .reversed()
+                .map { t -> (t.derivationId ?: t.id) }
+                .plus("term")
                 .forEachIndexed { index, t ->
-                    add("t-" + (t.derivationId?.let { index.toString() + it } ?: t.id))
+                    add("t-$index$t")
                 }
         }
-    private val Theme.classSelector get() = classes.joinToString("") { ".$it" }
+    private val Theme.classSelector get() = classes.dropLast(1).joinToString("") { ".$it" }
+    private val Theme.classSelectorWithTerminator get() = classes.joinToString("") { ".$it" }
 
     private val themeHandled = HashSet<String>()
     fun theme(
@@ -1021,7 +1040,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ) to mapOf(
                 "--parentSpacing" to theme.spacing.value,
             ),
-            sel(".useNavSpacing > *",) to mapOf(
+            sel(".useNavSpacing > *") to mapOf(
                 "--parentSpacing" to theme.navSpacing.value,
             ),
 
@@ -1045,14 +1064,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
                     "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
                 )
-            }),
-
-            (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to mapOf(
+            }) + mapOf(
                 "outline-width" to theme.outlineWidth.value,
                 "outline-offset" to (theme.outlineWidth * -1).value,
                 "box-shadow" to theme.elevation.toBoxShadow(),
                 "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
             ),
+
             sel("") to mapOf(
                 "color" to theme.foreground.toCss(),
                 "--icon-color" to theme.icon.toCss(),
@@ -1082,23 +1100,21 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
         )
 
-        var skipped = 0
+        val baseRules = l(theme)
+            .groupBy { it.first }.mapValues { it.value.flatMap { it.second.entries }.associate { it.key to it.value } }
+        val derivedFromRules = theme.derivedFrom?.let {
+            l(it).groupBy { it.first }
+                .mapValues { it.value.flatMap { it.second.entries }.associate { it.key to it.value } }
+        } ?: mapOf()
+        val resultingRules = baseRules.mapValues {
+            it.value.filter { it2 ->
+                it2.value != derivedFromRules[it.key]?.get(it2.key)
+            }
+        }
+
         dynamicCss.styles(
             mediaQuery = mediaQuery,
-            styles = l(theme).let {
-                val diffTheme = theme.derivedFrom
-                if (diffTheme != null) {
-                    val toRemove = l(diffTheme)
-                    it.zip(toRemove) { a, b ->
-                        val m: Map<String, String> = a.second.filter {
-                            val x = it.value != b.second[it.key]
-                            if (!x) skipped++
-                            x
-                        }
-                        a.first to m
-                    }.filter { it.second.isNotEmpty() }
-                } else it
-            }.groupBy { it.first }.mapValues { it.value.flatMap { it.second.entries }.associate { it.key to it.value } }
+            styles = resultingRules
         )
 
         return classes

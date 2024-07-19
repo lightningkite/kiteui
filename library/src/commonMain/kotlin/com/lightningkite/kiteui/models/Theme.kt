@@ -74,18 +74,15 @@ data object FieldSemantic : Semantic {
 
 data object ButtonSemantic : Semantic {
     override val key: String = "btn"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "btn",
-        font = theme.font.copy(allCaps = true, bold = true)
-    ).withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
 }
 
 data object HoverSemantic : Semantic {
     override val key: String = "hov"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "hov",
-        background = theme.background.closestColor().highlight(0.2f),
-        outline = theme.background.closestColor().highlight(0.2f).highlight(0.1f),
+        background = theme.background.map { it.highlight(0.2f) },
+        outline = theme.background.map { it.highlight(0.2f).highlight(0.1f) },
         elevation = theme.elevation * 2f,
     ).withBack
 }
@@ -94,8 +91,8 @@ data object DownSemantic : Semantic {
     override val key: String = "dwn"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "dwn",
-        background = theme.background.closestColor().highlight(0.3f),
-        outline = theme.background.closestColor().highlight(0.3f).highlight(0.1f),
+        background = theme.background.map { it.highlight(0.3f) },
+        outline = theme.background.map { it.highlight(0.3f).highlight(0.1f) },
         elevation = theme.elevation / 2f,
     ).withBack
 }
@@ -105,7 +102,7 @@ data object FocusSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "fcs",
         outlineWidth = theme.outlineWidth + 2.dp,
-        outline = theme.outline.closestColor().highlight(1f),
+        outline = theme.outline.map { it.highlight(1f) },
     ).withBack
 }
 
@@ -146,7 +143,7 @@ data object BarSemantic : Semantic {
 
 data object NavSemantic : Semantic {
     override val key: String = "nav"
-    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
 }
 
 data object DialogSemantic : Semantic {
