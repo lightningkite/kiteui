@@ -11,11 +11,39 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
+import kotlin.time.measureTime
 
 @Routable("controls")
 object ControlsScreen : Screen {
     override fun ViewWriter.render() {
-        val booleanContent = Property(true).also {
+        class PerfProperty<T>(startValue: T): ImmediateWritable<T> {
+            private val listeners = ArrayList<() -> Unit>()
+            override var value: T = startValue
+            set(value) {
+                if(field != value) {
+                    field = value
+                    measureTime {
+                        listeners.invokeAllSafe()
+                    }.also { println("Calling listeners took $it") }
+                }
+            }
+
+            override fun addListener(listener: () -> Unit): () -> Unit {
+                listeners.add(listener)
+                return {
+                    val pos = listeners.indexOfFirst { it === listener }
+                    if (pos != -1) {
+                        listeners.removeAt(pos)
+                    }
+                }
+            }
+            override suspend infix fun set(value: T) {
+                this.value = value
+            }
+        }
+        val booleanContent = PerfProperty(true).also {
             it.addListener { println("booleanContent changed!") }
         }
         col {

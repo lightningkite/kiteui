@@ -2,623 +2,203 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
-        dynamicCss.style(
-            "*", mapOf(
-                "box-sizing" to "border-box",
-                "line-height" to "unset",
-                "--parentPadding" to "0px",
-            )
-        )
-        dynamicCss.style("h1, h2, h3, h4, h5, h6, p, .subtext", mapOf("whitespace" to "pre-wrap"))
-//        dynamicCss.style("h2", mapOf("font-size" to "1.6rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style("h3", mapOf("font-size" to "1.4rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style("h4", mapOf("font-size" to "1.3rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style("h5", mapOf("font-size" to "1.2rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style("h6", mapOf("font-size" to "1.1rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style("p", mapOf("font-size" to "1rem", "whitespace" to "pre-wrap"))
-//        dynamicCss.style(".subtext", mapOf("font-size" to "0.8rem", "opacity" to "0.8", "whitespace" to "pre-wrap"))
-//        style.visibility = if (value) "visible" else "hidden"
-        dynamicCss.style(
-            ".visibleOnParentHover",
-            mapOf(
-                "visibility" to "hidden",
-                "width" to "auto",
-                "height" to "auto",
-                "max-width" to "unset",
-                "max-height" to "unset",
-            )
-        )
-        dynamicCss.style(":hover>.visibleOnParentHover", mapOf("visibility" to "visible"))
-        dynamicCss.style(":hover.visibleOnParentHover", mapOf("visibility" to "visible"))
-        dynamicCss.style(
-            ".kiteui-space",
-            mapOf("min-width" to "calc(var(--space-multiplier, 1.0) * var(--spacing, 0px))")
-        )
-
-        dynamicCss.style(".swapImage", mapOf("overflow" to "hidden"))
-        dynamicCss.style(
-            ".swapImage > img",
-            mapOf("object-fit" to "contain", "transition-duration" to "var(--transition-duration, 0.25s)")
-        )
-        dynamicCss.style(".swapImage.scaleType-Fit > img", mapOf("object-fit" to "contain"))
-        dynamicCss.style(".swapImage.scaleType-Crop > img", mapOf("object-fit" to "cover"))
-        dynamicCss.style(".swapImage.scaleType-Stretch > img", mapOf("object-fit" to "fill"))
-        dynamicCss.style(".swapImage.scaleType-NoScale > img", mapOf("object-fit" to "none"))
-        dynamicCss.style("video.scaleType-Fit", mapOf("object-fit" to "contain"))
-        dynamicCss.style("video.scaleType-Crop", mapOf("object-fit" to "cover"))
-        dynamicCss.style("video.scaleType-Stretch", mapOf("object-fit" to "fill"))
-        dynamicCss.style("video.scaleType-NoScale", mapOf("object-fit" to "none"))
-
-        dynamicCss.style(
-            ".noInteraction.noInteraction", mapOf(
-                "pointer-events" to "none"
-            )
-        )
-        dynamicCss.style(
-            ".noInteraction > *", mapOf(
-                "pointer-events" to "auto"
-            )
-        )
-
-        dynamicCss.style(
-            "body", mapOf(
-                "height" to "100svh",
-                "max-height" to "100svh",
-                "max-width" to "100vw",
-                "overflow" to "hidden"
-            )
-        )
-
-        dynamicCss.style(
-            "body > div", mapOf(
-                "height" to "100%",
-                "max-width" to "100vw",
-            )
-        )
-
-        dynamicCss.style(
-            "a", mapOf(
-                "text-decoration" to "none",
-                "color" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            "a:visited", mapOf(
-                "color" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            "button, input, textarea, select", mapOf(
-                "background" to "none",
-                "border-width" to "0",
-                "outline-width" to "0",
-                "font" to "unset",
-                "color" to "unset",
-                "text-align" to "start",
-            )
-        )
-
-        dynamicCss.style(
-            "input:focus, textarea:focus", mapOf(
-                "outline" to "none",
-            )
-        )
-
-        dynamicCss.style(
-            ".spinner", mapOf(
-                "width" to "32px !important",
-                "height" to "32px !important",
-                "opacity" to "0.5 !important",
-                "background" to "none !important",
-                "box-shadow" to "none !important",
-                "border-style" to "solid !important",
-                "border-color" to "currentColor currentColor currentColor transparent !important",
-                "border-width" to "5px !important",
-                "border-radius" to "50% !important",
-                "animation" to "spin 2s infinite linear !important",
-            )
-        )
-
-
-        val rowForceFlex = ".kiteui-row"
-//        val rowForceFlex = ".childHasWeight"
-        """
-    .kiteui-col:not(.childHasWeight) > .kiteui-col.childHasWeight,
-    .kiteui-col:not(.childHasWeight) > .kiteui-row$rowForceFlex,
-    .kiteui-col:not(.childHasWeight) > .kiteui-label,
-    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> .vCenter:only-child),
-    .kiteui-col:not(.childHasWeight) > .rowCollapsing {
-        display: block flex;
-    }
-    .kiteui-row:not($rowForceFlex) > .kiteui-col.childHasWeight,
-    .kiteui-row:not($rowForceFlex) > .kiteui-row$rowForceFlex,
-    .kiteui-row:not($rowForceFlex) > .kiteui-label,
-    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> .vCenter:only-child),
-    .kiteui-row:not($rowForceFlex) > .rowCollapsing {
-        display: inline-flex;
-    }
-    .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> :not(:only-child)) {
-        display: block grid;
-    }
-    .kiteui-row:not($rowForceFlex) > .kiteui-stack:has(> :not(:only-child)) {
-        display: inline-grid;
-    }
-
-
-    .kiteui-col.childHasWeight > .hEnd {
-        align-self: end;
-    }
-    .kiteui-col.childHasWeight > .hStretch {
-        align-self: stretch;
-    }
-    .kiteui-col.childHasWeight > .hCenter {
-        align-self: center;
-    }
-    .kiteui-col.childHasWeight > .hStart {
-        align-self: start;
-    }
-    .kiteui-col.childHasWeight {
-        display: flex;
-        flex-direction: column;
-    }
-
-
-
-    .kiteui-col:not(.childHasWeight) > * {
-        display: block;
-        width: calc(100%);
-    }
-    .kiteui-col:not(.childHasWeight) > :not(:last-child) {
-        margin-bottom: var(--parentSpacing, 0);
-    }
-    .kiteui-col:not(.childHasWeight) > .hEnd {
-        width: fit-content;
-        margin-left: auto;
-    }
-    .kiteui-col:not(.childHasWeight) > .hCenter {
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .kiteui-col:not(.childHasWeight) > .hStart {
-        width: fit-content;
-        margin-right: auto;
-    }
-
-
-    .kiteui-row:not($rowForceFlex) > * {
-        display: inline-block;
-        height: calc(100% - var(--parentPadding, 0) * 2);
-        vertical-align: top;
-    }
-    .kiteui-row:not($rowForceFlex) > :not(:last-child) {
-        margin-right: var(--parentSpacing, 0);
-    }
-    .kiteui-row:not($rowForceFlex) {
-        white-space: nowrap;
-    }
-    .kiteui-row:not($rowForceFlex)::before {
-      content: "\200B";
-      display: inline-block;
-      height: 100%; 
-      vertical-align: middle;
-    }
-    .kiteui-row:not($rowForceFlex) > .vEnd {
-        vertical-align: bottom;
-        height: fit-content;
-    }
-    .kiteui-row:not($rowForceFlex) > .vCenter {
-        vertical-align: middle;
-        height: fit-content;
-    }
-    .kiteui-row:not($rowForceFlex) > .vStart {
-        vertical-align: top;
-        height: fit-content;
-    }
-
-
-    .kiteui-row$rowForceFlex > .vEnd {
-        align-self: end;
-    }
-    .kiteui-row$rowForceFlex > .vStretch {
-        align-self: stretch;
-    }
-    .kiteui-row$rowForceFlex > .vCenter {
-        align-self: center;
-    }
-    .kiteui-row$rowForceFlex > .vStart {
-        align-self: start;
-    }
-    .kiteui-row$rowForceFlex {
-        display: flex;
-        flex-direction: row;
-    }
-    
-    
-    .kiteui-stack > .vEnd:not(:only-child) {
-        align-self: end;
-    }
-
-    .kiteui-stack > .vStretch:not(:only-child) {
-        align-self: stretch;
-    }
-
-    .kiteui-stack > .vCenter:not(:only-child) {
-        align-self: center;
-    }
-    .kiteui-stack > .vStart:not(:only-child) {
-        align-self: start;
-    }
-    .kiteui-stack > .hEnd:not(:only-child) {
-        justify-self: end;
-    }
-    .kiteui-stack > .hStretch:not(:only-child) {
-        justify-self: stretch;
-    }
-
-    .kiteui-stack > .hCenter:not(:only-child) {
-        justify-self: center;
-    }
-
-    .kiteui-stack > .hStart:not(:only-child) {
-        justify-self: start;
-    }
-
-
-
-    .kiteui-stack > :not(:only-child) {
-        grid-column-start: 1;
-        grid-column-end: 1;
-        grid-row-start: 1;
-        grid-row-end: 1;
-        align-self: stretch;
-        justify-self: stretch;
-    }
-
-    .kiteui-stack:has(> :not(:only-child)) {
-        display: grid;
-        grid-template-columns: 100%;
-        grid-template-rows: 100%;
-    }
-
-    .kiteui-stack:has(> :only-child) {
-        line-height: 0px !important;
-    }
-
-    .kiteui-stack > :only-child {
-        height: 100%;
-        width: 100%;
-        vertical-align: top;
-        display: block;
-    }
-
-    .kiteui-stack > .vEnd:only-child {
-        height: unset;
-        vertical-align: top;
-    }
-
-    .kiteui-stack > .vStart:only-child {
-        height: unset;
-        vertical-align: bottom;
-    }
-
-    .kiteui-stack > .hEnd:only-child {
-        width: unset;
-        margin-left: auto;
-    }
-
-    .kiteui-stack > .hCenter:only-child {
-        width: unset;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .kiteui-stack > .hStart:only-child {
-        width: unset;
-        margin-right: auto;
-    }
-    
-    .kiteui-stack:has(> .vCenter:only-child) {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-    }
-    .kiteui-stack > .vCenter:only-child {
-        height: fit-content;
-    }
-    
-        """.trimIndent().split('}').filter { it.isNotBlank() }.forEach { dynamicCss.rule("$it}") }
-
-        dynamicCss.style(
-            "img", mapOf(
-                "overflow" to "hidden",
-            )
-        )
-
-        dynamicCss.style(
-            "p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack)",
-            mapOf(
-                "min-height" to "1.4em",
-                "background" to "color-mix(in srgb, currentColor, transparent 70%) !important",
-                "animation" to "flickerAnimation 2s infinite !important",
-                "animation-timing-function" to "linear",
-            )
-        )
-
-        dynamicCss.style(
-            "button.loading:after", mapOf(
-                "opacity" to "0.5 !important",
-                "content" to "\"\"",
-                "pointer-events" to "none",
-                "position" to "absolute",
-                "top" to "calc(50% - 15px)",
-                "left" to "calc(50% - 15px)",
-                "width" to "20px !important",
-                "height" to "20px !important",
-                "background" to "none !important",
-                "box-shadow" to "none !important",
-                "border-style" to "solid !important",
-                "border-color" to "currentColor currentColor currentColor transparent !important",
-                "border-width" to "6px !important",
-                "border-radius" to "50% !important",
-                "transition" to "all .3s ease",
-                "animation" to "spin 2s infinite linear !important",
-            )
-        )
-        dynamicCss.style("button", mapOf("position" to "relative"))
-        dynamicCss.style(
-            "button.loading > *", mapOf(
-                "opacity" to "0.15",
-            )
-        )
-
-        dynamicCss.style(
-            ".clickable", mapOf(
-                "cursor" to "pointer",
-            )
-        )
-
-        dynamicCss.style(
-            ".switch", mapOf(
-                "position" to "relative",
-                "overflow" to "visible",
-                "padding" to "0 !important",
-                "height" to "1.5rem",
-                "width" to "3rem",
-                "cursor" to "pointer",
-                "appearance" to "none",
-                "-webkit-appearance" to "none",
-                "border-radius" to "9999px !important",
-                "background-color" to "rgba(100, 116, 139, 0.377)",
-                "transition" to "all .3s ease",
-            )
-        )
-
-        dynamicCss.style(
-            ".switch:not(:checked)", mapOf(
-                "background-color" to "rgb(204, 204, 204) !important",
-                "background-image" to "none !important",
-            )
-        )
-
-        dynamicCss.style(
-            ".switch::before", mapOf(
-                "position" to "absolute",
-                "content" to "\"\"",
-                "left" to "calc(1.5rem - 1.6rem)",
-                "top" to "calc(1.5rem - 1.6rem)",
-                "display" to "block",
-                "height" to "1.6rem",
-                "width" to "1.6rem",
-                "max-width" to "unset",
-                "max-height" to "unset",
-                "cursor" to "pointer",
-                "border" to "1px solid rgba(100, 116, 139, 0.527)",
-                "border-radius" to "9999px !important",
-                "background-color" to "rgba(255, 255, 255, 1)",
-                "box-shadow" to "0 3px 10px rgba(100, 116, 139, 0.327)",
-                "transition" to "all .3s ease",
-            )
-        )
-
-        dynamicCss.style(
-            ".switch:checked:before", mapOf(
-                "left" to "calc(3rem - 1.6rem)",
-            )
-        )
-
-        dynamicCss.style(
-            ".checkbox", mapOf(
-                "appearance" to "none",
-                "width" to "1.5rem",
-                "height" to "1.5rem",
-                "position" to "relative",
-                "padding" to "0px !important",
-                "border-width" to "0.1rem",
-                "border-style" to "solid",
-                "opacity" to "0.75",
-            )
-        )
-        dynamicCss.style(
-            ".checkbox:checked", mapOf(
-                "opacity" to "1",
-            )
-        )
-        dynamicCss.style(
-            ".checkbox::after", mapOf(
-                "position" to "absolute",
-                "content" to "\"\"",
-                "display" to "block",
-                "width" to "0.8rem",
-                "height" to "0.3rem",
-                "top" to "0.3rem",
-                "left" to "0.16rem",
-                "border-left-color" to "currentColor",
-                "border-bottom-color" to "currentColor",
-                "border-left-style" to "solid",
-                "border-bottom-style" to "solid",
-                "border-left-width" to "0.2rem",
-                "border-bottom-width" to "0.2rem",
-                "opacity" to "0.4",
-                "transform" to "rotate(-45deg) scale(0,0)",
-                "transition-property" to "opacity, transform",
-                "transition-timing-function" to "linear",
-            )
-        )
-        dynamicCss.style(
-            ":checked.checkbox::after", mapOf(
-                "opacity" to "1",
-                "transform" to "rotate(-45deg)"
-            )
-        )
-        dynamicCss.style(
-            ".radio", mapOf(
-                "appearance" to "none",
-                "width" to "1.5rem",
-                "height" to "1.5rem",
-                "position" to "relative",
-                "border-radius" to "999px !important",
-                "padding" to "0px !important",
-                "border-width" to "0.1rem",
-                "border-style" to "solid",
-            )
-        )
-        dynamicCss.style(
-            ".radio::after", mapOf(
-                "position" to "absolute",
-                "border-radius" to "999px",
-                "content" to "\"\"",
-                "display" to "block",
-                "width" to "1rem",
-                "height" to "1rem",
-                "top" to "0.15rem",
-                "left" to "0.15rem",
-                "background-color" to "currentColor",
-                "opacity" to "0.4",
-                "transform" to "scale(0,0)",
-                "transition-property" to "opacity, transform",
-                "transition-timing-function" to "linear",
-            )
-        )
-        dynamicCss.style(
-            ":checked.radio::after", mapOf(
-                "opacity" to "1",
-                "transform" to "none"
-            )
-        )
-
-        dynamicCss.style(
-            ".crowd", mapOf(
-                "padding" to "0 !important",
-            )
-        )
-
-        dynamicCss.style(
-            ".kiteui-label.kiteui-label", mapOf(
-                "display" to "flex",
-                "flex-direction" to "column",
-                "align-items" to "stretch",
-            )
-        )
-
-        dynamicCss.style(
-            "*", mapOf(
-                "scrollbar-color" to "#999 #0000",
-                "scrollbar-width" to "thin",
-                "scrollbar-gutter" to "auto",
-                "flex-shrink" to "0",
-                "max-width" to "calc(100%)",
-                "max-height" to "calc(100%)",
-                "min-height" to "0",
-                "min-width" to "0",
-                "padding" to "0",
-            )
-        )
-
-        dynamicCss.style(
-            "input", mapOf(
-                "min-height" to "1.5rem",
-                "min-width" to "1.5rem",
-            )
-        )
-
-        dynamicCss.style(
-            "::placeholder", mapOf(
-                "color" to "currentColor",
-                "opacity" to "0.3",
-            )
-        )
-
-        dynamicCss.style(
-            ".kiteui-separator", mapOf(
-                "background-color" to "currentColor",
-                "opacity" to "0.25",
-                "min-width" to "1px",
-                "min-height" to "1px",
-            )
-        )
-
-        dynamicCss.style(
-            "iframe#webpack-dev-server-client-overlay", mapOf(
-                "display" to "none !important"
-            )
-        )
-
-
-        dynamicCss.style(
-            ".scroll-vertical > *", mapOf(
-                "max-height" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            ".scroll-vertical", mapOf(
-                "overflow-y" to "auto",
-                "overflow-x" to "hidden",
-            )
-        )
-
-        dynamicCss.style(
-            ".scroll-horizontal > *", mapOf(
-                "max-width" to "unset",
-            )
-        )
-
-        dynamicCss.style(
-            ".scroll-horizontal", mapOf(
-                "overflow-x" to "auto",
-                "overflow-y" to "hidden",
-            )
-        )
-
-        dynamicCss.style(
-            "::-webkit-scrollbar", mapOf(
-                "background" to "#0000",
-            )
-        )
-
-        dynamicCss.style(
-            "::-webkit-scrollbar-thumb", mapOf(
-                "background" to "color-mix(in srgb, currentColor 20%, transparent)",
-                "-webkit-border-radius" to "4px",
-            )
-        )
-
-        dynamicCss.style(
-            "::-webkit-scrollbar-corner", mapOf(
-                "background" to "#0000"
-            )
-        )
-
+        //language=CSS
+        @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
+            /*noinspection ALL*/@media {
+            .useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing {
+                --spacing: var(--navSpacing, 0px);
+            }
+
+            .icon {
+                color: var(--icon-color, black);
+            }
+
+            .dismissBackground {
+                border-radius: 0px;
+                outline-width: 0px;
+                background-color: color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent);
+            }
+
+            .mightTransition:not(.isRoot):not(.swapImage):not(.unpadded), .padded:not(.unpadded):not(.swapImage) {
+                padding: var(--spacing, 0px);
+            }
+
+            input[type="number"] {
+                appearance: textfield;
+            }
+
+            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+                appearance: none;
+            }
+
+            progress::-moz-progress-bar {
+                height: 100%;
+                background-color: currentcolor;
+                border-radius: 1rem;
+            }
+
+            progress::-webkit-progress-bar {
+                border-radius: 100px;
+            }
+
+            progress::-webkit-progress-value {
+                height: 100%;
+                background-color: currentcolor;
+                border-radius: 1rem;
+            }
+
+            progress {
+                height: 0.5rem;
+                border: medium;
+                border-radius: 1rem;
+                padding: 0px !important;
+                appearance: none;
+                background: color-mix(in srgb, currentcolor 20%, transparent);
+            }
+
+            @media (pointer: coarse) and (hover: none) {
+                .touchscreenOnly {
+                    visibility: visible;
+                }
+            }
+
+            .touchscreenOnly {
+            }
+
+            .viewPager > :not(.recyclerViewCap) {
+                width: var(--pager-width, 0rem);
+                height: var(--pager-height, 0rem);
+                scroll-snap-align: center;
+                scroll-snap-stop: always;
+            }
+
+            .viewPager {
+                scroll-snap-type: x mandatory;
+            }
+
+            .recyclerViewGridSub > * {
+                flex: 1 1 0px;
+            }
+
+            .contentScroll-H > .recyclerViewGridSub {
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacing, 0);
+                width: auto;
+            }
+
+            .contentScroll-V > .recyclerViewGridSub {
+                display: flex;
+                flex-direction: row;
+                gap: var(--spacing, 0);
+                height: auto;
+            }
+
+            .contentScroll-H > * {
+                max-width: unset;
+                position: absolute;
+                height: calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2);
+                margin-top: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
+                margin-bottom: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
+                overflow-anchor: revert;
+            }
+
+            .contentScroll-V > * {
+                position: absolute;
+                max-height: unset;
+                width: calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2);
+                margin-left: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
+                margin-right: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
+                overflow-anchor: revert;
+            }
+
+            .contentScroll-H {
+                width: 100%;
+                height: 100%;
+                position: relative;
+                overflow-x: scroll;
+                overflow-anchor: none;
+                scrollbar-width: none;
+            }
+
+            .contentScroll-V {
+                width: 100%;
+                height: 100%;
+                position: relative;
+                overflow-y: scroll;
+                overflow-anchor: none;
+                scrollbar-width: none;
+            }
+
+            .contentScroll-H::-webkit-scrollbar {
+                display: none;
+            }
+
+            .contentScroll-V::-webkit-scrollbar {
+                display: none;
+            }
+
+            .recyclerView > * > * {
+                overflow-anchor: none;
+            }
+
+            .recyclerView > * {
+                overflow-anchor: none;
+                scroll-behavior: auto !important;
+            }
+
+            .recyclerView {
+                position: relative;
+                padding: 0px !important;
+                scroll-behavior: auto;
+            }
+
+            .dismissBackground + * {
+                z-index: 999;
+            }
+
+            .dismissBackground {
+                z-index: 998;
+                pointer-events: auto;
+            }
+
+            .notransition, .notransition * {
+                transition: none !important;
+            }
+
+            :not(.unkiteui).animatingShowHide {
+                overflow: hidden;
+            }
+
+            :not(.unkiteui) {
+                transition-timing-function: linear;
+                transition-delay: 0s;
+                transition-property: color, background-image, background-color, border-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter;
+            }
+
+            [hidden] {
+                display: none !important;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
             @keyframes flickerAnimation {
                 0% {
                     opacity: 1;
@@ -630,275 +210,611 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     opacity: 1;
                 }
             }
-        """.trimIndent()
-        )
-        dynamicCss.rule(
-            """
-            @keyframes spin {
-                from {
-                    transform: rotate(0deg);
-                }
-                to {
-                    transform: rotate(360deg);
-                }
+
+            ::-webkit-scrollbar-corner {
+                background: none;
             }
-        """.trimIndent()
-        )
 
-//        DynamicCss.style(
-//            ".kiteui-row > [hidden]", mapOf(
-//                "width" to "0px !important",
-//                "transform" to "scaleX(0)",
-//            )
-//        )
-//        DynamicCss.style(
-//            ".kiteui-col > [hidden]", mapOf(
-//                "height" to "0px !important",
-//                "transform" to "scaleY(0)",
-//            )
-//        )
-//        DynamicCss.style(
-//            ".kiteui-stack > [hidden]", mapOf(
-////                "width" to "0px !important",
-////                "height" to "0px !important",
-//                "transform" to "scale(0, 0)",
-//            )
-//        )
-        dynamicCss.style(
-            "[hidden]", mapOf(
-                "display" to "none !important",
-            )
-        )
-
-        dynamicCss.style(
-            ":not(.unkiteui)", mapOf(
-                "transition-timing-function" to "linear",
-                "transition-delay" to "0s",
-                "transition-property" to "color, background-image, background-color, border-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter",
-            )
-        )
-
-        dynamicCss.style(
-            ":not(.unkiteui).animatingShowHide", mapOf(
-                "overflow" to "hidden",
-                "minWidth" to "0px",
-                "minHeight" to "0px",
-            )
-        )
-
-        dynamicCss.style(
-            ".notransition, .notransition *", mapOf(
-                "transition" to "none !important"
-            )
-        )
-
-        dynamicCss.style(
-            ".dismissBackground", mapOf(
-                "z-index" to "998",
-                "pointer-events" to "auto"
-            )
-        )
-        dynamicCss.style(
-            ".dismissBackground + *", mapOf(
-                "z-index" to "999",
-            )
-        )
-
-        dynamicCss.style(
-            ".recyclerView", mapOf(
-                "position" to "relative",
-                "padding" to "0 !important",
-                "scroll-behavior" to "auto",
-            )
-        )
-        dynamicCss.style(
-            ".recyclerView > *", mapOf(
-                "overflow-anchor" to "none",
-                "scroll-behavior" to "auto !important;",
-            )
-        )
-        dynamicCss.style(
-            ".recyclerView > * > *", mapOf(
-                "overflow-anchor" to "none",
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-V::-webkit-scrollbar", mapOf(
-                "display" to "none"
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-H::-webkit-scrollbar", mapOf(
-                "display" to "none"
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-V", mapOf(
-                "width" to "100%",
-                "height" to "100%",
-                "position" to "relative",
-                "overflow-y" to "scroll",
-                "overflow-anchor" to "none",
-                "scrollbar-width" to "none",
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-H", mapOf(
-                "width" to "100%",
-                "height" to "100%",
-                "position" to "relative",
-                "overflow-x" to "scroll",
-                "overflow-anchor" to "none",
-                "scrollbar-width" to "none",
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-V > *", mapOf(
-                "position" to "absolute",
-                "max-height" to "unset",
-                "width" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-                "margin-left" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "margin-right" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "overflow-anchor" to "revert",
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-H > *", mapOf(
-                "max-width" to "unset",
-                "position" to "absolute",
-                "height" to "calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2)",
-                "margin-top" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "margin-bottom" to "calc(var(--parentSpacing, 0px) * var(--usePadding, 0))",
-                "overflow-anchor" to "revert",
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-V > .recyclerViewGridSub", mapOf(
-                "display" to "flex",
-                "flex-direction" to "row",
-                "gap" to "var(--spacing, 0)",
-                "height" to "auto"
-            )
-        )
-        dynamicCss.style(
-            ".contentScroll-H > .recyclerViewGridSub", mapOf(
-                "display" to "flex",
-                "flex-direction" to "column",
-                "gap" to "var(--spacing, 0)",
-                "width" to "auto"
-            )
-        )
-        dynamicCss.style(
-            ".recyclerViewGridSub > *", mapOf(
-                "flex-grow" to "1",
-                "flex-shrink" to "1",
-                "flex-basis" to "0",
-            )
-        )
-        dynamicCss.style(
-            ".viewPager", mapOf(
-                "scroll-snap-type" to "x mandatory"
-            )
-        )
-        dynamicCss.style(
-            ".viewPager > :not(.recyclerViewCap)", mapOf(
-                "width" to "var(--pager-width, 0rem)",
-                "height" to "var(--pager-height, 0rem)",
-                "scroll-snap-align" to "center",
-                "scroll-snap-stop" to "always",
-            )
-        )
-        dynamicCss.style(
-            ".touchscreenOnly", mapOf(
-                "visibility" to "gone"
-            )
-        )
-        dynamicCss.rule(
-            """
-            @media (pointer: coarse) and (hover: none) {
-                .touchscreenOnly {
-                    visibility: visible
-                }
+            ::-webkit-scrollbar-thumb {
+                background: color-mix(in srgb, currentcolor 20%, transparent);
+                border-radius: 4px;
             }
-        """.trimIndent()
-        )
-        dynamicCss.style(
-            "progress", mapOf(
-                "height" to "0.5rem",
-                "border" to "none",
-                "border-radius" to "1rem",
-                "padding" to "0px !important",
-                "appearance" to "none",
-                "background" to "color-mix(in srgb, currentColor 20%, transparent)",
-            )
-        )
+
+            ::-webkit-scrollbar {
+                background: none;
+            }
+
+            .scroll-horizontal {
+                overflow: auto hidden;
+            }
+
+            .scroll-horizontal > * {
+                max-width: unset;
+            }
+
+            .scroll-vertical {
+                overflow: hidden auto;
+            }
+
+            .scroll-vertical > * {
+                max-height: unset;
+            }
+
+            iframe#webpack-dev-server-client-overlay {
+                display: none !important;
+            }
+
+            .kiteui-separator {
+                background-color: currentcolor;
+                opacity: 0.25;
+                min-width: 1px;
+                min-height: 1px;
+            }
+
+            ::placeholder {
+                color: currentcolor;
+                opacity: 0.3;
+            }
+
+            input {
+                min-height: 1.5rem;
+                min-width: 1.5rem;
+            }
+
+            * {
+                scrollbar-color: rgb(153, 153, 153) rgba(0, 0, 0, 0);
+                scrollbar-width: thin;
+                scrollbar-gutter: auto;
+                flex-shrink: 0;
+                max-width: calc(100%);
+                max-height: calc(100%);
+                min-height: 0px;
+                min-width: 0px;
+                padding: 0px;
+            }
+
+            .kiteui-label.kiteui-label {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .crowd {
+                padding: 0px !important;
+            }
+
+            :checked.radio::after {
+                opacity: 1;
+                transform: none;
+            }
+
+            .radio::after {
+                position: absolute;
+                border-radius: 999px;
+                content: "";
+                display: block;
+                width: 1rem;
+                height: 1rem;
+                top: 0.15rem;
+                left: 0.15rem;
+                background-color: currentcolor;
+                opacity: 0.4;
+                transform: scale(0);
+                transition-property: opacity, transform;
+                transition-timing-function: linear;
+            }
+
+            .radio {
+                appearance: none;
+                width: 1.5rem;
+                height: 1.5rem;
+                position: relative;
+                border-radius: 999px !important;
+                padding: 0px !important;
+                border-width: 0.1rem;
+                border-style: solid;
+            }
+
+            :checked.checkbox::after {
+                opacity: 1;
+                transform: rotate(-45deg);
+            }
+
+            .checkbox::after {
+                position: absolute;
+                content: "";
+                display: block;
+                width: 0.8rem;
+                height: 0.3rem;
+                top: 0.3rem;
+                left: 0.16rem;
+                border-left-color: currentcolor;
+                border-bottom: 0.2rem solid;
+                border-left-style: solid;
+                border-left-width: 0.2rem;
+                opacity: 0.4;
+                transform: rotate(-45deg) scale(0);
+                transition-property: opacity, transform;
+                transition-timing-function: linear;
+            }
+
+            .checkbox:checked {
+                opacity: 1;
+            }
+
+            .checkbox {
+                appearance: none;
+                width: 1.5rem;
+                height: 1.5rem;
+                position: relative;
+                padding: 0px !important;
+                border-width: 0.1rem;
+                border-style: solid;
+                opacity: 0.75;
+            }
+
+            .switch:checked::before {
+                left: calc(1.4rem);
+            }
+
+            .switch::before {
+                position: absolute;
+                content: "";
+                left: calc(-0.1rem);
+                top: calc(-0.1rem);
+                display: block;
+                height: 1.6rem;
+                width: 1.6rem;
+                max-width: unset;
+                max-height: unset;
+                cursor: pointer;
+                border: 1px solid rgba(100, 116, 139, 0.527);
+                border-radius: 9999px !important;
+                background-color: rgb(255, 255, 255);
+                box-shadow: rgba(100, 116, 139, 0.327) 0px 3px 10px;
+                transition: 0.3s;
+            }
+
+            .switch:not(:checked) {
+                background-color: rgb(204, 204, 204) !important;
+                background-image: none !important;
+            }
+
+            .switch {
+                position: relative;
+                overflow: visible;
+                padding: 0px !important;
+                height: 1.5rem;
+                width: 3rem;
+                cursor: pointer;
+                appearance: none;
+                border-radius: 9999px !important;
+                background-color: rgba(100, 116, 139, 0.377);
+                transition: 0.3s;
+            }
+
+            .clickable {
+                cursor: pointer;
+            }
+
+            button.loading > * {
+                opacity: 0.15;
+            }
+
+            button {
+                position: relative;
+            }
+
+            button.loading::after {
+                opacity: 0.5 !important;
+                content: "";
+                pointer-events: none;
+                position: absolute;
+                top: calc(50% - 15px);
+                left: calc(50% - 15px);
+                width: 20px !important;
+                height: 20px !important;
+                background: none !important;
+                box-shadow: none !important;
+                border-style: solid !important;
+                border-color: currentcolor currentcolor currentcolor transparent !important;
+                border-width: 6px !important;
+                border-radius: 50% !important;
+                transition: 0.3s;
+                animation: 2s linear infinite spin !important;
+            }
+
+            p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack) {
+                min-height: 1.4em;
+                background: color-mix(in srgb, currentcolor 30%, transparent) !important;
+                animation: 2s infinite flickerAnimation !important;
+            }
+
+            img {
+                overflow: hidden;
+            }
+
+            .kiteui-stack > .vCenter:only-child {
+                height: fit-content;
+            }
+
+            .kiteui-stack:has(> .vCenter:only-child) {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .kiteui-stack > .hStart:only-child {
+                width: unset;
+                margin-right: auto;
+            }
+
+            .kiteui-stack > .hCenter:only-child {
+                width: unset;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .kiteui-stack > .hEnd:only-child {
+                width: unset;
+                margin-left: auto;
+            }
+
+            .kiteui-stack > .vStart:only-child {
+                height: unset;
+                vertical-align: bottom;
+            }
+
+            .kiteui-stack > .vEnd:only-child {
+                height: unset;
+                vertical-align: top;
+            }
+
+            .kiteui-stack > :only-child {
+                height: 100%;
+                width: 100%;
+                vertical-align: top;
+                display: block;
+            }
+
+            .kiteui-stack:has(> :only-child) {
+                line-height: 0px !important;
+            }
+
+            .kiteui-stack:has(> :not(:only-child)) {
+                display: grid;
+                grid-template-columns: 100%;
+                grid-template-rows: 100%;
+            }
+
+            .kiteui-stack > :not(:only-child) {
+                grid-area: 1 / 1 / 1 / 1;
+                place-self: stretch;
+            }
+
+            .kiteui-stack > .hStart:not(:only-child) {
+                justify-self: start;
+            }
+
+            .kiteui-stack > .hCenter:not(:only-child) {
+                justify-self: center;
+            }
+
+            .kiteui-stack > .hStretch:not(:only-child) {
+                justify-self: stretch;
+            }
+
+            .kiteui-stack > .hEnd:not(:only-child) {
+                justify-self: end;
+            }
+
+            .kiteui-stack > .vStart:not(:only-child) {
+                align-self: start;
+            }
+
+            .kiteui-stack > .vCenter:not(:only-child) {
+                align-self: center;
+            }
+
+            .kiteui-stack > .vStretch:not(:only-child) {
+                align-self: stretch;
+            }
+
+            .kiteui-stack > .vEnd:not(:only-child) {
+                align-self: end;
+            }
+
+            .kiteui-row.kiteui-row {
+                display: flex;
+                gap: var(--spacing, 0px);
+                flex-direction: row;
+            }
+
+            .kiteui-row.kiteui-row > .vStart {
+                align-self: start;
+            }
+
+            .kiteui-row.kiteui-row > .vCenter {
+                align-self: center;
+            }
+
+            .kiteui-row.kiteui-row > .vStretch {
+                align-self: stretch;
+            }
+
+            .kiteui-row.kiteui-row > .vEnd {
+                align-self: end;
+            }
+
+            .kiteui-row:not(.kiteui-row) > .vStart {
+                vertical-align: top;
+                height: fit-content;
+            }
+
+            .kiteui-row:not(.kiteui-row) > .vCenter {
+                vertical-align: middle;
+                height: fit-content;
+            }
+
+            .kiteui-row:not(.kiteui-row) > .vEnd {
+                vertical-align: bottom;
+                height: fit-content;
+            }
+
+            .kiteui-row:not(.kiteui-row)::before {
+                content: "​";
+                display: inline-block;
+                height: 100%;
+                vertical-align: middle;
+            }
+
+            .kiteui-row:not(.kiteui-row) {
+                white-space: nowrap;
+            }
+
+            .kiteui-row:not(.kiteui-row) > :not(:last-child) {
+                margin-right: var(--parentSpacing, 0);
+            }
+
+            .kiteui-row:not(.kiteui-row) > * {
+                display: inline-block;
+                height: calc(100% - var(--parentPadding, 0) * 2);
+                vertical-align: top;
+            }
+
+            .kiteui-col:not(.childHasWeight) > .hStart {
+                width: fit-content;
+                margin-right: auto;
+            }
+
+            .kiteui-col:not(.childHasWeight) > .hCenter {
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .kiteui-col:not(.childHasWeight) > .hEnd {
+                width: fit-content;
+                margin-left: auto;
+            }
+
+            .kiteui-col:not(.childHasWeight) > :not(:last-child) {
+                margin-bottom: var(--parentSpacing, 0);
+            }
+
+            .kiteui-col:not(.childHasWeight) > * {
+                display: block;
+                width: calc(100%);
+            }
+
+            .kiteui-col.childHasWeight {
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacing, 0px);
+            }
+
+            .kiteui-col.childHasWeight > .hStart {
+                align-self: start;
+            }
+
+            .kiteui-col.childHasWeight > .hCenter {
+                align-self: center;
+            }
+
+            .kiteui-col.childHasWeight > .hStretch {
+                align-self: stretch;
+            }
+
+            .kiteui-col.childHasWeight > .hEnd {
+                align-self: end;
+            }
+
+            .kiteui-row:not(.kiteui-row) > .kiteui-stack:has(> :not(:only-child)) {
+                display: inline-grid;
+            }
+
+            .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> :not(:only-child)) {
+                display: grid;
+            }
+
+            .kiteui-row:not(.kiteui-row) > .kiteui-col.childHasWeight, .kiteui-row:not(.kiteui-row) > .kiteui-row.kiteui-row, .kiteui-row:not(.kiteui-row) > .kiteui-label, .kiteui-row:not(.kiteui-row) > .kiteui-stack:has(> .vCenter:only-child), .kiteui-row:not(.kiteui-row) > .rowCollapsing {
+                display: inline-flex;
+            }
+
+            .kiteui-col:not(.childHasWeight) > .kiteui-col.childHasWeight, .kiteui-col:not(.childHasWeight) > .kiteui-row.kiteui-row, .kiteui-col:not(.childHasWeight) > .kiteui-label, .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> .vCenter:only-child), .kiteui-col:not(.childHasWeight) > .rowCollapsing {
+                display: flex;
+            }
+
+            .spinner {
+                width: 32px !important;
+                height: 32px !important;
+                opacity: 0.5 !important;
+                background: none !important;
+                box-shadow: none !important;
+                border-style: solid !important;
+                border-color: currentcolor currentcolor currentcolor transparent !important;
+                border-width: 5px !important;
+                border-radius: 50% !important;
+                animation: 2s linear infinite spin !important;
+            }
+
+            input:focus, textarea:focus {
+                outline: none;
+            }
+
+            button, input, textarea, select {
+                background: none;
+                border-width: 0px;
+                outline-width: 0px;
+                font: unset;
+                color: unset;
+                text-align: start;
+            }
+
+            a:visited {
+                color: unset;
+            }
+
+            a {
+                text-decoration: none;
+                color: unset;
+            }
+
+            body > div {
+                height: 100%;
+                max-width: 100vw;
+            }
+
+            body {
+                height: 100svh;
+                max-height: 100svh;
+                max-width: 100vw;
+                overflow: hidden;
+            }
+
+            .noInteraction > * {
+                pointer-events: auto;
+            }
+
+            .noInteraction.noInteraction {
+                pointer-events: none;
+            }
+
+            video.scaleType-NoScale {
+                object-fit: none;
+            }
+
+            video.scaleType-Stretch {
+                object-fit: fill;
+            }
+
+            video.scaleType-Crop {
+                object-fit: cover;
+            }
+
+            video.scaleType-Fit {
+                object-fit: contain;
+            }
+
+            .swapImage.scaleType-NoScale > img {
+                object-fit: none;
+            }
+
+            .swapImage.scaleType-Stretch > img {
+                object-fit: fill;
+            }
+
+            .swapImage.scaleType-Crop > img {
+                object-fit: cover;
+            }
+
+            .swapImage.scaleType-Fit > img {
+                object-fit: contain;
+            }
+
+            .swapImage > img {
+                object-fit: contain;
+                transition-duration: var(--transition-duration, 0.25s);
+            }
+
+            .swapImage {
+                overflow: hidden;
+            }
+
+            .kiteui-space {
+                min-width: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
+            }
+
+            :hover.visibleOnParentHover {
+                visibility: visible;
+            }
+
+            :hover > .visibleOnParentHover {
+                visibility: visible;
+            }
+
+            .visibleOnParentHover {
+                visibility: hidden;
+                width: auto;
+                height: auto;
+                max-width: unset;
+                max-height: unset;
+            }
+
+            h1, h2, h3, h4, h5, h6, p, .subtext {
+            }
+
+            * {
+                box-sizing: border-box;
+                line-height: unset;
+                --parentPadding: 0px;
+            }
+            }
+        """.trimIndent())
         try {
-            dynamicCss.style(
-                "progress::-webkit-progress-value", mapOf(
-                    "height" to "100%",
-                    "background-color" to "currentColor",
-                    "border-radius" to "1rem",
-                )
+            dynamicCss.rule(
+                """progress::-webkit-progress-value {
+                    height: 100%;
+                    background-color: currentColor;
+                    border-radius: 1rem;
+                }"""
             )
         } catch (e: Throwable) { /*squish*/
         }
         try {
-            dynamicCss.style(
-                "progress::-webkit-progress-bar", mapOf(
-                    "border-radius"  to "100px",
-                )
+            dynamicCss.rule(
+                """progress::-webkit-progress-bar {
+                    border-radius: 100px;
+                }"""
             )
         } catch (e: Throwable) { /*squish*/
         }
         try {
-            dynamicCss.style(
-                "progress::-moz-progress-bar", mapOf(
-                    "height" to "100%",
-                    "background-color" to "currentColor",
-                    "border-radius" to "1rem",
-                )
+            dynamicCss.rule(
+                """progress::-moz-progress-bar {
+                    height: 100%;
+                    background-color: currentColor;
+                    border-radius: 1rem;
+                }"""
             )
         } catch (e: Throwable) { /*squish*/
         }
         try {
-            dynamicCss.style(
-                "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button", mapOf(
-                    "-webkit-appearance" to "none",
-                )
+            dynamicCss.rule(
+                """input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                }"""
             )
         } catch (e: Throwable) { /*squish*/
         }
         try {
-            dynamicCss.style(
-                "input[type=number]", mapOf(
-                    "-moz-appearance" to "textfield"
-                )
+            dynamicCss.rule(
+                """input[type=number] {
+                    -moz-appearance: textfield
+                }"""
             )
         } catch (e: Throwable) { /*squish*/
         }
-        dynamicCss.style(
-            ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded), .padded:not(.unpadded):not(.swapImage)",
-            mapOf(
-                "padding" to "var(--spacing, 0px)",
-            )
-        )
-        dynamicCss.style(
-            ".dismissBackground", mapOf(
-                "border-radius" to "0",
-                "outline-width" to "0",
-                "background-color" to "color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent)"
-            )
-        )
-        dynamicCss.style(
-            ".icon", mapOf(
-                "color" to "var(--icon-color, black)"
-            )
-        )
-        dynamicCss.style(
-            ".useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing", mapOf(
-                "--spacing" to "var(--navSpacing, 0px)",
-            )
-        )
     }
 
     private val transitionHandled = HashSet<String>()
@@ -949,61 +865,72 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
     }
 
+    private var cssGenTotal: Duration = 0.seconds
+    private val themeInteractiveHandled = HashSet<String>()
     fun themeInteractive(theme: Theme): List<String> {
-        theme.derivedFrom?.let { themeInteractive(it) }
-        val cs = theme.classSelectorWithTerminator
-        theme(theme)
-        fun sub(subtheme: Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
-            theme(
-                subtheme,
-                asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs").map { it.trim() }.distinct() },
-                includeMaybeTransition = includeMaybeTransition
+        if (!themeInteractiveHandled.add(theme.id)) return theme.classes
+        measureTime {
+            theme.derivedFrom?.let { themeInteractive(it) }
+            theme(theme)
+            val cs = theme.classSelectorWithTerminator
+            fun sub(subtheme: Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
+                if(theme != subtheme) {
+                    theme(
+                        subtheme,
+                        asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
+                        includeMaybeTransition = includeMaybeTransition
+                    )
+                }
+                theme(subtheme.down(), asSelectors = asSelectors.flatMap {
+                    listOf(
+                        ":where(.clickable):active$it $cs",
+                        ":where(.clickable):active$it$cs",
+                    )
+                }, includeMaybeTransition = true)
+                theme(subtheme.hover(), asSelectors = asSelectors.flatMap {
+                    listOf(
+                        ":where(.clickable):hover$it $cs",
+                        ":where(.clickable):hover$it$cs",
+                    )
+                }, includeMaybeTransition = true)
+                theme(subtheme.focus(), asSelectors = asSelectors.flatMap {
+                    listOf(
+                        ":where(.clickable):focus-visible$it $cs",
+                        ":where(.clickable):focus-visible$it$cs",
+                        "input:focus$it$cs",
+                        "textarea:focus$it$cs",
+                        "select:focus$it$cs",
+                        ":has(> input:focus-visible:not(.mightTransition))$it$cs",
+                        ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
+                        ":has(> select:focus-visible:not(.mightTransition))$it$cs",
+                        ":has(> input:focus-visible:not(.mightTransition))$it $cs",
+                        ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
+                        ":has(> select:focus-visible:not(.mightTransition))$it $cs",
+                    )
+                }, includeMaybeTransition = true)
+                theme(subtheme.disabled(), asSelectors = asSelectors.flatMap {
+                    listOf(
+                        ":where(.clickable):disabled$it $cs",
+                        ":where(.clickable):disabled$it$cs",
+                    )
+                })
+            }
+            sub(theme, asSelectors = listOf(""), includeMaybeTransition = false)
+            sub(
+                theme.selected(),
+                asSelectors = listOf(":has(> input:checked).checkResponsive"),
+                includeMaybeTransition = true
             )
-            theme(subtheme.down(), asSelectors = asSelectors.flatMap {
-                listOf(
-                    ":where(.clickable):active$it $cs",
-                    ":where(.clickable):active$it$cs",
-                )
-            }, includeMaybeTransition = true)
-            theme(subtheme.hover(), asSelectors = asSelectors.flatMap {
-                listOf(
-                    ":where(.clickable):hover$it $cs",
-                    ":where(.clickable):hover$it$cs",
-                )
-            }, includeMaybeTransition = true)
-            theme(subtheme.focus(), asSelectors = asSelectors.flatMap {
-                listOf(
-                    ":where(.clickable):focus-visible$it $cs",
-                    ":where(.clickable):focus-visible$it$cs",
-                    "input:focus$it$cs",
-                    "textarea:focus$it$cs",
-                    "select:focus$it$cs",
-                    ":has(> input:focus-visible:not(.mightTransition))$it$cs",
-                    ":has(> textarea:focus-visible:not(.mightTransition))$it$cs",
-                    ":has(> select:focus-visible:not(.mightTransition))$it$cs",
-                    ":has(> input:focus-visible:not(.mightTransition))$it $cs",
-                    ":has(> textarea:focus-visible:not(.mightTransition))$it $cs",
-                    ":has(> select:focus-visible:not(.mightTransition))$it $cs",
-                )
-            }, includeMaybeTransition = true)
-            theme(subtheme.disabled(), asSelectors = asSelectors.flatMap {
-                listOf(
-                    ":where(.clickable):disabled$it $cs",
-                    ":where(.clickable):disabled$it$cs",
-                )
-            })
+            sub(
+                theme.unselected(),
+                asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"),
+                includeMaybeTransition = true
+            )
+        }.also {
+            cssGenTotal += it
+            println("CSS Generation for ${theme.id} took $it. Total: $cssGenTotal")
         }
-        sub(theme, asSelectors = listOf(""), includeMaybeTransition = false)
-        sub(
-            theme.selected(),
-            asSelectors = listOf(":has(> input:checked).checkResponsive"),
-            includeMaybeTransition = true
-        )
-        sub(
-            theme.unselected(),
-            asSelectors = listOf(":has(> input:not(:checked)).checkResponsive"),
-            includeMaybeTransition = true
-        )
+        dynamicCss.flush()
         return theme.classes
     }
 
@@ -1021,7 +948,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private val Theme.classSelector get() = classes.dropLast(1).joinToString("") { ".$it" }
     private val Theme.classSelectorWithTerminator get() = classes.joinToString("") { ".$it" }
 
-    private val themeHandled = HashSet<String>()
+    private inline fun <T> Theme.diff(getter: Theme.()->T): T? = getter().takeUnless { derivedFrom?.getter() == it }
+
     fun theme(
         theme: Theme,
         asSelectors: List<String> = listOf(theme.classSelector),
@@ -1029,101 +957,103 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         mediaQuery: String? = null,
     ): List<String> {
         val classes = theme.classes
-        val includeSelectors = asSelectors.filter { themeHandled.add(it) }
-        if (includeSelectors.isEmpty()) return classes
 
         fun sel(vararg plus: String): String {
-            return includeSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
+            return asSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
 
-        fun l(theme: Theme) = listOf(
-            sel(
-                ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *",
-                ".padded:not(.unpadded):not(.swapImage) > *"
-            ) to mapOf(
-                "--parentPadding" to theme.spacing.value,
-            ),
-            sel(
-                " > *",
-            ) to mapOf(
-                "--parentSpacing" to theme.spacing.value,
-            ),
-            sel(".useNavSpacing > *") to mapOf(
-                "--parentSpacing" to theme.navSpacing.value,
-            ),
+        theme.diff { spacing }?.let {
+            dynamicCss.add(
+                selector = sel(
+                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *",
+                    ".padded:not(.unpadded):not(.swapImage) > *"
+                ),
+                key = "--parentPadding",
+                value = it.value
+            )
+            dynamicCss.add(
+                selector = sel(
+                    " > *",
+                ),
+                key = "--parentSpacing",
+                value = it.value
+            )
+        }
+        theme.diff { navSpacing }?.let {
+            dynamicCss.add(
+                selector = sel(
+                    ".useNavSpacing > *",
+                ),
+                key = "--parentSpacing",
+                value = it.value
+            )
+        }
 
-            (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition")) to (when (val it =
-                theme.background) {
-                is Color -> mapOf(
-                    "background-color" to it.toCss(),
-                    "background-image" to "none",
-                )
+        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
+        theme.diff { background }?.let {
+            when (it) {
+                is Color -> {
+                    dynamicCss.add(backSel, "background-color", it.toCss())
+                    dynamicCss.add(backSel, "background-image", "none")
+                }
 
-                is LinearGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                is LinearGradient -> {
+                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
+                    dynamicCss.add(backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
                         joinGradientStops(it.stops)
-                    })",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
+                    })")
+                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                }
 
-                is RadialGradient -> mapOf(
-                    "background-color" to it.closestColor().toCss(),
-                    "background-image" to "radial-gradient(circle at center, ${joinGradientStops(it.stops)})",
-                    "background-attachment" to (if (it.screenStatic) "fixed" else "unset"),
-                )
-            }) + mapOf(
-                "outline-width" to theme.outlineWidth.value,
-                "outline-offset" to (theme.outlineWidth * -1).value,
-                "box-shadow" to theme.elevation.toBoxShadow(),
-                "outline-style" to if (theme.outlineWidth != 0.px) "solid" else "none",
-            ),
-
-            sel("") to mapOf(
-                "color" to theme.foreground.toCss(),
-                "--icon-color" to theme.icon.toCss(),
-                "--spacing" to theme.spacing.value,
-                "--navSpacing" to theme.navSpacing.value,
-                "gap" to "var(--spacing, 0.0)",
-                "font-size" to theme.font.size.value,
-                "font-family" to dynamicCss.font(theme.font.font),
-                "font-weight" to theme.font.weight.toString(),
-                "font-style" to if (theme.font.italic) "italic" else "normal",
-                "text-transform" to if (theme.font.allCaps) "uppercase" else "none",
-                "line-height" to theme.font.lineSpacingMultiplier.toString(),
-                "letter-spacing" to theme.font.additionalLetterSpacing.toString(),
-                "outline-color" to theme.outline.toCss(),
-                "transition-duration" to theme.transitionDuration.toCss(),
-                "--transition-duration" to theme.transitionDuration.toCss(),
-                "--nearest-background-color" to theme.background.closestColor().toCss(),
-                "border-radius" to theme.cornerRadii.toRawCornerRadius(),
-            ) + when (val it = theme.foreground) {
-                is Color -> mapOf("color" to it.toCss())
-                is LinearGradient, is RadialGradient -> mapOf(
-                    "color" to it.toCss(),
-                    "background" to "-webkit-${it.toCss()}",
-                    "-webkit-background-clip" to "text",
-                    "-webkit-text-fill-color" to "transparent",
-                )
-            }
-        )
-
-        val baseRules = l(theme)
-            .groupBy { it.first }.mapValues { it.value.flatMap { it.second.entries }.associate { it.key to it.value } }
-        val derivedFromRules = theme.derivedFrom?.let {
-            l(it).groupBy { it.first }
-                .mapValues { it.value.flatMap { it.second.entries }.associate { it.key to it.value } }
-        } ?: mapOf()
-        val resultingRules = baseRules.mapValues {
-            it.value.filter { it2 ->
-                it2.value != derivedFromRules[it.key]?.get(it2.key)
+                is RadialGradient -> {
+                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
+                    dynamicCss.add(backSel, "background-image", "radial-gradient(circle at center, ${
+                        joinGradientStops(it.stops)
+                    })")
+                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                }
             }
         }
 
-        dynamicCss.styles(
-            mediaQuery = mediaQuery,
-            styles = resultingRules
-        )
+        theme.diff { outlineWidth }?.let {
+            dynamicCss.add(backSel, "outline-width", it.value)
+            dynamicCss.add(backSel, "outline-style", if (it != 0.px) "solid" else "none")
+            dynamicCss.add(backSel, "outline-offset", it.times(-1).value)
+        }
+        theme.diff { elevation }?.let {
+            dynamicCss.add(backSel, "box-shadow", theme.elevation.toBoxShadow())
+        }
+
+        val directSel = sel("")
+        theme.diff { foreground }?.let { dynamicCss.add(directSel, "color",it.toCss()) }
+        theme.diff { icon }?.let { dynamicCss.add(directSel, "--icon-color",it.toCss()) }
+        theme.diff { spacing }?.let { dynamicCss.add(directSel, "--spacing",it.value) }
+        theme.diff { navSpacing }?.let { dynamicCss.add(directSel, "--navSpacing",it.value) }
+        theme.diff { font.size }?.let { dynamicCss.add(directSel, "font-size",it.value) }
+        theme.diff { font.font }?.let { dynamicCss.add(directSel, "font-family",it.let { dynamicCss.font(it) }) }
+        theme.diff { font.weight }?.let { dynamicCss.add(directSel, "font-weight",it.toString()) }
+        theme.diff { font.italic }?.let { dynamicCss.add(directSel, "font-style",it.let { if (it) "italic" else "normal" }) }
+        theme.diff { font.allCaps }?.let { dynamicCss.add(directSel, "text-transform",it.let { if (it) "uppercase" else "none" }) }
+        theme.diff { font.lineSpacingMultiplier }?.let { dynamicCss.add(directSel, "line-height",it.toString()) }
+        theme.diff { font.additionalLetterSpacing }?.let { dynamicCss.add(directSel, "letter-spacing",it.toString()) }
+        theme.diff { outline }?.let { dynamicCss.add(directSel, "outline-color",it.toCss()) }
+        theme.diff { transitionDuration }?.let { dynamicCss.add(directSel, "transition-duration",it.toCss()) }
+        theme.diff { transitionDuration }?.let { dynamicCss.add(directSel, "--transition-duration",it.toCss()) }
+        theme.diff { background }?.let { dynamicCss.add(directSel, "--nearest-background-color",it.closestColor().toCss()) }
+        theme.diff { cornerRadii }?.let { dynamicCss.add(directSel, "border-radius",it.toRawCornerRadius()) }
+        theme.diff { foreground }?.let {
+            when (it) {
+                is Color -> {
+                    dynamicCss.add(directSel, "color", it.toCss())
+                }
+                is LinearGradient, is RadialGradient -> {
+                    dynamicCss.add(directSel, "color", it.toCss())
+                    dynamicCss.add(directSel, "background", "-webkit-${it.toCss()}")
+                    dynamicCss.add(directSel, "-webkit-background-clip", "text")
+                    dynamicCss.add(directSel, "-webkit-text-fill-color", "transparent")
+                }
+            }
+        }
 
         return classes
     }
@@ -1132,11 +1062,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     fun rowCollapsingToColumn(breakpoint: Dimension): String {
         val name = "rowCollapsingToColumn_${breakpoint.value.filter { it.isLetterOrDigit() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
-            dynamicCss.style(
-                ".$name", mapOf(
-                    "display" to "flex"
-                )
-            )
+            dynamicCss.rule("""
+                .$name { display: flex }
+            """)
             dynamicCss.rule(
                 """
                     @media (min-width: ${breakpoint.value}) {

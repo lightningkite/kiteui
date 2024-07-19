@@ -27,15 +27,11 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         native.classes.removeAll { it.startsWith("spacingOf") }
         value?.let { value ->
             val cn = "spacingOf${value.value.replace(".", "_").filter { it.isLetterOrDigit() || it == '_' }}"
-            context.dynamicCss.styleIfMissing(
-                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > *", mapOf(
-                    "--parentSpacing" to value.value
-                )
+            context.dynamicCss.rule(
+                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > * { --parentSpacing: ${value.value} } "
             )
-            context.dynamicCss.styleIfMissing(
-                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > .hidingContainer > *", mapOf(
-                    "--parentPadding" to value.value
-                )
+            context.dynamicCss.rule(
+                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > .hidingContainer > * { --parentPadding: ${value.value} } "
             )
             native.classes.add(cn)
         }

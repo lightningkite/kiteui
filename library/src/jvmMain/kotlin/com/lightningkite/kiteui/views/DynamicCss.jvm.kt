@@ -31,4 +31,6 @@ actual class DynamicCss actual constructor(basePath: String) {
         styles: Map<String, Map<String, String>>
     ) {
     }
+
+    actual fun flush() {}
 }
