@@ -125,7 +125,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     protected var fullyStarted = false
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
     open fun hasAlternateBackedStates(): Boolean = false
-    protected fun refreshTheming() {
+    fun refreshTheming() {
         if (!fullyStarted) return
         if (parent?.fullyStarted == false) return
         performanceRefreshTheme {

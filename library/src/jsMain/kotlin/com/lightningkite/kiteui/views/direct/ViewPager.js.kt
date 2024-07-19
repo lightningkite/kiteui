@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import org.w3c.dom.HTMLDivElement
@@ -14,6 +15,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         controller?.let(action) ?: onController.add(action)
     }
     private val newViews = NewViewWriter(context)
+    private val buttons = ArrayList<RView>()
     init {
         native.tag = "div"
         native.classes.add("recyclerView")
@@ -26,14 +28,19 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             onController.clear()
         }
 
-
         with(object: ViewWriter() {
             override val context: RContext = context
+            override fun willAddChild(view: RView) {
+                super.willAddChild(view)
+                view.parent = this@ViewPager
+            }
             override fun addChild(view: RView) {
                 native.appendChild(view.native)
             }
         }) {
+
             buttonTheme - button {
+                buttons += this
                 native.classes.add("touchscreenOnly")
                 native.style.run {
                     position = "absolute"
@@ -50,6 +57,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 }
             }
             buttonTheme - button {
+                buttons += this
                 native.classes.add("touchscreenOnly")
                 native.style.run {
                     position = "absolute"
@@ -66,6 +74,11 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 }
             }
         }
+    }
+
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        buttons.forEach { it.refreshTheming() }
     }
 
     override fun internalAddChild(index: Int, view: RView) {
