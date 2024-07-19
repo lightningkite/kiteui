@@ -71,6 +71,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     visibility: visible;
                 }
             }
+            
+            * {
+                gap: var(--spacing, 0);
+        }       
 
             .touchscreenOnly {
             }
@@ -93,14 +97,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .contentScroll-H > .recyclerViewGridSub {
                 display: flex;
                 flex-direction: column;
-                gap: var(--spacing, 0);
                 width: auto;
             }
 
             .contentScroll-V > .recyclerViewGridSub {
                 display: flex;
                 flex-direction: row;
-                gap: var(--spacing, 0);
                 height: auto;
             }
 
@@ -526,7 +528,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kiteui-row.kiteui-row {
                 display: flex;
-                gap: var(--spacing, 0px);
                 flex-direction: row;
             }
 
@@ -610,7 +611,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .kiteui-col.childHasWeight {
                 display: flex;
                 flex-direction: column;
-                gap: var(--spacing, 0px);
             }
 
             .kiteui-col.childHasWeight > .hStart {
