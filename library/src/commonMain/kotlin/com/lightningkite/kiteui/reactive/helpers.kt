@@ -140,3 +140,10 @@ fun CalculationContext.use(resourceUse: ResourceUse) {
     val x = resourceUse.start()
     onRemove { x() }
 }
+
+fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
+    object : Writable<T>, Readable<T> by this {
+        override suspend fun set(value: T) {
+            action(this@interceptWrite, value)
+        }
+    }

@@ -228,6 +228,33 @@ data object SubtextSemantic : Semantic {
     ).withoutBack
 }
 
+data object InvalidSemantic: Semantic {
+    override val key: String = "ivd"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        outlineWidth = 1.px,
+        outline = Color.red
+    ).withBack
+}
+
+data object EmphasizedSemantic: Semantic {
+    override val key: String = "emf"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        font = theme.font.copy(italic = true)
+    ).withoutBack
+}
+
+data object EmbeddedSemantic: Semantic {
+    override val key: String = "ebd"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = theme.background.closestColor().highlight(-0.1f)
+    ).withBack
+}
+
+
+
 val H1Semantic = HeaderSizeSemantic(1)
 val H2Semantic = HeaderSizeSemantic(2)
 val H3Semantic = HeaderSizeSemantic(3)
