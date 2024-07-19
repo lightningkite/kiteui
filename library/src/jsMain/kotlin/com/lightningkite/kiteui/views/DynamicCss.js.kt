@@ -148,7 +148,6 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
             queue = json()
         }.also {
             flushTotal += it
-            println("DynamicCss flush took $it, total $flushTotal $ruleTotal rules")
         }
     }
 }

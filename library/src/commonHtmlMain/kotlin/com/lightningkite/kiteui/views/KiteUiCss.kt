@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
 import kotlin.math.absoluteValue
 import kotlin.time.Duration
@@ -956,7 +957,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         }.also {
             cssGenTotal += it
-            println("CSS Generation for ${theme.id} took $it. Total: $cssGenTotal")
         }
         dynamicCss.flush()
         return theme.classes
