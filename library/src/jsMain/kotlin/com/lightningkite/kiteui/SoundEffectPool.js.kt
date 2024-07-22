@@ -117,6 +117,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCoroutineCancellable { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
+        native.preload = "auto"
         val obj = object : PlayableAudio {
             override var volume: Float
                 get() = native.volume.toFloat()
