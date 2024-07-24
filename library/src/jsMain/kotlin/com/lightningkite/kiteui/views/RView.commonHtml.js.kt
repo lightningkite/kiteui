@@ -180,9 +180,9 @@ actual class FutureElement actual constructor() {
     }
 
     private fun assertSizeMatch() {
-        this.element?.let {
-            if(it.childElementCount != lastChildren.size) throw IllegalStateException("Size mismatch - ${it.childElementCount} vs ${lastChildren.size}")
-        }
+//        this.element?.let {
+//            if(it.childElementCount != lastChildren.size) throw IllegalStateException("Size mismatch - ${it.childElementCount} vs ${lastChildren.size}")
+//        }
     }
 
     inner class ClassSet : MutableSet<String> {

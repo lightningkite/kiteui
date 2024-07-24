@@ -63,7 +63,7 @@ fun ViewWriter.appNav(main: ScreenNavigator, dialog: ScreenNavigator? = null, se
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
         bar - row {
             setup(appNav)
             toggleButton {
@@ -86,7 +86,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navSpacing { appNav.existsProperty.await() } - stack {
+        expanding - navSpacing  - stack {
             navigatorView(screenNavigator)
             atStart - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - stack {
                 scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
@@ -101,7 +101,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
         bar - row {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
@@ -129,7 +129,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
         bar - row {
             setup(appNav)
@@ -159,7 +159,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
             setup(appNav)
@@ -181,21 +181,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 
             ::exists { appNav.existsProperty.await() }
         }
-        navSpacing { appNav.existsProperty.await() } - row {
-            navSpacing { appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
+        navSpacing  - row {
+            navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
             expanding - navigatorView(screenNavigator)
         } in weight(1f)
     }
-}
-
-@ViewModifierDsl3
-fun ViewWriter.navSpacing(showNav: suspend () -> Boolean): ViewWrapper {
-    beforeNextElementSetup {
-        reactiveScope {
-            useNavSpacing = showNav()
-        }
-    }
-    return ViewWrapper
 }

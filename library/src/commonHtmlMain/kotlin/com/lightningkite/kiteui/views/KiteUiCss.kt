@@ -771,16 +771,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 line-height: unset;
                 --parentPadding: 0px;
             }
-            
-            .mightTransition, .transition {
-                background-color: var(--k-background-color, transparent);
-                background-image: var(--k-background-image, none);
-                background-attachment: var(--k-background-attachment, scroll);
-                outline-width: var(--k-outline-width, 0px);
-                outline-style: var(--k-outline-style, none);
-                outline-offset: calc(var(--k-outline-width, 0px) * -1);
-                box-shadow: var(--k-box-shadow, none);
-            }
             }
         """.trimIndent()
         )
@@ -886,77 +876,81 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             theme.derivedFrom?.let { themeInteractive(it) }
             theme(theme)
             val cs = theme.classSelector
-            fun sub(subthemeGen: (Theme) -> Theme, asSelectors: List<String>, includeMaybeTransition: Boolean) {
-                val subtheme = subthemeGen(theme)
+            fun sub(subthemeGen: Semantic?, asSelectors: List<String>) {
+                val subtheme = subthemeGen?.let { s -> theme[s] } ?: theme.withoutBack
                 if (theme != subtheme) {
                     theme(
-                        subtheme,
-                        diff = theme.derivedFrom?.let { subthemeGen(it) },
+                        subtheme.theme,
+                        diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack).theme },
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
-                        includeMaybeTransition = includeMaybeTransition
+                        includeMaybeTransition = subtheme.useBackground
                     )
                 }
+                val hov = subtheme[HoverSemantic]
                 theme(
-                    subtheme.hover(),
-                    diff = theme.derivedFrom?.let { subthemeGen(it).hover() },
+                    hov.theme,
+                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[HoverSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ":where(.clickable):hover$it $cs",
-                            ":where(.clickable):hover$it$cs",
+                            ".clickable.clickable.clickable.clickable:hover$it $cs",
+                            ".clickable.clickable.clickable.clickable:hover$it$cs",
                         )
                     },
-                    includeMaybeTransition = true
+                    includeMaybeTransition = hov.useBackground
                 )
+                val foc = subtheme[FocusSemantic]
                 theme(
-                    subtheme.focus(),
-                    diff = theme.derivedFrom?.let { subthemeGen(it).focus() },
+                    foc.theme,
+                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[FocusSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ":where(.clickable):focus-visible$it $cs",
-                            ":where(.clickable):focus-visible$it$cs",
-                            "input:focus$it$cs",
-                            "textarea:focus$it$cs",
-                            "select:focus$it$cs",
-                            ":has(> :is(input, textarea, select):focus-visible:not(.mightTransition))$it$cs",
+                            ".clickable.clickable.clickable.clickable:focus-visible$it $cs",
+                            ".clickable.clickable.clickable.clickable:focus-visible$it$cs",
+                            "input:focus:focus:focus:focus$it$cs",
+                            "textarea:focus:focus:focus:focus$it$cs",
+                            "select:focus:focus:focus:focus$it$cs",
+                            ":has(> :is(input, textarea, select):focus-visible:focus-visible:focus-visible:focus-visible:not(.mightTransition))$it$cs",
                         )
                     },
-                    includeMaybeTransition = true
+                    includeMaybeTransition = foc.useBackground
                 )
+                val dwn = subtheme[DownSemantic]
                 theme(
-                    subtheme.down(),
-                    diff = theme.derivedFrom?.let { subthemeGen(it).down() },
+                    dwn.theme,
+                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DownSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ":where(.clickable):active$it $cs",
-                            ":where(.clickable):active$it$cs",
+                            ".clickable.clickable.clickable.clickable:active$it $cs",
+                            ".clickable.clickable.clickable.clickable:active$it$cs",
                         )
                     },
-                    includeMaybeTransition = true
+                    includeMaybeTransition = dwn.useBackground
                 )
+                val dis = subtheme[DisabledSemantic]
                 theme(
-                    subtheme.disabled(),
-                    diff = theme.derivedFrom?.let { subthemeGen(it).disabled() },
+                    dis.theme,
+                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DisabledSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ":where(.clickable):disabled$it $cs",
-                            ":where(.clickable):disabled$it$cs",
+                            ".clickable.clickable.clickable.clickable:disabled$it $cs",
+                            ".clickable.clickable.clickable.clickable:disabled$it$cs",
                         )
-                    }
+                    },
+                    includeMaybeTransition = dis.useBackground
                 )
             }
-            sub({ it }, asSelectors = listOf(""), includeMaybeTransition = false)
+            sub(null, asSelectors = listOf(""))
             sub(
-                { it.selected() },
-                asSelectors = listOf(".checked.checkResponsive"),
-                includeMaybeTransition = true
+                SelectedSemantic,
+                asSelectors = listOf(".checked.checked.checked.checked.checkResponsive.checkResponsive.checkResponsive.checkResponsive"),
             )
             sub(
-                { it.unselected() },
-                asSelectors = listOf(".checkResponsive"),
-                includeMaybeTransition = true
+                UnselectedSemantic,
+                asSelectors = listOf(".checkResponsive.checkResponsive.checkResponsive.checkResponsive"),
             )
         }.also {
             cssGenTotal += it
+            println("CSS for ${theme.id} (#${themeInteractiveHandled.size}) took $it, $cssGenTotal total")
         }
         dynamicCss.flush()
         return theme.classes
@@ -982,7 +976,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         diff: Theme? = theme.derivedFrom,
         asSelectors: List<String> = listOf(theme.classSelector),
         includeMaybeTransition: Boolean = false,
-        mediaQuery: String? = null,
     ): List<String> {
         val classes = theme.classes
 
@@ -1017,44 +1010,44 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         }
         val directSel = sel("")
-//
-//        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
+
+        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
         theme.diff(diff) { background }?.let {
             when (it) {
                 is Color -> {
-                    dynamicCss.add(directSel, "--k-background-color", it.toCss())
-                    dynamicCss.add(directSel, "--k-background-image", "none")
+                    dynamicCss.add(backSel, "background-color", it.toCss())
+                    dynamicCss.add(backSel, "background-image", "none")
                 }
 
                 is LinearGradient -> {
-                    dynamicCss.add(directSel, "--k-background-color", it.closestColor().toCss())
+                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
                     dynamicCss.add(
-                        directSel, "--k-background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
+                        backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(directSel, "--k-background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
 
                 is RadialGradient -> {
-                    dynamicCss.add(directSel, "--k-background-color", it.closestColor().toCss())
+                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
                     dynamicCss.add(
-                        directSel, "--k-background-image", "radial-gradient(circle at center, ${
+                        backSel, "background-image", "radial-gradient(circle at center, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(directSel, "--k-background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
             }
         }
 
         theme.diff(diff) { outlineWidth }?.let {
-            dynamicCss.add(directSel, "--k-outline-width", it.value)
-            dynamicCss.add(directSel, "--k-outline-style", if (it != 0.px) "solid" else "none")
-            dynamicCss.add(directSel, "--k-outline-offset", it.times(-1).value)
+            dynamicCss.add(backSel, "outline-width", it.value)
+            dynamicCss.add(backSel, "outline-style", if (it != 0.px) "solid" else "none")
+            dynamicCss.add(backSel, "outline-offset", it.times(-1).value)
         }
         theme.diff(diff) { elevation }?.let {
-            dynamicCss.add(directSel, "--k-box-shadow", theme.elevation.toBoxShadow())
+            dynamicCss.add(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
         theme.diff(diff) { foreground }?.let { dynamicCss.add(directSel, "color", it.toCss()) }
