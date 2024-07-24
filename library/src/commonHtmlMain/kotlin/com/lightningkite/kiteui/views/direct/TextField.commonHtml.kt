@@ -87,4 +87,5 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
 }

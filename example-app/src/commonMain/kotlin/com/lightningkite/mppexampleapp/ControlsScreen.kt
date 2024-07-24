@@ -351,12 +351,12 @@ object ControlsScreen : Screen {
                 h2 { content = "Drop Downs" }
                 val options = shared { listOf("Apple", "Banana", "Crepe") }
                 val value = Property("Apple")
-                select { bind(value, data = options, render = { it }) } in padded
-                select { bind(value, data = options, render = { it }) } in card
-                select { bind(value, data = options, render = { it }) } in important
-                select { bind(value, data = options, render = { it }) } in critical
-                select { bind(value, data = options, render = { it }) } in warning
-                select { bind(value, data = options, render = { it }) } in danger
+                fieldTheme - select { bind(value, data = options, render = { it }) } in padded
+                fieldTheme - select { bind(value, data = options, render = { it }) } in card
+                fieldTheme - select { bind(value, data = options, render = { it }) } in important
+                fieldTheme - select { bind(value, data = options, render = { it }) } in critical
+                fieldTheme - select { bind(value, data = options, render = { it }) } in warning
+                fieldTheme - select { bind(value, data = options, render = { it }) } in danger
             } in card
 
             col {
@@ -367,10 +367,10 @@ object ControlsScreen : Screen {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
                 }
-                localDateField { content bind date }
-                localDateField { content bind date } in card
-                localDateField { content bind date } in important
-                localDateField { content bind date } in critical
+                fieldTheme - localDateField { content bind date }
+                fieldTheme - localDateField { content bind date } in card
+                fieldTheme - localDateField { content bind date } in important
+                fieldTheme - localDateField { content bind date } in critical
             } in card
 
             col {
@@ -381,10 +381,10 @@ object ControlsScreen : Screen {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time }
                 }
-                localTimeField { content bind date }
-                localTimeField { content bind date } in card
-                localTimeField { content bind date } in important
-                localTimeField { content bind date } in critical
+                fieldTheme - localTimeField { content bind date }
+                fieldTheme - localTimeField { content bind date } in card
+                fieldTheme - localTimeField { content bind date } in important
+                fieldTheme - localTimeField { content bind date } in critical
             } in card
 
             col {
@@ -395,20 +395,20 @@ object ControlsScreen : Screen {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
                 }
-                localDateTimeField { content bind date }
-                localDateTimeField { content bind date } in card
-                localDateTimeField { content bind date } in important
-                localDateTimeField { content bind date } in critical
+                fieldTheme - localDateTimeField { content bind date }
+                fieldTheme - localDateTimeField { content bind date } in card
+                fieldTheme - localDateTimeField { content bind date } in important
+                fieldTheme - localDateTimeField { content bind date } in critical
             } in card
 
             col {
                 val number = Property<Double?>(1.0)
                 h2 { content = "Number Fields" }
                 text { ::content { "Value: ${number.await()}" } }
-                numberField { content bind number }
-                numberField { content bind number } in card
-                numberField { content bind number } in important
-                numberField { content bind number } in critical
+                fieldTheme - numberField { content bind number }
+                fieldTheme - numberField { content bind number } in card
+                fieldTheme - numberField { content bind number } in important
+                fieldTheme - numberField { content bind number } in critical
             } in card
 
             col {
@@ -416,19 +416,19 @@ object ControlsScreen : Screen {
                 val text = Property("text")
                 h2 { content = "Text Fields" }
                 text { ::content { "Text: ${text.await()}" } }
-                textField { content bind text }
-                textField { content bind text } in card
-                textField { content bind text } in important
-                textField { content bind text } in critical
+                fieldTheme - textField { content bind text }
+                fieldTheme - textField { content bind text } in card
+                fieldTheme - textField { content bind text } in important
+                fieldTheme - textField { content bind text } in critical
             } in card
 
             col {
                 val text = Property("Longer form text\n with newlines goes here")
                 h2 { content = "Text Areas" }
-                textArea { content bind text }
-                textArea { content bind text } in card
-                textArea { content bind text } in important
-                textArea { content bind text } in critical
+                fieldTheme - textArea { content bind text }
+                fieldTheme - textArea { content bind text } in card
+                fieldTheme - textArea { content bind text } in important
+                fieldTheme - textArea { content bind text } in critical
             } in card
 
             col {

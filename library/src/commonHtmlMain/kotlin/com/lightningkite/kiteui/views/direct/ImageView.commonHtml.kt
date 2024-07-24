@@ -11,7 +11,6 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
-        native.classes.add("kiteui-stack")
         native.classes.add("swapImage")
     }
     override fun internalAddChild(index: Int, view: RView) {

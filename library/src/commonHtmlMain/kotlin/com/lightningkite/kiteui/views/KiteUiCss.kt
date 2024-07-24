@@ -65,7 +65,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border-radius: 1rem;
                 padding: 0px !important;
                 appearance: none;
-                background: color-mix(in srgb, currentcolor 20%, transparent);
             }
 
             @media (pointer: coarse) and (hover: none) {
@@ -453,6 +452,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .spinner {
+                display: block !important;
                 width: 32px !important;
                 height: 32px !important;
                 opacity: 0.5 !important;
@@ -589,6 +589,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             dynamicCss.rule(
                 """progress::-webkit-progress-bar {
                     border-radius: 100px;
+                    background: var(--nearest-background-color);
+                    padding: 1px;
                 }"""
             )
         } catch (e: Throwable) { /*squish*/
@@ -682,7 +684,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 if (theme != subtheme) {
                     theme(
                         subtheme.theme,
-                        diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack).theme },
+                        diff = theme,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
                         includeMaybeTransition = subtheme.useBackground
                     )
@@ -690,11 +692,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val hov = subtheme[HoverSemantic]
                 theme(
                     hov.theme,
-                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[HoverSemantic].theme },
+                    diff = theme,
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ".clickable.clickable.clickable.clickable:hover$it $cs",
-                            ".clickable.clickable.clickable.clickable:hover$it$cs",
+                            ".clickable:hover$it $cs",
+                            ".clickable:hover$it$cs",
                         )
                     },
                     includeMaybeTransition = hov.useBackground
@@ -702,7 +704,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val foc = subtheme[FocusSemantic]
                 theme(
                     foc.theme,
-                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[FocusSemantic].theme },
+                    diff = theme,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:focus-visible$it $cs",
@@ -710,7 +712,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             "input:focus$it$cs",
                             "textarea:focus$it$cs",
                             "select:focus$it$cs",
-                            ":has(> :is(input, textarea, select):focus-visible:not(.mightTransition))$it$cs",
+                            ".hasNoBackField:focus-within$it$cs",
                         )
                     },
                     includeMaybeTransition = foc.useBackground
@@ -718,7 +720,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val dwn = subtheme[DownSemantic]
                 theme(
                     dwn.theme,
-                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DownSemantic].theme },
+                    diff = theme,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:active$it $cs",
@@ -730,7 +732,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 val dis = subtheme[DisabledSemantic]
                 theme(
                     dis.theme,
-                    diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DisabledSemantic].theme },
+                    diff = theme,
                     asSelectors = asSelectors.flatMap {
                         listOf(
                             ".clickable:disabled$it $cs",
@@ -770,11 +772,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
     private val Theme.classSelector get() = classes.joinToString("") { ".$it" }
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
-        getter()//.takeUnless { diff?.getter() == it }
+        getter().takeUnless { diff?.getter() == it }
 
     fun theme(
         theme: Theme,
-        diff: Theme? = theme.derivedFrom,
+        diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
         includeMaybeTransition: Boolean = false,
     ): List<String> {

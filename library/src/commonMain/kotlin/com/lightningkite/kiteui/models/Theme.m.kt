@@ -13,7 +13,7 @@ fun Theme.Companion.material(
     title: FontAndStyle = FontAndStyle(systemDefaultFont),
     body: FontAndStyle = FontAndStyle(systemDefaultFont),
     elevation: Dimension = 1.dp,
-    cornerRadii: CornerRadii = CornerRadii.Constant(0.25.rem),
+    cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     spacing: Dimension = 1.rem,
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.dp,
@@ -91,7 +91,7 @@ object MaterialLikeTheme {
         title: FontAndStyle = FontAndStyle(systemDefaultFont),
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         elevation: Dimension = 1.dp,
-        cornerRadii: CornerRadii = CornerRadii.Constant(0.25.rem),
+        cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
         spacing: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.dp,
@@ -159,19 +159,19 @@ fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     0 -> copy(
         id = "${Random.nextInt()}",
         elevation = Random.nextInt(2, 4).dp,
-        cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
+        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
     )
 
     1 -> copy(
         id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
-        cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
+        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
     )
 
     else -> copy(
         id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
         elevation = Random.nextInt(2, 4).dp,
-        cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
+        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
     )
 }

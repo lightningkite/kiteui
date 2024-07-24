@@ -69,6 +69,8 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
         native.classes.removeAll { it.startsWith("t-") }
         native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
+
+        native.setStyleProperty("--parentSpacing", parentSpacing.value)
     }
 
     actual override fun applyForeground(theme: Theme) {

@@ -129,7 +129,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
                         view.native.style.width = "fit-content"
                 }
                 else -> {
-                    view.native.style.width = "100%"
+                    if(view.native.style.width.isNullOrEmpty()) view.native.style.width = "100%"
                 }
             }
         }
