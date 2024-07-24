@@ -71,7 +71,7 @@ object ThemesScreen : Screen {
                         val a = Angle(Random.nextFloat())
                         appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
                             .copy(
-                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                                cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
                             )
                             .randomTitleFontSettings()
                     }
@@ -82,7 +82,7 @@ object ThemesScreen : Screen {
                         val a = Angle(Random.nextFloat())
                         appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
                             .copy(
-                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                                cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
                             )
                             .randomTitleFontSettings()
                     }

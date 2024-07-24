@@ -119,6 +119,7 @@ expect /*inline*/ var FutureElementStyle.imageOrientation: String?
 expect /*inline*/ var FutureElementStyle.imageRendering: String?
 expect /*inline*/ var FutureElementStyle.imageResolution: String?
 expect /*inline*/ var FutureElementStyle.imeMode: String?
+expect /*inline*/ var FutureElementStyle.justifySelf: String?
 expect /*inline*/ var FutureElementStyle.justifyContent: String?
 expect /*inline*/ var FutureElementStyle.left: String?
 expect /*inline*/ var FutureElementStyle.letterSpacing: String?

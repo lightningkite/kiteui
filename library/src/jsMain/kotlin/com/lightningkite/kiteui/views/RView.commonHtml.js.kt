@@ -69,6 +69,8 @@ actual class FutureElement actual constructor() {
     actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
     val styleBack = json()
     actual val style: FutureElementStyle = FutureElementStyle(styleBack)
+    actual var desiredVerticalGravity: Align? = null
+    actual var desiredHorizontalGravity: Align? = null
     val eventsBack = json()
     actual inline fun addEventListener(
         name: String,

@@ -111,7 +111,9 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         native.classes.add("h${horizontal}")
+        native.desiredHorizontalGravity = horizontal
         native.classes.add("v${vertical}")
+        native.desiredVerticalGravity = vertical
     }
     return ViewWrapper
 }
@@ -213,6 +215,10 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
             native.classes.add("hidingContainer")
             native.classes.add("kiteui-stack")
             nativeAnimateHideBinding(default, condition)
+        }
+        override fun internalAddChild(index: Int, view: RView) {
+            super.internalAddChild(index, view)
+            Stack.internalAddChildStack(this, index, view)
         }
     })
     return ViewWrapper

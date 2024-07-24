@@ -354,6 +354,9 @@ actual inline var FutureElementStyle.imageResolution: String?
 actual inline var FutureElementStyle.imeMode: String?
     get() = this["ime-mode"]
     set(value) { this["ime-mode"] = value }
+actual inline var FutureElementStyle.justifySelf: String?
+    get() = this["justify-self"]
+    set(value) { this["justify-self"] = value }
 actual inline var FutureElementStyle.justifyContent: String?
     get() = this["justify-content"]
     set(value) { this["justify-content"] = value }

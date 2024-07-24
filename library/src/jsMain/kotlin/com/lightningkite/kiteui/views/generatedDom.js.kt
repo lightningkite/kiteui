@@ -354,6 +354,9 @@ actual inline var FutureElementStyle.imageResolution: String?
 actual inline var FutureElementStyle.imeMode: String?
     get() = native.imeMode as? String 
     set(value) { native.imeMode = value }
+actual inline var FutureElementStyle.justifySelf: String?
+    get() = native.justifySelf as? String
+    set(value) { native.justifySelf = value }
 actual inline var FutureElementStyle.justifyContent: String?
     get() = native.justifyContent as? String 
     set(value) { native.justifyContent = value }

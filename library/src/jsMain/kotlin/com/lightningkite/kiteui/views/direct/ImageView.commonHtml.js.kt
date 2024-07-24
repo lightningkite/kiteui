@@ -25,11 +25,13 @@ actual fun RView.nativeSetSrc(url: String?) {
     val animating = RViewHelper.animationsEnabled
     val urlOrBlank = url ?: ""
     val element = native.element
-    if(element == null){
+    if (element == null){
         native.clearChildren()
         native.appendChild(FutureElement().apply {
             tag = "img"
             attributes.src = url
+            style.width = "100%"
+            style.height = "100%"
         })
 
         return
@@ -57,6 +59,8 @@ actual fun RView.nativeSetSrc(url: String?) {
     }
 
     val newElement = document.createElement("img") as HTMLImageElement
+    newElement.style.width = "100%"
+    newElement.style.height = "100%"
     newElement.style.opacity = "0"
     val now = clockMillis()
     newElement.onload = label@{

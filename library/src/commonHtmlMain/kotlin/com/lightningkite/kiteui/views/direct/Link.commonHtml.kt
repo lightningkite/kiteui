@@ -23,6 +23,10 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             }
         }
     }
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     override fun hasAlternateBackedStates(): Boolean = true
 

@@ -10,6 +10,10 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
     }
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     actual inline var to: String
         get() = native.attributes.href ?: ""

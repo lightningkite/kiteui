@@ -78,12 +78,11 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
             stack {
                 existingView = this
                 themeChoice = DialogSemantic
-                native.onElement {
-                    it as HTMLElement
-                    it.style.position = "absolute"
-                    it.style.zIndex = "999"
-                    it.style.height = "auto"
-                }
+                native.style.position = "absolute"
+                native.style.zIndex = "999"
+                native.style.height = "auto"
+                native.style.width = "fit-content"
+                native.style.height = "fit-content"
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement

@@ -13,6 +13,10 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
         native.classes.add("kiteui-stack")
         native.classes.add("icon")
     }
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     actual var source: Icon? = null
         set(value) {

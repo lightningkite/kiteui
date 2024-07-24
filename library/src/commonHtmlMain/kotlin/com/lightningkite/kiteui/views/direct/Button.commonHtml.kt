@@ -11,6 +11,11 @@ actual class Button actual constructor(context: RContext): RView(context) {
         native.classes.add("clickable")
     }
 
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
+
     override fun hasAlternateBackedStates(): Boolean = true
 
     actual fun onClick(action: suspend () -> Unit): Unit {

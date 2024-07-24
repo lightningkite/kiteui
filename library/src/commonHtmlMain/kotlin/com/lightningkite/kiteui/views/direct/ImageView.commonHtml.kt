@@ -14,7 +14,10 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.classes.add("kiteui-stack")
         native.classes.add("swapImage")
     }
-
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     actual var source: ImageSource? = null
         set(value) {

@@ -49,6 +49,8 @@ actual class FutureElement actual constructor() {
 
     actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
     actual val style: FutureElementStyle = FutureElementStyle(HashMap())
+    actual var desiredVerticalGravity: Align? = null
+    actual var desiredHorizontalGravity: Align? = null
     actual fun setAttribute(key: String, value: String?) {
         if (value == null) attributes.underlyingMap.remove(key)
         else attributes.underlyingMap[key] = value

@@ -180,11 +180,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition: none !important;
             }
 
-            :not(.unkiteui).animatingShowHide {
+            *.animatingShowHide {
                 overflow: hidden;
             }
 
-            :not(.unkiteui) {
+            * {
                 transition-timing-function: linear;
                 transition-delay: 0s;
                 transition-property: color, background-image, background-color, border-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter;
@@ -437,214 +437,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             img {
                 overflow: hidden;
             }
-
-            .kiteui-stack > .vCenter:only-child {
-                height: fit-content;
+            
+            .weakBlock {
+                display: block;
             }
-
-            .kiteui-stack:has(> .vCenter:only-child) {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .kiteui-stack > .hStart:only-child {
-                width: unset;
-                margin-right: auto;
-            }
-
-            .kiteui-stack > .hCenter:only-child {
-                width: unset;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .kiteui-stack > .hEnd:only-child {
-                width: unset;
-                margin-left: auto;
-            }
-
-            .kiteui-stack > .vStart:only-child {
-                height: unset;
-                vertical-align: bottom;
-            }
-
-            .kiteui-stack > .vEnd:only-child {
-                height: unset;
-                vertical-align: top;
-            }
-
-            .kiteui-stack > :only-child {
-                height: 100%;
+            .weakFill {
                 width: 100%;
-                vertical-align: top;
-                display: block;
-            }
-
-            .kiteui-stack:has(> :only-child) {
-                line-height: 0px !important;
-            }
-
-            .kiteui-stack:has(> :not(:only-child)) {
-                display: grid;
-                grid-template-columns: 100%;
-                grid-template-rows: 100%;
-            }
-
-            .kiteui-stack > :not(:only-child) {
-                grid-area: 1 / 1 / 1 / 1;
-                place-self: stretch;
-            }
-
-            .kiteui-stack > .hStart:not(:only-child) {
-                justify-self: start;
-            }
-
-            .kiteui-stack > .hCenter:not(:only-child) {
-                justify-self: center;
-            }
-
-            .kiteui-stack > .hStretch:not(:only-child) {
-                justify-self: stretch;
-            }
-
-            .kiteui-stack > .hEnd:not(:only-child) {
-                justify-self: end;
-            }
-
-            .kiteui-stack > .vStart:not(:only-child) {
-                align-self: start;
-            }
-
-            .kiteui-stack > .vCenter:not(:only-child) {
-                align-self: center;
-            }
-
-            .kiteui-stack > .vStretch:not(:only-child) {
-                align-self: stretch;
-            }
-
-            .kiteui-stack > .vEnd:not(:only-child) {
-                align-self: end;
-            }
-
-            .kiteui-row.kiteui-row {
-                display: flex;
-                flex-direction: row;
-            }
-
-            .kiteui-row.kiteui-row > .vStart {
-                align-self: start;
-            }
-
-            .kiteui-row.kiteui-row > .vCenter {
-                align-self: center;
-            }
-
-            .kiteui-row.kiteui-row > .vStretch {
-                align-self: stretch;
-            }
-
-            .kiteui-row.kiteui-row > .vEnd {
-                align-self: end;
-            }
-
-            .kiteui-row:not(.kiteui-row) > .vStart {
-                vertical-align: top;
-                height: fit-content;
-            }
-
-            .kiteui-row:not(.kiteui-row) > .vCenter {
-                vertical-align: middle;
-                height: fit-content;
-            }
-
-            .kiteui-row:not(.kiteui-row) > .vEnd {
-                vertical-align: bottom;
-                height: fit-content;
-            }
-
-            .kiteui-row:not(.kiteui-row)::before {
-                content: "​";
-                display: inline-block;
                 height: 100%;
-                vertical-align: middle;
             }
-
-            .kiteui-row:not(.kiteui-row) {
-                white-space: nowrap;
-            }
-
-            .kiteui-row:not(.kiteui-row) > :not(:last-child) {
-                margin-right: var(--parentSpacing, 0);
-            }
-
-            .kiteui-row:not(.kiteui-row) > * {
-                display: inline-block;
-                height: calc(100% - var(--parentPadding, 0) * 2);
-                vertical-align: top;
-            }
-
-            .kiteui-col:not(.childHasWeight) > .hStart {
-                width: fit-content;
-                margin-right: auto;
-            }
-
-            .kiteui-col:not(.childHasWeight) > .hCenter {
-                width: fit-content;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .kiteui-col:not(.childHasWeight) > .hEnd {
-                width: fit-content;
-                margin-left: auto;
-            }
-
-            .kiteui-col:not(.childHasWeight) > :not(:last-child) {
-                margin-bottom: var(--parentSpacing, 0);
-            }
-
-            .kiteui-col:not(.childHasWeight) > * {
+            
+            .dumbColFix::after {
+                content: " ";
+                margin-bottom: calc(-1 * var(--spacing, 0px));
                 display: block;
-                width: calc(100%);
-            }
-
-            .kiteui-col.childHasWeight {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .kiteui-col.childHasWeight > .hStart {
-                align-self: start;
-            }
-
-            .kiteui-col.childHasWeight > .hCenter {
-                align-self: center;
-            }
-
-            .kiteui-col.childHasWeight > .hStretch {
-                align-self: stretch;
-            }
-
-            .kiteui-col.childHasWeight > .hEnd {
-                align-self: end;
-            }
-
-            .kiteui-row:not(.kiteui-row) > .kiteui-stack:has(> :not(:only-child)) {
-                display: inline-grid;
-            }
-
-            .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> :not(:only-child)) {
-                display: grid;
-            }
-
-            .kiteui-row:not(.kiteui-row) > .kiteui-col.childHasWeight, .kiteui-row:not(.kiteui-row) > .kiteui-row.kiteui-row, .kiteui-row:not(.kiteui-row) > .kiteui-label, .kiteui-row:not(.kiteui-row) > .kiteui-stack:has(> .vCenter:only-child), .kiteui-row:not(.kiteui-row) > .rowCollapsing {
-                display: inline-flex;
-            }
-
-            .kiteui-col:not(.childHasWeight) > .kiteui-col.childHasWeight, .kiteui-col:not(.childHasWeight) > .kiteui-row.kiteui-row, .kiteui-col:not(.childHasWeight) > .kiteui-label, .kiteui-col:not(.childHasWeight) > .kiteui-stack:has(> .vCenter:only-child), .kiteui-col:not(.childHasWeight) > .rowCollapsing {
-                display: flex;
             }
 
             .spinner {
@@ -692,10 +497,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 max-height: 100svh;
                 max-width: 100vw;
                 overflow: hidden;
-            }
-
-            .noInteraction > * {
-                pointer-events: auto;
             }
 
             .noInteraction.noInteraction {
@@ -904,12 +705,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[FocusSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ".clickable.clickable.clickable.clickable:focus-visible$it $cs",
-                            ".clickable.clickable.clickable.clickable:focus-visible$it$cs",
-                            "input:focus:focus:focus:focus$it$cs",
-                            "textarea:focus:focus:focus:focus$it$cs",
-                            "select:focus:focus:focus:focus$it$cs",
-                            ":has(> :is(input, textarea, select):focus-visible:focus-visible:focus-visible:focus-visible:not(.mightTransition))$it$cs",
+                            ".clickable:focus-visible$it $cs",
+                            ".clickable:focus-visible$it$cs",
+                            "input:focus$it$cs",
+                            "textarea:focus$it$cs",
+                            "select:focus$it$cs",
+                            ":has(> :is(input, textarea, select):focus-visible:not(.mightTransition))$it$cs",
                         )
                     },
                     includeMaybeTransition = foc.useBackground
@@ -920,8 +721,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DownSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ".clickable.clickable.clickable.clickable:active$it $cs",
-                            ".clickable.clickable.clickable.clickable:active$it$cs",
+                            ".clickable:active$it $cs",
+                            ".clickable:active$it$cs",
                         )
                     },
                     includeMaybeTransition = dwn.useBackground
@@ -932,8 +733,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     diff = theme.derivedFrom?.let { (subthemeGen?.let { s -> it[s] } ?: it.withoutBack)[DisabledSemantic].theme },
                     asSelectors = asSelectors.flatMap {
                         listOf(
-                            ".clickable.clickable.clickable.clickable:disabled$it $cs",
-                            ".clickable.clickable.clickable.clickable:disabled$it$cs",
+                            ".clickable:disabled$it $cs",
+                            ".clickable:disabled$it$cs",
                         )
                     },
                     includeMaybeTransition = dis.useBackground
@@ -942,11 +743,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             sub(null, asSelectors = listOf(""))
             sub(
                 SelectedSemantic,
-                asSelectors = listOf(".checked.checked.checked.checked.checkResponsive.checkResponsive.checkResponsive.checkResponsive"),
+                asSelectors = listOf(".checked.checkResponsive"),
             )
             sub(
                 UnselectedSemantic,
-                asSelectors = listOf(".checkResponsive.checkResponsive.checkResponsive.checkResponsive"),
+                asSelectors = listOf(".checkResponsive"),
             )
         }.also {
             cssGenTotal += it
@@ -958,18 +759,18 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     private val Theme.classes: List<String>
         get() = buildList<String> {
-            generateSequence(this@classes) { it.derivedFrom }
-                .toList()
-                .reversed()
-                .map { t -> (t.derivationId ?: t.id) }
-                .forEachIndexed { index, t ->
-                    add("t-$index$t")
-                }
+            add("t-${id}")
+//            generateSequence(this@classes) { it.derivedFrom }
+//                .toList()
+//                .reversed()
+//                .map { t -> (t.derivationId ?: t.id) }
+//                .forEachIndexed { index, t ->
+//                    add("t-$index$t")
+//                }
         }
     private val Theme.classSelector get() = classes.joinToString("") { ".$it" }
-
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
-        getter().takeUnless { diff?.getter() == it }
+        getter()//.takeUnless { diff?.getter() == it }
 
     fun theme(
         theme: Theme,
@@ -983,32 +784,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             return asSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
 
-        theme.diff(diff) { spacing }?.let {
-            dynamicCss.add(
-                selector = sel(
-                    ".mightTransition:not(.isRoot):not(.swapImage):not(.unpadded) > *",
-                    ".padded:not(.unpadded):not(.swapImage) > *"
-                ),
-                key = "--parentPadding",
-                value = it.value
-            )
-            dynamicCss.add(
-                selector = sel(
-                    " > *",
-                ),
-                key = "--parentSpacing",
-                value = it.value
-            )
-        }
-        theme.diff(diff) { navSpacing }?.let {
-            dynamicCss.add(
-                selector = sel(
-                    ".useNavSpacing > *",
-                ),
-                key = "--parentSpacing",
-                value = it.value
-            )
-        }
         val directSel = sel("")
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
@@ -1159,5 +934,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
         }
         return name
+    }
+
+    inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
+
     }
 }

@@ -24,17 +24,6 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     protected actual override fun spacingSet(value: Dimension?) {
         native.setStyleProperty("--spacing", value?.value)
-        native.classes.removeAll { it.startsWith("spacingOf") }
-        value?.let { value ->
-            val cn = "spacingOf${value.value.replace(".", "_").filter { it.isLetterOrDigit() || it == '_' }}"
-            context.dynamicCss.rule(
-                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn > .hidingContainer > * { --parentSpacing: ${value.value} } "
-            )
-            context.dynamicCss.rule(
-                ".$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > *, .$cn.$cn.$cn.$cn.$cn.$cn.$cn.$cn.mightTransition > .hidingContainer > * { --parentPadding: ${value.value} } "
-            )
-            native.classes.add(cn)
-        }
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
@@ -117,6 +106,8 @@ expect class FutureElement {
     var tag: String
     val attributes: FutureElementAttributes
     val style: FutureElementStyle
+    var desiredVerticalGravity: Align?
+    var desiredHorizontalGravity: Align?
     fun setAttribute(key: String, value: String?)
     fun setStyleProperty(key: String, value: String?)
     inline fun addEventListener(name: String, crossinline listener: (Event)->Unit)

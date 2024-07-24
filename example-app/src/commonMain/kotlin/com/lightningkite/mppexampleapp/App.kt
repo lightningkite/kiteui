@@ -112,7 +112,6 @@ fun brandBasedExperimental(id: String, normalBack: Color): Theme {
         background = startingBack.withStripe(),
         elevation = 0.dp,
         transitionDuration = 0.25.seconds,
-        cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
         spacing = 0.75.rem,
         outlineWidth = 0.px,
         foreground = startingBack.deriveForeground(),

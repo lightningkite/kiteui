@@ -10,7 +10,10 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         native.classes.add("viewDraws")
         native.classes.add("kiteui-stack")
     }
-
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     actual var source: ImageSource? = null
         set(value) {

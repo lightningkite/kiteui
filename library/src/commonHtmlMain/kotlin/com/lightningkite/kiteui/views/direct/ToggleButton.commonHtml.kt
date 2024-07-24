@@ -37,6 +37,10 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         })
         native.appendChild(input)
     }
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     override fun hasAlternateBackedStates(): Boolean = true
 

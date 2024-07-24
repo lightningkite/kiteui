@@ -12,6 +12,10 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         native.classes.add("kiteui-stack")
         native.addEventListener("click") { screenNavigator.clear() }
     }
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+        Stack.internalAddChildStack(this, index, view)
+    }
 
     override fun addChild(view: RView) {
         super.addChild(view)

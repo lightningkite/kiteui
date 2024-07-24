@@ -26,10 +26,8 @@ actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimensio
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension("calc(max(${this.value}, ${other.value}))")
 
 fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
-    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
-    is CornerRadii.ForceConstant -> value.value
+    is CornerRadii.Constant -> value.value
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
-    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
 }
 
 actual data class Font(
