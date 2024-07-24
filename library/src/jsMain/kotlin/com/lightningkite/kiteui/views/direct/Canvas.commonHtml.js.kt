@@ -1,10 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.ResizeObserver
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
-import org.w3c.dom.CanvasLineCap
-import org.w3c.dom.CanvasLineJoin
-import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.ROUND
+import org.w3c.dom.*
 
 actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     delegate?.let { value ->
@@ -21,4 +19,19 @@ actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
         }
         value.invalidate()
     }
+}
+
+actual fun Canvas.setupResizeListener() {
+    val htmlNative = native as HTMLCanvasElement
+    ResizeObserver { _, _ ->
+        htmlNative.apply {
+            if (width != scrollWidth || height != scrollHeight) {
+                width = scrollWidth
+                height = scrollHeight
+            }
+            delegate?.onResize(scrollWidth.toDouble(), scrollHeight.toDouble())
+            delegate?.invalidate?.invoke()
+        }
+
+    }.observe(htmlNative)
 }

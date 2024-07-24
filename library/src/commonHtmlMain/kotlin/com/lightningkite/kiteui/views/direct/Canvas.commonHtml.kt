@@ -58,20 +58,13 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             if(delegate?.onPointerCancel(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
                 event.preventDefault()
         }
+        setupResizeListener()
     }
-
-    // TODO
-//    ResizeObserver { _, _ ->
-//        if (width != scrollWidth || height != scrollHeight) {
-//            width = scrollWidth
-//            height = scrollHeight
-//        }
-//        delegate?.onResize(scrollWidth.toDouble(), scrollHeight.toDouble())
-//        delegate?.invalidate?.invoke()
-//    }.observe(this)
 }
 
 expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
+
+expect fun Canvas.setupResizeListener()
 
 //actual var Canvas.delegate: CanvasDelegate?
 //    get() = this.native.asDynamic().__ROCK_delegate__ as? CanvasDelegate
