@@ -22,16 +22,18 @@ actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
 }
 
 actual fun Canvas.setupResizeListener() {
-    val htmlNative = native as HTMLCanvasElement
-    ResizeObserver { _, _ ->
-        htmlNative.apply {
-            if (width != scrollWidth || height != scrollHeight) {
-                width = scrollWidth
-                height = scrollHeight
+    native.onElement { htmlNative ->
+        htmlNative as HTMLCanvasElement
+        ResizeObserver { _, _ ->
+            htmlNative.apply {
+                if (width != scrollWidth || height != scrollHeight) {
+                    width = scrollWidth
+                    height = scrollHeight
+                }
+                delegate?.onResize(scrollWidth.toDouble(), scrollHeight.toDouble())
+                delegate?.invalidate?.invoke()
             }
-            delegate?.onResize(scrollWidth.toDouble(), scrollHeight.toDouble())
-            delegate?.invalidate?.invoke()
-        }
 
-    }.observe(htmlNative)
+        }.observe(htmlNative)
+    }
 }
