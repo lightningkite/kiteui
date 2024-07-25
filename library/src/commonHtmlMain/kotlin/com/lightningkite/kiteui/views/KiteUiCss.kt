@@ -545,6 +545,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 line-height: 0px;
                 display: block;
             }
+            .icon {
+                border-radius: 0px !important;
+            }
 
             .kiteui-space {
                 min-width: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
