@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
@@ -25,7 +26,7 @@ actual class Stack actual constructor(context: RContext) : RView(context) {
                 }
             }
             on.native.children.forEachIndexed { index, futureElement ->
-                view.native.style.zIndex = index.toString()
+                futureElement.style.zIndex = index.toString()
             }
 
             view.native.setStyleProperty("grid-area", "1 / 1 / 1 / 1")

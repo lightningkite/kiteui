@@ -154,14 +154,15 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     fun addChild(index: Int, view: RView) {
         if (view.parent != this) view.parent = this as RView
-        internalAddChild(index, view)
         internalChildren.add(index, view)
+        internalAddChild(index, view)
     }
 
     override fun addChild(view: RView) {
         view.parent = this as RView
-        internalAddChild(children.size, view)
-        internalChildren.add(children.size, view)
+        val index = children.size
+        internalChildren.add(index, view)
+        internalAddChild(index, view)
     }
 
     fun removeChild(index: Int) {
