@@ -108,7 +108,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
         if (!complex) {
             // Optimized mode requires weird stuff
-            view.native.classes.add("weakBlock")
+            view.native.classes.add("optColChild")
             when(align) {
                 Align.Start -> {
                     view.native.style.marginLeft = "unset"
@@ -149,7 +149,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             complex = true
             native.style.display = "flex"
             for (child in children) {
-                native.classes.remove("weakBlock")
+                native.classes.remove("optColChild")
                 child.native.style.marginBottom = "0px"
             }
         }

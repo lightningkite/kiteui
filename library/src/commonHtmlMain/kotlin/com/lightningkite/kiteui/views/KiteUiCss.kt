@@ -437,18 +437,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 overflow: hidden;
             }
             
-            .weakBlock {
+            .optColChild {
                 display: block;
+            }
+            .optColChild:last-child {
+                margin-bottom: 0px !important;
             }
             .weakFill {
                 width: 100%;
                 height: 100%;
-            }
-            
-            .dumbColFix::after {
-                content: " ";
-                margin-bottom: calc(-1 * var(--spacing, 0px));
-                display: block;
             }
 
             .spinner {
