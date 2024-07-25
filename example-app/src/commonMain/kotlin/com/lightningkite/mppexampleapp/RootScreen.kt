@@ -10,7 +10,6 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
-import com.lightningkite.kiteui.views.debugNext
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.minus

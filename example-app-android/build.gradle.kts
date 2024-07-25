@@ -20,11 +20,16 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        // Flag to enable support for the new language APIs
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    dependencies {
+        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     val props = project.rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { stream ->
         Properties().apply { load(stream) }
@@ -57,10 +62,7 @@ android {
 val okHttpVersion: String = "4.11.0"
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation(project(":library"))
     api(project(":example-app"))
     testImplementation("junit:junit:4.13.2")
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion"))
-    implementation("com.squareup.okhttp3:okhttp")
 }

@@ -19,7 +19,6 @@ object ReactivityScreen : Screen {
             delay(1000)
             "Loaded!"
         }
-        debugNext
         col {
             col {
                 h1 { content = "This screen demonstrates various forms of reactivity." }
