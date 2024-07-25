@@ -17,7 +17,7 @@ actual class Stack actual constructor(context: RContext) : RView(context) {
         Stack.internalAddChildStack(this, index, view)
     }
     companion object {
-        internal fun internalAddChildStack(on: RView, index: Int, view: RView) {
+        fun internalAddChildStack(on: RView, index: Int, view: RView) {
             if(index >= 1) {
                 if(on.native.style.display != "grid") {
                     on.native.style.display = "grid"

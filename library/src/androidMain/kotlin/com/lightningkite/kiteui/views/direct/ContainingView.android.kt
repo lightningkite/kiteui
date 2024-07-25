@@ -50,14 +50,15 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
-        SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
     init {
         native.orientation = SimplifiedLinearLayout.VERTICAL
         native.gravity = Gravity.CENTER_HORIZONTAL
         reactiveScope {
             val w = AppState.windowInfo().width
-            if (breakpoints.indexOfFirst { it > w }.rem(2).absoluteValue == 1) {
+            val index = breakpoints.indexOfFirst { w > it }
+            if (index == -1 || index % 2 == 1) {
                 native.orientation = SimplifiedLinearLayout.VERTICAL
                 native.gravity = Gravity.CENTER_HORIZONTAL
                 native.ignoreWeights = true

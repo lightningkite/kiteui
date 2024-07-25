@@ -29,7 +29,7 @@ object LayoutExamplesScreen : Screen {
 
             card - col {
                 h2("Collapsing layout")
-                rowCollapsingToColumn(50.rem) {
+                rowCollapsingToColumn(80.rem) {
                     expanding - card - stack { centered - text("A") }
                     expanding - important - stack { centered - text("B") }
                     expanding - critical - stack { centered - text("C") }

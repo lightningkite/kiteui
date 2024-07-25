@@ -18,6 +18,7 @@ import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import io.ktor.http.*
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
@@ -126,6 +127,21 @@ abstract class KiteUiActivity : AppCompatActivity() {
                 suppressKeyboardChange = true
                 AppState._softInputOpen.value = false
                 suppressKeyboardChange = false
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.data?.let {
+            val path = UrlLikePath(
+                segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
+                parameters = it.query?.removePrefix("?")?.split('&')?.associate {
+                    it.decodeURLQueryComponent().substringBefore('=') to it.substringAfter('=', "").decodeURLQueryComponent()
+                } ?: mapOf()
+            )
+            mainNavigator.routes.parse(path)?.let {
+                mainNavigator.navigate(it)
             }
         }
     }
