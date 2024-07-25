@@ -876,7 +876,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
                 """
-                .$name { display: flex }
+                .$name.rowCollapsing { display: flex }
             """
             )
             (-1..breakpoints.size-1).forEach { index ->
@@ -892,24 +892,25 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     dynamicCss.rule(
                         """
                     @media $mediaQuery {
-                        .$name {
+                        .$name.rowCollapsing {
                             flex-direction: column;
                         }
-                        .$name > * {
+                        .$name.rowCollapsing > * {
+                            display: block;
                             flex-grow: 0 !important;
                             flex-shrink: 0 !important;
                             flex-basis: auto !important;
                         }
-                        .$name > .hStart {
+                        .$name.rowCollapsing > .hStart {
                             align-self: start;
                         }
-                        .$name > .hCenter {
+                        .$name.rowCollapsing > .hCenter {
                             align-self: center;
                         }
-                        .$name > .hStretch {
+                        .$name.rowCollapsing > .hStretch {
                             align-self: stretch;
                         }
-                        .$name > .hEnd {
+                        .$name.rowCollapsing > .hEnd {
                             align-self: end;
                         }
                     }
@@ -919,19 +920,22 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     dynamicCss.rule(
                         """
                     @media $mediaQuery {
-                        .$name {
+                        .$name.rowCollapsing {
                             flex-direction: row;
                         }
-                        .$name > .vStart {
+                        .$name.rowCollapsing > * {
+                            display: block;
+                        }
+                        .$name.rowCollapsing > .vStart {
                             align-self: start;
                         }
-                        .$name > .vCenter {
+                        .$name.rowCollapsing > .vCenter {
                             align-self: center;
                         }
-                        .$name > .vStretch {
+                        .$name.rowCollapsing > .vStretch {
                             align-self: stretch;
                         }
-                        .$name > .vEnd {
+                        .$name.rowCollapsing > .vEnd {
                             align-self: end;
                         }
                     }

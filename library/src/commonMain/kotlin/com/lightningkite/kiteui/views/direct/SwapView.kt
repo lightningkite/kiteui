@@ -11,8 +11,6 @@ expect class SwapView(context: RContext) : RView {
     fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> Unit): Unit
 }
 
-val swapTimePerformance = PerformanceInfo("swapTime", immediate = true)
-
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: suspend () -> T,
@@ -30,9 +28,7 @@ inline fun <T> SwapView.swapping(
         while (queue.isNotEmpty()) {
             val next = queue.removeAt(0)
             try {
-                swapTimePerformance {
-                    swap(transition(next)) { views(next) }
-                }
+                swap(transition(next)) { views(next) }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

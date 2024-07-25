@@ -61,6 +61,7 @@ actual class FutureElement actual constructor() {
     }
 
     actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
+    actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
 
     fun render(out: Appendable) {
         out.append('<')

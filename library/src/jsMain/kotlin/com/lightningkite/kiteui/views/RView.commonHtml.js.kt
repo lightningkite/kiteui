@@ -81,6 +81,14 @@ actual class FutureElement actual constructor() {
             eventsBack["on$name"] = { it:Event -> old?.invoke(it);  listener(it) }
         }
     }
+    actual inline fun replaceEventListener(
+        name: String,
+        crossinline listener: (Event) -> Unit
+    ) {
+        element?.let { it.asDynamic()["on$name"] = { it: Event -> listener(it) } } ?: run {
+            eventsBack["on$name"] = { it:Event -> listener(it) }
+        }
+    }
     val futureStyles = HashMap<String, String>()
     actual fun setStyleProperty(key: String, value: String?) {
         val element = element

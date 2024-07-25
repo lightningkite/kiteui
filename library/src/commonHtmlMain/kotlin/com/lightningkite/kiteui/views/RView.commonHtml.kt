@@ -113,6 +113,7 @@ expect class FutureElement {
     fun setAttribute(key: String, value: String?)
     fun setStyleProperty(key: String, value: String?)
     inline fun addEventListener(name: String, crossinline listener: (Event)->Unit)
+    inline fun replaceEventListener(name: String, crossinline listener: (Event)->Unit)
     var classes: MutableSet<String>
     var id: String?
     var content: String?

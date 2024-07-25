@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
@@ -10,7 +11,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         native.tag = "div"
         native.classes.add("dismissBackground")
         native.classes.add("kiteui-stack")
-        native.addEventListener("click") { screenNavigator.clear() }
+        native.replaceEventListener("click") { dialogScreenNavigator.clear() }
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
@@ -23,6 +24,6 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {
-        native.addEventListener("click") { launchManualCancel(action) }
+        native.replaceEventListener("click") { launchManualCancel(action) }
     }
 }

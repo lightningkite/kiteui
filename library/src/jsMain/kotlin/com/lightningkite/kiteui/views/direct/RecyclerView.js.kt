@@ -71,7 +71,8 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                         value
                 },
                 shutdown = { element ->
-                    removeChild(children.indexOfFirst { it.native.element === element })
+                    val i = children.indexOfFirst { it.native.element === element }
+                    if (i != -1) removeChild(i)
                 }
             )
             reactiveScope {

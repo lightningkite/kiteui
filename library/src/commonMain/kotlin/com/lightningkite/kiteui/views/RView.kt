@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import kotlin.random.Random
@@ -82,11 +81,6 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     companion object {
         var animationsEnabled: Boolean = true
-        val performanceRefreshTheme = PerformanceInfo("refreshTheme")
-        val performanceApplyTheme_applyElevation = PerformanceInfo("applyTheme_applyElevation")
-        val performanceApplyTheme_applyPadding = PerformanceInfo("applyTheme_applyPadding")
-        val performanceApplyTheme_applyForeground = PerformanceInfo("applyTheme_applyForeground")
-        val performanceApplyTheme_applyBackground = PerformanceInfo("applyTheme_applyBackground")
     }
 
 
@@ -103,15 +97,15 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         private set(value) {
             if (value != field) {
                 field = value
-                performanceApplyTheme_applyElevation { applyElevation(if (value.useBackground) value.theme.elevation else 0.px) }
-                performanceApplyTheme_applyPadding {
+                run { applyElevation(if (value.useBackground) value.theme.elevation else 0.px) }
+                run {
                     applyPadding(
                         if (forcePadding ?: (value.useBackground || hasAlternateBackedStates())) (spacing
                             ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
                     )
                 }
-                performanceApplyTheme_applyForeground { applyForeground(value.theme) }
-                performanceApplyTheme_applyBackground { applyBackground(value.theme, value.useBackground) }
+                run { applyForeground(value.theme) }
+                run { applyBackground(value.theme, value.useBackground) }
                 for (child in internalChildren) {
 //                    if (child.themeChoice !is ThemeChoice.Set)
                     child.refreshTheming()
@@ -128,9 +122,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     fun refreshTheming() {
         if (!fullyStarted) return
         if (parent?.fullyStarted == false) return
-        performanceRefreshTheme {
-            themeAndBack = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
-        }
+        themeAndBack = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
     }
 
     abstract fun applyElevation(dimension: Dimension)

@@ -47,7 +47,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
-    afterNextElementSetup {
+    beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -80,7 +80,7 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
-    afterNextElementSetup {
+    beforeNextElementSetup {
         val params = lparams
         val horizontalGravity = when (horizontal) {
             Align.Start -> Gravity.START
@@ -410,7 +410,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
-    afterNextElementSetup {
+    beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)
 //        (parent as? SimplifiedLinearLayout)?.let {

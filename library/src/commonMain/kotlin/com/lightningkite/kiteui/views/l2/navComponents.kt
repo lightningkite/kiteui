@@ -105,6 +105,7 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
         padded - stack {
             icon {
                 ::source { navElement.icon() }
+                ::description { navElement.title() }
             } in gravity(Align.Center, Align.Center)
         }
         navElement.count?.let { count ->
@@ -223,6 +224,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
     stack {
         icon {
             ::source { navElement.icon() }
+            ::description { navElement.title() }
         } in gravity(Align.Center, Align.Center)
         navElement.count?.let { count ->
             gravity(Align.End, Align.Start) - compact - critical - stack {
@@ -241,6 +243,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement) {
     row {
         centered - icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
+            ::description { navElement.title() }
         }
         navElement.count?.let { count ->
             centered - compact - critical - stack {
