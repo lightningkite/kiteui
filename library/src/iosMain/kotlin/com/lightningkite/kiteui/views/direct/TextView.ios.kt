@@ -2,19 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.CoreGraphics.CGPointMake
-import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotificationCenter
-import platform.Foundation.NSNumber
 import platform.Foundation.NSOperationQueue
-import platform.Foundation.numberWithFloat
-import platform.QuartzCore.CAGradientLayer
-import platform.QuartzCore.CALayer
-import platform.QuartzCore.kCAGradientLayerAxial
-import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.*
 
 
@@ -26,6 +17,7 @@ actual class TextView actual constructor(context: RContext): RView(context) {
     init {
         label.numberOfLines = 0
         native.addSubview(withGradient)
+        native.userInteractionEnabled = false
     }
 
     init {

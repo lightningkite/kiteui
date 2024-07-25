@@ -142,10 +142,6 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
             native.accessibilityLabel = value
         }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        super.applyBackground(theme, true)
-    }
-
     actual var refreshOnParamChange: Boolean = false
 
     /**
@@ -453,8 +449,4 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
         set(value) {
             native.accessibilityLabel = value
         }
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        super.applyBackground(theme, true)
-    }
 }
