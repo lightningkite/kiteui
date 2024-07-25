@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.experimental.ExperimentalNativeApi
 
@@ -15,26 +16,21 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
 
     actual fun opensMenu(createMenu: Stack.() -> Unit) {
         native.onClick = {
-            dialogScreenNavigator.navigate(object : Screen {
-                override fun ViewWriter.render() {
-                    dismissBackground {
-                        centered - card - stack {
-                            object: ViewWriter() {
-                                override val context: RContext = this@stack.context.split().also {
-                                    popoverClosers = BasicListenable().also {
-                                        it.addListener {
-                                            dialogScreenNavigator.dismiss()
-                                        }
-                                    }
-                                }
-                                override fun addChild(view: RView) {
-                                    this@stack.addChild(view)
-                                }
-                            }
-                        }
+            var willRemove: RView? = null
+            this.overlayStack!!.popoverWriter {
+                println("Removing $willRemove from ${willRemove?.parent?.native}")
+                willRemove?.let { it.parent!!.removeChild(it) }
+                willRemove = null
+            }.run {
+                willRemove = dismissBackground {
+                    onClick {
+                        closePopovers()
+                    }
+                    centered - card - stack {
+                        createMenu()
                     }
                 }
-            })
+            }
         }
     }
     actual var enabled: Boolean

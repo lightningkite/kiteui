@@ -11,6 +11,8 @@ import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.overlayStack
+import kotlin.random.Random
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
@@ -19,26 +21,19 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
 
     actual fun opensMenu(createMenu: Stack.() -> Unit) {
         native.setOnClickListener { view ->
-            dialogScreenNavigator.navigate(object : Screen {
-                override fun ViewWriter.render() {
-                    dismissBackground {
-                        centered - card - stack {
-                           object: ViewWriter() {
-                               override val context: RContext = this@stack.context.split().also {
-                                   popoverClosers = BasicListenable().also {
-                                       it.addListener {
-                                           dialogScreenNavigator.dismiss()
-                                       }
-                                   }
-                               }
-                               override fun addChild(view: RView) {
-                                   this@stack.addChild(view)
-                               }
-                           }
-                        }
+            var willRemove: RView? = null
+            this.overlayStack!!.popoverWriter {
+                willRemove?.let { overlayStack!!.removeChild(it) }
+            }.run {
+                willRemove = dismissBackground {
+                    onClick {
+                        closePopovers()
+                    }
+                    centered - card - stack {
+                        createMenu()
                     }
                 }
-            })
+            }
         }
     }
 

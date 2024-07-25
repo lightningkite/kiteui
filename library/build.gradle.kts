@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform")
@@ -33,6 +34,9 @@ kotlin {
             api("androidx.media3:media3-exoplayer:1.3.1")
             api("androidx.media3:media3-ui:1.3.1")
             api("androidx.media3:media3-common:1.3.1")
+        }
+        this.compilerOptions {
+            this.jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
     jvm()

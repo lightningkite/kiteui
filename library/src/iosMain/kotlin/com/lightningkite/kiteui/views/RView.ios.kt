@@ -185,11 +185,19 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
-        native.insertSubview(view.native, index.toLong())
+        if(index == native.subviews.size)
+            native.addSubview(view.native)
+        else
+            native.insertSubview(view.native, index.toLong())
+        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        (native.subviews.getOrNull(index) as? UIView)?.removeFromSuperview()
+        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (index >= native.subviews.size || index < 0) {
+            throw IllegalStateException("Index $index not in 0..<${native.subviews.size}")
+        }
+        (native.subviews[index] as UIView).removeFromSuperview()
     }
 
     actual override fun internalClearChildren() {

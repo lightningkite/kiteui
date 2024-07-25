@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlin.properties.ReadWriteProperty
 import kotlin.random.Random
 import kotlin.reflect.KProperty
@@ -55,4 +56,26 @@ fun ViewWriter.closePopovers() {
 
 fun ViewWriter.closeSiblingPopovers() {
     popoverClosers.invokeAll()
+}
+
+fun ViewWriter.popoverWriter(close: ()->Unit): ViewWriter {
+    val writer = object : ViewWriter() {
+        override val context: RContext = this@popoverWriter.context.split()
+        override fun addChild(view: RView) = this@popoverWriter.addChild(view)
+    }
+    this@popoverWriter.closeSiblingPopovers()
+    val childCloser = BasicListenable()
+    var closeCurrent = {}
+    var stopListeningToCloser = {}
+    fun internalClose() {
+        stopListeningToCloser()
+        closeCurrent()
+        close()
+    }
+    stopListeningToCloser = this@popoverWriter.popoverClosers.addListener {
+        childCloser.invokeAll()
+        internalClose()
+    }
+    writer.popoverClosers = childCloser
+    return writer
 }
