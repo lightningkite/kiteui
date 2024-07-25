@@ -452,7 +452,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .spinner {
-                display: block !important;
+                display: block;
                 width: 32px !important;
                 height: 32px !important;
                 opacity: 0.5 !important;
@@ -502,6 +502,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .noInteraction.noInteraction {
                 pointer-events: none;
             }
+            .noInteraction > * {
+                pointer-events: auto;
+            }
 
             video.scaleType-NoScale {
                 object-fit: none;
@@ -540,8 +543,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition-duration: var(--transition-duration, 0.25s);
             }
 
-            .swapImage {
+            .swapImage, .icon {
                 overflow: hidden;
+                line-height: 0px;
+                display: block;
             }
 
             .kiteui-space {
@@ -681,7 +686,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             val cs = theme.classSelector
             fun sub(subthemeGen: Semantic?, asSelectors: List<String>) {
                 val subtheme = subthemeGen?.let { s -> theme[s] } ?: theme.withoutBack
-                if (theme != subtheme) {
+                if (theme != subtheme.theme) {
                     theme(
                         subtheme.theme,
                         diff = theme,
