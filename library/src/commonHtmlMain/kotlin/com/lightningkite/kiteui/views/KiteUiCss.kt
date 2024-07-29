@@ -79,6 +79,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .touchscreenOnly {
             }
+            .disableContextMenu {
+                -webkit-user-select: none !important;  
+                -webkit-touch-callout: none !important;  
+            }
 
             .viewPager > :not(.recyclerViewCap) {
                 width: var(--pager-width, 0rem);
@@ -550,6 +554,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kiteui-space {
+                display: inline-block;
                 min-width: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
             }
 
