@@ -36,7 +36,8 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     init {
         reactiveScope {
             val w = AppState.windowInfo().width
-            if (breakpoints.indexOfFirst { it > w }.rem(2).absoluteValue == 1) {
+            val index = breakpoints.indexOfFirst { w > it }
+            if (index == -1 || index % 2 == 1) {
                 native.horizontal = false
                 native.ignoreWeights = true
             } else {

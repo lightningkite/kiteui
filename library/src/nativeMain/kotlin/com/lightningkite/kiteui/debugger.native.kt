@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui
 
+import kotlin.experimental.ExperimentalNativeApi
+
 actual fun Throwable.printStackTrace2() = printStackTrace()
 actual object ConsoleRoot: Console {
     private val platform = PlatformConsole("MyApp")
@@ -27,3 +29,6 @@ private class PlatformConsole(val tag: String): Console {
         println("$tag: " + entries.joinToString(" "))
     }
 }
+
+@OptIn(ExperimentalNativeApi::class)
+actual typealias WeakReference<T> = kotlin.native.ref.WeakReference<T>

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
@@ -21,7 +22,10 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class TextArea actual constructor(context: RContext): RView(context) {
-    override val native = EditText(context.activity)
+    override val native = EditText(context.activity).apply {
+        maxLines = Int.MAX_VALUE
+        inputType = InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE
+    }
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())

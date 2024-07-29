@@ -25,14 +25,21 @@ data class LinearGradient(
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
-        return stops.map { it.color.toHSV() }.let {
-            HSVColor(
-                hue = it.map { it.hue.turns }.average().let(::Angle),
-                value = it.map { it.value }.average().toFloat(),
-                saturation = it.map { it.saturation }.average().toFloat(),
-                alpha = stops.map { it.color.alpha }.average().toFloat()
-            )
-        }.toRGB()
+        if (stops.size == 1) return stops[0].color
+        return Color(
+            alpha = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.alpha + b.color.alpha) / 2
+            }.sum(),
+            red = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.red + b.color.red) / 2
+            }.sum(),
+            green = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.green + b.color.green) / 2
+            }.sum(),
+            blue = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.blue + b.color.blue) / 2
+            }.sum(),
+        )
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
@@ -52,7 +59,22 @@ data class RadialGradient(
 ) : Paint {
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
-        return stops.maxByOrNull { it.ratio }?.color ?: Color.transparent
+        if (stops.isEmpty()) return Color.transparent
+        if (stops.size == 1) return stops[0].color
+        return Color(
+            alpha = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.alpha + b.color.alpha) / 2
+            }.sum(),
+            red = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.red + b.color.red) / 2
+            }.sum(),
+            green = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.green + b.color.green) / 2
+            }.sum(),
+            blue = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.blue + b.color.blue) / 2
+            }.sum(),
+        )
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })

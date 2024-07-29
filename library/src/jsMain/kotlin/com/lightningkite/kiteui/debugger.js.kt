@@ -8,6 +8,9 @@ actual fun debugger() {
 actual fun gc(): GCInfo {
     return GCInfo(-1L)
 }
+actual fun cleanImageCache() {
+}
+actual fun gcReport() {}
 
 actual fun assertMainThread() {
 }
@@ -50,4 +53,8 @@ private class PlatformConsole(val tag: String): Console {
     override fun warn(vararg entries: Any?) {
         console.warn(tag, *entries)
     }
+}
+
+actual class WeakReference<T: Any> actual constructor(private val referred: T) {
+    actual fun get(): T? = referred
 }

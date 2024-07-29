@@ -59,10 +59,10 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             field = value
             @Suppress("KotlinConstantConditions")
             when (value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
-                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
-                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
-                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).transition(DrawableTransitionOptions.withCrossFade()).into(native)
+                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(native)
+                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(native)
+                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(native)
+                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(native)
                 is ImageVector -> native.setImageDrawable(PathDrawable(value))
                 null -> native.setImageDrawable(null)
                 else -> TODO()

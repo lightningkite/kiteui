@@ -14,7 +14,7 @@ import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
 actual class Space actual constructor(context: RContext, multiplier: Double): RView(context) {
-    override val native = NSpace()
+    override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))//NSpace()
     init {
 //        sizeConstraints =
     }

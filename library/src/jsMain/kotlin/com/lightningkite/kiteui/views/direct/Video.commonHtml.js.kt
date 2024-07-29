@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.autoplay
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLVideoElement
@@ -23,7 +24,11 @@ actual val Video.nativePlaying: Writable<Boolean>
             native.attributes.autoplay = it
             onElement { e ->
                 e as HTMLVideoElement
-                if(it) e.play() else e.pause()
+                if(it) e.play().catch {
+                    if(it.message?.contains("AbortError") == true) return@catch
+                    if(it.message?.contains("NotAllowedError") == true) return@catch
+                    Exception("Failed to play ${this}", it).report()
+                } else e.pause()
             }
         }
     )

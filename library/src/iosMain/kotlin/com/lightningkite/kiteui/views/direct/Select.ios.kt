@@ -9,10 +9,7 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
-import platform.UIKit.UIPickerView
-import platform.UIKit.UIPickerViewDataSourceProtocol
-import platform.UIKit.UIPickerViewDelegateProtocol
-import platform.UIKit.UIView
+import platform.UIKit.*
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
@@ -60,11 +57,29 @@ actual class Select actual constructor(context: RContext): RView(context) {
         picker.setDataSource(source)
         picker.setDelegate(source)
         native.extensionStrongRef = source
+        onRemove {
+            native.extensionStrongRef = null
+            picker.setDataSource(null)
+            picker.setDelegate(null)
+        }
     }
 
+    var fontAndStyle: FontAndStyle? = null
+        set(value) {
+            field = value
+            updateFont()
+            native.informParentOfSizeChange()
+        }
     override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-//        textField.apply(theme)
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
+    }
+    fun updateFont() {
+        val alignment = textField.textAlignment
+        textField.font = fontAndStyle?.let {
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
+        textField.textAlignment = alignment
     }
 
     actual var enabled: Boolean

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
@@ -18,7 +19,9 @@ import platform.UIKit.UITapGestureRecognizer
 import platform.UIKit.UIView
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.roundToInt
+import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
 @OptIn(ExperimentalForeignApi::class)
@@ -67,20 +70,20 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
-        if (value) {
-            val actionHolder = object : NSObject() {
-                @ObjCAction
-                fun eventHandler() {
-                }
-            }
-            val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-            native.addGestureRecognizer(rec)
-            onRemove {
-                // Retain the sleeve until disposed
-                rec.enabled
-                actionHolder.description
-            }
-        }
+//        if (value) {
+//            val actionHolder = object : NSObject() {
+//                @ObjCAction
+//                fun eventHandler() {
+//                }
+//            }
+//            val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+//            native.addGestureRecognizer(rec)
+//            onRemove {
+//                // Retain the sleeve until disposed
+//                rec.enabled
+//                actionHolder.description
+//            }
+//        }
     }
 
     protected actual override fun forcePaddingSet(value: Boolean?) {
@@ -179,6 +182,18 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalNativeApi::class)
+    override fun leakDetect() {
+        super.leakDetect()
+        WeakReference(native).checkLeakAfterDelay(1_000)
+    }
+
+    override fun postSetup() {
+        super.postSetup()
+        ObjCountTrackers.track(this)
+        ObjCountTrackers.track(native)
     }
 
     actual override fun applyForeground(theme: Theme) {

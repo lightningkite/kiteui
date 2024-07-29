@@ -41,6 +41,11 @@ actual class Select actual constructor(context: RContext): RView(context) {
         return t
     }
 
+    override fun applyPadding(dimension: Dimension?) {
+        // padding handled by inner
+        native.setPaddingAll(0)
+    }
+
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf(null, null))
 

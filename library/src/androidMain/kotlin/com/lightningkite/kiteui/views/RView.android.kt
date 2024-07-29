@@ -9,8 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import androidx.core.view.ScrollingView
+import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
@@ -74,15 +76,20 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
         generateSequence(native) {
             it.parent as? View
-        }.first {
+        }.firstOrNull() {
             when (it) {
+                is HorizontalScrollView -> {
+                    scrollToView(it, native, animate)
+                    true
+                }
+
                 is ScrollView -> {
                     scrollToView(it, native, animate)
                     true
                 }
 
-                is ScrollingView -> {
-                    // TODO
+                is NestedScrollView -> {
+                    scrollToView(it, native, animate)
                     true
                 }
 

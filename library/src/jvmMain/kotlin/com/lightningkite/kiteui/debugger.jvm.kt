@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui
 
+import java.lang.ref.WeakReference
+
 actual fun debugger() {
 }
 
@@ -9,6 +11,11 @@ actual fun gc(): GCInfo {
         GCInfo(totalMemory() - freeMemory())
     }
 }
+actual fun cleanImageCache() {
+}
+actual fun gcReport() {}
+
+actual typealias WeakReference<T> = WeakReference<T>
 
 actual fun assertMainThread() {
 }

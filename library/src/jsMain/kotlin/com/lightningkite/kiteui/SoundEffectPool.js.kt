@@ -127,8 +127,11 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             override var isPlaying: Boolean
                 get() = !native.paused
                 set(value) {
-                    println("Play ${this@load} started")
-                    if (value) native.play() else native.pause()
+                    if (value) native.play().catch {
+                        if(it.message?.contains("AbortError") == true) return@catch
+                        if(it.message?.contains("NotAllowedError") == true) return@catch
+                        Exception("Failed to play ${this}", it).report()
+                    } else native.pause()
                 }
 
             override fun onComplete(action: () -> Unit) {
@@ -157,7 +160,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
         native.load()
         return@suspendCoroutineCancellable {
-            println("Cancelled loading of ${this@load}.")
             native.src = ""
         }
     }

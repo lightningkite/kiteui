@@ -91,13 +91,17 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             makeView = { _, obs -> render(obs) }) {
             init {
                 reactiveScope(onLoad = {
+//                    println("Data set to loading")
                     loading = true
                     notifyDataSetChanged()
+//                    println("Data set to loading complete")
                 }) {
                     val new = items.await().toList()
+//                    println("Data set to $new")
                     loading = false
                     lastPublished = new
                     notifyDataSetChanged()
+//                    println("Data set to new complete")
                 }
             }
         }
@@ -111,10 +115,12 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             parent: androidx.recyclerview.widget.RecyclerView,
             state: androidx.recyclerview.widget.RecyclerView.State
         ) {
-            outRect.left = spacing
-            outRect.top = spacing
-            outRect.bottom = spacing
-            outRect.right = spacing
+            val horizontal = (parent.layoutManager as? GridLayoutManager)?.orientation == GridLayoutManager.HORIZONTAL ||
+                    (parent.layoutManager as? LinearLayoutManager)?.orientation == LinearLayoutManager.HORIZONTAL
+            val first = parent.getChildAdapterPosition(view) == 0
+            val last = parent.getChildAdapterPosition(view) == (parent.adapter?.itemCount ?: Int.MAX_VALUE)
+            outRect.left = if (!first && horizontal) spacing else 0
+            outRect.top = if (!first && !horizontal) spacing else 0
         }
     }
 

@@ -8,6 +8,9 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSRunLoop
+import platform.Foundation.NSRunLoopCommonModes
+import platform.QuartzCore.CADisplayLink
 import platform.UIKit.UIKeyboardWillHideNotification
 import platform.UIKit.UIKeyboardWillShowNotification
 import platform.UIKit.UIScreen
@@ -15,11 +18,20 @@ import platform.darwin.NSObject
 import platform.darwin.sel_registerName
 
 
+@OptIn(ExperimentalForeignApi::class)
 actual object AppState {
     internal val _animationFrame = BasicListenable()
     actual val animationFrame: Listenable
         get() = _animationFrame
-    @OptIn(ExperimentalForeignApi::class)
+    private val handle = object: NSObject() {
+        @ObjCAction
+        fun onFrame() {
+            _animationFrame.invokeAll()
+        }
+    }
+    init {
+        CADisplayLink.displayLinkWithTarget(handle, sel_registerName("onFrame")).addToRunLoop(NSRunLoop.currentRunLoop, forMode = NSRunLoopCommonModes)
+    }
     internal val _windowInfo = Property(WindowStatistics(
         width = Dimension(UIScreen.mainScreen.bounds.useContents { size.width }),
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),

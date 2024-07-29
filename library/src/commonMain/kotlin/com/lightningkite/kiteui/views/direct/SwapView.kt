@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 
 
@@ -30,7 +31,7 @@ inline fun <T> SwapView.swapping(
             try {
                 swap(transition(next)) { views(next) }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Exception("Failed to render $next", e).report("SwapView.swapping")
             }
         }
         alreadySwapping = false

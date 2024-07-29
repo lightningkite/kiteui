@@ -5,6 +5,40 @@ import com.lightningkite.kiteui.views.RView
 expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
 expect fun gc(): GCInfo
+expect fun cleanImageCache()
+expect fun gcReport()
+expect class WeakReference<T: Any>(referred: T) {
+    fun get(): T?
+}
+val leaks = ArrayList<WeakReference<*>>()
+var lastGc = clockMillis()
+private fun gcIfNotVeryRecent() {
+    if(clockMillis() - lastGc > 100.0) {
+        gc()
+        lastGc = clockMillis()
+    }
+}
+fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        get()?.let {
+            leaks.add(this)
+            println("Leaked ${it}, total ${leaks.size} leaks")
+            recheckLeakAfterDelay(milliseconds)
+        }
+    }
+}
+fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        if (get() == null) {
+            leaks.remove(this)
+            println("Recovered item, total ${leaks.size} leaks")
+        } else {
+            recheckLeakAfterDelay(milliseconds)
+        }
+    }
+}
 expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()

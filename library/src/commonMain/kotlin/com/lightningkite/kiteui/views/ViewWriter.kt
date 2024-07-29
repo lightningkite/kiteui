@@ -29,9 +29,13 @@ abstract class ViewWriter {
 
     var _wrapElement: RView? = null
     fun wrapNextIn(view: RView) {
-        (_wrapElement ?: this).addChild(view)
+        val p = _wrapElement ?: this
+        p.willAddChild(view)
         _wrapElement = view
+        beforeNextElementSetup?.invoke(view)
+        beforeNextElementSetup = null
         view.postSetup()
+        p.addChild(view)
     }
 
     fun <T : RView> writePre(p: ViewWriter, view: T) {

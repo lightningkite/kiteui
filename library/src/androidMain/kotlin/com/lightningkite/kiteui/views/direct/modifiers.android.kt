@@ -15,6 +15,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
@@ -219,13 +220,21 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         getChildAt(0).measure(
-            MeasureSpec.makeMeasureSpec(r - l, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(b - t, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
         )
-        getChildAt(0).layout(0, 0, r - l, b - t)
+        getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val widthMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(widthMeasureSpec) - paddingLeft - paddingRight,
+            MeasureSpec.getMode(widthMeasureSpec)
+        )
+        val heightMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(heightMeasureSpec) - paddingTop - paddingBottom,
+            MeasureSpec.getMode(heightMeasureSpec)
+        )
         val f = getChildAt(0)
         fun preprocess(baseSpec: Int, min: Int?, max: Int?, set: Int?): Int {
             var out = baseSpec
@@ -328,14 +337,24 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
         var processedWidthSpec = postprocess(
             widthMeasureSpec,
-            f.measuredWidth,
+            f.measuredWidth.let {
+                MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(it) + paddingLeft + paddingRight,
+                    MeasureSpec.getMode(it)
+                )
+            },
             constraints.minWidth?.value?.toInt(),
             constraints.maxWidth?.value?.toInt(),
             constraints.width?.value?.toInt()
         )
         var processedHeightSpec = postprocess(
             heightMeasureSpec,
-            f.measuredHeight,
+            f.measuredHeight.let {
+                MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(it) + paddingTop + paddingBottom,
+                    MeasureSpec.getMode(it)
+                )
+            },
             constraints.minHeight?.value?.toInt(),
             constraints.maxHeight?.value?.toInt(),
             constraints.height?.value?.toInt()
@@ -352,6 +371,10 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         }
 
         setMeasuredDimension(processedWidthSpec, processedHeightSpec)
+    }
+
+    init {
+        clipChildren = false
     }
 }
 
@@ -426,6 +449,10 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
             val value = condition()
             if (goal == value) return@reactiveScope
             goal = value
+            if (native.layoutParams == null) {
+                exists = value
+                return@reactiveScope
+            }
             existingAnimator?.cancel()
             existingAnimator = null
             val parent = parent

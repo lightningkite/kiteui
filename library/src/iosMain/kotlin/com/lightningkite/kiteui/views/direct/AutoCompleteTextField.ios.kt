@@ -25,17 +25,6 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
         native.addSubview(textField)
     }
 
-    init {
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            UIContentSizeCategoryDidChangeNotification,
-            textField,
-            NSOperationQueue.mainQueue
-        ) {
-            updateFont()
-            native.informParentOfSizeChange()
-        }
-    }
-
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font

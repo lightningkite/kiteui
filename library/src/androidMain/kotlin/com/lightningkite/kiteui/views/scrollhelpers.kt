@@ -4,7 +4,10 @@ import android.graphics.Point
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.core.view.ScrollingView
+import androidx.core.widget.NestedScrollView
 
 
 /**
@@ -19,9 +22,45 @@ internal fun scrollToView(scrollViewParent: ScrollView, view: View, smooth: Bool
     getDeepChildOffset(scrollViewParent, view.parent, view, childOffset)
     // Scroll to child.
     if (smooth) {
-        scrollViewParent.smoothScrollTo(0, childOffset.y)
+        scrollViewParent.smoothScrollTo(0, childOffset.y.plus(view.height / 2).minus(scrollViewParent.height / 2))
     } else {
-        scrollViewParent.scrollTo(0, childOffset.y)
+        scrollViewParent.scrollTo(0, childOffset.y.plus(view.height / 2).minus(scrollViewParent.height / 2))
+    }
+}
+
+/**
+ * Used to scroll to the given view.
+ *
+ * @param scrollViewParent Parent ScrollView
+ * @param view View to which we need to scroll.
+ */
+internal fun scrollToView(scrollViewParent: NestedScrollView, view: View, smooth: Boolean) {
+    // Get deepChild Offset
+    val childOffset = Point()
+    getDeepChildOffset(scrollViewParent, view.parent, view, childOffset)
+    // Scroll to child.
+    if (smooth) {
+        scrollViewParent.smoothScrollTo(0, childOffset.y.plus(view.height / 2).minus(scrollViewParent.height / 2))
+    } else {
+        scrollViewParent.scrollTo(0, childOffset.y.plus(view.height / 2).minus(scrollViewParent.height / 2))
+    }
+}
+
+/**
+ * Used to scroll to the given view.
+ *
+ * @param scrollViewParent Parent ScrollView
+ * @param view View to which we need to scroll.
+ */
+internal fun scrollToView(scrollViewParent: HorizontalScrollView, view: View, smooth: Boolean) {
+    // Get deepChild Offset
+    val childOffset = Point()
+    getDeepChildOffset(scrollViewParent, view.parent, view, childOffset)
+    // Scroll to child.
+    if (smooth) {
+        scrollViewParent.smoothScrollTo(childOffset.x.plus(view.width / 2).minus(scrollViewParent.width / 2), 0)
+    } else {
+        scrollViewParent.scrollTo(childOffset.x.plus(view.width / 2).minus(scrollViewParent.width / 2), 0)
     }
 }
 

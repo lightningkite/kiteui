@@ -62,12 +62,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         "${super.debugDescription()} $debugDescriptionInfo $debugDescriptionInfo2"
 
     override fun subviewDidChangeSizing(view: UIView?) {
-        val it = view ?: return
+        val view = view ?: return
         val index = subviews.indexOf(view)
-//        if(viewDebugTarget?.native == view && index != -1) {
-//            println("${this.toString().take(20)} / ${it.toString().take(20)} - sizes invalidated")
-//        }
         if (index != -1) childSizeCache[index].clear()
+        else {
+            println("WARN: Child $view not found inside $this")
+        }
         lastLaidOutSize = null
         informParentOfSizeChange()
     }
@@ -113,6 +113,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
         childSizeCache.add(index, HashMap())
         lastLaidOutSize = null
+        informParentOfSizeChange()
     }
 
     override fun willRemoveSubview(subview: UIView) {
@@ -122,6 +123,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
             childSizeCache.removeAt(index)
         }
+        informParentOfSizeChange()
         super.willRemoveSubview(subview)
     }
 
@@ -255,7 +257,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                 Align.End -> mySize.secondary - padding - size.secondary
                 Align.Center -> (mySize.secondary - size.secondary) / 2
             }
-            val secondarySize = if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary
+            val secondarySize = (if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary.coerceAtMost(mySize.secondary - padding * 2))
             val widthSize = if (horizontal) size.primary else secondarySize
             val heightSize = if (horizontal) secondarySize else size.primary
             t.pause()

@@ -19,24 +19,13 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
-        this.delegate = delegate
+        this.delegate = this@TextArea.delegate
     }
 
     init {
         native.addSubview(textField)
     }
 
-
-    init {
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            UIContentSizeCategoryDidChangeNotification,
-            textField,
-            NSOperationQueue.mainQueue
-        ) {
-            updateFont()
-            native.informParentOfSizeChange()
-        }
-    }
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font

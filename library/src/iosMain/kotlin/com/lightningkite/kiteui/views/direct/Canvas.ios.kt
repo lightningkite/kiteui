@@ -2,11 +2,14 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
 
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
+import com.lightningkite.kiteui.views.canvas.fillPaint
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CATransaction
@@ -255,9 +258,15 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 //        startRefresh()
 //    }
 
+    private var x = 0.0
     override fun drawRect(rect: CValue<CGRect>) {
         with(DrawingContext2DImpl(UIGraphicsGetCurrentContext()!!, rect.useContents { this.size.width }, rect.useContents { this.size.height })) {
-            delegate?.draw(this)
+            try {
+                delegate?.draw(this)
+            } catch(e: Exception) {
+                println("OH MAN")
+                e.printStackTrace2()
+            }
         }
     }
 

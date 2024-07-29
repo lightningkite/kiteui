@@ -46,9 +46,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
-                beforeNextElementSetup {
-                    viewDebugTarget = this
-                }
+                linkScreen { LeakCheckerScreen }
                 linkScreen { ExperimentScreen }
                 linkScreen { AudioScreen }
                 linkScreen { HorizontalRecyclerViewScreen }
@@ -94,8 +92,6 @@ object RootScreen : Screen {
                     text { content = "GC" }
                     onClick { gc() }
                 }
-
-                println("Debug is ${viewDebugTarget}")
 
                 calculationContext.onRemove {
                     println("Left root screen")

@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.reactive.CalculationContext
@@ -11,9 +12,11 @@ import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
 import com.lightningkite.kiteui.reactive.Property
+import kotlin.experimental.ExperimentalNativeApi
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class TextFieldInput(val calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalNativeApi::class)
+class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
+    val calculationContextWeak = WeakReference(calculationContext)
 
     val toolbar = UIToolbar().apply {
         barStyle = UIBarStyleDefault
@@ -33,11 +36,9 @@ class TextFieldInput(val calculationContext: CalculationContext): UITextField(CG
     @ObjCAction
     fun done() {
         resignFirstResponder()
-        calculationContext.launch { action?.onSelect?.invoke() }
+        calculationContextWeak.get()?.launch { action?.onSelect?.invoke() }
     }
 
-    var currentValue: Property<*>? = null
-    var valueRange: ClosedRange<*>? = null
     var action: Action? = null
         set(value) {
             field = value

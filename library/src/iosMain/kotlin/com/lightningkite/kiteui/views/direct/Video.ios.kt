@@ -6,10 +6,7 @@ import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
-import kotlinx.cinterop.readValue
+import kotlinx.cinterop.*
 import platform.AVFoundation.*
 import platform.AVKit.AVPlayerViewController
 import platform.AVKit.AVPlayerViewControllerDelegateProtocol
@@ -97,16 +94,19 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    @ObjCAction
-    fun playerItemDidReachEnd(notification: NSNotification?) {
-        if (player?.rate == 0f) {
-            onComplete?.invoke()
+    @OptIn(BetaInteropApi::class)
+    val playerCallbackHolder = object: NSObject() {
+        @ObjCAction
+        fun playerItemDidReachEnd(notification: NSNotification?) {
+            if (player?.rate == 0f) {
+                onComplete?.invoke()
+            }
         }
     }
 
     init {
         NSNotificationCenter.defaultCenter.addObserver(
-            observer = this,
+            observer = playerCallbackHolder,
             selector = sel_registerName("playerItemDidReachEnd:"),
             name = AVPlayerItemDidPlayToEndTimeNotification,
             `object` = null

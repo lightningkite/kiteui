@@ -21,6 +21,7 @@ actual fun SwapView.nativeSwap(
             removeChild(view)
         }
     }
+    previousLast = null
     withoutAnimation {
         createNewView()
     }

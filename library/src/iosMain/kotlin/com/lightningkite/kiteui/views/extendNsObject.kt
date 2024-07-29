@@ -7,42 +7,51 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSString
+import platform.Foundation.NSValue
+import platform.Foundation.UTF8String
+import platform.Foundation.valueWithPointer
 import platform.UIKit.UIView
 import platform.darwin.NSObject
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.properties.ReadWriteProperty
+import kotlin.random.Random
 import kotlin.reflect.KProperty
 
-class ExtensionProperty<A: NSObject, B>: ReadWriteProperty<A, B?> {
-    companion object {
-        val storage = HashMap<Any, HashMap<ExtensionProperty<*, *>, Any?>>()
-        fun remove(key: Any) = storage.remove(key)
-        fun debug() {
-            for((key, value) in storage) {
-                if(key is UIView) {
-                    if(key.window == null) println("Warning! $key is detatched but still holds external storage")
-                }
-            }
-        }
-    }
+//class ExtensionProperty<A: NSObject, B>: ReadWriteProperty<A, B?> {
+//    companion object {
+//        val storage = HashMap<Any, HashMap<ExtensionProperty<*, *>, Any?>>()
+//        fun remove(key: Any) = storage.remove(key)
+//        fun debug() {
+//            for((key, value) in storage) {
+//                if(key is UIView) {
+////                    if(key.window == null) println("Warning! $key is detatched but still holds external storage")
+//                }
+//            }
+//        }
+//    }
+//    override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
+//    override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
+//    @Suppress("UNCHECKED_CAST")
+//    fun getValue(thisRef: A): B? = storage.get(thisRef)?.get(this) as B
+//    fun setValue(thisRef: A, value: B?) {
+//        storage.getOrPut(thisRef) { HashMap() }.put(this, value)
+//    }
+//}
+class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
+    @OptIn(ExperimentalForeignApi::class)
+    val key = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
     override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
     override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
-    @Suppress("UNCHECKED_CAST")
-    fun getValue(thisRef: A): B? = storage.get(thisRef)?.get(this) as B
-    fun setValue(thisRef: A, value: B?) {
-        storage.getOrPut(thisRef) { HashMap() }.put(this, value)
+    @OptIn(ExperimentalForeignApi::class)
+    fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
+    @OptIn(ExperimentalForeignApi::class)
+    fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
+    companion object {
+        fun debug() {}
     }
 }
-//class ExtensionProperty<A: NSObject, B>: ReadWriteProperty<A, B?> {
-//@OptIn(ExperimentalForeignApi::class)
-//override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
-//@OptIn(ExperimentalForeignApi::class)
-//override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
-//@OptIn(ExperimentalForeignApi::class)
-//fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
-//@OptIn(ExperimentalForeignApi::class)
-//fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
-//}
 
 private val UIViewWeight = ExtensionProperty<UIView, Float>()
 var UIView.extensionWeight: Float? by UIViewWeight
@@ -65,23 +74,11 @@ var UIView.extensionFontAndStyle: FontAndStyle? by UIViewFontAndStyle
 private val UIViewTextSize = ExtensionProperty<UIView, Double>()
 var UIView.extensionTextSize: Double? by UIViewTextSize
 
-private val UIViewMarginless = ExtensionProperty<UIView, Boolean>()
-var UIView.extensionMarginless: Boolean? by UIViewMarginless
-
 private val UIViewForcePadding = ExtensionProperty<UIView, Boolean>()
 var UIView.extensionForcePadding: Boolean? by UIViewForcePadding
 
-private val UIViewWriter = ExtensionProperty<UIView, ViewWriter>()
-var UIView.extensionViewWriter: ViewWriter? by UIViewWriter
-
 private val UIViewAnimationDuration = ExtensionProperty<UIView, Double>()
 var UIView.extensionAnimationDuration: Double? by UIViewAnimationDuration
-
-private val UIViewProp = ExtensionProperty<UIView, Property<*>>()
-var UIView.extensionProp: Property<*>? by UIViewProp
-
-//private val CALayerCornerRadii = ExtensionProperty<CALayer, CornerRadii>()
-//var CALayer.cornerRadii: CornerRadii? by CALayerCornerRadii
 
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
 var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder

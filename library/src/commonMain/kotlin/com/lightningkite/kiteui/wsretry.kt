@@ -135,8 +135,10 @@ fun retryWebsocket(
                             log?.log("started A")
                         }
                     } catch(e: Exception) {
+                        if(e is CancelledException) return@reactiveScope
                         log?.log("start fail: $e")
                         e.printStackTrace2()
+                    } finally {
                         starting = false
                     }
                 } else if (!shouldBeOn && isOn) {

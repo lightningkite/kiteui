@@ -20,19 +20,10 @@ import platform.UIKit.*
 
 @OptIn(ExperimentalForeignApi::class)
 actual class TextView actual constructor(context: RContext): RView(context) {
-    override val native = WrapperView()
-    val withGradient = UILabelWithGradient()
-    val label get() = withGradient.label
+    override val native = UILabelWithGradient()
+    val label get() = native.label
     init {
         label.numberOfLines = 0
-        native.addSubview(withGradient)
-    }
-
-    init {
-        NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, label, NSOperationQueue.mainQueue) {
-            updateFont()
-            native.informParentOfSizeChange()
-        }
     }
 
     actual inline var content: String
@@ -100,7 +91,7 @@ actual class TextView actual constructor(context: RContext): RView(context) {
 
     override fun applyForeground(theme: Theme) {
         fontAndStyle = theme.font
-        withGradient.foreground = theme.foreground
+        native.foreground = theme.foreground
         sizeConstraints = SizeConstraints(
             minWidth = theme.font.size * 0.6,
             minHeight = theme.font.size * 1.5,
@@ -124,12 +115,6 @@ fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0
-}
-fun UILabel.setContentSizeCategoryChangeListener() {
-    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
-        updateFont()
-        informParentOfSizeChange()
-    }
 }
 fun UILabel.updateFont() {
     val textSize = extensionTextSize ?: return

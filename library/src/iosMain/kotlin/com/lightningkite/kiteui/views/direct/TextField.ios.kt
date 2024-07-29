@@ -25,16 +25,6 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
         native.addSubview(textField)
     }
 
-    init {
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            UIContentSizeCategoryDidChangeNotification,
-            textField,
-            NSOperationQueue.mainQueue
-        ) {
-            updateFont()
-            native.informParentOfSizeChange()
-        }
-    }
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
@@ -159,6 +149,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
             refreshTheming()
         }
     init {
+        onRemove { textField.delegate = null }
         onRemove(textField.observe("highlighted", { refreshTheming() }))
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))

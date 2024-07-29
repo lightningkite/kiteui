@@ -1,5 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.WeakReference
+import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import kotlin.random.Random
@@ -24,6 +28,8 @@ expect abstract class RView : RViewHelper {
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
 abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
+    var additionalTestingData: Any? = null
+
     var opacity: Double = 1.0
         set(value) {
             field = value
@@ -81,6 +87,9 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     companion object {
         var animationsEnabled: Boolean = true
+        var leakDetection: Boolean = true
+        var removeBeforeShutdown: Boolean = true
+        val leakLog = ConsoleRoot.tag("RViewLeaks")
     }
 
 
@@ -115,14 +124,16 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     protected val parentSpacing: Dimension
         get() = (parent?.spacing
-            ?: (if (parent?.useNavSpacing == true) parent?.themeAndBack?.theme?.navSpacing else parent?.themeAndBack?.theme?.spacing) ?: 0.px)
+            ?: (if (parent?.useNavSpacing == true) parent?.themeAndBack?.theme?.navSpacing else parent?.themeAndBack?.theme?.spacing)
+            ?: 0.px)
     protected var fullyStarted = false
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
         if (!fullyStarted) return
         if (parent?.fullyStarted == false) return
-        themeAndBack = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        themeAndBack =
+            applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
     }
 
     abstract fun applyElevation(dimension: Dimension)
@@ -145,13 +156,13 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     }
 
     fun addChild(index: Int, view: RView) {
-        if (view.parent != this) view.parent = this as RView
+        if (view.parent !== this) view.parent = this as RView
         internalChildren.add(index, view)
         internalAddChild(index, view)
     }
 
     override fun addChild(view: RView) {
-        view.parent = this as RView
+        if (view.parent !== this) view.parent = this as RView
         val index = children.size
         internalChildren.add(index, view)
         internalAddChild(index, view)
@@ -181,11 +192,23 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
-    fun shutdown() {
+    open fun shutdown() {
         onRemoveSet.invokeAllSafe()
         onRemoveSet.clear()
-        for (child in internalChildren)
-            child.shutdown()
+        if (removeBeforeShutdown) {
+            for (index in internalChildren.lastIndex downTo 0) {
+                internalRemoveChild(index)
+                internalChildren.removeAt(index).shutdown()
+            }
+        } else {
+            internalChildren.forEach { it.shutdown() }
+            internalChildren.clear()
+        }
+        if (leakDetection) leakDetect()
+    }
+
+    open fun leakDetect() {
+        WeakReference(this).checkLeakAfterDelay(1000)
     }
 
     abstract fun internalAddChild(index: Int, view: RView)

@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.KeyValueObserverProtocol
@@ -17,6 +18,7 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.experimental.ExperimentalNativeApi
 
 class Ref<T>(var target: T?)
 
@@ -44,25 +46,7 @@ inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIC
     }
 }
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-inline fun UIControl.onEventNoRemove(events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
-    val actionHolder = object: NSObject() {
-        @ObjCAction
-        fun eventHandler() = action()
-    }
-    val sel = sel_registerName("eventHandler")
-    addTarget(actionHolder, sel, events)
-    val ref = Ref(actionHolder)
-    return {
-        ref.target?.let {
-            removeTarget(it, sel, events)
-        }
-        ref.target = null
-    }
-}
-
-val observers = ArrayList<NSObject>()
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
     val observer = object: NSObject(), KeyValueObserverProtocol {
         override fun observeValueForKeyPath(
@@ -74,29 +58,19 @@ fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
             action()
         }
     }
-    val ref = Ref(observer)
     addObserver(observer, key, NSKeyValueObservingOptionNew, null)
-    observers.add(observer)
-    return {
-        ref.target?.let {
-            removeObserver(it, key)
-        }
-        ref.target = null
-    }
+    return ObserveRemover(WeakReference(this), key, observer)
 }
 
-val UIControl.stateReadable: Readable<UIControlState> get() {
-    return object: Readable<UIControlState> {
-        override val state: ReadableState<UIControlState>
-            get() = ReadableState(this@stateReadable.state)
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            val toCall = listOf(
-                this@stateReadable.observe("highlighted", listener),
-                this@stateReadable.observe("selected", listener),
-                this@stateReadable.observe("enabled", listener),
-            )
-            return { toCall.forEach { it() } }
+@OptIn(ExperimentalNativeApi::class)
+private class ObserveRemover(val source: WeakReference<NSObject>, val key: String, var observer: NSObject? = null): ()->Unit {
+    override fun invoke() {
+        source.get()?.let { source ->
+            observer?.let {
+                source.removeObserver(it, key)
+            }
         }
+        observer = null
     }
 }
 

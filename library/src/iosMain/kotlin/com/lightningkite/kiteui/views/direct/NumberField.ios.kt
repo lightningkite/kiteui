@@ -28,14 +28,6 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
     }
 
     init {
-        NSNotificationCenter.defaultCenter.addObserverForName(
-            UIContentSizeCategoryDidChangeNotification,
-            textField,
-            NSOperationQueue.mainQueue
-        ) {
-            updateFont()
-            native.informParentOfSizeChange()
-        }
         var block = false
         textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
             if (block) return@onEvent
@@ -59,6 +51,10 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
                 block = false
             }
         }
+    }
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
     }
 
     fun updateFont() {

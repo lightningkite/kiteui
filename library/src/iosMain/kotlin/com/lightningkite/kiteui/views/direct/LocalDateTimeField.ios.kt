@@ -68,9 +68,9 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeTime
             date = _content.value?.atDate(1970, 1, 1)?.toNSDateComponents()?.date() ?: NSDate()
-            onRemove(onEventNoRemove(UIControlEventValueChanged) {
+            onEvent(this@LocalTimeField, UIControlEventValueChanged) {
                 _content.value = this.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault()).time
-            })
+            }
         }
         reactiveScope {
             textField.text = _content.invoke()?.renderToString() ?: "-"
@@ -99,9 +99,9 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleWheels)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDateAndTime
             date = _content.value?.toNSDateComponents()?.date() ?: NSDate()
-            onRemove(onEventNoRemove(UIControlEventValueChanged) {
+            onEvent(this@LocalDateTimeField, UIControlEventValueChanged) {
                 _content.value = this.date.toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-            })
+            }
         }
         reactiveScope {
             textField.text = _content.invoke()?.renderToString() ?: "-"

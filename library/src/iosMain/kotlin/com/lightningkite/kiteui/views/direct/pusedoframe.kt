@@ -12,9 +12,6 @@ import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
-//    if(frame.useContents {
-//            this.origin.x == x && this.origin.y == y && this.size.width == width && this.size.height == height
-//    }) return // No reason to trigger a bunch of stuff if we don't have to.
     if(this is UIScrollView) {
         setFrame(CGRectMake(x, y, width, height))
     } else {

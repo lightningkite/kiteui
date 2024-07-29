@@ -480,12 +480,12 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         val childWidthMeasureSpec = getChildMeasureSpec(
             parentWidthMeasureSpec,
             paddingLeft + paddingRight,
-            if(orientation == HORIZONTAL && ignoreWeights && lp.width == 0) ViewGroup.LayoutParams.MATCH_PARENT else  lp.width
+            if(orientation == HORIZONTAL && ignoreWeights && lp.width == 0) ViewGroup.LayoutParams.WRAP_CONTENT else  lp.width
         )
         val childHeightMeasureSpec = getChildMeasureSpec(
             parentHeightMeasureSpec,
             paddingTop + paddingBottom,
-            if(orientation == VERTICAL && ignoreWeights && lp.height == 0) ViewGroup.LayoutParams.MATCH_PARENT else  lp.height
+            if(orientation == VERTICAL && ignoreWeights && lp.height == 0) ViewGroup.LayoutParams.WRAP_CONTENT else  lp.height
         )
 
         child.measure(childWidthMeasureSpec, childHeightMeasureSpec)

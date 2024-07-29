@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ExtensionProperty
+import com.lightningkite.kiteui.views.direct.ImageCache
 import platform.Foundation.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
@@ -19,24 +20,33 @@ object ObjCountTrackers {
         return allWeak.mapValues { it.value.size }
     }
     fun track(instance: Any) {
-        allWeak.getOrPut(instance::class) { ArrayList() }.add(WeakReference(instance))
+        allWeak.getOrPut(instance::class) {
+            println("Tracking type ${instance::class.qualifiedName}")
+            ArrayList()
+        }.add(WeakReference(instance))
     }
 }
 
 @OptIn(NativeRuntimeApi::class, ExperimentalStdlibApi::class)
 actual fun gc(): GCInfo {
-    println("ExtensionProperty.storage.size = ${ExtensionProperty.storage.size}")
-    ObjCountTrackers.alive.entries.forEach {
-        println("${it.key.qualifiedName}.alive = ${it.value}")
+    repeat(3) {
+        GC.collect()
+        NSRunLoop.currentRunLoop()
+            .runMode(mode = NSDefaultRunLoopMode, beforeDate = NSDate.dateWithTimeIntervalSinceNow(0.1))
     }
-    GC.collect()
-    NSRunLoop.currentRunLoop().runMode(mode = NSDefaultRunLoopMode, beforeDate = NSDate.dateWithTimeIntervalSinceNow(0.1))
-    println("ExtensionProperty.storage.size = ${ExtensionProperty.storage.size}")
+    return GCInfo(GC.lastGCInfo!!.memoryUsageAfter["heap"]?.totalObjectsSizeBytes ?: -1L)
+}
+
+actual fun cleanImageCache() {
+    ImageCache.imageCache.removeAllObjects()
+    ImageCache.imageCacheSized.removeAllObjects()
+}
+
+actual fun gcReport() {
     ObjCountTrackers.alive.entries.forEach {
         println("${it.key.qualifiedName}.alive = ${it.value}")
     }
     ExtensionProperty.debug()
-    return GCInfo(GC.lastGCInfo!!.memoryUsageAfter["heap"]?.totalObjectsSizeBytes ?: -1L)
 }
 
 actual fun assertMainThread() {
