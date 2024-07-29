@@ -99,10 +99,6 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             native.contentDescription = value
         }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        super.applyBackground(theme, true)
-    }
-
     actual var refreshOnParamChange: Boolean = false
 
     /**
