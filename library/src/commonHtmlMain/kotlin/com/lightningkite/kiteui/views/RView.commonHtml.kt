@@ -52,6 +52,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         native.setAttribute("autofocus", "true")
     }
 
+    override fun leakDetect() {
+        // Do nothing.  No access to manual GC exists in JS.
+    }
+
     actual override fun applyElevation(dimension: Dimension) {
     }
 
