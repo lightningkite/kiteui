@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
@@ -13,6 +14,18 @@ object DocSearchScreen : Screen {
 
     @QueryParameter
     val query = Property<String>("")
+
+    val docsPages = Property(listOf(
+        { TextElementScreen },
+        { DataScreen },
+        { NavigationScreen },
+        { VideoElementScreen },
+        { ViewPagerElementScreen },
+        { ImageElementScreen },
+        { IconsScreen },
+        { ViewModifiersScreen },
+        { LayoutScreen }
+    ))
 
     override fun ViewWriter.render() {
         stack {
@@ -34,17 +47,7 @@ object DocSearchScreen : Screen {
                 }
                 expanding - recyclerView {
                     children(shared {
-                        listOf(
-                            { TextElementScreen },
-                            { DataScreen },
-                            { NavigationScreen },
-                            { VideoElementScreen },
-                            { ViewPagerElementScreen },
-                            { ImageElementScreen },
-                            { IconsScreen },
-                            { ViewModifiersScreen },
-                            { LayoutScreen }
-                        ).mapNotNull {
+                        docsPages().mapNotNull {
                             val q = query.await()
                             if(q.isBlank()) return@mapNotNull it to it().covers
                             val matchingTerms = it().covers.filter { term ->

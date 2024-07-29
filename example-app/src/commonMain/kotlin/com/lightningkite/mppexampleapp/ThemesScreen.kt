@@ -1,9 +1,11 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.random.Random
@@ -14,24 +16,15 @@ object ThemesScreen : Screen {
         col {
             h1 { content = "Theme Control" }
             col {
-                h2 { content = "Theme Sampling" }
+                h2 {
+                    content = "Theme Sampling"
+                    viewDebugTarget = this
+                }
                 row {
                     space {} in weight(1f)
                     text { content = "Sample" } in padded
                     text { content = "Card" } in card
-                    text { content = "Important" } in hasPopover {
-                        card - col {
-                            text {
-                                content = "Pop over!"
-                            }
-                            button {
-                                text("Dismiss")
-                                onClick {
-                                    it.close()
-                                }
-                            }
-                        }
-                    } in important
+                    text { content = "Important" } in important
                     text { content = "Critical" } in critical
                     space {} in weight(1f)
                 } in scrollsHorizontally
@@ -76,9 +69,9 @@ object ThemesScreen : Screen {
                     h6 { content = "Flat Light" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
+                        appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.15f, accentHue = a + Angle.halfTurn, baseBrightness = 0.8f)
                             .copy(
-                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                                cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
                             )
                             .randomTitleFontSettings()
                     }
@@ -87,9 +80,9 @@ object ThemesScreen : Screen {
                     h6 { content = "Flat Dark" }
                     onClick {
                         val a = Angle(Random.nextFloat())
-                        appTheme set Theme.flat(hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
+                        appTheme set Theme.flat(id = "flat-${Random.nextInt()}", hue = a, saturation = 0.5f, accentHue = a + Angle.halfTurn)
                             .copy(
-                                cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+                                cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)
                             )
                             .randomTitleFontSettings()
                     }

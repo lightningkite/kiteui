@@ -1,0 +1,49 @@
+# Update Goals
+
+- [ ] `forEach` doesn't need to be alone
+- [ ] Invalid theme when failed, message on fields?
+- [ ] SSR
+- [ ] Hydration
+- [ ] Optimize CSS control themes to reduce rule count
+- [ ] Toast / Snackbar / New Dialogs
+- [ ] Recyclers work
+  - [ ] Web
+  - [X] Android
+  - [X] iOS
+- [ ] Recyclers have reasonable scroll bars
+  - [ ] Web
+  - [X] Android
+  - [ ] iOS
+- [ ] Transition animation selection is respected and smooth
+  - [ ] Web
+  - [ ] Android
+  - [ ] iOS
+- [ ] Transitions allow for view -> view animation
+  - [ ] Web
+  - [ ] Android
+  - [ ] iOS
+- [ ] Loading Animations
+  - [ ] Button shows some kind of loading indicator while working
+    - [ ] Web
+    - [X] Android
+    - [X] iOS
+  - [ ] Text shows some kind of faded placeholder with smooth fade-in
+    - [ ] Web
+    - [ ] Android
+    - [ ] iOS
+  - [ ] Images have a loading indicator
+    - [ ] Web
+    - [ ] Android
+    - [ ] iOS
+  - [ ] Images fade in smoothly on long loads
+    - [ ] Web
+    - [ ] Android
+    - [ ] iOS
+  - [ ] Text fields show loading indicator while working
+    - [ ] Web
+    - [ ] Android
+    - [ ] iOS
+  - [ ] Switches animate while working
+    - [ ] Web
+    - [ ] Android
+    - [ ] iOS

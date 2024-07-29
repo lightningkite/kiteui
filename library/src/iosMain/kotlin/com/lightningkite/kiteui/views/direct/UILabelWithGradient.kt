@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
 import com.lightningkite.kiteui.models.RadialGradient
 import com.lightningkite.kiteui.objc.toObjcId
+import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -14,6 +15,7 @@ import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import platform.UIKit.UIColor
 import platform.UIKit.UILabel
 import platform.UIKit.UIView
 
@@ -24,7 +26,9 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         userInteractionEnabled = false
     }
 
-    private val uiViewWithLabelMask = UIView(bounds).also(::addSubview)
+    private val uiViewWithLabelMask = UIView(bounds).apply {
+        backgroundColor = UIColor.grayColor
+    }.also(::addSubview)
 
     val label = UILabel().also {
         uiViewWithLabelMask.addSubview(it)
@@ -73,13 +77,14 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     override fun layoutSubviews() {
         super.layoutSubviews()
+        val padding = extensionPadding ?: 0.0
         gradientLayer?.frame = bounds
         bounds.useContents {
             val childFrame = cValue<CGRect> {
-                origin.x = 0.0
-                origin.y = 0.0
-                size.width = this@useContents.size.width
-                size.height = this@useContents.size.height
+                origin.x = padding
+                origin.y = padding
+                size.width = this@useContents.size.width - 2 * padding
+                size.height = this@useContents.size.height - 2 * padding
             }
             uiViewWithLabelMask.setFrame(childFrame)
             label.setFrame(childFrame)

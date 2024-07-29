@@ -1,25 +1,40 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NRadioToggleButton = FrameLayoutToggleButton
+actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+    override val native: FrameLayoutButton = FrameLayoutButton(this)
+    actual inline var enabled: Boolean
+        get() = native.enabled
+        set(value) {
+            native.enabled = value
+        }
+    private val _checked = Property(false)
+    actual val checked: ImmediateWritable<Boolean> get() = _checked
 
-@ViewDsl
-actual inline fun ViewWriter.radioToggleButtonActual(crossinline setup: RadioToggleButton.() -> Unit): Unit =
-    element(FrameLayoutToggleButton()) {
-        handleThemeControl(this, { checkedWritable.await() }) {
-            allowUnselect = false
-            setup(RadioToggleButton(this))
+    init {
+        onRemove(native.observe("highlighted", { refreshTheming() }))
+        onRemove(native.observe("selected", { refreshTheming() }))
+        onRemove(native.observe("enabled", { refreshTheming() }))
+        _checked.addListener { refreshTheming() }
+        native.onClick = {
+            _checked.value = true
         }
     }
 
-actual inline var RadioToggleButton.enabled: Boolean
-    get() = native.enabled
-    set(value) {
-        native.enabled = value
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(_checked.value) t = t[SelectedSemantic]
+        else t = t[UnselectedSemantic]
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
-actual val RadioToggleButton.checked: Writable<Boolean> get() = native.checkedWritable
+}

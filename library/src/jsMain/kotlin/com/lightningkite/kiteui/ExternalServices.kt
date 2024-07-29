@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.dom.HTMLAnchorElement
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
 import org.w3c.dom.url.URL

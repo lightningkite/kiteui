@@ -2,18 +2,14 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.decodeURIComponent
-import com.lightningkite.kiteui.dom.HTMLScriptElement
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.NContext
+import com.lightningkite.kiteui.views.RContext
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.Location
-import org.w3c.dom.MANUAL
-import org.w3c.dom.PopStateEvent
-import org.w3c.dom.ScrollRestoration
+import org.w3c.dom.*
 import kotlin.math.min
 
-actual fun ScreenStack.bindToPlatform(context: NContext) {
+actual fun ScreenNavigator.bindToPlatform(context: RContext) {
     val log = ConsoleRoot.tag("ScreenStack.bindToPlatform")
     val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 

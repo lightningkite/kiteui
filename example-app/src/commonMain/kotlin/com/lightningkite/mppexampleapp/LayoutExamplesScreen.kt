@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
@@ -28,7 +29,12 @@ object LayoutExamplesScreen : Screen {
 
             card - col {
                 h2("Collapsing layout")
-                rowCollapsingToColumn(50.rem) {
+                rowCollapsingToColumn(80.rem) {
+                    expanding - card - stack { centered - text("A") }
+                    expanding - important - stack { centered - text("B") }
+                    expanding - critical - stack { centered - text("C") }
+                }
+                rowCollapsingToColumn(30.rem, 40.rem, 50.rem) {
                     expanding - card - stack { centered - text("A") }
                     expanding - important - stack { centered - text("B") }
                     expanding - critical - stack { centered - text("C") }
@@ -156,6 +162,7 @@ object LayoutExamplesScreen : Screen {
                     checkbox { checked bind showExtra }
                     text("Show extra view")
                 }
+                onlyWhen { showExtra.await() } - text("Showing an extra view!")
                 card - row {
                     spacing = 0.rem
                     text("0.0")

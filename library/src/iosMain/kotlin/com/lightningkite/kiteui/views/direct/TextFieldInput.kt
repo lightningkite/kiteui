@@ -2,17 +2,21 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
 import com.lightningkite.kiteui.reactive.Property
+import kotlin.experimental.ExperimentalNativeApi
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class TextFieldInput: UITextField(CGRectZero.readValue()) {
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalNativeApi::class)
+class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
+    val calculationContextWeak = WeakReference(calculationContext)
 
     val toolbar = UIToolbar().apply {
         barStyle = UIBarStyleDefault
@@ -25,19 +29,16 @@ class TextFieldInput: UITextField(CGRectZero.readValue()) {
     }
     init {
         inputAccessoryView = toolbar
-        onEvent(UIControlEventTouchUpInside) {
+        onEvent(calculationContext, UIControlEventTouchUpInside) {
             becomeFirstResponder()
         }
     }
-
     @ObjCAction
     fun done() {
         resignFirstResponder()
-        calculationContext.launch { action?.onSelect?.invoke() }
+        calculationContextWeak.get()?.launch { action?.onSelect?.invoke() }
     }
 
-    var currentValue: Property<*>? = null
-    var valueRange: ClosedRange<*>? = null
     var action: Action? = null
         set(value) {
             field = value

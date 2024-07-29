@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.utils.fitInsideBox
 import kotlinx.cinterop.CValue
@@ -12,7 +13,11 @@ import platform.UIKit.UIScreen
 import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
-fun UIView.sizeThatFits2(size: CValue<CGSize>, sizeConstraints: SizeConstraints?, debug: Boolean = false): CValue<CGSize> {
+fun UIView.sizeThatFits2(
+    size: CValue<CGSize>,
+    sizeConstraints: SizeConstraints?,
+    debug: Boolean = false
+): CValue<CGSize> {
     val newSize = sizeConstraints?.let {
         var w = size.useContents { width }
         var h = size.useContents { height }
@@ -30,21 +35,11 @@ fun UIView.sizeThatFits2(size: CValue<CGSize>, sizeConstraints: SizeConstraints?
         it.height?.let { h = it.value }
         CGSizeMake(w, h)
     } ?: size
-    return if(this is NImageView) {
-        if (sizeConstraints?.aspectRatio != null) return newSize
-        this.image?.size?.useContents {
-            val original = this
-            newSize.useContents {
-                val max = this
-                val smallerRatio = (max.width / original.width)
-                    .coerceAtMost(max.height / original.height)
-                val imageScale = smallerRatio
-                    .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
-                CGSizeMake(
-                    original.width * imageScale,
-                    original.height * imageScale
-                )
-            }
-        } ?: CGSizeMake(0.0, 0.0)
-    } else sizeThatFits(newSize)
+    return when (this) {
+        is LinearLayout,
+        is FrameLayout,
+        is FrameLayoutButton -> sizeThatFits(newSize)
+
+        else -> PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSize) }
+    }
 }

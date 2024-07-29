@@ -5,15 +5,18 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.canvas.DrawingContext2D
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
-@ViewDsl
-actual inline fun ViewWriter.canvasActual(crossinline setup: Canvas.() -> Unit) {
-    return viewElement(factory = ::NCanvas, wrapper = ::Canvas, setup = setup)
+
+actual class Canvas actual constructor(context: RContext): RView(context) {
+    override val native = NCanvas(context.activity)
+
+    actual var delegate: CanvasDelegate?
+        get() = native.delegate
+        set(value) { native.delegate = value }
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -142,10 +145,6 @@ actual class NCanvas @JvmOverloads constructor(
         )
     }
 }
-
-actual var Canvas.delegate: CanvasDelegate?
-    get() = native.delegate
-    set(value) { native.delegate = value }
 
 actual typealias KeyCode = Int
 actual object KeyCodes {

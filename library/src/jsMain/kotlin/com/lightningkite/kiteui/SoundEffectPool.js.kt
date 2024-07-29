@@ -1,12 +1,11 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.dom.HTMLAudioElement
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.ArrayBuffer
+import org.w3c.dom.HTMLAudioElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.coroutines.resume
@@ -118,6 +117,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCoroutineCancellable { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
+        native.preload = "auto"
         val obj = object : PlayableAudio {
             override var volume: Float
                 get() = native.volume.toFloat()
@@ -127,8 +127,11 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             override var isPlaying: Boolean
                 get() = !native.paused
                 set(value) {
-                    println("Play ${this@load} started")
-                    if (value) native.play() else native.pause()
+                    if (value) native.play().catch {
+                        if(it.message?.contains("AbortError") == true) return@catch
+                        if(it.message?.contains("NotAllowedError") == true) return@catch
+                        Exception("Failed to play ${this}", it).report()
+                    } else native.pause()
                 }
 
             override fun onComplete(action: () -> Unit) {
@@ -157,7 +160,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
         native.load()
         return@suspendCoroutineCancellable {
-            println("Cancelled loading of ${this@load}.")
             native.src = ""
         }
     }

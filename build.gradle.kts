@@ -15,9 +15,9 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.10")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.20")
         classpath("com.lightningkite:deploy-helpers:0.0.7")
-        classpath("com.android.tools.build:gradle:7.4.2")
+        classpath("com.android.tools.build:gradle:8.2.2")
     }
 }
 allprojects {

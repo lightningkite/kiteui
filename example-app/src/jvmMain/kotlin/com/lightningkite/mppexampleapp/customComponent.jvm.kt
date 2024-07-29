@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.views.ViewWriter
+import ViewWriter
 
 actual class CustomComponent {
     actual var src: String

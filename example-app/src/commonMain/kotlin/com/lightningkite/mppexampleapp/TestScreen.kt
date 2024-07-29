@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col

@@ -3,19 +3,12 @@ package com.lightningkite.kiteui.views.direct
 import android.content.res.ColorStateList
 import android.widget.ProgressBar
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 
-actual typealias NActivityIndicator = ProgressBar
-
-@ViewDsl
-actual inline fun ViewWriter.activityIndicatorActual(crossinline setup: ActivityIndicator.() -> Unit) {
-    return viewElement(factory = { ProgressBar(it, null, android.R.attr.progressBarStyleSmall) }, wrapper = ::ActivityIndicator) {
-        handleTheme(native, foreground = {
-            theme: Theme, progressBar: ProgressBar ->
-            progressBar.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
-        }) {
-            setup(this)
-        }
+actual class ActivityIndicator actual constructor(context: RContext): RView(context) {
+    override val native = ProgressBar(context.activity)
+    override fun applyForeground(theme: Theme) {
+        native.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
     }
 }

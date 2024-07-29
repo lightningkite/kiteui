@@ -1,52 +1,50 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
-
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.lparams
+import com.lightningkite.kiteui.views.*
 
 
-@ViewDsl
-actual inline fun ViewWriter.separatorActual(crossinline setup: Separator.() -> Unit): Unit {
-    val c = stack.asReversed().asSequence().filterIsInstance<SimplifiedLinearLayout>().firstOrNull()
-        ?: throw IllegalStateException("Separators can only be used inside rows or columns")
-    viewElement(factory = { NSeparator(it, c.orientation == SimplifiedLinearLayout.HORIZONTAL) }, wrapper = ::Separator) {
-        handleTheme(native, foreground = { it, v ->
-            v.background = ColorDrawable(it.foreground.closestColor().colorInt())
-            v.alpha = 0.25f
-            val size = it.outlineWidth.value.coerceAtLeast(1f).toInt()
-            v.thickness = size
-            (v.parent as? SimplifiedLinearLayout)?.let {
-                v.lparams.run {
-                    width = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) size else ViewGroup.LayoutParams.MATCH_PARENT
-                    height = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) ViewGroup.LayoutParams.MATCH_PARENT else size
-                }
-            } ?: (v.parent as? DesiredSizeView)?.let {
-                if(c.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    it.constraints = it.constraints.copy(width = size.px)
-                } else {
-                    it.constraints = it.constraints.copy(height = size.px)
-                }
+actual class Separator actual constructor(context: RContext): RView(context) {
+    override val native = NSeparator(context.activity).apply {
+        minimumWidth = 1
+        minimumHeight = 1
+    }
+    override fun applyForeground(theme: Theme) {
+        val c = native.parent as? SimplifiedLinearLayout
+        val v = native
+        v.background = ColorDrawable(theme.foreground.closestColor().colorInt())
+        v.alpha = 0.25f
+        val size = theme.outlineWidth.value.coerceAtLeast(1f).toInt()
+        v.thickness = size
+        (v.parent as? SimplifiedLinearLayout)?.let {
+            lparams.run {
+                width = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) size else ViewGroup.LayoutParams.MATCH_PARENT
+                height = if(it.orientation == SimplifiedLinearLayout.HORIZONTAL) ViewGroup.LayoutParams.MATCH_PARENT else size
             }
-        }) {
-            native.minimumWidth = 1
-            native.minimumHeight = 1
-            setup(this)
+        } ?: (v.parent as? DesiredSizeView)?.let {
+            if(c?.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                it.constraints = it.constraints.copy(width = size.px)
+            } else {
+                it.constraints = it.constraints.copy(height = size.px)
+            }
         }
     }
 }
 
-actual class NSeparator(context: Context, val containerHorizontal: Boolean) : View(context) {
+class NSeparator(context: Context) : View(context) {
     var thickness: Int = 1
         set(value) {
             field = value
             requestLayout()
         }
+    val containerHorizontal: Boolean get() = (parent as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(if(containerHorizontal) thickness else measuredWidth, if(!containerHorizontal) measuredHeight else thickness)

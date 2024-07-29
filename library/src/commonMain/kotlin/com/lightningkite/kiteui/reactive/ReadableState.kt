@@ -17,6 +17,11 @@ value class ReadableState<out T>(val raw: T) {
         if(raw is ThrownException) throw raw.exception
         return raw
     }
+    inline fun getOrNull(): T? {
+        if(raw is NotReady) return null
+        if(raw is ThrownException) return null
+        return raw
+    }
     companion object {
         @Suppress("UNCHECKED_CAST")
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>

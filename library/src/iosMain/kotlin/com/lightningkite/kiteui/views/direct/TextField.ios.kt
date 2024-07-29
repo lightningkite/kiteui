@@ -1,157 +1,165 @@
 package com.lightningkite.kiteui.views.direct
 
+
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NTextField = UITextField
 
-@ViewDsl
-actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit): Unit = stack {
-    element(UITextField()) {
-        setContentSizeCategoryChangeListener()
+@OptIn(ExperimentalForeignApi::class)
+actual class TextField actual constructor(context: RContext) : RView(context) {
+    override val native = WrapperView()
+    val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
-        handleTheme(this, viewLoads = true, foreground = {
-            textColor = it.foreground.closestColor().toUiColor()
-//            attributedPlaceholder = NSMutableAttributedString()
-        }) {
-            calculationContext.onRemove {
-                extensionStrongRef = null
-            }
-            setup(TextField(this))
-        }
     }
-}
 
-actual val TextField.content: Writable<String>
-    get() = object : Writable<String> {
-        override val state get() = ReadableState(native.text ?: "")
+    init {
+        native.addSubview(textField)
+    }
+
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
+    }
+
+    fun updateFont() {
+        val alignment = textField.textAlignment
+        textField.font = fontAndStyle?.let {
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
+        textField.textAlignment = alignment
+    }
+
+    fun updateHint() {
+        textField.placeholder = hint
+        // TODO: Colored hint
+//        textField.attributedPlaceholder = hint
+    }
+
+    var fontAndStyle: FontAndStyle? = null
+        set(value) {
+            field = value
+            updateFont()
+            native.informParentOfSizeChange()
+        }
+
+    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return native.onEvent(UIControlEventEditingChanged) {
+            return textField.onEvent(this@TextField, UIControlEventEditingChanged) {
                 listener()
             }
         }
 
-        override suspend fun set(value: String) {
-            native.text = value
-        }
+        override var value: String
+            get() = textField.text ?: ""
+            set(value) { textField.text = value }
     }
-actual inline var TextField.keyboardHints: KeyboardHints
-    get() = TODO()
-    set(value) {
-        native.autocapitalizationType = when (value.case) {
-            KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-            KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-            KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-            KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-        }
-        native.keyboardType = when (value.type) {
-            KeyboardType.Text -> UIKeyboardTypeDefault
-            KeyboardType.Integer -> UIKeyboardTypeNumberPad
-            KeyboardType.Phone -> UIKeyboardTypePhonePad
-            KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
-            KeyboardType.Email -> UIKeyboardTypeEmailAddress
-        }
-        native.textContentType = when (value.autocomplete) {
-            AutoComplete.Email -> UITextContentTypeUsername
-            AutoComplete.Password -> UITextContentTypePassword
-            AutoComplete.NewPassword -> UITextContentTypeNewPassword
-            else -> null
-        }
-        native.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
-    }
-actual var TextField.action: Action?
-    get() = TODO()
-    set(value) {
-        native.delegate = value?.let {
-            val d = object : NSObject(), UITextFieldDelegateProtocol {
-                override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                    launch { it.onSelect() }
-                    return true
-                }
+    actual var keyboardHints: KeyboardHints = KeyboardHints()
+        set(value) {
+            field = value
+            textField.autocapitalizationType = when (value.case) {
+                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
+                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
+                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
+                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
             }
-            native.extensionStrongRef = d
-            d
-        } ?: NextFocusDelegateShared
-        native.returnKeyType = when (value?.title) {
-            "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
-            "Go" -> UIReturnKeyType.UIReturnKeyGo
-            "Next" -> UIReturnKeyType.UIReturnKeyNext
-            "Continue" -> UIReturnKeyType.UIReturnKeyContinue
-            "Default" -> UIReturnKeyType.UIReturnKeyDefault
-            "Join" -> UIReturnKeyType.UIReturnKeyJoin
-            "Done" -> UIReturnKeyType.UIReturnKeyDone
-            "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
-            "Send" -> UIReturnKeyType.UIReturnKeySend
-            "Google" -> UIReturnKeyType.UIReturnKeyGoogle
-            "Route" -> UIReturnKeyType.UIReturnKeyRoute
-            "Search" -> UIReturnKeyType.UIReturnKeySearch
-            else -> UIReturnKeyType.UIReturnKeyDone
+            textField.keyboardType = when (value.type) {
+                KeyboardType.Text -> UIKeyboardTypeDefault
+                KeyboardType.Integer -> UIKeyboardTypeNumberPad
+                KeyboardType.Phone -> UIKeyboardTypePhonePad
+                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
+                KeyboardType.Email -> UIKeyboardTypeEmailAddress
+            }
+            textField.textContentType = when (value.autocomplete) {
+                AutoComplete.Email -> UITextContentTypeUsername
+                AutoComplete.Password -> UITextContentTypePassword
+                AutoComplete.NewPassword -> UITextContentTypeNewPassword
+                else -> null
+            }
+            textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-    }
-actual inline var TextField.hint: String
-    get() = native.placeholder ?: ""
-    set(value) {
-        native.placeholder = value
-    }
-actual inline var TextField.align: Align
-    get() = when (native.textAlignment) {
-        NSTextAlignmentLeft -> Align.Start
-        NSTextAlignmentCenter -> Align.Center
-        NSTextAlignmentRight -> Align.End
-        NSTextAlignmentJustified -> Align.Stretch
-        else -> Align.Start
-    }
-    set(value) {
-        native.contentMode = when (value) {
-            Align.Start -> UIViewContentMode.UIViewContentModeLeft
-            Align.Center -> UIViewContentMode.UIViewContentModeCenter
-            Align.End -> UIViewContentMode.UIViewContentModeRight
-            Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
+    actual var action: Action?
+        get() = TODO()
+        set(value) {
+            textField.delegate = value?.let {
+                val d = object : NSObject(), UITextFieldDelegateProtocol {
+                    override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                        launch { it.onSelect() }
+                        return true
+                    }
+                }
+                textField.extensionStrongRef = d
+                d
+            } ?: NextFocusDelegateShared
+            textField.returnKeyType = when (value?.title) {
+                "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
+                "Go" -> UIReturnKeyType.UIReturnKeyGo
+                "Next" -> UIReturnKeyType.UIReturnKeyNext
+                "Continue" -> UIReturnKeyType.UIReturnKeyContinue
+                "Default" -> UIReturnKeyType.UIReturnKeyDefault
+                "Join" -> UIReturnKeyType.UIReturnKeyJoin
+                "Done" -> UIReturnKeyType.UIReturnKeyDone
+                "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
+                "Send" -> UIReturnKeyType.UIReturnKeySend
+                "Google" -> UIReturnKeyType.UIReturnKeyGoogle
+                "Route" -> UIReturnKeyType.UIReturnKeyRoute
+                "Search" -> UIReturnKeyType.UIReturnKeySearch
+                else -> UIReturnKeyType.UIReturnKeyDone
+            }
         }
-        native.textAlignment = when (value) {
-            Align.Start -> NSTextAlignmentLeft
-            Align.Center -> NSTextAlignmentCenter
-            Align.End -> NSTextAlignmentRight
-            Align.Stretch -> NSTextAlignmentJustified
+    actual var hint: String = ""
+        set(value) {
+            field = value
+            updateHint()
         }
+    actual inline var align: Align
+        get() = when (textField.textAlignment) {
+            NSTextAlignmentLeft -> Align.Start
+            NSTextAlignmentCenter -> Align.Center
+            NSTextAlignmentRight -> Align.End
+            NSTextAlignmentJustified -> Align.Stretch
+            else -> Align.Start
+        }
+        set(value) {
+            textField.contentMode = when (value) {
+                Align.Start -> UIViewContentMode.UIViewContentModeLeft
+                Align.Center -> UIViewContentMode.UIViewContentModeCenter
+                Align.End -> UIViewContentMode.UIViewContentModeRight
+                Align.Stretch -> UIViewContentMode.UIViewContentModeScaleAspectFit
+            }
+            textField.textAlignment = when (value) {
+                Align.Start -> NSTextAlignmentLeft
+                Align.Center -> NSTextAlignmentCenter
+                Align.End -> NSTextAlignmentRight
+                Align.Stretch -> NSTextAlignmentJustified
+            }
+        }
+    actual var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove { textField.delegate = null }
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-
-private val UILabelTextSize = ExtensionProperty<UITextField, Dimension>()
-var UITextField.extensionTextSize: Dimension? by UILabelTextSize
-
-actual inline var TextField.textSize: Dimension
-    get() = native.extensionTextSize ?: native.font?.pointSize?.let(::Dimension) ?: 1.rem
-    set(value) {
-        native.extensionTextSize = value
-        native.updateFont()
-        native.informParentOfSizeChange()
-    }
-
-actual inline var TextField.enabled: Boolean
-    get() = native.enabled
-    set(value) {
-        native.enabled = value
-    }
-
-fun UITextField.setContentSizeCategoryChangeListener() {
-    NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
-        updateFont()
-        informParentOfSizeChange()
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!textField.enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
     }
 }
-fun UITextField.updateFont() {
-    val textSize = extensionTextSize ?: return
-    val alignment = textAlignment
-    font = extensionFontAndStyle?.let {
-        it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-    } ?: UIFont.systemFontOfSize(textSize.value)
-    textAlignment = alignment
-}
+

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.models
 import kotlin.random.Random
 
 fun Theme.Companion.material(
+    id: String,
     foreground: Paint = Color.black,
     background: Paint = Color.white,
     primary: Color = Color.fromHex(0xFF6200EE.toInt()),
@@ -17,6 +18,7 @@ fun Theme.Companion.material(
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.dp,
 ) = Theme(
+    id = id,
     title = title,
     body = body,
     elevation = elevation,
@@ -28,6 +30,7 @@ fun Theme.Companion.material(
     background = background,
     dialog = {
         copy(
+            id = "dlg",
             background = this.background.closestColor().darken(0.1f),
             outline = this.outline.closestColor().darken(0.1f),
             elevation = this.elevation * 2f,
@@ -35,11 +38,13 @@ fun Theme.Companion.material(
     },
     important = {
         copy(
+            id = "imp",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
             important = {
                 copy(
+                    id = "imp2",
                     foreground = secondaryForeground,
                     background = secondary,
                     outline = secondary.highlight(0.1f),
@@ -49,11 +54,13 @@ fun Theme.Companion.material(
     },
     bar = {
         copy(
+            id = "bar",
             foreground = primaryForeground,
             background = primary,
             outline = primary.highlight(0.1f),
             important = {
                 copy(
+                    id = "barimp",
                     foreground = secondaryForeground,
                     background = secondary,
                     outline = secondary.highlight(0.1f),
@@ -63,6 +70,7 @@ fun Theme.Companion.material(
     },
     critical = {
         copy(
+            id = "crt",
             foreground = secondaryForeground,
             background = secondary,
             outline = secondary.highlight(0.1f),
@@ -73,6 +81,7 @@ fun Theme.Companion.material(
 @Deprecated("Use Theme.material instead")
 object MaterialLikeTheme {
     operator fun invoke(
+        id: String,
         foreground: Paint = Color.black,
         background: Paint = Color.white,
         primary: Color = Color.fromHex(0xFF6200EE.toInt()),
@@ -87,6 +96,7 @@ object MaterialLikeTheme {
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.dp,
     ) = Theme.material(
+        id = id,
         foreground = foreground,
         background = background,
         primary = primary,
@@ -107,6 +117,7 @@ object MaterialLikeTheme {
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
         return Theme.material(
+            id = "materialRandomLight-${Random.nextInt()}",
             primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
             secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),
         )
@@ -117,6 +128,7 @@ object MaterialLikeTheme {
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
         return Theme.material(
+            id = "materialRandomDark-${Random.nextInt()}",
             foreground = Color.white,
             background = Color.gray(0.2f),
             primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
@@ -127,17 +139,37 @@ object MaterialLikeTheme {
     fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
 }
 
-fun Theme.randomTitleFontSettings() = copy(title = title.copy(font = systemDefaultFont, weight = if(Random.nextBoolean()) 700 else 500, allCaps = Random.nextBoolean()))
-fun Theme.randomElevationAndCorners() = when(Random.nextInt(0, 3)) {
+fun Theme.randomTitleFontSettings() = copy(
+    id = "${Random.nextInt()}",
+    derivations = mapOf(
+        HeaderSemantic to {
+            val old = this.derivations[HeaderSemantic]?.invoke(it) ?: HeaderSemantic.default(it)
+            old.theme.copy(
+                font = font.copy(
+                    font = systemDefaultFont,
+                    weight = if (Random.nextBoolean()) 700 else 500,
+                    allCaps = Random.nextBoolean()
+                )
+            ).withoutBack
+        }
+    )
+)
+
+fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     0 -> copy(
-            elevation = Random.nextInt(2, 4).dp,
-            cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
-        )
+        id = "${Random.nextInt()}",
+        elevation = Random.nextInt(2, 4).dp,
+        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+    )
+
     1 -> copy(
-            outlineWidth = Random.nextInt(1, 4).dp,
-            cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
-        )
+        id = "${Random.nextInt()}",
+        outlineWidth = Random.nextInt(1, 4).dp,
+        cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())
+    )
+
     else -> copy(
+        id = "${Random.nextInt()}",
         outlineWidth = Random.nextInt(1, 4).dp,
         elevation = Random.nextInt(2, 4).dp,
         cornerRadii = CornerRadii.RatioOfSpacing(Random.nextFloat())

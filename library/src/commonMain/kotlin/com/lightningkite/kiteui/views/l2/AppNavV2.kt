@@ -1,11 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.contains
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.kiteui.navigation.Routes
-import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.navigation.bindToPlatform
+import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -32,16 +29,23 @@ fun ViewWriter.navSideBar(navElements: suspend () -> List<NavElement>) {
 
 }
 
-fun ViewWriter.appBase(routes: Routes, mainLayout: ContainingView.() -> Unit) {
-    transitionNextView = ViewWriter.TransitionNextView.Yes
+var ViewWriter.overlayStack by rContextAddon<Stack?>(null)
+
+fun ViewWriter.appBase(main: ScreenNavigator, dialog: ScreenNavigator? = null, mainLayout: ContainingView.() -> Unit) {
     stack {
         spacing = 0.px
-        ScreenStack.mainRoutes = routes
-        ScreenStack.main.bindToPlatform(context)
-        this@appBase.navigator = ScreenStack.main
+        mainScreenNavigator = main
+        dialog?.let {
+            dialogScreenNavigator = it
+        }
+        main.bindToPlatform(context)
+        screenNavigator = main
+        overlayStack = this
         mainLayout()
-        navigatorViewDialog() in tweakTheme { it.dialog() }
-        baseStack = this
-        baseStackWriter = split()
+        dialog?.let {
+            navigatorViewDialog() in tweakTheme { it.dialog() }
+        }
+//        baseStack = this
+//        baseStackWriter = split()
     }
 }

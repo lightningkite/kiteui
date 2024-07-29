@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -14,54 +15,31 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.utils.fitInsideBox
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.toast
-import java.util.*
-
-
-val viewHasPadding: WeakHashMap<View, Boolean> = WeakHashMap()
-
-@ViewModifierDsl3
-actual val ViewWriter.padded: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            viewHasPadding[this] = true
-        }
-        return ViewWrapper
-    }
-
-@ViewModifierDsl3
-actual val ViewWriter.unpadded: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            viewHasPadding[this] = false
-        }
-        return ViewWrapper
-    }
 
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
-            try {
-                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                lp.weight = amount
-                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width = 0
-                } else {
-                    lp.height = 0
-                }
-            } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
+        try {
+            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+            lp.weight = amount
+            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                lp.width = 0
+            } else {
+                lp.height = 0
             }
+        } catch (ex: Throwable) {
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
+        }
 
     }
     return ViewWrapper
@@ -70,32 +48,32 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
-    afterNextElementSetup {
-            val originalSize = try {
+    beforeNextElementSetup {
+        val originalSize = try {
+            val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+            if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                lp.width
+            } else {
+                lp.height
+            }
+        } catch (ex: Throwable) {
+            RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
+            WRAP_CONTENT
+        }
+
+        reactiveScope {
+            try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                    lp.width
+                lp.weight = amount()
+                if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                    lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
-                    lp.height
+                    lp.height = if (lp.weight != 0f) 0 else originalSize
                 }
             } catch (ex: Throwable) {
-                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
-                WRAP_CONTENT
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
             }
-
-            calculationContext.reactiveScope {
-                try {
-                    val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                    lp.weight = amount()
-                    if ((this.parent as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                        lp.width = if (lp.weight != 0f) 0 else originalSize
-                    } else {
-                        lp.height = if (lp.weight != 0f) 0 else originalSize
-                    }
-                } catch (ex: Throwable) {
-                    RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.let { it::class.simpleName }}").printStackTrace()
-                }
-            }
+        }
 
     }
     return ViewWrapper
@@ -103,8 +81,8 @@ actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
-    afterNextElementSetup {
-        val params = this.lparams
+    beforeNextElementSetup {
+        val params = lparams
         val horizontalGravity = when (horizontal) {
             Align.Start -> Gravity.START
             Align.Center -> Gravity.CENTER_HORIZONTAL
@@ -123,12 +101,12 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
             params.gravity = horizontalGravity or verticalGravity
         else
             println("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
-        if (horizontal == Align.Stretch && (this.parent as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
+        if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
             params.width = ViewGroup.LayoutParams.WRAP_CONTENT
         }
-        if (vertical == Align.Stretch && (this.parent as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
+        if (vertical == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.VERTICAL) {
             params.height = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -140,35 +118,63 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual val ViewWriter.scrolls: ViewWrapper
     get() {
-        wrapNext(NestedScrollView(this.context)) {
-            isFillViewport = true
-        }
+        wrapNextIn(object : RView(context) {
+            override val native: View = NestedScrollView(context.activity).apply {
+                isFillViewport = true
+            }
+
+            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+            override fun applyForeground(theme: Theme) { /*Do nothing*/
+            }
+
+            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+            }
+        })
         return ViewWrapper
     }
 
 @ViewModifierDsl3
 actual val ViewWriter.scrollsHorizontally: ViewWrapper
     get() {
-        wrapNext(HorizontalScrollView(this.context)) {
-            isFillViewport = true
-        }
+        wrapNextIn(object : RView(context) {
+            override val native: View = HorizontalScrollView(context.activity).apply {
+                isFillViewport = true
+            }
+
+            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+            override fun applyForeground(theme: Theme) { /*Do nothing*/
+            }
+
+            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+            }
+        })
         return ViewWrapper
     }
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        wrapNext(DesiredSizeView(this.context)) {
-            this.constraints = constraints
-        }
+        wrapNextIn(object : RView(context) {
+            override val native: View = DesiredSizeView(context.activity).apply {
+                this.constraints = constraints
+            }
+        })
     } else {
         beforeNextElementSetup {
-            constraints.width?.let { it: Dimension -> this.lparams.width = it.value.toInt() }
-            constraints.height?.let { it: Dimension -> this.lparams.height = it.value.toInt() }
-            constraints.maxWidth?.let { it: Dimension -> (this.lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt() }
-            constraints.maxHeight?.let { it: Dimension -> (this.lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt() }
-            constraints.minWidth?.let { this.minimumWidth = it.value.toInt() }
-            constraints.minHeight?.let { this.minimumHeight = it.value.toInt() }
+            constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
+            constraints.height?.let { it: Dimension -> lparams.height = it.value.toInt() }
+            constraints.maxWidth?.let { it: Dimension ->
+                (lparams as? MaxSizeLayoutParams)?.maxWidth = it.value.toInt()
+            }
+            constraints.maxHeight?.let { it: Dimension ->
+                (lparams as? MaxSizeLayoutParams)?.maxHeight = it.value.toInt()
+            }
+            constraints.minWidth?.let { native.minimumWidth = it.value.toInt() }
+            constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
         }
     }
     return ViewWrapper
@@ -176,11 +182,13 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
-    wrapNext(DesiredSizeView(this.context)) {
-        calculationContext.reactiveScope {
-            this.constraints = constraints()
+    wrapNextIn(object : RView(context) {
+        override val native: View = DesiredSizeView(context.activity).apply {
+            reactiveScope {
+                this.constraints = constraints()
+            }
         }
-    }
+    })
     return ViewWrapper
 }
 
@@ -212,13 +220,21 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         getChildAt(0).measure(
-            MeasureSpec.makeMeasureSpec(r - l, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(b - t, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
         )
-        getChildAt(0).layout(0, 0, r - l, b - t)
+        getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val widthMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(widthMeasureSpec) - paddingLeft - paddingRight,
+            MeasureSpec.getMode(widthMeasureSpec)
+        )
+        val heightMeasureSpec = MeasureSpec.makeMeasureSpec(
+            MeasureSpec.getSize(heightMeasureSpec) - paddingTop - paddingBottom,
+            MeasureSpec.getMode(heightMeasureSpec)
+        )
         val f = getChildAt(0)
         fun preprocess(baseSpec: Int, min: Int?, max: Int?, set: Int?): Int {
             var out = baseSpec
@@ -321,14 +337,24 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
         var processedWidthSpec = postprocess(
             widthMeasureSpec,
-            f.measuredWidth,
+            f.measuredWidth.let {
+                MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(it) + paddingLeft + paddingRight,
+                    MeasureSpec.getMode(it)
+                )
+            },
             constraints.minWidth?.value?.toInt(),
             constraints.maxWidth?.value?.toInt(),
             constraints.width?.value?.toInt()
         )
         var processedHeightSpec = postprocess(
             heightMeasureSpec,
-            f.measuredHeight,
+            f.measuredHeight.let {
+                MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(it) + paddingTop + paddingBottom,
+                    MeasureSpec.getMode(it)
+                )
+            },
             constraints.minHeight?.value?.toInt(),
             constraints.maxHeight?.value?.toInt(),
             constraints.height?.value?.toInt()
@@ -346,6 +372,10 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
         setMeasuredDimension(processedWidthSpec, processedHeightSpec)
     }
+
+    init {
+        clipChildren = false
+    }
 }
 
 @ViewModifierDsl3
@@ -354,8 +384,9 @@ actual fun ViewWriter.hintPopover(
     setup: ViewWriter.() -> Unit,
 ): ViewWrapper {
     beforeNextElementSetup {
-        setOnLongClickListener {
-            toast(inner = setup)
+        native.setOnLongClickListener {
+            // TODO
+//            toast(inner = setup)
             true
         }
     }
@@ -368,24 +399,20 @@ actual fun ViewWriter.hasPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
 ): ViewWrapper {
-    val originalNavigator = navigator
     beforeNextElementSetup {
-        setOnClickListener {
-            navigator.dialog.navigate(object : Screen {
+        native.setOnClickListener {
+            dialogScreenNavigator.navigate(object : Screen {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - stack {
-                            with(split()) {
-                                navigator = originalNavigator
-                                setup(object : PopoverContext {
-                                    override val calculationContext: CalculationContext
-                                        get() = this@beforeNextElementSetup.calculationContext
+                            setup(object : PopoverContext {
+                                override val calculationContext: CalculationContext
+                                    get() = this@beforeNextElementSetup
 
-                                    override fun close() {
-                                        navigator.dialog.dismiss()
-                                    }
-                                })
-                            }
+                                override fun close() {
+                                    dialogScreenNavigator.dismiss()
+                                }
+                            })
                         }
                     }
                 }
@@ -398,7 +425,7 @@ actual fun ViewWriter.hasPopover(
 @ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWrapper {
     beforeNextElementSetup {
-        tooltipText = message
+        native.tooltipText = message
     }
     return ViewWrapper
 }
@@ -406,7 +433,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
-    afterNextElementSetup {
+    beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)
 //        (parent as? SimplifiedLinearLayout)?.let {
@@ -417,47 +444,52 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
 
         exists = default
         var existingAnimator: ValueAnimator? = null
-        val theme = currentTheme
         var goal = default
-        calculationContext.reactiveScope {
+        reactiveScope {
             val value = condition()
             if (goal == value) return@reactiveScope
             goal = value
+            if (native.layoutParams == null) {
+                exists = value
+                return@reactiveScope
+            }
             existingAnimator?.cancel()
             existingAnimator = null
             val parent = parent
             exists = true
+            val p = parent?.native
             if (animationsEnabled) {
                 existingAnimator = if (value) {
-                    if (parent is SimplifiedLinearLayout) {
-                        if (parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                            widthAnimator(WRAP_CONTENT)
+                    if (p is SimplifiedLinearLayout) {
+                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            native.widthAnimator(WRAP_CONTENT)
                         } else {
-                            heightAnimator(WRAP_CONTENT)
+                            native.heightAnimator(WRAP_CONTENT)
                         }.also {
                             it.addUpdateListener {
-                                (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio = it.animatedFraction
+                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                    it.animatedFraction
                             }
                         }
                     } else {
-                        TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { alpha = it }
+                        TypedValueAnimator.FloatAnimator(0f, 1f).onUpdate { native.alpha = it }
                     }
                 } else {
-                    if (parent is SimplifiedLinearLayout) {
-                        if (parent.orientation == SimplifiedLinearLayout.HORIZONTAL) {
-                            widthAnimator(0)
+                    if (p is SimplifiedLinearLayout) {
+                        if (p.orientation == SimplifiedLinearLayout.HORIZONTAL) {
+                            native.widthAnimator(0)
                         } else {
-                            heightAnimator(0)
+                            native.heightAnimator(0)
                         }.also {
                             it.addUpdateListener {
-                                (layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
+                                (native.layoutParams as? SimplifiedLinearLayoutLayoutParams)?.gapRatio =
                                     1f - it.animatedFraction
                             }
                         }
                     } else {
-                        TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { alpha = it }
+                        TypedValueAnimator.FloatAnimator(1f, 0f).onUpdate { native.alpha = it }
                     }
-                }.setDuration(theme().transitionDuration.inWholeMilliseconds).also {
+                }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
                     it.doOnEnd {
                         exists = value
                     }
@@ -504,7 +536,6 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                println("ENDING, set to $toHeight")
                 layoutParams.height = toHeight
             }
         })
@@ -552,7 +583,7 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     }
 }
 
-private object TypedValueAnimator {
+internal object TypedValueAnimator {
 
     /**
      * A value animator that animates between [Int] values.

@@ -1,273 +1,148 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.current
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.MaterialLikeTheme
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.direct.ContainingView
-import kotlin.math.min
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.CalculationContextStack.end
+import com.lightningkite.kiteui.reactive.CalculationContextStack.start
+import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.viewDebugTarget
 
-/**
- * An object that writes view trees, similar to the way a Writer in Java sequentially writes text data.
- * Views rendered through here will be inserted into the given parent in the constructor.
- */
-class ViewWriter(
-    parent: NView?,
-    val context: NContext = parent?.nContext ?: throw IllegalArgumentException(),
-    private val startDepth: Int = 0,
-) {
-    val depth: Int get() = stack.size - 1 + startDepth
-    var rootCreated: NView? = null
+abstract class ViewWriter {
+    abstract val context: RContext
+    open fun willAddChild(view: RView) {}
+    abstract fun addChild(view: RView)
 
-    /**
-     * Additional data keyed by string attached to the context.
-     * Copied to writers that are split off.
-     * Easiest use comes from [viewWriterAddon] and [viewWriterAddonLateInit].
-     */
-    val addons: MutableMap<String, Any?> = mutableMapOf()
-
-    /**
-     * Creates a copy of the [ViewWriter] with the current view as its root.
-     * Used for view containers that need their contents removed and replaced later.
-     */
-    fun split(): ViewWriter = ViewWriter(stack.lastOrNull(), context = context, startDepth = depth).also {
-        it.addons.putAll(this.addons)
-        it.currentTheme = currentTheme
-        it.isRoot = isRoot
-        it.transitionNextView = TransitionNextView.No
-        it.rootTheme = rootTheme
-        it.lastSpacing = lastSpacing
-        it.popoverClosers = popoverClosers
-        it.baseStack = baseStack
-        it.baseStackWriter = baseStackWriter
-    }
-
-    /**
-     * Creates a copy of the [ViewWriter] with no root view.
-     * Used for view containers that need their contents removed and replaced later.
-     */
-    fun newViews(): ViewWriter = ViewWriter(null, context = context, startDepth = depth).also {
-        it.addons.putAll(this.addons)
-        it.currentTheme = currentTheme
-        it.isRoot = isRoot
-        it.transitionNextView = TransitionNextView.No
-        it.rootTheme = rootTheme
-        it.lastSpacing = lastSpacing
-        it.popoverClosers = popoverClosers
-        it.baseStack = baseStack
-        it.baseStackWriter = baseStackWriter
-    }
-
-    /**
-     * Creates a copy of the [ViewWriter] with no root view.
-     * Used for view containers that need their contents removed and replaced later.
-     */
-    fun targeting(view: NView): ViewWriter = ViewWriter(view, context = context, startDepth = depth).also {
-        it.addons.putAll(this.addons)
-        it.currentTheme = currentTheme
-        it.isRoot = isRoot
-        it.transitionNextView = TransitionNextView.No
-        it.rootTheme = rootTheme
-        it.lastSpacing = lastSpacing
-        it.popoverClosers = popoverClosers
-        it.baseStack = baseStack
-        it.baseStackWriter = baseStackWriter
-    }
-
-    val stack = if (parent == null) arrayListOf() else arrayListOf(parent)
-    val currentView: NView get() = stack.last()
-    inline fun <T : NView> stackUse(item: T, action: T.() -> Unit) =
-        CalculationContextStack.useIn(item.calculationContext) {
-            stack.add(item)
-            try {
-                action(item)
-            } finally {
-                stack.removeLast()
-            }
+    fun split(): ViewWriter = object : ViewWriter() {
+        override val context: RContext = this@ViewWriter.context.split()
+        override fun addChild(view: RView) {
+            this@ViewWriter.addChild(view)
         }
+    }
 
-    var rootTheme: suspend () -> Theme = { MaterialLikeTheme() }
-    var currentTheme: suspend () -> Theme = { rootTheme() }
-    inline fun <T> withThemeGetter(crossinline calculate: suspend (suspend () -> Theme) -> Theme, action: () -> T): T {
-        val old = currentTheme
-        changedThemes = true
-        currentTheme = { calculate(old) }
+    // Modifier and wrapper handling
+
+    var beforeNextElementSetup: (RView.() -> Unit)? = null
+    inline fun beforeNextElementSetup(crossinline action: RView.() -> Unit) {
+        val prev = beforeNextElementSetup
+        beforeNextElementSetup = { prev?.invoke(this); action() }
+    }
+
+    var _wrapElement: RView? = null
+    fun wrapNextIn(view: RView) {
+        val p = _wrapElement ?: this
+        p.willAddChild(view)
+        _wrapElement = view
+        beforeNextElementSetup?.invoke(view)
+        beforeNextElementSetup = null
+        view.postSetup()
+        p.addChild(view)
+    }
+
+    fun <T : RView> writePre(p: ViewWriter, view: T) {
+        start(view)
+        p.willAddChild(view)
+        _wrapElement = null
+        beforeNextElementSetup?.invoke(view)
+        beforeNextElementSetup = null
+    }
+
+    fun <T : RView> writePost(p: ViewWriter, view: T) {
+        view.postSetup()
+        p.addChild(view)
+    }
+
+    inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
+        val p = _wrapElement ?: this
+        writePre(p, view)
         try {
-            return action()
+            setup(view)
+            writePost(p, view)
         } finally {
-            currentTheme = old
+            end(view)
         }
+        return view
+    }
+
+    @Deprecated(
+        "Use UseBackground instead",
+        ReplaceWith("UseBackground", "com.lightningkite.kiteui.views.UseBackground")
+    )
+    object TransitionNextView {
+        @Deprecated(
+            "Use UseBackground.Yes instead",
+            ReplaceWith("UseBackground.Yes", "com.lightningkite.kiteui.views.UseBackground")
+        )
+        val Yes = Unit
+        @Deprecated(
+            "Use UseBackground.No instead",
+            ReplaceWith("UseBackground.No", "com.lightningkite.kiteui.views.UseBackground")
+        )
+        val No = Unit
+    }
+
+    @Deprecated("Use UseBackground on the element itself")
+    var transitionNextView: Unit
+        get() = Unit
+        set(value) {
+//            afterNextElementSetup { useBackground = value }
+        }
+
+    @ViewModifierDsl3
+    val Theme.onNext: ViewWrapper get() {
+        beforeNextElementSetup {
+            themeChoice = ThemeDerivation { this@onNext.withBack }
+        }
+        return ViewWrapper
     }
 
     @ViewModifierDsl3
-    inline fun ViewWriter.themeModifier(crossinline calculate: suspend (suspend () -> Theme) -> Theme): ViewWrapper {
-        val old = currentTheme
-        changedThemes = true
-        currentTheme = { calculate(old) }
-        afterNextElementSetup {
-            currentTheme = old
+    val ThemeDerivation.onNext: ViewWrapper get() {
+        beforeNextElementSetup {
+            val old = themeChoice
+            themeChoice = old + this@onNext
         }
         return ViewWrapper
     }
 
-    /**
-     * Adds a card / border / padding to the next view.
-     */
-    sealed interface TransitionNextView {
-        object No : TransitionNextView
-        object Yes : TransitionNextView
-        class Maybe(val logic: suspend () -> Boolean) : TransitionNextView
-    }
+    // Theme, ViewWrapper, ThemeDerivation, Boolean
+    // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
+    // contains / minus
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
 
-    var lastSpacing: suspend () -> Dimension = { 0.px }
-    var transitionNextView: TransitionNextView = TransitionNextView.No
-    var changedThemes: Boolean = false
-    var isRoot: Boolean = true
-    val stackEmpty: Boolean get() = stack.isEmpty()
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
 
-    var baseStack: ContainingView? = null
-    var baseStackWriter: ViewWriter? = null
-    var popoverClosers = ArrayList<()->Unit>()
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWriter): Boolean { return true }
 
-    val calculationContext: CalculationContext get() = stack.last().calculationContext
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
+}
 
-    /**
-     * Runs the given [action] on the next created element before its setup block is run.
-     */
-    fun beforeNextElementSetup(action: NView.() -> Unit) {
-        beforeNextElementSetupList.add(action)
-    }
-
-    /**
-     * Runs the given [action] on the next created element after its setup block is run.
-     */
-    fun afterNextElementSetup(action: NView.() -> Unit) {
-        afterNextElementSetupList.add(action)
-    }
-
-    var beforeNextElementSetupList = ArrayList<NView.() -> Unit>()
-    var afterNextElementSetupList = ArrayList<NView.() -> Unit>()
-    var afterNextElementPopList = ArrayList<()->Unit>()
-
-    //    private val wrapperToDoList = ArrayList<NView.() -> Unit>()
-    var popCount = 0
-
-    /**
-     * Wraps the next created element within this element.
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun <T : NView> wrapNext(element: T, setup: T.() -> Unit): ViewWrapper {
-        stack.lastOrNull()?.addNView(element) ?: run { rootCreated = element }
-        stack.add(element)
-        val beforeCopy = beforeNextElementSetupList.toList()
-        val afterCopy = afterNextElementSetupList.toList()
-            beforeNextElementSetupList = ArrayList()
-            afterNextElementSetupList = ArrayList()
-        CalculationContextStack.useIn(element.calculationContext) {
-            val oldPop = popCount
-            popCount = 0
-            beforeCopy.forEach { it(element) }
-            setup(element)
-            afterNextElementPopList.add {
-                CalculationContextStack.useIn(element.calculationContext) {
-                    afterCopy.asReversed().forEach { it(element) }
-                }
-            }
-            popCount = oldPop
-        }
-        popCount++
-        return ViewWrapper
-    }
-
-    /**
-     * Writes an element to the current parent.
-     */
-    fun <T : NView> element(initialElement: T, setup: T.() -> Unit) {
-        initialElement.apply {
-            stack.lastOrNull()?.addNView(this) ?: run { rootCreated = this }
-            val beforeCopy =
-                if (beforeNextElementSetupList.isNotEmpty()) beforeNextElementSetupList.toList() else listOf()
-            beforeNextElementSetupList = ArrayList()
-            val afterCopy = if (afterNextElementSetupList.isNotEmpty()) afterNextElementSetupList.toList() else listOf()
-            afterNextElementSetupList = ArrayList()
-            var toPop = popCount
-            popCount = 0
-            stackUse(this) {
-                beforeCopy.forEach { it(this) }
-                setup()
-                afterCopy.asReversed().forEach { it(this) }
-            }
-            while (toPop > 0) {
-                val item = stack.removeLast()
-                toPop--
-                afterNextElementPopList.removeLast().invoke()
-            }
-//            wrapperToDoList.clear()
-        }
-    }
-
-    fun <T> forEachUpdating(
-        items: Readable<List<T>>,
-        placeholdersWhileLoading: Int = 5,
-        render: ViewWriter.(Readable<T>) -> Unit
-    ) {
-        val split = split()
-        val currentViews = ArrayList<LateInitProperty<T>>()
-        val currentView = currentView
-        calculationContext.reactiveScope(onLoad = {
-            currentView.withoutAnimation {
-                if (placeholdersWhileLoading <= 0) return@reactiveScope
-                if (currentViews.size < placeholdersWhileLoading) {
-                    repeat(placeholdersWhileLoading - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        split.render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
-                }
-            }*/
-                val children = currentView.listNViews()
-                for (index in 0 until placeholdersWhileLoading) {
-                    children[index].exists = true
-                    currentViews[index].unset()
-                }
-                for (index in placeholdersWhileLoading..<currentViews.size) {
-                    children[index].exists = false
-                }
-            }
-        }) {
-            val itemList = items.await()
-            currentView.withoutAnimation {
-                val oldCurrentViewsSize = currentViews.size
-                if (currentViews.size < itemList.size) {
-                    repeat(itemList.size - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        newProp.value = itemList[currentViews.size]
-                        split.render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
-                }
-            }*/
-                val children = currentView.listNViews()
-                for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
-                    children[index].exists = true
-                    currentViews[index].value = itemList[index]
-                }
-                for (index in itemList.size..<currentViews.size) {
-                    children[index].exists = false
-                }
-            }
-        }
+class NewViewWriter(override val context: RContext) : ViewWriter() {
+    var newView: RView? = null
+    override fun addChild(view: RView) {
+        newView = view
     }
 }
+
+//var RView.themeDeriver: ThemeDeriver?
+//    get() = (themeChoice as? ThemeChoice.Derive)?.derivation
+//    set(value) {
+//        themeChoice = value?.let { ThemeChoice.Derive(it) }
+//        useBackground = UseBackground.IfChanged
+//    }
+//var RView.themeTweak: ThemeDeriver?
+//    get() = (themeChoice as? ThemeChoice.Derive)?.derivation
+//    set(value) {
+//        themeChoice = value?.let { ThemeChoice.Derive(it) }
+//    }

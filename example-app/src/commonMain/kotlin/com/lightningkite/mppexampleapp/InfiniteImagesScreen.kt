@@ -1,12 +1,14 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.lazyExpanding
 
 @Routable("recycler-view-infinite-images")
 object InfiniteImagesScreen : Screen {
@@ -49,13 +51,13 @@ object InfiniteImagesScreen : Screen {
             columns = 4
             children(Constant(ReturnIndexList)) {
                 unpadded - button {
+                    ::transitionId { it().toString() }
                     sizeConstraints(height = 16.rem) - image {
                         scaleType = ImageScaleType.Crop
-                        ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/1000/1000") }
-//                            source = Resources.imagesSolera
+                        ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }
                     }
                     onClick {
-                        navigator.dialog.navigate(ImageViewPager(it.await()))
+                        dialogScreenNavigator.navigate(ImageViewPager(it.await()))
                     }
                 }
             }
@@ -74,8 +76,9 @@ class ImageViewPager(val initialIndex: Int) : Screen {
                 children(Constant(InfiniteImagesScreen.ReturnIndexList)) { currImage ->
                     val renders = Property(0)
                     stack {
+                        ::transitionId { currImage().toString() }
                         spacing = 0.25.rem
-                        image {
+                        zoomableImage {
                             reactiveScope {
                                 renders.value++
                                 val index = currImage.await()
@@ -93,7 +96,7 @@ class ImageViewPager(val initialIndex: Int) : Screen {
             gravity(Align.End, Align.Start) - button {
                 icon { source = Icon.close }
                 onClick {
-                    navigator.dismiss()
+                    screenNavigator.dismiss()
                 }
             }
             atBottomCenter - row {

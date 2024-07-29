@@ -1,9 +1,10 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.HoverSemantic
+import com.lightningkite.kiteui.models.ImportantSemantic
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
@@ -22,7 +23,7 @@ object HorizontalRecyclerViewScreen : Screen {
         var recyclerView: RecyclerView? = null
         col {
             row {
-                for(align in Align.values()) {
+                for (align in Align.values()) {
                     expanding - button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, false) }
@@ -30,7 +31,7 @@ object HorizontalRecyclerViewScreen : Screen {
                 }
             }
             row {
-                for(align in Align.values()) {
+                for (align in Align.values()) {
                     expanding - button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, true) }
@@ -52,18 +53,21 @@ object HorizontalRecyclerViewScreen : Screen {
                 columns = 2
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
-                    themeFromLast { theme ->
-                        if(it.await() == 50) theme.important() else if(it.await() % 7 == 0) theme.hover() else theme
-                    } - col {
+                    col {
                         row {
+                            dynamicTheme {
+                                if (it() == 50) ImportantSemantic
+                                else if (it() % 7 == 0) HoverSemantic
+                                else null
+                            }
                             expanding - centered - text { ::content { "Item ${it.await()}" } }
                             centered - button {
                                 text {
                                     ::content { if (expanded.await() == it.await()) "Expanded" else "Expand" }
                                 }
                                 onClick {
-                                    expanded.value = if(it.await() == expanded.value) -1 else it.await()
-                                    native.scrollIntoView(null, Align.Start, true)
+                                    expanded.value = if (it.await() == expanded.value) -1 else it.await()
+                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }

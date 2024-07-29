@@ -2,12 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
 import android.graphics.Shader
-import androidx.appcompat.widget.AppCompatTextView
+import android.widget.TextView
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
 
-class TextViewWithGradient(context: Context): AppCompatTextView(context) {
+class TextViewWithGradient(context: Context): android.widget.TextView(context) {
 
     var kuiPaintForeground: Paint = Color.black
         set(f) {

@@ -1,12 +1,15 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.NContext
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.rContextAddonInit
 
-@Deprecated("Use ScreenStack directly instead", ReplaceWith("ScreenStack", "com.lightningkite.kiteui.navigation.ScreenStack"))
-typealias KiteUiNavigator = ScreenStack
-class ScreenStack(private val routesGetter: ()->Routes, dialog: ScreenStack? = null) {
-    val dialog: ScreenStack = dialog ?: this
+@Deprecated("Use ScreenNavigator directly instead", ReplaceWith("ScreenNavigator", "com.lightningkite.kiteui.navigation.ScreenNavigator"))
+typealias KiteUiNavigator = ScreenNavigator
+@Deprecated("Use ScreenNavigator directly instead", ReplaceWith("ScreenNavigator", "com.lightningkite.kiteui.navigation.ScreenNavigator"))
+typealias ScreenStack = ScreenNavigator
+class ScreenNavigator(private val routesGetter: ()->Routes) {
     val routes: Routes by lazy { routesGetter() }
     
     val stack: Property<List<Screen>> = Property(listOf())
@@ -48,13 +51,22 @@ class ScreenStack(private val routesGetter: ()->Routes, dialog: ScreenStack? = n
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
     companion object {
-        lateinit var mainRoutes: Routes
-        val main = ScreenStack({ mainRoutes }, ScreenStack({ mainRoutes }))
-        val dialog get() = main.dialog
+        @Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator.routes", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
+        val mainRoutes: Routes get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
+        val main: ScreenNavigator get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
+        val dialog: ScreenNavigator get() = TODO()
     }
+    @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
+    val dialog: ScreenNavigator get() = TODO()
 }
 
-@Deprecated("Use ScreenStack.main", ReplaceWith("ScreenStack.main", "com.lightningkite.kiteui.navigation.ScreenStack"))
-val PlatformNavigator get() = ScreenStack.main
+expect fun ScreenNavigator.bindToPlatform(context: RContext)
 
-expect fun ScreenStack.bindToPlatform(context: NContext)
+var ViewWriter.screenNavigator by rContextAddonInit<ScreenNavigator>()
+var ViewWriter.mainScreenNavigator by rContextAddonInit<ScreenNavigator>()
+var ViewWriter.dialogScreenNavigator by rContextAddonInit<ScreenNavigator>()
+
+@Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
+val PlatformNavigator: ScreenNavigator get() = TODO()

@@ -33,7 +33,7 @@ object DataLoadingExampleScreen : Screen {
                     card - col {
                         val f = shared { delay(Random.nextLong(0, 5000)); "" }
                         h3 { ::content { it.await().title + f.await() } }
-                        text { ::content { it.await().body + f.await() } }
+                        text { ::content { it.await().body.substringBefore('\n') + f.await() } }
                     }
                 }
             }

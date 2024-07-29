@@ -31,14 +31,14 @@ interface PlayableAudio {
     }
 }
 
-fun RView<*>.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
-    val backgroundAudioShared = shared {
+fun RView.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
+    val backgroundAudioShared = asyncGlobal {
         audio.load().apply { volume = backgroundVolume }
     }
     // Loop and cancel the background sound
     reactiveScope {
         if (playBackgroundAudio()) {
-            val backgroundAudio = backgroundAudioShared()
+            val backgroundAudio = backgroundAudioShared.await()
             suspendCoroutineCancellable<Unit> {
                 backgroundAudio.onComplete {
                     backgroundAudio.play()
@@ -52,7 +52,7 @@ fun RView<*>.backgroundAudio(audio: AudioResource, backgroundVolume: Float, play
     // Trigger the background sound once every five seconds until it successfully starts
     reactiveScope {
         if (playBackgroundAudio()) {
-            val backgroundAudio = backgroundAudioShared()
+            val backgroundAudio = backgroundAudioShared.await()
             while (true) {
                 if (!backgroundAudio.isPlaying) {
                     backgroundAudio.play()

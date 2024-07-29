@@ -1,13 +1,13 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
@@ -75,7 +75,7 @@ object NavigationScreen: DocScreen {
             ) {
                 button {
                     onClick {
-                        navigator.navigate(DocSearchScreen)
+                        screenNavigator.navigate(DocSearchScreen)
                     }
                     centered - row {
                         centered - icon(Icon.arrowBack, "Back")
@@ -120,7 +120,7 @@ object NavigationScreen: DocScreen {
                 col {
                     button {
                         onClick {
-                            navigator.goBack()
+                            screenNavigator.goBack()
                         }
                         row {
                             centered - icon(Icon.arrowBack, "Back")
@@ -129,7 +129,7 @@ object NavigationScreen: DocScreen {
                     }
                     button {
                         onClick {
-                            navigator.replace(DocSearchScreen)
+                            screenNavigator.replace(DocSearchScreen)
                         }
                         row {
                             centered - icon(Icon.arrowBack, "Back")
@@ -138,7 +138,7 @@ object NavigationScreen: DocScreen {
                     }
                     button {
                         onClick {
-                            navigator.reset(DocSearchScreen)
+                            screenNavigator.reset(DocSearchScreen)
                         }
                         row {
                             centered - icon(Icon.arrowBack, "Back")
@@ -178,7 +178,7 @@ object NavigationScreen: DocScreen {
                 button {
                     text("Open a dialog")
                     onClick {
-                        navigator.dialog.navigate(object: Screen {
+                        dialogScreenNavigator.navigate(object: Screen {
                             override fun ViewWriter.render() {
                                 stack {
                                     centered - card - col {
@@ -187,7 +187,7 @@ object NavigationScreen: DocScreen {
                                         button {
                                             centered - text("Dismiss")
                                             onClick {
-                                                navigator.dismiss()
+                                                screenNavigator.dismiss()
                                             }
                                         }
                                     }

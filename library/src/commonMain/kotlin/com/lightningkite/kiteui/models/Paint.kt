@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.models
 
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
 sealed interface Paint {
     fun closestColor(): Color
+    fun map(mapper: (Color)->Color): Paint
     fun applyAlpha(alpha: Float): Paint
     fun lighten(ratio: Float): Paint
     fun darken(ratio: Float): Paint
@@ -20,16 +22,24 @@ data class LinearGradient(
     val angle: Angle = Angle.zero,
     val screenStatic: Boolean = false,
 ) : Paint {
+    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
-        return stops.map { it.color.toHSV() }.let {
-            HSVColor(
-                hue = it.map { it.hue.turns }.average().let(::Angle),
-                value = it.map { it.value }.average().toFloat(),
-                saturation = it.map { it.saturation }.average().toFloat(),
-                alpha = stops.map { it.color.alpha }.average().toFloat()
-            )
-        }.toRGB()
+        if (stops.size == 1) return stops[0].color
+        return Color(
+            alpha = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.alpha + b.color.alpha) / 2
+            }.sum(),
+            red = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.red + b.color.red) / 2
+            }.sum(),
+            green = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.green + b.color.green) / 2
+            }.sum(),
+            blue = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.blue + b.color.blue) / 2
+            }.sum(),
+        )
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
@@ -47,8 +57,24 @@ data class RadialGradient(
     val stops: List<GradientStop>,
     val screenStatic: Boolean = false,
 ) : Paint {
+    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
-        return stops.maxByOrNull { it.ratio }?.color ?: Color.transparent
+        if (stops.isEmpty()) return Color.transparent
+        if (stops.size == 1) return stops[0].color
+        return Color(
+            alpha = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.alpha + b.color.alpha) / 2
+            }.sum(),
+            red = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.red + b.color.red) / 2
+            }.sum(),
+            green = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.green + b.color.green) / 2
+            }.sum(),
+            blue = stops.asSequence().zipWithNext { a, b ->
+                (b.ratio - a.ratio) * (a.color.blue + b.color.blue) / 2
+            }.sum(),
+        )
     }
 
     override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
@@ -60,6 +86,7 @@ data class Color(
     val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
+    override fun map(mapper: (Color) -> Color): Paint = let(mapper)
     override fun closestColor(): Color = this
     override fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
 
@@ -176,6 +203,11 @@ data class Color(
         green = (green * other.green),
         blue = (blue * other.blue),
     )
+
+    infix fun channelDifferenceSum(other: Color): Float = abs(red - other.red) +
+            abs(green - other.green) +
+            abs(blue - other.blue) +
+            abs(alpha - other.alpha)
 
     fun toWhite(ratio: Float) = interpolate(this, white, ratio)
     fun toBlack(ratio: Float) = interpolate(this, black, ratio)

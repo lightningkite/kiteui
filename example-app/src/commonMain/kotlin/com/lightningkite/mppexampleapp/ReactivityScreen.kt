@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
@@ -18,7 +19,6 @@ object ReactivityScreen : Screen {
             delay(1000)
             "Loaded!"
         }
-        debugNext
         col {
             col {
                 h1 { content = "This screen demonstrates various forms of reactivity." }

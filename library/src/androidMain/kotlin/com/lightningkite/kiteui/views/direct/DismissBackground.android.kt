@@ -1,31 +1,30 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.content.Context
-import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
-actual fun DismissBackground.onClick(action: suspend () -> Unit) {
-    native.setOnClickListener { _ ->
-        launch { action() }
-    }
-}
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NDismissBackground = ViewGroup
-
-@ViewDsl
-actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit) = element(SlightlyModifiedFrameLayout(context)) {
-    handleTheme(this, foreground = { it, view ->
-        view.setBackgroundColor(it.background.closestColor().darken(0.5f).applyAlpha(alpha = 0.5f).toInt())
-    }) {
+actual class DismissBackground actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayout(context.activity).apply {
         setOnClickListener {
-            navigator.clear()
+            dialogScreenNavigator.clear()
         }
-        setup(DismissBackground(this))
-        listNViews().forEach {
-            it.isClickable = true
+    }
+    actual fun onClick(action: suspend () -> Unit) {
+        native.setOnClickListener { _ ->
+            launch { action() }
         }
+    }
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        native.setBackgroundColor(theme.background.closestColor().copy(alpha = 0.5f).toInt())
+    }
+    override fun postSetup() {
+        super.postSetup()
+        children.forEach { it.native.isClickable = true }
     }
 }

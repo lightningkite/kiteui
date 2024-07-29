@@ -1,11 +1,11 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.views.NContext
+import com.lightningkite.kiteui.views.RContext
 import platform.Foundation.NSUserActivity
 
 private var postedLandingUrl: UrlLikePath? = null
 
-actual fun ScreenStack.bindToPlatform(context: NContext) {
+actual fun ScreenNavigator.bindToPlatform(context: RContext) {
     val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
 }
@@ -19,9 +19,9 @@ fun postUserActivity(activity: NSUserActivity) {
 }
 
 // To be called from scene(_:continue:)
-fun handleUserActivity(activity: NSUserActivity) {
+fun handleUserActivity(main: ScreenNavigator, activity: NSUserActivity) {
     activity.webpageUrlLikePath()?.let {
-        ScreenStack.main.navigate(ScreenStack.main.routes.parse(it) ?: return)
+        main.navigate(main.routes.parse(it) ?: return)
     }
 }
 

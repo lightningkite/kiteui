@@ -12,7 +12,7 @@ interface Screen {
         get() = Constant(
             this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen")
         )
-    fun ViewWriter.render()
+    fun ViewWriter.render(): Any?
     object Empty: Screen {
         override fun ViewWriter.render() {
             space { }

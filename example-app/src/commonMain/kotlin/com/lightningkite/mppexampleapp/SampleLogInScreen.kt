@@ -1,11 +1,12 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -26,13 +27,7 @@ object SampleLogInScreen : Screen {
             }
             padded - scrolls - col {
                 expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - themeFromLast {
-                    it.copy(
-                        background = Color.orange.withAlpha(0.25f),
-                        backdropFilters = listOf(BackdropFilter.Blur(1.rem)),
-                        card = { it }
-                    )
-                } - col {
+                centered - sizeConstraints(maxWidth = 50.rem) - col {
                     h1 { content = "My App" }
                     label {
                         content = "Email"
@@ -70,6 +65,6 @@ object SampleLogInScreen : Screen {
 
     private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
         fetch("fake-login/${email.await()}")
-        navigator.navigate(ControlsScreen)
+        screenNavigator.navigate(ControlsScreen)
     }
 }

@@ -1,13 +1,11 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.*
 
 @Routable("sample/canvas")
 object CanvasSampleScreen : Screen {

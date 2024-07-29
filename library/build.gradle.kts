@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform")
@@ -17,13 +18,12 @@ val ktorVersion = "2.3.7"
 kotlin {
     androidTarget {
         publishLibraryVariants("release", "debug")
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
-        }
         dependencies {
-            api("androidx.transition:transition:1.4.1")
+            api("androidx.appcompat:appcompat:1.7.0")
+            api("androidx.recyclerview:recyclerview:1.3.2")
+            api("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+            api("com.google.android.material:material:1.12.0")
+            api("androidx.transition:transition:1.5.0")
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
             api("com.github.bumptech.glide:glide:5.0.0-rc01")
@@ -31,9 +31,12 @@ kotlin {
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")
-            api("androidx.media3:media3-exoplayer:1.2.1")
-            api("androidx.media3:media3-ui:1.2.1")
-            api("androidx.media3:media3-common:1.2.1")
+            api("androidx.media3:media3-exoplayer:1.3.1")
+            api("androidx.media3:media3-ui:1.3.1")
+            api("androidx.media3:media3-common:1.3.1")
+        }
+        this.compilerOptions {
+            this.jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
     jvm()
@@ -73,9 +76,6 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.recyclerview:recyclerview:1.3.2")
-                api("com.google.android.material:material:1.11.0")
             }
         }
 
@@ -93,7 +93,7 @@ kotlin {
         val jvmMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
-                api("org.apache.commons:commons-lang3:3.12.0")
+                api("org.apache.commons:commons-lang3:3.14.0")
             }
         }
         val jsMain by getting {
@@ -151,8 +151,8 @@ android {
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     dependencies {
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")

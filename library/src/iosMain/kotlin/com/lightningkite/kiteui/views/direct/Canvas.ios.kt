@@ -2,35 +2,29 @@
 
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.canvas.DrawingContext2D
+
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
+import com.lightningkite.kiteui.views.canvas.fillPaint
 import kotlinx.cinterop.*
-import platform.CoreFoundation.CFAbsoluteTimeGetCurrent
 import platform.CoreGraphics.*
-import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
-import kotlin.concurrent.AtomicInt
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NCanvas = CanvasView
+actual class Canvas actual constructor(context: RContext): RView(context) {
+    override val native = CanvasView()
 
-@ViewDsl
-actual inline fun ViewWriter.canvasActual(crossinline setup: Canvas.() -> Unit): Unit = element(CanvasView()) {
-    setup(Canvas(this))
+    actual var delegate: CanvasDelegate?
+        get() = native.delegate
+        set(value) {
+            native.delegate = value
+        }
 }
-
-
-actual var Canvas.delegate: CanvasDelegate?
-    get() = native.delegate
-    set(value) {
-        native.delegate = value
-    }
 
 actual typealias KeyCode = String
 
@@ -264,9 +258,15 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 //        startRefresh()
 //    }
 
+    private var x = 0.0
     override fun drawRect(rect: CValue<CGRect>) {
         with(DrawingContext2DImpl(UIGraphicsGetCurrentContext()!!, rect.useContents { this.size.width }, rect.useContents { this.size.height })) {
-            delegate?.draw(this)
+            try {
+                delegate?.draw(this)
+            } catch(e: Exception) {
+                println("OH MAN")
+                e.printStackTrace2()
+            }
         }
     }
 

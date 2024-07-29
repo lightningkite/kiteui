@@ -35,34 +35,65 @@ interface CalculationContext {
             onRemoveSet.clear()
         }
     }
-    abstract class WithLoadTracking: CalculationContext {
-
-        var loadShown: Boolean = false
-            private set
-        var loadCount = 0
-            set(value) {
-                field = value
-                if(value == 0 && loadShown) {
-                    loadShown = false
-                    hideLoad()
-                } else if(value > 0 && !loadShown) {
-                    loadShown = true
-                    showLoad()
-                }
-            }
-        abstract fun showLoad()
-        abstract fun hideLoad()
-
-        override fun notifyStart() {
-            super.notifyStart()
-            loadCount++
-        }
-
-        override fun notifyLongComplete(result: Result<Unit>) {
-            loadCount--
-            super.notifyLongComplete(result)
-        }
-    }
+//    abstract class WithLoadTracking: CalculationContext {
+//
+//        var loadShown: Boolean = false
+//            private set
+//        var loadCount = 0
+//            set(value) {
+//                field = value
+//                if(value == 0 && loadShown) {
+//                    loadShown = false
+//                    hideLoad()
+//                } else if(value > 0 && !loadShown) {
+//                    loadShown = true
+//                    showLoad()
+//                }
+//            }
+//        abstract fun showLoad()
+//        abstract fun hideLoad()
+//
+//        override fun notifyStart() {
+//            super.notifyStart()
+//            loadCount++
+//        }
+//
+//        override fun notifyLongComplete(result: Result<Unit>) {
+//            loadCount--
+//            super.notifyLongComplete(result)
+//        }
+//    }
+//    class StandardWithLoadTracking: CalculationContext, Cancellable {
+//        val onRemoveSet = ArrayList<()->Unit>()
+//        override fun onRemove(action: () -> Unit) {
+//            onRemoveSet.add(action)
+//        }
+//        override fun cancel() {
+//            onRemoveSet.invokeAllSafe()
+//            onRemoveSet.clear()
+//        }
+//
+//        val loadShown = Property(false)
+//        var loadCount = 0
+//            set(value) {
+//                field = value
+//                if(value == 0 && loadShown.value) {
+//                    loadShown.value = false
+//                } else if(value > 0 && !loadShown.value) {
+//                    loadShown.value = true
+//                }
+//            }
+//
+//        override fun notifyStart() {
+//            super.notifyStart()
+//            loadCount++
+//        }
+//
+//        override fun notifyLongComplete(result: Result<Unit>) {
+//            loadCount--
+//            super.notifyLongComplete(result)
+//        }
+//    }
 }
 
 fun CalculationContext.sub(): SubCalculationContext = SubCalculationContext(this)
@@ -111,7 +142,7 @@ object CalculationContextStack {
     inline fun start(handler: CalculationContext) {
         stack.add(handler)
     }
-    inline fun end(handler: CalculationContext) {
+    fun end(handler: CalculationContext) {
         if (stack.removeLast() != handler)
             throw ConcurrentModificationException("Multiple threads have been attempting to instantiate views at the same time.")
     }

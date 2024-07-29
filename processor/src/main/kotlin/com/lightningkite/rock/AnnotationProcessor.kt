@@ -55,7 +55,7 @@ class RouterGeneration(
                             it.asSequence().mapNotNull { (it as? ParsedRoutable.Segment.Variable)?.type }
                         } + it.queryParameters.map { it.type }
                     }
-                        .flatMap { sequenceOf(it) + it.arguments.mapNotNull { it.type?.resolve() } }
+                        .flatMap { sequenceOf(it) + it.arguments.mapNotNull { it.type?.resolve() } + it.annotations.mapNotNull { it.annotationType.resolve() } }
                         .mapNotNull { it.declaration.qualifiedName?.asString() }
                         .distinct()
                         .filter { !it.startsWith("kotlin.") }
@@ -215,9 +215,9 @@ class ParsedRoutable(
 }
 
 fun KSTypeReference.toKotlin(annotations: Sequence<KSAnnotation>? = null): String =
-    this.resolve().toKotlin(annotations ?: this.resolve().annotations)
+    this.resolve().toKotlin(annotations ?: sequenceOf())
 
-fun KSType.toKotlin(annotations: Sequence<KSAnnotation> = this.annotations): String {
+fun KSType.toKotlin(annotations: Sequence<KSAnnotation> = sequenceOf()): String {
     (this.declaration as? KSTypeParameter)?.let { return it.name.asString() }
 
     val annotationString = annotations.joinToString(" ") {

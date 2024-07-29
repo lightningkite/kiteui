@@ -1,10 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
+
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.navigation.ScreenStack
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
@@ -15,44 +18,31 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-@ViewDsl
-actual inline fun ViewWriter.dismissBackgroundActual(crossinline setup: DismissBackground.() -> Unit): Unit =
-    element(NDismissBackground()) {
-        handleTheme(
-            this,
-            foreground = {
-                backgroundColor = it.background.closestColor().darken(0.5f).applyAlpha(alpha = 0.5f).toUiColor()
-            },
-        ) {
-            val d = DismissBackground(this)
-            __dismissBackgroundOtherSetupX(navigator)
-            setup(d)
-            __dismissBackgroundOtherSetup()
-        }
+actual class DismissBackground actual constructor(context: RContext): RView(context) {
+    override val native = NDismissBackground(this)
 
+    actual fun onClick(action: suspend () -> Unit): Unit {
+        native.onClick = action
     }
 
-fun NDismissBackground.__dismissBackgroundOtherSetupX(navigator: ScreenStack) {
-    DismissBackground(this).onClick {
-        navigator.clear()
+    override fun postSetup() {
+        super.postSetup()
+        children.forEach { it.native.userInteractionEnabled = true }
     }
-}
 
-fun NDismissBackground.__dismissBackgroundOtherSetup() {
-    listNViews().forEach {
-        it.userInteractionEnabled = true
+    init {
+        onClick { dialogScreenNavigator.clear() }
     }
-}
 
-@OptIn(ExperimentalForeignApi::class)
-actual fun DismissBackground.onClick(action: suspend () -> Unit): Unit {
-    native.onClick = action
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        native.backgroundColor = theme.background.closestColor().copy(alpha = 0.5f).toUiColor()
+    }
 }
 
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 @OptIn(ExperimentalForeignApi::class)
-actual class NDismissBackground : UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol,
+actual class NDismissBackground(val calculationContext: CalculationContext) : UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0

@@ -2,42 +2,51 @@ package com.lightningkite.kiteui.views.direct
 
 import android.R
 import android.content.res.ColorStateList
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.CompoundButton
+import android.widget.CompoundButton.OnCheckedChangeListener
+import android.widget.ProgressBar
 import androidx.core.widget.CompoundButtonCompat
+import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.ImmediateWritable
+import com.lightningkite.kiteui.reactive.ReadableState
 import android.widget.CheckBox as AndroidCheckBox
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NCheckbox = AndroidCheckBox
 
-actual var Checkbox.enabled: Boolean
-    get() {
-        return native.androidCalculationContext.enabledWhenNotLoading
-    }
-    set(value) {
-        native.androidCalculationContext.enabledWhenNotLoading = value
-    }
-actual val Checkbox.checked: Writable<Boolean>
-    get() {
-        return native.checked
-    }
-
-@ViewDsl
-actual inline fun ViewWriter.checkboxActual(crossinline setup: Checkbox.() -> Unit) {
-    return viewElement(factory = ::AndroidCheckBox, wrapper = ::Checkbox) {
-        val theme = currentTheme
-        transitionNextView = ViewWriter.TransitionNextView.No
-        reactiveScope {
-            val it = theme()
-            CompoundButtonCompat.setButtonTintList(
-                native, ColorStateList(
-                    arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
-                        it.let { it.iconOverride ?: it.foreground }.closestColor().copy(alpha = 0.75f).colorInt(),
-                        it.let { it.iconOverride ?: it.foreground }.colorInt()
-                    )
+actual class Checkbox actual constructor(context: RContext): RView(context) {
+    override val native = AndroidCheckBox(context.activity)
+    override fun applyForeground(theme: Theme) {
+        CompoundButtonCompat.setButtonTintList(
+            native, ColorStateList(
+                arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
+                    theme.let { it.iconOverride ?: it.foreground }.closestColor().copy(alpha = 0.75f).colorInt(),
+                    theme.let { it.iconOverride ?: it.foreground }.colorInt()
                 )
             )
+        )
+    }
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
         }
-        setup(this)
+
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
+
+    actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        // Never apply a background
     }
 }

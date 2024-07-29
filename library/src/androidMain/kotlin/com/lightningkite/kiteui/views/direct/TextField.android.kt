@@ -1,29 +1,122 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.graphics.Typeface
+import android.text.Editable
 import android.text.InputType
+import android.text.TextUtils
+import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.graphics.TypefaceCompat
+import android.widget.TextView as AndroidTextView
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ImmediateWritable
+import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.views.ViewAction
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.launch
+import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NTextField = EditText
-
-actual val TextField.content: Writable<String>
-    get() {
-        return this@content.native.content
+actual class TextField actual constructor(context: RContext): RView(context) {
+    override val native = EditText(context.activity)
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        native.setTextColor(theme.foreground.colorInt())
+        native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
+        native.setTypeface(
+            TypefaceCompat.create(
+                native.context,
+                theme.font.font,
+                theme.font.weight,
+                theme.font.italic
+            )
+        )
+        native.isAllCaps = theme.font.allCaps
+        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
+    actual val content: ImmediateWritable<String> = native.contentProperty()
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
+        }
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        return t
+    }
+
+    actual var keyboardHints: KeyboardHints
+        get() {
+            return native.keyboardHints
+        }
+        set(value) {
+            native.keyboardHints = value
+        }
+    actual var action: Action? = null
+        set(value) {
+            field = value
+            native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+            native.setOnEditorActionListener { v, actionId, event ->
+                launch {
+                    value?.onSelect?.invoke()
+                }
+                value != null
+            }
+        }
+    actual var hint: String
+        get() {
+            return native.hint.toString()
+        }
+        set(value) {
+            native.hint = value
+        }
+    actual var align: Align
+        get() {
+            return when (native.gravity) {
+                Gravity.START -> Align.Start
+                Gravity.END -> Align.End
+                Gravity.CENTER -> Align.Center
+                Gravity.CENTER_VERTICAL -> Align.Start
+                Gravity.CENTER_HORIZONTAL -> Align.Center
+                else -> Align.Start
+            }
+        }
+        set(value) {
+            when (value) {
+                Align.Start -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+                Align.End -> native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
+                Align.Center -> native.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                Align.Stretch -> {
+                    native.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+                    native.updateLayoutParams<ViewGroup.LayoutParams> {
+                        this.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    }
+                }
+            }
+        }
+}
+
+
+
+
+
+
+abstract class EquatableByRef(val key: String, val ref: Any) {
+    override fun hashCode(): Int = key.hashCode() + ref.hashCode()
+    override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
+}
 var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
@@ -92,6 +185,8 @@ var EditText.keyboardHints: KeyboardHints
             if (value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword))
                 it or InputType.TYPE_TEXT_VARIATION_PASSWORD
             else it
+        }.let {
+            it or (this.inputType and (InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))
         }
         n.inputType = inputType
         when (value.autocomplete) {
@@ -101,77 +196,3 @@ var EditText.keyboardHints: KeyboardHints
             null -> null
         }?.let { n.setAutofillHints(it) }
     }
-actual var TextField.keyboardHints: KeyboardHints
-    get() {
-        return native.keyboardHints
-    }
-    set(value) {
-        native.keyboardHints = value
-    }
-actual var TextField.action: Action?
-    get() {
-        return ViewAction[native]
-    }
-    set(value) {
-        ViewAction[native] = value
-        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-        native.setOnEditorActionListener { v, actionId, event ->
-            launch {
-                value?.onSelect?.invoke()
-            }
-            value != null
-        }
-    }
-actual var TextField.hint: String
-    get() {
-        return this@hint.native.hint.toString()
-    }
-    set(value) {
-        this@hint.native.hint = value
-    }
-actual var TextField.align: Align
-    get() {
-        return when (native.gravity) {
-            Gravity.START -> Align.Start
-            Gravity.END -> Align.End
-            Gravity.CENTER -> Align.Center
-            Gravity.CENTER_VERTICAL -> Align.Start
-            Gravity.CENTER_HORIZONTAL -> Align.Center
-            else -> Align.Start
-        }
-    }
-    set(value) {
-        when (value) {
-            Align.Start -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-            Align.End -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_END
-            Align.Center -> native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_CENTER
-            Align.Stretch -> {
-                native.textAlignment = android.widget.TextView.TEXT_ALIGNMENT_TEXT_START
-                native.updateLayoutParams<ViewGroup.LayoutParams> {
-                    this.width = ViewGroup.LayoutParams.MATCH_PARENT
-                }
-            }
-        }
-    }
-actual var TextField.textSize: Dimension
-    get() {
-        return Dimension(native.textSize)
-    }
-    set(value) {
-        native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
-    }
-
-actual inline var TextField.enabled: Boolean
-    get() = native.isEnabled
-    set(value) {
-        native.isEnabled = value
-    }
-
-@ViewDsl
-actual inline fun ViewWriter.textFieldActual(crossinline setup: TextField.() -> Unit) {
-    return viewElement(factory = ::EditText, wrapper = ::TextField) {
-        handleTheme<TextView>(native, foreground = applyTextColorFromTheme, viewLoads = true) {
-            setup(this)
-        }
-    }
-}

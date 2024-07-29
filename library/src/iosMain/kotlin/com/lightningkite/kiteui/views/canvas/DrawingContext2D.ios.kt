@@ -182,10 +182,10 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
 
     override fun rect(x: Double, y: Double, w: Double, h: Double) = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 
-    var textAlign: TextAlign = TextAlign.start
-    var font: UIFont = UIFont.systemFontOfSize(12.0)
-    var fill: Paint = Color.black
-    var stroke: Paint = Color.black
+    internal var textAlign: TextAlign = TextAlign.start
+    internal var font: UIFont = UIFont.systemFontOfSize(12.0)
+    internal var fill: Paint = Color.black
+    internal var stroke: Paint = Color.black
 }
 
 @OptIn(ExperimentalForeignApi::class)

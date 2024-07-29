@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
@@ -12,6 +13,26 @@ import kotlin.math.min
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
+
+actual class IconView actual constructor(context: RContext): RView(context) {
+    override val native = NIconView()
+    actual var source: Icon?
+        get() = native.icon
+        set(value) {
+            native.icon = value
+        }
+    actual var description: String?
+        get() {
+            return native.accessibilityLabel.toString()
+        }
+        set(value) {
+            native.accessibilityLabel = value
+        }
+
+    override fun applyForeground(theme: Theme) {
+        native.iconPaint = theme.icon
+    }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 @Suppress("ACTUAL_WITHOUT_EXPECT")
@@ -80,27 +101,3 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? = null
     override fun pointInside(point: CValue<CGPoint>, withEvent: UIEvent?): Boolean = false
 }
-
-@ViewDsl
-actual inline fun ViewWriter.iconActual(crossinline setup: IconView.() -> Unit): Unit = element(NIconView()) {
-    handleTheme(
-        this, viewDraws = true, viewLoads = true,
-        foreground = { theme ->
-            this.iconPaint = theme.icon
-        },
-    ) {
-        this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
-        setup(IconView(this))
-    }
-}
-
-actual inline var IconView.source: Icon?
-    get() = native.icon
-    set(value) {
-        native.icon = value
-    }
-actual inline var IconView.description: String?
-    get() = native.accessibilityLabel
-    set(value) {
-        native.accessibilityLabel = value
-    }

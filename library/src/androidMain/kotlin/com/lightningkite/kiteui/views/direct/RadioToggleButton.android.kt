@@ -3,39 +3,41 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
-import androidx.appcompat.widget.AppCompatToggleButton
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.androidCalculationContext
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NRadioToggleButton(context: Context): SlightlyModifiedFrameLayout(context), View.OnClickListener {
-    val checked = Property(false)
-    init { setOnClickListener(this) }
-
-    override fun onClick(v: View?) {
-        if(!checked.value) checked.value = true
+actual class RadioToggleButton actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayout(context.activity).apply {
+        isClickable = true
+        setOnClickListener { checkedProp.value = true }
     }
-}
+    private val checkedProp = Property(false)
+    actual val checked: ImmediateWritable<Boolean> get() = checkedProp
 
-actual var RadioToggleButton.enabled: Boolean
-    get() {
-        return native.androidCalculationContext.enabledWhenNotLoading
+    init {
+        checked.addListener { refreshTheming() }
     }
-    set(value) {
-        native.androidCalculationContext.enabledWhenNotLoading = value
-    }
-actual val RadioToggleButton.checked: Writable<Boolean>
-    get() = native.checked
 
-@ViewDsl
-actual inline fun ViewWriter.radioToggleButtonActual(crossinline setup: RadioToggleButton.() -> Unit) {
-    return viewElement(factory = ::NRadioToggleButton, wrapper = ::RadioToggleButton) {
-        handleThemeControl(native, checked = { checked.await() }){
-            setup(this)
+    actual var enabled: Boolean
+        get() = native.isEnabled
+        set(value) {
+            native.isEnabled = value
+            refreshTheming()
         }
+
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(checkedProp.value) t = t[SelectedSemantic]
+        else t = t[UnselectedSemantic]
+        if(!enabled) t = t[DisabledSemantic]
+        return t
     }
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

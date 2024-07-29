@@ -46,6 +46,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen { LeakCheckerScreen }
                 linkScreen { ExperimentScreen }
                 linkScreen { AudioScreen }
                 linkScreen { HorizontalRecyclerViewScreen }
@@ -53,7 +54,6 @@ object RootScreen : Screen {
                 linkScreen { PlatformSpecificScreen }
                 linkScreen { VideoElementScreen }
                 linkScreen { ViewPagerElementScreen }
-                linkScreen { TwoPaneTestScreen }
                 linkScreen { ThemesScreen }
                 linkScreen { ControlPerformanceTesting }
                 linkScreen { ControlsScreen }
@@ -70,11 +70,23 @@ object RootScreen : Screen {
                 linkScreen { ReactivityScreen }
                 linkScreen { DialogSamplesScreen }
                 linkScreen { ExternalServicesScreen }
-                linkScreen { ImageCropScreen }
                 linkScreen { FullExampleScreen() }
                 linkScreen { RecyclerViewScreen }
                 linkScreen { PerformanceTestScreen }
-                linkScreen { ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" } }
+                run {
+                    val screen = { ArgumentsExampleScreen("test-id").also { it.toAdd.value = "Preset" } }
+                    link {
+                        to = screen
+                        row {
+                            text {
+                                ::content{ screen().title.await() }
+//                            content  = screen.toString()
+                            } in weight(1f)
+                            icon(Icon.chevronRight, "Open")
+                        }
+                        transitionId = "test-id"
+                    } in card
+                }
 
                 button {
                     text { content = "GC" }

@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.SizeConstraints
@@ -10,8 +10,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
 @Routable("load-animation-test")
 object LoadAnimationTestScreen : Screen {

@@ -86,9 +86,9 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             player.delegate = dg
         }
         val native = player
-        override var isPlaying: Boolean
-            get() = native.rate > 0.0
+        override var isPlaying: Boolean = false
             set(value) {
+                field = value
                 if(value) {
 //                    println("keepAlive.add($playableAudio)")
                     keepAlive.add(playableAudio)

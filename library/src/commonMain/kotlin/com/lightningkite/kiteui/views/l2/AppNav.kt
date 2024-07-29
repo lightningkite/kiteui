@@ -1,16 +1,16 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PlatformNavigator
 import com.lightningkite.kiteui.navigation.Routes
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.js.JsName
 
 data class UserInfo(
     val name: String,
@@ -43,14 +43,14 @@ interface AppNav {
 }
 
 
-val ViewWriter.appNavFactory by viewWriterAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Property(
         ViewWriter::appNavBottomTabs
     )
 )
 
-fun ViewWriter.appNav(routes: Routes, setup: AppNav.() -> Unit) {
-    appBase(routes) {
+fun ViewWriter.appNav(main: ScreenNavigator, dialog: ScreenNavigator? = null, setup: AppNav.() -> Unit) {
+    appBase(main, dialog) {
         swapView {
             swapping(
                 current = { appNavFactory.await() },
@@ -63,7 +63,7 @@ fun ViewWriter.appNav(routes: Routes, setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
         bar - row {
             setup(appNav)
             toggleButton {
@@ -72,11 +72,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             }
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -86,8 +86,8 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navSpacing { appNav.existsProperty.await() } - stack {
-            navigatorView(navigator)
+        expanding - navSpacing  - stack {
+            navigatorView(screenNavigator)
             atStart - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - stack {
                 scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                     spacing = 0.px
@@ -101,16 +101,16 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
         bar - row {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -123,23 +123,23 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             centered - navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navigatorView(navigator)
+        expanding - navigatorView(screenNavigator)
     }
 }
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
         bar - row {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -149,7 +149,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navigatorView(navigator)
+        expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
             ::exists { appNav.existsProperty.await() && !SoftInputOpen.await() }
@@ -159,17 +159,17 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing { appNav.existsProperty.await() } - col {
+    padded - navSpacing  - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { navigator.canGoBack.await() }
-                onClick { navigator.goBack() }
+                ::visible { screenNavigator.canGoBack.await() }
+                onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { navigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -181,22 +181,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 
             ::exists { appNav.existsProperty.await() }
         }
-        navSpacing { appNav.existsProperty.await() } - row {
-            navSpacing { appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
+        navSpacing  - row {
+            navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
-            expanding - navigatorView(navigator)
+            expanding - navigatorView(screenNavigator)
         } in weight(1f)
     }
-}
-
-@ViewModifierDsl3
-fun ViewWriter.navSpacing(showNav: suspend () -> Boolean): ViewWrapper {
-    beforeNextElementSetup {
-        val theme = currentTheme
-        calculationContext.reactiveScope {
-            spacing = if (showNav()) theme().navSpacing else 0.px
-        }
-    }
-    return ViewWrapper
 }

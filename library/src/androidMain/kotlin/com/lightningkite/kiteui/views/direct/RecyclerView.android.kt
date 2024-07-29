@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.views.ViewWriter
 import android.content.Context
 import android.graphics.Rect
 import android.view.View
@@ -11,166 +12,183 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.math.roundToInt
 import androidx.recyclerview.widget.RecyclerView as AndroidRecyclerView
 
+actual class RecyclerView actual constructor(context: RContext) : RView(context) {
+    private val firstVisibleIndexProp = Property(0)
+    private val lastVisibleIndexProp = Property(0)
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NRecyclerView(context: Context) : AndroidRecyclerView(context), HasSpacingMultiplier {
-    override val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
-    lateinit var viewWriter: ViewWriter
+    actual val firstVisibleIndex: Readable<Int> get() = firstVisibleIndexProp
+    actual val lastVisibleIndex: Readable<Int> get() = lastVisibleIndexProp
 
-    val firstVisibleIndex = Property(0)
-    val lastVisibleIndex = Property(0)
-    init {
-        addOnScrollListener(object: OnScrollListener() {
+    actual var columns: Int = 1
+        set(value) {
+            field = value
+            (native.layoutManager as? GridLayoutManager)?.spanCount = value
+        }
+    actual var vertical: Boolean = true
+        set(value) {
+            field = value
+            native.layoutManager = GridLayoutManager(context.activity, columns, if(value) GridLayoutManager.VERTICAL else GridLayoutManager.HORIZONTAL, false)
+        }
+
+    override val native = AndroidRecyclerView(context.activity).apply {
+        layoutManager = GridLayoutManager(context.activity, 1, GridLayoutManager.VERTICAL, false)
+        addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 ((recyclerView.layoutManager as? LinearLayoutManager)?.findFirstCompletelyVisibleItemPosition()
                     ?: (recyclerView.layoutManager as? GridLayoutManager)?.findFirstCompletelyVisibleItemPosition())?.let {
-                    if(firstVisibleIndex.value != it) firstVisibleIndex.value = it
+                    if (firstVisibleIndexProp.value != it) firstVisibleIndexProp.value = it
                 }
                 ((recyclerView.layoutManager as? LinearLayoutManager)?.findLastCompletelyVisibleItemPosition()
                     ?: (recyclerView.layoutManager as? GridLayoutManager)?.findLastCompletelyVisibleItemPosition())?.let {
-                    if(lastVisibleIndex.value != it) lastVisibleIndex.value = it
+                    if (lastVisibleIndexProp.value != it) lastVisibleIndexProp.value = it
                 }
             }
         })
     }
-}
 
-actual fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> Unit): Unit {
-    native.adapter = object : ObservableRVA<T>(
-        viewWriter = native.viewWriter,
-        calculationContext = native.calculationContext,
-        layoutManager = native.layoutManager,
-        placeholderCount = 5,
-        determineType = { 0 },
-        makeView = { _, obs -> render(obs) }) {
-        init {
-            native.calculationContext.reactiveScope(onLoad = {
-                loading = true
-                notifyDataSetChanged()
-            }) {
-                val new = items.await().toList()
-                loading = false
-                lastPublished = new
-                notifyDataSetChanged()
+    val spacingDecor = SpacingItemDecoration(0).apply {
+        native.addItemDecoration(this)
+    }
+    override fun applyForeground(theme: Theme) {
+        super.applyForeground(theme)
+        spacingDecor.spacing = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.requestLayout()
+    }
+    override fun spacingSet(value: Dimension?) {
+        super.spacingSet(value)
+        spacingDecor.spacing = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.requestLayout()
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalClearChildren() {
+         // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    actual fun <T> children(
+        items: Readable<List<T>>,
+        render: ViewWriter.(value: Readable<T>) -> Unit
+    ): Unit {
+        native.adapter = object : ObservableRVA<T>(
+            recyclerView = this,
+            calculationContext = this,
+            layoutManager = native.layoutManager,
+            placeholderCount = 5,
+            determineType = { 0 },
+            makeView = { _, obs -> render(obs) }) {
+            init {
+                reactiveScope(onLoad = {
+//                    println("Data set to loading")
+                    loading = true
+                    notifyDataSetChanged()
+//                    println("Data set to loading complete")
+                }) {
+                    val new = items.await().toList()
+//                    println("Data set to $new")
+                    loading = false
+                    lastPublished = new
+                    notifyDataSetChanged()
+//                    println("Data set to new complete")
+                }
             }
         }
     }
-}
 
 
-class SpacingItemDecoration(var spacing: Int) : AndroidRecyclerView.ItemDecoration() {
-    override fun getItemOffsets(
-        outRect: Rect,
-        view: View,
-        parent: androidx.recyclerview.widget.RecyclerView,
-        state: androidx.recyclerview.widget.RecyclerView.State
-    ) {
-        outRect.left = spacing
-        outRect.top = spacing
-        outRect.bottom = spacing
-        outRect.right = spacing
+    class SpacingItemDecoration(var spacing: Int) : AndroidRecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: androidx.recyclerview.widget.RecyclerView,
+            state: androidx.recyclerview.widget.RecyclerView.State
+        ) {
+            val horizontal = (parent.layoutManager as? GridLayoutManager)?.orientation == GridLayoutManager.HORIZONTAL ||
+                    (parent.layoutManager as? LinearLayoutManager)?.orientation == LinearLayoutManager.HORIZONTAL
+            val first = parent.getChildAdapterPosition(view) == 0
+            val last = parent.getChildAdapterPosition(view) == (parent.adapter?.itemCount ?: Int.MAX_VALUE)
+            outRect.left = if (!first && horizontal) spacing else 0
+            outRect.top = if (!first && !horizontal) spacing else 0
+        }
     }
-}
 
-@ViewDsl
-actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.() -> Unit) {
-    viewElement(factory = ::NRecyclerView, wrapper = ::RecyclerView) {
-        native.viewWriter = newViews()
-        native.layoutManager = GridLayoutManager(context, 1, LinearLayoutManager.VERTICAL, false)
-        val spacing = SpacingItemDecoration(0)
-        native.addItemDecoration(spacing)
-        handleTheme(native, viewDraws = false) {
-            val theme = currentTheme
-            reactiveScope {
-                spacing.spacing = native.spacingOverride?.await()?.value?.toInt() ?: theme().spacing.value.toInt()
+
+    internal open class ObservableRVA<T>(
+        val recyclerView: RView,
+        val calculationContext: CalculationContext,
+        val layoutManager: LayoutManager?,
+        val placeholderCount: Int = 5,
+        val determineType: (T) -> Int,
+        val makeView: ViewWriter.(Int, Readable<T>) -> Unit
+    ) : AndroidRecyclerView.Adapter<AndroidRecyclerView.ViewHolder>() {
+        interface ParentView {
+        }
+
+        var lastPublished: List<T> = listOf()
+        var loading: Boolean = false
+
+        override fun getItemViewType(position: Int): Int {
+            return if (loading) 0
+            else determineType(lastPublished[position])
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AndroidRecyclerView.ViewHolder {
+            val event = LateInitProperty<T>()
+            var newView: RView? = null
+            val w = object: ViewWriter() {
+                override val context: RContext
+                    get() = recyclerView.context
+
+                override fun addChild(view: RView) {
+                    recyclerView.addChild(view)
+                    newView = view
+                }
             }
-            setup()
-        }
-    }
-}
-
-@ViewDsl
-actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: RecyclerView.() -> Unit) {
-    viewElement(factory = ::NRecyclerView, wrapper = ::RecyclerView) {
-        native.viewWriter = newViews()
-        native.layoutManager = GridLayoutManager(context, 1, LinearLayoutManager.HORIZONTAL, false)
-        val spacing = SpacingItemDecoration(0)
-        native.addItemDecoration(spacing)
-        handleTheme(native, viewDraws = false) {
-            val theme = currentTheme
-            reactiveScope {
-                spacing.spacing = native.spacingOverride?.await()?.value?.toInt() ?: theme().spacing.value.toInt()
+            recyclerView.withoutAnimation {
+                w.makeView(viewType, event)
             }
-            setup()
+            val subview = newView?.native ?: throw IllegalArgumentException("makeView created no views in a RecyclerView!")
+            subview.layoutParams = AndroidRecyclerView.LayoutParams(
+                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
+                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.VERTICAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
+            )
+            subview.tag = event
+//            calculationContext.onRemove { newView?.shutdown() }
+            return object : AndroidRecyclerView.ViewHolder(subview) {}
+        }
+
+        override fun getItemCount(): Int = if (loading) placeholderCount else lastPublished.size
+
+        @Suppress("UNCHECKED_CAST")
+        override fun onBindViewHolder(holder: AndroidRecyclerView.ViewHolder, position: Int) {
+            val prop = (holder.itemView.tag as? LateInitProperty<T> ?: run {
+                println("Failed to find property to update")
+                null
+            })
+            holder.itemView.withoutAnimation {
+                if (loading)
+                    prop?.unset()
+                else
+                    prop?.value = (lastPublished[position])
+            }
         }
     }
-}
 
-actual var RecyclerView.columns: Int
-    get() = (native.layoutManager as? GridLayoutManager)?.spanCount ?: 0
-    set(value) {
-        (native.layoutManager as? GridLayoutManager)?.spanCount = value
-    }
-
-
-internal open class ObservableRVA<T>(
-    val viewWriter: ViewWriter,
-    val calculationContext: CalculationContext,
-    val layoutManager: LayoutManager?,
-    val placeholderCount: Int = 5,
-    val determineType: (T) -> Int,
-    val makeView: ViewWriter.(Int, Readable<T>) -> Unit
-) : AndroidRecyclerView.Adapter<AndroidRecyclerView.ViewHolder>() {
-    interface ParentView {
-    }
-
-    var lastPublished: List<T> = listOf()
-    var loading: Boolean = false
-
-    override fun getItemViewType(position: Int): Int {
-        return if(loading) 0
-        else determineType(lastPublished[position])
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AndroidRecyclerView.ViewHolder {
-        val event = LateInitProperty<T>()
-        parent.withoutAnimation {
-            viewWriter.makeView(viewType, event)
-        }
-        val subview = viewWriter.rootCreated!!
-        subview.layoutParams = AndroidRecyclerView.LayoutParams(
-            if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
-                AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
-            if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.VERTICAL)
-                AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
-        )
-        subview.tag = event
-        calculationContext.onRemove { subview.shutdown() }
-        return object : AndroidRecyclerView.ViewHolder(subview) {}
-    }
-
-    override fun getItemCount(): Int = if(loading) placeholderCount else lastPublished.size
-
-    @Suppress("UNCHECKED_CAST")
-    override fun onBindViewHolder(holder: AndroidRecyclerView.ViewHolder, position: Int) {
-        val prop = (holder.itemView.tag as? LateInitProperty<T> ?: run {
-            println("Failed to find property to update")
-            null
-        })
-        holder.itemView.withoutAnimation {
-            if(loading)
-                prop?.unset()
-            else
-                prop?.value = (lastPublished[position])
-        }
-    }
-}
-
-actual fun RecyclerView.scrollToIndex(
+actual fun scrollToIndex(
     index: Int,
     align: Align?,
     animate: Boolean
@@ -200,16 +218,20 @@ actual fun RecyclerView.scrollToIndex(
 }
 
 
-private class AlignSmoothScroller(context: Context, val align: Align?) : LinearSmoothScroller(context) {
-    override fun calculateDtToFit(viewStart: Int, viewEnd: Int, boxStart: Int, boxEnd: Int, snapPreference: Int): Int {
-        return when (align) {
-            Align.Start -> boxStart - viewStart
-            Align.Center -> boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
-            Align.End -> boxStart + (boxEnd - boxStart) - (viewStart + (viewEnd - viewStart))
-            else -> boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
+    private class AlignSmoothScroller(context: Context, val align: Align?) : LinearSmoothScroller(context) {
+        override fun calculateDtToFit(
+            viewStart: Int,
+            viewEnd: Int,
+            boxStart: Int,
+            boxEnd: Int,
+            snapPreference: Int
+        ): Int {
+            return when (align) {
+                Align.Start -> boxStart - viewStart
+                Align.Center -> boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
+                Align.End -> boxStart + (boxEnd - boxStart) - (viewStart + (viewEnd - viewStart))
+                else -> boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
+            }
         }
     }
 }
-
-actual val RecyclerView.firstVisibleIndex: Readable<Int> get() = native.firstVisibleIndex
-actual val RecyclerView.lastVisibleIndex: Readable<Int> get() = native.lastVisibleIndex

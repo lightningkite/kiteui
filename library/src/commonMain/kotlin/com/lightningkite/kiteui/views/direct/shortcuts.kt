@@ -1,13 +1,80 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.contains
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.subtext(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += SubtextSemantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h1(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H1Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h2(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H2Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h3(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H3Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h4(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H4Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h5(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H5Semantic
+        setup(this)
+    }
+}
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.h6(crossinline setup: TextView.()->Unit = {}): TextView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return text {
+        themeChoice += HeaderSemantic + H6Semantic
+        setup(this)
+    }
+}
 @ViewDsl
 fun ViewWriter.h1(text: String) = h1 { content = text }
 @ViewDsl
@@ -33,7 +100,7 @@ fun ViewWriter.confirmDanger(
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    navigator.dialog.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {
@@ -44,14 +111,14 @@ fun ViewWriter.confirmDanger(
                         button {
                             h6("Cancel")
                             onClick {
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         }
                         button {
                             h6(actionName)
                             onClick {
                                 action()
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         } in danger
                     }
@@ -64,7 +131,7 @@ fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    navigator.dialog.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Screen {
         override val title: Readable<String> = Constant(title)
         override fun ViewWriter.render() {
             dismissBackground {
@@ -76,7 +143,7 @@ fun ViewWriter.alert(
                         button {
                             h6("OK")
                             onClick {
-                                navigator.dismiss()
+                                screenNavigator.dismiss()
                             }
                         } in danger
                     }

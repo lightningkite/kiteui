@@ -1,12 +1,10 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.random.Random
 
 @Routable("docs/text")
 object TextElementScreen : DocScreen {
@@ -57,7 +55,7 @@ object TextElementScreen : DocScreen {
                 """.trimIndent()
             ) {
                 col {
-                    tweakTheme { it.copy(body = it.body.copy(bold = true)) } - text("Bold Text")
+                    tweakTheme { it.copy(body = it.font.copy(bold = true)) } - text("Bold Text")
                     tweakTheme { it.copy(foreground = Color.red) } - text("Red Text")
                 }
             }
@@ -89,7 +87,7 @@ object TextElementScreen : DocScreen {
             ) {
                 col {
                     for(weight in 900 downTo 100 step 100) {
-                        tweakTheme { it.copy(body = it.body.copy(weight = weight)) } - text("Weight $weight")
+                        tweakTheme { it.copy(font = it.font.copy(weight = weight)) } - text("Weight $weight")
                     }
                 }
             }

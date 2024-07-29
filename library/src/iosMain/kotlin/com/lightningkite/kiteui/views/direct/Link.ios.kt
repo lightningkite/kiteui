@@ -1,44 +1,59 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.navigation.PlatformNavigator
+import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.DownSemantic
+import com.lightningkite.kiteui.models.FocusSemantic
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.ScreenStack
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.navigator
+import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.mainScreenNavigator
+import com.lightningkite.kiteui.views.*
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NLink = NativeLink
 
-@ViewDsl
-actual inline fun ViewWriter.linkActual(crossinline setup: Link.() -> Unit): Unit = element(NativeLink()) {
-    handleThemeControl(this) {
-        setup(Link(this))
-        onNavigator = PlatformNavigator
+actual class Link actual constructor(context: RContext): RView(context) {
+    override val native = FrameLayoutButton(this)
+    init {
+        native.onClick = {
+            to().let {
+                if(resetsStack) {
+                    onNavigator.reset(it)
+                } else {
+                    onNavigator.navigate(it)
+                }
+            }
+            onNavigate()
+        }
+    }
+
+    actual var to: ()->Screen = { Screen.Empty }
+    actual var onNavigator: ScreenNavigator = mainScreenNavigator
+    actual var newTab: Boolean = false
+    actual var resetsStack: Boolean = false
+
+    private var onNavigate: suspend () -> Unit = {}
+    actual fun onNavigate(action: suspend () -> Unit): Unit {
+        onNavigate = action
+    }
+
+    var enabled: Boolean
+        get() = native.enabled
+        set(value) {
+            native.enabled = value
+        }
+
+    init {
+        onRemove(native.observe("highlighted", { refreshTheming() }))
+        onRemove(native.observe("selected", { refreshTheming() }))
+        onRemove(native.observe("enabled", { refreshTheming() }))
+    }
+
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return t
     }
 }
 
-actual var Link.to: ()->Screen
-    get() = native.toScreen ?: { Screen.Empty }
-    set(value) {
-        native.toScreen = value
-    }
-actual inline var Link.navigator: ScreenStack
-    get() = native.onNavigator ?: PlatformNavigator
-    set(value) {
-        native.onNavigator = value
-    }
-actual inline var Link.newTab: Boolean
-    get() = native.newTab
-    set(value) {
-        native.newTab = value
-    }
-actual var Link.resetsStack: Boolean
-    get() = native.resetsStack
-    set(value) {
-        native.resetsStack = value
-    }
-
-actual fun Link.onNavigate(action: suspend () -> Unit): Unit {
-    native.onNavigate = action
-}

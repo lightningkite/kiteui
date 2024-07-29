@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
@@ -21,6 +20,7 @@ data class FontAndStyle(
     val allCaps: Boolean = false,
     val lineSpacingMultiplier: Double = 1.4,
     val additionalLetterSpacing: Dimension = 0.px,
+    val size: Dimension = 1.rem,
 ) {
     constructor(
         font: Font = systemDefaultFont,
@@ -421,7 +421,7 @@ expect class ImageResource : ImageSource
 
 expect sealed class VideoSource()
 data class VideoRemote(val url: String) : VideoSource()
-data class VideoRaw(val data: ByteArray) : VideoSource()
+data class VideoRaw(val data: Blob) : VideoSource()
 data class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 
@@ -597,5 +597,3 @@ inline operator fun Dimension.div(other: Int): Dimension = this / other.toFloat(
 inline operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
 expect inline fun Dimension.coerceAtMost(other: Dimension): Dimension
 expect inline fun Dimension.coerceAtLeast(other: Dimension): Dimension
-
-data class WidgetOption(val key: String, val display: String)

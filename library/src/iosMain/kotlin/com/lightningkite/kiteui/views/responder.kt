@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.views.direct.ScrollLayout
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -15,29 +16,14 @@ fun UIView.findFirstResponderChild(): UIView? {
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.scrollToMe(animated: Boolean = false) {
-    scrollRectToVisibleClimb(
-        x = this.frame.useContents { origin.x },
-        y = this.frame.useContents { origin.y },
-        width = this.frame.useContents { size.width },
-        height = this.frame.useContents { size.height },
-        animated = animated
-    )
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun UIView.scrollRectToVisibleClimb(x: Double, y: Double, width: Double, height: Double, animated: Boolean) {
-    if(this is UIScrollView) {
-        val mySize = frame.useContents { size.width to size.height }
-        val contentSize = contentSize.useContents { width to height }
-        setContentOffset(CGPointMake(
-            x = (x + (width - mySize.first) / 2).coerceIn(0.0, contentSize.first - mySize.first),
-            y = (y + (height - mySize.second) / 2).coerceIn(0.0, contentSize.second - mySize.second),
-        ), animated = animated)
-    } else superview?.scrollRectToVisibleClimb(
-        x = x + this.frame.useContents { origin.x },
-        y = y + this.frame.useContents { origin.y },
-        width = width + this.frame.useContents { size.width },
-        height = height + this.frame.useContents { size.height },
-        animated = animated
-    )
+    generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
+        // goal: centers equal
+        val pt = it.convertPoint(center, fromView = superview)
+        println("Need to scroll to focus on ${pt.useContents { "$x, $y" }}")
+        println("Scroll bounds size ${it.bounds.useContents { "${origin.x} ${origin.y} ${size.width} ${size.height}" }}")
+        it.setContentOffset(CGPointMake(
+            pt.useContents { x }.minus(it.bounds.useContents { size.width / 2 }).takeIf { _ -> it.horizontal } ?: 0.0,
+            pt.useContents { y }.minus(it.bounds.useContents { size.height / 2 }).takeIf { _ -> !it.horizontal } ?: 0.0,
+        ).also { println("Setting content offset to ${it.useContents { "$x, $y" }}") }, animated = animated)
+    }
 }

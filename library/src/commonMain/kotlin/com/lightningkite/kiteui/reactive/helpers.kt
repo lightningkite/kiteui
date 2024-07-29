@@ -81,6 +81,21 @@ fun Writable<String>.asDouble(): Writable<Double?> =
     shared { this@asDouble.await().filter { it.isDigit() || it == '.' }.toDoubleOrNull() }
         .withWrite { this@asDouble set (it?.commaString() ?: "") }
 
+@JvmName("immediateWritableStringAsDouble")
+fun ImmediateWritable<String>.asDouble(): ImmediateWritable<Double?> = object: ImmediateWritable<Double?> {
+    override suspend fun set(value: Double?) {
+        this@asDouble.set(value?.commaString() ?: "")
+    }
+
+    override var value: Double?
+        get() = this@asDouble.value.filter { it.isDigit() || it == '.' }.toDoubleOrNull()
+        set(value) {
+            this@asDouble.value = (value?.commaString() ?: "")
+        }
+
+    override fun addListener(listener: () -> Unit): () -> Unit = this@asDouble.addListener(listener)
+}
+
 @JvmName("writableIntAsDouble")
 fun Writable<Int?>.asDouble(): Writable<Double?> = shared { this@asDouble.await()?.toDouble() }
     .withWrite { this@asDouble set it?.toInt() }
@@ -125,3 +140,10 @@ fun CalculationContext.use(resourceUse: ResourceUse) {
     val x = resourceUse.start()
     onRemove { x() }
 }
+
+fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
+    object : Writable<T>, Readable<T> by this {
+        override suspend fun set(value: T) {
+            action(this@interceptWrite, value)
+        }
+    }

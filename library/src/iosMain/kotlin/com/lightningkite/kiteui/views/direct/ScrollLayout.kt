@@ -114,7 +114,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
             Align.End -> mySize.secondary - padding - size.secondary
             Align.Center -> (mySize.secondary - size.secondary) / 2
         }
-        val secondarySize = if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary
+        val secondarySize = (if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary.coerceAtMost(mySize.secondary - padding * 2))
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
         val widthSize = if (horizontal) size.primary else secondarySize
         val heightSize = if (horizontal) secondarySize else size.primary

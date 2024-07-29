@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoRemote

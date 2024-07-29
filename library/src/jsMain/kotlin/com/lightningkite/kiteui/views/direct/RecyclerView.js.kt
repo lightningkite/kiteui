@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.clockMillis
-import com.lightningkite.kiteui.dom.HTMLElement
-import com.lightningkite.kiteui.dom.CSSStyleDeclaration
+import com.lightningkite.kiteui.debugger
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
@@ -13,82 +13,191 @@ import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias NRecyclerView = HTMLDivElement
 
-@ViewDsl
-actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit {
-    themedElement<HTMLDivElement>("div", viewDraws = false) {
-        classList.add("recyclerView")
-        val newViews: ViewWriter = newViews()
-        val ctrl = RecyclerController2(
-            root = this,
-            newViews = newViews,
-            vertical = true
-        )
-        this.asDynamic().__ROCK__controller = ctrl
-        setup(RecyclerView(this).also { it.calculationContext.onRemove { ctrl.ready = false } })
-    }
-}
-
-@ViewDsl
-actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit {
-    themedElement<HTMLDivElement>("div", viewDraws = false) {
-        classList.add("recyclerView")
-        val newViews: ViewWriter = newViews()
-        val ctrl = RecyclerController2(
-            root = this,
-            newViews = newViews,
-            vertical = false
-        )
-        this.asDynamic().__ROCK__controller = ctrl
-        setup(RecyclerView(this).also { it.calculationContext.onRemove { ctrl.ready = false } })
-    }
-}
-
-actual var RecyclerView.columns: Int
-    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).columns
-    set(value) {
-        (native.asDynamic().__ROCK__controller as RecyclerController2).columns = value
+actual class RecyclerView actual constructor(context: RContext) : RView(context) {
+    private var controller: RecyclerController2? = null
+    private var onController = ArrayList<(RecyclerController2) -> Unit>()
+    private fun onController(action: (RecyclerController2) -> Unit) {
+        controller?.let(action) ?: onController.add(action)
     }
 
-actual fun <T> RecyclerView.children(
-    items: Readable<List<T>>,
-    render: ViewWriter.(value: Readable<T>) -> Unit
-): Unit {
-    (native.asDynamic().__ROCK__controller as RecyclerController2).let {
-        it.renderer = ItemRenderer<T>(
-            create = { value ->
-                val prop = Property(value)
-                render(it.newViews, prop)
-                it.newViews.rootCreated!!.also {
-                    it.asDynamic().__ROCK_prop__ = prop
+    private val newViews = NewViewWriter(context)
+
+    init {
+        native.tag = "div"
+        native.classes.add("recyclerView")
+        native.onElement {
+            val controller = RecyclerController2(it as HTMLDivElement, vertical)
+            this.controller = controller
+            onController.forEach { it(controller) }
+            onRemove { controller.ready = false }
+            onController.clear()
+        }
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalClearChildren() {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        // Do nothing.  All children are virtual and managed by the native recycler view.
+    }
+
+
+    actual fun <T> children(
+        items: Readable<List<T>>,
+        render: ViewWriter.(value: Readable<T>) -> Unit
+    ): Unit {
+        onController { controller ->
+            controller.renderer = ItemRenderer<T>(
+                create = { value ->
+                    val prop = Property(value)
+                    render(newViews, prop)
+                    val new = newViews.newView!!
+                    addChild(new)
+                    new.asDynamic().__ROCK__prop = prop
+                    new.native.create() as HTMLElement
+                },
+                update = { element, value ->
+                    @Suppress("UNCHECKED_CAST")
+                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value =
+                        value
+                },
+                shutdown = { element ->
+                    val i = children.indexOfFirst { it.native.element === element }
+                    if (i != -1) removeChild(i)
                 }
-            },
-            update = { element, value ->
-                (element.asDynamic().__ROCK_prop__ as Property<T>).value = value
+            )
+            reactiveScope {
+                controller.data = items.await().asIndexed()
             }
-        )
-        reactiveScope {
-            it.data = items.await().asIndexed()
+        }
+    }
+
+    actual var columns: Int = 1
+        set(value) {
+            field = value
+            onController { it.columns = value }
+        }
+
+    actual fun scrollToIndex(
+        index: Int,
+        align: Align?,
+        animate: Boolean
+    ) {
+        onController { it.jump(index, align ?: Align.Center, animate) }
+    }
+
+    private val _firstVisibleIndex = Property(0)
+    actual val firstVisibleIndex: Readable<Int> = _firstVisibleIndex
+
+    init {
+        onController { it.firstVisible.addListener { _firstVisibleIndex.value = it.firstVisible.value } }
+    }
+
+    private val _lastVisibleIndex = Property(0)
+    actual val lastVisibleIndex: Readable<Int> = _lastVisibleIndex
+
+    init {
+        onController { it.lastVisible.addListener { _lastVisibleIndex.value = it.lastVisible.value } }
+    }
+
+    actual var vertical: Boolean = true
+        set(value) {
+            field = value
+            onController { controller -> controller.vertical = value }
+        }
+
+    init {
+        onRemove {
+            controller?.shutdown()
         }
     }
 }
 
-actual fun RecyclerView.scrollToIndex(
-    index: Int,
-    align: Align?,
-    animate: Boolean
-) {
-    (native.asDynamic().__ROCK__controller as RecyclerController2).jump(index, align ?: Align.Center, animate)
-}
 
-actual val RecyclerView.firstVisibleIndex: Readable<Int>
-    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).firstVisible
-
-actual val RecyclerView.lastVisibleIndex: Readable<Int>
-    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).lastVisible
+// TODO
+//@Suppress("ACTUAL_WITHOUT_EXPECT")
+//actual typealias NRecyclerView = HTMLDivElement
+//
+//@ViewDsl
+//actual inline fun ViewWriter.recyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit {
+//    themedElement<HTMLDivElement>("div", viewDraws = false) {
+//        classList.add("recyclerView")
+//        val newViews: ViewWriter = newViews()
+//        this.asDynamic().__ROCK__controller = RecyclerController2(
+//            root = this,
+//            newViews = newViews,
+//            vertical = true
+//        )
+//        setup(RecyclerView(this))
+//    }
+//}
+//
+//@ViewDsl
+//actual inline fun ViewWriter.horizontalRecyclerViewActual(crossinline setup: RecyclerView.() -> Unit): Unit {
+//    themedElement<HTMLDivElement>("div", viewDraws = false) {
+//        classList.add("recyclerView")
+//        val newViews: ViewWriter = newViews()
+//        this.asDynamic().__ROCK__controller = RecyclerController2(
+//            root = this,
+//            newViews = newViews,
+//            vertical = false
+//        )
+//        setup(RecyclerView(this))
+//    }
+//}
+//
+//actual var RecyclerView.columns: Int
+//    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).columns
+//    set(value) {
+//        (native.asDynamic().__ROCK__controller as RecyclerController2).columns = value
+//    }
+//
+//actual fun <T> RecyclerView.children(
+//    items: Readable<List<T>>,
+//    render: ViewWriter.(value: Readable<T>) -> Unit
+//): Unit {
+//    (native.asDynamic().__ROCK__controller as RecyclerController2).let {
+//        it.renderer = ItemRenderer<T>(
+//            create = { value ->
+//                val prop = Property(value)
+//                render(it.newViews, prop)
+//                it.newViews.rootCreated!!.also {
+//                    it.asDynamic().__ROCK_prop__ = prop
+//                }
+//            },
+//            update = { element, value ->
+//                (element.asDynamic().__ROCK_prop__ as Property<T>).value = value
+//            }
+//        )
+//        reactiveScope {
+//            it.data = items.await().asIndexed()
+//        }
+//    }
+//}
+//
+//actual fun RecyclerView.scrollToIndex(
+//    index: Int,
+//    align: Align?,
+//    animate: Boolean
+//) {
+//    (native.asDynamic().__ROCK__controller as RecyclerController2).jump(index, align ?: Align.Center, animate)
+//}
+//
+//actual val RecyclerView.firstVisibleIndex: Readable<Int>
+//    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).firstVisible
+//
+//actual val RecyclerView.lastVisibleIndex: Readable<Int>
+//    get() = (native.asDynamic().__ROCK__controller as RecyclerController2).lastVisible
+//
 
 interface Indexed<out T> {
     val min: Int
@@ -155,9 +264,9 @@ fun <T> ItemRenderer<T>.columned(count: Int) = ItemRenderer<Indexed<T>>(
             classList.add("recyclerViewGridSub")
             repeat(count) {
                 if (it in data.min..data.max) {
-                    addNView(this@columned.create(data[it]))
+                    appendChild(this@columned.create(data[it]))
                 } else {
-                    addNView((document.createElement("div") as HTMLDivElement).apply {
+                    appendChild((document.createElement("div") as HTMLDivElement).apply {
                         classList.add("placeholder")
                     })
                 }
@@ -179,14 +288,23 @@ fun <T> ItemRenderer<T>.columned(count: Int) = ItemRenderer<Indexed<T>>(
                 child.style.visibility = "hidden"
             }
         }
+    },
+    shutdown = {
+        repeat(count) { index ->
+            (it.children.get(index) as? HTMLElement)?.let(shutdown)
+        }
     }
 )
 
 class RecyclerController2(
     val root: HTMLDivElement,
-    val newViews: ViewWriter,
-    val vertical: Boolean = true,
+    vertical: Boolean = true,
 ) {
+    var vertical: Boolean = vertical
+        set(value) {
+            field = value
+            rendererDirect = rendererDirect
+        }
     val me = Random.nextInt()
     val firstVisible = Property(0)
     val centerVisible = Property(0)
@@ -204,7 +322,7 @@ class RecyclerController2(
                     KeyCodes.left -> {
                         scrollBy(
                             ScrollToOptions(
-                                -(clientWidth.toDouble() - this@RecyclerController2.spacing),
+                                -(clientWidth.toDouble() + this@RecyclerController2.spacing),
                                 behavior = ScrollBehavior.SMOOTH
                             )
                         )
@@ -214,7 +332,7 @@ class RecyclerController2(
                     KeyCodes.right -> {
                         scrollBy(
                             ScrollToOptions(
-                                (clientWidth.toDouble() - this@RecyclerController2.spacing),
+                                (clientWidth.toDouble() + this@RecyclerController2.spacing),
                                 behavior = ScrollBehavior.SMOOTH
                             )
                         )
@@ -250,7 +368,7 @@ class RecyclerController2(
         }
         style.maxWidth = "unset"
         style.maxHeight = "unset"
-    }.also { fakeScroll.addNView(it) }
+    }.also { fakeScroll.appendChild(it) }
     val capView = (document.createElement("div") as HTMLDivElement).apply {
         style.size = "1px"
         style.start = "${reservedScrollingSpace}px"
@@ -268,29 +386,21 @@ class RecyclerController2(
         }
 
     init {
-        root.addNView(contentHolder)
-        root.addNView(fakeScroll)
-        contentHolder.addNView(capView)
-        ResizeObserver { entries, obs ->
-            if (!ready) return@ResizeObserver
-            val newSize = root.clientSize
-            if (viewportSize != newSize && newSize != 0) {
-                viewportSize = newSize
-                nonEmergencyEdges()
-            }
-        }.observe(root)
+        root.appendChild(contentHolder)
+        root.appendChild(fakeScroll)
+        contentHolder.appendChild(capView)
     }
 
-    private var NView.scrollStart
+    private var HTMLElement.scrollStart
         get() = if (vertical) scrollTop else scrollLeft
         set(value) {
             if (vertical) scrollTop = value else scrollLeft = value
         }
-    private val NView.offsetStart
+    private val HTMLElement.offsetStart
         get() = if (vertical) offsetTop else offsetLeft
-    private val NView.clientSize
+    private val HTMLElement.clientSize
         get() = if (vertical) clientHeight else clientWidth
-    private val NView.scrollSize
+    private val HTMLElement.scrollSize
         get() = if (vertical) scrollHeight else scrollWidth
     private val DOMRect.size
         get() = if (vertical) height else width
@@ -298,16 +408,16 @@ class RecyclerController2(
         get() = if (vertical) top else left
     private val DOMRect.end
         get() = if (vertical) bottom else right
-    private val CSSStyleDeclaration.marginStart
+    private val org.w3c.dom.css.CSSStyleDeclaration.marginStart
         get() = if (vertical) marginTop else marginLeft
-    private val CSSStyleDeclaration.marginEnd
+    private val org.w3c.dom.css.CSSStyleDeclaration.marginEnd
         get() = if (vertical) marginBottom else marginRight
-    private var CSSStyleDeclaration.size
+    private var org.w3c.dom.css.CSSStyleDeclaration.size
         get() = if (vertical) height else width
         set(value) {
             if (vertical) height = value else width = value
         }
-    private var CSSStyleDeclaration.start
+    private var org.w3c.dom.css.CSSStyleDeclaration.start
         get() = if (vertical) top else left
         set(value) {
             if (vertical) top = value else left = value
@@ -335,7 +445,8 @@ class RecyclerController2(
                 dataDirect = value.columned(columns)
             }
         }
-    var renderer: ItemRenderer<*> = ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> })
+    var renderer: ItemRenderer<*> =
+        ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> }, {})
         set(value) {
             field = value
             data = Indexed.EMPTY
@@ -346,19 +457,28 @@ class RecyclerController2(
             }
         }
     var rendererDirect: ItemRenderer<*> =
-        ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> })
+        ItemRenderer<Int>({ document.createElement("div") as HTMLDivElement }, { _, _ -> }, {})
         set(value) {
             dataDirect = Indexed.EMPTY
+            val old = field
             field = value
             if (ready) {
                 allSubviews.forEach {
-                    it.element.shutdown()
                     contentHolder.removeChild(it.element)
+                    old.shutdown(it.element)
                 }
                 allSubviews.clear()
                 populate()
             }
         }
+
+    fun shutdown() {
+        allSubviews.forEach {
+            contentHolder.removeChild(it.element)
+            rendererDirect.shutdown(it.element)
+        }
+    }
+
     var dataDirect: Indexed<*> = Indexed.EMPTY
         set(value) {
             field = value
@@ -382,9 +502,8 @@ class RecyclerController2(
                                     rendererDirect.updateAny(it.element, value[it.index])
                                 }
                             } else {
-                                contentHolder.removeNView(it.element)
+                                contentHolder.removeChild(it.element)
                                 allSubviews.remove(it)
-//                                println("Removing ${it.index} due to out of bounds")
                             }
                         }
                         if (shift > 0) {
@@ -408,7 +527,8 @@ class RecyclerController2(
                 }
             }
         }
-    var spacing: Int = window.getComputedStyle(root).columnGap.removeSuffix("px").toDouble().toInt()
+    var spacing: Int =
+        window.getComputedStyle(root).columnGap.removeSuffix("px").let { it.toDoubleOrNull() ?: 0.0 }.toInt()
         set(value) {
             if (value != field) {
                 field = value
@@ -428,7 +548,6 @@ class RecyclerController2(
     var viewportSize: Int = 0
         set(value) {
             field = value
-//            println("viewportSize: $value")
             relayout()
         }
     private var _viewportOffsetField: Int = 0
@@ -444,60 +563,33 @@ class RecyclerController2(
     var suppressFakeScroll = true
 
     private var lastForceCenteringDismiss: Int = -1
-    fun onScrollStop() {
-        nonEmergencyEdges()
-        if (forceCentering) {
-            val scrollCenter = viewportOffset + viewportSize / 2
-            allSubviews.map { it.startPosition + it.size / 2 - scrollCenter }.minBy { it.absoluteValue }.let {
-                if (it.absoluteValue > 10) {
-                    if (vertical) {
-                        contentHolder.scrollBy(
-                            ScrollToOptions(
-                                top = it.toDouble(),
-                                behavior = ScrollBehavior.SMOOTH
-                            )
-                        )
-                    } else {
-                        contentHolder.scrollBy(
-                            ScrollToOptions(
-                                left = it.toDouble(),
-                                behavior = ScrollBehavior.SMOOTH
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     fun nonEmergencyEdges() {
         if (allSubviews.isNotEmpty()) {
-            if (allSubviews.first().index <= dataDirect.min) {
+            if (allSubviews.first()
+                    .let { it.index <= dataDirect.min && it.startPosition >= viewportOffset + padding }
+            ) {
                 // shift and attach to top
                 if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
                     offsetWholeSystem(-allSubviews.first().startPosition + padding)
                 }
             } else {
                 if (viewportOffset > reservedScrollingSpace * 7 / 8) {
-                    offsetWholeSystem(3 * reservedScrollingSpace / -8)
+                    offsetWholeSystem(reservedScrollingSpace / -2)
                 } else if (viewportOffset < reservedScrollingSpace / 8) {
-                    offsetWholeSystem(3 * reservedScrollingSpace / 8)
+                    offsetWholeSystem(reservedScrollingSpace / 2)
                 }
             }
             capViewAtBottom = allSubviews.last().index >= dataDirect.max
         }
-        Unit
     }
 
     var forceCentering = false
     var suppressFakeScrollEnd = false
     var suppressTrueScrollEnd = false
-    var printing = false
-        var startupTime: Double = 0.0
 
     init {
+        var startupTime: Double = 0.0
         contentHolder.onscroll = event@{ ev ->
-            if (!ready) return@event Unit
             if (clockMillis() < startupTime + 200) {
                 // Safari... my old nemesis
                 contentHolder.scrollStart = _viewportOffsetField.toDouble()
@@ -511,7 +603,7 @@ class RecyclerController2(
             suppressTrueScrollEnd = false
             lock("onscroll") {
                 window.clearTimeout(lastForceCenteringDismiss)
-                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
+                lastForceCenteringDismiss = window.setTimeout(::nonEmergencyEdges, 1000)
 
                 _viewportOffsetField = contentHolder.scrollStart.toInt()
                 populate()
@@ -521,7 +613,6 @@ class RecyclerController2(
             Unit
         }
         fakeScroll.onscroll = event@{ ev ->
-            if (!ready) return@event Unit
             if (suppressFakeScroll) {
                 suppressFakeScroll = false
                 suppressFakeScrollEnd = true
@@ -529,8 +620,8 @@ class RecyclerController2(
             }
             suppressFakeScrollEnd = false
             lock("fakescroll") {
-//                window.clearTimeout(lastForceCenteringDismiss)
-//                lastForceCenteringDismiss = window.setTimeout(::onScrollStop, 1000)
+                window.clearTimeout(lastForceCenteringDismiss)
+                lastForceCenteringDismiss = window.setTimeout(::nonEmergencyEdges, 1000)
                 if (allSubviews.isEmpty()) return@event Unit
 
                 val centerElementPartialIndex = (fakeScroll.scrollStart / viewportSize * 2 + 1) / 2
@@ -568,29 +659,29 @@ class RecyclerController2(
             }
             Unit
         }
-//        contentHolder.addEventListener("scrollend", event@{
-//            if (!ready) return@event Unit
-//            if (suppressTrueScrollEnd) {
-//                suppressTrueScrollEnd = false
-//                return@event Unit
-//            }
-//            window.clearTimeout(lastForceCenteringDismiss)
-//            onScrollStop()
-//        })
-//        fakeScroll.addEventListener("scrollend", event@{
-//            if (!ready) return@event Unit
-//            if (suppressFakeScrollEnd) {
-//                suppressFakeScrollEnd = false
-//                return@event Unit
-//            }
-//            window.clearTimeout(lastForceCenteringDismiss)
-//            onScrollStop()
-//        })
+        contentHolder.addEventListener("scrollend", event@{
+            if (suppressTrueScrollEnd) {
+                suppressTrueScrollEnd = false
+                return@event Unit
+            }
+            window.clearTimeout(lastForceCenteringDismiss)
+            nonEmergencyEdges()
+        })
+        fakeScroll.addEventListener("scrollend", event@{
+            if (suppressFakeScrollEnd) {
+                suppressFakeScrollEnd = false
+                return@event Unit
+            }
+            window.clearTimeout(lastForceCenteringDismiss)
+            nonEmergencyEdges()
+        })
         window.setTimeout({
             lock("ready") {
                 viewportSize = root.clientSize
-                spacing = window.getComputedStyle(root).columnGap.removeSuffix("px").toDouble().toInt()
-                padding = window.getComputedStyle(root).paddingTop.removeSuffix("px").toDouble().toInt()
+                spacing = window.getComputedStyle(root).columnGap.removeSuffix("px")
+                    .let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail B $it") }.toInt()
+                padding = window.getComputedStyle(root).paddingTop.removeSuffix("px")
+                    .let { it.toDoubleOrNull() ?: throw IllegalArgumentException("Number fail C $it") }.toInt()
                 ready = true
                 startupTime = clockMillis()
                 populate()
@@ -602,7 +693,6 @@ class RecyclerController2(
     private var lockState: String? = null
     private inline fun lock(key: String, action: () -> Unit) {
         if (lockState != null) {
-//            println("Cannot get lock for $key, already held by $lockState!!!")
             return
         }
         lockState = key
@@ -623,7 +713,6 @@ class RecyclerController2(
             ) {
                 // shift and attach to top
                 if ((allSubviews.first().startPosition - padding).absoluteValue > 2) {
-//                    println("Attach to top - ${allSubviews.first().startPosition} -> offset ${-allSubviews.first().startPosition + padding} ")
                     offsetWholeSystem(-allSubviews.first().startPosition + padding)
                     populate()
                 }
@@ -660,7 +749,6 @@ class RecyclerController2(
 
     var startCreatingViewsAt: Pair<Int, Align> = 0 to Align.Start
     fun jump(index: Int, align: Align, animate: Boolean, onlyIfNear: Boolean = false) {
-//        println("Jump $index")
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
         }
@@ -694,9 +782,8 @@ class RecyclerController2(
                                 rendererDirect.updateAny(it.element, dataDirect[it.index])
                             }
                         } else {
-                            contentHolder.removeNView(it.element)
+                            contentHolder.removeChild(it.element)
                             allSubviews.remove(it)
-//                            println("Removing ${it.index} due to out of bounds")
                         }
                     }
                 }
@@ -712,7 +799,6 @@ class RecyclerController2(
                         else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
                     }
                 }
-//                    ?: println("Wha?!")
             } else {
                 val existingIndex = when (align) {
                     Align.Start -> allSubviews.first().index
@@ -731,9 +817,8 @@ class RecyclerController2(
                             rendererDirect.updateAny(it.element, dataDirect[it.index])
                         }
                     } else {
-                        contentHolder.removeNView(it.element)
+                        contentHolder.removeChild(it.element)
                         allSubviews.remove(it)
-//                        println("Removing ${it.index} due to out of bounds")
                     }
                 }
                 viewportOffset = when (align) {
@@ -742,7 +827,6 @@ class RecyclerController2(
                     else -> target?.let { it.startPosition + it.size / 2 - viewportSize / 2 }
                         ?: (allSubviews.first().startPosition - padding)
                 }
-//                println("Hopped to ${viewportOffset}, where the target starts at ${target?.startPosition} size ${target?.size} and the viewport size is $viewportSize")
                 populate()
                 emergencyEdges()
                 updateVisibleIndexes()
@@ -825,7 +909,6 @@ class RecyclerController2(
 
     fun offsetWholeSystem(by: Int) {
         val byFiltered = by.coerceAtLeast(-viewportOffset)
-//        if(byFiltered != by) println("You're trying to offset too much!  $by -> $byFiltered viewportOffset: $viewportOffset")
         for (view in allSubviews) {
             view.startPosition += by
         }
@@ -838,7 +921,7 @@ class RecyclerController2(
         return Subview(
             element = element,
             index = index,
-        ).also { if (atStart) allSubviews.add(0, it) else allSubviews.add(it); contentHolder.addNView(it.element) }
+        ).also { if (atStart) allSubviews.add(0, it) else allSubviews.add(it); contentHolder.appendChild(it.element) }
     }
 
     fun makeFirst(): Subview? {
@@ -850,8 +933,22 @@ class RecyclerController2(
             Align.Start -> viewportOffset + padding
             Align.End -> viewportOffset + viewportSize - padding - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
+        }.also {
+        }
+        repeat(100) {
+            afterTimeout(it * 10L) {
+            }
         }
         return element
+    }
+
+    private inline fun preventAnchoring(action: ()->Unit) {
+        val before = contentHolder.scrollStart
+        action()
+        val after = contentHolder.scrollStart
+        if(before != after) {
+            contentHolder.scrollStart = before
+        }
     }
 
     fun populate() {
@@ -882,7 +979,6 @@ class RecyclerController2(
         var anchor = allSubviews.lastOrNull() ?: makeFirst() ?: return
         var bottom = anchor.startPosition + anchor.size
         while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering).also {
-//            println("populateDown ($bottom < $viewportSize + $viewportOffset + $beyondEdgeRendering)")
             }) {
             val nextIndex = anchor.index + 1
             if (nextIndex > dataDirect.max) break
@@ -901,14 +997,12 @@ class RecyclerController2(
             bottom = element.placeAfter(bottom)
             anchor = element
         }
-//        println("populateDown complete")
     }
 
     fun populateUp() {
         var anchor = allSubviews.firstOrNull() ?: makeFirst() ?: return
         var top = anchor.startPosition
         while ((top > viewportOffset - beyondEdgeRendering).also {
-//            println("populateUp ($top > $viewportOffset - $beyondEdgeRendering)")
             }) {
             val nextIndex = anchor.index - 1
             if (nextIndex < dataDirect.min) break
@@ -927,7 +1021,6 @@ class RecyclerController2(
             top = element.placeBefore(top)
             anchor = element
         }
-//        println("populateUp complete")
     }
 
     val anchorPosition: Align = Align.Start
@@ -960,6 +1053,18 @@ class RecyclerController2(
             top = element.placeBefore(top)
         }
     }
+
+    init {
+
+        ResizeObserver { entries, obs ->
+            if (!ready) return@ResizeObserver
+            val newSize = root.clientSize
+            if (viewportSize != newSize && newSize != 0) {
+                viewportSize = newSize
+                nonEmergencyEdges()
+            }
+        }.observe(root)
+    }
 }
 
 
@@ -967,11 +1072,35 @@ val reservedScrollingSpace = 100_000
 
 class ItemRenderer<T>(
     val create: (T) -> HTMLElement,
-    val update: (HTMLElement, T) -> Unit
+    val update: (HTMLElement, T) -> Unit,
+    val shutdown: (HTMLElement) -> Unit
 ) {
     @Suppress("UNCHECKED_CAST")
     fun createAny(t: Any?) = create(t as T)
 
     @Suppress("UNCHECKED_CAST")
     fun updateAny(element: HTMLElement, t: Any?) = update(element, t as T)
+}
+
+
+external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver) -> Unit) {
+    fun disconnect()
+    fun observe(target: Element, options: ResizeObserverOptions = definedExternally)
+    fun unobserve(target: Element)
+}
+
+external interface ResizeObserverOptions {
+    val box: String
+}
+
+external interface ResizeObserverEntry {
+    val target: Element
+    val contentRect: DOMRectReadOnly
+    val contentBoxSize: ResizeObserverEntryBoxSize
+    val borderBoxSize: ResizeObserverEntryBoxSize
+}
+
+external interface ResizeObserverEntryBoxSize {
+    val blockSize: Double
+    val inlineSize: Double
 }

@@ -28,6 +28,9 @@ interface ImmediateReadable<out T> : Readable<T> {
 
 interface ImmediateWritable<T> : Writable<T>, ImmediateReadable<T> {
     override var value: T
+    override suspend fun set(value: T) {
+        this.value = value
+    }
 }
 
 class NotReadyException(message: String? = null) : IllegalStateException(message)

@@ -1,23 +1,19 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.NView
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RContext
+
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
-expect class NCanvas : NView
 
-@JvmInline
-value class Canvas(override val native: NCanvas) : RView<NCanvas>
+expect class Canvas(context: RContext) : RView {
 
-@ViewDsl
-expect fun ViewWriter.canvasActual(setup: Canvas.()->Unit = {}): Unit
-@OptIn(ExperimentalContracts::class) @ViewDsl inline fun ViewWriter.canvas(noinline setup: Canvas.() -> Unit = {}) { contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }; canvasActual(setup) }
 
-expect var Canvas.delegate: CanvasDelegate?
+    var delegate: CanvasDelegate?
+}
 
 abstract class CanvasDelegate {
     open fun onResize(width: Double, height: Double) {}
@@ -29,11 +25,12 @@ abstract class CanvasDelegate {
     open fun onKeyDown(key: KeyCode): Boolean = false
     open fun onKeyUp(key: KeyCode): Boolean = false
     open fun onWheel(x: Double, y: Double, z: Double): Boolean = false
-//    open fun onAccelerometer(x: Double, y: Double, z: Double): Boolean = false
+
+    //    open fun onAccelerometer(x: Double, y: Double, z: Double): Boolean = false
     open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
     open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
-    var invalidate: ()->Unit = {}
-    open fun ViewWriter.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+    var invalidate: () -> Unit = {}
+    open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }
 
 expect class KeyCode
