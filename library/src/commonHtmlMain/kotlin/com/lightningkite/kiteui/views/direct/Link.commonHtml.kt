@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.*
@@ -13,10 +14,15 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         native.classes.add("clickable")
         native.addEventListener("click") {
             it.preventDefault()
+            val destination = to()
             if(resetsStack) {
-                onNavigator.reset(to())
+                ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
+                onNavigator.reset(destination)
+                ConsoleRoot.log("Result is ", onNavigator.stack.value)
             } else {
-                onNavigator.navigate(to())
+                ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
+                onNavigator.navigate(destination)
+                ConsoleRoot.log("Result is ", onNavigator.stack.value)
             }
             onNavigate?.let {
                 launchManualCancel(it)
