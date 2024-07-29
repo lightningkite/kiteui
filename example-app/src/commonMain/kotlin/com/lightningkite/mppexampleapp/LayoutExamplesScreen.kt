@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.icon
 
 @Routable("layout-examples")
 object LayoutExamplesScreen : Screen {
@@ -25,6 +26,77 @@ object LayoutExamplesScreen : Screen {
                         }
                     }
                 } in sizedBox(SizeConstraints(minHeight = 200.px))
+            }
+
+            val showIcons = Property(false)
+            row {
+                expanding - text("Show icons")
+                switch { checked bind showIcons }
+            }
+
+            card - col {
+                h2("Sample from another project")
+                card - row {
+                    expanding - centered - rowCollapsingToColumn(30.rem) {
+                        centered - sizeConstraints(width = 5.rem, height = 5.rem) - image {
+                            source = Resources.imagesSolera
+                            this.description = ""
+                            scaleType = ImageScaleType.Crop
+                        }
+                        compact - col {
+                            h2 {
+                                ::content { "This is a really long name and will probably overlap" }
+                            }
+                            row {
+                                centered - icon(
+                                    Icon.starFilled.copy(width = 1.rem, height = 1.rem),
+                                    "star"
+                                )
+                                centered - text {
+                                    ::content { "Test content" }
+                                }
+                            }
+                        }
+                    }
+//                    gravity(Align.End, Align.Center) - row {
+                    gravity(Align.End, Align.Center) - row {
+                        onlyWhen { showIcons() } - centered - toggleButton {
+                            icon {
+                                source = Icon.starFilled
+                            }
+                        }
+
+                        onlyWhen { true } - centered - link {
+                            icon {
+                                source = Icon.done
+                                description = "Update"
+                            }
+                        }
+                    }
+                }
+                bar - row {
+                    button { icon { source = Icon.arrowBack }}
+                    expanding - h2("Dashboard")
+                    row {
+                        button { icon { source = Icon.notification }}
+                        centered - menuButton {
+                            col {
+                                spacing = 0.25.rem
+                                centered - sizeConstraints(width = 2.rem, height = 2.rem) - image {
+                                    description = ""
+                                    source = Resources.imagesSolera
+                                }
+                                subtext {
+                                    ::exists { false }
+                                    ::content {
+                                        "Test dealership"
+                                    }
+                                }
+                            }
+                        }
+                        stack {}
+                    }
+                }
             }
 
             card - col {

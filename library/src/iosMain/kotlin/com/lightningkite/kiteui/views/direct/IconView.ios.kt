@@ -57,6 +57,7 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
         set(value) {
             field = value
             refresh()
+            informParentOfSizeChange()
         }
     var iconPaint: Paint = Color.black
         set(value) {
