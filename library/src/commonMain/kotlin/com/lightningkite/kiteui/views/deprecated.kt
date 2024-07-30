@@ -15,9 +15,9 @@ import com.lightningkite.kiteui.launch as otherLaunch
 //}
 
 
-@Deprecated("Wrong import; this has moved", ReplaceWith("launch", ""))
+//@Deprecated("Wrong import; this has moved", ReplaceWith("launch", ""))
 inline fun RView.launch(noinline action: suspend () -> Unit) = otherLaunch(action)
-@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(action = action)", "com.lightningkite.kiteui.reactive.reactiveScope"))
+//@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(action = action)", "com.lightningkite.kiteui.reactive.reactiveScope"))
 inline fun RView.reactiveScope(noinline action: suspend () -> Unit) { ReactiveScopeData(this, action, null) }
-@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(onLoad, action)", "com.lightningkite.kiteui.reactive.reactiveScope"))
+//@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope(onLoad, action)", "com.lightningkite.kiteui.reactive.reactiveScope"))
 inline fun RView.reactiveScope(noinline onLoad: (() -> Unit)?, noinline action: suspend () -> Unit) { ReactiveScopeData(this, action, onLoad) }

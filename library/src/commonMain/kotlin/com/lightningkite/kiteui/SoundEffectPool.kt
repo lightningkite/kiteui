@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.AudioResource
 import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.reactive.shared
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.reactiveScope
