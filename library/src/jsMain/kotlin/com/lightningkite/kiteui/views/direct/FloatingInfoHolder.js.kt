@@ -81,8 +81,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 native.style.position = "absolute"
                 native.style.zIndex = "999"
                 native.style.height = "auto"
-                native.style.width = "fit-content"
-                native.style.height = "fit-content"
+                native.style.width = "unset"
+                native.style.height = "unset"
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement

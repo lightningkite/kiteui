@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.UrlCacheStrategy
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl

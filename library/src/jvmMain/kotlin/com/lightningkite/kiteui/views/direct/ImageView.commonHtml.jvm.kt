@@ -10,7 +10,7 @@ actual fun createObjectURL(blob: Blob): String = ""
 
 actual fun createObjectURL(fileReference: FileReference): String = ""
 
-actual fun RView.nativeSetSrc(url: String?) {
+actual fun RView.nativeSetSrc(url: String?, onSuccess: ()->Unit, onError: ()->Unit) {
     native.clearChildren()
     native.appendChild(FutureElement().apply {
         tag = "img"
