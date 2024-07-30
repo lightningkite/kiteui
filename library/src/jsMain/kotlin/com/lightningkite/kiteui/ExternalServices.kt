@@ -19,15 +19,30 @@ actual object ExternalServices {
         window.open(url, "_blank")
     }
 
+    private var lastFileInput: HTMLInputElement? = null
+    private fun removeFileInput() {
+        lastFileInput?.let { document.body!!.removeChild(it) }
+        lastFileInput = null
+    }
     suspend fun requestFileInput(mimeTypes: List<String>, setup: HTMLInputElement.() -> Unit): List<FileReference> =
         suspendCoroutineCancellable {
+            removeFileInput()
             (document.createElement("input") as HTMLInputElement).apply {
                 type = "file"
+                hidden = true
                 accept = mimeTypes.joinToString(",")
                 setup()
-                onchange =
-                    { e -> it.resume(files?.let { (0 until it.length).map { index -> it.item(index)!! } } ?: listOf()) }
-                oncancel = { e -> it.resume(listOf()) }
+                // iOS Safari requires 'addEventListener' opposed to setting onchange directly, and requires it to be attached to the dom.
+                addEventListener("change", { _ ->
+                    it.resume(files?.let { (0 until it.length).map { index -> it.item(index)!! } } ?: listOf())
+                    removeFileInput()
+                })
+                addEventListener("cancel", { _ ->
+                    it.resume(listOf())
+                    removeFileInput()
+                })
+                document.body!!.appendChild(this)
+                lastFileInput = this
             }.click()
             return@suspendCoroutineCancellable { }
         }
