@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'library'
-    spec.version                  = 'direct-theme-SNAPSHOT'
+    spec.version                  = 'main-SNAPSHOT'
     spec.homepage                 = ''
     spec.source                   = { :http=> ''}
     spec.authors                  = ''

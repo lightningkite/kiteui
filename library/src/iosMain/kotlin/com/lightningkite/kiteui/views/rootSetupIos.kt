@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSNumber
@@ -21,21 +22,24 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.()->Unit) {
-    setup({theme}, app)
+fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
+    setup({ theme }, app)
 }
-fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.()->Unit) {
-    setup({themeReadable.invoke()}, app)
+
+fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> Unit) {
+    setup({ themeReadable.invoke() }, app)
 }
+
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWriter.()->Unit) {
+fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWriter.() -> Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
 
-    val writer = object: ViewWriter() {
+    val writer = object : ViewWriter() {
         override val context: RContext = RContext(this@setup)
         override fun addChild(view: RView) {
             this@setup.view.addSubview(view.native)
         }
+
         init {
             beforeNextElementSetup {
                 ::themeChoice { ThemeDerivation.Set(themeCalculation()) }
@@ -58,7 +62,7 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
 
     ExternalServices.rootView = subview
 
-    class Observer: NSObject() {
+    class Observer : NSObject() {
         var keyboardAnimationDuration: Double = 0.25
 
         @ObjCAction
@@ -66,20 +70,24 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
             val userInfo = notification?.userInfo ?: return
             val keyboardFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue ?: return
             val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
-            keyboardAnimationDuration = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?: return
+            keyboardAnimationDuration =
+                (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?: return
             UIView.animateWithDuration(keyboardAnimationDuration) {
-                bottom.constant = keyboardHeight - (this@setup.view.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
+                bottom.constant =
+                    keyboardHeight - (this@setup.view.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
             }
             afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
 //                this@setup.view.findFirstResponderChild()?.scrollToMe(true)
             }
         }
+
         @ObjCAction
         fun keyboardWillHideNotification() {
             UIView.animateWithDuration(keyboardAnimationDuration) {
                 bottom.constant = 0.0
             }
         }
+
         @ObjCAction
         fun hideKeyboardWhenTappedAround() {
             view.findFirstResponderChild()?.resignFirstResponder()
@@ -97,6 +105,7 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
 //            }
 //        }
     }
+
     val observer: Observer = Observer()
 
     NSNotificationCenter.defaultCenter.addObserver(
@@ -117,8 +126,16 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
     g.cancelsTouchesInView = false
     view.addGestureRecognizer(g)
 
-    subview.observe("bounds") {
-        println("Root bounds change")
+    val remover = subview.observe("bounds") {
         subview.layoutLayers()
     }
+    view.addSubview(object: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+        override fun willMoveToWindow(newWindow: UIWindow?) {
+            super.willMoveToWindow(newWindow)
+            println("willMoveToWindow: $newWindow")
+            if(newWindow == null) {
+                remover()
+            }
+        }
+    })
 }
