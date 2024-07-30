@@ -123,9 +123,9 @@ fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<I
         }
     },
     shutdown = { parent, element ->
-        repeat(count) { index ->
-            val child = element.subviews[index] as UIView
-            this@columned.shutdown(parent, child)
+        element.subviews.forEach {
+            it as UIView
+            this@columned.shutdown(parent, it)
         }
     }
 )

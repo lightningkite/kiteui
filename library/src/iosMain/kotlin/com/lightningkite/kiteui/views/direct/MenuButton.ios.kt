@@ -18,6 +18,17 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 override fun ViewWriter.render() {
                     dismissBackground {
                         centered - card - stack {
+                            object: ViewWriter() {
+                                override val context: RContext = this@stack.context.split()
+                                init {
+                                    popoverClosers.addListener {
+                                        dialogScreenNavigator.dismiss()
+                                    }
+                                }
+                                override fun addChild(view: RView) {
+                                    this@stack.addChild(view)
+                                }
+                            }
                             createMenu()
                         }
                     }
