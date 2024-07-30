@@ -47,7 +47,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
             }
         }
 
-    fun setSrc(url: String) = nativeSetSrc(url)
+    fun setSrc(url: String) = nativeSetSrc(url, onError = { source = null }, onSuccess = {})
 
     actual var scaleType: ImageScaleType = ImageScaleType.Fit
         set(value) {

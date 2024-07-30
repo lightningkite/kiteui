@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.UrlCacheStrategy
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl
@@ -13,9 +14,11 @@ import kotlin.contracts.*
 expect class ImageView(context: RContext) : RView {
 
     var source: ImageSource?
+//    suspend fun setSourceAndWaitForResult(source: ImageSource)
     var scaleType: ImageScaleType
     var description: String?
     var refreshOnParamChange: Boolean
+//    var cacheStrategy: UrlCacheStrategy
 
     /**
      * When true, images are dimensioned according to the platform logical coordinate space as opposed to the physical

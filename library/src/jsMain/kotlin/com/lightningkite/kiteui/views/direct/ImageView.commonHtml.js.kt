@@ -21,7 +21,7 @@ actual fun createObjectURL(fileReference: FileReference): String {
     return URL.createObjectURL(fileReference)
 }
 
-actual fun RView.nativeSetSrc(url: String?) {
+actual fun RView.nativeSetSrc(url: String?, onSuccess: ()->Unit, onError: ()->Unit) {
     val animating = RViewHelper.animationsEnabled
     val urlOrBlank = url ?: ""
     val element = native.element
@@ -63,7 +63,11 @@ actual fun RView.nativeSetSrc(url: String?) {
     newElement.style.height = "100%"
     newElement.style.opacity = "0"
     val now = clockMillis()
+    newElement.onerror = { dyn, msg, a, b, c ->
+        onError()
+    }
     newElement.onload = label@{
+        onSuccess()
 //        native.style.setProperty("aspect-ratio",
 //            (newElement.naturalWidth.toDouble() / newElement.naturalHeight).toString()
 //        )

@@ -50,7 +50,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    fun setSrc(url: String) = nativeSetSrc(url)
+    fun setSrc(url: String) = nativeSetSrc(url, onError = { source = null }, onSuccess = {})
 
     actual var scaleType: ImageScaleType = ImageScaleType.Fit
         set(value) {
@@ -63,6 +63,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             field = value
             native.setAttribute("aria-label", value)
         }
+    //    actual var cacheStrategy: UrlCacheStrategy = UrlCacheStrategy.PathOnly
     actual var refreshOnParamChange: Boolean = false
 
     /**
@@ -71,6 +72,8 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
      * density screens.
      */
     actual var naturalSize: Boolean = false
+
+//    actual suspend fun setSourceAndWaitForResult(source: ImageSource) {}
 }
 
 @JsName("createObjectURLBlob")
@@ -78,4 +81,4 @@ expect fun createObjectURL(blob: Blob): String
 @JsName("createObjectURLFileReference")
 expect fun createObjectURL(fileReference: FileReference): String
 
-expect fun RView.nativeSetSrc(url: String?)
+expect fun RView.nativeSetSrc(url: String?, onSuccess: ()->Unit = {}, onError: ()->Unit = {})

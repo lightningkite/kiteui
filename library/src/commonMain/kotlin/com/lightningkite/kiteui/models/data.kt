@@ -573,6 +573,7 @@ data class Action(
 
 
 enum class ImageScaleType { Fit, Crop, Stretch, NoScale }
+enum class UrlCacheStrategy { None, Full, PathOnly }
 
 expect class DimensionRaw
 
