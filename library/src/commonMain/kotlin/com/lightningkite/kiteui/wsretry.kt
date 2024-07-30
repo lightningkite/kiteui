@@ -24,7 +24,7 @@ suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { com.lig
 fun retryWebsocket(
     url: String,
     pingTime: Long,
-    gate: ConnectivityGate = connectivityFetchGate,
+    gate: ConnectivityGate = Connectivity.fetchGate,
     log: Console? = null
 ): RetryWebsocket = retryWebsocket(
     underlyingSocket = { websocket(url) },
@@ -35,7 +35,7 @@ fun retryWebsocket(
 fun retryWebsocket(
     underlyingSocket: () -> WebSocket,
     pingTime: Long,
-    gate: ConnectivityGate = connectivityFetchGate,
+    gate: ConnectivityGate = Connectivity.fetchGate,
     log: Console? = null
 ): RetryWebsocket {
     log?.log("Creating")

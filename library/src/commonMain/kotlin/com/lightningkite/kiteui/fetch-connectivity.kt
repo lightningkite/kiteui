@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.shared
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.*
@@ -37,7 +39,7 @@ class WaitGate(permit: Boolean = false) {
 
 class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: Long) -> Unit = { ms -> com.lightningkite.kiteui.delay(ms) }) {
     val gate = WaitGate(true)
-    val baseRetry = 5.seconds
+    val baseRetry = 10.seconds
     var nextRetry = baseRetry
     val maxRetry = 5.minutes
     val retryAt = Property<Instant?>(null)
@@ -76,8 +78,17 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
     }
 }
 
-val noConnectivityCodes = setOf<Short>(502, 503, 420)
-val connectivityFetchGate = ConnectivityGate()
+@Deprecated("Use Connectivity instead", ReplaceWith("Connectivity.fetchGate", "com.lightningkite.kiteui.Connectivity"))
+val connectivityFetchGate get() = Connectivity.fetchGate
+
+object Connectivity {
+    val noConnectivityCodes = setOf<Short>(502, 503)
+    val tooMuchCodes = setOf<Short>(420, 429)
+    val stopConnectivityCodes = noConnectivityCodes + tooMuchCodes
+    val fetchGate = ConnectivityGate()
+    val lastConnectivityIssueCode: Property<Short> = Property(0)
+}
+
 suspend fun connectivityFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
@@ -85,9 +96,17 @@ suspend fun connectivityFetch(
     body: RequestBody,
 ): RequestResponse {
     return if(coroutineContext[ConnectivityIssueSuppress.Key] == null) {
-        connectivityFetchGate.run("$method $url") {
-            val r = fetch(url = url, method = method, headers = headers(), body = body)
-            if (r.status in noConnectivityCodes) throw ConnectionException("Status code ${r.status}")
+        Connectivity.fetchGate.run("$method $url") {
+            val r = try {
+                fetch(url = url, method = method, headers = headers(), body = body)
+            } catch(e: ConnectionException) {
+                Connectivity.lastConnectivityIssueCode.value = 0
+                throw e
+            }
+            if (r.status in Connectivity.stopConnectivityCodes) {
+                Connectivity.lastConnectivityIssueCode.value = r.status
+                throw ConnectionException("Status code ${r.status}")
+            }
             r
         }
     } else {
