@@ -763,7 +763,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             )
         }.also {
             cssGenTotal += it
-            println("CSS for ${theme.id} (#${themeInteractiveHandled.size}) took $it, $cssGenTotal total")
         }
         dynamicCss.flush()
         return theme.classes
