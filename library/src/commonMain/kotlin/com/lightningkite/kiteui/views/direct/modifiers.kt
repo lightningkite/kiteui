@@ -16,7 +16,7 @@ expect fun ViewWriter.hintPopover(
     setup: ViewWriter.() -> Unit
 ): ViewWrapper
 
-@Deprecated("Use hintPopover or menuPopover depending on your situation.")
+@Deprecated("Use hintPopover or opensMenu depending on your situation.")
 @ViewModifierDsl3
 expect fun ViewWriter.hasPopover(
     requiresClick: Boolean = false,
