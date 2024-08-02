@@ -506,16 +506,18 @@ class RecyclerController2(
                                 allSubviews.remove(it)
                             }
                         }
-                        if (shift > 0) {
-                            // Force to top
-                            if (allSubviews.first().startPosition < 0) {
-                                offsetWholeSystem(-allSubviews.first().startPosition)
-                            } else {
-                                viewportOffset = allSubviews.first().startPosition
+                        if(allSubviews.isNotEmpty()) {
+                            if (shift > 0) {
+                                // Force to top
+                                if (allSubviews.first().startPosition < 0) {
+                                    offsetWholeSystem(-allSubviews.first().startPosition)
+                                } else {
+                                    viewportOffset = allSubviews.first().startPosition
+                                }
+                            } else if (shift < 0) {
+                                // Force to bottom
+                                viewportOffset = allSubviews.last().let { it.startPosition + it.size } - viewportSize
                             }
-                        } else if (shift < 0) {
-                            // Force to bottom
-                            viewportOffset = allSubviews.last().let { it.startPosition + it.size } - viewportSize
                         }
                         populate()
                     } else {

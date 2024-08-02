@@ -10,20 +10,16 @@ import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 import com.lightningkite.kiteui.PerformanceInfo
+import com.lightningkite.kiteui.viewDebugTarget
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.sizeThatFits2(
     size: CValue<CGSize>,
     sizeConstraints: SizeConstraints?
 ): CValue<CGSize> {
-    // Completely override native sizeThatFits algo for some view elements
-    val nativeBestSize = when (this) {
-        is MyImageView -> size
-        else -> sizeThatFits(size)
-    }
-    val newSize = sizeConstraints?.let {
-        var w = nativeBestSize.useContents { width }
-        var h = nativeBestSize.useContents { height }
+    val newSizeInput = sizeConstraints?.let {
+        var w = size.useContents { width }
+        var h = size.useContents { height }
         it.maxWidth?.let { w = w.coerceAtMost(it.value) }
         it.maxHeight?.let { h = h.coerceAtMost(it.value) }
         it.minWidth?.let { w = w.coerceAtLeast(it.value) }
@@ -37,11 +33,12 @@ fun UIView.sizeThatFits2(
         it.width?.let { w = it.value }
         it.height?.let { h = it.value }
         CGSizeMake(w, h)
-    } ?: nativeBestSize
-    return when (this) {
+    } ?: size
+    val measured = when (this) {
+        is MyImageView -> newSizeInput
         is LinearLayout,
         is FrameLayout,
-        is FrameLayoutButton -> sizeThatFits(newSize)
+        is FrameLayoutButton -> sizeThatFits(newSizeInput)
 
         else -> {
             // Uncomment this code if you believe some fool is using the default sizeThatFits.
@@ -52,7 +49,7 @@ fun UIView.sizeThatFits2(
 //            val widthExisting = bounds.useContents { this.size.width }
 //            val heightExisting = bounds.useContents { this.size.height }
 //            setBounds(CGRectMake(0.0, 0.0, 0.0, 0.0))
-            val result = PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSize) }
+            val result = PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSizeInput) }
 //            setBounds(
 //                CGRectMake(
 //                xExisting,
@@ -64,4 +61,30 @@ fun UIView.sizeThatFits2(
             result
         }
     }
+    val result = measured
+//    val result = sizeConstraints?.let {
+//        var w = measured.useContents { width }
+//        var h = measured.useContents { height }
+//        it.maxWidth?.let { w = w.coerceAtMost(it.value) }
+//        it.maxHeight?.let { h = h.coerceAtMost(it.value) }
+//        it.minWidth?.let { w = w.coerceAtLeast(it.value) }
+//        it.minHeight?.let { h = h.coerceAtLeast(it.value) }
+//        it.aspectRatio?.let { aspectRatio ->
+//            aspectRatio.fitInsideBox(w, h).let { innerBox ->
+//                w = innerBox.first
+//                h = innerBox.second
+//            }
+//        }
+//        it.width?.let { w = it.value }
+//        it.height?.let { h = it.value }
+//        CGSizeMake(w, h)
+//    } ?: measured
+    if(this === viewDebugTarget?.native) {
+        println("viewDebugTarget constraints: $sizeConstraints")
+        println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
+        println("viewDebugTarget newSizeInput: ${newSizeInput.useContents { "$width, $height" }}")
+        println("viewDebugTarget measured: ${measured.useContents { "$width, $height" }}")
+        println("viewDebugTarget result: ${result.useContents { "$width, $height" }}")
+    }
+    return result
 }

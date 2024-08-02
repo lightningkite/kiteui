@@ -92,10 +92,12 @@ actual class TextView actual constructor(context: RContext): RView(context) {
     override fun applyForeground(theme: Theme) {
         fontAndStyle = theme.font
         native.foreground = theme.foreground
-        sizeConstraints = SizeConstraints(
-            minWidth = theme.font.size * 0.6,
-            minHeight = theme.font.size * 1.5,
-        )
+
+        //
+//        sizeConstraints = SizeConstraints(
+//            minWidth = theme.font.size * 0.6,
+//            minHeight = theme.font.size * 1.5,
+//        )
     }
 }
 

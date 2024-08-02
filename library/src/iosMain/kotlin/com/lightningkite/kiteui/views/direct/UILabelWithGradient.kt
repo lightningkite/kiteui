@@ -73,7 +73,14 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             }
         }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = label.sizeThatFits(size)
+    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        return label.sizeThatFits(size).useContents {
+            CGSizeMake(
+                width = width.coerceAtLeast(label.font.lineHeight),
+                height = height.coerceAtLeast(label.font.lineHeight),
+            )
+        }
+    }
 
     override fun layoutSubviews() {
         super.layoutSubviews()
