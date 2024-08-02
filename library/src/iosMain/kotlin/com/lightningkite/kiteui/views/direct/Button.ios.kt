@@ -1,21 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.NSKeyValueObservingOptionNew
-import platform.Foundation.addObserver
-import platform.UIKit.UIControlEventTouchUpInside
-import platform.UIKit.UIView
-import platform.objc.sel_registerName
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.WeakReference
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class Button actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton(this)
     init {
@@ -39,6 +29,9 @@ actual class Button actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("highlighted", { refreshTheming() }))
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
+        reactiveScope {
+            opacity = if (working()) 0.7 else 1.0
+        }
     }
 
     override fun hasAlternateBackedStates(): Boolean = true
