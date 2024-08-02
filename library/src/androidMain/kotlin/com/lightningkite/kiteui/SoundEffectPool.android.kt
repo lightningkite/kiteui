@@ -4,6 +4,7 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.AndroidAppContext
 import java.io.Closeable
 import kotlin.coroutines.resume
@@ -72,6 +73,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 }
 
+private val runningMediaPlayers = ArrayList<MediaPlayer>()
 actual suspend fun AudioSource.load(): PlayableAudio {
     val player = MediaPlayer()
     var toClose: Closeable? = null
@@ -86,22 +88,34 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
         else -> TODO()
     }
+    val onCompletes = ArrayList<()->Unit>()
+    player.setOnCompletionListener {
+        runningMediaPlayers.remove(player)
+        onCompletes.invokeAllSafe()
+    }
     val audio = object: PlayableAudio {
         override var volume: Float = 1f
             set(value) { field = value; player.setVolume(value, value) }
         override var isPlaying: Boolean
             get() = player.isPlaying
             set(value) {
-                if(value) player.start() else player.pause()
+                if(value) {
+                    player.start()
+                    runningMediaPlayers.add(player)
+                } else {
+                    runningMediaPlayers.remove(player)
+                    player.pause()
+                }
             }
 
         override fun onComplete(action: () -> Unit) {
-            player.setOnCompletionListener { action() }
+            onCompletes.add(action)
         }
 
         override fun stop() {
             player.pause()
             player.reset()
+            runningMediaPlayers.remove(player)
         }
 
     }

@@ -282,12 +282,12 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     }
 }
 
-inline fun CATransactionWithDisabledActions(action: () -> Unit) {
-    CATransaction.begin()
-    CATransaction.setDisableActions(true)
-    try {
-        action()
-    } finally {
-        CATransaction.commit()
-    }
-}
+//inline fun CATransactionWithDisabledActions(action: () -> Unit) {
+//    CATransaction.begin()
+//    CATransaction.setDisableActions(true)
+//    try {
+//        action()
+//    } finally {
+//        CATransaction.commit()
+//    }
+//}

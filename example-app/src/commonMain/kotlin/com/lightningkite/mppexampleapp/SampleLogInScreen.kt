@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -27,18 +28,18 @@ object SampleLogInScreen : Screen {
             }
             padded - scrolls - col {
                 expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - col {
+                centered - sizeConstraints(maxWidth = 50.rem) - card - col {
                     h1 { content = "My App" }
                     label {
                         content = "Email"
-                        textField {
+                        sizeConstraints(width = 20.rem) - fieldTheme - textField {
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
                     }
                     label {
                         content = "Password"
-                        textField {
+                        sizeConstraints(width = 20.rem) - fieldTheme - textField {
                             keyboardHints = KeyboardHints.password
                             content bind password
                             action = Action(

@@ -104,7 +104,8 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
 val NextFocusDelegateShared = NextFocusDelegate()
 class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-        textField.findNextFocus()?.let {
+        println("NextFocusDelegateShared hit")
+        textField.findNextFocus().also { println("Next focus identified as ${it}") }?.let {
             it.becomeFirstResponder()
         } ?: textField.resignFirstResponder()
         return true

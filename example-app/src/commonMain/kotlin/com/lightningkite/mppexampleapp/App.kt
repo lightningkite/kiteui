@@ -111,7 +111,7 @@ fun brandBasedExperimental(id: String, normalBack: Color): Theme {
 //        body = FontAndStyle(Resources.opensans),
         background = startingBack.withStripe(),
         elevation = 0.dp,
-        transitionDuration = 0.25.seconds,
+        transitionDuration = 1.seconds,
         spacing = 0.75.rem,
         outlineWidth = 0.px,
         foreground = startingBack.deriveForeground(),

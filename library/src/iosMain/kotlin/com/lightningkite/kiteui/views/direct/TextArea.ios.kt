@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.views.*
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.*
@@ -15,11 +16,14 @@ import platform.darwin.NSObject
 actual class TextArea actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
+    @OptIn(ExperimentalForeignApi::class)
     val textField = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
         this.delegate = this@TextArea.delegate
+        this.textContainerInset = UIEdgeInsetsMake(0.0, 0.0, 0.0, 0.0)
+        this.textContainer.lineFragmentPadding = 0.0
     }
 
     init {

@@ -2,22 +2,18 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.locale.renderToString
-import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.datetime.*
 import platform.Foundation.NSDate
-import platform.UIKit.UIControlEventValueChanged
-import platform.UIKit.UIDatePicker
-import platform.UIKit.UIDatePickerMode
-import platform.UIKit.UIDatePickerStyle
+import platform.UIKit.*
 
 
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalDateField actual constructor(context: RContext) : RView(context) {
-    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -45,10 +41,47 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
     }
+
+    var fontAndStyle: FontAndStyle? = null
+        set(value) {
+            field = value
+            updateFont()
+            native.informParentOfSizeChange()
+        }
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
+    }
+    fun updateFont() {
+        val alignment = textField.textAlignment
+        textField.font = fontAndStyle?.let {
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
+        textField.textAlignment = alignment
+    }
+
+    var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
+    }
 }
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalTimeField actual constructor(context: RContext) : RView(context) {
-    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -76,10 +109,47 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
     }
+
+    var fontAndStyle: FontAndStyle? = null
+        set(value) {
+            field = value
+            updateFont()
+            native.informParentOfSizeChange()
+        }
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
+    }
+    fun updateFont() {
+        val alignment = textField.textAlignment
+        textField.font = fontAndStyle?.let {
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
+        textField.textAlignment = alignment
+    }
+
+    var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
+    }
 }
 @OptIn(ExperimentalForeignApi::class)
 actual class LocalDateTimeField actual constructor(context: RContext) : RView(context) {
-    override fun hasAlternateBackedStates(): Boolean = true
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
@@ -106,5 +176,43 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
         reactiveScope {
             textField.text = _content.invoke()?.renderToString() ?: "-"
         }
+    }
+
+    var fontAndStyle: FontAndStyle? = null
+        set(value) {
+            field = value
+            updateFont()
+            native.informParentOfSizeChange()
+        }
+    override fun applyForeground(theme: Theme) {
+        textField.textColor = theme.foreground.closestColor().toUiColor()
+        fontAndStyle = theme.font
+    }
+    fun updateFont() {
+        val alignment = textField.textAlignment
+        textField.font = fontAndStyle?.let {
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
+        textField.textAlignment = alignment
+    }
+
+    var enabled: Boolean
+        get() = textField.enabled
+        set(value) {
+            textField.enabled = value
+            refreshTheming()
+        }
+    init {
+        onRemove(textField.observe("highlighted", { refreshTheming() }))
+        onRemove(textField.observe("selected", { refreshTheming() }))
+        onRemove(textField.observe("enabled", { refreshTheming() }))
+    }
+    override fun hasAlternateBackedStates(): Boolean = true
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme
+        if(!enabled) t = t[DisabledSemantic]
+        if(textField.highlighted) t = t[DownSemantic]
+        if(textField.focused) t = t[FocusSemantic]
+        return t
     }
 }

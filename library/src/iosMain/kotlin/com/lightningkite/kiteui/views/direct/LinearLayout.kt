@@ -90,7 +90,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizeLocal = size.local
         val measuredSize = Size()
 
-        val sizes = calcSizes(sizeLocal, false)
+        val sizes = calcSizes(sizeLocal, sizeLocal.primary == ScrollLayoutMeta.unboundSize)
         measuredSize.primary += padding
         var first = true
         subviews.zip(sizes) { view, size ->
@@ -159,9 +159,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val measureInput = Size(remaining.primary, remaining.secondary)
             t.pause()
             val required = childSizeCache[index].getOrPut(measureInput) {
-//                if(viewDebugTarget?.native == it) {
-//                    println("${this.toString().take(20)} / ${it.toString().take(20)} - no match found for $measureInput out of ${childSizeCache[index].keys.joinToString()}, remeasuring")
-//                }
                 it.sizeThatFits2(
                     measureInput.objc,
                     it.extensionSizeConstraints
@@ -185,7 +182,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         subviews.forEachIndexed { index, it ->
             it as UIView
             if (out[index] != null) return@forEachIndexed
-            if (it.isHidden()) return@forEachIndexed
+            if (it.hidden) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
             val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             t.pause()
@@ -261,12 +258,14 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val widthSize = if (horizontal) size.primary else secondarySize
             val heightSize = if (horizontal) secondarySize else size.primary
             t.pause()
-            view.setPsuedoframe(
-                if (horizontal) ps else offset,
-                if (horizontal) offset else ps,
-                widthSize,
-                heightSize,
-            )
+            /*maybeWithoutAnimation (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 })*/ run {
+                view.setPsuedoframe(
+                    if (horizontal) ps else offset,
+                    if (horizontal) offset else ps,
+                    widthSize,
+                    heightSize,
+                )
+            }
 //                if (oldSize.first != widthSize || oldSize.second != heightSize) {
             view.layoutSubviewsAndLayers()
 //                }

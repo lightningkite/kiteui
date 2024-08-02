@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.utils.fitInsideBox
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIImageView
@@ -39,7 +40,20 @@ fun UIView.sizeThatFits2(
         is LinearLayout,
         is FrameLayout,
         is FrameLayoutButton -> sizeThatFits(newSize)
-
-        else -> PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSize) }
+        else -> {
+            val xExisting = bounds.useContents { origin.x }
+            val yExisting = bounds.useContents { origin.y }
+            val widthExisting = bounds.useContents { this.size.width }
+            val heightExisting = bounds.useContents { this.size.height }
+            setBounds(CGRectMake(0.0, 0.0, 0.0, 0.0))
+            val result = PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSize) }
+            setBounds(CGRectMake(
+                xExisting,
+                yExisting,
+                widthExisting,
+                heightExisting,
+            ))
+            result
+        }
     }
 }

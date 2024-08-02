@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -45,7 +46,7 @@ interface AppNav {
 
 val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Property(
-        ViewWriter::appNavBottomTabs
+        ViewWriter::appNavHamburger
     )
 )
 
@@ -86,12 +87,10 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navSpacing  - stack {
+        expanding - navSpacing  - beforeNextElementSetup { viewDebugTarget = this } - stack {
             navigatorView(screenNavigator)
-            atStart - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - stack {
-                scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
-                    spacing = 0.px
-                }
+            atStart - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+                spacing = 0.px
             }
         }
     }

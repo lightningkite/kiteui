@@ -33,6 +33,7 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
 fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWriter.() -> Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
+    UIView.setAnimationsEnabled(false)
 
     val writer = object : ViewWriter() {
         override val context: RContext = RContext(this@setup)
@@ -72,20 +73,20 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
             val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
             keyboardAnimationDuration =
                 (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?: return
-            UIView.animateWithDuration(keyboardAnimationDuration) {
+//            UIView.animateWithDuration(keyboardAnimationDuration) {
                 bottom.constant =
                     keyboardHeight - (this@setup.view.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
-            }
+//            }
             afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
-//                this@setup.view.findFirstResponderChild()?.scrollToMe(true)
+                this@setup.view.findFirstResponderChild()?.scrollToMe(true)
             }
         }
 
         @ObjCAction
         fun keyboardWillHideNotification() {
-            UIView.animateWithDuration(keyboardAnimationDuration) {
+//            UIView.animateWithDuration(keyboardAnimationDuration) {
                 bottom.constant = 0.0
-            }
+//            }
         }
 
         @ObjCAction

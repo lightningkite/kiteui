@@ -74,7 +74,6 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
                     val old = oldView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
                     val intersecting = new.keys.intersect(old.keys)
                     if(intersecting.isNotEmpty()) {
-                        println("Transitioning ${intersecting}")
                         val shared = CustomTransition(native)
                         shared.setDuration(theme.transitionDuration.inWholeMilliseconds)
                         intersecting.forEach {
@@ -86,7 +85,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
                         addTransition(shared)
                     }
                 }
-                val start = Scene(native)
+//                val start = Scene(native)
                 exit?.let { addTransition(it) }
                 enter?.let { addTransition(it) }
                 this.addListener(object: Transition.TransitionListener {

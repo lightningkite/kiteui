@@ -91,6 +91,7 @@ fun <T> Indexed<T>.columned(count: Int): Indexed<Indexed<T>> = object : Indexed<
     override fun copy(): Indexed<Indexed<T>> = original.copy().columned(count)
 }
 
+@OptIn(ExperimentalForeignApi::class)
 fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<Indexed<T>>(
     create = { parent, data ->
         LinearLayout().apply {

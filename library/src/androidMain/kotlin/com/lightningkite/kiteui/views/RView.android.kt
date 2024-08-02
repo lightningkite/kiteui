@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import androidx.core.view.ScrollingView
+import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -143,13 +144,16 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
+        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
+        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeViewAt(index)
     }
 
     actual override fun internalClearChildren() {
+        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeAllViews()
     }
 

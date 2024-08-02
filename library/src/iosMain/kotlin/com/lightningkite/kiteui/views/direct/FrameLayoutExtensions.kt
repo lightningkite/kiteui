@@ -19,6 +19,7 @@ import kotlin.math.max
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
+    if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
     var padding = extensionPadding ?: 0.0
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
@@ -38,23 +39,13 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
             Align.Center -> (mySize.height - size.height) / 2
         }
         val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
-        val heightSize =
-            if (v == Align.Stretch) mySize.height - padding * 2 else size.height
+        val heightSize = if (v == Align.Stretch) mySize.height - padding * 2 else size.height
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 
-        if (view.bounds.useContents { this.size.width == 0.0 && this.size.height == 0.0 }) {
-            view.withoutAnimation {
-                view.setPsuedoframe(
-                    offsetH,
-                    offsetV,
-                    widthSize,
-                    heightSize,
-                )
-                if (oldSize.first != widthSize || oldSize.second != heightSize) {
-                    view.layoutSubviewsAndLayers()
-                }
+        run {
+            if(viewDebugTarget?.native == this) {
+                println("Don't animate the change")
             }
-        } else {
             view.setPsuedoframe(
                 offsetH,
                 offsetV,
@@ -102,16 +93,18 @@ fun UIView.frameLayoutSizeThatFits(
     size: CValue<CGSize>,
     childSizeCache: ArrayList<HashMap<Size, Size>>
 ): CValue<CGSize> {
-    val size = size.local
+    val inputSize = size.local
     val measuredSize = Size()
 
-    val sizes = frameLayoutCalcSizes(size, childSizeCache)
+    val sizes = frameLayoutCalcSizes(inputSize, childSizeCache)
     val padding = extensionPadding ?: 0.0
-    for (size in sizes) {
+    for ((index, size) in sizes.withIndex()) {
         measuredSize.width = max(measuredSize.width, size.width + padding * 2)
         measuredSize.height = max(measuredSize.height, size.height + padding * 2)
+        if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}")
     }
 
+    if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits ${inputSize} -> ${measuredSize}")
     return measuredSize.objc
 }
 
@@ -119,13 +112,11 @@ fun UIView.frameLayoutSizeThatFits(
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
     var t = PerformanceInfo.trace("calcSizeFrame")
     val padding = extensionPadding ?: 0.0
-//        let size = padding.shrinkSize(size)
-//    val remaining = size.copy()
     val remaining = size.copy(width = size.width - 2 * padding, height = size.height - 2 * padding)
 
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
-        if (it.hidden) return@mapIndexed Size(0.0, 0.0)
+        if (it.hidden) return@mapIndexed Size()
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
         t.pause()
         val required = childSizeCache[index].getOrPut(measureInput) {
@@ -134,6 +125,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
                 it.extensionSizeConstraints
             ).local
         }
+        if(viewDebugTarget?.native == this) println("frameLayoutCalcSizes child[$index] ${size} -> ${required}")
         t.resume()
         it.extensionSizeConstraints?.let {
             it.maxWidth?.let { required.width = required.width.coerceAtMost(it.value) }

@@ -19,6 +19,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
+        delegate = NextFocusDelegateShared
     }
 
     init {

@@ -5,16 +5,21 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
-import kotlin.math.max
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
 //val UIView.layoutParams: LayoutParams by UIViewLayoutParams
 //
 //class LayoutParams()
+
+
+object ScrollLayoutMeta {
+    val unboundSize = 10_000.0
+}
 
 @OptIn(ExperimentalForeignApi::class)
 class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
@@ -27,6 +32,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
 
     override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
+        informParentOfSizeChange()
     }
 
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
@@ -46,34 +52,32 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val size = size.local
-        val measuredSize = Size()
+        val mySizeWithoutPadding = bounds.useContents { size.local }
+        mySizeWithoutPadding.primary -= padding * 2
+        mySizeWithoutPadding.secondary -= padding * 2
 
-        val subsize = calcSizes(size, true)
-        measuredSize.primary += padding
-        measuredSize.primary += subsize.primary
-        measuredSize.secondary = max(measuredSize.secondary, subsize.secondary + padding * 2)
-        measuredSize.primary += padding
+        val subsize = calcSizes(mySizeWithoutPadding, true)
 
-        return measuredSize.objc
+        if (viewDebugTarget?.native === this) println("Total sizeThatFits $subsize")
+
+        subsize.primary += padding * 2 + 0.00001
+        subsize.secondary += padding * 2 + 0.00001
+
+        return subsize.objc
     }
 
-    fun calcSizes(size: Size, unbound: Boolean): Size {
-        val remaining = size.copy()
-        remaining.primary -= padding * 2
-        remaining.secondary -= padding * 2
+    fun calcSizes(sizeWithoutPadding: Size, unbound: Boolean): Size {
+        val remaining = sizeWithoutPadding.copy()
 
-        var totalWeight = 0f
         return mainSubview?.let {
-            val remainingPrimary = if (unbound) 10000.0 else remaining.primary
+            val remainingPrimary = if (unbound) ScrollLayoutMeta.unboundSize else remaining.primary
+            val sizeInput = Size(remainingPrimary, remaining.secondary)
             val required = it.sizeThatFits2(
-                CGSizeMake(
-                    if (horizontal) remainingPrimary else remaining.secondary,
-                    if (horizontal) remaining.secondary else remainingPrimary
-                ),
+                sizeInput.objc,
 //                null,
                 it.extensionSizeConstraints,
             ).local
+            if (viewDebugTarget?.native === this) println("Scroll child measured with $sizeInput, got $required")
             it.extensionSizeConstraints?.let {
                 it.primaryMax?.let { required.primary = required.primary.coerceAtMost(it.value) }
                 it.secondaryMax?.let { required.secondary = required.secondary.coerceAtMost(it.value) }
@@ -86,35 +90,36 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
             required.secondary = required.secondary.coerceAtLeast(0.0)
 
             remaining.secondary = remaining.secondary.coerceAtLeast(required.secondary)
-            it.extensionWeight?.let { w ->
-                totalWeight += w
-                required.primary = (-w).toDouble()
-            } ?: run {
-                remaining.primary -= required.primary
-            }
+            if (viewDebugTarget?.native === this) println("Scroll child result is $required")
             required
-        } ?: size
+        } ?: sizeWithoutPadding
     }
 
     override fun layoutSubviews() {
-        val mySize = bounds.useContents { size.local }
+        val mySizeWithoutPadding = bounds.useContents { size.local }
+        mySizeWithoutPadding.primary -= padding * 2
+        mySizeWithoutPadding.secondary -= padding * 2
+        if (viewDebugTarget?.native === this) println("Laying out within $mySizeWithoutPadding")
         var primary = padding
         val view = mainSubview ?: run {
             return
         }
-        var size = calcSizes(frame.useContents { this.size.local }, true)
+        var size = calcSizes(mySizeWithoutPadding, true)
+        if (viewDebugTarget?.native === this) println("Initial scroll size calc: $size")
         if (size.primary >= 9999.0) {
-            size = calcSizes(frame.useContents { this.size.local }, false)
+            size = calcSizes(mySizeWithoutPadding, false)
+            size.primary = size.primary.coerceAtLeast(mySizeWithoutPadding.primary)
+            if (viewDebugTarget?.native === this) println("Constrained scroll size calc: $size")
         }
         val ps = primary
         val a = view.secondaryAlign ?: Align.Stretch
         val offset = when (a) {
             Align.Start -> padding
             Align.Stretch -> padding
-            Align.End -> mySize.secondary - padding - size.secondary
-            Align.Center -> (mySize.secondary - size.secondary) / 2
+            Align.End -> padding + mySizeWithoutPadding.secondary - size.secondary
+            Align.Center -> padding + (mySizeWithoutPadding.secondary - size.secondary) / 2
         }
-        val secondarySize = (if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary.coerceAtMost(mySize.secondary - padding * 2))
+        val secondarySize = (if (a == Align.Stretch) mySizeWithoutPadding.secondary else size.secondary.coerceAtMost(mySizeWithoutPadding.secondary - padding * 2))
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
         val widthSize = if (horizontal) size.primary else secondarySize
         val heightSize = if (horizontal) secondarySize else size.primary

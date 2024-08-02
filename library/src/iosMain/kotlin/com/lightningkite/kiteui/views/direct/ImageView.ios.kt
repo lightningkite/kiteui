@@ -25,8 +25,9 @@ import kotlin.coroutines.resumeWithException
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-actual class ImageView actual constructor(context: RContext): RView(context) {
+actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = MyImageView()
+
     init {
         native.clipsToBounds = true
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
@@ -36,10 +37,10 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
     actual var source: ImageSource?
         get() = native.imageSource
         set(value) {
-            if(refreshOnParamChange && value is ImageRemote) {
-                if(value.url == (native.imageSource as? ImageRemote)?.url) return
-            } else if(value == native.imageSource) return
-            if(native.bounds.useContents { size.height } == 0.0) {
+            if (refreshOnParamChange && value is ImageRemote) {
+                if (value.url == (native.imageSource as? ImageRemote)?.url) return
+            } else if (value == native.imageSource) return
+            if (native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
                     setImageInternal(value)
                 }
@@ -47,6 +48,7 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
             }
             setImageInternal(value)
         }
+
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     private fun setImageInternal(value: ImageSource?) {
         if (!com.lightningkite.kiteui.views.animationsEnabled) {
@@ -60,19 +62,28 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
                 native.informParentOfSizeChange()
             }
 
-        is ImageRaw -> {
-            try {
-                native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
-                native.informParentOfSizeChange()
-            } catch (_: Exception) { }
-        }
+            is ImageRaw -> {
+                try {
+                    native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
+                    native.informParentOfSizeChange()
+                } catch (_: Exception) {
+                }
+            }
 
             is ImageRemote -> {
                 native.startLoad()
                 calculationContext.sub().launch {
-                    val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    val image = ImageCache.get(
+                        value,
+                        native.bounds.useContents { size.width.toInt() },
+                        native.bounds.useContents { size.height.toInt() }) {
                         inBackground {
-                            UIImage(data = NSData.dataWithContentsOfURL(NSURL.URLWithString(value.url) ?: throw IllegalStateException("Invalid URL ${value.url}")) ?: throw IllegalStateException("No data found at URL ${value.url}"))
+                            UIImage(
+                                data = NSData.dataWithContentsOfURL(
+                                    NSURL.URLWithString(value.url)
+                                        ?: throw IllegalStateException("Invalid URL ${value.url}")
+                                ) ?: throw IllegalStateException("No data found at URL ${value.url}")
+                            )
                         }
                     }
                     if (native.imageSource != value) return@launch
@@ -98,9 +109,12 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
                 native.startLoad()
                 calculationContext.sub().launch {
                     if (native.imageSource != value) return@launch
-                    val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    val image = ImageCache.get(
+                        value,
+                        native.bounds.useContents { size.width.toInt() },
+                        native.bounds.useContents { size.height.toInt() }) {
                         suspendCoroutineCancellable { cont ->
-                            loadImageFromProvider(value.file.provider, ) { data, err ->
+                            loadImageFromProvider(value.file.provider) { data, err ->
                                 if (err != null) cont.resumeWithException(Exception(err.description))
                                 else if (data is UIImage) {
                                     dispatch_async(queue = dispatch_get_main_queue(), block = {
@@ -126,6 +140,7 @@ actual class ImageView actual constructor(context: RContext): RView(context) {
             else -> {}
         }
     }
+
     actual inline var scaleType: ImageScaleType
         get() = TODO()
         set(value) {
@@ -167,17 +182,18 @@ object ImageCache {
         imageCache.setObject(loaded, key, loaded.size.useContents { width * height * 4 }.toULong())
         return loaded
     }
+
     val imageCacheSized = NSCache()
     suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = Triple(key, minWidth, minHeight)
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let { return it }
         val baseCached = get(key, { load() })
-        if(minWidth == 0 || minHeight == 0) return baseCached
+        if (minWidth == 0 || minHeight == 0) return baseCached
         val scaling = max(
-            minWidth.toFloat() / baseCached.size.useContents { width } ,
+            minWidth.toFloat() / baseCached.size.useContents { width },
             minHeight.toFloat() / baseCached.size.useContents { height }
         )
-        if(scaling >= 1f) return baseCached
+        if (scaling >= 1f) return baseCached
         return inBackground {
             val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
             val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
@@ -189,7 +205,7 @@ object ImageCache {
             } finally {
                 UIGraphicsEndImageContext()
             }
-            if(image == null) return@inBackground baseCached
+            if (image == null) return@inBackground baseCached
 //        println("Resized image is be ${image.size.useContents { "$width x $height" }}")
             imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
             image
@@ -197,13 +213,13 @@ object ImageCache {
     }
 }
 
-internal suspend fun <T> inBackground(action: ()->T): T {
+internal suspend fun <T> inBackground(action: () -> T): T {
     return suspendCoroutineCancellable<T> { cont ->
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT.toLong(), 0UL)) {
             try {
                 val result = action()
                 dispatch_async(dispatch_get_main_queue(), { cont.resume(result) })
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 dispatch_async(dispatch_get_main_queue(), { cont.resumeWithException(e) })
             }
         }
@@ -333,9 +349,9 @@ class PanZoomImageView : UIScrollView(CGRectZero.readValue()), UIScrollViewDeleg
 }
 
 
-
-actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
+actual class ZoomableImageView actual constructor(context: RContext) : RView(context) {
     override val native = PanZoomImageView()
+
     init {
         native.clipsToBounds = true
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
@@ -348,7 +364,7 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
             field = value
-            if(native.bounds.useContents { size.height } == 0.0) {
+            if (native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
                     setImageInternal(value)
                 }
@@ -356,6 +372,7 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             }
             setImageInternal(value)
         }
+
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     private fun setImageInternal(value: ImageSource?) {
         if (!com.lightningkite.kiteui.views.animationsEnabled) {
@@ -377,9 +394,17 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             is ImageRemote -> {
                 native.imageView.startLoad()
                 calculationContext.sub().launch {
-                    val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    val image = ImageCache.get(
+                        value,
+                        native.bounds.useContents { size.width.toInt() },
+                        native.bounds.useContents { size.height.toInt() }) {
                         inBackground {
-                            UIImage(data = NSData.dataWithContentsOfURL(NSURL.URLWithString(value.url) ?: throw IllegalStateException("Invalid URL ${value.url}")) ?: throw IllegalStateException("No data found at URL ${value.url}"))
+                            UIImage(
+                                data = NSData.dataWithContentsOfURL(
+                                    NSURL.URLWithString(value.url)
+                                        ?: throw IllegalStateException("Invalid URL ${value.url}")
+                                ) ?: throw IllegalStateException("No data found at URL ${value.url}")
+                            )
                         }
                     }
                     if (native.imageView.imageSource != value) return@launch
@@ -405,9 +430,12 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
                 native.imageView.startLoad()
                 calculationContext.sub().launch {
                     if (native.imageView.imageSource != value) return@launch
-                    val image = ImageCache.get(value, native.bounds.useContents { size.width.toInt() }, native.bounds.useContents { size.height.toInt() }) {
+                    val image = ImageCache.get(
+                        value,
+                        native.bounds.useContents { size.width.toInt() },
+                        native.bounds.useContents { size.height.toInt() }) {
                         suspendCoroutineCancellable { cont ->
-                            loadImageFromProvider(value.file.provider, ) { data, err ->
+                            loadImageFromProvider(value.file.provider) { data, err ->
                                 if (err != null) cont.resumeWithException(Exception(err.description))
                                 else if (data is UIImage) {
                                     dispatch_async(queue = dispatch_get_main_queue(), block = {
@@ -433,6 +461,7 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             else -> {}
         }
     }
+
     actual inline var scaleType: ImageScaleType
         get() = TODO()
         set(value) {

@@ -42,16 +42,24 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     protected actual override fun existsSet(value: Boolean) {
-        if (animationsEnabled) {
-            UIView.animateWithDuration(theme.transitionDuration.toDouble(DurationUnit.SECONDS)) {
-                native.hidden = !value
-                native.informParentOfSizeChange()
-                native.superview?.layoutIfNeeded()
-            }
-        } else {
-            native.hidden = !value
+        native.hidden = !value
+        if(fullyStarted) {
             native.informParentOfSizeChange()
         }
+//        if (animationsEnabled) {
+//            UIView.animateWithDuration(theme.transitionDuration.toDouble(DurationUnit.SECONDS)) {
+//                native.hidden = !value
+//                if(fullyStarted) {
+//                    native.informParentOfSizeChange()
+//                    native.superview?.layoutIfNeeded()
+//                }
+//            }
+//        } else {
+//            native.hidden = !value
+//            if(fullyStarted) {
+//                native.informParentOfSizeChange()
+//            }
+//        }
     }
 
     protected actual override fun visibleSet(value: Boolean) {
@@ -226,40 +234,34 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
 var animationsEnabled: Boolean = true
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
-    if (!animationsEnabled) {
-        CATransaction.begin()
-        CATransaction.disableActions()
-        try {
-            action()
-        } finally {
-            CATransaction.commit()
-        }
-        return
-    }
-    try {
-        animationsEnabled = false
-        CATransaction.begin()
-        CATransaction.disableActions()
-        try {
-            action()
-        } finally {
-            CATransaction.commit()
-        }
-    } finally {
-        animationsEnabled = true
-    }
+    native.withoutAnimation(action)
+//    if (!animationsEnabled) {
+//        CATransaction.begin()
+//        CATransaction.disableActions()
+//        try {
+//            action()
+//        } finally {
+//            CATransaction.commit()
+//        }
+//        return
+//    }
+//    try {
+//        animationsEnabled = false
+//        CATransaction.begin()
+//        CATransaction.disableActions()
+//        try {
+//            action()
+//        } finally {
+//            CATransaction.commit()
+//        }
+//    } finally {
+//        animationsEnabled = true
+//    }
 }
 
 inline fun UIView.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {
-        CATransaction.begin()
-        CATransaction.disableActions()
-        try {
-            action()
-        } finally {
-            CATransaction.commit()
-        }
-        return
+        action()
     }
     try {
         animationsEnabled = false
@@ -274,22 +276,10 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
         animationsEnabled = true
     }
 }
-
-inline fun NView.animateIfAllowed(crossinline animations: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(extensionAnimationDuration ?: 0.15) {
-        animations()
+inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
+    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.15) {
+        action()
     } else {
-        animations()
-    }
-}
-
-inline fun NView.animateIfAllowedWithComplete(
-    crossinline animations: () -> Unit,
-    crossinline completion: () -> Unit,
-) {
-    if (animationsEnabled) UIView.animateWithDuration(duration = extensionAnimationDuration ?: 0.15, animations = {
-        animations()
-    }, completion = { completion() }) else {
-        animations()
+        action()
     }
 }

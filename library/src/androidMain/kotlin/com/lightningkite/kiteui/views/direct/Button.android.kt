@@ -25,7 +25,9 @@ actual class Button actual constructor(context: RContext): RView(context) {
 
     override fun postSetup() {
         super.postSetup()
-        native.addView(progress)
+        addChild(object: RView(context) {
+            override val native = progress
+        })
         working.addListener { progress.visibility = if(working.value) View.VISIBLE else View.GONE }
     }
 

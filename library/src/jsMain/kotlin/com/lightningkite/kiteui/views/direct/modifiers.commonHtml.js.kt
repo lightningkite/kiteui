@@ -139,9 +139,9 @@ internal actual fun RView.nativeAnimateHideBinding(
                         myElement.hidden = value
                         myElement.classList.remove("animatingShowHide")
                         this.asDynamic().__kiteui__hiddenAnim = null
-                        child.style.removeProperty("width")
+                        child.style.width = "100%"
                         child.style.removeProperty("maxWidth")
-                        child.style.removeProperty("height")
+                        child.style.height = "100%"
                         child.style.removeProperty("maxHeight")
                     }
                 }
@@ -150,9 +150,9 @@ internal actual fun RView.nativeAnimateHideBinding(
                         myElement.hidden = value
                         myElement.classList.remove("animatingShowHide")
                         this.asDynamic().__kiteui__hiddenAnim = null
-                        child.style.removeProperty("width")
+                        child.style.width = "100%"
                         child.style.removeProperty("maxWidth")
-                        child.style.removeProperty("height")
+                        child.style.height = "100%"
                         child.style.removeProperty("maxHeight")
                     }
                 }
@@ -161,9 +161,9 @@ internal actual fun RView.nativeAnimateHideBinding(
                         myElement.hidden = value
                         myElement.classList.remove("animatingShowHide")
                         this.asDynamic().__kiteui__hiddenAnim = null
-                        child.style.removeProperty("width")
+                        child.style.width = "100%"
                         child.style.removeProperty("maxWidth")
-                        child.style.removeProperty("height")
+                        child.style.height = "100%"
                         child.style.removeProperty("maxHeight")
                     }
                 }

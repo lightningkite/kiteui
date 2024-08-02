@@ -87,8 +87,8 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     companion object {
         var animationsEnabled: Boolean = true
-        var leakDetection: Boolean = true
-        var removeBeforeShutdown: Boolean = true
+        var leakDetection: Boolean = false
+        var removeBeforeShutdown: Boolean = false
         val leakLog = ConsoleRoot.tag("RViewLeaks")
     }
 

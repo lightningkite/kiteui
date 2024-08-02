@@ -12,13 +12,7 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let navigator = ScreenNavigator { AutoRoutesKt.AutoRoutes }
-        let dialog = ScreenNavigator { AutoRoutesKt.AutoRoutes }
-        DataKt.remMultiplier = 0.9
-        RootSetupIosKt.setup(self, themeReadable: AppKt.appTheme, app: { $0.app(navigator: navigator, dialog: dialog) })
-//        RootSetupIosKt.setup(self, app: { vw in vw.appBase(routes: AutoRoutesKt.AutoRoutes, mainLayout: {_ in
-//            vw.iosTest2()
-//        }) })
+        AppIos.root(self)
     }
 
 

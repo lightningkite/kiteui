@@ -21,8 +21,10 @@ fun ViewWriter.navGroupColumn(
 private fun RView.selectedIfRouteMatches(it: NavLink) {
     dynamicTheme {
         val matchingScreen = mainScreenNavigator.currentScreen.await()
-            ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(it.destination()())?.urlLikePath?.segments
-        if(matchingScreen) SelectedSemantic else null
+            ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(
+            it.destination()()
+        )?.urlLikePath?.segments
+        if (matchingScreen) SelectedSemantic else null
     }
 }
 
@@ -109,12 +111,11 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
             } in gravity(Align.Center, Align.Center)
         }
         navElement.count?.let { count ->
-            gravity(Align.End, Align.Start) - compact - critical - stack {
+            atTopEnd - compact - critical - stack {
                 exists = false
                 ::exists { count() != null }
-                space(0.01)
-                centered - subtext {
-                    ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
+                subtext {
+                    ::content { count()?.takeIf { it > 0 }?.toString() ?: "*" }
                 }
             }
         }
@@ -124,7 +125,6 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
             is NavAction -> unpadded - button {
                 exists = false
                 ::exists { it.hidden?.invoke() != true }
-//                text { ::content { it.title() } }
                 navElementIconAndCount(it)
                 onClick { it.onSelect() }
             }
@@ -133,24 +133,19 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
                 exists = false
                 ::exists { it.hidden?.invoke() != true }
                 ::to { it.to() }
-//                text { ::content { it.title() } }
                 navElementIconAndCount(it)
             }
 
-            is NavGroup -> {
-                row {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
-                    navGroupActionsInner(shared { it.children() })
-                }
+            is NavGroup -> row {
+                exists = false
+                ::exists { it.hidden?.invoke() != true }
+                navGroupActionsInner(shared { it.children() })
             }
 
-            is NavCustom -> {
-                stack {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
-                    it.square(this@forEach)
-                }
+            is NavCustom -> stack {
+                exists = false
+                ::exists { it.hidden?.invoke() != true }
+                it.square(this@forEach)
             }
 
             is NavLink -> unpadded - link {
@@ -159,7 +154,6 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
                 exists = false
                 ::exists { it.hidden?.invoke() != true }
                 ::to { it.destination() }
-//                text { ::content { it.title() } }
                 navElementIconAndCount(it)
             }
         }

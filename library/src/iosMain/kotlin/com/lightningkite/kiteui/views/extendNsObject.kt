@@ -77,8 +77,5 @@ var UIView.extensionTextSize: Double? by UIViewTextSize
 private val UIViewForcePadding = ExtensionProperty<UIView, Boolean>()
 var UIView.extensionForcePadding: Boolean? by UIViewForcePadding
 
-private val UIViewAnimationDuration = ExtensionProperty<UIView, Double>()
-var UIView.extensionAnimationDuration: Double? by UIViewAnimationDuration
-
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
 var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder
