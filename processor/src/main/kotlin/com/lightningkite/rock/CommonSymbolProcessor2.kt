@@ -29,7 +29,7 @@ abstract class CommonSymbolProcessor2(
 
         val interestedIn = interestedIn(resolver)
 
-        val stub = myCodeGenerator.createNewFile(
+        myCodeGenerator.createNewFile(
             Dependencies.ALL_FILES,
             fileName = "$myId",
             extensionName = "txt",
@@ -42,7 +42,7 @@ abstract class CommonSymbolProcessor2(
         val projectFolder = generateSequence(outSample) { it.parentFile!! }
             .first { it.name == "build" }
             .parentFile!!
-        val common = interestedIn.any { it.filePath?.contains("/src/common", true) == true }
+        val common = interestedIn.any { it.filePath.contains("/src/common", true) }
         val flavor = outSample.path.split(File.separatorChar)
             .dropWhile { it != "ksp" }
             .drop(2)
@@ -61,7 +61,7 @@ abstract class CommonSymbolProcessor2(
                 lockFile = outFolder.resolve("$myId.lock"),
                 destinationFolder = outFolder.resolve(myId).also { it.mkdirs() },
                 action = {
-                    fileCreator = label@{ dependencies, packageName, fileName, extensionName ->
+                    fileCreator = label@{ _, packageName, fileName, extensionName ->
                         val packagePath = packageName.split('.').filter { it.isNotBlank() }.joinToString("") { "$it/" }
                         this.file("${packagePath}$fileName.$extensionName")
                     }
