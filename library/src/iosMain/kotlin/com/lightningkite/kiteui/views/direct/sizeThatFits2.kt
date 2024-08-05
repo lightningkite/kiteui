@@ -35,7 +35,6 @@ fun UIView.sizeThatFits2(
         CGSizeMake(w, h)
     } ?: size
     val measured = when (this) {
-        is MyImageView -> newSizeInput
         is LinearLayout,
         is FrameLayout,
         is FrameLayoutButton -> sizeThatFits(newSizeInput)
