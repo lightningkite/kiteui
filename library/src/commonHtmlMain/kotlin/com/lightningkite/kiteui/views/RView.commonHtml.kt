@@ -1,11 +1,14 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.dom.Event
+import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.direct.HtmlInput
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
@@ -50,6 +53,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
+        launchGlobal {
+            delay(100)
+            native.focus()
+        }
     }
 
     override fun leakDetect() {
