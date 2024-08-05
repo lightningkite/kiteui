@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
+import com.lightningkite.rock.CommonSymbolProcessor2
 import java.io.BufferedWriter
 import java.io.File
 import java.util.*
@@ -14,9 +15,18 @@ var khrysalisUsed = false
 class RouterGeneration(
     val codeGenerator: CodeGenerator,
     val logger: KSPLogger,
-) : CommonSymbolProcessor(codeGenerator) {
-    override fun process2(resolver: Resolver) {
-        val allRoutables = resolver.getAllFiles()
+) : CommonSymbolProcessor2(codeGenerator, "kiteui", 0) {
+    override fun interestedIn(resolver: Resolver): Set<KSFile> {
+        val allRoutables = resolver.getAllFiles().filter {
+            it.declarations
+                .filterIsInstance<KSClassDeclaration>()
+                .any { it.annotation("Routable") != null }
+        }.toSet()
+        return allRoutables
+    }
+
+    override fun process2(resolver: Resolver, files: Set<KSFile>) {
+        val allRoutables = files
             .flatMap { it.declarations }
             .filterIsInstance<KSClassDeclaration>()
             .filter { it.annotation("Routable") != null }
@@ -92,7 +102,7 @@ class RouterGeneration(
                                                 }
                                             }
                                             appendLine("}")
-                                        }else {
+                                        } else {
                                             appendLine("${routable.source.simpleName!!.asString()}(")
                                             tab {
                                                 for ((index, part) in route.withIndex()) {
@@ -127,6 +137,7 @@ class RouterGeneration(
                                     when (it) {
                                         is ParsedRoutable.Segment.Constant -> "\"${it.value}\""
                                         is ParsedRoutable.Segment.Variable -> "UrlProperties.encodeToString(it.${it.name})"
+                                        else -> throw Exception()
                                     }
                                 }
                                 appendLine("${routable.source.simpleName!!.asString()}::class to label@{")
