@@ -29,6 +29,7 @@ class KiteUiPlugin : Plugin<Project> {
             val resourceFolder = project.file("src/commonMain/resources")
             inputs.files(resourceFolder)
             afterEvaluate {
+                tasks.findByName("compileCommonMainKotlinMetadata")?.dependsOn(this)
 
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
@@ -73,9 +74,79 @@ expect object Resources {
             from("src/commonMain/resources")
             into("src/jsMain/resources/common")
             afterEvaluate {
+                tasks.findByName("compileKotlinJs")?.dependsOn(this)
 
                 val out = project.file("src/jsMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")
+                outputs.file(out)
+                outputs.file(gitIgnore)
+                val resourceFolder = project.file("src/commonMain/resources")
+                inputs.files(resourceFolder)
+                doLast {
+                    var usesBlob = false
+                    gitIgnore.writeText("*\n")
+                    val lines = resourceFolder.resources()
+                        .entries
+                        .sortedBy { it.key }
+                        .joinToString("\n    ") {
+                            when (val r = it.value) {
+                                is Resource.Font -> {
+                                    val normal = r.normal.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                                    val italics = r.italics.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
+                                    "actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = mapOf($normal), italics = mapOf($italics)))"
+                                }
+
+                                is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"common/${
+                                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                                }\")"
+
+                                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"common/${
+                                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                                }\")"
+
+                                is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"common/${
+                                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                                }\")"
+
+                                is Resource.Binary -> { usesBlob = true; "actual suspend fun ${r.name}(): Blob = fetch(\"common/${
+                                    r.relativeFile.toString().replace(File.separatorChar, '/')
+                                }\").blob()" }
+
+                                else -> ""
+                            }
+                        }
+
+                    val imports = mutableListOf("import com.lightningkite.kiteui.models.*")
+                        .also {
+                            if (usesBlob) {
+                                it.add("import com.lightningkite.kiteui.Blob")
+                                it.add("import com.lightningkite.kiteui.fetch")
+                            }
+                        }
+                        .joinToString("\n")
+
+                    out.writeText(
+                        """
+package ${ext.packageName}
+
+$imports
+
+actual object Resources {
+    $lines
+}
+        """.trimIndent()
+                    )
+                }
+            }
+        }
+
+        tasks.create("kiteuiResourcesJvm", Task::class.java).apply {
+            dependsOn("kiteuiResourcesCommon")
+            group = "build"
+            afterEvaluate {
+                tasks.findByName("compileKotlinJvm")?.dependsOn(this)
+                val out = project.file("src/jvmMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
+                val gitIgnore = project.file("src/jvmMain/resources/common/.gitignore")
                 outputs.file(out)
                 outputs.file(gitIgnore)
                 val resourceFolder = project.file("src/commonMain/resources")
@@ -143,6 +214,9 @@ actual object Resources {
             group = "build"
 
             afterEvaluate {
+                tasks.findByName("compileKotlinIosSimulatorArm64")?.dependsOn(this)
+                tasks.findByName("compileKotlinIosArm64")?.dependsOn(this)
+                tasks.findByName("compileKotlinIosX64")?.dependsOn(this)
                 val outKt = project.file("src/iosMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
 
@@ -300,9 +374,12 @@ actual object Resources {
             val androidResFolder = project.file("src/androidMain/res")
 
             afterEvaluate {
+                tasks.findByName("compileReleaseKotlinAndroid")?.dependsOn(this)
+                tasks.findByName("compileDebugKotlinAndroid")?.dependsOn(this)
                 val outKt =
                     project.file("src/androidMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
+                // TODO: Manifest for tracking which files are under our control; git-ignore
                 doLast {
                     val resources = resourceFolder.resources()
                         .entries
@@ -403,6 +480,7 @@ actual object Resources {
             dependsOn("kiteuiResourcesJs")
             dependsOn("kiteuiResourcesIos")
             dependsOn("kiteuiResourcesAndroid")
+            dependsOn("kiteuiResourcesJvm")
         }
 
         tasks.create("kiteuiLocalize").apply {
