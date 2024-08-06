@@ -95,7 +95,7 @@ actual object ExternalServices {
             val blob = it.second
 
             val type = blob.type.split("/").lastOrNull() ?: "png"
-            val fileName = if (name.endsWith(".$type")) name else "${name}.${type}"
+            val fileName = if (name.contains(".")) name else "${name}.${type}"
 
             File(
                 fileBits = arrayOf(blob),
