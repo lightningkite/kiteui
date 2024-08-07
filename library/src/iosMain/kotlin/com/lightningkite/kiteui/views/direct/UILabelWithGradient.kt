@@ -75,9 +75,10 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return label.sizeThatFits(size).useContents {
+            val padding = extensionPadding ?: 0.0
             CGSizeMake(
-                width = width.coerceAtLeast(label.font.lineHeight),
-                height = height.coerceAtLeast(label.font.lineHeight),
+                width = width.coerceAtLeast(label.font.lineHeight) + 2 * padding,
+                height = height.coerceAtLeast(label.font.lineHeight) + 2 * padding,
             )
         }
     }
@@ -87,14 +88,20 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         val padding = extensionPadding ?: 0.0
         gradientLayer?.frame = bounds
         bounds.useContents {
-            val childFrame = cValue<CGRect> {
-                origin.x = padding
-                origin.y = padding
-                size.width = this@useContents.size.width - 2 * padding
-                size.height = this@useContents.size.height - 2 * padding
-            }
-            uiViewWithLabelMask.setFrame(childFrame)
-            label.setFrame(childFrame)
+            val insetWidth = this@useContents.size.width - 2 * padding
+            val insetHeight = this@useContents.size.height - 2 * padding
+            uiViewWithLabelMask.setFrame(CGRectMake(
+                padding,
+                padding,
+                insetWidth,
+                insetHeight
+            ))
+            label.setFrame(CGRectMake(
+                0.0,
+                0.0,
+                insetWidth,
+                insetHeight
+            ))
         }
     }
 }
