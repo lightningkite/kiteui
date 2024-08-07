@@ -25,11 +25,12 @@ class KiteUiPlugin : Plugin<Project> {
                 throw IllegalArgumentException("KiteUiPluginExtension property iosProjectRoot is null. Please configure KiteUiPluginExtension and provide a value")
         }
         tasks.create("kiteuiResourcesCommon", Task::class.java).apply {
+            val task = this
             group = "build"
             val resourceFolder = project.file("src/commonMain/resources")
             inputs.files(resourceFolder)
             afterEvaluate {
-                tasks.findByName("compileCommonMainKotlinMetadata")?.dependsOn(this)
+//                tasks.findByName("compileCommonMainKotlinMetadata")?.dependsOn(task)
 
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
@@ -69,12 +70,13 @@ expect object Resources {
         }
 
         tasks.create("kiteuiResourcesJs", Copy::class.java).apply {
+            val task = this
             dependsOn("kiteuiResourcesCommon")
             group = "build"
             from("src/commonMain/resources")
             into("src/jsMain/resources/common")
             afterEvaluate {
-                tasks.findByName("compileKotlinJs")?.dependsOn(this)
+//                tasks.findByName("compileKotlinJs")?.dependsOn(task)
 
                 val out = project.file("src/jsMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")
@@ -141,10 +143,11 @@ actual object Resources {
         }
 
         tasks.create("kiteuiResourcesJvm", Task::class.java).apply {
+            val task = this
             dependsOn("kiteuiResourcesCommon")
             group = "build"
             afterEvaluate {
-                tasks.findByName("compileKotlinJvm")?.dependsOn(this)
+//                tasks.findByName("compileKotlinJvm")?.dependsOn(task)
                 val out = project.file("src/jvmMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jvmMain/resources/common/.gitignore")
                 outputs.file(out)
@@ -210,13 +213,14 @@ actual object Resources {
         }
 
         tasks.create("kiteuiResourcesIos").apply {
+            val task = this
             dependsOn("kiteuiResourcesCommon")
             group = "build"
 
             afterEvaluate {
-                tasks.findByName("compileKotlinIosSimulatorArm64")?.dependsOn(this)
-                tasks.findByName("compileKotlinIosArm64")?.dependsOn(this)
-                tasks.findByName("compileKotlinIosX64")?.dependsOn(this)
+//                tasks.findByName("compileKotlinIosSimulatorArm64")?.dependsOn(task)
+//                tasks.findByName("compileKotlinIosArm64")?.dependsOn(task)
+//                tasks.findByName("compileKotlinIosX64")?.dependsOn(task)
                 val outKt = project.file("src/iosMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
 
@@ -367,6 +371,7 @@ actual object Resources {
         }
 
         tasks.create("kiteuiResourcesAndroid").apply {
+            val task = this
             dependsOn("kiteuiResourcesCommon")
             group = "build"
             val resourceFolder = project.file("src/commonMain/resources")
@@ -374,8 +379,8 @@ actual object Resources {
             val androidResFolder = project.file("src/androidMain/res")
 
             afterEvaluate {
-                tasks.findByName("compileReleaseKotlinAndroid")?.dependsOn(this)
-                tasks.findByName("compileDebugKotlinAndroid")?.dependsOn(this)
+//                tasks.findByName("compileReleaseKotlinAndroid")?.dependsOn(task)
+//                tasks.findByName("compileDebugKotlinAndroid")?.dependsOn(task)
                 val outKt =
                     project.file("src/androidMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
@@ -475,6 +480,7 @@ actual object Resources {
         }
 
         tasks.create("kiteuiResourcesAll").apply {
+            val task = this
             group = "build"
             dependsOn("kiteuiResourcesCommon")
             dependsOn("kiteuiResourcesJs")
@@ -484,6 +490,7 @@ actual object Resources {
         }
 
         tasks.create("kiteuiLocalize").apply {
+            val task = this
             group = "kiteui"
             afterEvaluate {
                 val commonMain = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}")
