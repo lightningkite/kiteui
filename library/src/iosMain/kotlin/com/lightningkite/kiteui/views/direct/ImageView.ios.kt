@@ -277,20 +277,31 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        return this.image?.size?.useContents {
-            val original = this
-            size.useContents {
-                val max = this
-                val smallerRatio = (max.width / original.width)
-                    .coerceAtMost(max.height / original.height)
-                val imageScale = smallerRatio
-                    .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
-                CGSizeMake(
-                    original.width * imageScale,
-                    original.height * imageScale
-                )
-            }
-        } ?: CGSizeMake(0.0, 0.0)
+        val contentModesThatScale = setOf(
+            UIViewContentMode.UIViewContentModeScaleAspectFit,
+            UIViewContentMode.UIViewContentModeScaleAspectFill,
+            UIViewContentMode.UIViewContentModeScaleToFill
+        )
+        // When we use a contentMode that scales, don't size based off of the size of the image; otherwise, we would
+        // size according to the media dimensions and no cropping, fitting, or stretching would occur
+        if (contentMode in contentModesThatScale) {
+            return size
+        } else {
+            return this.image?.size?.useContents {
+                val original = this
+                size.useContents {
+                    val max = this
+                    val smallerRatio = (max.width / original.width)
+                        .coerceAtMost(max.height / original.height)
+                    val imageScale = smallerRatio
+                        .coerceAtMost(if (naturalSize) 1.0 else (1 / UIScreen.mainScreen.scale))
+                    CGSizeMake(
+                        original.width * imageScale,
+                        original.height * imageScale
+                    )
+                }
+            } ?: CGSizeMake(0.0, 0.0)
+        }
     }
 
     var naturalSize: Boolean = false

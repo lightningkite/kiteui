@@ -60,24 +60,24 @@ fun UIView.sizeThatFits2(
             result
         }
     }
-    val result = measured
-//    val result = sizeConstraints?.let {
-//        var w = measured.useContents { width }
-//        var h = measured.useContents { height }
+    //val result = measured
+    val result = sizeConstraints?.let {
+        var w = measured.useContents { width }
+        var h = measured.useContents { height }
 //        it.maxWidth?.let { w = w.coerceAtMost(it.value) }
 //        it.maxHeight?.let { h = h.coerceAtMost(it.value) }
 //        it.minWidth?.let { w = w.coerceAtLeast(it.value) }
 //        it.minHeight?.let { h = h.coerceAtLeast(it.value) }
-//        it.aspectRatio?.let { aspectRatio ->
-//            aspectRatio.fitInsideBox(w, h).let { innerBox ->
-//                w = innerBox.first
-//                h = innerBox.second
-//            }
-//        }
+        it.aspectRatio?.let { aspectRatio ->
+            aspectRatio.fitInsideBox(w, h).let { innerBox ->
+                w = innerBox.first
+                h = innerBox.second
+            }
+        }
 //        it.width?.let { w = it.value }
 //        it.height?.let { h = it.value }
-//        CGSizeMake(w, h)
-//    } ?: measured
+        CGSizeMake(w, h)
+    } ?: measured
     if(this === viewDebugTarget?.native) {
         println("viewDebugTarget constraints: $sizeConstraints")
         println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
