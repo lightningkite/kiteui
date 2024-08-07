@@ -77,7 +77,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         return label.sizeThatFits(size).useContents {
             val padding = extensionPadding ?: 0.0
             CGSizeMake(
-                width = width.coerceAtLeast(label.font.lineHeight) + 2 * padding,
+                width = width + 2 * padding,
                 height = height.coerceAtLeast(label.font.lineHeight) + 2 * padding,
             )
         }
