@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.dom.createElement
@@ -62,6 +63,16 @@ actual class FutureElement actual constructor() {
     actual fun click() { onElement { (it as HTMLElement).click() } }
     actual fun focus() { onElement { (it as HTMLElement).focus() } }
     actual fun blur() { onElement { (it as HTMLElement).blur() } }
+    actual fun screenRectangle(): Rect? {
+        return element?.getBoundingClientRect()?.let {
+            Rect(
+                left = it.left,
+                right = it.right,
+                top = it.top,
+                bottom = it.bottom,
+            )
+        }
+    }
 
     actual var xmlns: String? = null
     actual var tag: String = "tag"

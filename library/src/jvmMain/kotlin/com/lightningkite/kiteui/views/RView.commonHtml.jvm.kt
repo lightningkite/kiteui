@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Rect
 
 actual class FutureElementStyle(val underlyingMap: MutableMap<String, String>) {
     operator fun get(key: String): String? = underlyingMap.get(key)
@@ -46,6 +47,7 @@ actual class FutureElement actual constructor() {
     actual fun click() {}
     actual fun focus() {}
     actual fun blur() {}
+    actual fun screenRectangle(): Rect? = null
 
     actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
     actual val style: FutureElementStyle = FutureElementStyle(HashMap())
