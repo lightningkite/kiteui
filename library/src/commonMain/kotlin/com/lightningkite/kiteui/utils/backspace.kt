@@ -67,8 +67,13 @@ inline fun numberAutocommaRepair(
     val postDecimal = clean.substringAfter('.', "")
     val result = if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
     val newDecimal = preDecimal.length
-    val adjust =
-        { it: Int -> if (it == 0) newDecimal else if (it > 0) newDecimal + it else newDecimal + it + ((it + 1) / 3) }
+    val adjust = { it: Int ->
+        val first = if (it == 0) newDecimal
+        else if (it > 0) newDecimal + it
+        else newDecimal + it + ((it + 1) / 3)
+        if(first > 0 && result[first-1] == ',') first - 1
+        else first
+    }
     setResult(result)
     if (s != null && e != null) {
         setSelectionRange(adjust(s), adjust(e))
@@ -78,10 +83,10 @@ inline fun numberAutocommaRepair(
 inline fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
-    if(r == 0.0) return preDecimal
+    if (r == 0.0) return preDecimal
     val availableDigits = 10 - preDecimal.length
     val postDecimal = r.times(10.0.pow(availableDigits)).roundToInt()
-    if(postDecimal == 0) return preDecimal
+    if (postDecimal == 0) return preDecimal
     else return preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
 }
 
