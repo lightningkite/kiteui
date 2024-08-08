@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -17,6 +16,7 @@ expect abstract class RView : RViewHelper {
     override fun forcePaddingSet(value: Boolean?)
     override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
     override fun requestFocus()
+    override fun screenRectangle(): Rect?
     override fun applyElevation(dimension: Dimension)
     override fun applyPadding(dimension: Dimension?)
     override fun applyBackground(theme: Theme, fullyApply: Boolean)
@@ -24,6 +24,17 @@ expect abstract class RView : RViewHelper {
     override fun internalAddChild(index: Int, view: RView)
     override fun internalRemoveChild(index: Int)
     override fun internalClearChildren()
+}
+
+fun RView.rectangleRelativeTo(other: RView): Rect? {
+    val myRect = screenRectangle() ?: return null
+    val otherRect = other.screenRectangle() ?: return null
+    return Rect(
+        left = myRect.left - otherRect.left,
+        top = myRect.top - otherRect.top,
+        right = myRect.right - otherRect.left,
+        bottom = myRect.bottom - otherRect.top,
+    )
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
@@ -218,6 +229,8 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         fullyStarted = true
         refreshTheming()
     }
+
+    abstract fun screenRectangle(): Rect?
 
 
     // Calculation context

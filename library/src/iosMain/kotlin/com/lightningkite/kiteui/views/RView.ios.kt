@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
@@ -14,6 +15,7 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
 import platform.UIKit.UITapGestureRecognizer
 import platform.UIKit.UIView
@@ -96,6 +98,19 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     protected actual override fun forcePaddingSet(value: Boolean?) {
         native.extensionForcePadding = value
+    }
+
+    actual override fun screenRectangle(): Rect? {
+        val windowView = native.window?.rootViewController?.view ?: return null
+        val parent = native.superview ?: return null
+        return windowView.convertRect(native.frame, fromView = parent).useContents {
+            Rect(
+                left = (origin.x),
+                right = (origin.x + size.width),
+                top = (origin.y),
+                bottom = (origin.y + size.height),
+            )
+        }
     }
 
     actual override fun scrollIntoView(

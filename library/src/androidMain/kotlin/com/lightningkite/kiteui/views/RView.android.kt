@@ -25,7 +25,8 @@ import kotlin.math.roundToInt
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
-    open fun defaultLayoutParams(): LayoutParams = FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    open fun defaultLayoutParams(): LayoutParams =
+        FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override fun opacitySet(value: Double) {
         if (animationsEnabled) {
@@ -59,7 +60,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun spacingSet(value: Dimension?) {
-        for(child in children) child.updateCorners()
+        for (child in children) child.updateCorners()
     }
 
     actual override fun ignoreInteractionSet(value: Boolean) {
@@ -105,6 +106,17 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         }
     }
 
+    actual override fun screenRectangle(): Rect? {
+        val r = android.graphics.Rect()
+        native.getGlobalVisibleRect(r)
+        return Rect(
+            left = r.left.toDouble(),
+            top = r.top.toDouble(),
+            right = r.right.toDouble(),
+            bottom = r.bottom.toDouble(),
+        )
+    }
+
     protected var background: Drawable? = null
         set(value) {
             field = value
@@ -122,8 +134,14 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }
 
-    actual override fun applyElevation(dimension: Dimension) { native.elevation = dimension.value }
-    actual override fun applyPadding(dimension: Dimension?) { native.setPaddingAll(dimension?.value?.roundToInt() ?: 0) }
+    actual override fun applyElevation(dimension: Dimension) {
+        native.elevation = dimension.value
+    }
+
+    actual override fun applyPadding(dimension: Dimension?) {
+        native.setPaddingAll(dimension?.value?.roundToInt() ?: 0)
+    }
+
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         val view = native
         if (fullyApply) {
@@ -144,27 +162,34 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
-        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeViewAt(index)
     }
 
     actual override fun internalClearChildren() {
-        if((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeAllViews()
     }
 
-    protected fun getBackgroundWithRipple(theme: Theme, fullyApply: Boolean, oldRippleDrawable: RippleDrawable?): RippleDrawable {
+    protected fun getBackgroundWithRipple(
+        theme: Theme,
+        fullyApply: Boolean,
+        oldRippleDrawable: RippleDrawable?
+    ): RippleDrawable {
         val rippleColor = ColorStateList.valueOf(theme.hover().background.colorInt())
         val backgroundDrawable = if (fullyApply) {
             theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable)
         } else {
             GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                colors = intArrayOf(theme.background.applyAlpha(0.01f).colorInt(), theme.background.applyAlpha(0.01f).colorInt())
+                colors = intArrayOf(
+                    theme.background.applyAlpha(0.01f).colorInt(),
+                    theme.background.applyAlpha(0.01f).colorInt()
+                )
             }
         }
         backgroundBlock = backgroundDrawable
@@ -173,6 +198,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             setDrawable(0, backgroundDrawable)
         } ?: RippleDrawable(rippleColor, backgroundDrawable, null)
     }
+
     protected fun applyBackgroundWithRipple(theme: Theme, fullyApply: Boolean) {
         background = getBackgroundWithRipple(theme, fullyApply, background as? RippleDrawable)
         updateCorners()

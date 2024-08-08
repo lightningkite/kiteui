@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Mppexample" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#6CF</item>
+        <item name="colorPrimaryDark">#19A</item>
+        <item name="colorAccent">#080</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

@@ -53,7 +53,14 @@ kotlin {
 //        }
 //    }
     js(IR) {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                    useFirefox()
+                }
+            }
+        }
     }
 //    wasmJs {
 //        browser()
@@ -76,6 +83,12 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+            }
+        }
+        val androidUnitTest by getting {
+            dependencies {
+                implementation("junit:junit:4.13.2")
+                implementation("org.robolectric:robolectric:4.13")
             }
         }
 
@@ -156,6 +169,11 @@ android {
     }
     dependencies {
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
 }
 

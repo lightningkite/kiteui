@@ -27,9 +27,11 @@ abstract class KiteUiActivity : AppCompatActivity() {
 
     abstract val mainNavigator : ScreenNavigator
 
+    lateinit var root: RView
     val viewWriter = object: ViewWriter() {
         override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
+            root = view
             setContentView(view.native)
         }
         init {
