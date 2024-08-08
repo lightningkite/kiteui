@@ -1,21 +1,25 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.nsdata
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.*
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGRectMake
-import platform.Foundation.NSNotificationCenter
-import platform.Foundation.NSNumber
-import platform.Foundation.NSOperationQueue
-import platform.Foundation.numberWithFloat
+import platform.CoreGraphics.CGSizeMake
+import platform.Foundation.*
 import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.*
+import platform.objc.sel_registerName
 
 
 @OptIn(ExperimentalForeignApi::class)
@@ -98,6 +102,16 @@ actual class TextView actual constructor(context: RContext): RView(context) {
 //            minWidth = theme.font.size * 0.6,
 //            minHeight = theme.font.size * 1.5,
 //        )
+    }
+    actual fun setBasicHtmlContent(html: String) {
+        // TODO: Font carry-over
+        label.attributedText = NSAttributedString.create(
+            data = html.nsdata()!!,
+            options = mapOf(NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType),
+            documentAttributes = null,
+            error = null
+        )
+        native.linkSetup()
     }
 }
 

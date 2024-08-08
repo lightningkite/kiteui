@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -20,6 +21,7 @@ fun ViewWriter.example(
     action: ViewWriter.()->Unit
 ) {
     row {
+        beforeNextElementSetup { viewDebugTarget = this }
         expanding - scrollsHorizontally - code - text(codeText)
         separator()
         expanding - action()

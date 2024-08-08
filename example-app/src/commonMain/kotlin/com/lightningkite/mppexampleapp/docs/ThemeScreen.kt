@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -21,7 +22,7 @@ object ThemeScreen: DocScreen {
                     text("This is the default color")
                     text("This is a different color") in tweakTheme { it.copy(foreground = Color(0.5f, 0f, 0f, 1f)) }
                 }
-            """.trimIndent()) {
+            """.trimIndent().also { println("'$it'") }) {
                 card - col {
                     text("This is the default color")
                     text("This is a different color")}

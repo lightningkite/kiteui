@@ -103,6 +103,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             }
             measuredSize.primary += size.primary
             measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding * 2)
+            if (viewDebugTarget?.native == view) {
+                println("size: $size")
+                println("measuredSize: $measuredSize")
+            }
         }
         measuredSize.primary += padding
         return measuredSize.objc

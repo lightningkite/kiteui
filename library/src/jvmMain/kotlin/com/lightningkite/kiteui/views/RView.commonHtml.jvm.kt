@@ -26,6 +26,7 @@ actual class FutureElement actual constructor() {
     actual var classes: MutableSet<String> = HashSet()
     actual var id: String? = null
     actual var content: String? = null
+    actual var innerHtmlUnsafe: String? = null
     val childrenBack = ArrayList<FutureElement>()
     actual val children: List<FutureElement> = childrenBack
     actual fun appendChild(element: FutureElement) {
