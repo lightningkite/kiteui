@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.objc.UIViewWithNewSpacingRulesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
@@ -136,7 +136,7 @@ private val reservedScrollingSpace: CGFloat = 50000.0
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     UIScrollViewDelegateProtocol,
-    UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+    UIViewWithSizeOverridesProtocol, UIViewWithNewSpacingRulesProtocol {
     val firstVisible = Property(0)
     val centerVisible = Property(0)
     val lastVisible = Property(0)
@@ -201,8 +201,11 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     private fun CValue<CGRect>.size() = useContents { if(vertical) size.height else size.width }
     private fun CValue<CGRect>.start() = useContents { if(vertical) origin.y else origin.x }
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    override fun spacingSet(dimension: Any?) {
+        (dimension as? Dimension?)?.let {
+            spacing = it
+        }
+    }
     var spacing: Dimension = 0.px
         set(value) {
             if (value != field) {

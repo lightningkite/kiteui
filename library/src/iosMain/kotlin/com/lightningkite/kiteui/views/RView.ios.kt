@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.objc.UIViewWithNewSpacingRulesProtocol
 import com.lightningkite.kiteui.objc.toObjcId
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -73,6 +74,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
     protected actual override fun spacingSet(value: Dimension?) {
         native.spacingOverride?.value = value
+        (native as? UIViewWithNewSpacingRulesProtocol)?.spacingSet(value)
         val spacing = mySpacing.value
         for (child in children) {
             child.native.layoutLayers(spacing)
