@@ -23,16 +23,18 @@ import platform.objc.sel_registerName
 
 
 @OptIn(ExperimentalForeignApi::class)
-actual class TextView actual constructor(context: RContext): RView(context) {
+actual class TextView actual constructor(context: RContext) : RView(context) {
     override val native = UILabelWithGradient()
     val label get() = native.label
+
     init {
         label.numberOfLines = 0
     }
 
-    actual inline var content: String
+    actual var content: String
         get() = label.text ?: ""
         set(value) {
+            originalHtml = null
             label.text = value
             native.informParentOfSizeChange()
         }
@@ -62,12 +64,12 @@ actual class TextView actual constructor(context: RContext): RView(context) {
     actual var ellipsis: Boolean
         get() = label.lineBreakMode == NSLineBreakByTruncatingTail
         set(value) {
-            label.lineBreakMode = if(value) NSLineBreakByTruncatingTail else NSLineBreakByClipping
+            label.lineBreakMode = if (value) NSLineBreakByTruncatingTail else NSLineBreakByClipping
         }
     actual var wraps: Boolean
         get() = label.numberOfLines == 0L
         set(value) {
-            label.numberOfLines = if(value) 0 else 1
+            label.numberOfLines = if (value) 0 else 1
         }
 
     var fontAndStyle: FontAndStyle? = null
@@ -78,16 +80,41 @@ actual class TextView actual constructor(context: RContext): RView(context) {
         }
 
     private fun updateFont() {
-        val alignment = label.textAlignment
-        label.font = fontAndStyle?.let {
-            it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
-        } ?: UIFont.systemFontOfSize(12.0)
-        label.textAlignment = alignment
+        if (originalHtml == null) {
+            val alignment = label.textAlignment
+            label.font = fontAndStyle?.let {
+                it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
+            } ?: UIFont.systemFontOfSize(12.0)
+            label.textAlignment = alignment
+        } else {
+            val src = NSMutableAttributedString.create(originalHtml!!)
+            src.enumerateAttribute(
+                NSFontAttributeName,
+                inRange = NSMakeRange(0U, src.length),
+                options = NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+            ) { attr, range, ptr ->
+                val attrFont = attr as? UIFont ?: return@enumerateAttribute
+                val bold = attrFont.fontDescriptor.symbolicTraits and UIFontDescriptorTraitBold != 0U
+                val italic = attrFont.fontDescriptor.symbolicTraits and UIFontDescriptorTraitItalic != 0U
+                val traits = attrFont.fontDescriptor.objectForKey(UIFontDescriptorTraitsAttribute) as? NSDictionary
+                val weightNum = (traits?.objectForKey(UIFontWeightTrait) as? NSNumber)?.doubleValue
+                val sizeRatio = attrFont.pointSize / 12.0
+                val scaled = fontAndStyle?.let {
+                    it.font.get(
+                        (it.size * sizeRatio).value,
+                        weightNum ?: if (bold) UIFontWeightBold else UIFontWeightSemibold,
+                        italic
+                    )
+                } ?: UIFont.systemFontOfSize(12.0)
+                src.addAttribute(NSFontAttributeName, scaled, range)
+            }
+            label.attributedText = src
+        }
     }
 
     actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
-            label.lineBreakMode = when(value) {
+            label.lineBreakMode = when (value) {
                 WordBreak.Normal -> NSLineBreakByWordWrapping
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
@@ -103,14 +130,17 @@ actual class TextView actual constructor(context: RContext): RView(context) {
 //            minHeight = theme.font.size * 1.5,
 //        )
     }
+
+    private var originalHtml: NSAttributedString? = null
     actual fun setBasicHtmlContent(html: String) {
-        // TODO: Font carry-over
-        label.attributedText = NSAttributedString.create(
+        val x = NSAttributedString.create(
             data = html.nsdata()!!,
             options = mapOf(NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType),
             documentAttributes = null,
             error = null
         )
+        originalHtml = x
+        label.attributedText = x
         native.linkSetup()
     }
 }
@@ -132,6 +162,7 @@ fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
 } else {
     1.0
 }
+
 fun UILabel.updateFont() {
     val textSize = extensionTextSize ?: return
     val alignment = textAlignment

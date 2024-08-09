@@ -32,7 +32,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
 
     override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
-        informParentOfSizeChange()
+        informParentOfSizeChangeDueToChild()
     }
 
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {

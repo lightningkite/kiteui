@@ -21,7 +21,6 @@ fun ViewWriter.example(
     action: ViewWriter.()->Unit
 ) {
     row {
-        beforeNextElementSetup { viewDebugTarget = this }
         expanding - scrollsHorizontally - code - text(codeText)
         separator()
         expanding - action()

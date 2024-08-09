@@ -40,7 +40,6 @@ class WrapperView : UIView(CGRectZero.readValue()) {
                 val rect = this
                 point.useContents {
                     val point = this
-                    println("${point.x}, ${point.y} in ${rect.origin.x}, ${rect.origin.y}, ${rect.size.width}, ${rect.size.height}")
                     point.x >= rect.origin.x &&
                             point.y >= rect.origin.y &&
                             point.x <= rect.origin.x + rect.size.width &&

@@ -87,7 +87,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty.await() }
         }
-        expanding - navSpacing  - beforeNextElementSetup { viewDebugTarget = this } - stack {
+        expanding - navSpacing - stack {
             navigatorView(screenNavigator)
             atStart - navSpacing - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 spacing = 0.px

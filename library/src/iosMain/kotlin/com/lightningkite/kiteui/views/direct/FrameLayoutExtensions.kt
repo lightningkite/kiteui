@@ -148,7 +148,7 @@ fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCache: Arr
     val it = child ?: return
     val index = subviews.indexOf(child)
     if (index != -1) childSizeCache[index].clear()
-    informParentOfSizeChange()
+    informParentOfSizeChangeDueToChild()
 }
 
 fun UIView.frameLayoutDidAddSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {

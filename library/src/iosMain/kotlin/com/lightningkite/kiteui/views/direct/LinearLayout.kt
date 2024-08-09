@@ -69,7 +69,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             println("WARN: Child $view not found inside $this")
         }
         lastLaidOutSize = null
-        informParentOfSizeChange()
+        informParentOfSizeChangeDueToChild()
     }
 
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
@@ -117,7 +117,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
         childSizeCache.add(index, HashMap())
         lastLaidOutSize = null
-        informParentOfSizeChange()
+        informParentOfSizeChangeDueToChild()
     }
 
     override fun willRemoveSubview(subview: UIView) {
@@ -127,7 +127,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
             childSizeCache.removeAt(index)
         }
-        informParentOfSizeChange()
+        informParentOfSizeChangeDueToChild()
         super.willRemoveSubview(subview)
     }
 

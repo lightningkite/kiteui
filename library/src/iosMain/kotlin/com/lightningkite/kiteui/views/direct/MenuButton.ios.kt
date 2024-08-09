@@ -18,7 +18,6 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         native.onClick = {
             var willRemove: RView? = null
             this.overlayStack!!.popoverWriter {
-                println("Removing $willRemove from ${willRemove?.parent?.native}")
                 willRemove?.let { it.parent!!.removeChild(it) }
                 willRemove = null
             }.run {
