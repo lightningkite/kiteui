@@ -201,7 +201,9 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     private fun CValue<CGRect>.size() = useContents { if(vertical) size.height else size.width }
     private fun CValue<CGRect>.start() = useContents { if(vertical) origin.y else origin.x }
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null).also {
+        it.addListener { it.value?.let { spacing = it } }
+    }
     override fun getSpacingOverrideProperty() = spacingOverride
     var spacing: Dimension = 0.px
         set(value) {
