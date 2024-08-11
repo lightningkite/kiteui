@@ -3,8 +3,12 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.validation.Invalid
+import com.lightningkite.kiteui.validation.Validated
+import com.lightningkite.kiteui.validation.Validator
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
@@ -38,7 +42,7 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
-abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : CalculationContext, Validator, ViewWriter() {
     var additionalTestingData: Any? = null
 
     var opacity: Double = 1.0
@@ -262,6 +266,102 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     override fun notifyLongComplete(result: Result<Unit>) {
         loadCount--
         super.notifyLongComplete(result)
+    }
+
+    // Validator
+    private val subs = ArrayList<Validator.NonSuspending>()
+
+    override fun sub(): Validator = Validator.NonSuspending().also { subs.add(it) }
+
+    private val myErrors = mutableSetOf<String>()
+    internal val internalErrors = Property(emptySet<String>())
+    override val errors: Readable<Set<String>> = internalErrors
+
+    private var allowRecalculation = true
+    internal fun recalculateValidity() {
+        if (!allowRecalculation) return
+        val childErrors = mutableSetOf<String>()
+        for (child in internalChildren) {
+            childErrors.addAll(child.internalErrors.value)
+        }
+        for (sub in subs) {
+            childErrors.addAll(sub.errors.value)
+        }
+
+        internalErrors.value = myErrors + childErrors
+    }
+
+    override fun addError(cause: String) {
+        myErrors.add(cause)
+        internalErrors.value += cause
+    }
+    override fun removeError(cause: String) {
+        allowRecalculation = false
+
+        myErrors.remove(cause)
+        subs.forEach { it.removeError(cause) }
+        internalChildren.forEach { it.removeError(cause) }
+
+        internalErrors.value -= cause
+
+        allowRecalculation = true
+    }
+    override fun clearErrors() {
+        allowRecalculation = false
+        myErrors.clear()
+
+        subs.forEach { it.clearErrors() }
+        internalChildren.forEach { it.clearErrors() }
+        internalErrors.value = emptySet()
+
+        allowRecalculation = true
+    }
+
+    init {
+        parent?.let {
+            errors.addListener { it.recalculateValidity() }
+        }
+    }
+
+    var validates: Validated? = null
+        set(value) {
+            value?.bindTo(this)
+            field = value
+        }
+
+    fun launchCatchInvalid(action: suspend () -> Unit) {
+        var errorOccurred = false
+        try {
+            launch(action)
+        } catch (invalid: Invalid) {
+            errorOccurred = true
+            addError(invalid.reason)
+        } finally {
+            if (!errorOccurred) clearErrors()
+        }
+    }
+
+    infix fun <T> Writable<T>.bind(master: Writable<T>) {
+        var setting = false
+        launchCatchInvalid {
+            this@bind.set(master.await())
+            master.addListener {
+                if (setting) return@addListener
+                setting = true
+                launchCatchInvalid {
+                    this@bind.set(master.await())
+                }
+                setting = false
+            }.also { onRemove(it) }
+            this@bind.addListener {
+                if (setting) return@addListener
+                setting = true
+                launchCatchInvalid {
+                    master.set(this@bind.await())
+                }
+                setting = false
+            }.also { onRemove(it) }
+        }
     }
 }
 
