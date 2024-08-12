@@ -74,7 +74,6 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
     protected actual override fun spacingSet(value: Dimension?) {
         native.spacingOverride?.value = value
-        (native as? UIViewWithNewSpacingRulesProtocol)?.spacingSet(value)
         val spacing = mySpacing.value
         for (child in children) {
             child.native.layoutLayers(spacing)

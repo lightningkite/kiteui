@@ -49,10 +49,6 @@ id cgColorRefasIdType(CGColorRef color) {
 - (id)getSpacingOverrideProperty;
 @end
 
-@protocol UIViewWithNewSpacingRules
-- (void)spacingSet:(nullable id)dimension;
-@end
-
 @protocol UIViewWithSizeOverrides
 - (void)subviewDidChangeSizing:(UIView*)view;
 // - (CGSize)sizeThatFitsV2WithWidth:(CGFloat)width height:(CGFloat)forceHeight minWidth:(CGFloat)minWidth maxWidth:(CGFloat)minWidth minHeight:(CGFloat)minWidth maxHeight:(CGFloat)minWidth;
