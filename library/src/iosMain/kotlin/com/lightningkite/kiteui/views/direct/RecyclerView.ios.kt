@@ -1,23 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
-import platform.UIKit.*
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.absoluteValue
-import kotlin.native.ref.WeakReference
 
 @OptIn(ExperimentalNativeApi::class)
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {

@@ -3,9 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
-import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
-import kotlin.time.Duration
 
 actual fun SwapView.nativeSwap(
     transition: ScreenTransition,

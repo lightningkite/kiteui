@@ -5,26 +5,18 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
-import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
-import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
-import platform.UIKit.UITapGestureRecognizer
 import platform.UIKit.UIView
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.roundToInt
 import kotlin.native.ref.WeakReference
-import kotlin.time.DurationUnit
 
 @OptIn(ExperimentalForeignApi::class)
 actual abstract class RView(context: RContext) : RViewHelper(context) {

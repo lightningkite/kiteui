@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias NViewPager = NRecyclerView

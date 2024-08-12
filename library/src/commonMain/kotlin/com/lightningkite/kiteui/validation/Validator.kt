@@ -3,90 +3,80 @@ package com.lightningkite.kiteui.validation
 import com.lightningkite.kiteui.reactive.*
 
 /**
- * Tracks validation through a hierarchy of sub-validators.
- *
- * A Validator should relay all of its sub-validator errors
+ * Tracks validation through a hierarchy of sub-validators and tracked validates
 * */
 interface Validator {
-    val errors: Readable<Set<String>>
+    val subValidators: Readable<List<Validator>>
+    val validations: Readable<List<Validated>>
 
-    fun addError(cause: String)
-    fun removeError(cause: String)
-    fun clearErrors()
+    fun validate(validated: Validated)
+    fun remove(validated: Validated)
+    fun clearValidations()
 
-    /**
-     * Creates a sub-validator
-    * */
+    /** Creates a sub-validator */
     fun sub(): Validator
+    fun remove(validator: Validator)
 
-
-    suspend fun allValid(): Boolean = errors.await().isEmpty()
-
-    fun <T> Writable<T>.validate(
-        validation: ValidationUtils.(T) -> ValidationResult
-    ) = validate(this@Validator, validation)
-
-
-    open class Basic: Validator {
-        private val children = Property(emptySet<Basic>())
-
-        private val myErrors = Property(emptySet<String>())
-
-        override val errors: Readable<Set<String>> = shared {
-            myErrors() + children().flatMap { it.errors() }
-        }
-
-        override fun addError(cause: String) { myErrors.value += cause }
-        override fun removeError(cause: String) {
-            myErrors.value -= cause
-            children.value.forEach { it.myErrors.value -= cause }
-        }
-        override fun clearErrors() {
-            myErrors.value = emptySet()
-            children.value.forEach { it.clearErrors() }
-        }
-
-        override fun sub(): Validator = Basic().also { children.value += it }
+    val errors: Readable<Set<String>> get() = shared {
+        (subValidators.await().flatMap { it.errors() } + validations.await().flatMap { it.errors() }).toSet()
     }
 
-    class NonSuspending(parent: NonSuspending? = null): Validator {
-        private val children = ArrayList<NonSuspending>()
+    val allValid: Readable<Boolean> get() = shared {
+        subValidators.await().all { it.allValid() } and validations.await().all { it.valid() }
+    }
 
-        private val myErrors = mutableSetOf<String>()
-        override val errors = Property(emptySet<String>())
+    open class Basic: Validator {
+        private val _children = SignalingList<Basic>()
+        override val subValidators: ImmediateReadable<List<Validator>> get() = _children
 
-        override fun addError(cause: String) {
-            myErrors.add(cause)
-            errors.value += cause
-        }
-        override fun removeError(cause: String) {
-            myErrors.remove(cause)
-            errors.value -= cause
-            children.forEach { it.removeError(cause) }
-        }
-        override fun clearErrors() {
-            myErrors.clear()
-            errors.value = emptySet()
-        }
+        private val _validations = SignalingList<Validated>()
+        override val validations: ImmediateReadable<List<Validated>> get() = _validations
 
-        private fun recalculateValidity() {
-            val childErrors = mutableSetOf<String>()
-            for (child in children) {
-                childErrors.addAll(child.errors.value)
+        override fun validate(validated: Validated) { _validations.add(validated) }
+
+        override fun remove(validated: Validated) { _validations.remove(validated) }
+
+        override fun clearValidations() { _validations.clear() }
+
+        override fun sub(): Validator = Basic().also { _children.add(it) }
+
+        override fun remove(validator: Validator) {
+            if (validator is Basic) {
+                _children.remove(validator)
             }
+        }
+    }
 
-            errors.value = myErrors + childErrors
+    open class Lazy: Validator {
+        private val _children by lazy { SignalingList<Validator>() }
+        override val subValidators: ImmediateReadable<List<Validator>> get() = _children
+
+        private val _validations by lazy { SignalingList<Validated>() }
+        override val validations: ImmediateReadable<List<Validated>> get() = _validations
+
+        override fun validate(validated: Validated) { _validations.add(validated) }
+
+        override fun remove(validated: Validated) { _validations.remove(validated) }
+
+        override fun clearValidations() { _validations.clear() }
+
+        override fun sub(): Validator = Lazy().also { _children.add(it) }
+
+        override fun remove(validator: Validator) {
+            if (validator is Lazy) {
+                _children.remove(validator)
+            }
         }
 
-        override fun sub(): Validator =
-            NonSuspending(parent = this).also {
-                children.add(it)
-                recalculateValidity()
+        override val errors: Readable<Set<String>> by lazy {
+            shared {
+                (subValidators.await().flatMap { it.errors() } + validations.await().flatMap { it.errors() }).toSet()
             }
+        }
 
-        init {
-            parent?.let {
-                errors.addListener { it.recalculateValidity() }
+        override val allValid: Readable<Boolean> by lazy {
+            shared {
+                subValidators.await().all { it.allValid() } and validations.await().all { it.valid() }
             }
         }
     }
