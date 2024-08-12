@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.printStackTrace2
 
 fun <O, T> Writable<O>.map(
     get: (O) -> T,
@@ -12,8 +11,8 @@ fun <O, T> Writable<O>.map(
         override var state: ReadableState<T>
             get() {
                 @Suppress("UNCHECKED_CAST")
-                return if (myListen == null) this@map.state.map { get(it) }
-                else _state
+                if (myListen == null) _state = this@map.state.map { get(it) }
+                return _state
             }
             private set(value) {
                 if (_state != value) {
@@ -25,13 +24,14 @@ fun <O, T> Writable<O>.map(
         private val myListeners = ArrayList<() -> Unit>()
         private var myListen: (() -> Unit)? = null
         override fun addListener(listener: () -> Unit): () -> Unit {
-            if (myListeners.isEmpty()) {
+            myListeners.add(listener)
+            if (myListeners.size == 1) {
                 myListen = this@map.addListener {
                     @Suppress("UNCHECKED_CAST")
                     state = this@map.state.map { get(it) }
                 }
+                state = this@map.state.map { get(it) }
             }
-            myListeners.add(listener)
             return {
                 myListeners.remove(listener)
                 if (myListeners.isEmpty()) {
@@ -61,29 +61,6 @@ class WritableList<E, ID>(
     val identity: (E) -> ID,
 ) : Writable<List<WritableList<E, ID>.ElementWritable>> {
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E> {
-        var queuedSet: ReadableState<E> = ReadableState.notReady
-        val queuedOrValue: E get(){
-            val qs = queuedSet
-            return if(qs.success) qs.get() else value
-        }
-        override suspend fun set(value: E) {
-            queuedSet = ReadableState(value)
-            val allWritables = this@WritableList()
-            val newList = allWritables.map { it.queuedOrValue }
-            log?.log("New list is $newList")
-            if (allWritables.contains(this)) {
-                try {
-                    source.set(newList)
-                } finally {
-                    queuedSet = ReadableState.notReady
-                }
-                log?.log("Source set finished. ${source.state}")
-            } else log?.warn("This writable is no longer in the list")
-            if (myListen == null) {
-                this.value = value
-            }
-        }
-
         var id: ID = identity(valueInit)
             private set
         private val listeners = ArrayList<() -> Unit>()
@@ -95,6 +72,27 @@ class WritableList<E, ID>(
                     listeners.invokeAllSafe()
                 }
             }
+        var queuedSet: ReadableState<E> = ReadableState.notReady
+        val queuedOrValue: E get(){
+            val qs = queuedSet
+            return if(qs.success) qs.get() else value
+        }
+
+        override suspend fun set(value: E) {
+            queuedSet = ReadableState(value)
+            val allWritables = this@WritableList()
+            val newList = allWritables.map { it.queuedOrValue }
+            if (allWritables.contains(this)) {
+                try {
+                    source.set(newList)
+                } finally {
+                    queuedSet = ReadableState.notReady
+                }
+                if (myListen == null) {
+                    this.value = value
+                }
+            }
+        }
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             listeners.add(listener)
@@ -107,7 +105,16 @@ class WritableList<E, ID>(
         }
     }
 
-    fun create(e: E): ElementWritable = ElementWritable(e)
+    fun newElement(e: E): ElementWritable = ElementWritable(e)
+    suspend fun add(index: Int, value: E) {
+        set(awaitOnce().toMutableList().apply { add(index, newElement(value)) })
+    }
+    suspend fun add(value: E) {
+        set(awaitOnce() + newElement(value))
+    }
+    suspend fun remove(element: ElementWritable) {
+        set(awaitOnce() - element)
+    }
 
     private var lastElements: List<ElementWritable> = listOf()
     private var _state: ReadableState<List<ElementWritable>> = ReadableState.notReady
@@ -117,7 +124,7 @@ class WritableList<E, ID>(
         }
     override var state: ReadableState<List<ElementWritable>>
         get() {
-            if (myListen == null) _state = getStateFromSource()
+            if (myListen == null || !_state.ready) _state = getStateFromSource()
             return _state
         }
         private set(value) {
@@ -134,6 +141,7 @@ class WritableList<E, ID>(
             myListen = source.addListener {
                 state = getStateFromSource()
             }
+            state = getStateFromSource()
         }
         myListeners.add(listener)
         return {
@@ -146,15 +154,13 @@ class WritableList<E, ID>(
     }
 
     private fun getStateFromSource() = source.state.map { newList ->
-        log?.log("existing state $newList")
-        newList.map { newElement ->
-            val existing = lastElements.find { old -> old.id == identity(newElement) }
-            log?.log("For value $newElement id ${identity(newElement)}, existing is $existing out of ${lastElements.joinToString { "${it.id}" }}")
+        newList.mapIndexed { index, newElement ->
+            val existing = lastElements.getOrNull(index)?.takeIf { it.id == identity(newElement) } ?: lastElements.find { old -> old.id == identity(newElement) }
             if(existing != null) {
                 existing.value = newElement
                 existing
             } else {
-                create(newElement)
+                newElement(newElement)
             }
         }
     }

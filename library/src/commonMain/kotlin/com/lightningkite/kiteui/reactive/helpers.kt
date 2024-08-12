@@ -147,3 +147,5 @@ fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Un
             action(this@interceptWrite, value)
         }
     }
+
+fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten() set it }

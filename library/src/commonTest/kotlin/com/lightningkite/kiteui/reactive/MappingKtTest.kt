@@ -140,13 +140,13 @@ class MappingKtTest {
     // Insertion works
     @Test fun listInsertionWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.set(view() + view.create(4)) }
+        launch { view.set(view() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
     @Test fun listInsertion() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.set(view() + view.create(4)) }
+        launch { view.set(view() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 

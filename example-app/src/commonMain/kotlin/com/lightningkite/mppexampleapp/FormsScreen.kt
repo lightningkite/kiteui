@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
@@ -10,8 +9,12 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
 
+
 @Routable("forms")
 object FormsScreen : Screen {
+
+
+
 
     val externals = HashMap<String, Property<String>>()
     fun leafExample(propName: String): FormLeaf {
