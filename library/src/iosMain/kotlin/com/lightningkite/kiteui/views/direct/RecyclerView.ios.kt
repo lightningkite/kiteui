@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
@@ -66,6 +67,14 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         set(value) {
             native.columns = value
         }
+
+    override fun spacingSet(value: Dimension?) {
+        super.spacingSet(value)
+        native.spacing = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing)
+    }
+    override fun applyForeground(theme: Theme) {
+        native.spacing = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing)
+    }
 
     actual fun scrollToIndex(
         index: Int,

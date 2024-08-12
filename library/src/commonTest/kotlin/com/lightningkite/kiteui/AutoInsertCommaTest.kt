@@ -1,12 +1,11 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.utils.*
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class AutoInsertComma {
+class AutoInsertCommaTest {
     val testCases = listOf(
         "1234567",
         "12345678",
@@ -19,6 +18,11 @@ class AutoInsertComma {
         "1,234.56789",
         "1,234.",
     )
+
+    @Test fun deleteComma() {
+        // "123,456"
+        numberAutocommaRepair("123,456", 4, 4, { println(it) }, { a, b -> println("$a, $b")})
+    }
 
     @Test
     fun editsKeepPosition() {
@@ -40,6 +44,8 @@ class AutoInsertComma {
                         println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
                     })
                 string.getOrNull(it)?.takeIf { it == '.' || it.isDigit() }?.let {
+                    // Position should be before the comma
+                    if(post.getOrNull(postPos) == ',') postPos++
                     assertEquals(it, post.getOrNull(postPos))
                 }
             }
@@ -61,6 +67,8 @@ class AutoInsertComma {
                         println("^".padStart(a + 1, ' ') + "^".repeat(postPosB - postPos))
                     })
                 string.getOrNull(it)?.takeIf { it == '.' || it.isDigit() }?.let {
+                    // Position should be before the comma
+                    if(post.getOrNull(postPos) == ',') postPos++
                     assertEquals(it, post.getOrNull(postPos))
                 }
             }

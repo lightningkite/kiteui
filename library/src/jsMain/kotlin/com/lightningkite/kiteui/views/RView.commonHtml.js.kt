@@ -46,6 +46,7 @@ actual class FutureElement actual constructor() {
             e.setAttribute(it.key, it.value)
         }
         content?.let { (e as? HTMLElement)?.innerText = it }
+        innerHtmlUnsafe?.let { (e as? HTMLElement)?.innerHTML = it }
         children.forEach {
             e.appendChild(it.create())
         }
@@ -148,6 +149,13 @@ actual class FutureElement actual constructor() {
             field = value
             value?.let {
                 (element as? HTMLElement)?.innerText = value
+            }
+        }
+    actual var innerHtmlUnsafe: String? = null
+        set(value) {
+            field = value
+            value?.let {
+                (element as? HTMLElement)?.innerHTML = value
             }
         }
     private val lastChildren = ArrayList<FutureElement>()

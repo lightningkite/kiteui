@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.parseMPNodes
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WordBreak
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 
 
@@ -46,5 +45,8 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         set(value) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
+    actual fun setBasicHtmlContent(html: String) {
+        native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
+    }
 }
 

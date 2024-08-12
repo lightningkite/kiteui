@@ -133,7 +133,6 @@ fun UIViewController.setup(themeCalculation: suspend () -> Theme, app: ViewWrite
     view.addSubview(object: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
         override fun willMoveToWindow(newWindow: UIWindow?) {
             super.willMoveToWindow(newWindow)
-            println("willMoveToWindow: $newWindow")
             if(newWindow == null) {
                 remover()
             }

@@ -18,7 +18,6 @@ object ThemesScreen : Screen {
             col {
                 h2 {
                     content = "Theme Sampling"
-                    viewDebugTarget = this
                 }
                 row {
                     space {} in weight(1f)

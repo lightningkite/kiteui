@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
@@ -9,15 +10,13 @@ import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
-import platform.Foundation.NSNumber
-import platform.Foundation.numberWithFloat
+import platform.Foundation.*
 import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
-import platform.UIKit.UIColor
-import platform.UIKit.UILabel
-import platform.UIKit.UIView
+import platform.UIKit.*
+import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class)
 class UILabelWithGradient : UIView(CGRectZero.readValue()) {
@@ -26,13 +25,14 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         userInteractionEnabled = false
     }
 
-    private val uiViewWithLabelMask = UIView(bounds).apply {
+    val uiViewWithLabelMask = UIView(bounds).apply {
         backgroundColor = UIColor.grayColor
     }.also(::addSubview)
 
     val label = UILabel().also {
         uiViewWithLabelMask.addSubview(it)
         uiViewWithLabelMask.maskView = it
+//        addSubview(it)
     }
 
     private var gradientLayer: CALayer? = null
@@ -74,11 +74,17 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        return label.sizeThatFits(size).useContents {
-            val padding = extensionPadding ?: 0.0
+        val padding = extensionPadding ?: 0.0
+        val smallerSize = size.useContents {
             CGSizeMake(
-                width = width + 2 * padding,
-                height = height.coerceAtLeast(label.font.lineHeight) + 2 * padding,
+                width = width - padding * 2,
+                height = height - padding * 2
+            )
+        }
+        return label.sizeThatFits(smallerSize).useContents {
+            CGSizeMake(
+                width = width + padding * 2,
+                height = height.coerceAtLeast(label.font.lineHeight) + padding * 2,
             )
         }
     }
@@ -103,5 +109,52 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                 insetHeight
             ))
         }
+    }
+
+
+    @OptIn(BetaInteropApi::class)
+    @ObjCAction
+    fun handleLink() {
+        val text = label.attributedText ?: return
+        val locationOfTouchInLabel = recognizer.locationInView(uiViewWithLabelMask)
+        val layoutManager = NSLayoutManager()
+        val textContainer = NSTextContainer(CGSizeMake(0.0, 0.0))
+        val storage = NSTextStorage.create(attributedString = text)
+        layoutManager.addTextContainer(textContainer)
+        storage.addLayoutManager(layoutManager)
+        textContainer.lineFragmentPadding = 0.0
+        textContainer.lineBreakMode = label.lineBreakMode
+        textContainer.maximumNumberOfLines = label.numberOfLines.toULong()
+        val labelSize = label.bounds.useContents { CGSizeMake(size.width, size.height) }
+        textContainer.size = labelSize
+        val textBoundingBox = layoutManager.usedRectForTextContainer(textContainer)
+        val textContainerOffset = CGPointMake(
+            x = (labelSize.useContents { width } - textBoundingBox.useContents { size.width }) * 0.5 - textBoundingBox.useContents { origin.x },
+            y = (labelSize.useContents { height } - textBoundingBox.useContents { size.height }) * 0.5 - textBoundingBox.useContents { origin.y }
+        )
+        val locationOfTouchInTextContainer = CGPointMake(
+            x = locationOfTouchInLabel.useContents { x } - textContainerOffset.useContents { x },
+            y = locationOfTouchInLabel.useContents { y } - textContainerOffset.useContents { y }
+        )
+        val indexOfCharacter = layoutManager.characterIndexForPoint(
+            point = locationOfTouchInTextContainer,
+            inTextContainer = textContainer,
+            fractionOfDistanceBetweenInsertionPoints = null
+        )
+
+        val link = label.attributedText?.attribute(NSLinkAttributeName, indexOfCharacter, effectiveRange = null)
+
+        when(link) {
+            is NSURL -> ExternalServices.openTab(link.toString())
+            is NSString -> ExternalServices.openTab(link as String)
+        }
+
+    }
+
+    val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    internal fun linkSetup() {
+        userInteractionEnabled = true
+        uiViewWithLabelMask.userInteractionEnabled = true
+        uiViewWithLabelMask.addGestureRecognizer(recognizer)
     }
 }

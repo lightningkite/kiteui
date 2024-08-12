@@ -126,11 +126,11 @@ actual val ViewWriter.scrolls: ViewWrapper
             override fun defaultLayoutParams(): ViewGroup.LayoutParams =
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-            override fun applyForeground(theme: Theme) { /*Do nothing*/
-            }
-
-            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
-            }
+//            override fun applyForeground(theme: Theme) { /*Do nothing*/
+//            }
+//
+//            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+//            }
         })
         return ViewWrapper
     }
@@ -146,11 +146,11 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
             override fun defaultLayoutParams(): ViewGroup.LayoutParams =
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
-            override fun applyForeground(theme: Theme) { /*Do nothing*/
-            }
-
-            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
-            }
+//            override fun applyForeground(theme: Theme) { /*Do nothing*/
+//            }
+//
+//            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
+//            }
         })
         return ViewWrapper
     }

@@ -264,7 +264,6 @@ class CanvasView : UIView(CGRectZero.readValue()) {
             try {
                 delegate?.draw(this)
             } catch(e: Exception) {
-                println("OH MAN")
                 e.printStackTrace2()
             }
         }

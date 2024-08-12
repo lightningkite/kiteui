@@ -4,8 +4,6 @@ import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.direct.HtmlInput
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
@@ -129,6 +127,7 @@ expect class FutureElement {
     var classes: MutableSet<String>
     var id: String?
     var content: String?
+    var innerHtmlUnsafe: String?
     val children: List<FutureElement>
     fun appendChild(element: FutureElement)
     fun appendChild(index: Int, element: FutureElement)

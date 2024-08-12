@@ -91,6 +91,36 @@ object TextElementScreen : DocScreen {
                     }
                 }
             }
+            text("It's gross, but you can assign some level of HTML too.")
+            example(
+                """
+                text {
+                    setBasicHtmlContent(""${'"'}
+                        <h1>Hello!</h1>
+                        <p>Welcome to my website from 2000.</p>
+                        <ol>
+                        <li> Item One</li>
+                        <li> Item Two</li>
+                        <li> Item Three</li>
+                        </ol>
+                        <a href="https://google.com"> Open Google </a>
+                    ""${'"'}.trimIndent())
+                }
+                """.trimIndent()
+            ) {
+                text {
+                    setBasicHtmlContent("""
+                        <h1>Hello!</h1>
+                        <p>Welcome to my website from 2000.</p>
+                        <ol>
+                        <li> Item One</li>
+                        <li> Item Two</li>
+                        <li> Item Three</li>
+                        </ol>
+                        <a href="https://google.com"> Open Google </a>
+                    """.trimIndent())
+                }
+            }
         }
     }
 

@@ -5,8 +5,10 @@ import android.graphics.Typeface
 import android.graphics.text.LineBreakConfig
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.text.Html
 import android.text.Layout
 import android.text.TextUtils
+import android.text.method.LinkMovementMethod
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
@@ -77,6 +79,10 @@ actual class TextView actual constructor(context: RContext) :
         native.setTypeface(theme.font.typeface(context.activity))
         native.isAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
+    }
+    actual fun setBasicHtmlContent(html: String) {
+        native.movementMethod = LinkMovementMethod.getInstance()
+        native.text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
     }
 }
 

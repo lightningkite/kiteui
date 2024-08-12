@@ -75,22 +75,26 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
 }
 
 fun UIControl.findNextFocus(): UIView? {
+    println("findNextFocus $this")
     return superview?.let {
-        it.findNextParentFocus(startingAtIndex = subviews.indexOf(this) + 1)
+        it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
 }
 
 private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
+    println("findNextParentFocus $this $startingAtIndex")
     findNextChildFocus(startingAtIndex = startingAtIndex)?.let { return it }
     return superview?.let {
-        it.findNextParentFocus(startingAtIndex = subviews.indexOf(this) + 1)
+        it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
 }
 
 private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
+    println("findNextChildFocus $this $startingAtIndex")
     var index = startingAtIndex
-    while(index < subviews.size - 1) {
+    while(index < subviews.size) {
         val sub = subviews[index] as UIView
+        println("findNextChildFocus $this check $index $sub")
         if (sub.canBecomeFirstResponder) {
             return sub
         } else {
@@ -104,8 +108,7 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
 val NextFocusDelegateShared = NextFocusDelegate()
 class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-        println("NextFocusDelegateShared hit")
-        textField.findNextFocus().also { println("Next focus identified as ${it}") }?.let {
+        textField.findNextFocus()?.let {
             it.becomeFirstResponder()
         } ?: textField.resignFirstResponder()
         return true

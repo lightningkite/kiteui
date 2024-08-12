@@ -12,7 +12,7 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        AppIos.root(self)
+        App_iosKt.root(viewController: self)
     }
 
 

@@ -19,4 +19,5 @@ expect class TextView(context: RContext) : RView {
     var ellipsis: Boolean
     var wraps: Boolean
     var wordBreak: WordBreak
+    fun setBasicHtmlContent(html: String)
 }

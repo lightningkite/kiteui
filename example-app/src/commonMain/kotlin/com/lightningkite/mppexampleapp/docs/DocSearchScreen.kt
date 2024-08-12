@@ -16,6 +16,7 @@ object DocSearchScreen : Screen {
     val query = Property<String>("")
 
     val docsPages = Property(listOf(
+        { ThemeScreen },
         { TextElementScreen },
         { DataScreen },
         { NavigationScreen },
