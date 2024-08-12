@@ -21,6 +21,10 @@ class WaitGate(permit: Boolean = false) {
                 continuations.clear()
             }
         }
+    fun permitOnce() {
+        permit = true
+        permit = false
+    }
     val continuations = ArrayList<Continuation<Unit>>()
     suspend fun await(): Unit {
         if (permit) return
