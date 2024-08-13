@@ -17,7 +17,7 @@ class WritableList<E, ID>(
             private set
         private val listeners = ArrayList<() -> Unit>()
         override var value: E = valueInit
-            set(value) {
+            internal set(value) {
                 if (field != value) {
                     id = identity(value)
                     field = value
@@ -25,6 +25,7 @@ class WritableList<E, ID>(
                 }
             }
         var queuedSet: ReadableState<E> = ReadableState.notReady
+            private set
         val queuedOrValue: E get(){
             val qs = queuedSet
             return if(qs.success) qs.get() else value
