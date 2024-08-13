@@ -1,6 +1,7 @@
-package com.lightningkite.kiteui.reactive
+package com.lightningkite.kiteui.reactive.mapping
 
 import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.reactive.*
 
 fun <O, T> Writable<O>.map(
     get: (O) -> T,

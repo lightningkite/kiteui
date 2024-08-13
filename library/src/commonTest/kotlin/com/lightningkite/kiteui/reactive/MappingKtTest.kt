@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WaitGate
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.reactive.mapping.WritableList
+import com.lightningkite.kiteui.reactive.mapping.map
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
