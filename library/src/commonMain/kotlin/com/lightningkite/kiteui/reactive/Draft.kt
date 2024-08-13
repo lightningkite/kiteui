@@ -1,14 +1,12 @@
 package com.lightningkite.kiteui.reactive
 
-class Draft<T>(val published: Writable<T>): Writable<T> {
+class Draft<T> private constructor(
+    val published: Writable<T>,
+    private val draft: LazyProperty<T>
+): Writable<T> by draft {
+    constructor(published: Writable<T>) : this(published, LazyProperty(stopListeningWhenOverridden = false) { published() })
     constructor(initialValue: T) : this(Property(initialValue))
     constructor(initialValue: suspend CalculationContext.() -> T) : this(LazyProperty(initialValue = initialValue))
-
-    val draft = LazyProperty(stopListeningWhenOverridden = false) { published() }
-
-    override val state: ReadableState<T> get() = draft.state
-    override fun addListener(listener: () -> Unit): () -> Unit = draft.addListener(listener)
-    override suspend fun set(value: T) = draft.set(value)
 
     val changesMade = shared { draft() != published() }
 
