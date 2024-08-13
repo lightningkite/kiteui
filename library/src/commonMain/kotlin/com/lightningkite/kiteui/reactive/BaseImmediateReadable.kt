@@ -6,9 +6,12 @@ abstract class BaseImmediateReadable<T>(start: T): ImmediateReadable<T> {
         set(value) {
             if(field != value) {
                 field = value
+                onSet(value)
                 listeners.invokeAllSafe()
             }
         }
+
+    open fun onSet(value: T) {}
 
     override fun addListener(listener: () -> Unit): () -> Unit {
         listeners.add(listener)
