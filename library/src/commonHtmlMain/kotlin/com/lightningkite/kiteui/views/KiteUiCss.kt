@@ -762,7 +762,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:hover$it$cs",
                         )
                     },
-                    includeMaybeTransition = hov.useBackground
+                    includeMaybeTransition = hov.useBackground,
+                    mediaQuery = "(hover : hover)"
                 )
                 val foc = subtheme[FocusSemantic]
                 theme(
@@ -841,6 +842,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
         includeMaybeTransition: Boolean = false,
+        mediaQuery: String = "",
     ): List<String> {
         val classes = theme.classes
 
@@ -848,78 +850,83 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             return asSelectors.asSequence().flatMap { plus.asSequence().map { p -> "$it$p" } }.joinToString(", ")
         }
 
+        fun addToCss(selector: String, key: String, value: String) {
+            dynamicCss.add(selector, key, value, mediaQuery)
+        }
+
         val directSel = sel("")
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
+
         theme.diff(diff) { background }?.let {
             when (it) {
                 is Color -> {
-                    dynamicCss.add(backSel, "background-color", it.toCss())
-                    dynamicCss.add(backSel, "background-image", "none")
+                    addToCss(backSel, "background-color", it.toCss())
+                    addToCss(backSel, "background-image", "none")
                 }
 
                 is LinearGradient -> {
-                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
-                    dynamicCss.add(
+                    addToCss(backSel, "background-color", it.closestColor().toCss())
+                    addToCss(
                         backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    addToCss(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
 
                 is RadialGradient -> {
-                    dynamicCss.add(backSel, "background-color", it.closestColor().toCss())
-                    dynamicCss.add(
+                    addToCss(backSel, "background-color", it.closestColor().toCss())
+                    addToCss(
                         backSel, "background-image", "radial-gradient(circle at center, ${
                             joinGradientStops(it.stops)
                         })"
                     )
-                    dynamicCss.add(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    addToCss(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
                 }
             }
         }
 
         theme.diff(diff) { outlineWidth }?.let {
-            dynamicCss.add(backSel, "outline-width", it.value)
-            dynamicCss.add(backSel, "outline-style", if (it != 0.px) "solid" else "none")
-            dynamicCss.add(backSel, "outline-offset", it.times(-1).value)
+            addToCss(backSel, "outline-width", it.value)
+            addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
+            addToCss(backSel, "outline-offset", it.times(-1).value)
         }
         theme.diff(diff) { elevation }?.let {
-            dynamicCss.add(backSel, "box-shadow", theme.elevation.toBoxShadow())
+            addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
-        theme.diff(diff) { foreground }?.let { dynamicCss.add(directSel, "color", it.toCss()) }
-        theme.diff(diff) { icon }?.let { dynamicCss.add(directSel, "--icon-color", it.toCss()) }
-        theme.diff(diff) { spacing }?.let { dynamicCss.add(directSel, "--spacing", it.value) }
-        theme.diff(diff) { navSpacing }?.let { dynamicCss.add(directSel, "--navSpacing", it.value) }
-        theme.diff(diff) { font.size }?.let { dynamicCss.add(directSel, "font-size", it.value) }
-        theme.diff(diff) { font.font }?.let { dynamicCss.add(directSel, "font-family", it.let { dynamicCss.font(it) }) }
-        theme.diff(diff) { font.weight }?.let { dynamicCss.add(directSel, "font-weight", it.toString()) }
+        theme.diff(diff) { foreground }?.let { addToCss(directSel, "color", it.toCss()) }
+        theme.diff(diff) { icon }?.let { addToCss(directSel, "--icon-color", it.toCss()) }
+        theme.diff(diff) { spacing }?.let { addToCss(directSel, "--spacing", it.value) }
+        theme.diff(diff) { navSpacing }?.let { addToCss(directSel, "--navSpacing", it.value) }
+        theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
+        theme.diff(diff) { font.font }?.let { addToCss(directSel, "font-family", it.let { dynamicCss.font(it) }) }
+        theme.diff(diff) { font.weight }?.let { addToCss(directSel, "font-weight", it.toString()) }
         theme.diff(diff) { font.italic }
-            ?.let { dynamicCss.add(directSel, "font-style", it.let { if (it) "italic" else "normal" }) }
+            ?.let { addToCss(directSel, "font-style", it.let { if (it) "italic" else "normal" }) }
         theme.diff(diff) { font.allCaps }
-            ?.let { dynamicCss.add(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
-        theme.diff(diff) { font.lineSpacingMultiplier }?.let { dynamicCss.add(directSel, "line-height", it.toString()) }
+            ?.let { addToCss(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
+        theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
         theme.diff(diff) { font.additionalLetterSpacing }
-            ?.let { dynamicCss.add(directSel, "letter-spacing", it.toString()) }
-        theme.diff(diff) { outline }?.let { dynamicCss.add(directSel, "outline-color", it.toCss()) }
-        theme.diff(diff) { transitionDuration }?.let { dynamicCss.add(directSel, "transition-duration", it.toCss()) }
-        theme.diff(diff) { transitionDuration }?.let { dynamicCss.add(directSel, "--transition-duration", it.toCss()) }
+            ?.let { addToCss(directSel, "letter-spacing", it.toString()) }
+        theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.toCss()) }
+        theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "transition-duration", it.toCss()) }
+        theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "--transition-duration", it.toCss()) }
         theme.diff(diff) { background }
-            ?.let { dynamicCss.add(directSel, "--nearest-background-color", it.closestColor().toCss()) }
-        theme.diff(diff) { cornerRadii }?.let { dynamicCss.add(directSel, "border-radius", it.toRawCornerRadius()) }
+            ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toCss()) }
+        theme.diff(diff) { cornerRadii }?.let { addToCss(directSel, "border-radius", it.toRawCornerRadius()) }
         theme.diff(diff) { foreground }?.let {
             when (it) {
                 is Color -> {
-                    dynamicCss.add(directSel, "color", it.toCss())
+                    addToCss(directSel, "color", it.toCss())
                 }
 
                 is LinearGradient, is RadialGradient -> {
-                    dynamicCss.add(directSel, "color", it.toCss())
-                    dynamicCss.add(directSel, "background", "-webkit-${it.toCss()}")
-                    dynamicCss.add(directSel, "-webkit-background-clip", "text")
-                    dynamicCss.add(directSel, "-webkit-text-fill-color", "transparent")
+                    addToCss(directSel, "color", it.toCss())
+                    addToCss(directSel, "background", "-webkit-${it.toCss()}")
+                    addToCss(directSel, "-webkit-background-clip", "text")
+                    addToCss(directSel, "-webkit-text-fill-color", "transparent")
                 }
             }
         }
