@@ -13,12 +13,21 @@ fun <T, V> Writable<T>.transform(
 fun <T, V> Writable<T>.dynamicTransform(
     get: suspend (T) -> V,
     set: suspend (V) -> T,
+): Writable<V> = shared {
+    get(this@dynamicTransform.await())
+}.withWrite {
+    this@dynamicTransform set set(it)
+}
+
+fun <T, V> Writable<T>.longTransform(
+    get: suspend (T) -> V,
+    set: suspend (V) -> T,
 ) = object: Writable<V> {
     val late = LateInitProperty<Unit>().apply { value = Unit }
 
     val shared = shared {
         late.await()
-        get(this@dynamicTransform.await())
+        get(this@longTransform.await())
     }
 
     override val state: ReadableState<V> get() = shared.state
@@ -30,7 +39,7 @@ fun <T, V> Writable<T>.dynamicTransform(
     override suspend fun set(value: V) {
         setLoading()
 
-        this@dynamicTransform set set(value)
+        this@longTransform set set(value)
 
         setComplete()
     }
