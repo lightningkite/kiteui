@@ -4,14 +4,15 @@ import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 
 class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val action: suspend CalculationContext.() -> T) : Readable<T> {
-    val removers = ArrayList<() -> Unit>()
-    val ctx = object : CalculationContext {
-        override fun onRemove(action: () -> Unit) {
-            removers.add(action)
-        }
+    var job = Job()
+    val ctx = object: CalculationContext {
+        override val coroutineContext: CoroutineContext get() = job + Dispatchers.Unconfined
     }
     override var state: ReadableState<T> = ReadableState.notReady
     var listening = false
@@ -40,7 +41,7 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
             } catch (e: CancelledException) {
                 // just bail, since either we're already rerunning or this stuff doesn't matter anymore
                 return@ReactiveScopeData
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
             notifyListeners()
@@ -58,13 +59,8 @@ class SharedReadable<T>(val useLastWhileLoading: Boolean = false, private val ac
         if (!listening) return
         debug?.log("Shutting down...")
         listening = false
-        removers.forEach {
-            try {
-                it()
-            } catch (e: Exception) {
-                e.report()
-            }
-        }
+        job.cancel()
+        job = Job()
         state = ReadableState.notReady
     }
 

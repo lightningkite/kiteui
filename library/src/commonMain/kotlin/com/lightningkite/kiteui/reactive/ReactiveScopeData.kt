@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.coroutines.*
 
 class ReactiveScopeData(
@@ -12,7 +15,7 @@ class ReactiveScopeData(
     internal val removers: HashMap<ResourceUse, () -> Unit> = HashMap()
     internal val latestPass: ArrayList<ResourceUse> = ArrayList()
     override val key: CoroutineContext.Key<ReactiveScopeData> = Key
-    internal var previousContext: CoroutineContext? = null
+    internal var lastJob: Job? = null
 
     var runningLong: Result<Unit>? = Result.success(Unit)
         set(value) {
@@ -39,34 +42,26 @@ class ReactiveScopeData(
         runningLong = null
     }
 
+    private var executionInstance = 0
     internal fun run() {
-        val context: CoroutineContext = EmptyCoroutineContext.childCancellation() + this
-        if(debug != null) context.setDebugLog(debug)
-        previousContext.let {
-            previousContext = context
-            it?.cancel()
-        }
         latestPass.clear()
 
         debug?.log("Calculating")
         var done = false
-        action.startCoroutine(object : Continuation<Unit> {
-            override val context: CoroutineContext = context
-
-            // called when a coroutine ends. do nothing.
-            override fun resumeWith(result: Result<Unit>) {
-                if (previousContext !== context) return
-                done = true
-                debug?.log("Complete, got result $result")
-                runningLong = result
-                for (entry in removers.entries.toList()) {
-                    if (entry.key !in latestPass) {
-                        entry.value()
-                        removers.remove(entry.key)
-                    }
+        var index = ++executionInstance
+        lastJob = calculationContext.launch(this) {
+            val result = kotlin.runCatching { action() }
+            if (index != executionInstance) return@launch
+            done = true
+            debug?.log("Complete, got result $result")
+            runningLong = result
+            for (entry in removers.entries.toList()) {
+                if (entry.key !in latestPass) {
+                    entry.value()
+                    removers.remove(entry.key)
                 }
             }
-        })
+        }
 
         if (!done) {
             // start load
@@ -80,8 +75,8 @@ class ReactiveScopeData(
         onLoad = {}
         removers.forEach { it.value() }
         removers.clear()
-        previousContext?.let {
-            previousContext = null
+        lastJob?.let {
+            lastJob = null
             it.cancel()
         }
         latestPass.clear()
@@ -131,9 +126,9 @@ suspend fun <T> Readable<T>.await(): T {
         if(state.ready) {
             // and the value is ready to go, just add the listener and proceed with the value.
             if (!it.removers.containsKey(this)) {
-//                println("ReactiveScope $it adding listener to $this")
+                it.debug?.log("adding listener to $this")
                 it.removers[this] = this.addListener {
-//                    println("ReactiveScope $it READABLE LISTENER HIT A")
+                    it.debug?.log("READABLE LISTENER HIT A")
                     if(this.state.ready) {
                         it.run()
                     } else {
@@ -142,7 +137,7 @@ suspend fun <T> Readable<T>.await(): T {
                     }
                 }
             } else {
-//                println("ReactiveScope $it already depends on $this")
+                it.debug?.log("already depends on $this")
             }
             it.latestPass.add(this)
             state.get()
@@ -155,9 +150,9 @@ suspend fun <T> Readable<T>.await(): T {
             // otherwise, wait for the first instance of it
             suspendCoroutineCancellable { cont ->
                 var runOnce = false
-//                println("ReactiveScope $it adding listener to $this")
+                it.debug?.log("adding listener to $this")
                 val remover = listenable.addListener {
-//                    println("ReactiveScope $it READABLE LISTENER HIT B")
+                    it.debug?.log("READABLE LISTENER HIT B")
                     // The first time the listener runs, resume.  After that, rerun the whole scope.
                     val state = this@await.state
                     if(runOnce) {
@@ -170,7 +165,7 @@ suspend fun <T> Readable<T>.await(): T {
                         runOnce = true
                         cont.resumeState(state)
                     } else {
-//                        println("ReactiveScope $it no resume")
+                        it.debug?.log("no resume")
                     }
                 }
                 it.latestPass.add(listenable)

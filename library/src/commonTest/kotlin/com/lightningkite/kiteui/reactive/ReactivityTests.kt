@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,17 +35,48 @@ class ReactivityTests {
     fun waitingTest() {
         val property = Property<Int?>(null)
         val emissions = ArrayList<Int>()
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 emissions.add(property.waitForNotNull.await())
             }
             repeat(10) {
-                property.value = it
                 property.value = null
+                property.value = it
             }
-            cancel()
         }
         assertEquals((0..9).toList(), emissions)
+    }
+
+    @Test fun baselineScope() {
+        testContext {
+            val a = Property(0)
+            var received = -1
+            ReactiveScopeData(this, action = {
+                received = a()
+            })
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+        }
+    }
+
+    @Test fun launchReadableAwait() {
+        testContext {
+            val a = LateInitProperty<Int>()
+            var received = -1
+            onRemove { println("Shutting down...") }
+            launch {
+                println("Started...")
+                received = a.await()
+            }
+            println("Setting...")
+            a.value = 42
+            assertEquals(a.value, received)
+        }
     }
 
     @Test fun sharedShutdownTest() {
@@ -66,7 +101,7 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 println("Got ${a.await() + b.await()}")
             }
@@ -80,7 +115,7 @@ class ReactivityTests {
         val c = shared { println("CALC b"); b.await() }
         var hits = 0
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 println("#1 Got ${c.await()}")
                 hits++
@@ -100,7 +135,7 @@ class ReactivityTests {
         val a = LateInitProperty<Int>()
         var hits = 0
 
-        with(CalculationContext.Standard()) {
+        testContext {
             launch {
                 println("launch ${a.await()}")
                 hits++
@@ -132,7 +167,7 @@ class ReactivityTests {
         val e = shared { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
         println("$e: e")
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 e.await()
             }
@@ -166,7 +201,7 @@ class ReactivityTests {
         val e = shared { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
         println("$e: e")
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 e.await()
             }
@@ -329,14 +364,12 @@ class VirtualDelayer() {
     }
 }
 
-fun testContext(action: CalculationContext.()->Unit): Cancellable {
+fun testContext(action: CalculationContext.()->Unit): Job {
     var error: Throwable? = null
-    val onRemoveSet = HashSet<()->Unit>()
+    val job = Job()
     var numOutstandingContracts = 0
     with(object: CalculationContext {
-        override fun onRemove(action: () -> Unit) {
-            onRemoveSet.add(action)
-        }
+        override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined
 
         override fun notifyLongComplete(result: Result<Unit>) {
             numOutstandingContracts--
@@ -356,13 +389,9 @@ fun testContext(action: CalculationContext.()->Unit): Cancellable {
         CalculationContextStack.useIn(this) {
             action()
         }
+        job.cancel()
         if(error != null) throw error!!
-        assertEquals(numOutstandingContracts, 0)
+        assertEquals(0, numOutstandingContracts, "Some work was not completed.")
     }
-    return object: Cancellable {
-        override fun cancel() {
-            onRemoveSet.forEach { it() }
-            onRemoveSet.clear()
-        }
-    }
+    return job
 }

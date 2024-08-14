@@ -137,7 +137,6 @@ fun ViewWriter.renderFormReadOnly(section: FormSection) {
     )
 }
 
-
 data class FormIssue(
     val field: String,
     val summary: String,

@@ -5,6 +5,8 @@ import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
@@ -203,9 +205,9 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
+    override val coroutineContext: Job = Job()
     open fun shutdown() {
-        onRemoveSet.invokeAllSafe()
-        onRemoveSet.clear()
+        coroutineContext.cancel()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
@@ -237,11 +239,6 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
     val calculationContext: CalculationContext get() = this
-
-    private val onRemoveSet = ArrayList<() -> Unit>()
-    override fun onRemove(action: () -> Unit) {
-        onRemoveSet.add(action)
-    }
 
     val working = Property(false)
     private var loadCount = 0

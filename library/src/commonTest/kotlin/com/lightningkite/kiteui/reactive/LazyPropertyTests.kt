@@ -11,7 +11,7 @@ class LazyPropertySharedBehaviorTests {
         val b = LazyProperty { a.await() }
         var starts = 0
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 starts++
                 b.await()
@@ -34,7 +34,7 @@ class LazyPropertySharedBehaviorTests {
         val b = LazyProperty { a.await() }
         var starts = 0
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 starts++
                 b.await()

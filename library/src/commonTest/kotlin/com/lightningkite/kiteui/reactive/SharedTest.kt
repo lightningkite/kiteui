@@ -12,7 +12,7 @@ class SharedTest {
         val b = shared { a.await() }
         var starts = 0
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 starts++
                 b.await()
@@ -34,7 +34,7 @@ class SharedTest {
         val b = shared { a.await() }
         var starts = 0
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 starts++
                 b.await()
