@@ -60,16 +60,22 @@ data class FontAndStyle(
 data class Icon(
     val width: Dimension, val height: Dimension,
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
-    val pathDatas: List<String>,
+    val pathDatas: List<String> = listOf(),
+    val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
-    fun toImageSource(fillColor: Paint?, strokeColor: Color? = null, strokeWidth: Double? = null) = ImageVector(
+    data class StrokePathData(val strokeWidth: Dimension, val path: String)
+
+    fun toImageSource(color: Paint) = ImageVector(
         width,
         height,
         viewBoxMinX,
         viewBoxMinY,
         viewBoxWidth,
         viewBoxHeight,
-        pathDatas.map { ImageVector.Path(fillColor, strokeColor, strokeWidth, it) })
+        pathDatas.map { ImageVector.Path(color, null, 0.0, it) } + strokePathDatas.map {
+            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.path)
+        }
+    )
 
     companion object {
         val search = Icon(
