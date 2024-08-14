@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.clockMillis
-import com.lightningkite.kiteui.debugger
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
@@ -13,8 +12,6 @@ import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import kotlin.math.absoluteValue
 import kotlin.random.Random
-import kotlin.time.TimeSource
-import kotlin.time.measureTime
 
 
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {

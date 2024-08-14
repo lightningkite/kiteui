@@ -4,7 +4,6 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
 
 

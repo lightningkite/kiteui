@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.LateInitProperty
 import com.lightningkite.kiteui.reactive.Readable
