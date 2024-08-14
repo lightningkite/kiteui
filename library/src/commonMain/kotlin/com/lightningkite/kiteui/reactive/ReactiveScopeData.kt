@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlin.coroutines.*
 
 class ReactiveScopeData(
@@ -12,8 +14,9 @@ class ReactiveScopeData(
     var onLoad: (() -> Unit)? = null,
     val debug: Console? = null
 ) : CoroutineContext.Element {
-    internal val removers: HashMap<ResourceUse, () -> Unit> = HashMap()
-    internal val latestPass: ArrayList<ResourceUse> = ArrayList()
+    internal val removers: HashMap<Any?, () -> Unit> = HashMap()
+    internal val lastValue: HashMap<Any?, Any?> = HashMap()
+    internal val latestPass: ArrayList<Any?> = ArrayList()
     override val key: CoroutineContext.Key<ReactiveScopeData> = Key
     internal var lastJob: Job? = null
 
@@ -21,18 +24,18 @@ class ReactiveScopeData(
         set(value) {
             val previous = field
             field = value
-            if((previous == null) != (value == null)) {
-                if(value != null) {
+            if ((previous == null) != (value == null)) {
+                if (value != null) {
                     calculationContext.notifyLongComplete(value)
                 } else {
 //                    try {
-                        onLoad?.invoke()
+                    onLoad?.invoke()
 //                    } catch(e: Exception) {
 //                        e.printStackTrace2()
 //                    }
                     calculationContext.notifyStart()
                 }
-            } else if(value != null) {
+            } else if (value != null) {
                 calculationContext.notifyComplete(value)
             }
         }
@@ -59,6 +62,7 @@ class ReactiveScopeData(
                 if (entry.key !in latestPass) {
                     entry.value()
                     removers.remove(entry.key)
+                    lastValue.remove(entry.key)
                 }
             }
         }
@@ -73,8 +77,10 @@ class ReactiveScopeData(
     internal fun shutdown() {
         action = {}
         onLoad = {}
+        println("Shutting down")
         removers.forEach { it.value() }
         removers.clear()
+        lastValue.clear()
         lastJob?.let {
             lastJob = null
             it.cancel()
@@ -120,16 +126,16 @@ suspend fun rerunOn(listenable: Listenable) {
 suspend inline operator fun <T> Readable<T>.invoke(): T = await()
 
 suspend fun <T> Readable<T>.await(): T {
-    return coroutineContext[ReactiveScopeData.Key]?.let {
+    coroutineContext[ReactiveScopeData.Key]?.let {
         // If we're in a reactive scope,
         val state = state
-        if(state.ready) {
+        if (state.ready) {
             // and the value is ready to go, just add the listener and proceed with the value.
             if (!it.removers.containsKey(this)) {
                 it.debug?.log("adding listener to $this")
                 it.removers[this] = this.addListener {
                     it.debug?.log("READABLE LISTENER HIT A")
-                    if(this.state.ready) {
+                    if (this.state.ready) {
                         it.run()
                     } else {
                         // Don't even bother trying to calculate, since we don't have data yet.
@@ -140,28 +146,28 @@ suspend fun <T> Readable<T>.await(): T {
                 it.debug?.log("already depends on $this")
             }
             it.latestPass.add(this)
-            state.get()
+            return state.get()
         } else {
             val listenable = this@await
             if (it.removers.containsKey(listenable)) {
 //                println("ReactiveScope $it already depends on $this")
-                return@let awaitOnce()
+                return awaitOnce()
             }
             // otherwise, wait for the first instance of it
-            suspendCoroutineCancellable { cont ->
+            return suspendCoroutineCancellable { cont ->
                 var runOnce = false
                 it.debug?.log("adding listener to $this")
                 val remover = listenable.addListener {
                     it.debug?.log("READABLE LISTENER HIT B")
                     // The first time the listener runs, resume.  After that, rerun the whole scope.
                     val state = this@await.state
-                    if(runOnce) {
-                        if(state.ready) {
+                    if (runOnce) {
+                        if (state.ready) {
                             it.run()
                         } else {
                             it.setLoading()
                         }
-                    } else if(state.ready) {
+                    } else if (state.ready) {
                         runOnce = true
                         cont.resumeState(state)
                     } else {
@@ -173,7 +179,8 @@ suspend fun <T> Readable<T>.await(): T {
                 return@suspendCoroutineCancellable remover
             }
         }
-    } ?: awaitOnce()
+    }
+    return awaitOnce()
 }
 
 @Deprecated("Replace with 'awaitOnce'", ReplaceWith("this.awaitOnce()", "com.lightningkite.kiteui.reactive.awaitOnce"))
@@ -181,21 +188,21 @@ suspend fun <T> Readable<T>.awaitRaw(): T = awaitOnce()
 
 suspend fun <T> Readable<T>.awaitOnce(): T {
     val state = state
-    return if(state.ready) state.get()
+    return if (state.ready) state.get()
     else suspendCoroutineCancellable {
         // If it's not ready, we need to wait until it is then never bother with this again.
-        var remover: (()->Unit)? = null
+        var remover: (() -> Unit)? = null
         var alreadyRun = false
         remover = addListener {
             val state = this.state
-            if(state.ready) {
+            if (state.ready) {
                 it.resumeState(state)
                 remover?.invoke() ?: run {
                     alreadyRun = true
                 }
             }
         }
-        if(alreadyRun) remover.invoke()
+        if (alreadyRun) remover.invoke()
         return@suspendCoroutineCancellable remover
     }
 }
@@ -203,4 +210,30 @@ suspend fun <T> Readable<T>.awaitOnce(): T {
 fun <T> Readable<Readable<T>>.flatten(): Readable<T> {
     val first = shared { this@flatten.await() }
     return shared { first.await().await() }
+}
+
+suspend fun <T> Flow<T>.latest(): T {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        it.latestPass.add(this@latest)
+        if (it.removers[this@latest] == null) {
+            val job = CoroutineScope(coroutineContext).launch {
+                collect { v ->
+                    it.lastValue[this@latest] = v
+                    it.run()
+                }
+            }
+            it.removers[this@latest] = {
+                job.cancel()
+            }
+            return suspendCancellableCoroutine { }
+        } else {
+            if (it.lastValue.containsKey(this@latest)) {
+                return it.lastValue[this@latest] as T
+            } else {
+                return suspendCancellableCoroutine { }
+            }
+        }
+    } ?: run {
+        return first()
+    }
 }

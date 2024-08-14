@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
@@ -205,9 +206,10 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
-    override val coroutineContext: Job = Job()
+    val job = Job()
+    override val coroutineContext = Dispatchers.Main + job
     open fun shutdown() {
-        coroutineContext.cancel()
+        job.cancel()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
