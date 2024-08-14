@@ -1,56 +1,20 @@
 package com.lightningkite.kiteui.validation
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.suspendCoroutineCancellable
 import kotlin.coroutines.coroutineContext
 
-/**
- * Only signals for a recalculation when the [condition] is met
-* */
-suspend fun <T> Readable<T>.awaitCondition(condition: (T) -> Boolean): T {
-    return coroutineContext[ReactiveScopeData.Key]?.let {
-        val state = state
-        if(state.ready) {
-            if (!it.removers.containsKey(this)) {
-                it.removers[this] = this.addListener {
-                    val state = this.state
-                    if(state.ready) {
-                        if (condition(state.get())) it.run()
-                    } else {
-                        it.setLoading()
-                    }
-                }
-            }
-            it.latestPass.add(this)
-            state.get()
-        } else {
-            val listenable = this
-            if (it.removers.containsKey(listenable)) {
-                return@let awaitOnce()
-            }
-            suspendCoroutineCancellable { cont ->
-                var runOnce = false
-                val remover = listenable.addListener {
-                    val state = this.state
-                    if(runOnce) {
-                        if(state.ready) {
-                            if (condition(state.get())) it.run()
-                        } else {
-                            it.setLoading()
-                        }
-                    } else if(state.ready) {
-                        runOnce = true
-                        cont.resumeState(state)
-                    } else {
-//                        println("ReactiveScope $it no resume")
-                    }
-                }
-                it.latestPass.add(listenable)
-                it.removers[listenable] = remover
-                return@suspendCoroutineCancellable remover
+// Returns its current invalid state, and then signals for recalculation when invalid
+suspend fun <T> Readable<T>.isInvalid(): ErrorState.Invalid? {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        if (!it.removers.containsKey(this)) {
+            it.removers[this] = this.addListener {
+                if (state.invalid == null) return@addListener
+                else it.run()
             }
         }
-    } ?: awaitOnce()
+        it.latestPass.add(this)
+    }
+    return state.invalid
 }
 
 class SignalingList<T>

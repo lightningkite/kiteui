@@ -91,7 +91,7 @@ fun RView.example() {
             }
 
             onClick {
-                if (prop.invalid()) {
+                if (prop.isInvalid()) {
                     failedSubmission.value = true
                     return@onClick
                 }

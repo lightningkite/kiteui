@@ -7,34 +7,34 @@ import com.lightningkite.kiteui.reactive.*
 * */
 interface Validator {
     val subValidators: Readable<List<Validator>>
-    val validations: Readable<List<Validated>>
+    val validations: Readable<List<Readable<Any?>>>
 
-    fun validate(validated: Validated)
-    fun remove(validated: Validated)
+    fun validate(readable: Readable<Any?>)
+    fun remove(readable: Readable<Any?>)
     fun clearValidations()
 
     /** Creates a sub-validator */
     fun sub(): Validator
     fun remove(validator: Validator)
 
-    val errors: Readable<Set<String>> get() = shared {
-        (subValidators.await().flatMap { it.errors() } + validations.await().flatMap { it.errors() }).toSet()
+    val errors: Readable<List<ErrorState.Invalid>> get() = shared {
+        val subErrors = subValidators().flatMap { it.errors() }
+        val validationErrors = validations().mapNotNull { it.isInvalid() }
+        subErrors + validationErrors
     }
 
-    val allValid: Readable<Boolean> get() = shared {
-        subValidators.await().all { it.allValid() } and validations.await().all { it.valid() }
-    }
+    val allValid: Readable<Boolean> get() = shared { errors().isEmpty() }
 
     open class Basic: Validator {
         private val _children = SignalingList<Basic>()
         override val subValidators: ImmediateReadable<List<Validator>> get() = _children
 
-        private val _validations = SignalingList<Validated>()
-        override val validations: ImmediateReadable<List<Validated>> get() = _validations
+        private val _validations = SignalingList<Readable<Any?>>()
+        override val validations: ImmediateReadable<List<Readable<Any?>>> get() = _validations
 
-        override fun validate(validated: Validated) { _validations.add(validated) }
+        override fun validate(readable: Readable<Any?>) { _validations.add(readable) }
 
-        override fun remove(validated: Validated) { _validations.remove(validated) }
+        override fun remove(readable: Readable<Any?>) { _validations.remove(readable) }
 
         override fun clearValidations() { _validations.clear() }
 
@@ -51,12 +51,12 @@ interface Validator {
         private val _children by lazy { SignalingList<Validator>() }
         override val subValidators: ImmediateReadable<List<Validator>> get() = _children
 
-        private val _validations by lazy { SignalingList<Validated>() }
-        override val validations: ImmediateReadable<List<Validated>> get() = _validations
+        private val _validations by lazy { SignalingList<Readable<Any?>>() }
+        override val validations: ImmediateReadable<List<Readable<Any?>>> get() = _validations
 
-        override fun validate(validated: Validated) { _validations.add(validated) }
+        override fun validate(readable: Readable<Any?>) { _validations.add(readable) }
 
-        override fun remove(validated: Validated) { _validations.remove(validated) }
+        override fun remove(readable: Readable<Any?>) { _validations.remove(readable) }
 
         override fun clearValidations() { _validations.clear() }
 
@@ -68,16 +68,14 @@ interface Validator {
             }
         }
 
-        override val errors: Readable<Set<String>> by lazy {
+        override val errors: Readable<List<ErrorState.Invalid>> by lazy {
             shared {
-                (subValidators.await().flatMap { it.errors() } + validations.await().flatMap { it.errors() }).toSet()
+                val subErrors = subValidators().flatMap { it.errors() }
+                val validationErrors = validations().mapNotNull { it.isInvalid() }
+                subErrors + validationErrors
             }
         }
 
-        override val allValid: Readable<Boolean> by lazy {
-            shared {
-                subValidators.await().all { it.allValid() } and validations.await().all { it.valid() }
-            }
-        }
+        override val allValid: Readable<Boolean> by lazy { shared { errors().isEmpty() } }
     }
 }
