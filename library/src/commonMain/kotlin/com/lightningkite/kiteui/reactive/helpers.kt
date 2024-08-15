@@ -2,6 +2,9 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.utils.commaString
+import com.lightningkite.kiteui.validation.InvalidException
+import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
@@ -40,16 +43,20 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
             master.addListener {
                 if (setting) return@addListener
                 setting = true
-                launch {
-                    this@bind.set(master.await())
+                master.state.onSuccess {
+                    this@with.launch {
+                        this@bind.set(it)
+                    }
                 }
                 setting = false
             }.also { onRemove(it) }
             this@bind.addListener {
                 if (setting) return@addListener
                 setting = true
-                launch {
-                    master.set(this@bind.await())
+                this@bind.state.onSuccess {
+                    this@with.launch {
+                        master.set(it)
+                    }
                 }
                 setting = false
             }.also { onRemove(it) }
@@ -149,3 +156,16 @@ fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Un
     }
 
 fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten() set it }
+
+interface ReadableEmitter<T> { fun emit(value: T) }
+fun <T> CoroutineScope.readable(emitter: suspend ReadableEmitter<T>.()->Unit): Readable<T> {
+    val prop = LateInitProperty<T>()
+    launch {
+        emitter(object: ReadableEmitter<T> {
+            override fun emit(value: T) {
+                prop.value = value
+            }
+        })
+    }
+    return prop
+}

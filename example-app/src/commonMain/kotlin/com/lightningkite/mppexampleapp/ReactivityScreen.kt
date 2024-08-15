@@ -57,7 +57,7 @@ object ReactivityScreen : Screen {
                         delay(it * 10L)
                     }
                 }
-                ::content { timerFlow.latest().toString() }
+                ::content { timerFlow().toString() }
             }
 
             col {

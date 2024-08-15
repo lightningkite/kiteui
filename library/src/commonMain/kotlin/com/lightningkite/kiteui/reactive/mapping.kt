@@ -46,8 +46,13 @@ fun <O, T> Writable<O>.map(
          */
         override suspend fun set(value: T) {
             val old: O = this@map.await()
-            val new: O = set(old, value)
-            this@map.set(new)
+            try {
+                val new: O = set(old, value)
+                this@map.set(new)
+                if(!_state.success) state = this@map.state.map { get(it) }
+            } catch(e: Exception) {
+                state = ReadableState.exception(e)
+            }
         }
     }
 }

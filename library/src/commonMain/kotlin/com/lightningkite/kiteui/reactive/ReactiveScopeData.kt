@@ -122,8 +122,28 @@ suspend fun rerunOn(listenable: Listenable) {
         it.latestPass.add(listenable)
     }
 }
-
 suspend inline operator fun <T> Readable<T>.invoke(): T = await()
+suspend fun <T> Readable<T>.watchState(): ReadableState<T> {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        // and the value is ready to go, just add the listener and proceed with the value.
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            it.removers[this] = this.addListener {
+                it.debug?.log("READABLE LISTENER HIT A")
+                if (this.state.ready) {
+                    it.run()
+                } else {
+                    // Don't even bother trying to calculate, since we don't have data yet.
+                    it.setLoading()
+                }
+            }
+        } else {
+            it.debug?.log("already depends on $this")
+        }
+        it.latestPass.add(this)
+        return state
+    } ?: return state
+}
 
 suspend fun <T> Readable<T>.await(): T {
     coroutineContext[ReactiveScopeData.Key]?.let {
@@ -212,23 +232,23 @@ fun <T> Readable<Readable<T>>.flatten(): Readable<T> {
     return shared { first.await().await() }
 }
 
-suspend fun <T> Flow<T>.latest(): T {
+operator suspend fun <T> Flow<T>.invoke(): T {
     coroutineContext[ReactiveScopeData.Key]?.let {
-        it.latestPass.add(this@latest)
-        if (it.removers[this@latest] == null) {
+        it.latestPass.add(this@invoke)
+        if (it.removers[this@invoke] == null) {
             val job = CoroutineScope(coroutineContext).launch {
                 collect { v ->
-                    it.lastValue[this@latest] = v
+                    it.lastValue[this@invoke] = v
                     it.run()
                 }
             }
-            it.removers[this@latest] = {
+            it.removers[this@invoke] = {
                 job.cancel()
             }
             return suspendCancellableCoroutine { }
         } else {
-            if (it.lastValue.containsKey(this@latest)) {
-                return it.lastValue[this@latest] as T
+            if (it.lastValue.containsKey(this@invoke)) {
+                return it.lastValue[this@invoke] as T
             } else {
                 return suspendCancellableCoroutine { }
             }

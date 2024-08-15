@@ -4,7 +4,10 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -207,7 +210,11 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
     }
 
     val job = Job()
-    override val coroutineContext = Dispatchers.Main + job
+    override val coroutineContext = Dispatchers.Main + job + CoroutineExceptionHandler { coroutineContext, throwable ->
+        if(throwable !is CancellationException) {
+            throwable.printStackTrace2()
+        }
+    }
     open fun shutdown() {
         job.cancel()
         if (removeBeforeShutdown) {
