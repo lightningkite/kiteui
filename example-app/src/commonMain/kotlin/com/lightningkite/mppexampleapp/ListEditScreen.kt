@@ -17,7 +17,7 @@ object ListEditScreen : Screen {
 
     override fun ViewWriter.render() {
         recyclerView {
-            children(data.perElement(identity = { it.index })) { itemObs ->
+            children(data.lensByElement(identity = { it.index }, map = { it })) { itemObs ->
                 row {
                     centered - sizeConstraints(width = 5.rem) - text {
                         ::content { itemObs()().index.toString() }

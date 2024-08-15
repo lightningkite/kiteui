@@ -8,15 +8,15 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 class MappingKtTest {
-    
+
     data class Sample(
         val x: Int,
         val y: List<Int>
     )
-    
+
     @Test fun subfield() {
         val source = Property(Sample(42, listOf(1, 2, 3)))
-        val view = source.map(
+        val view = source.lens(
             get = { it.x },
             set = { old, it -> old.copy(x = it) }
         )
@@ -47,7 +47,7 @@ class MappingKtTest {
 
     @Test fun subfieldLate() {
         val source = LateInitProperty<Sample>()
-        val view = source.map(
+        val view = source.lens(
             get = { it.x },
             set = { old, it -> old.copy(x = it) }
         )
@@ -80,13 +80,13 @@ class MappingKtTest {
         }
     }
 
-    fun perElementTest(action: CalculationContext.(source: Property<List<Int>>, view: WritableList<Int, Int>) -> Unit) {
+    fun perElementTest(action: CalculationContext.(source: Property<List<Int>>, view: WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>) -> Unit) {
         val source = Property(listOf(1, 2, 3)).apply {
             addListener {
                 println("source: $value")
             }
         }
-        val view = WritableList(source, ConsoleRoot) { it }
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
@@ -140,52 +140,50 @@ class MappingKtTest {
     // Insertion works
     @Test fun listInsertionWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.set(view() + view.newElement(4)) }
+        launch { view.elements.set(view.elements() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
     @Test fun listInsertion() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.set(view() + view.newElement(4)) }
+        launch { view.elements.set(view.elements() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 
     // Removal works
     @Test fun listRemovalWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.set(view().filter { it.value != 3 }) }
+        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
     @Test fun listRemoval() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.set(view().filter { it.value != 3 }) }
+        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
 
     // Removal works by identity
     @Test fun listRemovalByIdentityWithoutListen() = perElementTest { source, view ->
-        val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.set(view() - sub) }
+        launch { view.remove(3) }
         assertEquals(2, source.value.size)
     }
     @Test fun listRemovalByIdentity() = perElementTest { source, view ->
-        val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.set(view() - sub) }
+        launch { view.remove(3) }
         assertEquals(2, source.value.size)
     }
 
     // Rearranging works and retains identity
     @Test fun listRearrangingWithoutListening() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.set(view().reversed()) }
+        launch { view.elements.set(view.elements().reversed()) }
         assertEquals(3, sub.value)
     }
     @Test fun listRearranging() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.set(view().reversed()) }
+        launch { view.elements.set(view.elements().reversed()) }
         assertEquals(3, sub.value)
     }
 
@@ -205,7 +203,7 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList(source, ConsoleRoot) { it }
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
@@ -241,7 +239,7 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList(source, ConsoleRoot) { it }
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
