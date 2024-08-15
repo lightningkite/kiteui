@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
@@ -42,8 +43,8 @@ abstract class ViewWriter {
     }
 
     fun <T : RView> writePre(p: ViewWriter, view: T) {
-        start(view)
         p.willAddChild(view)
+        start(view)
         _wrapElement = null
         beforeNextElementSetup?.invoke(view)
         beforeNextElementSetup = null
@@ -60,6 +61,9 @@ abstract class ViewWriter {
         try {
             setup(view)
             writePost(p, view)
+        } catch(e: Exception) {
+            ConsoleRoot.warn("Failed to setup $view: $e")
+            throw e
         } finally {
             end(view)
         }

@@ -209,7 +209,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
-    val job = Job()
+    private val job = Job()
     override val coroutineContext = Dispatchers.Main + job + CoroutineExceptionHandler { coroutineContext, throwable ->
         if(throwable !is CancellationException) {
             throwable.printStackTrace2()

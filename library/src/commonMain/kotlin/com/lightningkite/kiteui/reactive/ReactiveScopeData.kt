@@ -77,7 +77,6 @@ class ReactiveScopeData(
     internal fun shutdown() {
         action = {}
         onLoad = {}
-        println("Shutting down")
         removers.forEach { it.value() }
         removers.clear()
         lastValue.clear()
