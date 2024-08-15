@@ -7,10 +7,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.validation.InvalidException
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.yield
 
 @Routable("validation")
 object ValidationScreen : Screen {
@@ -19,7 +15,7 @@ object ValidationScreen : Screen {
 
     override fun ViewWriter.render() {
         val rawData = Property<Int>(0)
-        val rawDataAsString = rawData.map(
+        val rawDataAsString = rawData.validationLens(
             get = {
                 println("Getting $it")
                 it.toString()
@@ -39,7 +35,7 @@ object ValidationScreen : Screen {
             }
             text {
                 ::content {
-                    rawDataAsString.watchState().let { it.exception?.message ?: it.getOrNull().toString() }
+                    rawDataAsString.exception()?.message ?: "OK"
                 }
             }
             button {
@@ -50,4 +46,4 @@ object ValidationScreen : Screen {
     }
 }
 
-suspend fun allValid(vararg readables: Readable<*>): Boolean = readables.all { it.watchState().success }
+suspend fun allValid(vararg readables: Readable<*>): Boolean = readables.all { it.state().success }

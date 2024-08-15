@@ -16,7 +16,7 @@ class MappingKtTest {
     
     @Test fun subfield() {
         val source = Property(Sample(42, listOf(1, 2, 3)))
-        val view = source.map(
+        val view = source.lens(
             get = { it.x },
             set = { old, it -> old.copy(x = it) }
         )
@@ -47,7 +47,7 @@ class MappingKtTest {
 
     @Test fun subfieldLate() {
         val source = LateInitProperty<Sample>()
-        val view = source.map(
+        val view = source.lens(
             get = { it.x },
             set = { old, it -> old.copy(x = it) }
         )

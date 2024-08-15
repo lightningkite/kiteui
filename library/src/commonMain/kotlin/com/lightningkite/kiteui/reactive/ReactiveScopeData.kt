@@ -3,8 +3,6 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlin.coroutines.*
 
@@ -122,19 +120,36 @@ suspend fun rerunOn(listenable: Listenable) {
     }
 }
 suspend inline operator fun <T> Readable<T>.invoke(): T = await()
-suspend fun <T> Readable<T>.watchState(): ReadableState<T> {
+suspend inline fun <T> Readable<T>.exception(): Exception? = state { it.exception }
+
+suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        // and the value is ready to go, just add the listener and proceed with the value.
+        val s = state.let(get)
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            var last = s
+            it.removers[this] = this.addListener {
+                val newVal = state.let(get)
+                if(last != newVal) {
+                    it.run()
+                }
+            }
+        } else {
+            it.debug?.log("already depends on $this")
+        }
+        it.latestPass.add(this)
+        return s
+    } ?: return state.let(get)
+}
+
+suspend fun <T> Readable<T>.state(): ReadableState<T> {
     coroutineContext[ReactiveScopeData.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
         if (!it.removers.containsKey(this)) {
             it.debug?.log("adding listener to $this")
             it.removers[this] = this.addListener {
-                it.debug?.log("READABLE LISTENER HIT A")
-                if (this.state.ready) {
-                    it.run()
-                } else {
-                    // Don't even bother trying to calculate, since we don't have data yet.
-                    it.setLoading()
-                }
+                it.run()
             }
         } else {
             it.debug?.log("already depends on $this")
