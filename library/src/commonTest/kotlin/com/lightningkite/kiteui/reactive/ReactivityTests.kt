@@ -1,6 +1,6 @@
-package com.lightningkite.kiteui
+package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.test.Test

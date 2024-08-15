@@ -8,7 +8,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
     init {
         native.tag = "div"
         native.classes.add("viewDraws")
-        native.classes.add("kiteui-stack")
+        native.classes.add("swapImage")
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
@@ -17,9 +17,9 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
     actual var source: ImageSource? = null
         set(value) {
-            if (refreshOnParamChange && value is ImageRemote) {
-                if (value.url == (field as? ImageRemote)?.url) return
-            } else if (value == field) return
+            if(refreshOnParamChange && value is ImageRemote) {
+                if(value.url == (field as? ImageRemote)?.url) return
+            } else if(value == field) return
             field = value
             when (value) {
                 null -> setSrc("")
@@ -60,6 +60,8 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
             field = value
             native.setAttribute("aria-label", value)
         }
+    //    actual var cacheStrategy: UrlCacheStrategy = UrlCacheStrategy.PathOnly
     actual var refreshOnParamChange: Boolean = false
-}
 
+//    actual suspend fun setSourceAndWaitForResult(source: ImageSource) {}
+}

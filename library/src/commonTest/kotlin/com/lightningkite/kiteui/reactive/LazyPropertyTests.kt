@@ -1,14 +1,14 @@
-package com.lightningkite.kiteui
+package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.launch
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SharedTest {
+class LazyPropertySharedBehaviorTests {
     @Test
     fun sharedPassesNulls() {
         val a = LateInitProperty<Int?>()
-        val b = shared { a.await() }
+        val b = LazyProperty { a.await() }
         var starts = 0
         var hits = 0
         with(CalculationContext.Standard()) {
@@ -28,9 +28,10 @@ class SharedTest {
         }
     }
 
-    @Test fun sharedDoesNotEmitSameValue() {
+    @Test
+    fun sharedDoesNotEmitSameValue() {
         val a = LateInitProperty<Int?>()
-        val b = shared { a.await() }
+        val b = LazyProperty { a.await() }
         var starts = 0
         var hits = 0
         with(CalculationContext.Standard()) {
@@ -50,32 +51,37 @@ class SharedTest {
         }
     }
 
-    @Test fun sharedTerminatesWhenNoOneIsListening() {
+    @Test
+    fun sharedTerminatesWhenNoOneIsListening() {
         var onRemoveCalled = 0
         var scopeCalled = 0
-        val shared = shared {
+        val shared = LazyProperty {
             scopeCalled++
-            onRemove { onRemoveCalled++ }
+            onRemove { println("Remove called"); onRemoveCalled++ }
             42
         }
+
         assertEquals(0, scopeCalled)
         assertEquals(0, onRemoveCalled)
-        val removeListener = shared.addListener {  }
-        assertEquals(1, scopeCalled)
+        val removeListener = shared.addListener { }
+        assertEquals(1, scopeCalled, "Scope not called")
         assertEquals(0, onRemoveCalled)
         removeListener()
         assertEquals(1, scopeCalled)
-        assertEquals(1, onRemoveCalled)
+        assertEquals(1, onRemoveCalled, "OnRemove not called")
     }
 
-    @Test fun sharedSharesCalculations() {
+    @Test
+    fun sharedSharesCalculations() {
         var hits = 0
         val property = Property(1)
-        val a = shared {
+        val a = LazyProperty {
             hits++
             property.await()
         }
         testContext {
+            println("Starting scopes")
+
             reactiveScope {
                 a.await()
             }
@@ -91,9 +97,11 @@ class SharedTest {
             assertEquals(2, hits)
         }.cancel()
 
+        assertEquals(ReadableState.notReady, a.state)
+
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
-        assertEquals(2, hits)
+        assertEquals(2, hits, "Failed on cancelled context")
 
         testContext {
             reactiveScope {
@@ -109,13 +117,14 @@ class SharedTest {
         assertEquals(3, hits)
     }
 
-    @Test fun sharedSharesWithLaunch() {
+    @Test
+    fun sharedSharesWithLaunch() {
         // Note that it can only share if it doesn't complete yet.
         // This is because it's considered 'inactive' once it completes the first time if there are no stable listeners.
         val delayed = VirtualDelay { 1 }
         var starts = 0
         var hits = 0
-        val a = shared {
+        val a = LazyProperty {
             starts++
             delayed.await()
             hits++
@@ -136,11 +145,12 @@ class SharedTest {
         }.cancel()
     }
 
-    @Test fun sharedWorksWithLaunch() {
+    @Test
+    fun sharedWorksWithLaunch() {
         val delayed = VirtualDelay { 1 }
         var starts = 0
         var hits = 0
-        val a = shared {
+        val a = LazyProperty {
             starts++
             delayed.await()
             hits++
@@ -151,10 +161,12 @@ class SharedTest {
             launch { a.await() }
             assertEquals(1, starts)
             assertEquals(0, hits)
+            println("Going")
             delayed.go()
             assertEquals(1, starts)
             assertEquals(1, hits)
 
+            println("Clearing")
             delayed.clear()
             launch { a.await() }
             launch { a.await() }
@@ -167,11 +179,12 @@ class SharedTest {
         }
     }
 
-    @Test fun sharedReloads() {
+    @Test
+    fun sharedReloads() {
         val late = LateInitProperty<Int>()
         var starts = 0
         var hits = 0
-        val a = shared {
+        val a = LazyProperty {
             starts++
             val r = late.await()
             hits++
@@ -184,6 +197,7 @@ class SharedTest {
             late.value = 1
             assertEquals(ReadableState(1), a.state)
 
+            println("Unsetting")
             late.unset()
             assertEquals(ReadableState.notReady, a.state)
 
@@ -196,13 +210,15 @@ class SharedTest {
         fun item(id: Int): Readable<Int?>
     }
     @Test fun recreation() {
-        class CachingModelRestEndpointsC(): CachingModelRestEndpoints {
+        class CachingModelRestEndpointsC():
+            CachingModelRestEndpoints {
             val items = HashMap<Int, LateInitProperty<Int?>>()
             override fun item(id: Int) = items.getOrPut(id) { LateInitProperty() }
         }
         data class Session(val dealerships: CachingModelRestEndpoints)
         val session = LateInitProperty<Session?>()
-        fun Readable<CachingModelRestEndpoints>.flatten(): CachingModelRestEndpoints = object : CachingModelRestEndpoints {
+        fun Readable<CachingModelRestEndpoints>.flatten(): CachingModelRestEndpoints = object :
+            CachingModelRestEndpoints {
             override fun item(id: Int): Readable<Int?> {
                 return shared { this@flatten().item(id) }.let { shared { it()() } }
             }
@@ -223,6 +239,151 @@ class SharedTest {
             currentId.value = 1
             e.item(1).value = 2
             println("DONE")
+        }
+    }
+}
+
+class LazyPropertyTests {
+    @Test fun sharedIsOverridden() {
+        val late = LateInitProperty<Int>()
+        val test = LazyProperty {
+            println("In initial value")
+            late.await()
+        }
+        testContext {
+            test.addListener {  }
+
+            assertEquals(ReadableState.notReady, test.state)
+
+            late.value = 1
+            assertEquals(ReadableState(1), test.state)
+
+            test.value = 2
+            assertEquals(ReadableState(2), test.state)
+        }
+    }
+
+    @Test fun stopsListeningWhenOverridden() {
+        var hits: Int = 0
+        val prop = Property(1)
+        val test = LazyProperty {
+            hits++
+            prop.await()
+        }
+        testContext {
+            assertEquals(0, hits)
+
+            test.addListener {  }
+            assertEquals(1, hits)
+
+            prop.value = 2
+            assertEquals(ReadableState(2), test.state)
+            assertEquals(2, hits)
+
+            test.value = 0
+            assertEquals(ReadableState(0), test.state)
+
+            prop.value = 3
+            assertEquals(ReadableState(0), test.state)
+            assertEquals(2, hits)
+        }
+    }
+
+    @Test fun startsListeningAgainOnceReset() {
+        var hits: Int = 0
+        val prop = Property(1)
+        val test = LazyProperty {
+            hits++
+            prop.await()
+        }
+        testContext {
+            assertEquals(0, hits)
+
+            test.addListener {  }
+            assertEquals(1, hits)
+
+            prop.value = 2
+            assertEquals(ReadableState(2), test.state)
+            assertEquals(2, hits)
+
+            test.value = 0
+            assertEquals(ReadableState(0), test.state)
+            assertEquals(2, hits)
+
+            prop.value = 3
+            assertEquals(2, hits)
+
+            test.reset()
+            assertEquals(ReadableState(3), test.state)
+
+            prop.value = 4
+            assertEquals(ReadableState(4), test.state)
+        }
+    }
+
+    @Test fun useLastWhileLoadingWorks() {
+        val late = LateInitProperty<Int>()
+        val test = LazyProperty(useLastWhileLoading = true) {
+            late.await()
+        }
+
+        testContext {
+            test.addListener {  }
+
+            assertEquals(ReadableState.notReady, test.state)
+
+            late.value = 1
+            assertEquals(ReadableState(1), test.state)
+
+            test.value = 10
+            assertEquals(ReadableState(10), test.state)
+
+            late.unset()
+            assertEquals(ReadableState(10), test.state)
+
+            test.reset()
+            assertEquals(ReadableState(10), test.state)
+
+            late.value = 1
+            assertEquals(ReadableState(1), test.state)
+        }
+    }
+
+    @Test fun keepsListeningIfTold() {
+        var hits = 0
+        val prop = Property(0)
+        val test = LazyProperty(stopListeningWhenOverridden = false) {
+            hits++
+            prop.await()
+        }
+
+        testContext {
+            assertEquals(0, hits)
+
+            test.addListener {  }
+
+            assertEquals(1, hits)
+            assertEquals(ReadableState(0), test.state)
+
+            prop.value = 1
+
+            assertEquals(2, hits)
+            assertEquals(ReadableState(1), test.state)
+
+            test.value = 10
+
+            assertEquals(2, hits)
+            assertEquals(ReadableState(10), test.state)
+
+            prop.value = 2
+
+            assertEquals(3, hits)
+            assertEquals(ReadableState(10), test.state)
+
+            test.reset()
+
+            assertEquals(3, hits)
+            assertEquals(ReadableState(2), test.state)
         }
     }
 }
