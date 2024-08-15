@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
+import kotlin.jvm.JvmName
 
 fun <O, T> Readable<O>.lens(
     get: (O) -> T
@@ -50,7 +51,7 @@ fun <O, T> Writable<O>.map(
 
 fun <O, T> Writable<O>.lens(
     get: (O) -> T,
-    set: (O, T) -> O
+    modify: (O, T) -> O
 ): Writable<T> {
     return object : Writable<T> {
         private var _state: ReadableState<T> = ReadableState.notReady
@@ -92,28 +93,81 @@ fun <O, T> Writable<O>.lens(
          */
         override suspend fun set(value: T) {
             val old: O = this@lens.await()
-            val new: O = set(old, value)
+            val new: O = modify(old, value)
             this@lens.set(new)
         }
     }
 }
 
-fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) = WritableList<E, ID, W>(this, identity = identity, createTag = { it.map(it) })
-fun <E, W> Writable<List<E>>.lensByElement(map: CalculationContext.(Writable<E>) -> W) = WritableList<E, E, W>(this, identity = { it }, createTag = { it.map(it) })
-fun <E> Writable<List<E>>.lensByElement() = WritableList<E, E, Writable<E>>(this, identity = { it }, createTag = { it })
+fun <O, T> Writable<O>.lens(
+    get: (O) -> T,
+    set: (T) -> O
+): Writable<T> {
+    return object : Writable<T> {
+        private var _state: ReadableState<T> = ReadableState.notReady
+        override var state: ReadableState<T>
+            get() {
+                @Suppress("UNCHECKED_CAST")
+                if (myListen == null) _state = this@lens.state.map { get(it) }
+                return _state
+            }
+            private set(value) {
+                if (_state != value) {
+                    _state = value
+                    myListeners.invokeAllSafe()
+                }
+            }
 
+        private val myListeners = ArrayList<() -> Unit>()
+        private var myListen: (() -> Unit)? = null
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            myListeners.add(listener)
+            if (myListeners.size == 1) {
+                myListen = this@lens.addListener {
+                    @Suppress("UNCHECKED_CAST")
+                    state = this@lens.state.map { get(it) }
+                }
+                state = this@lens.state.map { get(it) }
+            }
+            return {
+                myListeners.remove(listener)
+                if (myListeners.isEmpty()) {
+                    myListen?.invoke()
+                    myListen = null
+                }
+            }
+        }
+
+        /**
+         * Queues changes
+         */
+        override suspend fun set(value: T) {
+            val new: O = set(value)
+            this@lens.set(new)
+        }
+    }
+}
+
+fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) = WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
+fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) = WritableListWithoutMap<E, ID>(this, identity = identity, elementLens = { it })
+
+@JvmName("setLensByElement") fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) = lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
+@JvmName("setLensByElement") fun <E, ID> Writable<Set<E>>.lensByElement(identity: (E) -> ID) = lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
+
+
+typealias WritableListWithoutMap<E, ID> = WritableList<E, ID, WritableList<E, ID, *>.ElementWritable>
 class WritableList<E, ID, T>(
     val source: Writable<List<E>>,
-    val log: Console? = null,
+    internal val log: Console? = null,
     val identity: (E) -> ID,
-    val createTag: (WritableList<E, ID, T>.ElementWritable)->T
+    val elementLens: (WritableList<E, ID, T>.ElementWritable)->T
 ) : Readable<List<T>> {
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>, CalculationContext {
-        val onRemoves = ArrayList<()->Unit>()
+        private val onRemoves = ArrayList<()->Unit>()
         override fun onRemove(action: () -> Unit) {
             onRemoves.add(action)
         }
-        var dead = false
+        internal var dead = false
             set(value) {
                 field = value
                 listeners.invokeAllSafe()
@@ -133,12 +187,12 @@ class WritableList<E, ID, T>(
                     listeners.invokeAllSafe()
                 }
             }
-        var queuedSet: ReadableState<E> = ReadableState.notReady
-        val queuedOrValue: E get(){
+        internal var queuedSet: ReadableState<E> = ReadableState.notReady
+        internal val queuedOrValue: E get(){
             val qs = queuedSet
             return if(qs.success) qs.get() else value
         }
-        var usedFlag = false
+        internal var usedFlag = false
 
         override suspend fun set(value: E) {
             queuedSet = ReadableState(value)
@@ -166,7 +220,7 @@ class WritableList<E, ID, T>(
             }
         }
 
-        val tagged = createTag(this)
+        val view = elementLens(this)
     }
 
     inner class Elements: Writable<List<ElementWritable>> {
@@ -193,7 +247,7 @@ class WritableList<E, ID, T>(
             }
 
         private val myListeners = ArrayList<() -> Unit>()
-        var myListen: (() -> Unit)? = null
+        internal var myListen: (() -> Unit)? = null
         override fun addListener(listener: () -> Unit): () -> Unit {
             if (myListeners.isEmpty()) {
                 myListen = source.addListener {
@@ -231,19 +285,34 @@ class WritableList<E, ID, T>(
     val elements = Elements()
 
     fun newElement(e: E): ElementWritable = ElementWritable(e)
-    suspend fun add(index: Int, value: E) {
-        elements.set(elements.awaitOnce().toMutableList().apply { add(index, newElement(value)) })
+    suspend fun add(index: Int, value: E): T {
+        val newly = newElement(value)
+        elements.set(elements.awaitOnce().toMutableList().apply { add(index, newly) })
+        return newly.view
     }
-    suspend fun add(value: E) {
-        elements.set(elements.awaitOnce() + newElement(value))
+    suspend fun add(value: E): T {
+        val newly = newElement(value)
+        elements.set(elements.awaitOnce() + newly)
+        return newly.view
+    }
+    suspend fun upsert(value: E): T {
+        val id = identity(value)
+        val existing = elements.awaitOnce().find { it.id == id }
+        return if (existing == null) add(value) else {
+            existing.set(value)
+            existing.view
+        }
     }
     suspend fun remove(element: E) {
         val id = identity(element)
+        removeById(id)
+    }
+    suspend fun removeById(id: ID) {
         elements.set(elements.awaitOnce().filter { it.id != id })
     }
 
     override val state: ReadableState<List<T>>
-        get() = elements.state.map { it.map { it.tagged } }
+        get() = elements.state.map { it.map { it.view } }
 
     override fun addListener(listener: () -> Unit): () -> Unit = elements.addListener(listener)
 }

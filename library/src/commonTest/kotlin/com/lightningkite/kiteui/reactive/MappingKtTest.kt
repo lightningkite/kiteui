@@ -18,7 +18,7 @@ class MappingKtTest {
         val source = Property(Sample(42, listOf(1, 2, 3)))
         val view = source.lens(
             get = { it.x },
-            set = { old, it -> old.copy(x = it) }
+            modify = { old, it -> old.copy(x = it) }
         )
         assertEquals(ReadableState(42), view.state)
         testContext {
@@ -49,7 +49,7 @@ class MappingKtTest {
         val source = LateInitProperty<Sample>()
         val view = source.lens(
             get = { it.x },
-            set = { old, it -> old.copy(x = it) }
+            modify = { old, it -> old.copy(x = it) }
         )
         assertEquals(ReadableState.notReady, view.state)
         testContext {
@@ -86,7 +86,7 @@ class MappingKtTest {
                 println("source: $value")
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
@@ -203,7 +203,7 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
@@ -239,7 +239,7 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, createTag = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
