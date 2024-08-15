@@ -44,13 +44,21 @@ class ReactiveScopeData(
     }
 
     private var executionInstance = 0
+
+    @OptIn(ExperimentalStdlibApi::class)
     internal fun run() {
         latestPass.clear()
 
         debug?.log("Calculating")
         var done = false
         var index = ++executionInstance
-        lastJob = calculationContext.launch(this) {
+        lastJob = calculationContext.launch(
+            this,
+            start = if (calculationContext.coroutineContext[CoroutineDispatcher.Key]?.isDispatchNeeded(
+                    calculationContext.coroutineContext
+                ) == false
+            ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
+        ) {
             val result = kotlin.runCatching { action() }
             if (index != executionInstance) return@launch
             done = true
@@ -119,7 +127,9 @@ suspend fun rerunOn(listenable: Listenable) {
         it.latestPass.add(listenable)
     }
 }
+
 suspend inline operator fun <T> Readable<T>.invoke(): T = await()
+suspend inline operator fun <T> ImmediateReadable<T>.invoke(): T = await()
 suspend inline fun <T> Readable<T>.exception(): Exception? = state { it.exception }
 
 suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
@@ -131,7 +141,8 @@ suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
             var last = s
             it.removers[this] = this.addListener {
                 val newVal = state.let(get)
-                if(last != newVal) {
+                if (last != newVal) {
+                    last = newVal
                     it.run()
                 }
             }
@@ -157,6 +168,22 @@ suspend fun <T> Readable<T>.state(): ReadableState<T> {
         it.latestPass.add(this)
         return state
     } ?: return state
+}
+
+suspend fun <T> ImmediateReadable<T>.await(): T {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        // and the value is ready to go, just add the listener and proceed with the value.
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            it.removers[this] = this.addListener {
+                it.run()
+            }
+        } else {
+            it.debug?.log("already depends on $this")
+        }
+        it.latestPass.add(this)
+        return value
+    } ?: return value
 }
 
 suspend fun <T> Readable<T>.await(): T {
@@ -241,6 +268,7 @@ suspend fun <T> Readable<T>.awaitOnce(): T {
     }
 }
 
+@Deprecated("STAHP")
 fun <T> Readable<Readable<T>>.flatten(): Readable<T> {
     val first = shared { this@flatten.await() }
     return shared { first.await().await() }

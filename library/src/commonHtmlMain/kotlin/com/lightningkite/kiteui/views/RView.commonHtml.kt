@@ -101,6 +101,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     init {
         this.working.addListener {
+            if(working.value) native.classes.add("loaded-once")
             if(working.value) native.classes.add("loading")
             else native.classes.remove("loading")
         }
