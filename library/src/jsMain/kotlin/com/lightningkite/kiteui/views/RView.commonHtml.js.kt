@@ -34,6 +34,7 @@ actual class FutureElement actual constructor() {
     fun create(): Element {
         element?.let { return it }
         val e = xmlns?.let { document.createElementNS(it, tag) } ?: document.createElement(tag)
+        id?.let { e.id = it }
         objectAssign(e, attributesBack)
         (e as? HTMLElement)?.style?.let {
             objectAssign(it, styleBack)
