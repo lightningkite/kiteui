@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
@@ -35,7 +36,8 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.backgroundColor = theme.background.closestColor().copy(alpha = 0.5f).toUiColor()
+        val color = if (fullyApply) theme.background.closestColor() else Color.black
+        native.backgroundColor = color.copy(alpha = 0.5f).toUiColor()
     }
 }
 

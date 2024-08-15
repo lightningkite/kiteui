@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.UIViewWithNewSpacingRulesProtocol
 import com.lightningkite.kiteui.objc.toObjcId
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -157,14 +156,15 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             if (!fullyApply) {
                 backgroundLayer?.removeFromSuperlayer()
                 backgroundLayer = null
-            } else {
-                val layer = backgroundLayer ?: run {
-                    val newLayer = CAGradientLayerResizing()
-                    backgroundLayer = newLayer
-                    native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
-                    newLayer
-                }
-                with(layer) {
+            }
+            val layer = backgroundLayer ?: run {
+                val newLayer = CAGradientLayerResizing()
+                backgroundLayer = newLayer
+                native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+                newLayer
+            }
+            with(layer) {
+                if (fullyApply) {
                     when (val b = theme.background) {
                         is Color -> {
                             val c = b.toUiColor().CGColor!!
@@ -195,15 +195,15 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                             this.endPoint = CGPointMake(0.0, 0.0)
                         }
                     }
-                    zPosition = -99999.0
-                    parentSpacing = (parent?.mySpacing ?: theme.spacing).value
-
                     borderWidth = theme.outlineWidth.value
                     borderColor = theme.outline.closestColor().toUiColor().CGColor
-                    desiredCornerRadius = theme.cornerRadii
-
-                    matchParentSize("insert")
                 }
+
+                zPosition = -99999.0
+                parentSpacing = (parent?.mySpacing ?: theme.spacing).value
+                desiredCornerRadius = theme.cornerRadii
+
+                matchParentSize("insert")
             }
         }
     }
