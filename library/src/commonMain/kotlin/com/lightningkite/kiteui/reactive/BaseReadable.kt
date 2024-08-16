@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady): Readable<T> {
-    private val listeners = ArrayList<() -> Unit>()
+    protected val listeners = ArrayList<() -> Unit>()
     override var state: ReadableState<T> = start
         protected set(value) {
             if(field != value) {

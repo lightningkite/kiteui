@@ -37,6 +37,19 @@ value class ReadableState<out T>(val raw: T) {
             return exception(e)
         }
     }
+    @Suppress("UNCHECKED_CAST")
+    inline fun <R> handle(
+        success: (T)->R,
+        exception: (Exception)->R,
+        notReady: ()->R
+    ): R {
+        return when(raw) {
+            NotReady -> notReady()
+            is ThrownException -> exception(raw.exception)
+            else -> success(raw)
+        }
+    }
+    fun asResult(): Result<T> = handle(success = { Result.success(it) }, exception = { Result.failure(it) }, notReady = { Result.failure(NotReadyException()) })
 
     override fun toString(): String = when(raw) {
         is NotReady -> "NotReady"
