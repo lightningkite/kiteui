@@ -52,7 +52,7 @@ object InfiniteImagesScreen : Screen {
             children(Constant(ReturnIndexList)) {
                 unpadded - button {
                     ::transitionId { it().toString() }
-                    sizeConstraints(height = 16.rem) - image {
+                    sizeConstraints(aspectRatio = 1.0) - image {
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }
                     }
