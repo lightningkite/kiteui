@@ -115,12 +115,27 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             parent: androidx.recyclerview.widget.RecyclerView,
             state: androidx.recyclerview.widget.RecyclerView.State
         ) {
-            val horizontal = (parent.layoutManager as? GridLayoutManager)?.orientation == GridLayoutManager.HORIZONTAL ||
-                    (parent.layoutManager as? LinearLayoutManager)?.orientation == LinearLayoutManager.HORIZONTAL
-            val first = parent.getChildAdapterPosition(view) == 0
-            val last = parent.getChildAdapterPosition(view) == (parent.adapter?.itemCount ?: Int.MAX_VALUE)
-            outRect.left = if (!first && horizontal) spacing else 0
-            outRect.top = if (!first && !horizontal) spacing else 0
+            when(val m = parent.layoutManager) {
+                is GridLayoutManager -> {
+                    val horizontal = m.orientation == GridLayoutManager.HORIZONTAL
+                    val pos = parent.getChildAdapterPosition(view)
+                    val firstSpan = pos / m.spanCount == 0
+                    val firstInSpan = pos % m.spanCount == 0
+                    if (horizontal) {
+                        outRect.left = if(firstSpan) 0 else spacing
+                        outRect.top = if(firstInSpan) 0 else spacing
+                    } else {
+                        outRect.left = if(firstInSpan) 0 else spacing
+                        outRect.top = if(firstSpan) 0 else spacing
+                    }
+                }
+                is LinearLayoutManager -> {
+                    val horizontal = m.orientation == LinearLayoutManager.HORIZONTAL
+                    val first = parent.getChildAdapterPosition(view) == 0
+                    outRect.left = if (!first && horizontal) spacing else 0
+                    outRect.top = if (!first && !horizontal) spacing else 0
+                }
+            }
         }
     }
 

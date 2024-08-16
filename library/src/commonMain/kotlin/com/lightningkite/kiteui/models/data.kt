@@ -442,10 +442,28 @@ data class SizeConstraints(
     val maxWidth: Dimension? = null,
     val minHeight: Dimension? = null,
     val maxHeight: Dimension? = null,
-    val aspectRatio: Pair<Int, Int>? = null,
+    val aspectRatio: Double? = null,
     val width: Dimension? = null,
     val height: Dimension? = null,
-)
+) {
+    constructor(
+        minWidth: Dimension? = null,
+        maxWidth: Dimension? = null,
+        minHeight: Dimension? = null,
+        maxHeight: Dimension? = null,
+        aspectRatio: Pair<Int, Int>,
+        width: Dimension? = null,
+        height: Dimension? = null,
+    ):this(
+        minWidth = minWidth,
+        maxWidth = maxWidth,
+        minHeight = minHeight,
+        maxHeight = maxHeight,
+        aspectRatio = aspectRatio.run { first.toDouble() / second },
+        width = width,
+        height = height,
+    )
+}
 
 enum class Align {
     Start, Center, End, Stretch
