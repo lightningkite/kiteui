@@ -149,3 +149,19 @@ fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Un
     }
 
 fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten() set it }
+
+interface ReadableEmitter<T> {
+    fun emit(value: T)
+}
+
+fun <T> CalculationContext.readable(emitter: suspend ReadableEmitter<T>.() -> Unit): Readable<T> {
+    val prop = LateInitProperty<T>()
+    launch {
+        emitter(object : ReadableEmitter<T> {
+            override fun emit(value: T) {
+                prop.value = value
+            }
+        })
+    }
+    return prop
+}

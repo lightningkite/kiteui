@@ -1,6 +1,7 @@
 Pods
 .gradle
 .idea
+.kotlin
 build
 *.xcworkspace
 *.hprof

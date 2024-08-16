@@ -60,16 +60,22 @@ data class FontAndStyle(
 data class Icon(
     val width: Dimension, val height: Dimension,
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
-    val pathDatas: List<String>,
+    val pathDatas: List<String> = listOf(),
+    val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
-    fun toImageSource(fillColor: Paint?, strokeColor: Color? = null, strokeWidth: Double? = null) = ImageVector(
+    data class StrokePathData(val strokeWidth: Dimension, val path: String)
+
+    fun toImageSource(color: Paint) = ImageVector(
         width,
         height,
         viewBoxMinX,
         viewBoxMinY,
         viewBoxWidth,
         viewBoxHeight,
-        pathDatas.map { ImageVector.Path(fillColor, strokeColor, strokeWidth, it) })
+        pathDatas.map { ImageVector.Path(color, null, 0.0, it) } + strokePathDatas.map {
+            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.path)
+        }
+    )
 
     companion object {
         val search = Icon(
@@ -436,10 +442,28 @@ data class SizeConstraints(
     val maxWidth: Dimension? = null,
     val minHeight: Dimension? = null,
     val maxHeight: Dimension? = null,
-    val aspectRatio: Pair<Int, Int>? = null,
+    val aspectRatio: Double? = null,
     val width: Dimension? = null,
     val height: Dimension? = null,
-)
+) {
+    constructor(
+        minWidth: Dimension? = null,
+        maxWidth: Dimension? = null,
+        minHeight: Dimension? = null,
+        maxHeight: Dimension? = null,
+        aspectRatio: Pair<Int, Int>,
+        width: Dimension? = null,
+        height: Dimension? = null,
+    ):this(
+        minWidth = minWidth,
+        maxWidth = maxWidth,
+        minHeight = minHeight,
+        maxHeight = maxHeight,
+        aspectRatio = aspectRatio.run { first.toDouble() / second },
+        width = width,
+        height = height,
+    )
+}
 
 enum class Align {
     Start, Center, End, Stretch

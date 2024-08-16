@@ -28,12 +28,23 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
                     style.width = value.width.value
                     style.height = value.height.value
                     setStyleProperty("fill", "currentColor")
+                    setStyleProperty("stroke", "currentColor")
+                    setStyleProperty("stroke-width", "0")
                     setAttribute("viewBox", value.run { "$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight" })
                     for(path in value.pathDatas) {
                         appendChild(FutureElement().apply {
                             tag = "path"
                             xmlns = "http://www.w3.org/2000/svg"
                             setAttribute("d", path)
+                        })
+                    }
+                    for(path in value.strokePathDatas) {
+                        appendChild(FutureElement().apply {
+                            tag = "path"
+                            xmlns = "http://www.w3.org/2000/svg"
+                            setStyleProperty("stroke-width", path.strokeWidth.px.toString())
+                            setStyleProperty("fill", "none")
+                            setAttribute("d", path.path)
                         })
                     }
                 })

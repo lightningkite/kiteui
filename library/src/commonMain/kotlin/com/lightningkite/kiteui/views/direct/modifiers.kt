@@ -47,7 +47,25 @@ fun ViewWriter.sizeConstraints(
     maxWidth: Dimension? = null,
     minHeight: Dimension? = null,
     maxHeight: Dimension? = null,
-    aspectRatio: Pair<Int, Int>? = null,
+    aspectRatio: Pair<Int, Int>,
+    width: Dimension? = null,
+    height: Dimension? = null,
+): ViewWrapper = sizedBox(SizeConstraints(
+    minWidth = minWidth,
+    maxWidth = maxWidth,
+    minHeight = minHeight,
+    maxHeight = maxHeight,
+    aspectRatio = aspectRatio,
+    width = width,
+    height = height
+))
+@ViewModifierDsl3
+fun ViewWriter.sizeConstraints(
+    minWidth: Dimension? = null,
+    maxWidth: Dimension? = null,
+    minHeight: Dimension? = null,
+    maxHeight: Dimension? = null,
+    aspectRatio: Double? = null,
     width: Dimension? = null,
     height: Dimension? = null,
 ): ViewWrapper = sizedBox(SizeConstraints(

@@ -159,12 +159,13 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                                 }
                             } else {
                                 if(preferredDirection.after) {
-                                    if (rect.bottom > screen.bottom) {
+                                    // 2nd check is to see if there is enough room to move the element above
+                                    if (rect.bottom > screen.bottom && r.top > r.height) {
                                         style.removeProperty("top")
                                         style.bottom = "${window.innerHeight - r.top}px"
                                     }
                                 } else {
-                                    if (rect.top < screen.top) {
+                                    if (rect.top < screen.top && r.bottom > r.height) {
                                         style.removeProperty("bottom")
                                         style.top = "${r.bottom}px"
                                     }

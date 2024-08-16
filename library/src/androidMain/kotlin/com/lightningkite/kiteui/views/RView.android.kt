@@ -201,6 +201,20 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         background = getBackgroundWithRipple(theme, fullyApply, background as? RippleDrawable)
         updateCorners()
     }
+
+    protected fun applyBackgroundWithClipping(theme: Theme, fullyApply: Boolean) {
+        if (fullyApply) {
+            val backgroundDrawable = theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+            backgroundBlock = backgroundDrawable
+            updateCorners()
+            background = backgroundDrawable
+        } else {
+            val backgroundDrawable = theme.backgroundClippingDrawableWithoutCorners()
+            backgroundBlock = backgroundDrawable
+            updateCorners()
+            background = backgroundDrawable
+        }
+    }
 }
 
 var animationsEnabled: Boolean = true

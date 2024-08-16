@@ -155,7 +155,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
         else native.setStyleProperty(
             "aspect-ratio",
-            "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}"
+            "${constraints.aspectRatio} / 1"
         )
 
         if (constraints.width == null) native.style.width = null
@@ -188,7 +188,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeCon
             if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
             else native.setStyleProperty(
                 "aspect-ratio",
-                "${constraints.aspectRatio.first} / ${constraints.aspectRatio.second}"
+                "${constraints.aspectRatio} / 1"
             )
 
             if (constraints.width == null) native.style.width = null

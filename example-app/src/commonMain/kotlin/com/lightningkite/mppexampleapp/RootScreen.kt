@@ -46,7 +46,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
-                linkScreen { NestingEditsScreen }
+                linkScreen { TestingGroundScreen }
                 linkScreen { ListEditScreen }
                 linkScreen { LeakCheckerScreen }
                 linkScreen { ExperimentScreen }

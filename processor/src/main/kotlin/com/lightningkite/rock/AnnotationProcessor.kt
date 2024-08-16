@@ -9,8 +9,6 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-lateinit var comparable: KSClassDeclaration
-var khrysalisUsed = false
 
 class RouterGeneration(
     val codeGenerator: CodeGenerator,

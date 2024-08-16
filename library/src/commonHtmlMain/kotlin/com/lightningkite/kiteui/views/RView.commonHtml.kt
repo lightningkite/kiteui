@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
+import kotlin.random.Random
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
@@ -105,6 +106,14 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         }
         if(this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }
+
+    companion object { private var viewCounter: Int = 0 }
+    override fun postSetup() {
+        super.postSetup()
+        native.id = "${native.tag}${viewCounter++}"
+    }
+
+    override fun toString(): String = "${native.id}"
 }
 
 typealias HtmlElementLike = FutureElement
