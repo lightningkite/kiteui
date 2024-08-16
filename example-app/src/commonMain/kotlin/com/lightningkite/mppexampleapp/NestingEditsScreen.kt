@@ -7,10 +7,10 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.mapping.WritableList
-import com.lightningkite.kiteui.reactive.mapping.map
-import com.lightningkite.kiteui.reactive.mapping.perElement
-import com.lightningkite.kiteui.reactive.mapping.remove
+import com.lightningkite.kiteui.reactive.lensing.WritableList
+import com.lightningkite.kiteui.reactive.lensing.map
+import com.lightningkite.kiteui.reactive.lensing.perElement
+import com.lightningkite.kiteui.reactive.lensing.remove
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon

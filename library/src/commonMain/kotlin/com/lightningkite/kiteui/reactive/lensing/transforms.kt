@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.reactive.mapping
+package com.lightningkite.kiteui.reactive.lensing
 
 import com.lightningkite.kiteui.reactive.*
 

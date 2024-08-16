@@ -12,7 +12,7 @@ value class ReadableState<out T>(val raw: T) {
         if(raw is ErrorState) return null
         return action(raw)
     }
-    inline val error: ErrorState? get() = if (raw !is ErrorState) null else raw
+    inline val error: ErrorState? get() = raw as? ErrorState
     inline val exception: Exception? get() = (raw as? ErrorState.ThrownException)?.exception
     inline val invalid: ErrorState.Invalid? get() = raw as? ErrorState.Invalid
 
@@ -20,7 +20,15 @@ value class ReadableState<out T>(val raw: T) {
         if(raw is NotReady) throw NotReadyException()
         if(raw is ErrorState) when (raw) {
             is ErrorState.ThrownException -> throw raw.exception
-            is ErrorState.Invalid -> throw raw
+            is ErrorState.HasDataAttached -> raw.data as T
+        }
+        return raw
+    }
+    inline fun dataOrNull(): T? {
+        if (raw is NotReady) return null
+        if (raw is ErrorState) return when(raw) {
+            is ErrorState.HasDataAttached -> raw.data as? T
+            else -> null
         }
         return raw
     }
@@ -60,11 +68,19 @@ sealed interface ErrorState {
 
     val severity: Severity
 
+    sealed interface HasDataAttached: ErrorState {
+        val data: Any?
+    }
+
     class ThrownException(val exception: Exception): ErrorState {
         override val severity: Severity get() = Severity.High
     }
 
-    class Invalid(val errorSummary: String, val errorDescription: String = errorSummary): ErrorState, Throwable() {
+    class Invalid(
+        override val data: Any?,
+        val errorSummary: String,
+        val errorDescription: String = errorSummary
+    ): HasDataAttached, Throwable() {
         override val severity: Severity get() = Severity.Medium
     }
 }

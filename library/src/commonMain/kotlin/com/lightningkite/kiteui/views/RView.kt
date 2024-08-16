@@ -6,8 +6,6 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.validation.SignalingList
-import com.lightningkite.kiteui.validation.Validated
-import com.lightningkite.kiteui.validation.Validator
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
@@ -41,7 +39,7 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
-abstract class RViewHelper(override val context: RContext) : CalculationContext, Validator, ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
     var additionalTestingData: Any? = null
 
     var opacity: Double = 1.0
@@ -266,30 +264,5 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         loadCount--
         super.notifyLongComplete(result)
     }
-
-    // Validation
-    override val errors: Readable<Set<String>> by lazy {
-        shared {
-            (subValidators.await().flatMap { it.errors() }
-                    + internalChildren.await().flatMap { it.errors() }
-                    + validations.await().flatMap { it.errors() }
-            ).toSet()
-        }
-    }
-
-    override val allValid: Readable<Boolean> by lazy {
-        shared {
-            subValidators.await().all { it.allValid() }
-                    && internalChildren.await().all { it.allValid() }
-                    && validations.await().all { it.valid() }
-        }
-    }
-
-    var displayValidation: Boolean = true
-
-//    override fun validate(validated: Validated) {
-//        if (!displayValidation) displayValidation = true
-//        super.validate(validated)
-//    }
 }
 

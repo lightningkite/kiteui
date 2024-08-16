@@ -5,13 +5,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
 import com.lightningkite.kiteui.reactive.CalculationContextStack.start
-import com.lightningkite.kiteui.validation.Validator
 import com.lightningkite.kiteui.viewDebugTarget
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter: Validator.Lazy() {
+abstract class ViewWriter {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
