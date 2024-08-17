@@ -37,21 +37,33 @@ value class ReadableState<out T>(val raw: T) {
         if(raw is ErrorState) return null
         return raw
     }
+    @Suppress("UNCHECKED_CAST")
     companion object {
-        @Suppress("UNCHECKED_CAST")
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
-        @Suppress("UNCHECKED_CAST")
         fun <T> exception(exception: Exception) = ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
-        @Suppress("UNCHECKED_CAST")
-        fun <T> invalid(summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Invalid(summary, description)) as ReadableState<T>
+        fun <T> invalid(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
+        fun <T> error(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
     }
+
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
-        if(raw is NotReady || raw is ErrorState) return this as ReadableState<B>
-        try {
-            return ReadableState(mapper(raw))
+        if(raw is NotReady) return this as ReadableState<B>
+        if (raw is ErrorState) when (raw) {
+            is ErrorState.Invalid -> {
+                val t = raw.data as? T ?: return exception(ClassCastException())
+                return try {
+                    invalid(mapper(t), raw.errorSummary , "mapped from invalid data [$t]: ${raw.errorDescription}" )
+                } catch (e: Exception) {
+                    exception(e)
+                }
+            }
+            else -> return this as ReadableState<B>
+        }
+
+        return try {
+            ReadableState(mapper(raw))
         } catch(e: Exception) {
-            return exception(e)
+            exception(e)
         }
     }
 
@@ -80,7 +92,7 @@ sealed interface ErrorState {
         override val data: Any?,
         val errorSummary: String,
         val errorDescription: String = errorSummary
-    ): HasDataAttached, Throwable() {
+    ): HasDataAttached, Exception() {
         override val severity: Severity get() = Severity.Medium
     }
 }

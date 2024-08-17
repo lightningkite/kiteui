@@ -1,4 +1,4 @@
-package com.lightningkite.kiteui.validation
+package com.virtualrain.selfCancelling
 
 import com.lightningkite.kiteui.Cancellable
 import com.lightningkite.kiteui.Console
@@ -6,7 +6,8 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.reactive.*
 
 class SelfCancellingContext: CalculationContext, Cancellable {
-    var debug: Console? = null
+    private val log = ConsoleRoot.tag("SelfCancelling")
+    val debug: Console? = null
 
     private val onRemoveSet = ArrayList<()->Unit>()
     override fun onRemove(action: () -> Unit) {
@@ -18,11 +19,10 @@ class SelfCancellingContext: CalculationContext, Cancellable {
         onStartupSet.add(action)
     }
 
-    private val trackedListeners = ArrayList<() -> Unit>()
+    private var trackedListeners = 0
 
     var active = false
         private set
-
     fun startupIfNeeded() {
         if (active) return
         debug?.log("Starting up")
@@ -32,41 +32,23 @@ class SelfCancellingContext: CalculationContext, Cancellable {
 
     /**
      * Override addListener() on the listenable with this function
-    * */
-    fun track(listenable: Listenable, listener: () -> Unit): () -> Unit {
-        val remover = listenable.addListener(listener)
-        trackedListeners.add(listener)
-        debug?.log("Added listener, current: ${trackedListeners.size}")
+     * */
+    fun track(addListener: () -> (() -> Unit)): () -> Unit {
+        val remover = addListener()
+        trackedListeners++
+        debug?.log("Added listener, current: $trackedListeners")
         startupIfNeeded()
 
         return {
             remover.invoke()
-            removeTracked(listener)
-        }
-    }
-    fun track(listener: () -> Unit, addListener: (() -> Unit) -> () -> Unit): () -> Unit {
-        val remover = addListener(listener)
-        trackedListeners.add(listener)
-        debug?.log("Added listener, current: ${trackedListeners.size}")
-        startupIfNeeded()
-
-        return {
-            remover.invoke()
-            removeTracked(listener)
-        }
-    }
-
-    private fun removeTracked(listener: () -> Unit) {
-        val pos = trackedListeners.indexOfFirst { it === listener }
-        if (pos != -1) {
-            trackedListeners.removeAt(pos)
-            debug?.log("Removed Listener, remaining: ${trackedListeners.size}")
+            trackedListeners--
+            debug?.log("Removed listener, current: $trackedListeners")
             cancelIfNotNeeded()
         }
     }
 
     fun cancelIfNotNeeded() {
-        if (trackedListeners.isNotEmpty()) return
+        if (trackedListeners > 0) return
         if (!active) return
         active = false
         cancel()
@@ -80,25 +62,20 @@ class SelfCancellingContext: CalculationContext, Cancellable {
 
 fun Listenable.trackWith(context: SelfCancellingContext): Listenable =
     object : Listenable {
-        override fun addListener(listener: () -> Unit): () -> Unit = context.track(this@trackWith, listener)
+        override fun addListener(listener: () -> Unit): () -> Unit = context.track { this@trackWith.addListener(listener) }
     }
 
 fun <T> Readable<T>.trackWith(context: SelfCancellingContext): Readable<T> =
     object : Readable<T> by this {
-        override fun addListener(listener: () -> Unit): () -> Unit = context.track(this@trackWith, listener)
-    }
-
-fun <T> ImmediateReadable<T>.trackWith(context: SelfCancellingContext): ImmediateReadable<T> =
-    object : ImmediateReadable<T> by this {
-        override fun addListener(listener: () -> Unit): () -> Unit = context.track(this@trackWith, listener)
+        override fun addListener(listener: () -> Unit): () -> Unit = context.track { this@trackWith.addListener(listener) }
     }
 
 fun <T> Writable<T>.trackWith(context: SelfCancellingContext): Writable<T> =
     object : Writable<T> by this {
-        override fun addListener(listener: () -> Unit): () -> Unit = context.track(this@trackWith, listener)
+        override fun addListener(listener: () -> Unit): () -> Unit = context.track { this@trackWith.addListener(listener) }
     }
 
 fun <T> ImmediateWritable<T>.trackWith(context: SelfCancellingContext): ImmediateWritable<T> =
     object : ImmediateWritable<T> by this {
-        override fun addListener(listener: () -> Unit): () -> Unit = context.track(this@trackWith, listener)
+        override fun addListener(listener: () -> Unit): () -> Unit = context.track { this@trackWith.addListener(listener) }
     }

@@ -1,152 +1,8 @@
-package com.lightningkite.kiteui.reactive
+package com.lightningkite.kiteui.reactive.lensing
 
 import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.reactive.*
 import kotlin.jvm.JvmName
-
-fun <O, T> Readable<O>.lens(
-    get: (O) -> T
-): Readable<T> {
-    return object : Readable<T> {
-        private var _state: ReadableState<T> = ReadableState.notReady
-        override var state: ReadableState<T>
-            get() {
-                @Suppress("UNCHECKED_CAST")
-                if (myListen == null) _state = this@lens.state.map { get(it) }
-                return _state
-            }
-            private set(value) {
-                if (_state != value) {
-                    _state = value
-                    myListeners.invokeAllSafe()
-                }
-            }
-
-        private val myListeners = ArrayList<() -> Unit>()
-        private var myListen: (() -> Unit)? = null
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            myListeners.add(listener)
-            if (myListeners.size == 1) {
-                myListen = this@lens.addListener {
-                    @Suppress("UNCHECKED_CAST")
-                    state = this@lens.state.map { get(it) }
-                }
-                state = this@lens.state.map { get(it) }
-            }
-            return {
-                myListeners.remove(listener)
-                if (myListeners.isEmpty()) {
-                    myListen?.invoke()
-                    myListen = null
-                }
-            }
-        }
-    }
-}
-
-@Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lens"))
-fun <O, T> Writable<O>.map(
-    get: (O) -> T,
-    set: (O, T) -> O
-): Writable<T> = lens(get, set)
-
-fun <O, T> Writable<O>.lens(
-    get: (O) -> T,
-    modify: (O, T) -> O
-): Writable<T> {
-    return object : Writable<T> {
-        private var _state: ReadableState<T> = ReadableState.notReady
-        override var state: ReadableState<T>
-            get() {
-                @Suppress("UNCHECKED_CAST")
-                if (myListen == null) _state = this@lens.state.map { get(it) }
-                return _state
-            }
-            private set(value) {
-                if (_state != value) {
-                    _state = value
-                    myListeners.invokeAllSafe()
-                }
-            }
-
-        private val myListeners = ArrayList<() -> Unit>()
-        private var myListen: (() -> Unit)? = null
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            myListeners.add(listener)
-            if (myListeners.size == 1) {
-                myListen = this@lens.addListener {
-                    @Suppress("UNCHECKED_CAST")
-                    state = this@lens.state.map { get(it) }
-                }
-                state = this@lens.state.map { get(it) }
-            }
-            return {
-                myListeners.remove(listener)
-                if (myListeners.isEmpty()) {
-                    myListen?.invoke()
-                    myListen = null
-                }
-            }
-        }
-
-        /**
-         * Queues changes
-         */
-        override suspend fun set(value: T) {
-            val old: O = this@lens.await()
-            val new: O = modify(old, value)
-            this@lens.set(new)
-        }
-    }
-}
-
-fun <O, T> Writable<O>.lens(
-    get: (O) -> T,
-    set: (T) -> O
-): Writable<T> {
-    return object : Writable<T> {
-        private var _state: ReadableState<T> = ReadableState.notReady
-        override var state: ReadableState<T>
-            get() {
-                @Suppress("UNCHECKED_CAST")
-                if (myListen == null) _state = this@lens.state.map { get(it) }
-                return _state
-            }
-            private set(value) {
-                if (_state != value) {
-                    _state = value
-                    myListeners.invokeAllSafe()
-                }
-            }
-
-        private val myListeners = ArrayList<() -> Unit>()
-        private var myListen: (() -> Unit)? = null
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            myListeners.add(listener)
-            if (myListeners.size == 1) {
-                myListen = this@lens.addListener {
-                    @Suppress("UNCHECKED_CAST")
-                    state = this@lens.state.map { get(it) }
-                }
-                state = this@lens.state.map { get(it) }
-            }
-            return {
-                myListeners.remove(listener)
-                if (myListeners.isEmpty()) {
-                    myListen?.invoke()
-                    myListen = null
-                }
-            }
-        }
-
-        /**
-         * Queues changes
-         */
-        override suspend fun set(value: T) {
-            val new: O = set(value)
-            this@lens.set(new)
-        }
-    }
-}
 
 fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) = WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
 fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) = WritableListWithoutMap<E, ID>(this, identity = identity, elementLens = { it })
@@ -162,7 +18,8 @@ class WritableList<E, ID, T>(
     val identity: (E) -> ID,
     val elementLens: (WritableList<E, ID, T>.ElementWritable)->T
 ) : Readable<List<T>> {
-    inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>, CalculationContext {
+    inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>,
+        CalculationContext {
         private val onRemoves = ArrayList<()->Unit>()
         override fun onRemove(action: () -> Unit) {
             onRemoves.add(action)
