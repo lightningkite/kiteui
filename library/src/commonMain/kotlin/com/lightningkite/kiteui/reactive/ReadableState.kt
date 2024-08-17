@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import kotlin.Error
 import kotlin.jvm.JvmInline
 
 @JvmInline
@@ -41,20 +40,29 @@ value class ReadableState<out T>(val raw: T) {
     companion object {
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
         fun <T> exception(exception: Exception) = ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
+        fun <T> wrap(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
+        fun <T> warning(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Warning(data, summary, description)) as ReadableState<T>
         fun <T> invalid(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
-        fun <T> error(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
     }
 
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
         if(raw is NotReady) return this as ReadableState<B>
         if (raw is ErrorState) when (raw) {
-            is ErrorState.Invalid -> {
-                val t = raw.data as? T ?: return exception(ClassCastException())
-                return try {
-                    invalid(mapper(t), raw.errorSummary , "mapped from invalid data [$t]: ${raw.errorDescription}" )
+            is ErrorState.HasDataAttached -> {
+                val t = raw.data as? T ?: return exception(ClassCastException("Raw data ${raw.data} could not be mapped to type T"))
+                try {
+                    val b = mapper(t)
+                    return when (raw) {
+                        is ErrorState.Warning -> {
+                             warning(b, raw.errorSummary, "Mapped from warning data ($t) -> ($b): " + raw.errorDescription)
+                        }
+                        is ErrorState.Invalid -> {
+                            invalid(b, raw.errorSummary, "Mapped from invalid data ($t) -> ($b): " + raw.errorDescription)
+                        }
+                    }
                 } catch (e: Exception) {
-                    exception(e)
+                    return exception(e)
                 }
             }
             else -> return this as ReadableState<B>
@@ -84,8 +92,12 @@ sealed interface ErrorState {
         val data: Any?
     }
 
-    class ThrownException(val exception: Exception): ErrorState {
-        override val severity: Severity get() = Severity.High
+    class Warning(
+        override val data: Any?,
+        val errorSummary: String,
+        val errorDescription: String = errorSummary
+    ): HasDataAttached, Exception() {
+        override val severity: Severity get() = Severity.Low
     }
 
     class Invalid(
@@ -94,6 +106,10 @@ sealed interface ErrorState {
         val errorDescription: String = errorSummary
     ): HasDataAttached, Exception() {
         override val severity: Severity get() = Severity.Medium
+    }
+
+    class ThrownException(val exception: Exception): ErrorState {
+        override val severity: Severity get() = Severity.High
     }
 }
 

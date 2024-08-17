@@ -39,13 +39,16 @@ private open class ReadableView<O, T>(
     }
 }
 
-fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = ReadableView(this, get)
 
 @Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lensing.lens"))
 fun <O, T> Writable<O>.map(
     get: (O) -> T,
     set: (O, T) -> O
 ): Writable<T> = lens(get, set)
+
+// Basic lensing
+
+fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = ReadableView(this, get)
 
 fun <O, T> Writable<O>.lens(
     get: (O) -> T,
@@ -75,7 +78,7 @@ fun <O, T> Writable<O>.lens(
 }
 
 
-// Validation lenses
+// Validation lensing
 
 fun <O, T> Writable<O>.validationLens(
     get: (O) -> T,
@@ -88,7 +91,7 @@ fun <O, T> Writable<O>.validationLens(
                 val new = modify(old, value)
                 this@validationLens.set(new)
             } catch (e: ErrorState.Invalid) {
-                state = ReadableState.error(e)
+                state = ReadableState.wrap(e)
             } catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
@@ -106,10 +109,13 @@ fun <O, T> Writable<O>.validationLens(
                 val new = set(value)
                 this@validationLens.set(new)
             } catch (e: ErrorState.Invalid) {
-                state = ReadableState.error(e)
+                state = ReadableState.wrap(e)
             } catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
         }
     }
 }
+
+// Reactive lensing
+
