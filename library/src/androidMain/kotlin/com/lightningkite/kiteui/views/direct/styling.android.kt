@@ -359,7 +359,7 @@ fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //inline fun <T : View> ViewWriter.handleThemeControl(
 //    view: T,
 //    viewLoads: Boolean = false,
-//    noinline checked: suspend () -> Boolean = { false },
+//    noinline checked: ReactiveContext<*>.() -> Boolean = { false },
 //    noinline customDrawable: LayerDrawable.(Theme) -> Unit = {},
 //    crossinline background: (Theme) -> Unit = {},
 //    crossinline backgroundRemove: () -> Unit = {},

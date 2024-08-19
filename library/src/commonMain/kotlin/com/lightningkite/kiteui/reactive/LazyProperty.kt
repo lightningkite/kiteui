@@ -16,11 +16,11 @@ import com.lightningkite.kiteui.ConsoleRoot
 class LazyProperty<T>(
     private val stopListeningWhenOverridden: Boolean = true,
     private val useLastWhileLoading: Boolean = false,
-    initialValue: suspend CalculationContext.() -> T
+    private val debug: Console? = null,
+    initialValue: ReactiveContext<*>.() -> T
 ): Writable<T> {
-    private var debug: Console? = null
 
-    private val shared = SharedReadable(useLastWhileLoading, initialValue).also { it.debug = debug }
+    private val shared = SharedReadable(useLastWhileLoading = useLastWhileLoading, initialValue)
 
     private val listeners = ArrayList<() -> Unit>()
     override fun addListener(listener: () -> Unit): () -> Unit {
@@ -62,6 +62,8 @@ class LazyProperty<T>(
                 state = shared.state
             }
         }
+        val currentSharedState = shared.state
+        if(!overridden && (!useLastWhileLoading || currentSharedState.ready)) state = shared.state
     }
 
     private fun stopListeningToShared() {

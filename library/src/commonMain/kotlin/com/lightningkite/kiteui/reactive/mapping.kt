@@ -178,7 +178,7 @@ class WritableList<E, ID, T>(
             private set
         private val listeners = ArrayList<() -> Unit>()
         override val state: ReadableState<E>
-            get() = if(dead) ReadableState.notReady else ReadableState(value)
+            get() = if(dead) ReadableState.exception(NoSuchElementException("Element with value $value has been removed")) else ReadableState(value)
         override var value: E = valueInit
             set(value) {
                 if (field != value) {
@@ -196,7 +196,7 @@ class WritableList<E, ID, T>(
 
         override suspend fun set(value: E) {
             queuedSet = ReadableState(value)
-            val allWritables = elements()
+            val allWritables = elements.awaitOnce()
             val newList = allWritables.map { it.queuedOrValue }
             if (allWritables.contains(this)) {
                 try {

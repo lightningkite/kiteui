@@ -22,7 +22,7 @@ private fun RView.selectedIfRouteMatches(it: NavLink) {
     dynamicTheme {
         val matchingScreen = mainScreenNavigator.currentScreen.await()
             ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(
-            it.destination()()
+            it.destination.invoke(this)()
         )?.urlLikePath?.segments
         if (matchingScreen) SelectedSemantic else null
     }
@@ -33,22 +33,22 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
         fun ViewWriter.display(navElement: NavElement) {
             row {
                 centered - navElementIconAndCountHorizontal(navElement)
-                text { ::content { navElement.title() } } in gravity(Align.Center, Align.Center)
+                text { ::content { navElement.title(this) } } in gravity(Align.Center, Align.Center)
                 space(1.0)
             }
         }
         when (it) {
             is NavAction -> button {
                 exists = false
-                ::exists { it.hidden?.invoke() != true }
+                ::exists { it.hidden?.invoke(this) != true }
                 display(it)
                 onClick { it.onSelect() }
             }
 
             is NavExternal -> externalLink {
                 exists = false
-                ::exists { it.hidden?.invoke() != true }
-                ::to { it.to() }
+                ::exists { it.hidden?.invoke(this) != true }
+                ::to { it.to(this) }
                 display(it)
                 this.onNavigate(onNavigate)
             }
@@ -60,14 +60,14 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                     spacing = 0.px
                     padded - row {
                         centered - navElementIconAndCountHorizontal(it)
-                        centered - text { ::content { it.title() } }
+                        centered - text { ::content { it.title(this) } }
                     }
                     row {
                         spacing = 0.px
                         space()
                         expanding - col {
                             spacing = 0.px
-                            navGroupColumnInner(shared { it.children() }, onNavigate)
+                            navGroupColumnInner(shared { it.children(this) }, onNavigate)
                         }
                     }
                 }
@@ -87,7 +87,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                 exists = false
 
                 ::exists { it.hidden?.invoke() != true }
-                ::to { it.destination() }
+                ::to { it.destination(this) }
                 display(it)
                 this.onNavigate(onNavigate)
             }

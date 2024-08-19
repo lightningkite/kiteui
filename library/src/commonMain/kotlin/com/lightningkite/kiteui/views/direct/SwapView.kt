@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.ScreenTransition
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
@@ -14,13 +15,13 @@ expect class SwapView(context: RContext) : RView {
 
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
-    crossinline current: suspend () -> T,
+    crossinline current: ReactiveContext<*>.() -> T,
     crossinline views: ViewWriter.(T) -> Unit
 ): Unit {
     val queue = ArrayList<T>()
     var alreadySwapping = false
     reactiveScope {
-        val c = current()
+        val c = current(this)
         queue.add(c)
         if (alreadySwapping) {
             return@reactiveScope

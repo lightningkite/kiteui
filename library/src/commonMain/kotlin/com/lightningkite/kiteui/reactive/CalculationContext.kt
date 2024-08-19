@@ -152,11 +152,11 @@ object CalculationContextStack {
 annotation class ReactiveB
 
 @ReactiveB
-inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: suspend () -> T) = CalculationContextStack.current().reactiveScope {
-    this@invoke(actionToCalculate())
+inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext<*>.() -> T) = CalculationContextStack.current().reactiveScope {
+    this@invoke(actionToCalculate(this))
 }
 
 @ReactiveB
-inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: suspend () -> T) = CalculationContextStack.current().reactiveScope {
-    this@invoke.set(actionToCalculate())
+inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext<*>.() -> T) = CalculationContextStack.current().reactiveScope {
+    this@invoke.set(actionToCalculate(this))
 }

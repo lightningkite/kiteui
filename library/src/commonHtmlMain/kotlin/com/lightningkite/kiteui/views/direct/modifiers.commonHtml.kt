@@ -2,9 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.invokeAllSafe
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlin.math.min
@@ -88,7 +86,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
@@ -168,7 +166,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
         reactiveScope {
@@ -204,7 +202,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeCon
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.() -> Boolean): ViewWrapper {
 //    // TODO: include old animation code
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
@@ -224,4 +222,4 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
     return ViewWrapper
 }
 
-internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: suspend () -> Boolean)
+internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: ReactiveContext<*>.() -> Boolean)

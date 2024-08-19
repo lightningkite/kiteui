@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewHelper.Companion.animationsEnabled
@@ -14,7 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 internal actual fun RView.nativeAnimateHideBinding(
     default: Boolean,
-    condition: suspend () -> Boolean
+    condition: ReactiveContext<*>.() -> Boolean
 ) {
     native.attributes.hidden = !default
     var last = !default

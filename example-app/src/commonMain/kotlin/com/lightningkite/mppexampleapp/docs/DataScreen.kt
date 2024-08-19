@@ -1,15 +1,12 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.minus
-import com.lightningkite.kiteui.views.reactiveScope
 
 @Routable("docs/data")
 object DataScreen: DocScreen {

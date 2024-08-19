@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
 
@@ -522,18 +523,18 @@ enum class KeyboardCase { None, Letters, Words, Sentences }
 enum class KeyboardType { Text, Integer, Phone, Decimal, Email }
 
 sealed interface NavElement {
-    val title: suspend () -> String
-    val icon: suspend () -> Icon
-    val count: (suspend () -> Int?)?
-    val hidden: (suspend () -> Boolean)?
+    val title: ReactiveContext<*>.() -> String
+    val icon: ReactiveContext<*>.() -> Icon
+    val count: (ReactiveContext<*>.() -> Int?)?
+    val hidden: (ReactiveContext<*>.() -> Boolean)?
 }
 
 data class NavGroup(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val children: suspend () -> List<NavElement>,
+    override val title: ReactiveContext<*>.() -> String,
+    override val icon: ReactiveContext<*>.() -> Icon,
+    override val count: (ReactiveContext<*>.() -> Int?)? = null,
+    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
+    val children: ReactiveContext<*>.() -> List<NavElement>,
 ) : NavElement {
     constructor(title: String, icon: Icon, children: List<NavElement> = listOf()) : this(
         { title },
@@ -547,11 +548,11 @@ data class NavGroup(
 typealias NavItem = NavLink
 
 data class NavLink(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val destination: suspend () -> () -> Screen,
+    override val title: ReactiveContext<*>.() -> String,
+    override val icon: ReactiveContext<*>.() -> Icon,
+    override val count: (ReactiveContext<*>.() -> Int?)? = null,
+    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
+    val destination: ReactiveContext<*>.() -> () -> Screen,
 ) : NavElement {
     constructor(title: String, icon: Icon, destination: () -> Screen) : this(
         { title },
@@ -564,26 +565,26 @@ data class NavLink(
 typealias ExternalNav = NavExternal
 
 data class NavExternal(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val to: suspend () -> String,
+    override val title: ReactiveContext<*>.() -> String,
+    override val icon: ReactiveContext<*>.() -> Icon,
+    override val count: (ReactiveContext<*>.() -> Int?)? = null,
+    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
+    val to: ReactiveContext<*>.() -> String,
 ) : NavElement
 
 data class NavAction(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
+    override val title: ReactiveContext<*>.() -> String,
+    override val icon: ReactiveContext<*>.() -> Icon,
+    override val count: (ReactiveContext<*>.() -> Int?)? = null,
+    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
     val onSelect: suspend () -> Unit,
 ) : NavElement
 
 data class NavCustom(
-    override val title: suspend () -> String = { "" },
-    override val icon: suspend () -> Icon = { Icon.moreHoriz },
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
+    override val title: ReactiveContext<*>.() -> String = { "" },
+    override val icon: ReactiveContext<*>.() -> Icon = { Icon.moreHoriz },
+    override val count: (ReactiveContext<*>.() -> Int?)? = null,
+    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
     val square: ViewWriter.() -> Unit,
     val long: ViewWriter.() -> Unit = square,
     val tall: ViewWriter.() -> Unit = square,

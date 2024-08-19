@@ -21,9 +21,11 @@ object DataLoadingExampleScreen : Screen {
 
     override fun ViewWriter.render() {
         val data: Readable<List<Post>> = shared {
-            delay(5000)
-            val response: RequestResponse = fetch("https://jsonplaceholder.typicode.com/posts", onDownloadProgress = { complete, max -> println("$complete/$max") })
-            Json.decodeFromString<List<Post>>(response.text())
+            async(0) {
+                delay(5000)
+                val response: RequestResponse = fetch("https://jsonplaceholder.typicode.com/posts", onDownloadProgress = { complete, max -> println("$complete/$max") })
+                Json.decodeFromString<List<Post>>(response.text())
+            }
         }
         col {
             h1 { content = "This example loads some data." }
@@ -31,7 +33,7 @@ object DataLoadingExampleScreen : Screen {
             expanding - recyclerView {
                 children(data) {
                     card - col {
-                        val f = shared { delay(Random.nextLong(0, 5000)); "" }
+                        val f = shared { async { delay(Random.nextLong(0, 5000)); }; "" }
                         h3 { ::content { it.await().title + f.await() } }
                         text { ::content { it.await().body.substringBefore('\n') + f.await() } }
                     }

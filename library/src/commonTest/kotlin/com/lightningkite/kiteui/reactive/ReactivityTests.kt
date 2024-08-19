@@ -188,7 +188,7 @@ class ReactivityTests {
 
     @Test fun sharedTest3() {
         val a = VirtualDelay { 1 }
-        val c = shared { a.await() }
+        val c = shared { async { a.await() } }
         val d = shared { c.await() }
         testContext {
             launch { println("launch got " + d.await()) }
@@ -238,30 +238,6 @@ class ReactivityTests {
             s2.value = "A"
             s2.value = "B"
             s2.value = "C"
-        }
-    }
-
-    @Test fun scopeSkippedIfLoading() {
-        val source = LateInitProperty<Int>()
-        var starts = 0
-        var hits = 0
-        testContext {
-            reactiveScope {
-                starts++
-                source()
-                hits++
-            }
-            assertEquals(1, starts)
-            assertEquals(0, hits)
-            source.value = 1
-            assertEquals(1, starts)
-            assertEquals(1, hits)
-            source.unset()
-            assertEquals(1, starts)
-            assertEquals(1, hits)
-            source.value = 2
-            assertEquals(2, starts)
-            assertEquals(2, hits)
         }
     }
 

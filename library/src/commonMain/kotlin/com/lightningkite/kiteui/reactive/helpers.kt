@@ -14,12 +14,6 @@ infix fun <T> Writable<T>.equalTo(value: T): Writable<Boolean> = object : Writab
     }
 }
 
-infix fun <T> Writable<T>.equalToDynamic(value: suspend () -> T): Writable<Boolean> = shared {
-    await() == value()
-}.withWrite {
-    if (it) set(value())
-}
-
 @JsName("invokeAllSafeMutable")
 @JvmName("invokeAllSafeMutable")
 fun MutableList<() -> Unit>.invokeAllSafe() = toList().invokeAllSafe()
@@ -40,16 +34,20 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
             master.addListener {
                 if (setting) return@addListener
                 setting = true
-                launch {
-                    this@bind.set(master.await())
+                master.state.onSuccess {
+                    launch {
+                        this@bind.set(it)
+                    }
                 }
                 setting = false
             }.also { onRemove(it) }
             this@bind.addListener {
                 if (setting) return@addListener
                 setting = true
-                launch {
-                    master.set(this@bind.await())
+                this@bind.state.onSuccess {
+                    launch {
+                        master.set(it)
+                    }
                 }
                 setting = false
             }.also { onRemove(it) }
@@ -148,7 +146,7 @@ fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Un
         }
     }
 
-fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten() set it }
+fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten.awaitOnce() set it }
 
 interface ReadableEmitter<T> {
     fun emit(value: T)

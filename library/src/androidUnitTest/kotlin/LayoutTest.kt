@@ -23,7 +23,7 @@ class LayoutTest {
 
         val s = LayoutsTestScreen()
 
-        override val theme: suspend () -> Theme = { Theme(id = "unitTest") }
+        override val theme: ReactiveContext<*>.() -> Theme = { Theme(id = "unitTest") }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)

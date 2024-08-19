@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 
@@ -127,7 +128,7 @@ val ViewWriter.navSpacing: ViewWrapper
     }
 
 
-fun RView.dynamicTheme(calculate: suspend () -> ThemeDerivation?) {
+fun RView.dynamicTheme(calculate: ReactiveContext<*>.() -> ThemeDerivation?) {
     val existing = themeChoice
     reactiveScope {
         themeChoice = existing + (calculate() ?: ThemeDerivation.none)

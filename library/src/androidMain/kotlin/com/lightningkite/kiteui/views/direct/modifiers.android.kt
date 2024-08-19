@@ -22,6 +22,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 
@@ -46,7 +47,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -180,7 +181,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper {
     wrapNextIn(object : RView(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
@@ -376,7 +377,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)

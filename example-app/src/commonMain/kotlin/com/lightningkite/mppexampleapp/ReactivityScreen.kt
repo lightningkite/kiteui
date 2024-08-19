@@ -16,7 +16,7 @@ object ReactivityScreen : Screen {
         val local = Property("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
         val fetching = shared {
-            delay(1000)
+            async { delay(1000) }
             "Loaded!"
         }
         col {

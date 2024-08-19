@@ -3,11 +3,13 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.delay
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -19,7 +21,7 @@ object PerformanceTestScreen : Screen {
             text("This screen is hammering the UI by adding and removing thousands of views and updating content.")
             val items = Property((0..5000).toList())
             val property = Property(0)
-            reactiveScope {
+            launch {
                 var i = 0
                 while(true) {
                     delay(400L)
@@ -27,7 +29,7 @@ object PerformanceTestScreen : Screen {
                     i++
                 }
             }
-            reactiveScope {
+            launch {
                 while(true) {
                     delay(50L)
                     property.value++

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.KeyCodes
@@ -30,7 +31,7 @@ fun main() {
 //            created = view
         }
 
-        val theme: suspend () -> Theme = { appTheme() }
+        val theme: ReactiveContext<*>.() -> Theme = { appTheme() }
 
         init {
             beforeNextElementSetup {

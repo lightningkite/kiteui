@@ -24,18 +24,18 @@ object ControlPerformanceTesting : Screen {
     }
     val bindMode = Property(BindMode.Reactive)
 
-    operator inline fun <V> KMutableProperty0<V>.invoke(default: V, crossinline actionToCalculate: suspend ()->V) {
+    operator inline fun <V> KMutableProperty0<V>.invoke(default: V, crossinline actionToCalculate: ReactiveContext<*>.()->V) {
         when(bindMode.value) {
             BindMode.None -> {}
             BindMode.Instant -> {
                 this@invoke.set(default)
             }
             BindMode.Launch -> CalculationContextStack.current().launch {
-                this@invoke.set(actionToCalculate())
+//                this@invoke.set(actionToCalculate(this))
             }
             BindMode.Reactive -> {
                 CalculationContextStack.current().reactiveScope {
-                    this@invoke.set(actionToCalculate())
+                    this@invoke.set(actionToCalculate(this))
                 }
             }
         }

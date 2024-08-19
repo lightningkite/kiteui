@@ -153,9 +153,9 @@ data class FormSection(
     val title: String,
     val icon: Icon? = null,
     val helperText: String? = null,
-    val directIssues: suspend CalculationContext.() -> List<FormIssue> = { listOf() },
-    val leaves: suspend CalculationContext.() -> List<FormLeaf> = { listOf() },
-    val subsections: suspend CalculationContext.() -> List<FormSection> = { listOf() },
+    val directIssues: ReactiveContext<*>.() -> List<FormIssue> = { listOf() },
+    val leaves: ReactiveContext<*>.() -> List<FormLeaf> = { listOf() },
+    val subsections: ReactiveContext<*>.() -> List<FormSection> = { listOf() },
 ) {
     override fun toString(): String = title
 }
@@ -165,7 +165,7 @@ data class FormLeaf(
     val icon: Icon? = null,
     val helperText: String? = null,
     val directWorkSize: Int = 1,
-    val directIssues: suspend CalculationContext.() -> List<FormIssue> = { listOf() },
+    val directIssues: ReactiveContext<*>.() -> List<FormIssue> = { listOf() },
     val editor: ViewWriter.() -> Unit,
     val viewer: ViewWriter.() -> Unit,
 ) {

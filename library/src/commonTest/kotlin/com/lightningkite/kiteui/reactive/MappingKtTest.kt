@@ -92,7 +92,11 @@ class MappingKtTest {
             // The state of each subwritable always matches the source
             assertEquals(source.value, view.state.get().map { it.value }.also { println("Before: $it") })
             action(source, view)
-            assertEquals(source.value, view.state.get().map { it.value }.also { println("After: $it") })
+            println("After values: ${source.value}")
+            assertEquals(source.value, view.state.get().map {
+                println("Checking item ${it.id}")
+                it.value
+            }.also { println("After: $it") })
         }
     }
 
@@ -140,26 +144,32 @@ class MappingKtTest {
     // Insertion works
     @Test fun listInsertionWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements() + view.newElement(4)) }
+        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
     @Test fun listInsertion() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.elements.set(view.elements() + view.newElement(4)) }
+        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 
     // Removal works
     @Test fun listRemovalWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
+        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
     @Test fun listRemoval() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        reactiveScope { sub() }
-        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
+        reactiveScope {
+            try {
+                sub()
+            } catch(e: Exception) {
+                println("Blocked $e")
+            }
+        }
+        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
 
@@ -177,13 +187,13 @@ class MappingKtTest {
     // Rearranging works and retains identity
     @Test fun listRearrangingWithoutListening() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements().reversed()) }
+        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
         assertEquals(3, sub.value)
     }
     @Test fun listRearranging() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.elements.set(view.elements().reversed()) }
+        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
         assertEquals(3, sub.value)
     }
 

@@ -47,7 +47,7 @@ object DocSearchScreen : Screen {
                     }
                 }
                 expanding - recyclerView {
-                    children(shared {
+                    children<Pair<()->DocScreen, List<String>>>(shared {
                         docsPages().mapNotNull {
                             val q = query.await()
                             if(q.isBlank()) return@mapNotNull it to it().covers

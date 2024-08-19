@@ -22,7 +22,7 @@ import io.ktor.http.*
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: suspend () -> Theme get() = { Theme.placeholder }
+    open val theme: ReactiveContext<*>.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
     abstract val mainNavigator : ScreenNavigator

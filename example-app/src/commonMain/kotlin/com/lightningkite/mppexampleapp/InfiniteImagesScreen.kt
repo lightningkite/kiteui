@@ -83,7 +83,7 @@ class ImageViewPager(val initialIndex: Int) : Screen {
                                 renders.value++
                                 val index = currImage.await()
                                 source = ImageRemote("https://picsum.photos/seed/${index}/100/100")
-                                delay(1)
+                                async(index) { delay(1) }
                                 source = ImageRemote("https://picsum.photos/seed/${index}/1000/1000")
                             }
                             scaleType = ImageScaleType.Fit

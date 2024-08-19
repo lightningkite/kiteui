@@ -17,6 +17,7 @@ internal class WaitForNotNull<T : Any>(val wraps: Readable<T?>) : Readable<T> {
     override fun equals(other: Any?): Boolean = other is WaitForNotNull<*> && this.wraps == other.wraps
 }
 val <T : Any> Readable<T?>.waitForNotNull: Readable<T> get() = WaitForNotNull(this)
+
 suspend fun <T : Any> Readable<T?>.awaitNotNull(): T {
     val basis = await()
     if (basis == null) return suspendCoroutineCancellable<T> { {} }

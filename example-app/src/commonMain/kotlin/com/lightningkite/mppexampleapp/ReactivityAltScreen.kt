@@ -16,8 +16,9 @@ object ReactivityAltScreen : Screen {
         val local = Property("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
         val dependency = Property(0)
-        val fetching = shared2 {
-            async(dependency()) { delay(1000) }
+        val fetching = shared {
+            dependency
+            async() { delay(1000) }
             "Loaded!"
         }
         col {
@@ -46,9 +47,9 @@ object ReactivityAltScreen : Screen {
 
             col {
                 h2 { content = "Using reactiveScope()" }
-                text { reactive { content = local() } }
-                text { reactive { content = persist() } }
-                text { reactive { content = fetching() } }
+                text { reactiveScope { content = local() } }
+                text { reactiveScope { content = persist() } }
+                text { reactiveScope { content = fetching() } }
             } in card
         }
     }
