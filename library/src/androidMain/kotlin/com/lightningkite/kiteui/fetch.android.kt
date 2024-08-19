@@ -325,3 +325,17 @@ actual fun FileReference.bytes(): Long {
         }
         ?: return -1L
 }
+
+//actual suspend fun Blob.byteArray(): ByteArray = data
+//actual suspend fun FileReference.byteArray(): ByteArray = withContext(Dispatchers.Main) {
+//    withContext(Dispatchers.IO) {
+//        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.readBytes()
+//    }
+//}
+
+actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
+        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
+    }
+}

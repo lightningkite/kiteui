@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui
 
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Int8Array
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
@@ -191,3 +193,6 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
 
 actual fun Blob.bytes(): Long = size.toLong()
 actual fun FileReference.bytes(): Long = size.toLong()
+
+actual suspend fun Blob.text(): String = (js("this.text()") as Promise<String>).await()
+actual suspend fun FileReference.text(): String = (js("this.text()") as Promise<String>).await()
