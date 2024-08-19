@@ -24,6 +24,12 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
                 NavLink({ "Themes" }, { Icon.sync }) { { ThemesScreen } },
                 NavLink({ "Navigation" }, { Icon.chevronRight }) { { NavigationTestScreen } },
                 NavLink(title = { "Docs" }, icon = { Icon.list }) { { DocSearchScreen } },
+                NavGroup("Grouped Test", Icon.settings, listOf(
+                    NavLink(title = { "Home Home Home" }, icon = { Icon.home }) { { RootScreen } },
+                    NavLink({ "Themes Themes Themes" }, { Icon.sync }) { { ThemesScreen } },
+                    NavLink({ "Navigation Navigation Navigation" }, { Icon.chevronRight }) { { NavigationTestScreen } },
+                    NavLink(title = { "Docs Docs Docs" }, icon = { Icon.list }) { { DocSearchScreen } },
+                ))
             )
         }
 
