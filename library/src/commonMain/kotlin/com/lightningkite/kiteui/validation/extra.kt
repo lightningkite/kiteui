@@ -3,20 +3,6 @@ package com.lightningkite.kiteui.validation
 import com.lightningkite.kiteui.reactive.*
 import kotlin.coroutines.coroutineContext
 
-// Returns its current invalid state, and then signals for recalculation when invalid
-suspend fun <T> Readable<T>.isInvalid(): ErrorState.Invalid? {
-    coroutineContext[ReactiveScopeData.Key]?.let {
-        if (!it.removers.containsKey(this)) {
-            it.removers[this] = this.addListener {
-                if (state.invalid == null) return@addListener
-                else it.run()
-            }
-        }
-        it.latestPass.add(this)
-    }
-    return state.invalid
-}
-
 class SignalingList<T>
     private constructor(private val list: MutableList<T>)
     : MutableList<T> by list, ImmediateReadable<List<T>>
@@ -37,6 +23,8 @@ class SignalingList<T>
             }
         }
     }
+
+    suspend fun watchIsEmpty(): Boolean? = state { state -> state.onData { it.isEmpty() } }
 
     private fun <V> changeList(action: MutableList<T>.() -> V): V = list.action().also { listeners.invokeAllSafe() }
 

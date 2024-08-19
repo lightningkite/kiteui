@@ -181,6 +181,44 @@ suspend fun <T> Readable<T>.await(): T {
     } ?: awaitOnce()
 }
 
+suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        // and the value is ready to go, just add the listener and proceed with the value.
+        val s = state.let(get)
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            var last = s
+            it.removers[this] = this.addListener {
+                val newVal = state.let(get)
+                if (last != newVal) {
+                    last = newVal
+                    it.run()
+                }
+            }
+        } else {
+            it.debug?.log("already depends on $this")
+        }
+        it.latestPass.add(this)
+        return s
+    } ?: return state.let(get)
+}
+
+suspend fun <T> Readable<T>.state(): ReadableState<T> {
+    coroutineContext[ReactiveScopeData.Key]?.let {
+        // and the value is ready to go, just add the listener and proceed with the value.
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            it.removers[this] = this.addListener {
+                it.run()
+            }
+        } else {
+            it.debug?.log("already depends on $this")
+        }
+        it.latestPass.add(this)
+        return state
+    } ?: return state
+}
+
 @Deprecated("Replace with 'awaitOnce'", ReplaceWith("this.awaitOnce()", "com.lightningkite.kiteui.reactive.awaitOnce"))
 suspend fun <T> Readable<T>.awaitRaw(): T = awaitOnce()
 

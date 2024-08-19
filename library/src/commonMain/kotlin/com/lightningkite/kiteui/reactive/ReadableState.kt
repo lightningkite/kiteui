@@ -11,6 +11,10 @@ value class ReadableState<out T>(val raw: T) {
         if(raw is ErrorState) return null
         return action(raw)
     }
+    inline fun <R> onData(action: (T)->R): R? {
+        val data = getOrNull() ?: return null
+        return action(data)
+    }
     inline val error: ErrorState? get() = raw as? ErrorState
     inline val exception: Exception? get() = (raw as? ErrorState.ThrownException)?.exception
     inline val invalid: ErrorState.Invalid? get() = raw as? ErrorState.Invalid
@@ -23,7 +27,7 @@ value class ReadableState<out T>(val raw: T) {
         }
         return raw
     }
-    inline fun dataOrNull(): T? {
+    inline fun getOrNull(): T? {
         if (raw is NotReady) return null
         if (raw is ErrorState) return when(raw) {
             is ErrorState.HasDataAttached -> raw.data as? T
@@ -31,18 +35,14 @@ value class ReadableState<out T>(val raw: T) {
         }
         return raw
     }
-    inline fun getOrNull(): T? {
-        if(raw is NotReady) return null
-        if(raw is ErrorState) return null
-        return raw
-    }
+
     @Suppress("UNCHECKED_CAST")
     companion object {
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
-        fun <T> exception(exception: Exception) = ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
-        fun <T> wrap(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
         fun <T> warning(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Warning(data, summary, description)) as ReadableState<T>
         fun <T> invalid(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
+        fun <T> exception(exception: Exception) = ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
+        internal fun <T> wrap(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -55,7 +55,7 @@ value class ReadableState<out T>(val raw: T) {
                     val b = mapper(t)
                     return when (raw) {
                         is ErrorState.Warning -> {
-                             warning(b, raw.errorSummary, "Mapped from warning data ($t) -> ($b): " + raw.errorDescription)
+                            warning(b, raw.errorSummary, "Mapped from warning data ($t) -> ($b): " + raw.errorDescription)
                         }
                         is ErrorState.Invalid -> {
                             invalid(b, raw.errorSummary, "Mapped from invalid data ($t) -> ($b): " + raw.errorDescription)
