@@ -56,3 +56,4 @@ actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
 actual suspend fun FileReference.text(): String = TODO() /*withContext(Dispatchers.IO) {
     AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
 }*/
+actual fun String.toBlob(contentType: String): Blob = TODO()

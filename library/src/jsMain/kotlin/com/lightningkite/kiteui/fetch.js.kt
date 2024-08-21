@@ -7,6 +7,7 @@ import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
+import org.w3c.files.BlobPropertyBag
 import org.w3c.files.File
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
@@ -196,3 +197,4 @@ actual fun FileReference.bytes(): Long = size.toLong()
 
 actual suspend fun Blob.text(): String = (js("this.text()") as Promise<String>).await()
 actual suspend fun FileReference.text(): String = (js("this.text()") as Promise<String>).await()
+actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
