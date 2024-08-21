@@ -60,6 +60,8 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
 
         if (viewDebugTarget?.native === this) println("Total sizeThatFits $subsize")
 
+        subsize.primary = subsize.primary.coerceAtMost(mySizeWithoutPadding.primary)
+
         subsize.primary += padding * 2 + 0.00001
         subsize.secondary += padding * 2 + 0.00001
 
