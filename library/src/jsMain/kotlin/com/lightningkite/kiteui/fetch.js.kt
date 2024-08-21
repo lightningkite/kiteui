@@ -195,6 +195,7 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
 actual fun Blob.bytes(): Long = size.toLong()
 actual fun FileReference.bytes(): Long = size.toLong()
 
-actual suspend fun Blob.text(): String = (js("this.text()") as Promise<String>).await()
-actual suspend fun FileReference.text(): String = (js("this.text()") as Promise<String>).await()
+fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+actual suspend fun Blob.text(): String = jsTextBlob(this).await()
+actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
