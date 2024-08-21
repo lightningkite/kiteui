@@ -8,6 +8,7 @@ class ReactiveContext<T>(
     val onLoad: (()->Unit)? = null,
     val action: ReactiveContext<T>.()->T
 ): CalculationContext by context {
+    private var slow = false
     var lastResult: ReadableState<T> = ReadableState.notReady
 
     companion object {
@@ -21,7 +22,6 @@ class ReactiveContext<T>(
 
     var running = false
     val dependencies = ArrayList<Pair<Any, () -> Unit>>()
-    private var slow = false
     val usedDependencies = ArrayList<Any?>()
     val rerun = { ->
         if (scheduled) queue.add(this)
@@ -61,8 +61,28 @@ class ReactiveContext<T>(
         )
     }
 
-    operator fun <T> Readable<T>.invoke(): T {
-        rerunOn(this)
+    operator fun <R> Readable<R>.invoke(): R {
+        if (existingDependency(this) == null) {
+            dependencies += (this to this.addListener(rerun))
+            // The shortcut below isn't valid because you can try/catch stuff!
+//            dependencies += this to this.addListener {
+//                this.state.handle(
+//                    success = {
+//                        if (scheduled) queue.add(this@ReactiveContext)
+//                        else run()
+//                        Unit
+//                    },
+//                    exception = {
+//                        // shortcut
+//                        @Suppress("UNCHECKED_CAST")
+//                        setResult(this.state as ReadableState<T>)
+//                    },
+//                    notReady = {
+//                        setResult(ReadableState.notReady)
+//                    }
+//                )
+//            }
+        }
         if (!usedDependencies.contains(this)) usedDependencies.add(this)
         return state.handle(
             success = { it },
@@ -108,19 +128,31 @@ class ReactiveContext<T>(
     fun run() {
         running = true
         usedDependencies.clear()
-        lastResult = readableState { action(this) }
-        if (lastResult.ready) {
+        setResult(readableState { action(this) })
+        val iter = dependencies.iterator()
+        while (iter.hasNext()) {
+            val entry = iter.next()
+            if (entry.first !in usedDependencies) {
+                entry.second()
+                iter.remove()
+            }
+        }
+    }
+
+    fun setResult(state: ReadableState<T>) {
+        lastResult = state
+        if (state.ready) {
             if (slow) {
                 slow = false
                 context.notifyLongComplete(
-                    if (lastResult.success) Result.success(Unit) else Result.failure(
-                        lastResult.exception ?: NotReadyException()
+                    if (state.success) Result.success(Unit) else Result.failure(
+                        state.exception ?: NotReadyException()
                     )
                 )
             } else {
                 context.notifyComplete(
-                    if (lastResult.success) Result.success(Unit) else Result.failure(
-                        lastResult.exception ?: NotReadyException()
+                    if (state.success) Result.success(Unit) else Result.failure(
+                        state.exception ?: NotReadyException()
                     )
                 )
             }
@@ -129,14 +161,6 @@ class ReactiveContext<T>(
                 slow = true
                 context.notifyStart()
                 onLoad?.invoke()
-            }
-        }
-        val iter = dependencies.iterator()
-        while (iter.hasNext()) {
-            val entry = iter.next()
-            if (entry.first !in usedDependencies) {
-                entry.second()
-                iter.remove()
             }
         }
     }
@@ -223,10 +247,8 @@ private inline fun <T> readableState(action: ()->T): ReadableState<T> {
     try {
         return ReadableState(action())
     } catch(e: ReactiveLoading) {
-        println("Caught $e")
         return ReadableState.notReady
     } catch(e: Exception) {
-        println("Caught $e")
         return ReadableState.exception(e)
     }
 }
@@ -241,4 +263,4 @@ private class SuspendCalculation<T>(val key: Any): BaseReadable<T>() {
     override fun toString(): String = "SuspendCalculation($key)"
 }
 
-object ReactiveLoading: Exception()
+object ReactiveLoading: Throwable()
