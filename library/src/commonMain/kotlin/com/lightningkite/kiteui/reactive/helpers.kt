@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.utils.commaString
+import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
@@ -21,7 +23,7 @@ fun List<() -> Unit>.invokeAllSafe() = forEach {
     try {
         it()
     } catch (e: Exception) {
-        if(e is CancelledException) return@forEach
+        if (e is CancelledException) return@forEach
         e.report()
     }
 }
@@ -33,23 +35,23 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
             this@bind.set(master.await())
             master.addListener {
                 if (setting) return@addListener
-                setting = true
                 master.state.onSuccess {
-                    launch {
+                    setting = true
+                    this@with.launch {
                         this@bind.set(it)
+                        setting = false
                     }
                 }
-                setting = false
             }.also { onRemove(it) }
             this@bind.addListener {
                 if (setting) return@addListener
-                setting = true
                 this@bind.state.onSuccess {
-                    launch {
+                    setting = true
+                    this@with.launch {
                         master.set(it)
+                        setting = false
                     }
                 }
-                setting = false
             }.also { onRemove(it) }
         }
 
@@ -80,7 +82,7 @@ fun Writable<String>.asDouble(): Writable<Double?> =
         .withWrite { this@asDouble set (it?.commaString() ?: "") }
 
 @JvmName("immediateWritableStringAsDouble")
-fun ImmediateWritable<String>.asDouble(): ImmediateWritable<Double?> = object: ImmediateWritable<Double?> {
+fun ImmediateWritable<String>.asDouble(): ImmediateWritable<Double?> = object : ImmediateWritable<Double?> {
     override suspend fun set(value: Double?) {
         this@asDouble.set(value?.commaString() ?: "")
     }
@@ -139,20 +141,21 @@ fun CalculationContext.use(resourceUse: ResourceUse) {
     onRemove { x() }
 }
 
-fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
+fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
     object : Writable<T>, Readable<T> by this {
         override suspend fun set(value: T) {
             action(this@interceptWrite, value)
         }
     }
 
-fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten.awaitOnce() set it }
+fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }
+    .withWrite { this@flatten.state.onSuccess { s -> s set it } }
 
 interface ReadableEmitter<T> {
     fun emit(value: T)
 }
 
-fun <T> CalculationContext.readable(emitter: suspend ReadableEmitter<T>.() -> Unit): Readable<T> {
+fun <T> CoroutineScope.readable(emitter: suspend ReadableEmitter<T>.() -> Unit): Readable<T> {
     val prop = LateInitProperty<T>()
     launch {
         emitter(object : ReadableEmitter<T> {

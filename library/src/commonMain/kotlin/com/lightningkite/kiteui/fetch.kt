@@ -80,7 +80,7 @@ data class RequestBodyFile(val content: FileReference): RequestBody {
 
 expect fun websocket(url: String): WebSocket
 
-interface WebSocket: Cancellable {
+interface WebSocket {
     fun close(code: Short, reason: String)
     fun send(data: String)
     fun send(data: Blob)
@@ -88,7 +88,7 @@ interface WebSocket: Cancellable {
     fun onMessage(action: (String)->Unit)
     fun onBinaryMessage(action: (Blob)->Unit)
     fun onClose(action: (Short)->Unit)
-    override fun cancel() { close(1000, "Closed normally") }
+    fun cancel() { close(1000, "Closed normally") }
 }
 
 /*

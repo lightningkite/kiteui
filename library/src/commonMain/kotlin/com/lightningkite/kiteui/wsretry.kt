@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.Job
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -59,7 +61,7 @@ fun retryWebsocket(
         val id = instanceCount++
         currentWebSocketId = id
         currentWebSocket = underlyingSocket().also { socket ->
-            var pings: Cancellable? = null
+            var pings: Job? = null
             socket.onOpen {
                 log?.log("$id onOpen")
                 onOpenList.toList().forEach { l -> l() }
@@ -119,6 +121,8 @@ fun retryWebsocket(
                 if(--listenerCounter == 0) shouldBeOn.value = false
             }
         }
+
+        override val coroutineContext: CoroutineContext = Job()
 
         init {
             var starting = false
@@ -182,7 +186,6 @@ fun retryWebsocket(
             onCloseList.add(action)
         }
 
-        override fun notifyStart() {}
         override fun onRemove(action: () -> Unit) {
         }
     }

@@ -9,17 +9,23 @@ value class ReadableState<out T>(val raw: T) {
     inline fun <R> onSuccess(action: (T)->R): R? {
         if(raw is NotReady) return null
         if(raw is ThrownException) return null
+        @Suppress("UNCHECKED_CAST")
+        if(raw is ReadableWrapper__INTERNAL<*>) return action(raw.other as T)
         return action(raw)
     }
     inline val exception: Exception? get() = (raw as? ThrownException)?.exception
     inline fun get(): T {
         if(raw is NotReady) throw NotReadyException()
         if(raw is ThrownException) throw raw.exception
+        @Suppress("UNCHECKED_CAST")
+        if(raw is ReadableWrapper__INTERNAL<*>) return raw.other as T
         return raw
     }
     inline fun getOrNull(): T? {
         if(raw is NotReady) return null
         if(raw is ThrownException) return null
+        @Suppress("UNCHECKED_CAST")
+        if(raw is ReadableWrapper__INTERNAL<*>) return raw.other as T
         return raw
     }
     companion object {
@@ -27,10 +33,17 @@ value class ReadableState<out T>(val raw: T) {
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
         @Suppress("UNCHECKED_CAST")
         fun <T> exception(exception: Exception) = ReadableState<Any?>(ThrownException(exception)) as ReadableState<T>
+        @Suppress("UNCHECKED_CAST")
+        fun <T> wrap(value: T) = ReadableState<Any?>(ReadableWrapper__INTERNAL(value)) as ReadableState<T>
     }
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
         if(raw is NotReady || raw is ThrownException) return this as ReadableState<B>
+        if(raw is ReadableWrapper__INTERNAL<*>) try {
+            return ReadableState(mapper(raw.other as T))
+        } catch(e: Exception) {
+            return exception(e)
+        }
         try {
             return ReadableState(mapper(raw))
         } catch(e: Exception) {
@@ -54,8 +67,10 @@ value class ReadableState<out T>(val raw: T) {
     override fun toString(): String = when(raw) {
         is NotReady -> "NotReady"
         is ThrownException -> "ThrownException(${raw.exception})"
+        is ReadableWrapper__INTERNAL<*> -> "ReadyW($raw)"
         else -> "Ready($raw)"
     }
 }
-class ThrownException(val exception: Exception)
+data class ReadableWrapper__INTERNAL<T>(val other: T)
+data class ThrownException(val exception: Exception)
 object NotReady

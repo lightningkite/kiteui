@@ -23,7 +23,7 @@ object ListEditScreen : Screen {
                         ::content { itemObs()().index.toString() }
                     }
                     expanding - fieldTheme - textField {
-                        content bind itemObs.flatten().map(
+                        content bind itemObs.flatten().lens(
                             get = { it.value },
                             set = { old, it -> old.copy(value = it) }
                         )

@@ -11,7 +11,7 @@ class SharedTest {
         val a = LateInitProperty<Int?>()
         val b = shared { a.await() }
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 b.await()
                 hits++
@@ -28,7 +28,7 @@ class SharedTest {
         val a = LateInitProperty<Int?>()
         val b = shared { a.await() }
         var hits = 0
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
                 b.await()
                 hits++

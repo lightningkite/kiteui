@@ -71,9 +71,10 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.7.1")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
             }
         }
         val commonTest by getting {

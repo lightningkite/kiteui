@@ -48,9 +48,9 @@ actual suspend fun fetch(
     onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
-    return withContext(Dispatchers.Main) {
+    return run {
         try {
-            val response = withContext(Dispatchers.IO) {
+            val response = run {
                 client.request(url) {
                     this.method = when (method) {
                         HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -91,14 +91,14 @@ actual suspend fun fetch(
                     }
                     onUploadProgress?.let {
                         onUpload { a, b ->
-                            withContext(Dispatchers.Main) {
+                            run {
                                 it(a.toInt(), b.toInt())
                             }
                         }
                     }
                     onDownloadProgress?.let {
                         onDownload { a, b ->
-                            withContext(Dispatchers.Main) {
+                            run {
                                 it(a.toInt(), b.toInt())
                             }
                         }
@@ -144,8 +144,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
     actual val ok: Boolean get() = wraps.status.isSuccess()
     actual suspend fun text(): String {
         try {
-            val result = withContext(Dispatchers.Main) {
-                withContext(Dispatchers.IO) {
+            val result = run {
+                run {
                     wraps.bodyAsText()
                 }
             }
@@ -157,8 +157,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
 
     actual suspend fun blob(): Blob {
         try {
-            val result = withContext(Dispatchers.Main) {
-                withContext(Dispatchers.IO) {
+            val result = run {
+                run {
                     wraps.body<ByteArray>()
                         .let { Blob(it.toNSData(), wraps.contentType()?.toString() ?: "application/octet-stream") }
                 }
@@ -211,7 +211,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    withContext(Dispatchers.Main) {
+                    run {
                         onOpen.forEach { it() }
                     }
                     launch {
@@ -226,7 +226,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
-                                withContext(Dispatchers.Main) {
+                                run {
                                     onClose.forEach { it(reason.code) }
                                 }
                             }
@@ -239,14 +239,14 @@ class WebSocketWrapper(val url: String) : WebSocket {
                             when (val x = incoming.receive()) {
                                 is Frame.Binary -> {
                                     val data = Blob(x.data.toNSData())
-                                    withContext(Dispatchers.Main) {
+                                    run {
                                         onBinaryMessage.forEach { it(data) }
                                     }
                                 }
 
                                 is Frame.Text -> {
                                     val text = x.readText()
-                                    withContext(Dispatchers.Main) {
+                                    run {
                                         onMessage.forEach { it(text) }
                                     }
                                 }
@@ -261,12 +261,12 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         } catch (e: ClosedReceiveChannelException) {
                         }
                     }
-                    withContext(Dispatchers.Main) {
+                    run {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
+                run {
                     onClose.forEach { it(0) }
                 }
             }
