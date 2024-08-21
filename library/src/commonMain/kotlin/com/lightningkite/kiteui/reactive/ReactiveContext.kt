@@ -155,7 +155,7 @@ class ReactiveContext<T>(
     }
 }
 
-fun <T> shared(action: ReactiveContext<T>.()->T): Readable<T> {
+fun <T> shared(action: ReactiveContext<*>.()->T): Readable<T> {
     return SharedReadable(action = action)
 }
 
