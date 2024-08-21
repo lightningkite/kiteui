@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.reactiveScope
 
 @Routable("sample/websockets")
 object WebSocketScreen : Screen {

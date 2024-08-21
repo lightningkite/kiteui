@@ -47,7 +47,7 @@ object DocSearchScreen : Screen {
                     }
                 }
                 expanding - recyclerView {
-                    children<Pair<()->DocScreen, List<String>>>(shared {
+                    val items = shared {
                         docsPages().mapNotNull {
                             val q = query.await()
                             if(q.isBlank()) return@mapNotNull it to it().covers
@@ -57,7 +57,8 @@ object DocSearchScreen : Screen {
                             if(matchingTerms.isEmpty()) return@mapNotNull null
                             it to matchingTerms
                         }
-                    }) {
+                    }
+                    children(items) {
                         card - link {
                             ::to { it.await().first }
                             col {

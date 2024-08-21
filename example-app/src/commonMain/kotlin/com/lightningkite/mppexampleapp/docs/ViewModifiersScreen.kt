@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*

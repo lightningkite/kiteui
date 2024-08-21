@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.launch
 
 class ReactiveContext<T>(
     val context: CalculationContext,
-    val scheduled: Boolean,
+    val scheduled: Boolean = false,
     val onLoad: (()->Unit)? = null,
     val action: ReactiveContext<T>.()->T
 ): CalculationContext by context {
