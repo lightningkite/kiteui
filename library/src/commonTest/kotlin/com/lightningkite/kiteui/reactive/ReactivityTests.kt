@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -51,9 +53,9 @@ class ReactivityTests {
         testContext {
             val a = Property(0)
             var received = -1
-            ReactiveScopeData(this, action = {
+            ReactiveContext(this, action = {
                 received = a()
-            })
+            }).run()
             assertEquals(a.value, received)
             a.value++
             assertEquals(a.value, received)
@@ -297,6 +299,16 @@ class ReactivityTests {
             listItem.value = 1
         }
     }
+
+    @Test fun flowtest() {
+        testContext {
+            val flow = MutableStateFlow(0)
+            reactiveScope {
+                println(flow())
+            }
+            repeat(5) { flow.value = it }
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {
@@ -349,10 +361,12 @@ fun testContext(action: CalculationContext.()->Unit): Job {
 
         override fun notifyLongComplete(result: Result<Unit>) {
             numOutstandingContracts--
+            println("Long load complete")
         }
 
         override fun notifyStart() {
             numOutstandingContracts++
+            println("Long load start")
         }
 
         override fun notifyComplete(result: Result<Unit>) {

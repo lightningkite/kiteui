@@ -1,6 +1,11 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.printStackTrace2
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
 
 fun <O, T> Readable<O>.lens(
@@ -163,16 +168,18 @@ class WritableList<E, ID, T>(
     val elementLens: (WritableList<E, ID, T>.ElementWritable)->T
 ) : Readable<List<T>> {
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>, CalculationContext {
-        private val onRemoves = ArrayList<()->Unit>()
-        override fun onRemove(action: () -> Unit) {
-            onRemoves.add(action)
+        private var job = Job()
+        override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
+            if(throwable !is CancellationException) {
+                throwable.printStackTrace2()
+            }
         }
         internal var dead = false
             set(value) {
                 field = value
                 listeners.invokeAllSafe()
-                onRemoves.invokeAllSafe()
-                onRemoves.clear()
+                job.cancel()
+                job = Job()
             }
         var id: ID = identity(valueInit)
             private set

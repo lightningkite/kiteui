@@ -25,7 +25,7 @@ object ListEditScreen : Screen {
                     expanding - fieldTheme - textField {
                         content bind itemObs.flatten().lens(
                             get = { it.value },
-                            set = { old, it -> old.copy(value = it) }
+                            modify = { old, it -> old.copy(value = it) }
                         )
                     }
                 }
