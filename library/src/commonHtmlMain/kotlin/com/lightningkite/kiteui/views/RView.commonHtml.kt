@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {

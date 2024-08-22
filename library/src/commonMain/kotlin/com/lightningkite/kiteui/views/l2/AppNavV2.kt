@@ -20,7 +20,7 @@ fun ViewWriter.navLayout(
 
 fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
     row {
-        ::exists { show() && !SoftInputOpen() }
+        ::exists { show() && !AppState.softInputOpen() }
         navGroupTabs(shared { navElements() }) {}
     } 
 }
@@ -43,7 +43,7 @@ fun ViewWriter.appBase(main: ScreenNavigator, dialog: ScreenNavigator? = null, m
         overlayStack = this
         mainLayout()
         dialog?.let {
-            navigatorViewDialog() in tweakTheme { it.dialog() }
+            navigatorViewDialog() in DialogSemantic.onNext
         }
 //        baseStack = this
 //        baseStackWriter = split()

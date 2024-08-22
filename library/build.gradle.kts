@@ -66,6 +66,9 @@ kotlin {
 //        browser()
 //    }
 
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
     sourceSets {
         applyDefaultHierarchyTemplate()
 

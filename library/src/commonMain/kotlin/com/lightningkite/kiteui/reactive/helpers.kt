@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.launch
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
+import kotlin.time.Duration
 
 @JsName("invokeAllSafeMutable")
 @JvmName("invokeAllSafeMutable")

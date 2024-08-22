@@ -74,6 +74,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     }
 
     var queue: Json = json()
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private inline fun Json.subObj(key: String) = this.get(key) as? Json ?: run {
         val obj = json()
         this.set(key, obj)
@@ -94,6 +95,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 
     var flushTotal: Duration = 0.seconds
     var ruleTotal = 0
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     actual fun flush() {
         measureTime {
 //            val map = HashMap<String, HashMap<String, HashMap<String, String>>>()

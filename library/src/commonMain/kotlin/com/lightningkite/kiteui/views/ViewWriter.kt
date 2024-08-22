@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ConsoleRoot

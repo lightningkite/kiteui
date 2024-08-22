@@ -2,13 +2,14 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { com.lightningkite.kiteui.delay(it) }) {
+suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCoroutineCancellable<Unit> {
         onOpen {
             launchGlobal {

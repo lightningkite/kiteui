@@ -32,13 +32,13 @@ internal actual fun RView.nativeAnimateHideBinding(
             val transitionTime = myStyle.transitionDuration.let { Duration.parseOrNull(it) } ?: 150.milliseconds
             val totalTime = transitionTime.inWholeMilliseconds.toDouble()
             var oldAnimTime = totalTime
+            @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
             (this.asDynamic().__kiteui__hiddenAnim as? Animation)?.let {
                 oldAnimTime = it.currentTime
                 it.cancel()
             }
-            (this.asDynamic().__kiteui__hiddenAnim2 as? Animation)?.let {
-                it.cancel()
-            }
+            @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+            ((this.asDynamic().__kiteui__hiddenAnim2 as? Animation)?.cancel())
             this.asDynamic().__kiteui__goalHidden = value
             myElement.hidden = false
             val parent = generateSequence(myElement) { it.parentElement as? HTMLElement }.drop(1)
@@ -46,7 +46,7 @@ internal actual fun RView.nativeAnimateHideBinding(
             val parentStyle = window.getComputedStyle(parent)
             val x =
                 parentStyle.display == "flex" && parentStyle.flexDirection.contains("row") ||
-                        parentStyle.display != "flex" && myStyle.display.let { it.contains("inline") }
+                        parentStyle.display != "flex" && myStyle.display.contains("inline")
             val y =
                 parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
                         parentStyle.display != "flex" && myStyle.display.let { it.contains("block") && !it.contains("inline") }
@@ -180,7 +180,6 @@ internal actual fun RView.nativeAnimateHideBinding(
 inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     this.asDynamic().animate(keyframes, options) as Animation
 
-@Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
 inline fun HTMLElement.getAnimations(): Array<Animation> = this.asDynamic().getAnimations as Array<Animation>
 external interface Animation {
     var oncancel: ((Event) -> Unit)?
