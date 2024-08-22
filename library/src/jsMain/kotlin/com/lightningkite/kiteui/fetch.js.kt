@@ -1,10 +1,13 @@
 package com.lightningkite.kiteui
 
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Int8Array
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
+import org.w3c.files.BlobPropertyBag
 import org.w3c.files.File
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
@@ -191,3 +194,8 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
 
 actual fun Blob.bytes(): Long = size.toLong()
 actual fun FileReference.bytes(): Long = size.toLong()
+
+fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+actual suspend fun Blob.text(): String = jsTextBlob(this).await()
+actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
+actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))

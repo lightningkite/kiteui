@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.utils.fitInsideBox
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -25,9 +24,10 @@ fun UIView.sizeThatFits2(
         it.minWidth?.let { w = w.coerceAtLeast(it.value) }
         it.minHeight?.let { h = h.coerceAtLeast(it.value) }
         it.aspectRatio?.let { aspectRatio ->
-            aspectRatio.fitInsideBox(w, h).let { innerBox ->
-                w = innerBox.first
-                h = innerBox.second
+            if (w / h > aspectRatio) {
+                w = h * aspectRatio
+            } else {
+                h = w / aspectRatio
             }
         }
         it.width?.let { w = it.value }
@@ -64,18 +64,13 @@ fun UIView.sizeThatFits2(
     val result = sizeConstraints?.let {
         var w = measured.useContents { width }
         var h = measured.useContents { height }
-//        it.maxWidth?.let { w = w.coerceAtMost(it.value) }
-//        it.maxHeight?.let { h = h.coerceAtMost(it.value) }
-//        it.minWidth?.let { w = w.coerceAtLeast(it.value) }
-//        it.minHeight?.let { h = h.coerceAtLeast(it.value) }
         it.aspectRatio?.let { aspectRatio ->
-            aspectRatio.fitInsideBox(w, h).let { innerBox ->
-                w = innerBox.first
-                h = innerBox.second
+            if (w / h > aspectRatio) {
+                w = h * aspectRatio
+            } else {
+                h = w / aspectRatio
             }
         }
-//        it.width?.let { w = it.value }
-//        it.height?.let { h = it.value }
         CGSizeMake(w, h)
     } ?: measured
     if(this === viewDebugTarget?.native) {

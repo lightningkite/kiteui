@@ -107,8 +107,13 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         if(this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }
 
-    private val randomId = Random.nextInt()
-    override fun toString(): String = "${native.tag}#${randomId}"
+    companion object { private var viewCounter: Int = 0 }
+    override fun postSetup() {
+        super.postSetup()
+        native.id = "${native.tag}${viewCounter++}"
+    }
+
+    override fun toString(): String = "${native.id}"
 }
 
 typealias HtmlElementLike = FutureElement

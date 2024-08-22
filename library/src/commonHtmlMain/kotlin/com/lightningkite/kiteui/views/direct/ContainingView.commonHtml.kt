@@ -133,6 +133,8 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
                     if(view.native.style.width.isNullOrEmpty()) view.native.style.width = "100%"
                 }
             }
+            val amnt = spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing
+            view.native.style.marginBottom = amnt.value
         }
     }
 

@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.DOMRect
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -26,12 +27,12 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     actual var menuGenerator: Stack.() -> Unit = { space() }
 
     actual fun block() {
-        if(blockView != null) return
+        if (blockView != null) return
         val o = source.overlayStack ?: return
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
-            object: RView(o.context) {
+            object : RView(o.context) {
                 init {
                     native.tag = "div"
                     native.addEventListener("click") {
@@ -83,6 +84,39 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 native.style.height = "auto"
                 native.style.width = "unset"
                 native.style.height = "unset"
+                var tx = 0.0
+                var txm = 0
+                var ty = 0.0
+                var tym = 0
+
+                // Corrective measures: force it back on-screen
+                native.onElement { e ->
+                    e as HTMLElement
+                    ResizeObserver { entry, observer ->
+                        val screen = document.body!!.getBoundingClientRect()
+                        val rect = e.getBoundingClientRect()
+                        var altered = false
+                        if (rect.right > screen.right) {
+                            tx -= rect.right - screen.right
+                            altered = true
+                        }
+                        if (rect.left < screen.left) {
+                            tx -= rect.left - screen.left
+                            altered = true
+                        }
+                        if (rect.bottom > screen.bottom) {
+                            ty -= rect.bottom - screen.bottom
+                            altered = true
+                        }
+                        if (rect.top < screen.top) {
+                            ty -= rect.top - screen.top
+                            altered = true
+                        }
+                        if (altered)
+                            e.style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
+                    }.observe(e)
+                }
+
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
@@ -95,96 +129,54 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                             style.removeProperty("transform")
                             if (preferredDirection.horizontal) {
                                 if (preferredDirection.after) {
-                                    style.left = "${r.right}px"
+                                    tx = r.right
+                                    txm = 0
                                 } else {
-                                    style.right = "${window.innerWidth - r.left}px"
+                                    tx = r.left
+                                    txm = -100
                                 }
                                 when (preferredDirection.align) {
-                                    Align.Start -> style.bottom =
-                                        "${window.innerHeight - r.bottom}px"
+                                    Align.Start -> {
+                                        ty = r.bottom
+                                        tym = -100
+                                    }
 
-                                    Align.End -> style.top = "${r.top}px"
+                                    Align.End -> {
+                                        ty = r.top
+                                        tym = 0
+                                    }
+
                                     else -> {
-                                        style.top = "${(r.top + r.bottom) / 2}px"
-                                        style.transform = "translateY(-50%)"
+                                        ty = (r.top + r.bottom) / 2
+                                        tym = -50
                                     }
                                 }
                             } else {
                                 if (preferredDirection.after) {
-                                    style.top = "${r.bottom}px"
+                                    ty = r.bottom
+                                    tym = 0
                                 } else {
-                                    style.bottom = "${window.innerHeight - r.top}px"
+                                    ty = r.top
+                                    tym = -100
                                 }
                                 when (preferredDirection.align) {
-                                    Align.Start -> style.right =
-                                        "${window.innerWidth - r.right}px"
+                                    Align.Start -> {
+                                        tx = r.right
+                                        txm = -100
+                                    }
 
-                                    Align.End -> style.left = "${r.left}px"
+                                    Align.End -> {
+                                        tx = r.left
+                                        txm = 0
+                                    }
+
                                     else -> {
-                                        style.left = "${(r.left + r.right) / 2}px"
-                                        style.transform = "translateX(-50%)"
+                                        tx = (r.left + r.right) / 2
+                                        txm = -50
                                     }
                                 }
                             }
-
-                            // Corrective measures: force it back on-screen
-                            val screen = document.body!!.getBoundingClientRect()
-                            val rect = e.getBoundingClientRect()
-                            if(preferredDirection.horizontal) {
-                                if(preferredDirection.after) {
-                                    if (rect.right > screen.right) {
-                                        style.removeProperty("left")
-                                        style.right = "${window.innerWidth - r.left}px"
-                                    }
-                                } else {
-                                    if (rect.left < screen.left) {
-                                        style.removeProperty("right")
-                                        style.left = "${r.right}px"
-                                    }
-                                }
-                                when(preferredDirection.align) {
-                                    Align.Start -> {
-                                        if(rect.top < screen.top) {
-                                            style.removeProperty("bottom")
-                                            style.top = "0px"
-                                        }
-                                    }
-                                    Align.End -> {
-                                        if(rect.bottom > screen.bottom) {
-                                            style.removeProperty("top")
-                                            style.bottom = "0px"
-                                        }
-                                    }
-                                    else -> {}
-                                }
-                            } else {
-                                if(preferredDirection.after) {
-                                    if (rect.bottom > screen.bottom) {
-                                        style.removeProperty("top")
-                                        style.bottom = "${window.innerHeight - r.top}px"
-                                    }
-                                } else {
-                                    if (rect.top < screen.top) {
-                                        style.removeProperty("bottom")
-                                        style.top = "${r.bottom}px"
-                                    }
-                                }
-                                when(preferredDirection.align) {
-                                    Align.Start -> {
-                                        if(rect.left < screen.left) {
-                                            style.removeProperty("right")
-                                            style.left = "0px"
-                                        }
-                                    }
-                                    Align.End -> {
-                                        if(rect.right > screen.right) {
-                                            style.removeProperty("left")
-                                            style.right = "0px"
-                                        }
-                                    }
-                                    else -> {}
-                                }
-                            }
+                            style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
                         }
                     }
                 }
@@ -225,9 +217,11 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         (e as HTMLElement)
                         window.getComputedStyle(e).getPropertyValue("transition-duration")
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
-                            .let { window.setTimeout({
-                                source.overlayStack!!.removeChild(this)
-                            }, it.inWholeMilliseconds.toInt()) }
+                            .let {
+                                window.setTimeout({
+                                    source.overlayStack!!.removeChild(this)
+                                }, it.inWholeMilliseconds.toInt())
+                            }
                         e.style.opacity = "0"
                     }
                     existingView = null

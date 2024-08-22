@@ -115,17 +115,15 @@ fun processFiles(
                     channel.position(0)
                     val lastHash = channel.readInt()
                     if (lastHash == hash) return
-                    val temp = Files.createTempDirectory("kspTemp").toFile()
                     try {
+                        destinationFolder.deleteRecursively()
                         action(object : FileGenerator {
                             override fun file(name: String): Writer {
-                                return temp.resolve(name).also {
+                                return destinationFolder.resolve(name).also {
                                     it.parentFile.mkdirs()
                                 }.bufferedWriter()
                             }
                         })
-                        destinationFolder.deleteRecursively()
-                        temp.renameTo(destinationFolder)
                     } catch (e: Exception) {
                         // abandon
                         e.printStackTrace()

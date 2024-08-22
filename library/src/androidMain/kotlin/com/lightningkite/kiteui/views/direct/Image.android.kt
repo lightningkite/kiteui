@@ -1,47 +1,72 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.graphics.drawable.BitmapDrawable
-import android.os.Handler
-import android.os.Looper
-import androidx.core.content.ContextCompat
-import com.lightningkite.kiteui.R
-import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.Path.PathDrawable
-import timber.log.Timber
 import android.content.Context
-import android.graphics.*
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.util.AttributeSet
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
-import android.view.View
-import android.view.Window
-import android.widget.FrameLayout
-import androidx.annotation.Nullable
-import androidx.core.view.children
+import android.widget.ImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.bumptech.glide.GenericTransitionOptions
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.Request
+import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.request.target.ImageViewTarget
-import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.transition.Transition
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.WindowInfo
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
-import com.ortiz.touchview.TouchImageView
+import com.lightningkite.kiteui.views.Path.PathDrawable
 import android.widget.ImageView as AImageView
 
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
-    override val native = android.widget.ImageView(context.activity)
+    override val native = Custom(context.activity)
+    class Custom(context: Context): androidx.appcompat.widget.AppCompatImageView(context) {
+        init {
+            this.adjustViewBounds = true
+            this.clipToOutline = true
+        }
+        var widthMeasureSpecLast = 0
+        var heightMeasureSpecLast = 0
+        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+            widthMeasureSpecLast = widthMeasureSpec
+            heightMeasureSpecLast = heightMeasureSpec
+            if(callbacks.isNotEmpty()) {
+                val w = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0 ) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
+                val h = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0 ) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
+                callbacks.toList().forEach { cb -> cb.onSizeReady(w, h) }
+                callbacks.clear()
+            }
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        }
+        val callbacks = ArrayList<SizeReadyCallback>()
+
+        val target = object: ImageViewTarget<Drawable>(this) {
+            override fun setResource(resource: Drawable?) {
+                this@Custom.setImageDrawable(resource)
+            }
+
+            @SuppressLint("MissingSuperCall")
+            override fun getSize(cb: SizeReadyCallback) {
+                if(widthMeasureSpecLast != 0) {
+                    cb.onSizeReady(
+                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0 ) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt(),
+                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0 ) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt(),
+                    )
+                } else {
+                    callbacks.add(cb)
+                }
+            }
+
+            @SuppressLint("MissingSuperCall")
+            override fun removeCallback(cb: SizeReadyCallback) {
+                callbacks.remove(cb)
+            }
+
+            @SuppressLint("MissingSuperCall")
+            override fun onLoadCleared(placeholder: Drawable?) {
+                callbacks.clear()
+            }
+        }
+    }
 
     //    var placeholder = ColorDrawable(0xFFFF0000.toInt())
     var placeholder = CircularProgressDrawable(context.activity).apply {
@@ -57,17 +82,40 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
             field = value
-            @Suppress("KotlinConstantConditions")
-            when (value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(native)
-                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(native)
-                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(native)
-                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(native)
-                is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                null -> native.setImageDrawable(null)
-                else -> TODO()
-            }
+            reload()
         }
+
+    private fun reload() {
+        val value = source
+        fun RequestBuilder<Drawable>.load() {
+            var requestOptions = this
+            if ((!requestOptions.isTransformationSet
+                        && requestOptions.isTransformationAllowed) && native.getScaleType() != null
+            ) {
+                when (native.getScaleType()) {
+                    ImageView.ScaleType.CENTER_CROP -> requestOptions = requestOptions.clone().optionalCenterCrop()
+                    ImageView.ScaleType.CENTER_INSIDE -> requestOptions = requestOptions.clone().optionalCenterInside()
+                    ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
+                        requestOptions.clone().optionalFitCenter()
+
+                    ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
+                    ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
+                    else -> {}
+                }
+            }
+            requestOptions.into(native.target)
+        }
+        when (value) {
+            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).load()
+            is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).load()
+            is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).load()
+            is ImageResource -> Glide.with(native).load(value.resource).load()
+            is ImageVector -> native.setImageDrawable(PathDrawable(value))
+            null -> native.setImageDrawable(null)
+            else -> TODO()
+        }
+    }
+
     actual var scaleType: ImageScaleType
         get() {
             return when (this.native.scaleType) {
@@ -118,6 +166,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             )
         }
     }
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithClipping(theme, fullyApply)
 }
 
 //@ViewDsl

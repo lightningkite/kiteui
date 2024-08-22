@@ -9,6 +9,15 @@ import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+internal fun Theme.backgroundClippingDrawableWithoutCorners(): GradientDrawable {
+    return GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE
+        val barelyColor = 0x01808080
+        setStroke(0, barelyColor)
+        colors = intArrayOf(barelyColor, barelyColor)
+    }
+}
+
 internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null): GradientDrawable {
     return GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE

@@ -23,7 +23,6 @@ import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.reactiveScope
-import com.lightningkite.kiteui.utils.fitInsideBox
 import com.lightningkite.kiteui.views.*
 
 @ViewModifierDsl3
@@ -226,151 +225,96 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
+    val Int.measureSpecMode get() = MeasureSpec.getMode(this)
+    val Int.measureSpecSize get() = MeasureSpec.getSize(this)
+    fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
+        if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
+        when (measureSpecMode) {
+            MeasureSpec.UNSPECIFIED -> MeasureSpec.AT_MOST
+            MeasureSpec.EXACTLY -> MeasureSpec.EXACTLY
+            MeasureSpec.AT_MOST -> MeasureSpec.AT_MOST
+            else -> 0
+        }
+    )
+
+    fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
+        if (measureSpecMode == MeasureSpec.UNSPECIFIED) value
+        else value.coerceAtMost(this.measureSpecSize),
+//        value,
+        MeasureSpec.EXACTLY
+    )
+
+    fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
+        var out = this
+        set?.let { out = out.measureSpecConstrainSet(it) }
+        max?.let { out = out.measureSpecConstrainMax(it) }
+        return out
+    }
+
+    infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
+        MeasureSpec.getSize(this) + value,
+        MeasureSpec.getMode(this)
+    )
+
+    val Int.measureSpecString: String get() = when(measureSpecMode) {
+        MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
+        MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
+        MeasureSpec.AT_MOST -> "AT_MOST $measureSpecSize"
+        else -> "??? $measureSpecSize"
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(widthMeasureSpec) - paddingLeft - paddingRight,
-            MeasureSpec.getMode(widthMeasureSpec)
-        )
-        val heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(heightMeasureSpec) - paddingTop - paddingBottom,
-            MeasureSpec.getMode(heightMeasureSpec)
-        )
         val f = getChildAt(0)
-        fun preprocess(baseSpec: Int, min: Int?, max: Int?, set: Int?): Int {
-            var out = baseSpec
-            when (MeasureSpec.getMode(baseSpec)) {
-                MeasureSpec.UNSPECIFIED -> {
-                    max?.let {
-                        out = MeasureSpec.makeMeasureSpec(it, MeasureSpec.AT_MOST)
-                    }
-                    set?.let {
-                        out = MeasureSpec.makeMeasureSpec(it, MeasureSpec.AT_MOST)
-                    }
-                }
-
-                MeasureSpec.EXACTLY -> {
-                    val value = MeasureSpec.getSize(baseSpec)
-                    out = MeasureSpec.makeMeasureSpec(
-                        value.let {
-                            set?.let { limit ->
-                                it.coerceAtMost(limit)
-                            } ?: it
-                        }.let {
-                            max?.let { limit ->
-                                it.coerceAtMost(limit)
-                            } ?: it
-                        },
-                        MeasureSpec.EXACTLY
-                    )
-                }
-
-                MeasureSpec.AT_MOST -> {
-                    val value = MeasureSpec.getSize(baseSpec)
-                    out = MeasureSpec.makeMeasureSpec(
-                        value.let {
-                            set?.let { limit ->
-                                it.coerceAtMost(limit)
-                            } ?: it
-                        }.let {
-                            max?.let { limit ->
-                                it.coerceAtMost(limit)
-                            } ?: it
-                        },
-                        MeasureSpec.AT_MOST
-                    )
-                }
-            }
-            return out
-        }
-        f.measure(
-            preprocess(
-                widthMeasureSpec,
-                constraints.minWidth?.value?.toInt(),
-                constraints.maxWidth?.value?.toInt(),
-                constraints.width?.value?.toInt()
-            ),
-            preprocess(
-                heightMeasureSpec,
-                constraints.minHeight?.value?.toInt(),
-                constraints.maxHeight?.value?.toInt(),
-                constraints.height?.value?.toInt()
-            )
-        )
-        fun postprocess(originalSpec: Int, baseSpec: Int, min: Int?, max: Int?, set: Int?): Int {
-            val measuredSize = MeasureSpec.getSize(baseSpec)
-            val outerRulesSize = MeasureSpec.getSize(originalSpec)
-
-            var outMode = MeasureSpec.getMode(baseSpec)
-            var outSize = measuredSize
-
-            set?.let {
-                outSize = outSize.coerceAtLeast(it)
-            }
-
-            when (MeasureSpec.getMode(originalSpec)) {
-                MeasureSpec.EXACTLY -> {
-                    outMode = MeasureSpec.EXACTLY
-                    outSize = outSize.coerceAtMost(outerRulesSize)
-                }
-
-                MeasureSpec.AT_MOST -> {
-                    if (outMode == MeasureSpec.EXACTLY) {
-                        outSize = outSize.coerceAtMost(outerRulesSize)
-                    } else {
-                        outMode = MeasureSpec.AT_MOST
-                        outSize = outSize.coerceAtMost(outerRulesSize)
-                    }
-                }
-            }
-
-            min?.let {
-                outSize = outSize.coerceAtLeast(it)
-            }
-            max?.let {
-                outSize = outSize.coerceAtMost(it)
-                if (outMode == MeasureSpec.UNSPECIFIED) {
-                    outMode = MeasureSpec.AT_MOST
-                }
-            }
-            return MeasureSpec.makeMeasureSpec(outSize, outMode)
-        }
-
-        var processedWidthSpec = postprocess(
-            widthMeasureSpec,
-            f.measuredWidth.let {
-                MeasureSpec.makeMeasureSpec(
-                    MeasureSpec.getSize(it) + paddingLeft + paddingRight,
-                    MeasureSpec.getMode(it)
-                )
-            },
-            constraints.minWidth?.value?.toInt(),
-            constraints.maxWidth?.value?.toInt(),
-            constraints.width?.value?.toInt()
-        )
-        var processedHeightSpec = postprocess(
-            heightMeasureSpec,
-            f.measuredHeight.let {
-                MeasureSpec.makeMeasureSpec(
-                    MeasureSpec.getSize(it) + paddingTop + paddingBottom,
-                    MeasureSpec.getMode(it)
-                )
-            },
-            constraints.minHeight?.value?.toInt(),
-            constraints.maxHeight?.value?.toInt(),
-            constraints.height?.value?.toInt()
-        )
-
+        f.minimumWidth = constraints.minWidth?.value?.toInt() ?: 0
+        f.minimumHeight = constraints.minHeight?.value?.toInt() ?: 0
+//        println("$f widthMeasureSpec: ${widthMeasureSpec.measureSpecString} / ${heightMeasureSpec.measureSpecString}")
+        var widthMeasureSpec2 = widthMeasureSpec.measureSpecConstrain(
+            min = constraints.minWidth?.value?.toInt(),
+            max = constraints.maxWidth?.value?.toInt(),
+            set = constraints.width?.value?.toInt()
+        ).measureSpecPlus(-paddingLeft - paddingRight)
+        var heightMeasureSpec2 = heightMeasureSpec.measureSpecConstrain(
+            min = constraints.minHeight?.value?.toInt(),
+            max = constraints.maxHeight?.value?.toInt(),
+            set = constraints.height?.value?.toInt()
+        ).measureSpecPlus(-paddingTop - paddingBottom)
+//        println("$f widthMeasureSpec2: ${widthMeasureSpec2.measureSpecString} / ${heightMeasureSpec2.measureSpecString}")
+        val xConstrained = widthMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
+        val yConstrained = heightMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
         constraints.aspectRatio?.let { aspectRatio ->
-            aspectRatio.fitInsideBox(
-                MeasureSpec.getSize(processedWidthSpec).toDouble(),
-                MeasureSpec.getSize(processedHeightSpec).toDouble(),
-            ).let { innerBox ->
-                processedWidthSpec = MeasureSpec.makeMeasureSpec(innerBox.first.toInt(), MeasureSpec.EXACTLY)
-                processedHeightSpec = MeasureSpec.makeMeasureSpec(innerBox.second.toInt(), MeasureSpec.EXACTLY)
+            if (xConstrained && !yConstrained) {
+                heightMeasureSpec2 = MeasureSpec.makeMeasureSpec(
+                    (widthMeasureSpec2 / aspectRatio).toInt(),
+                    MeasureSpec.EXACTLY,
+                )
+            } else if (!xConstrained && yConstrained) {
+                widthMeasureSpec2 = MeasureSpec.makeMeasureSpec(
+                    (heightMeasureSpec2 * aspectRatio).toInt(),
+                    MeasureSpec.EXACTLY,
+                )
             }
         }
-
-        setMeasuredDimension(processedWidthSpec, processedHeightSpec)
+//        println("$f widthMeasureSpec3: ${widthMeasureSpec2.measureSpecString} / ${heightMeasureSpec2.measureSpecString}")
+        f.measure(
+            widthMeasureSpec2,
+            heightMeasureSpec2,
+        )
+//        println("$f inner: ${f.measuredWidth} / ${f.measuredHeight}")
+        var mWidth = (f.measuredWidth + paddingLeft + paddingRight)
+        var mHeight = (f.measuredHeight + paddingTop + paddingBottom)
+//        println("$f mWidth: ${mWidth} / ${mHeight}")
+        constraints.aspectRatio?.let { aspectRatio ->
+            if (xConstrained && !yConstrained) {
+                mHeight = (mWidth / aspectRatio).toInt()
+            } else if (!xConstrained && yConstrained) {
+                mHeight = (mHeight * aspectRatio).toInt()
+            }
+        }
+//        println("$f mWidth2: ${mWidth} / ${mHeight}")
+        setMeasuredDimension(
+            mWidth,
+            mHeight,
+        )
     }
 
     init {
