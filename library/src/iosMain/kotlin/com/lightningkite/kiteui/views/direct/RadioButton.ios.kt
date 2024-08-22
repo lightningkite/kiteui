@@ -33,7 +33,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
             ).withBack
         }
         icon(Icon.done, "") {
-            ::visible.invoke { checked.await() }
+            ::visible.invoke { checked() }
         }
     }
 

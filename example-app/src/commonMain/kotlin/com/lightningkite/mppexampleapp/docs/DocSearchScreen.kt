@@ -49,21 +49,21 @@ object DocSearchScreen : Screen {
                 expanding - recyclerView {
                     children(shared {
                         docsPages().mapNotNull {
-                            val q = query.await()
-                            if(q.isBlank()) return@mapNotNull it to it().covers
+                            val q = query()
+                            if (q.isBlank()) return@mapNotNull it to it().covers
                             val matchingTerms = it().covers.filter { term ->
                                 q.split(' ').all { part -> term.contains(part, ignoreCase = true) }
                             }
-                            if(matchingTerms.isEmpty()) return@mapNotNull null
+                            if (matchingTerms.isEmpty()) return@mapNotNull null
                             it to matchingTerms
                         }
                     }) {
                         card - link {
-                            ::to { it.await().first }
+                            ::to { it().first }
                             col {
                                 spacing = 0.25.rem
-                                text { ::content { it.await().first().title.await() } }
-                                subtext { ::content { it.await().second.joinToString() }}
+                                text { ::content { it().first().title() } }
+                                subtext { ::content { it().second.joinToString() }}
                             }
                         }
                     }

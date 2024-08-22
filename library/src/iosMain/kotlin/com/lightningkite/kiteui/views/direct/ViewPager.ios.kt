@@ -15,7 +15,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         forceCentering = true
         elementsMatchSize = true
     }
-    val newViews = NewViewWriter(context)
+    val newViews = NewViewWriter(this, context)
 
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -58,7 +58,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             }
         )
         reactiveScope {
-            native.data = items.await().asIndexed()
+            native.data = items().asIndexed()
         }
     }
 

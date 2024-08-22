@@ -158,11 +158,11 @@ object LayoutExamplesScreen : Screen {
                 scrollsHorizontally - row {
                     forEachUpdating(
                         shared {
-                            (1..(countString.await().toIntOrNull()
+                            (1..(countString().toIntOrNull()
                                 ?: 1).coerceAtMost(100)).map { "Item $it" }
                         }
                     ) {
-                        text { ::content.invoke { it.await() } }
+                        text { ::content.invoke { it() } }
                     }
                 }
                 label {
@@ -183,25 +183,25 @@ object LayoutExamplesScreen : Screen {
                 run {
                     val amount = 20
                     gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
+                        text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
                     gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
+                        text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
                     gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
+                        text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }
                 run {
                     val amount = 40
                     gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
+                        text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
                     gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
+                        text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
                     gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - stack {
-                        text { ::content { if(text.await()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
+                        text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }
             }
@@ -234,33 +234,33 @@ object LayoutExamplesScreen : Screen {
                     checkbox { checked bind showExtra }
                     text("Show extra view")
                 }
-                onlyWhen { showExtra.await() } - text("Showing an extra view!")
+                onlyWhen { showExtra() } - text("Showing an extra view!")
                 card - row {
                     spacing = 0.rem
                     text("0.0")
                     important - text("X")
-                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    onlyWhen { showExtra() } - stack { important - text("X") }
                     stack { important - text("X") }
                 }
                 card - row {
                     spacing = 0.5.rem
                     text("0.5")
                     important - text("X")
-                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    onlyWhen { showExtra() } - stack { important - text("X") }
                     stack { important - text("X") }
                 }
                 card - row {
                     spacing = 1.rem
                     text("1.0")
                     important - text("X")
-                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    onlyWhen { showExtra() } - stack { important - text("X") }
                     stack { important - text("X") }
                 }
                 card - row {
                     spacing = 2.rem
                     text("2.0")
                     important - text("X")
-                    onlyWhen { showExtra.await() } - stack { important - text("X") }
+                    onlyWhen { showExtra() } - stack { important - text("X") }
                     stack { important - text("X") }
                 }
                 card - button {

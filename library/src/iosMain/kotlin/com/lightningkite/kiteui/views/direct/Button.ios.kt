@@ -10,7 +10,7 @@ actual class Button actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton(this)
     init {
         activityIndicator {
-            ::opacity.invoke { if (this@Button.working.await()) 1.0 else 0.0 }
+            ::opacity.invoke { if (this@Button.working()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }
     }

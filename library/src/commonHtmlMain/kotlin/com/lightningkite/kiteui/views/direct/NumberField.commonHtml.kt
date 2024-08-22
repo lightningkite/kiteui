@@ -25,7 +25,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
                     },
                     setSelectionRange = {start, end, -> setSelectionRange(start, end)}
                 )
-                invokeAll()
+                invokeAllListeners()
             }
         }
 

@@ -12,20 +12,20 @@ fun ViewWriter.navLayout(
     appIcon: Icon = Icon.star,
     appLogo: ImageSource = Icon.star.toImageSource(Color.gray),
     navItems: List<NavElement>,
-    currentUser: ReactiveContext<*>.() -> UserInfo?,
+    currentUser: ReactiveContext.() -> UserInfo?,
     additionalSetup: CalculationContext.()->Unit
 ) {
 
 }
 
-fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext<*>.() -> List<NavElement>) {
+fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
     row {
-        ::exists { show.await() && !SoftInputOpen.await() }
+        ::exists { show() && !SoftInputOpen() }
         navGroupTabs(shared { navElements() }) {}
     } 
 }
 
-fun ViewWriter.navSideBar(navElements: ReactiveContext<*>.() -> List<NavElement>) {
+fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 }
 

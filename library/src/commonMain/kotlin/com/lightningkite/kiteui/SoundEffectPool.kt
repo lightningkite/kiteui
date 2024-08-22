@@ -33,7 +33,7 @@ interface PlayableAudio {
     }
 }
 
-fun RView.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: ReactiveContext<*>.() -> Boolean) {
+fun RView.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: ReactiveContext.() -> Boolean) {
     // TODO
 //    val backgroundAudioShared = asyncGlobal {
 //        audio.load().apply { volume = backgroundVolume }

@@ -17,10 +17,10 @@ class LazyProperty<T>(
     private val stopListeningWhenOverridden: Boolean = true,
     private val useLastWhileLoading: Boolean = false,
     private val debug: Console? = null,
-    initialValue: ReactiveContext<*>.() -> T
+    initialValue: ReactiveContext.() -> T
 ): Writable<T> {
 
-    private val shared = SharedReadable(useLastWhileLoading = useLastWhileLoading, initialValue)
+    private val shared = SharedReadable(useLastWhileLoading = useLastWhileLoading, action = initialValue)
 
     private val listeners = ArrayList<() -> Unit>()
     override fun addListener(listener: () -> Unit): () -> Unit {

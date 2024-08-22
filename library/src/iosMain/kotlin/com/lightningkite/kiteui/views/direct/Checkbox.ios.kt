@@ -32,7 +32,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
             ).withBack
         }
         icon(Icon.done, "") {
-            ::visible.invoke { checked.await() }
+            ::visible.invoke { checked() }
         }
     }
 

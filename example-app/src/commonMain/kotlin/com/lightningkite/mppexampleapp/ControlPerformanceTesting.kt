@@ -24,7 +24,7 @@ object ControlPerformanceTesting : Screen {
     }
     val bindMode = Property(BindMode.Reactive)
 
-    operator inline fun <V> KMutableProperty0<V>.invoke(default: V, crossinline actionToCalculate: ReactiveContext<*>.()->V) {
+    operator inline fun <V> KMutableProperty0<V>.invoke(default: V, crossinline actionToCalculate: ReactiveContext.()->V) {
         when(bindMode.value) {
             BindMode.None -> {}
             BindMode.Instant -> {
@@ -159,32 +159,32 @@ object ControlPerformanceTesting : Screen {
                             println(x.text())
                         }; text {
                         content = "Sample"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     card - button {
                         onClick { delay(1000L) }; text {
                         content = "Card"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     important - button {
                         onClick { delay(1000L) }; text {
                         content = "Important"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     critical - button {
                         onClick { delay(1000L) }; text {
                         content = "Critical"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     warning - button {
                         onClick { delay(1000L) }; text {
                         content = "Warning"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     danger - button {
                         onClick { delay(1000L) }; text {
                         content = "Danger"
-                    }; (::enabled)(false) { booleanContent.await() }
+                    }; (::enabled)(false) { booleanContent() }
                     }
                     expanding - space {}
                 } in scrollsHorizontally
@@ -428,7 +428,7 @@ object ControlPerformanceTesting : Screen {
             col {
                 val date = Property<LocalDate?>(null)
                 h2 { content = "Date Fields" }
-                text { (::content)("Set without bind") { date.await()?.renderToString() ?: "Not Selected" } }
+                text { (::content)("Set without bind") { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
@@ -442,7 +442,7 @@ object ControlPerformanceTesting : Screen {
             col {
                 val date = Property<LocalTime?>(null)
                 h2 { content = "Time Fields" }
-                text { (::content)("Set without bind") { date.await()?.renderToString() ?: "Not Selected" } }
+                text { (::content)("Set without bind") { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time }
@@ -456,7 +456,7 @@ object ControlPerformanceTesting : Screen {
             col {
                 val date = Property<LocalDateTime?>(null)
                 h2 { content = "Date Time Fields" }
-                text { (::content)("Set without bind") { date.await()?.renderToString() ?: "Not Selected" } }
+                text { (::content)("Set without bind") { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
@@ -470,7 +470,7 @@ object ControlPerformanceTesting : Screen {
             col {
                 val number = Property<Double?>(1.0)
                 h2 { content = "Number Fields" }
-                text { (::content)("Set without bind") { "Value: ${number.await()}" } }
+                text { (::content)("Set without bind") { "Value: ${number()}" } }
                 numberField { content bind number }
                 numberField { content bind number } in card
                 numberField { content bind number } in important
@@ -481,7 +481,7 @@ object ControlPerformanceTesting : Screen {
                 val number = Property(1)
                 val text = Property("text")
                 h2 { content = "Text Fields" }
-                text { (::content)("Set without bind") { "Text: ${text.await()}" } }
+                text { (::content)("Set without bind") { "Text: ${text()}" } }
                 textField { content bind text }
                 textField { content bind text } in card
                 textField { content bind text } in important

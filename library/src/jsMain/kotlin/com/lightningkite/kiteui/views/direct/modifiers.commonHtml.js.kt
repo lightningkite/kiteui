@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 internal actual fun RView.nativeAnimateHideBinding(
     default: Boolean,
-    condition: ReactiveContext<*>.() -> Boolean
+    condition: ReactiveContext.() -> Boolean
 ) {
     native.attributes.hidden = !default
     var last = !default

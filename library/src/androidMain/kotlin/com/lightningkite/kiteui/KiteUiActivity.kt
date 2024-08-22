@@ -22,13 +22,13 @@ import io.ktor.http.*
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: ReactiveContext<*>.() -> Theme get() = { Theme.placeholder }
+    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
     abstract val mainNavigator : ScreenNavigator
 
     lateinit var root: RView
-    val viewWriter = object: ViewWriter() {
+    val viewWriter: ViewWriter = object: ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
         override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
             root = view

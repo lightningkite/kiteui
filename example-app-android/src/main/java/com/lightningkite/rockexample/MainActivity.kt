@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
@@ -40,6 +41,6 @@ class MainActivity : KiteUiActivity() {
         }
     }
 
-    override val theme: suspend () -> Theme
-        get() = { appTheme.await() }
+    override val theme: ReactiveContext.() -> Theme
+        get() = { appTheme() }
 }

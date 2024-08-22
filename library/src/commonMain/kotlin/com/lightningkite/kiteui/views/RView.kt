@@ -44,7 +44,7 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
-abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     var additionalTestingData: Any? = null
 
     var opacity: Double = 1.0

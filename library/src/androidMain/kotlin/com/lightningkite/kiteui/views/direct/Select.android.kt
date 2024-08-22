@@ -76,7 +76,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                     return convertView
                 } else {
                     var newView: RView? = null
-                    val w = object: ViewWriter() {
+                    val w = object: ViewWriter(), CalculationContext by this@Select {
                         override val context: RContext
                             get() = this@Select.context
 
@@ -116,20 +116,20 @@ actual class Select actual constructor(context: RContext): RView(context) {
             }
         }
         reactiveScope {
-            list = data.await()
+            list = data()
             adapter.notifyDataSetChanged()
             val currentlySelected = edits.awaitOnce()
             val index = list.indexOf(currentlySelected)
-            if(index != -1 && !suppressChange) {
+            if (index != -1 && !suppressChange) {
                 suppressChange = true
                 native.setSelection(index)
                 suppressChange = false
             }
         }
         reactiveScope {
-            val currentlySelected = edits.await()
+            val currentlySelected = edits()
             val index = list.indexOf(currentlySelected)
-            if(index != -1 && !suppressChange) {
+            if (index != -1 && !suppressChange) {
                 suppressChange = true
                 native.setSelection(index)
                 suppressChange = false

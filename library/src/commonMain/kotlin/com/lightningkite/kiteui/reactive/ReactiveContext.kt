@@ -1,93 +1,77 @@
+@file:OptIn(InternalKiteUi::class)
+
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.printStackTrace2
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlin.coroutines.cancellation.CancellationException
+import kotlin.coroutines.CoroutineContext
 
-class ReactiveContext<T>(
-    val context: CalculationContext,
-    val scheduled: Boolean = false,
-    val onLoad: (() -> Unit)? = null,
-    val action: ReactiveContext<T>.() -> T
-) : CalculationContext by context {
-    private var slow = false
-    var lastResult: ReadableState<T> = ReadableState.notReady
+abstract class ReactiveContext : CalculationContext {
+    var log: Console? = null
+    // Dependency management
+    var active = false
+        private set
+    private val dependencies = ArrayList<Pair<Any, () -> Unit>>()
+    private val usedDependencies = ArrayList<Any?>()
+    abstract val rerun: () -> Unit
 
-    companion object {
-        internal var queue = ArrayList<ReactiveContext<*>>()
-        fun runScheduled() {
-            val old = queue
-            queue = ArrayList()
-            old.forEach { it.run() }
-        }
-    }
-
-    var running = false
-    val dependencies = ArrayList<Pair<Any, () -> Unit>>()
-    val usedDependencies = ArrayList<Any?>()
-    val rerun = { ->
-        if (scheduled) queue.add(this)
-        else run()
-        Unit
-    }
-
-    fun rerunOn(listenable: Listenable) {
-        if (existingDependency(listenable) != null) return
-        dependencies += listenable to listenable.addListener(rerun)
-    }
-
-    private fun existingDependency(listenable: Any): Any? {
+    @Suppress("UNCHECKED_CAST")
+    fun <T> existingDependency(listenable: T): T? {
         usedDependencies.add(listenable)
         if (dependencies.size > usedDependencies.size) {
             val maybe = dependencies[usedDependencies.size].first
-            if (maybe == listenable) return maybe
+            if (maybe == listenable) return maybe as T
         }
-        return dependencies.find { it.first == listenable }?.first
+        return dependencies.find { it.first == listenable }?.first as? T
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> async(vararg dependencies: Any?, action: suspend () -> T): T {
-        val key = setOf(*dependencies)
-        val calc = SuspendCalculation<T>(key)
-        (existingDependency(calc) as? SuspendCalculation<T>)?.let {
-            return it.invoke()
+    fun registerDependency(any: Any, remove: () -> Unit) {
+        this.dependencies += any to remove
+        log?.log("Registered dependency on $any")
+    }
+
+    protected fun runStart() {
+        active = true
+        usedDependencies.clear()
+        log?.log("Run start")
+    }
+
+    protected fun runComplete() {
+        log?.log("Run complete")
+        val iter = dependencies.iterator()
+        while (iter.hasNext()) {
+            val entry = iter.next()
+            if (entry.first !in usedDependencies) {
+                log?.log("Dependency on ${entry?.first} no longer used")
+                entry.second()
+                iter.remove()
+            }
         }
-        this.context.launch {
-            calc.state = readableState { action() }
-        }
-        this.dependencies += calc to calc.addListener(rerun)
-        return calc.state.handle(
-            success = { it },
-            exception = { throw it },
-            notReady = { throw ReactiveLoading }
-        )
+    }
+
+    protected open fun cancel() {
+        active = false
+        dependencies.forEach { it.second() }
+        dependencies.clear()
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // Everything after this point only uses public API from above.
+    // Eventually, this should use context receivers.  However, that's not stable yet.
+    //////////////////////////////////////////////////////////////////////////////////
+
+    // Operators for standard reactive tools
+    fun rerunOn(listenable: Listenable) {
+        if (existingDependency(listenable) != null) return
+        registerDependency(listenable, listenable.addListener(rerun))
     }
 
     operator fun <R> Readable<R>.invoke(): R {
         if (existingDependency(this) == null) {
-            dependencies += (this to this.addListener(rerun))
-            // The shortcut below isn't valid because you can try/catch stuff!
-//            dependencies += this to this.addListener {
-//                this.state.handle(
-//                    success = {
-//                        if (scheduled) queue.add(this@ReactiveContext)
-//                        else run()
-//                        Unit
-//                    },
-//                    exception = {
-//                        // shortcut
-//                        @Suppress("UNCHECKED_CAST")
-//                        setResult(this.state as ReadableState<T>)
-//                    },
-//                    notReady = {
-//                        setResult(ReadableState.notReady)
-//                    }
-//                )
-//            }
+            registerDependency(this, addListener(rerun))
         }
         return state.handle(
             success = { it },
@@ -106,7 +90,7 @@ class ReactiveContext<T>(
                 remover()
                 rerun()
             }
-            dependencies += key to { remover() }
+            registerDependency(key, remover)
         }
         return state.handle(
             success = { it },
@@ -115,9 +99,66 @@ class ReactiveContext<T>(
         )
     }
 
-    operator fun <T> (ReactiveContext<*>.() -> T).invoke(): T = invoke(this@ReactiveContext)
+    // Hack: fixes compiler weirdness around lambdas with 'this'
+    inline operator fun <T> (ReactiveContext.() -> T).invoke(): T = invoke(this@ReactiveContext)
+    inline operator fun <A, T> (ReactiveContext.(A) -> T).invoke(a: A): T = invoke(this@ReactiveContext, a)
+    inline operator fun <A, B, T> (ReactiveContext.(A, B) -> T).invoke(a: A, b: B): T = invoke(this@ReactiveContext, a, b)
+
+    @Deprecated("Just use the invoke operator", ReplaceWith("this()"))
     fun <T> Readable<T>.await(): T = invoke()
+    @Deprecated("Just use the once function", ReplaceWith("this.once()"))
     fun <T> Readable<T>.awaitOnce(): T = once()
+
+
+    // Suspending calculations
+
+    private class SuspendCalculation<T>(val key: Any) : BaseReadable<T>() {
+        override var state: ReadableState<T>
+            get() = super.state
+            public set(value) {
+                super.state = value
+            }
+
+        override fun equals(other: Any?): Boolean = other is SuspendCalculation<*> && other.key == key
+        override fun hashCode(): Int = key.hashCode() + 1
+        override fun toString(): String = "SuspendCalculation($key)"
+    }
+
+    fun <T> async(vararg dependencies: Any?, action: suspend () -> T): T {
+        val key = setOf(*dependencies)
+        val calc = SuspendCalculation<T>(key)
+        existingDependency(calc)?.let {
+            return it.invoke()
+        }
+        launch {
+            calc.state = readableState { action() }
+        }
+        registerDependency(calc, calc.addListener(rerun))
+        return calc.state.handle(
+            success = { it },
+            exception = { throw it },
+            notReady = { throw ReactiveLoading }
+        )
+    }
+
+    operator fun <T> Deferred<T>.invoke(): T {
+        val calc = SuspendCalculation<T>(this)
+        existingDependency(calc)?.let {
+            return it.invoke()
+        }
+        launch {
+            calc.state = readableState { this@invoke.await() }
+        }
+        registerDependency(calc, calc.addListener(rerun))
+        return calc.state.handle(
+            success = { it },
+            exception = { throw it },
+            notReady = { throw ReactiveLoading }
+        )
+    }
+
+
+    // Flows
 
     private class FlowLoader<T>(val flow: Flow<T>) {
         var state: ReadableState<T> = ReadableState.notReady
@@ -127,14 +168,12 @@ class ReactiveContext<T>(
     }
 
     operator fun <T> Flow<T>.invoke(): T {
-        usedDependencies += this
         val new = FlowLoader(this)
 
-        @Suppress("UNCHECKED_CAST")
-        val existing = existingDependency(new) as? FlowLoader<T>
+        val existing = existingDependency(new)
         if (existing == null) {
             var job: Job? = null
-            dependencies += new to { job?.cancel() }
+            registerDependency(new, { job?.cancel() })
             job = CoroutineScope(coroutineContext).launch {
                 collect { v ->
                     try {
@@ -155,30 +194,46 @@ class ReactiveContext<T>(
             )
         }
     }
+}
 
-    internal fun complete() {
-        val iter = dependencies.iterator()
-        while (iter.hasNext()) {
-            val entry = iter.next()
-            if (entry.first !in usedDependencies) {
-                entry.second()
-                iter.remove()
-            }
+@InternalKiteUi
+class DirectReactiveContext<T> constructor(
+    val context: CalculationContext,
+    val scheduled: Boolean = false,
+    val onLoad: (() -> Unit)? = null,
+    val action: DirectReactiveContext<T>.() -> T
+) : ReactiveContext() {
+    private var slow = false
+    var lastResult: ReadableState<T> = ReadableState.notReady
+
+    override val coroutineContext: CoroutineContext get() = context.coroutineContext
+    override val requireMainThread: Boolean get() = context.requireMainThread
+
+    companion object {
+        internal var queue = HashSet<DirectReactiveContext<*>>()
+        fun runScheduled() {
+            val old = queue
+            queue = HashSet()
+            old.forEach { it.start() }
         }
     }
 
-    fun run() {
-        running = true
-        usedDependencies.clear()
-        setResult(readableState { action(this) })
-        val iter = dependencies.iterator()
-        while (iter.hasNext()) {
-            val entry = iter.next()
-            if (entry.first !in usedDependencies) {
-                entry.second()
-                iter.remove()
-            }
+    override val rerun: () -> Unit = when {
+        scheduled -> { -> queue.add(this) }
+        context.requireMainThread -> { -> onMainThread { runInternal() } }
+        else -> { -> runInternal() }
+    }
+    fun start() {
+        if(context.requireMainThread) onMainThread {
+            runInternal()
+        } else {
+            runInternal()
         }
+    }
+    fun runInternal() {
+        runStart()
+        setResult(readableState { action(this@DirectReactiveContext) })
+        runComplete()
     }
 
     fun setResult(state: ReadableState<T>) {
@@ -211,114 +266,27 @@ class ReactiveContext<T>(
         lastResult = readableState { action(this) }
     }
 
-    init {
-        context.onRemove {
-            running = false
-            if (scheduled) queue.remove(this)
-            dependencies.forEach { it.second() }
-            dependencies.clear()
-        }
+    init { context.onRemove { cancel() } }
+    override fun cancel() {
+        super.cancel()
+        if (scheduled) queue.remove(this)
     }
 }
 
-fun <T> shared(action: ReactiveContext<*>.() -> T): Readable<T> {
-    return SharedReadable(action = action)
+fun CalculationContext.reactive(action: ReactiveContext.() -> Unit) {
+    DirectReactiveContext(this, scheduled = false, action = action).start()
 }
 
-class SharedReadable<T>(useLastWhileLoading: Boolean = false, private val action: ReactiveContext<T>.() -> T) :
-    Readable<T>, CalculationContext {
-
-    private var job = Job()
-    override val coroutineContext =
-        Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-            if (throwable !is CancellationException) {
-                throwable.printStackTrace2()
-            }
-        }
-
-    private fun cancel() {
-        job.cancel()
-        job = Job()
-    }
-
-    override fun notifyStart() {
-        super.notifyStart()
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    override fun notifyComplete(result: Result<Unit>) {
-        super.notifyComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        super.notifyLongComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    private val scope = ReactiveContext(this, scheduled = false, action = action)
-    override val state: ReadableState<T>
-        get() {
-            if (!scope.running) scope.runOnceWhileDead()
-            return scope.lastResult
-        }
-    private var lastNotified: ReadableState<T> = ReadableState.notReady
-    val listeners = ArrayList<() -> Unit>()
-    override fun addListener(listener: () -> Unit): () -> Unit {
-        if (listeners.size == 0) {
-            scope.run()
-        }
-        listeners.add(listener)
-        return {
-            val pos = listeners.indexOfFirst { it === listener }
-            if (pos != -1) {
-                listeners.removeAt(pos)
-            }
-            if (listeners.size == 0) {
-                cancel()
-            }
-        }
-    }
+fun CalculationContext.reactive(onLoad: () -> Unit, action: ReactiveContext.() -> Unit) {
+    DirectReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).start()
 }
 
-fun CalculationContext.reactiveScope(action: ReactiveContext<Unit>.() -> Unit) {
-    ReactiveContext(this, scheduled = false, action = action).run()
+fun CalculationContext.reactiveScope(action: ReactiveContext.() -> Unit) {
+    DirectReactiveContext(this, scheduled = false, action = action).start()
 }
 
-fun CalculationContext.reactiveScope(onLoad: () -> Unit, action: ReactiveContext<Unit>.() -> Unit) {
-    ReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).run()
-}
-
-private inline fun <T> readableState(action: () -> T): ReadableState<T> {
-    try {
-        return ReadableState(action())
-    } catch (e: ReactiveLoading) {
-        return ReadableState.notReady
-    } catch (e: Exception) {
-        return ReadableState.exception(e)
-    }
-}
-
-private class SuspendCalculation<T>(val key: Any) : BaseReadable<T>() {
-    override var state: ReadableState<T>
-        get() = super.state
-        public set(value) {
-            super.state = value
-        }
-
-    override fun equals(other: Any?): Boolean = other is SuspendCalculation<*> && other.key == key
-    override fun hashCode(): Int = key.hashCode() + 1
-    val uses get() = listeners.size
-    override fun toString(): String = "SuspendCalculation($key)"
+fun CalculationContext.reactiveScope(onLoad: () -> Unit, action: ReactiveContext.() -> Unit) {
+    DirectReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).start()
 }
 
 object ReactiveLoading : Throwable()

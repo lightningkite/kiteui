@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.render
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.direct.stack
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -23,7 +24,7 @@ class LayoutTest {
 
         val s = LayoutsTestScreen()
 
-        override val theme: ReactiveContext<*>.() -> Theme = { Theme(id = "unitTest") }
+        override val theme: ReactiveContext.() -> Theme = { Theme(id = "unitTest") }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)

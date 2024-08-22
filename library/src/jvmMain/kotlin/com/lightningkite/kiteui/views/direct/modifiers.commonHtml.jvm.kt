@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.hidden
 
 internal actual fun RView.nativeAnimateHideBinding(
     default: Boolean,
-    condition: ReactiveContext<*>.() -> Boolean
+    condition: ReactiveContext.() -> Boolean
 ) {
     native.attributes.hidden = !default
     reactiveScope {

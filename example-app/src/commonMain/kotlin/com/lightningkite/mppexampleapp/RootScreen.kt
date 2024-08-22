@@ -39,7 +39,7 @@ object RootScreen : Screen {
                     to = screen
                     row {
                         text {
-                            ::content{ screen().title.await() }
+                            ::content{ screen().title() }
 //                            content  = screen.toString()
                         } in weight(1f)
                         icon(Icon.chevronRight, "Open")
@@ -81,7 +81,7 @@ object RootScreen : Screen {
                         to = screen
                         row {
                             text {
-                                ::content{ screen().title.await() }
+                                ::content{ screen().title() }
 //                            content  = screen.toString()
                             } in weight(1f)
                             icon(Icon.chevronRight, "Open")

@@ -33,7 +33,7 @@ expect fun ViewWriter.textPopover(message: String): ViewWrapper
 @ViewModifierDsl3
 expect fun ViewWriter.weight(amount: Float): ViewWrapper
 @ViewModifierDsl3
-expect fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper
+expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper
 @ViewModifierDsl3
 expect fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper
 @ViewModifierDsl3
@@ -79,7 +79,7 @@ fun ViewWriter.sizeConstraints(
     height = height
 ))
 @ViewModifierDsl3
-expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper
+expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper
 @ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.")
 val ViewWriter.marginless: ViewWrapper get() = ViewWrapper
@@ -98,4 +98,4 @@ val ViewWriter.unpadded: ViewWrapper get() {
 val ViewWriter.withDefaultPadding: ViewWrapper get() = padded
 
 @ViewModifierDsl3
-expect fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext<*>.()->Boolean): ViewWrapper
+expect fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext.()->Boolean): ViewWrapper

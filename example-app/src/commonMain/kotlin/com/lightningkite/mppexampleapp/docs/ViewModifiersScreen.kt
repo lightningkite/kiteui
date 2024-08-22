@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -283,10 +284,10 @@ object ViewModifiersScreen : DocScreen {
             ) {
                 col {
                     important - toggleButton {
-                        text { reactiveScope { content = if(condition.await()) "Hide" else "Show" } }
+                        text { reactiveScope { content = if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    text("Show Text Only When Toggled") in onlyWhen(condition = { condition.await() })
+                    text("Show Text Only When Toggled") in onlyWhen(condition = { condition() })
                 }
             }
         }

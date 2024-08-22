@@ -47,7 +47,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -181,11 +181,11 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     wrapNextIn(object : RView(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
-                this.constraints = constraints()
+                this@apply.constraints = constraints()
             }
         }
     })
@@ -377,7 +377,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)

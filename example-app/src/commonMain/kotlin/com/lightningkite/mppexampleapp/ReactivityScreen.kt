@@ -68,9 +68,9 @@ object ReactivityScreen : Screen {
 
             col {
                 h2 { content = "Using reactiveScope()" }
-                text { reactiveScope { content = local.await() } }
-                text { reactiveScope { content = persist.await() } }
-                text { reactiveScope { content = fetching.await() } }
+                text { reactiveScope { content = local() } }
+                text { reactiveScope { content = persist() } }
+                text { reactiveScope { content = fetching() } }
             } in card
 
             col {
@@ -82,9 +82,9 @@ object ReactivityScreen : Screen {
 
             col {
                 h2 { content = "Using ::content {}" }
-                text { ::content { local.await() } }
-                text { ::content { persist.await() } }
-                text { ::content { fetching.await() } }
+                text { ::content { local() } }
+                text { ::content { persist() } }
+                text { ::content { fetching() } }
             } in card
         }
     }

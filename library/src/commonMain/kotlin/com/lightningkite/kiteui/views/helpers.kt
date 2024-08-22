@@ -24,7 +24,7 @@ import kotlin.math.min
 @ViewModifierDsl3 fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
-fun ViewWriter.icon(icon: ReactiveContext<*>.()->Icon, description: String, setup: IconView.()->Unit = {}) {
+fun ViewWriter.icon(icon: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
     icon {
         ::source { icon() }
         this.description = description

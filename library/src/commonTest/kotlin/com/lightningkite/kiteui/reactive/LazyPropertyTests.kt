@@ -9,11 +9,11 @@ class LazyPropertySharedBehaviorTests {
     @Test
     fun sharedPassesNulls() {
         val a = LateInitProperty<Int?>()
-        val b = LazyProperty { a.await() }
+        val b = LazyProperty { a() }
         var hits = 0
         testContext {
             reactiveScope {
-                b.await()
+                b()
                 hits++
             }
             assertEquals(0, hits)
@@ -26,11 +26,11 @@ class LazyPropertySharedBehaviorTests {
 
     @Test fun sharedDoesNotEmitSameValue() {
         val a = LateInitProperty<Int?>()
-        val b = LazyProperty { a.await() }
+        val b = LazyProperty { a() }
         var hits = 0
         testContext {
             reactiveScope {
-                b.await()
+                b()
                 hits++
             }
             assertEquals(0, hits)
@@ -64,17 +64,17 @@ class LazyPropertySharedBehaviorTests {
         val property = Property(1)
         val a = LazyProperty {
             hits++
-            property.await()
+            property()
         }
         testContext {
             reactiveScope {
-                a.await()
+                a()
             }
             launch {
                 a.await()
             }
             reactiveScope {
-                a.await()
+                a()
             }
             assertEquals(1, hits)
 
@@ -88,13 +88,13 @@ class LazyPropertySharedBehaviorTests {
 
         testContext {
             reactiveScope {
-                a.await()
+                a()
             }
             launch {
                 a.await()
             }
             reactiveScope {
-                a.await()
+                a()
             }
         }.cancel()
         assertEquals(3, hits)
@@ -106,7 +106,7 @@ class LazyPropertySharedBehaviorTests {
         var hits = 0
         val a = LazyProperty {
             starts++
-            val r = late.await()
+            val r = late()
             hits++
             r
         }
@@ -131,7 +131,7 @@ class LazyPropertyTests {
         val late = LateInitProperty<Int>()
         val test = LazyProperty {
             println("In initial value")
-            late.await()
+            late()
         }
         testContext {
             test.addListener {  }
@@ -151,7 +151,7 @@ class LazyPropertyTests {
         val prop = Property(1)
         val test = LazyProperty {
             hits++
-            prop.await()
+            prop()
         }
         testContext {
             assertEquals(0, hits)
@@ -177,7 +177,7 @@ class LazyPropertyTests {
         val prop = Property(1)
         val test = LazyProperty {
             hits++
-            prop.await()
+            prop()
         }
         testContext {
             assertEquals(0, hits)
@@ -207,7 +207,7 @@ class LazyPropertyTests {
     @Test fun useLastWhileLoadingWorks() {
         val late = LateInitProperty<Int>()
         val test = LazyProperty(useLastWhileLoading = true) {
-            late.await()
+            late()
         }
 
         testContext {
@@ -235,10 +235,10 @@ class LazyPropertyTests {
     @Test fun keepsListeningIfTold() {
         var hits = 0
         val prop = Property(0)
-        val test = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot.tag("keepListening")) {
+        val test = LazyProperty(stopListeningWhenOverridden = false) {
             println("Calculation")
             hits++
-            prop.await()
+            prop()
         }
 
         testContext {

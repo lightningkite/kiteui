@@ -31,11 +31,11 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
 }
 
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-fun UIViewController.setup(themeCalculation: ReactiveContext<*>.() -> Theme, app: ViewWriter.() -> Unit) {
+fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
     UIView.setAnimationsEnabled(false)
 
-    val writer = object : ViewWriter() {
+    val writer = object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
         override val context: RContext = RContext(this@setup)
         override fun addChild(view: RView) {
             this@setup.view.addSubview(view.native)

@@ -60,10 +60,10 @@ object HorizontalRecyclerViewScreen : Screen {
                                 else if (it() % 7 == 0) HoverSemantic
                                 else null
                             }
-                            expanding - centered - text { ::content { "Item ${it.await()}" } }
+                            expanding - centered - text { ::content { "Item ${it()}" } }
                             centered - button {
                                 text {
-                                    ::content { if (expanded.await() == it.await()) "Expanded" else "Expand" }
+                                    ::content { if (expanded() == it()) "Expanded" else "Expand" }
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
@@ -71,7 +71,7 @@ object HorizontalRecyclerViewScreen : Screen {
                                 }
                             }
                         }
-                        lazyExpanding(shared { expanded.await() == it.await() }) {
+                        lazyExpanding(shared { expanded() == it() }) {
                             row {
                                 text("More Content")
                             }
@@ -82,7 +82,7 @@ object HorizontalRecyclerViewScreen : Screen {
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex.await()}, Max: ${recyclerView!!.lastVisibleIndex.await()}"
+                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
                     }
                 }
             }

@@ -93,32 +93,32 @@ object ControlsScreen : Screen {
                             println(x.text())
                         }; text {
                         content = "Sample"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     card - button {
                         onClick { delay(1000L) }; text {
                         content = "Card"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     important - button {
                         onClick { delay(1000L) }; text {
                         content = "Important"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     critical - button {
                         onClick { delay(1000L) }; text {
                         content = "Critical"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     warning - button {
                         onClick { delay(1000L) }; text {
                         content = "Warning"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     danger - button {
                         onClick { delay(1000L) }; text {
                         content = "Danger"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     expanding - space {}
                 } in scrollsHorizontally
@@ -362,7 +362,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDate?>(null)
                 h2 { content = "Date Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
@@ -376,7 +376,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalTime?>(null)
                 h2 { content = "Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time }
@@ -390,7 +390,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDateTime?>(null)
                 h2 { content = "Date Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
@@ -404,7 +404,7 @@ object ControlsScreen : Screen {
             col {
                 val number = Property<Double?>(1.0)
                 h2 { content = "Number Fields" }
-                text { ::content { "Value: ${number.await()}" } }
+                text { ::content { "Value: ${number()}" } }
                 fieldTheme - numberField { content bind number }
                 fieldTheme - numberField { content bind number } in card
                 fieldTheme - numberField { content bind number } in important
@@ -415,7 +415,7 @@ object ControlsScreen : Screen {
                 val number = Property(1)
                 val text = Property("text")
                 h2 { content = "Text Fields" }
-                text { ::content { "Text: ${text.await()}" } }
+                text { ::content { "Text: ${text()}" } }
                 fieldTheme - textField { content bind text }
                 fieldTheme - textField { content bind text } in card
                 fieldTheme - textField { content bind text } in important

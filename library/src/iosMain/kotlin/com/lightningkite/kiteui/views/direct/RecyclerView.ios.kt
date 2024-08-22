@@ -21,7 +21,7 @@ import kotlin.native.ref.WeakReference
 
 @OptIn(ExperimentalNativeApi::class)
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {
-    val newViews = NewViewWriter(context)
+    val newViews = NewViewWriter(this, context)
     override val native = NRecyclerView()
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -58,7 +58,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             }
         )
         reactiveScope {
-            native.data = items.await().asIndexed()
+            native.data = items().asIndexed()
         }
     }
 

@@ -12,7 +12,7 @@ fun <V> HtmlElementLike.vprop(
     return object : ImmediateWritable<V>, BaseListenable() {
         init {
             addEventListener(eventName) {
-                invokeAll()
+                invokeAllListeners()
             }
         }
 
@@ -21,7 +21,7 @@ fun <V> HtmlElementLike.vprop(
             set(value) { set(this@vprop, value) }
         override suspend fun set(value: V) {
             set(this@vprop, value)
-            invokeAll()
+            invokeAllListeners()
         }
     }
 }

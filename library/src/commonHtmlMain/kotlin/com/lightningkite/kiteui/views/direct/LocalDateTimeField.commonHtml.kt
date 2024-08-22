@@ -24,7 +24,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
     actual val content: ImmediateWritable<LocalDateTime?> = object : ImmediateWritable<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                invokeAll()
+                invokeAllListeners()
             }
         }
 
@@ -90,7 +90,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
     actual val content: ImmediateWritable<LocalDate?> = object : ImmediateWritable<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                invokeAll()
+                invokeAllListeners()
             }
         }
 
@@ -158,7 +158,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
     actual val content: ImmediateWritable<LocalTime?> = object : ImmediateWritable<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                invokeAll()
+                invokeAllListeners()
             }
         }
         override var value: LocalTime?

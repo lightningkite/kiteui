@@ -24,7 +24,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         controller?.let(action) ?: onController.add(action)
     }
 
-    private val newViews = NewViewWriter(context)
+    private val newViews = NewViewWriter(this, context)
 
     init {
         native.tag = "div"
@@ -76,7 +76,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 }
             )
             reactiveScope {
-                controller.data = items.await().asIndexed()
+                controller.data = items().asIndexed()
             }
         }
     }

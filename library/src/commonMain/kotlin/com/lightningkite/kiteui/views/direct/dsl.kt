@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
@@ -71,7 +72,7 @@ inline fun ViewWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): Z
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ZoomableImageView(context) , setup)
 }
-class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
+class Label(val label: TextView, val container: RowOrCol): ViewWriter(), CalculationContext by container {
     override val context: RContext
         get() = container.context
     override fun addChild(view: RView) {

@@ -128,7 +128,7 @@ val ViewWriter.navSpacing: ViewWrapper
     }
 
 
-fun RView.dynamicTheme(calculate: ReactiveContext<*>.() -> ThemeDerivation?) {
+fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     val existing = themeChoice
     reactiveScope {
         themeChoice = existing + (calculate() ?: ThemeDerivation.none)

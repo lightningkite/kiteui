@@ -33,7 +33,7 @@ object FormsScreen : Screen {
                         content = propName
                     }
                     text {
-                        ::content { prop.await() }
+                        ::content { prop() }
                     }
                 }
             }
@@ -82,7 +82,7 @@ object FormsScreen : Screen {
                                 },
                                 viewer = {}
                             )
-                        ) + (if(lp.await()) {
+                        ) + (if (lp()) {
                             listOf(
                                 leafExample("Paperwork Entry"),
                             )
@@ -106,12 +106,12 @@ fun ViewWriter.renderForm(section: FormSection) {
         titleSetup = { content = section.title },
         content = {
             col {
-                forEach(shared(section.subsections)) {
+                forEach(shared(action = section.subsections)) {
                     renderForm(it)
                 }
             }
             col {
-                forEach(shared(section.leaves)) {
+                forEach(shared(action = section.leaves)) {
                     it.editor(this)
                 }
             }
@@ -124,12 +124,12 @@ fun ViewWriter.renderFormReadOnly(section: FormSection) {
         titleSetup = { content = section.title },
         content = {
             col {
-                forEach(shared(section.subsections)) {
+                forEach(shared(action = section.subsections)) {
                     renderFormReadOnly(it)
                 }
             }
             col {
-                forEach(shared(section.leaves)) {
+                forEach(shared(action = section.leaves)) {
                     it.viewer(this)
                 }
             }
@@ -152,9 +152,9 @@ data class FormSection(
     val title: String,
     val icon: Icon? = null,
     val helperText: String? = null,
-    val directIssues: ReactiveContext<*>.() -> List<FormIssue> = { listOf() },
-    val leaves: ReactiveContext<*>.() -> List<FormLeaf> = { listOf() },
-    val subsections: ReactiveContext<*>.() -> List<FormSection> = { listOf() },
+    val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
+    val leaves: ReactiveContext.() -> List<FormLeaf> = { listOf() },
+    val subsections: ReactiveContext.() -> List<FormSection> = { listOf() },
 ) {
     override fun toString(): String = title
 }
@@ -164,7 +164,7 @@ data class FormLeaf(
     val icon: Icon? = null,
     val helperText: String? = null,
     val directWorkSize: Int = 1,
-    val directIssues: ReactiveContext<*>.() -> List<FormIssue> = { listOf() },
+    val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
     val editor: ViewWriter.() -> Unit,
     val viewer: ViewWriter.() -> Unit,
 ) {

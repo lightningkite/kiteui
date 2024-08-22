@@ -39,7 +39,7 @@ object PerformanceTestScreen : Screen {
                 forEach(items) {
                     row {
                         icon { source = Icon.add }
-                        text { ::content { property.await().toString() } }
+                        text { ::content { property().toString() } }
                     }
                 }
             }

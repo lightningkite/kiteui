@@ -127,8 +127,8 @@ fun retryWebsocket(
         init {
             var starting = false
             reactiveScope {
-                val shouldBeOn = shouldBeOn.await()
-                val isOn = connected.await()
+                val shouldBeOn = shouldBeOn()
+                val isOn = connected()
                 if (shouldBeOn && !isOn && !starting) {
                     starting = true
                     launch {

@@ -20,7 +20,7 @@ fun ViewWriter.navGroupColumn(
 
 private fun RView.selectedIfRouteMatches(it: NavLink) {
     dynamicTheme {
-        val matchingScreen = mainScreenNavigator.currentScreen.await()
+        val matchingScreen = mainScreenNavigator.currentScreen()
             ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(
             it.destination.invoke(this)()
         )?.urlLikePath?.segments

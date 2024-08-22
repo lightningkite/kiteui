@@ -13,10 +13,10 @@ object WebSocketScreen : Screen {
         val socket = shared {
             retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/", 30_000L).also { use(it) }
         }
-        val mostRecent = shared { socket.await().mostRecentMessage }
+        val mostRecent = shared { socket().mostRecentMessage }
         col {
             h1 { content = "WS time!" }
-            text { ::content { mostRecent.await().await() ?: "Nothing yet" } }
+            text { ::content { mostRecent()() ?: "Nothing yet" } }
             button {
                 text("Send junk")
                 onClick {
@@ -32,10 +32,10 @@ object WebSocketScreen : Screen {
                 }
             }
             reactiveScope {
-                println("mostRecent.await(): ${mostRecent.await()}")
+                println("mostRecent.await(): ${mostRecent()}")
             }
             reactiveScope {
-                println("mostRecent.await().await(): ${mostRecent.await().await()}")
+                println("mostRecent.await().await(): ${mostRecent()()}")
             }
         }
     }

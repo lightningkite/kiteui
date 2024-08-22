@@ -523,18 +523,18 @@ enum class KeyboardCase { None, Letters, Words, Sentences }
 enum class KeyboardType { Text, Integer, Phone, Decimal, Email }
 
 sealed interface NavElement {
-    val title: ReactiveContext<*>.() -> String
-    val icon: ReactiveContext<*>.() -> Icon
-    val count: (ReactiveContext<*>.() -> Int?)?
-    val hidden: (ReactiveContext<*>.() -> Boolean)?
+    val title: ReactiveContext.() -> String
+    val icon: ReactiveContext.() -> Icon
+    val count: (ReactiveContext.() -> Int?)?
+    val hidden: (ReactiveContext.() -> Boolean)?
 }
 
 data class NavGroup(
-    override val title: ReactiveContext<*>.() -> String,
-    override val icon: ReactiveContext<*>.() -> Icon,
-    override val count: (ReactiveContext<*>.() -> Int?)? = null,
-    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
-    val children: ReactiveContext<*>.() -> List<NavElement>,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val children: ReactiveContext.() -> List<NavElement>,
 ) : NavElement {
     constructor(title: String, icon: Icon, children: List<NavElement> = listOf()) : this(
         { title },
@@ -548,11 +548,11 @@ data class NavGroup(
 typealias NavItem = NavLink
 
 data class NavLink(
-    override val title: ReactiveContext<*>.() -> String,
-    override val icon: ReactiveContext<*>.() -> Icon,
-    override val count: (ReactiveContext<*>.() -> Int?)? = null,
-    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
-    val destination: ReactiveContext<*>.() -> () -> Screen,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val destination: ReactiveContext.() -> () -> Screen,
 ) : NavElement {
     constructor(title: String, icon: Icon, destination: () -> Screen) : this(
         { title },
@@ -565,26 +565,26 @@ data class NavLink(
 typealias ExternalNav = NavExternal
 
 data class NavExternal(
-    override val title: ReactiveContext<*>.() -> String,
-    override val icon: ReactiveContext<*>.() -> Icon,
-    override val count: (ReactiveContext<*>.() -> Int?)? = null,
-    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
-    val to: ReactiveContext<*>.() -> String,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val to: ReactiveContext.() -> String,
 ) : NavElement
 
 data class NavAction(
-    override val title: ReactiveContext<*>.() -> String,
-    override val icon: ReactiveContext<*>.() -> Icon,
-    override val count: (ReactiveContext<*>.() -> Int?)? = null,
-    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
     val onSelect: suspend () -> Unit,
 ) : NavElement
 
 data class NavCustom(
-    override val title: ReactiveContext<*>.() -> String = { "" },
-    override val icon: ReactiveContext<*>.() -> Icon = { Icon.moreHoriz },
-    override val count: (ReactiveContext<*>.() -> Int?)? = null,
-    override val hidden: (ReactiveContext<*>.() -> Boolean)? = { false },
+    override val title: ReactiveContext.() -> String = { "" },
+    override val icon: ReactiveContext.() -> Icon = { Icon.moreHoriz },
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
     val square: ViewWriter.() -> Unit,
     val long: ViewWriter.() -> Unit = square,
     val tall: ViewWriter.() -> Unit = square,

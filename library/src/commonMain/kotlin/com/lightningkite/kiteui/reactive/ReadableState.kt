@@ -1,45 +1,47 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.jvm.JvmInline
 
+@OptIn(InternalKiteUi::class)
 @JvmInline
 value class ReadableState<out T>(val raw: T) {
-    inline val ready: Boolean get() = raw !is NotReady
-    inline val success: Boolean get() = ready && raw !is ThrownException
+    inline val ready: Boolean get() = raw !is InternalReadableNotReady
+    inline val success: Boolean get() = ready && raw !is InternalReadableThrownException
     inline fun <R> onSuccess(action: (T)->R): R? {
-        if(raw is NotReady) return null
-        if(raw is ThrownException) return null
+        if(raw is InternalReadableNotReady) return null
+        if(raw is InternalReadableThrownException) return null
         @Suppress("UNCHECKED_CAST")
-        if(raw is ReadableWrapper__INTERNAL<*>) return action(raw.other as T)
+        if(raw is InternalReadableWrapper<*>) return action(raw.other as T)
         return action(raw)
     }
-    inline val exception: Exception? get() = (raw as? ThrownException)?.exception
+    inline val exception: Exception? get() = (raw as? InternalReadableThrownException)?.exception
     inline fun get(): T {
-        if(raw is NotReady) throw NotReadyException()
-        if(raw is ThrownException) throw raw.exception
+        if(raw is InternalReadableNotReady) throw NotReadyException()
+        if(raw is InternalReadableThrownException) throw raw.exception
         @Suppress("UNCHECKED_CAST")
-        if(raw is ReadableWrapper__INTERNAL<*>) return raw.other as T
+        if(raw is InternalReadableWrapper<*>) return raw.other as T
         return raw
     }
     inline fun getOrNull(): T? {
-        if(raw is NotReady) return null
-        if(raw is ThrownException) return null
+        if(raw is InternalReadableNotReady) return null
+        if(raw is InternalReadableThrownException) return null
         @Suppress("UNCHECKED_CAST")
-        if(raw is ReadableWrapper__INTERNAL<*>) return raw.other as T
+        if(raw is InternalReadableWrapper<*>) return raw.other as T
         return raw
     }
     companion object {
         @Suppress("UNCHECKED_CAST")
-        val notReady: ReadableState<Nothing> = ReadableState<Any?>(NotReady) as ReadableState<Nothing>
+        val notReady: ReadableState<Nothing> = ReadableState<Any?>(InternalReadableNotReady) as ReadableState<Nothing>
         @Suppress("UNCHECKED_CAST")
-        fun <T> exception(exception: Exception) = ReadableState<Any?>(ThrownException(exception)) as ReadableState<T>
+        fun <T> exception(exception: Exception) = ReadableState<Any?>(InternalReadableThrownException(exception)) as ReadableState<T>
         @Suppress("UNCHECKED_CAST")
-        fun <T> wrap(value: T) = ReadableState<Any?>(ReadableWrapper__INTERNAL(value)) as ReadableState<T>
+        fun <T> wrap(value: T) = ReadableState<Any?>(InternalReadableWrapper(value)) as ReadableState<T>
     }
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
-        if(raw is NotReady || raw is ThrownException) return this as ReadableState<B>
-        if(raw is ReadableWrapper__INTERNAL<*>) try {
+        if(raw is InternalReadableNotReady || raw is InternalReadableThrownException) return this as ReadableState<B>
+        if(raw is InternalReadableWrapper<*>) try {
             return ReadableState(mapper(raw.other as T))
         } catch(e: Exception) {
             return exception(e)
@@ -57,20 +59,30 @@ value class ReadableState<out T>(val raw: T) {
         notReady: ()->R
     ): R {
         return when(raw) {
-            NotReady -> notReady()
-            is ThrownException -> exception(raw.exception)
+            InternalReadableNotReady -> notReady()
+            is InternalReadableThrownException -> exception(raw.exception)
             else -> success(raw)
         }
     }
     fun asResult(): Result<T> = handle(success = { Result.success(it) }, exception = { Result.failure(it) }, notReady = { Result.failure(NotReadyException()) })
 
     override fun toString(): String = when(raw) {
-        is NotReady -> "NotReady"
-        is ThrownException -> "ThrownException(${raw.exception})"
-        is ReadableWrapper__INTERNAL<*> -> "ReadyW($raw)"
+        is InternalReadableNotReady -> "NotReady"
+        is InternalReadableThrownException -> "ThrownException(${raw.exception})"
+        is InternalReadableWrapper<*> -> "ReadyW($raw)"
         else -> "Ready($raw)"
     }
 }
-data class ReadableWrapper__INTERNAL<T>(val other: T)
-data class ThrownException(val exception: Exception)
-object NotReady
+@InternalKiteUi data class InternalReadableWrapper<T>(val other: T)
+@InternalKiteUi data class InternalReadableThrownException(val exception: Exception)
+@InternalKiteUi object InternalReadableNotReady
+
+inline fun <T> readableState(action: () -> T): ReadableState<T> {
+    return try {
+        ReadableState(action())
+    } catch (e: ReactiveLoading) {
+        ReadableState.notReady
+    } catch (e: Exception) {
+        ReadableState.exception(e)
+    }
+}

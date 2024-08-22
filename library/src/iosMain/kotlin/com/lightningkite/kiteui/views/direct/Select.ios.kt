@@ -33,10 +33,10 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
             init {
                 reactiveScope {
-                    list = data.await()
+                    list = data()
                     picker.reloadAllComponents()
                 }
-                reactiveScope { textField.text = render(edits.await()) }
+                reactiveScope { textField.text = render(edits()) }
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L

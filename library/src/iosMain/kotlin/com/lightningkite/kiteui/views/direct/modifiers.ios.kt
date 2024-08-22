@@ -97,7 +97,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
         calculationContext.reactiveScope {
             native.extensionWeight = amount()
@@ -150,7 +150,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
@@ -162,7 +162,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.()
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         exists = default
         ::exists.invoke(condition)

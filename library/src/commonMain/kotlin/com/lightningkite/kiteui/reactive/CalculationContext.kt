@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -12,6 +9,8 @@ import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KMutableProperty0
 
 interface CalculationContext: CoroutineScope {
+    @OptIn(ExperimentalStdlibApi::class)
+    val requireMainThread: Boolean get() = coroutineContext[CoroutineDispatcher.Key] is MainCoroutineDispatcher
     fun notifyStart() {}
     fun notifyLongComplete(result: Result<Unit>) {
         notifyComplete(result)
@@ -79,11 +78,11 @@ object CalculationContextStack {
 annotation class ReactiveB
 
 @ReactiveB
-inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext<*>.() -> T) = CalculationContextStack.current().reactiveScope {
+inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
     this@invoke(actionToCalculate(this))
 }
 
 @ReactiveB
-inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext<*>.() -> T) = CalculationContextStack.current().reactiveScope {
+inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
     this@invoke.set(actionToCalculate(this))
 }

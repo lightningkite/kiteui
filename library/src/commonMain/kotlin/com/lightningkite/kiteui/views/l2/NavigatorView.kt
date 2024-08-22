@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
@@ -21,7 +22,7 @@ fun ViewWriter.navigatorView(navigator: ScreenNavigator) {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { n.currentScreen.await() },
+            current = { n.currentScreen<Screen?>() },
             views = { screen ->
                 with(split()) {
                     this.screenNavigator = n
@@ -48,7 +49,7 @@ fun ViewWriter.navigatorViewDialog() {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { n.currentScreen.await() },
+            current = { n.currentScreen<Screen?>() },
             views = { screen ->
                 with(split()) {
                     this.screenNavigator = n

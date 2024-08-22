@@ -2,19 +2,22 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.Dispatchers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SharedTest {
+class SharedSuspendingTest {
     @Test
     fun sharedPassesNulls() {
         val a = LateInitProperty<Int?>()
-        val b = shared { a() }
+        val b = sharedSuspending(Dispatchers.Unconfined) { a() }
         var hits = 0
         testContext {
-            reactiveScope {
+            reactiveSuspending {
+                Exception("Calculating...").printStackTrace()
                 b()
                 hits++
+                println("Calculated")
             }
             assertEquals(0, hits)
             a.value = null
@@ -26,10 +29,10 @@ class SharedTest {
 
     @Test fun sharedDoesNotEmitSameValue() {
         val a = LateInitProperty<Int?>()
-        val b = shared { a() }
+        val b = sharedSuspending(Dispatchers.Unconfined) { a() }
         var hits = 0
         testContext {
-            reactiveScope {
+            reactiveSuspending {
                 b()
                 hits++
             }
@@ -44,14 +47,14 @@ class SharedTest {
     @Test fun sharedTerminatesWhenNoOneIsListening() {
         var onRemoveCalled = 0
         var scopeCalled = 0
-        val shared = shared {
+        val sharedSuspending = sharedSuspending(Dispatchers.Unconfined) {
             scopeCalled++
             onRemove { onRemoveCalled++ }
             42
         }
         assertEquals(0, scopeCalled)
         assertEquals(0, onRemoveCalled)
-        val removeListener = shared.addListener {  }
+        val removeListener = sharedSuspending.addListener {  }
         assertEquals(1, scopeCalled)
         assertEquals(0, onRemoveCalled)
         removeListener()
@@ -62,18 +65,18 @@ class SharedTest {
     @Test fun sharedSharesCalculations() {
         var hits = 0
         val property = Property(1)
-        val a = shared {
+        val a = sharedSuspending(Dispatchers.Unconfined) {
             hits++
             property()
         }
         testContext {
-            reactiveScope {
+            reactiveSuspending {
                 a()
             }
             launch {
                 a.await()
             }
-            reactiveScope {
+            reactiveSuspending {
                 a()
             }
             assertEquals(1, hits)
@@ -87,13 +90,13 @@ class SharedTest {
         assertEquals(2, hits)
 
         testContext {
-            reactiveScope {
+            reactiveSuspending {
                 a()
             }
             launch {
                 a.await()
             }
-            reactiveScope {
+            reactiveSuspending {
                 a()
             }
         }.cancel()
@@ -104,7 +107,7 @@ class SharedTest {
         val late = LateInitProperty<Int>()
         var starts = 0
         var hits = 0
-        val a = shared {
+        val a = sharedSuspending(Dispatchers.Unconfined) {
             starts++
             val r = late()
             hits++

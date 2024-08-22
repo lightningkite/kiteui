@@ -96,3 +96,9 @@ fun Double.commaString(): String {
     val postDecimal = clean.substringAfter('.', "")
     return if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
 }
+fun Int.commaString(): String {
+    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+}
+fun Long.commaString(): String {
+    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+}

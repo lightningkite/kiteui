@@ -86,7 +86,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext<*>.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
@@ -166,7 +166,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
         reactiveScope {
@@ -202,7 +202,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext<*>.()
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
 //    // TODO: include old animation code
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
@@ -222,4 +222,4 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext<*>.(
     return ViewWrapper
 }
 
-internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: ReactiveContext<*>.() -> Boolean)
+internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: ReactiveContext.() -> Boolean)

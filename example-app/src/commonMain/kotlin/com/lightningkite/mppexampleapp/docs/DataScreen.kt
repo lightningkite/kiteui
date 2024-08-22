@@ -44,7 +44,7 @@ object DataScreen: DocScreen {
                 }
                 """.trimIndent()) {
                 text {
-                    reactiveScope { content = "The current counter value is ${counter.await()}" }
+                    reactiveScope { content = "The current counter value is ${counter()}" }
                 }
             }
 

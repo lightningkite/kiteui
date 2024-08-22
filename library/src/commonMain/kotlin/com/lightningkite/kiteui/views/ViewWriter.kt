@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
 import com.lightningkite.kiteui.reactive.CalculationContextStack.start
 import com.lightningkite.kiteui.reactive.reactiveScope
@@ -11,12 +12,12 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter {
+abstract class ViewWriter: CalculationContext {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
-    fun split(): ViewWriter = object : ViewWriter() {
+    fun split(): ViewWriter = object : ViewWriter(), CalculationContext by this {
         override val context: RContext = this@ViewWriter.context.split()
         override fun addChild(view: RView) {
             this@ViewWriter.addChild(view)
@@ -135,7 +136,7 @@ abstract class ViewWriter {
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
 }
 
-class NewViewWriter(override val context: RContext) : ViewWriter() {
+class NewViewWriter(val calculationContext: CalculationContext, override val context: RContext) : ViewWriter(), CalculationContext by calculationContext {
     var newView: RView? = null
     override fun addChild(view: RView) {
         newView = view

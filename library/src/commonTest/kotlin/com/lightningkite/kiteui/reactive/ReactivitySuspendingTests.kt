@@ -3,8 +3,6 @@ package com.lightningkite.kiteui.reactive
 import com.lightningkite.kiteui.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -13,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ReactivityTests {
+class ReactivitySuspendingTests {
     @Test fun testAsync() {
 
         var cont: Continuation<String>? = null
@@ -38,8 +36,8 @@ class ReactivityTests {
         val property = Property<Int?>(null)
         val emissions = ArrayList<Int>()
         testContext {
-            reactiveScope {
-                emissions.add(property.waitForNotNull())
+            reactiveSuspending {
+                emissions.add(property.waitForNotNull.await())
             }
             repeat(10) {
                 property.value = null
@@ -53,9 +51,9 @@ class ReactivityTests {
         testContext {
             val a = Property(0)
             var received = -1
-            DirectReactiveContext(this, action = {
+            reactiveSuspending {
                 received = a()
-            }).start()
+            }
             assertEquals(a.value, received)
             a.value++
             assertEquals(a.value, received)
@@ -84,7 +82,7 @@ class ReactivityTests {
     @Test fun sharedShutdownTest() {
         var onRemoveCalled = 0
         var scopeCalled = 0
-        val shared = shared(Dispatchers.Unconfined) {
+        val shared = sharedSuspending(Dispatchers.Unconfined) {
             scopeCalled++
             onRemove { onRemoveCalled++ }
             42
@@ -104,8 +102,8 @@ class ReactivityTests {
         val b = Property(2)
 
         testContext {
-            reactiveScope {
-                println("Got ${a() + b()}")
+            reactiveSuspending {
+                println("Got ${a.await() + b.await()}")
             }
         }
         println("Done.")
@@ -113,17 +111,17 @@ class ReactivityTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = shared(Dispatchers.Unconfined) { println("CALC a"); a() }
-        val c = shared(Dispatchers.Unconfined) { println("CALC b"); b() }
+        val b = sharedSuspending(Dispatchers.Unconfined) { println("CALC a"); a.await() }
+        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
         var hits = 0
 
         testContext {
-            reactiveScope {
-                println("#1 Got ${c()}")
+            reactiveSuspending {
+                println("#1 Got ${c.await()}")
                 hits++
             }
-            reactiveScope {
-                println("#2 Got ${c()}")
+            reactiveSuspending {
+                println("#2 Got ${c.await()}")
                 hits++
             }
             assertEquals(2, hits)
@@ -142,8 +140,8 @@ class ReactivityTests {
                 println("launch ${a.await()}")
                 hits++
             }
-            reactiveScope {
-                println("scope ${a()}")
+            reactiveSuspending {
+                println("scope ${a.await()}")
                 hits++
             }
 
@@ -160,18 +158,18 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
-        val c = shared(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a() + b() }
+        val c = sharedSuspending(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a.await() + b.await() }
         println("$c: c")
         var dInvocations = 0
-        val d = shared(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c() + c() }
+        val d = sharedSuspending(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c.await() + c.await() }
         println("$d: d")
         var eInvocations = 0
-        val e = shared(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d() / 2 }
+        val e = sharedSuspending(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
         println("$e: e")
 
         testContext {
-            reactiveScope {
-                e()
+            reactiveSuspending {
+                e.await()
             }
             assertEquals(1, cInvocations)
             assertEquals(1, dInvocations)
@@ -194,18 +192,18 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
-        val c = shared(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a() + b() }
+        val c = sharedSuspending(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a.await() + b.await() }
         println("$c: c")
         var dInvocations = 0
-        val d = shared(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c() + b() }
+        val d = sharedSuspending(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c.await() + b.await() }
         println("$d: d")
         var eInvocations = 0
-        val e = shared(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d() / 2 }
+        val e = sharedSuspending(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
         println("$e: e")
 
         testContext {
-            reactiveScope {
-                e()
+            reactiveSuspending {
+                e.await()
             }
             assertEquals(1, cInvocations)
             assertEquals(1, dInvocations)
@@ -225,11 +223,11 @@ class ReactivityTests {
 
     @Test fun sharedTest3() {
         val a = VirtualDelay { 1 }
-        val c = SharedReadable(Dispatchers.Unconfined) { async { a.await() } }
-        val d = SharedReadable(Dispatchers.Unconfined) { c() }
+        val c = sharedSuspending(Dispatchers.Unconfined) { a.await() }
+        val d = sharedSuspending(Dispatchers.Unconfined) { c.await() }
         testContext {
             launch { println("launch got " + d.await()) }
-            reactiveScope { println("reactiveScope got " + d()) }
+            reactiveSuspending { println("reactiveScope got " + d.await()) }
             println("Ready... GO!")
             a.go()
         }
@@ -237,10 +235,10 @@ class ReactivityTests {
 
     @Test fun sharedTest4() {
         val property = LateInitProperty<LateInitProperty<Int>>()
-        val shared = shared(Dispatchers.Unconfined) { property()() }
+        val shared = sharedSuspending(Dispatchers.Unconfined) { property.await().await() }
         var completions = 0
         testContext {
-            reactiveScope { println("reactiveScope got " + shared()); completions++ }
+            reactiveSuspending { println("reactiveScope got " + shared.await()); completions++ }
             launch { println("launch got " + shared.await()); completions++ }
             println("Ready... GO!")
             val lp2 = LateInitProperty<Int>()
@@ -252,7 +250,7 @@ class ReactivityTests {
 
     @Test fun sharedTest5() {
         val property = LateInitProperty<Int>()
-        val shared = shared(Dispatchers.Unconfined) { property() }
+        val shared = sharedSuspending(Dispatchers.Unconfined) { property.await() }
         var completions = 0
         testContext {
             launch { println("launchA got " + shared.await()); completions++ }
@@ -265,10 +263,10 @@ class ReactivityTests {
 
     @Test fun websocketLikeTest() {
         val source = LateInitProperty<LateInitProperty<String>>()
-        val socket = shared(Dispatchers.Unconfined) { source() }
-        val sublistener = shared(Dispatchers.Unconfined) { socket()() }
+        val socket = sharedSuspending(Dispatchers.Unconfined) { source.await() }
+        val sublistener = sharedSuspending(Dispatchers.Unconfined) { socket.await().await() }
         testContext {
-            reactiveScope { println(sublistener()) }
+            reactiveSuspending { println(sublistener.await()) }
             println("Ready")
             val s2 = LateInitProperty<String>()
             source.value = s2
@@ -278,12 +276,36 @@ class ReactivityTests {
         }
     }
 
+    @Test fun scopeSkippedIfLoading() {
+        val source = LateInitProperty<Int>()
+        var starts = 0
+        var hits = 0
+        testContext {
+            reactiveSuspending {
+                starts++
+                source()
+                hits++
+            }
+            assertEquals(1, starts)
+            assertEquals(0, hits)
+            source.value = 1
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.unset()
+            assertEquals(1, starts)
+            assertEquals(1, hits)
+            source.value = 2
+            assertEquals(2, starts)
+            assertEquals(2, hits)
+        }
+    }
+
     @Test fun bindTest() {
         val master = LateInitProperty<Int>()
         val secondary = Property<Int>(0)
         testContext {
-            reactiveScope { println("master: ${master()}") }
-            reactiveScope { println("secondary: ${secondary()}") }
+            reactiveSuspending { println("master: ${master()}") }
+            reactiveSuspending { println("secondary: ${secondary()}") }
             secondary bind master
             secondary.value = 1
             master.value = 5
@@ -295,93 +317,8 @@ class ReactivityTests {
         val listItem = LateInitProperty<Int>()
         val selected = Property<Int>(0)
         testContext {
-            reactiveScope { println(listItem() == selected()) }
+            reactiveSuspending { println(listItem() == selected()) }
             listItem.value = 1
         }
     }
-
-    @Test fun flowtest() {
-        testContext {
-            val flow = MutableStateFlow(0)
-            reactiveScope {
-                println(flow())
-            }
-            repeat(5) { flow.value = it }
-        }
-    }
-}
-
-class VirtualDelay<T>(val action: () -> T) {
-    val continuations = ArrayList<Continuation<T>>()
-    var value: T? = null
-    var ready: Boolean = false
-    suspend fun await(): T {
-        if(ready) return value as T
-        return suspendCoroutineCancellable {
-            continuations.add(it)
-            return@suspendCoroutineCancellable {}
-        }
-    }
-    fun clear() {
-        ready = false
-    }
-    fun go() {
-        val value = action()
-        this.value = value
-        ready = true
-        for(continuation in continuations) {
-            continuation.resume(value)
-        }
-        continuations.clear()
-    }
-}
-
-class VirtualDelayer() {
-    val continuations = ArrayList<Continuation<Unit>>()
-    suspend fun await(): Unit {
-        return suspendCoroutineCancellable {
-            continuations.add(it)
-            return@suspendCoroutineCancellable {}
-        }
-    }
-    fun go() {
-        for(continuation in continuations) {
-            continuation.resume(Unit)
-        }
-        continuations.clear()
-    }
-}
-
-fun testContext(action: CalculationContext.()->Unit): Job {
-    var error: Throwable? = null
-    val job = Job()
-    var numOutstandingContracts = 0
-    with(object: CalculationContext {
-        override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined
-
-        override fun notifyLongComplete(result: Result<Unit>) {
-            numOutstandingContracts--
-            println("Long load complete")
-        }
-
-        override fun notifyStart() {
-            numOutstandingContracts++
-            println("Long load start")
-        }
-
-        override fun notifyComplete(result: Result<Unit>) {
-            result.onFailure { t ->
-                t.printStackTrace()
-                error = t
-            }
-        }
-    }) {
-        CalculationContextStack.useIn(this) {
-            action()
-        }
-        job.cancel()
-        if(error != null) throw error!!
-        assertEquals(0, numOutstandingContracts, "Some work was not completed.")
-    }
-    return job
 }
