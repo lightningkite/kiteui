@@ -35,7 +35,7 @@ abstract class BaseListenable : Listenable {
 abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady) : Readable<T>, BaseListenable() {
     override var state: ReadableState<T> = start
         protected set(value) {
-            if (field != value) {
+            if (field.raw !== value.raw && field != value) {
                 field = value
                 invokeAllListeners()
             }
@@ -45,7 +45,8 @@ abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady)
 abstract class BaseImmediateReadable<T>(start: T) : ImmediateReadable<T>, BaseListenable() {
     override var value: T = start
         set(value) {
-            if (field != value) {
+            @Suppress("SuspiciousEqualsCombination")
+            if (field !== value && field != value) {
                 field = value
                 invokeAllListeners()
             }

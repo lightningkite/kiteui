@@ -13,22 +13,22 @@ object ListEditScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
-    val data = Property(beeMovieScript.split('\n').withIndex().toList())
+    val data = Property(beeMovieScript.split('\n').toList())
 
     override fun ViewWriter.render() {
-        recyclerView {
-            children(data.lensByElement(identity = { it.index }, map = { it })) { itemObs ->
-                row {
-                    centered - sizeConstraints(width = 5.rem) - text {
-                        ::content { itemObs()().index.toString() }
-                    }
-                    expanding - fieldTheme - textField {
-                        content bind itemObs.flatten().lens(
-                            get = { it.value },
-                            modify = { old, it -> old.copy(value = it) }
-                        )
+        row {
+
+            expanding - recyclerView {
+                children(data.lensByElementAssumingSetNeverManipulates()) { itemObs ->
+                    row {
+                        expanding - fieldTheme - textField {
+                            content bind itemObs.flatten()
+                        }
                     }
                 }
+            }
+            expanding - text {
+                ::content { data().take(5).joinToString("\n") }
             }
         }
     }

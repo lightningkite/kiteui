@@ -2,9 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
 
@@ -50,7 +48,7 @@ private open class ImmediateReadableLens<S : ImmediateReadable<O>, O, T>(val sou
     BaseImmediateReadable<T>(source.value.let(get)) {
     override var value: T
         get() {
-            if(myListen == null) super.value = source.value.let(get)
+            if (myListen == null) super.value = source.value.let(get)
             return super.value
         }
         set(_) = TODO()
@@ -123,20 +121,114 @@ fun <O, T> ImmediateWritable<O>.lens(
     modify: (O, T) -> O
 ): ImmediateWritable<T> = ModifyImmediateLens(this, get, modify)
 
+@Deprecated("Be specific about what kind you need.")
 fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
     WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
 
+@Deprecated("Be specific about what kind you need.")
 fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) =
     WritableListWithoutMap<E, ID>(this, identity = identity, elementLens = { it })
 
+@Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
 fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
+@Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
 fun <E, ID> Writable<Set<E>>.lensByElement(identity: (E) -> ID) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
 
+fun <E, ID, W> Writable<List<E>>.lensByElementWithIdentity(
+    identity: (E) -> ID,
+    map: CalculationContext.(Writable<E>) -> W
+) =
+    WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
+
+fun <E, ID> Writable<List<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
+    WritableListWithoutMap<E, ID>(this, identity = identity, elementLens = { it })
+
+@JvmName("setLensByElementWithIdentity")
+fun <E, ID, W> Writable<Set<E>>.lensByElementWithIdentity(
+    identity: (E) -> ID,
+    map: CalculationContext.(Writable<E>) -> W
+) =
+    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
+
+@JvmName("setLensByElementWithIdentity")
+fun <E, ID> Writable<Set<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
+    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
+
+interface ListItemWritable<E> : ImmediateReadableWithWrite<E> {
+    val index: ImmediateReadable<Int>
+}
+
+/**
+ * THIS ONLY WORKS IF THE `set` on the receiver *never* manipulates the input before notifying.
+ */
+fun <E> Writable<List<E>>.lensByElementAssumingSetNeverManipulates(): Readable<List<ListItemWritable<E>>> =
+    lensByElementAssumingSetNeverManipulates { it }
+
+/**
+ * THIS ONLY WORKS IF THE `set` on the receiver *never* manipulates the input before notifying.
+ */
+fun <E, W> Writable<List<E>>.lensByElementAssumingSetNeverManipulates(map: CalculationContext.(ListItemWritable<E>) -> W): Readable<List<W>> =
+    LensByElementAssumingSetNeverManipulates(this, map)
+
+private class LensByElementAssumingSetNeverManipulates<E, W>(
+    val source: Writable<List<E>>,
+    private val map: CalculationContext.(ListItemWritable<E>) -> W
+) :
+    Readable<List<W>>, BaseListenable() {
+
+    inner class Instance(calculationContext: CalculationContext, index: Int, value: E) : ListItemWritable<E>,
+        BaseImmediateReadable<E>(value) {
+        val mapped = map(calculationContext, this)
+        override val index: ImmediateReadable<Int> = Constant(index)
+        override suspend fun set(value: E) {
+            this.value = value
+            source.set(sources.map { it.value })
+        }
+    }
+
+    val sources: ArrayList<Instance> = ArrayList()
+    var _state: ReadableState<List<W>> = ReadableState.notReady
+    private var myListen: (() -> Unit)? = null
+    override fun activate() {
+        super.activate()
+        myListen = source.addListener {
+            refresh()
+            invokeAllListeners()
+        }
+        refresh()
+    }
+
+    override fun deactivate() {
+        super.deactivate()
+        myListen?.invoke()
+        myListen = null
+    }
+
+    override val state: ReadableState<List<W>>
+        get() {
+            if (myListen == null) refresh()
+            return _state
+        }
+    var suppress = false
+    var old: CalculationContext.Standard? = null
+
+    fun refresh() {
+        if (suppress) return
+        old?.cancel()
+        val context = CalculationContext.Standard()
+        old = context
+        _state = source.state.map {
+            sources.clear()
+            sources.addAll(it.mapIndexed { index, it -> Instance(context, index, it) })
+            sources.map { it.mapped }
+        }
+    }
+}
 
 typealias WritableListWithoutMap<E, ID> = WritableList<E, ID, WritableList<E, ID, *>.ElementWritable>
 
@@ -149,7 +241,8 @@ class WritableList<E, ID, T>(
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>,
         CalculationContext {
         private var job = Job()
-        override val coroutineContext = Dispatchers.Default + job + CoroutineExceptionHandler { coroutineContext, throwable ->
+        override val coroutineContext =
+            Dispatchers.Default + job + CoroutineExceptionHandler { coroutineContext, throwable ->
                 if (throwable !is CancellationException) {
                     throwable.printStackTrace2()
                 }
@@ -218,13 +311,13 @@ class WritableList<E, ID, T>(
             source.set(value.map { it.queuedOrValue })
         }
 
-        private var lastElements: List<WritableList<E, ID, T>.ElementWritable> = listOf()
-        private var _state: ReadableState<List<WritableList<E, ID, T>.ElementWritable>> = ReadableState.notReady
+        private var lastElements: List<ElementWritable> = listOf()
+        private var _state: ReadableState<List<ElementWritable>> = ReadableState.notReady
             set(value) {
                 if (value.success) lastElements = value.get()
                 field = value
             }
-        override var state: ReadableState<List<WritableList<E, ID, T>.ElementWritable>>
+        override var state: ReadableState<List<ElementWritable>>
             get() {
                 if (myListen == null || !_state.ready) _state = getStateFromSource()
                 return _state.map { it }
@@ -259,7 +352,7 @@ class WritableList<E, ID, T>(
             lastElements.forEach { it.usedFlag = false }
             val result = newList.mapIndexed { index, newElement ->
                 val existing = lastElements.getOrNull(index)?.takeIf { it.id == identity(newElement) }
-                    ?: lastElements.find { old -> old.id == identity(newElement) }
+                    ?: lastElements.find { old -> !old.usedFlag && old.id == identity(newElement) }
                 if (existing != null) {
                     existing.usedFlag = true
                     existing.value = newElement
