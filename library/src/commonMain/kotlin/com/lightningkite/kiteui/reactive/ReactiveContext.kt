@@ -8,8 +8,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.CoroutineContext
+import kotlin.native.concurrent.ThreadLocal
+
+@ThreadLocal
+var reactiveContext: ReactiveContext? = null
 
 abstract class ReactiveContext : CalculationContext {
+    companion object {
+    }
     var log: Console? = null
     // Dependency management
     var active = false
@@ -45,7 +51,7 @@ abstract class ReactiveContext : CalculationContext {
         while (iter.hasNext()) {
             val entry = iter.next()
             if (entry.first !in usedDependencies) {
-                log?.log("Dependency on ${entry?.first} no longer used")
+                log?.log("Dependency on ${entry.first} no longer used")
                 entry.second()
                 iter.remove()
             }
@@ -78,6 +84,22 @@ abstract class ReactiveContext : CalculationContext {
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
+    }
+    fun <R> Readable<R?>.awaitNotNull(): R {
+        if (existingDependency(this) == null) {
+            registerDependency(this, addListener(rerun))
+        }
+        return state.handle(
+            success = { it ?: throw ReactiveLoading },
+            exception = { throw it },
+            notReady = { throw ReactiveLoading }
+        )
+    }
+    fun <R> Readable<R>.state(): ReadableState<R> {
+        if (existingDependency(this) == null) {
+            registerDependency(this, addListener(rerun))
+        }
+        return state
     }
 
     private data class Once<T>(val wraps: Readable<T>)
@@ -231,9 +253,12 @@ class DirectReactiveContext<T> constructor(
         }
     }
     fun runInternal() {
+        val old = reactiveContext
+        reactiveContext = this
         runStart()
         setResult(readableState { action(this@DirectReactiveContext) })
         runComplete()
+        reactiveContext = old
     }
 
     fun setResult(state: ReadableState<T>) {

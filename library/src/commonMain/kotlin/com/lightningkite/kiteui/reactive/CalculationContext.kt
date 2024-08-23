@@ -75,14 +75,14 @@ object CalculationContextStack {
 }
 
 @DslMarker
-annotation class ReactiveB
+annotation class Reactive
 
-@ReactiveB
+@Reactive
 inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
     this@invoke(actionToCalculate(this))
 }
 
-@ReactiveB
+@Reactive
 inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
     this@invoke.set(actionToCalculate(this))
 }

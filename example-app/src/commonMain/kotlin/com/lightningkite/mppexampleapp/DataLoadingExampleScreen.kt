@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.minus
+import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -31,7 +32,7 @@ object DataLoadingExampleScreen : Screen {
                         val takesTime = asyncReadable { delay(Random.nextLong(0, 5000)); "" }
                         val f = shared { takesTime() }
                         h3 { ::content { it().title + f() } }
-                        text { ::content { it().body.substringBefore('\n') + f() } }
+                        text { ::content.invoke { it().body.substringBefore('\n') + f() } }
                     }
                 }
             }
