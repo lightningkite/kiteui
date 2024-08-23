@@ -22,7 +22,7 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class TextView actual constructor(context: RContext) : RView(context) {
     override val native = UILabelWithGradient()
     val label get() = native.label

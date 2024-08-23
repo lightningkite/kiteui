@@ -1,7 +1,9 @@
+@file:Suppress("NOTHING_TO_INLINE")
 package com.lightningkite.kiteui.models
 
 import android.graphics.Typeface
 import com.lightningkite.kiteui.views.AndroidAppContext
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlin.math.min
 
 actual typealias Font = Typeface

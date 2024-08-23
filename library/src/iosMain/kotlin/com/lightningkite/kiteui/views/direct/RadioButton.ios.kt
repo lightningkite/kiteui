@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import kotlinx.cinterop.ExperimentalForeignApi
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean

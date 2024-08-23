@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.dom.addClass
 import kotlinx.dom.createElement
 import kotlinx.dom.hasClass
@@ -90,7 +91,7 @@ actual class FutureElement actual constructor() {
         crossinline listener: (Event) -> Unit
     ) {
         element?.addEventListener(name, { it:Event -> listener(it) }) ?: run {
-            val old = eventsBack["on$name"] as? (Event)->Unit
+            @Suppress("UNCHECKED_CAST") val old = eventsBack["on$name"] as? (Event)->Unit
             eventsBack["on$name"] = { it:Event -> old?.invoke(it);  listener(it) }
         }
     }
@@ -270,4 +271,5 @@ actual fun RView.nativeScrollIntoView(
 ) {
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")

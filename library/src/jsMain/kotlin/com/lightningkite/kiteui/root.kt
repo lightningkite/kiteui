@@ -6,8 +6,10 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
+import kotlinx.coroutines.DelicateCoroutinesApi
 
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
+    @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
         override val context: RContext = RContext("/")
 

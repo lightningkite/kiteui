@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
+import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty0

@@ -18,7 +18,7 @@ import platform.darwin.NSObject
 import platform.darwin.sel_registerName
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual object AppState {
     internal val _animationFrame = BasicListenable()
     actual val animationFrame: Listenable
@@ -45,8 +45,7 @@ actual object AppState {
     actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
 }
 
-@OptIn(ExperimentalForeignApi::class)
-@Suppress("ACTUAL_WITHOUT_EXPECT")
+
 private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
     private val listeners = ArrayList<() -> Unit>()
     override var value: Boolean = false
@@ -67,7 +66,7 @@ private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
         }
     }
 
-    @OptIn(BetaInteropApi::class)
+
     val observer: NSObject = object: NSObject() {
         @ObjCAction fun keyboardWillShowNotification() {
             value = true

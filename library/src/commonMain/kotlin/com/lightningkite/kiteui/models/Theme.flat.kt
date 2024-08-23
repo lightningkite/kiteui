@@ -45,7 +45,7 @@ fun Theme.Companion.flat(
             )
         }
     },
-    dialog = { card() },
+    dialog = { this[CardSemantic].theme },
     card = {
         copy(id = "crd", background = this.background.closestColor().toHSP().let {
             it.copy(brightness = it.brightness + brightnessStep)
@@ -112,7 +112,7 @@ fun Theme.Companion.flat(
         )
     },
     bar = { null },
-    nav = { card() },
+    nav = { this[CardSemantic].theme },
     mainContent = {
         copy(
             id = "con",

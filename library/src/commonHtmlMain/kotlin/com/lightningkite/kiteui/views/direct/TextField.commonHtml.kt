@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.launchGlobal
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
@@ -63,7 +64,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
              if (value != null) native.addEventListener("keyup") { ev ->
                 ev as KeyboardEvent
                 if (ev.code == KeyCodes.enter) {
-                    launchGlobal {
+                    launchManualCancel {
                         value.onSelect()
                     }
                 }

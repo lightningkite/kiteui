@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -21,11 +21,13 @@ import kotlin.math.max
 //
 //class LayoutParams()
 
-@OptIn(ExperimentalForeignApi::class)
-class FrameLayout: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+
+class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0
-        set(value) { extensionPadding = value }
+        set(value) {
+            extensionPadding = value
+        }
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
 
@@ -37,9 +39,11 @@ class FrameLayout: UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
+
     override fun willRemoveSubview(subview: UIView) {
-        // Fixes a really cursed crash where "this" is null
-        if(this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
+        // Fixes a really cursed crash where "this" is null due to GC interactions
+        @Suppress("SENSELESS_COMPARISON")
+        if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
 

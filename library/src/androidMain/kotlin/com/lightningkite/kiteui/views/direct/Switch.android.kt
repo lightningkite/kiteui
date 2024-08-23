@@ -4,10 +4,7 @@ import android.R
 import android.content.res.ColorStateList
 import android.widget.CheckBox
 import androidx.core.widget.CompoundButtonCompat
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.important
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -18,7 +15,7 @@ actual class Switch actual constructor(context: RContext): RView(context) {
         native.thumbTintList = ColorStateList(
             arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
                 theme.background.closestColor().highlight(.2f).colorInt(),
-                theme.important().background.colorInt()
+                theme[ImportantSemantic].theme.background.colorInt()
             )
         )
         native.trackTintList = ColorStateList(

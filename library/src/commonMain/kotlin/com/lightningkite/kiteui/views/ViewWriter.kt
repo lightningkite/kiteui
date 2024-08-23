@@ -58,7 +58,9 @@ abstract class ViewWriter: CalculationContext {
         p.addChild(view)
     }
 
+    @OptIn(ExperimentalContracts::class)
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
+        contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
         val p = _wrapElement ?: this
         writePre(p, view)
         try {

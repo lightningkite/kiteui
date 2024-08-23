@@ -613,13 +613,14 @@ expect val Int.dp: Dimension
 expect val Double.rem: Dimension
 expect val Double.dp: Dimension
 expect val Dimension.px: Double
-expect inline operator fun Dimension.plus(other: Dimension): Dimension
-expect inline operator fun Dimension.minus(other: Dimension): Dimension
-expect inline operator fun Dimension.times(other: Float): Dimension
-inline operator fun Dimension.times(other: Int): Dimension = this * other.toFloat()
-inline operator fun Dimension.times(other: Double): Dimension = this * other.toFloat()
-expect inline operator fun Dimension.div(other: Float): Dimension
-inline operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
-inline operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
-expect inline fun Dimension.coerceAtMost(other: Dimension): Dimension
-expect inline fun Dimension.coerceAtLeast(other: Dimension): Dimension
+
+expect operator fun Dimension.plus(other: Dimension): Dimension
+expect operator fun Dimension.minus(other: Dimension): Dimension
+expect operator fun Dimension.times(other: Float): Dimension
+operator fun Dimension.times(other: Int): Dimension = this * other.toFloat()
+operator fun Dimension.times(other: Double): Dimension = this * other.toFloat()
+expect operator fun Dimension.div(other: Float): Dimension
+operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
+operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
+expect fun Dimension.coerceAtMost(other: Dimension): Dimension
+expect fun Dimension.coerceAtLeast(other: Dimension): Dimension

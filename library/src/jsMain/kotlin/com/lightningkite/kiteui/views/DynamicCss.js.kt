@@ -75,7 +75,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 
     var queue: Json = json()
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    private inline fun Json.subObj(key: String) = this.get(key) as? Json ?: run {
+    private fun Json.subObj(key: String) = this.get(key) as? Json ?: run {
         val obj = json()
         this.set(key, obj)
         obj

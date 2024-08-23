@@ -29,6 +29,7 @@ import platform.posix.int64_t
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlin.js.JsName
 
 actual object ExternalServices {
     actual fun openTab(url: String) {
@@ -297,7 +298,7 @@ actual object ExternalServices {
         }
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+
     suspend fun requestCapture(
         camera: UIImagePickerControllerCameraDevice,
         mode: UIImagePickerControllerCameraCaptureMode,
@@ -432,7 +433,7 @@ actual object ExternalServices {
         return NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent(name) ?: throw IllegalStateException("Unable to find a temporary path for file")
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+
     private fun Blob.saveToTemporaryFile(name: String): NSURL {
         val type = UTType.typeWithMIMEType(type)
         val tmpFile = NSURL(fileURLWithPath = NSTemporaryDirectory()).URLByAppendingPathComponent("$name.${type?.preferredFilenameExtension ?: "tmp"}")!!
@@ -497,7 +498,7 @@ actual object ExternalServices {
     actual fun share(title: String, message: String?, url: String?) =
         showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
 
-    @OptIn(ExperimentalForeignApi::class)
+
     private fun showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
         currentPresenter(UIActivityViewController(messages + items, null).apply {
             popoverPresentationController?.sourceView = rootView
@@ -519,7 +520,7 @@ actual object ExternalServices {
             progressOfTasks[task] = DownloadTaskState(filename, 0f)
         }
 
-        @OptIn(ExperimentalForeignApi::class)
+
         override fun URLSession(
             session: NSURLSession,
             downloadTask: NSURLSessionDownloadTask,
@@ -594,7 +595,7 @@ actual object ExternalServices {
         }
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
 
         val options = arrayListOf(

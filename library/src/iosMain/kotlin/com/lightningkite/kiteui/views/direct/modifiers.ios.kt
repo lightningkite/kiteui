@@ -1,4 +1,5 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
+@file:Suppress("OPT_IN_USAGE")
 
 package com.lightningkite.kiteui.views.direct
 
@@ -19,7 +20,7 @@ import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-@OptIn(ExperimentalForeignApi::class)
+
 @ViewModifierDsl3
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -41,7 +42,7 @@ actual fun ViewWriter.hintPopover(
     return ViewWrapper
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -59,7 +60,7 @@ actual fun ViewWriter.hasPopover(
                                 screenNavigator = originalNavigator
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
-                                        get() = this@beforeNextElementSetup.calculationContext
+                                        get() = this@beforeNextElementSetup
 
                                     override fun close() {
                                         dialogScreenNavigator.dismiss()
@@ -99,7 +100,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 @ViewModifierDsl3
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
-        calculationContext.reactiveScope {
+        reactiveScope {
             native.extensionWeight = amount()
         }
     }

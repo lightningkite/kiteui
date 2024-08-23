@@ -80,7 +80,7 @@ inline fun numberAutocommaRepair(
     }
 }
 
-inline fun Double.toStringNoExponential(): String {
+fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
     if (r == 0.0) return preDecimal

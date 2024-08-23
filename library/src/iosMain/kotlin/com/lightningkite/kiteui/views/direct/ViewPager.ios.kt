@@ -30,7 +30,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         // Do nothing.  All children are virtual and managed by the native recycler view.
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual val index: Writable<Int>
         get() = native.centerVisible
             .withWrite { native.jump(it, Align.Center, animationsEnabled) }

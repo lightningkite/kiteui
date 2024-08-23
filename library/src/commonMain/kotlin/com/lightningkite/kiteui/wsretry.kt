@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.CoroutineContext
@@ -209,6 +210,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
             try {
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
+                @OptIn(ExperimentalSerializationApi::class)
                 Exception("Failed to decode message; expected a ${receive.descriptor.serialName} but got '${it.take(150)}'", e).report()
             }
         }

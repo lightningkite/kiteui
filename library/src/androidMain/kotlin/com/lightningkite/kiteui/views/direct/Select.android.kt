@@ -118,7 +118,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         reactiveScope {
             list = data()
             adapter.notifyDataSetChanged()
-            val currentlySelected = edits.awaitOnce()
+            val currentlySelected = edits.once()
             val index = list.indexOf(currentlySelected)
             if (index != -1 && !suppressChange) {
                 suppressChange = true

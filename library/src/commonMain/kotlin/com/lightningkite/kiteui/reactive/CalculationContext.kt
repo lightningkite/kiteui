@@ -40,17 +40,21 @@ interface CalculationContext: CoroutineScope {
     }
     companion object {
     }
+    @DelicateCoroutinesApi
     object NeverEnds: CalculationContext, CoroutineScope by GlobalScope {
     }
-    class Standard: CalculationContext, Job by Job() {
-        override val coroutineContext: CoroutineContext get() = this
+    class Standard: CalculationContext {
+        val job = Job()
+        override val coroutineContext: CoroutineContext get() = job
+        fun cancel() = job.cancel()
     }
 }
 
 fun CalculationContext.sub(): SubCalculationContext = SubCalculationContext(this)
 
-class SubCalculationContext(parent: CalculationContext) : CalculationContext, Job by Job(parent.coroutineContext[Job]) {
-    override val coroutineContext: CoroutineContext get() = this
+class SubCalculationContext(parent: CalculationContext) : CalculationContext {
+    private val sub = Job(parent.coroutineContext[Job])
+    override val coroutineContext: CoroutineContext = parent.coroutineContext + sub
 }
 
 object CalculationContextStack {
@@ -65,6 +69,8 @@ object CalculationContextStack {
             end(handler)
         }
     }
+    // Performance is very sensitive here, and this is a one-liner.  No need to perform a whole call for this.
+    @Suppress("NOTHING_TO_INLINE")
     inline fun start(handler: CalculationContext) {
         stack.add(handler)
     }

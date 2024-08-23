@@ -86,14 +86,14 @@ actual suspend fun fetch(
     }
 }
 
-actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders =
+actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
 actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
@@ -173,6 +173,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 
     init {
+        @Suppress("OPT_IN_USAGE")
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {

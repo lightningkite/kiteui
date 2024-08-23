@@ -474,7 +474,7 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
     }
     return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
         layoutParams.height = it
-        if (!ViewCompat.isInLayout(this@heightAnimator)) requestLayout()
+        if (!this@heightAnimator.isInLayout) requestLayout()
     }.apply {
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
@@ -513,15 +513,13 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     }
     return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {
         layoutParams.width = it
-        println("SETTING WIDTH TO $it")
-        if (!ViewCompat.isInLayout(this@widthAnimator)) requestLayout()
+        if (!this@widthAnimator.isInLayout) requestLayout()
     }.apply {
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                println("ENDING, set to $toWidth")
                 layoutParams.width = toWidth
             }
         })

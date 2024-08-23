@@ -122,9 +122,9 @@ abstract class ReactiveContext : CalculationContext {
     }
 
     // Hack: fixes compiler weirdness around lambdas with 'this'
-    inline operator fun <T> (ReactiveContext.() -> T).invoke(): T = invoke(this@ReactiveContext)
-    inline operator fun <A, T> (ReactiveContext.(A) -> T).invoke(a: A): T = invoke(this@ReactiveContext, a)
-    inline operator fun <A, B, T> (ReactiveContext.(A, B) -> T).invoke(a: A, b: B): T = invoke(this@ReactiveContext, a, b)
+    @Suppress("NOTHING_TO_INLINE") inline operator fun <T> (ReactiveContext.() -> T).invoke(): T = invoke(this@ReactiveContext)
+    @Suppress("NOTHING_TO_INLINE") inline operator fun <A, T> (ReactiveContext.(A) -> T).invoke(a: A): T = invoke(this@ReactiveContext, a)
+    @Suppress("NOTHING_TO_INLINE") inline operator fun <A, B, T> (ReactiveContext.(A, B) -> T).invoke(a: A, b: B): T = invoke(this@ReactiveContext, a, b)
 
     @Deprecated("Just use the invoke operator", ReplaceWith("this()"))
     fun <T> Readable<T>.await(): T = invoke()

@@ -18,7 +18,7 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-actual class DismissBackground actual constructor(context: RContext): RView(context) {
+actual class DismissBackground actual constructor(context: RContext) : RView(context) {
     override val native = NDismissBackground(this)
 
     actual fun onClick(action: suspend () -> Unit): Unit {
@@ -41,8 +41,9 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
 
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-@OptIn(ExperimentalForeignApi::class)
-actual class NDismissBackground(val calculationContext: CalculationContext) : UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol,
+
+actual class NDismissBackground(val calculationContext: CalculationContext) : UIButton(CGRectZero.readValue()),
+    UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0
@@ -63,6 +64,8 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
     }
 
     override fun willRemoveSubview(subview: UIView) {
+        // Fixes a really cursed crash where "this" is null due to GC interactions
+        @Suppress("SENSELESS_COMPARISON")
         if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }

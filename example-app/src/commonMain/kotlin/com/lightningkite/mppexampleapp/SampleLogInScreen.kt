@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.reactive.bind
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.delay
 
 @Routable("sample/login")
 object SampleLogInScreen : Screen {

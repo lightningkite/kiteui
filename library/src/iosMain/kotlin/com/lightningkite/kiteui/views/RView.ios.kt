@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
     var tag: Any? = null

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -22,7 +22,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 class Ref<T>(var target: T?)
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+
 inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
     val actionHolder = object: NSObject() {
         @ObjCAction

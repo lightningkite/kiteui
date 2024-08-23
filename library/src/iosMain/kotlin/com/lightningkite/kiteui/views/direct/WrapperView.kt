@@ -8,7 +8,7 @@ import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 class WrapperView : UIView(CGRectZero.readValue()) {
 
     init {

@@ -180,7 +180,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         fullyApply: Boolean,
         oldRippleDrawable: RippleDrawable?
     ): RippleDrawable {
-        val rippleColor = ColorStateList.valueOf(theme.hover().background.colorInt())
+        val rippleColor = ColorStateList.valueOf(theme[HoverSemantic].theme.background.colorInt())
         val backgroundDrawable = if (fullyApply) {
             theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable)
         } else {

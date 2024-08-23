@@ -33,7 +33,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+    
     actual var source: ImageSource?
         get() = native.imageSource
         set(value) {
@@ -49,7 +49,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             setImageInternal(value)
         }
 
-    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+    
     private fun setImageInternal(value: ImageSource?) {
         if (!com.lightningkite.kiteui.views.animationsEnabled) {
             native.image = null
@@ -72,7 +72,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
             is ImageRemote -> {
                 native.startLoad()
-                calculationContext.sub().launch {
+                sub().launch {
                     val image = ImageCache.get(
                         value,
                         native.bounds.useContents { size.width.toInt() },
@@ -107,7 +107,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
             is ImageLocal -> {
                 native.startLoad()
-                calculationContext.sub().launch {
+                sub().launch {
                     if (native.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,
@@ -168,11 +168,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 }
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 object ImageCache {
     val imageCache = NSCache()
-    inline fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
-    inline fun set(key: ImageSource, value: UIImage) {
+    fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
+    fun set(key: ImageSource, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
     }
 
@@ -232,7 +232,7 @@ internal suspend fun <T> inBackground(action: () -> T): T {
 // - Cache loaded data in RAM however much it can
 // - Cache sized image in RAM
 
-@OptIn(ExperimentalForeignApi::class)
+
 class MyImageView : UIImageView(CGRectZero.readValue()) {
 
     var imageSource: ImageSource? = null
@@ -296,7 +296,7 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     var naturalSize: Boolean = false
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 class PanZoomImageView : UIScrollView(CGRectZero.readValue()), UIScrollViewDelegateProtocol {
 
     val imageView = MyImageView()
@@ -357,7 +357,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+    
     actual var source: ImageSource? = null
         set(value) {
             if (refreshOnParamChange && value is ImageRemote) {
@@ -373,7 +373,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
             setImageInternal(value)
         }
 
-    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+    
     private fun setImageInternal(value: ImageSource?) {
         if (!com.lightningkite.kiteui.views.animationsEnabled) {
             native.imageView.image = null
@@ -393,7 +393,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
             is ImageRemote -> {
                 native.imageView.startLoad()
-                calculationContext.sub().launch {
+                sub().launch {
                     val image = ImageCache.get(
                         value,
                         native.bounds.useContents { size.width.toInt() },
@@ -428,7 +428,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
             is ImageLocal -> {
                 native.imageView.startLoad()
-                calculationContext.sub().launch {
+                sub().launch {
                     if (native.imageView.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,

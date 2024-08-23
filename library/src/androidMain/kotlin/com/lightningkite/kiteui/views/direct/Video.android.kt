@@ -9,6 +9,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AnimationFrame
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
@@ -61,7 +62,7 @@ actual class Video actual constructor(context: RContext): RView(context) {
                 var remover: (() -> Unit)? = null
                 val l = object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        if (isPlaying) remover = AnimationFrame.addListener(listener)
+                        if (isPlaying) remover = AppState.animationFrame.addListener(listener)
                         else {
                             remover?.invoke()
                             remover = null

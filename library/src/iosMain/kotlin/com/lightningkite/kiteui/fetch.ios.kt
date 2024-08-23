@@ -1,3 +1,5 @@
+
+
 package com.lightningkite.kiteui
 
 import io.ktor.client.*
@@ -113,14 +115,14 @@ actual suspend fun fetch(
     }
 }
 
-actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders =
+actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
 actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
@@ -208,6 +210,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 
     init {
+        @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
@@ -321,7 +324,7 @@ fun String.nsdata(): NSData? =
 fun NSData.string(): String? =
     NSString.create(data = this, encoding = NSUTF8StringEncoding)?.toString()
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun ByteArray.toNSData(): NSData = memScoped {
     NSData.create(
         bytes = allocArrayOf(this@toNSData),
@@ -329,7 +332,7 @@ fun ByteArray.toNSData(): NSData = memScoped {
     )
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt()).apply {
     usePinned {
         memcpy(it.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.models.BarSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.bar
@@ -12,6 +13,7 @@ import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
 import kotlinx.cinterop.*
+import kotlinx.coroutines.DelicateCoroutinesApi
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -30,11 +32,11 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
     setup({ themeReadable.invoke() }, app)
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
 fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
     UIView.setAnimationsEnabled(false)
 
+    @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
         override val context: RContext = RContext(this@setup)
         override fun addChild(view: RView) {
@@ -57,8 +59,8 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
 
-    CalculationContext.NeverEnds.reactiveScope {
-        view.backgroundColor = themeCalculation().let { it.bar() }.background.closestColor().toUiColor()
+    writer.reactiveScope {
+        view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
     }
 
     ExternalServices.rootView = subview

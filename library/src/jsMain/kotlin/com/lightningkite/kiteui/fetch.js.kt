@@ -68,19 +68,19 @@ actual suspend fun fetch(
     }
 }
 
-actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {
+actual fun httpHeaders(map: Map<String, String>): HttpHeaders = HttpHeaders().apply {
     for (entry in map) {
         append(entry.key, entry.value)
     }
 }
 
-actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(init = headers)
-actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
+actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(init = headers)
+actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
     for (entry in list) {
         append(entry.first, entry.second)
     }
 }
-actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
+actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders = HttpHeaders().apply {
     for (entry in sequence) {
         append(entry.first, entry.second)
     }

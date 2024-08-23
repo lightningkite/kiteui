@@ -8,28 +8,22 @@ import kotlin.jvm.JvmInline
 value class ReadableState<out T>(val raw: T) {
     inline val ready: Boolean get() = raw !is InternalReadableNotReady
     inline val success: Boolean get() = ready && raw !is InternalReadableThrownException
-    inline fun <R> onSuccess(action: (T)->R): R? {
-        if(raw is InternalReadableNotReady) return null
-        if(raw is InternalReadableThrownException) return null
-        @Suppress("UNCHECKED_CAST")
-        if(raw is InternalReadableWrapper<*>) return action(raw.other as T)
-        return action(raw)
-    }
+    inline fun <R> onSuccess(action: (T)->R): R? = handle(
+        success = { action(it) },
+        exception = { null },
+        notReady = { null }
+    )
     inline val exception: Exception? get() = (raw as? InternalReadableThrownException)?.exception
-    inline fun get(): T {
-        if(raw is InternalReadableNotReady) throw NotReadyException()
-        if(raw is InternalReadableThrownException) throw raw.exception
-        @Suppress("UNCHECKED_CAST")
-        if(raw is InternalReadableWrapper<*>) return raw.other as T
-        return raw
-    }
-    inline fun getOrNull(): T? {
-        if(raw is InternalReadableNotReady) return null
-        if(raw is InternalReadableThrownException) return null
-        @Suppress("UNCHECKED_CAST")
-        if(raw is InternalReadableWrapper<*>) return raw.other as T
-        return raw
-    }
+    fun get(): T = handle(
+        success = { it },
+        exception = { throw it },
+        notReady = { throw NotReadyException() }
+    )
+    fun getOrNull(): T? = handle(
+        success = { it },
+        exception = { null },
+        notReady = { null }
+    )
     companion object {
         @Suppress("UNCHECKED_CAST")
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(InternalReadableNotReady) as ReadableState<Nothing>
@@ -61,6 +55,7 @@ value class ReadableState<out T>(val raw: T) {
         return when(raw) {
             InternalReadableNotReady -> notReady()
             is InternalReadableThrownException -> exception(raw.exception)
+            is InternalReadableWrapper<*> -> success(raw.other as T)
             else -> success(raw)
         }
     }

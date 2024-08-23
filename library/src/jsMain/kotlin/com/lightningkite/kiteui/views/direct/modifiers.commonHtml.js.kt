@@ -176,10 +176,11 @@ internal actual fun RView.nativeAnimateHideBinding(
     }
 }
 
-@Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
 inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     this.asDynamic().animate(keyframes, options) as Animation
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun HTMLElement.getAnimations(): Array<Animation> = this.asDynamic().getAnimations as Array<Animation>
 external interface Animation {
     var oncancel: ((Event) -> Unit)?

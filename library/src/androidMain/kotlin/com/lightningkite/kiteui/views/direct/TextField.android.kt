@@ -19,6 +19,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
@@ -69,7 +70,7 @@ actual class TextField actual constructor(context: RContext): RView(context) {
             field = value
             native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
             native.setOnEditorActionListener { v, actionId, event ->
-                launch {
+                launchManualCancel {
                     value?.onSelect?.invoke()
                 }
                 value != null

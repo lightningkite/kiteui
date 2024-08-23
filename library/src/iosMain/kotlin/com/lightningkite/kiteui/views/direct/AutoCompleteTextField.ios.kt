@@ -13,7 +13,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class AutoCompleteTextField actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {

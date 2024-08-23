@@ -234,6 +234,7 @@ fun <T> CoroutineScope.asyncReadable(action: suspend () -> T): Readable<T> {
     return prop
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> Deferred<T>.readable() = object: BaseReadable<T>() {
     init {
         this@readable[Job]?.invokeOnCompletion {

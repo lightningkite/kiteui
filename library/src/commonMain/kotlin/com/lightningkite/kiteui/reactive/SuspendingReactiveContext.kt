@@ -108,13 +108,17 @@ class SuspendingReactiveContext(
 }
 
 
-inline fun CalculationContext.reactiveSuspending(noinline action: suspend () -> Unit) = reactiveSuspending(null, action)
-inline fun CalculationContext.reactiveSuspending(noinline onLoad: (() -> Unit)?, noinline action: suspend () -> Unit) {
+@Suppress("NOTHING_TO_INLINE") inline fun CalculationContext.reactiveSuspending(noinline action: suspend () -> Unit) = reactiveSuspending(null, action)
+@Suppress("NOTHING_TO_INLINE") inline fun CalculationContext.reactiveSuspending(noinline onLoad: (() -> Unit)?, noinline action: suspend () -> Unit) {
     SuspendingReactiveContext(this, action, onLoad)
 }
 
-private inline fun <T> Continuation<T>.resumeState(state: ReadableState<T>) {
-    state.exception?.let { resumeWithException(it) } ?: resume(state.get())
+private fun <T> Continuation<T>.resumeState(state: ReadableState<T>) {
+    state.handle(
+        success = { resume(it) },
+        exception = { resumeWithException(it) },
+        notReady = { resumeWithException(CancellationException("State not ready")) }
+    )
 }
 
 suspend fun rerunOn(listenable: Listenable) {
@@ -292,6 +296,7 @@ suspend operator fun <T> Flow<T>.invoke(): T {
             return suspendCancellableCoroutine { }
         } else {
             if (it.lastValue.containsKey(this@invoke)) {
+                @Suppress("UNCHECKED_CAST")
                 return it.lastValue[this@invoke] as T
             } else {
                 return suspendCancellableCoroutine { }

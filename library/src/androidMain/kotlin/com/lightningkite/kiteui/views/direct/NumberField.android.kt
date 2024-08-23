@@ -14,6 +14,7 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
@@ -87,7 +88,7 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
             field = value
             native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
             native.setOnEditorActionListener { v, actionId, event ->
-                launch {
+                launchManualCancel {
                     value?.onSelect?.invoke()
                 }
                 value != null
@@ -100,6 +101,7 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         set(value) {
             native.hint = value
         }
+    @Suppress("UNCHECKED_CAST")
     actual var range: ClosedRange<Double>?
         get() {
             return native.tag as? ClosedRange<Double>

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
@@ -15,7 +16,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class NumberField actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
@@ -128,7 +129,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
             textField.delegate = value?.let {
                 val d = object : NSObject(), UITextFieldDelegateProtocol {
                     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launch { it.onSelect() }
+                        launchManualCancel { it.onSelect() }
                         return true
                     }
                 }

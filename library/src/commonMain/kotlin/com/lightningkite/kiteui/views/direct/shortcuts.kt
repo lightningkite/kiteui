@@ -163,9 +163,7 @@ fun Button.onClickAssociatedField(
     field.action = Action(
         title = title,
         icon = icon,
-        onSelect = {
-            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
-        }
+        onSelect = action
     )
     onClick { action() }
 }
@@ -178,9 +176,7 @@ fun Button.onClickAssociatedField(
     field.action = Action(
         title = title,
         icon = icon,
-        onSelect = {
-            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
-        }
+        onSelect = action
     )
     onClick { action() }
 }

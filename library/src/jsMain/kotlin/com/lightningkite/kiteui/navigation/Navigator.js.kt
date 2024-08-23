@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.DelicateCoroutinesApi
 import org.w3c.dom.*
 import kotlin.math.min
 
@@ -50,6 +51,7 @@ actual fun ScreenNavigator.bindToPlatform(context: RContext) {
             suppressNav = false
         }
     })
+    @OptIn(DelicateCoroutinesApi::class)
     with(CalculationContext.NeverEnds) {
         reactiveScope {
             // After boot, we want to make storage ALWAYS match the actual stack.

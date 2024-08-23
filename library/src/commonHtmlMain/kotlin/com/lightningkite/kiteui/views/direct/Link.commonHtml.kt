@@ -15,7 +15,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         native.addEventListener("click") {
             it.preventDefault()
             val destination = to()
-            if(resetsStack) {
+            if (resetsStack) {
                 ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
                 onNavigator.reset(destination)
                 ConsoleRoot.log("Result is ", onNavigator.stack.value)
@@ -29,6 +29,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             }
         }
     }
+
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Stack.internalAddChildStack(this, index, view)
@@ -36,8 +37,8 @@ actual class Link actual constructor(context: RContext) : RView(context) {
 
     override fun hasAlternateBackedStates(): Boolean = true
 
-    actual var onNavigator: KiteUiNavigator = (this as RView).screenNavigator
-    actual var to: ()->Screen = { Screen.Empty }
+    actual var onNavigator: ScreenNavigator = (this as RView).screenNavigator
+    actual var to: () -> Screen = { Screen.Empty }
         set(value) {
             field = value
             onNavigator.routes.render(value())?.let {

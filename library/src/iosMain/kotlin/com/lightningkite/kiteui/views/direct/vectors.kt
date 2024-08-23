@@ -1,3 +1,5 @@
+// Yes, I know I'm inlining "useless" stuff.  I'm just fixing up syntax to not be atrocious that *really* doesn't justify an external call.
+@file:Suppress("NOTHING_TO_INLINE")
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Color
@@ -34,11 +36,11 @@ val pathLetters = charArrayOf(
 )
 val spaceOrComma = Regex("[ ,]+")
 
-@OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.move(x: CGFloat, y: CGFloat) = CGPathMoveToPoint(this, null, x, y)
-@OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.addLine(x: CGFloat, y: CGFloat) = CGPathAddLineToPoint(this, null, x, y)
-@OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.addQuadCurve(cx: CGFloat, cy: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddQuadCurveToPoint(this, null, cx, cy, x, y)
-@OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.addCurve(c1x: CGFloat, c1y: CGFloat, c2x: CGFloat, c2y: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddCurveToPoint(this, null, c1x, c1y, c2x, c2y, x, y)
-@OptIn(ExperimentalForeignApi::class) fun CGMutablePathRef.arcTo(lastX: CGFloat, lastY: CGFloat, x: CGFloat, y: CGFloat, radiusX: CGFloat, radiusY: CGFloat, rotation: CGFloat, largeArcFlag: Boolean, sweepFlag: Boolean) {
+ inline fun CGMutablePathRef.move(x: CGFloat, y: CGFloat) = CGPathMoveToPoint(this, null, x, y)
+ inline fun CGMutablePathRef.addLine(x: CGFloat, y: CGFloat) = CGPathAddLineToPoint(this, null, x, y)
+ inline fun CGMutablePathRef.addQuadCurve(cx: CGFloat, cy: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddQuadCurveToPoint(this, null, cx, cy, x, y)
+ inline fun CGMutablePathRef.addCurve(c1x: CGFloat, c1y: CGFloat, c2x: CGFloat, c2y: CGFloat, x: CGFloat, y: CGFloat) = CGPathAddCurveToPoint(this, null, c1x, c1y, c2x, c2y, x, y)
+ fun CGMutablePathRef.arcTo(lastX: CGFloat, lastY: CGFloat, x: CGFloat, y: CGFloat, radiusX: CGFloat, radiusY: CGFloat, rotation: CGFloat, largeArcFlag: Boolean, sweepFlag: Boolean) {
 //    println("x: $x, y: $y, radiusX: $radiusX, radiusY: $radiusY, theta: $rotation, largeArcFlag: $largeArcFlag, sweepFlag: $sweepFlag")
     if (radiusX == 0.0 || radiusY == 0.0) {
         addLine(x, y)
@@ -94,9 +96,9 @@ val spaceOrComma = Regex("[ ,]+")
 fun angle(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat): CGFloat {
     return (atan2(x1, y1) - atan2(x2, y2)) % (PI * 2)
 }
-@OptIn(ExperimentalForeignApi::class) inline fun CGMutablePathRef.close() = CGPathCloseSubpath(this)
+ inline fun CGMutablePathRef.close() = CGPathCloseSubpath(this)
 
-@OptIn(ExperimentalForeignApi::class)
+
 private fun CGMutablePathRef.render(pathData: String, translateX: CGFloat = 0.0, translateY: CGFloat = 0.0, scaleX: CGFloat = 1.0, scaleY: CGFloat = 1.0) {
     fun CGFloat.posX() = ((this + translateX) * scaleX)
     fun CGFloat.posY() = ((this + translateY) * scaleY)
@@ -160,7 +162,7 @@ private fun CGMutablePathRef.render(pathData: String, translateX: CGFloat = 0.0,
             arguments.add(currentNumber.toString().toDouble())
         }
 
-        var instruction = rawInstruction.toLowerCase()
+        var instruction = rawInstruction.lowercaseChar()
         val isAbsolute: Boolean = rawInstruction.isUpperCase()
         inline fun offsetX(): Double = if (isAbsolute) 0.0 else referenceX
         inline fun offsetY(): Double = if (isAbsolute) 0.0 else referenceY
@@ -294,7 +296,7 @@ class CAShapeLayerScaling: CAShapeLayer() {
 
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun ImageVector.caLayer(): CALayer {
     val layer = CALayer()
     layer.bounds = CGRectMake(0.0, 0.0, width.px, height.px)
@@ -353,7 +355,7 @@ fun ImageVector.caLayer(): CALayer {
     return layer
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun ImageVector.render(): UIImage {
     UIGraphicsBeginImageContext(CGSizeMake(width.px, height.px))
     try {

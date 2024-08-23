@@ -33,10 +33,10 @@ class ConnectionException(message: String, cause: Exception? = null): Exception(
 enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
 
 fun httpHeaders(vararg entries: Pair<String, String>) = httpHeaders(entries.toList())
-expect inline fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
-expect inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
-expect inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
-expect inline fun httpHeaders(headers: HttpHeaders): HttpHeaders
+expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
+expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
+expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
+expect fun httpHeaders(headers: HttpHeaders): HttpHeaders
 expect class HttpHeaders {
     fun append(name: String, value: String)
     fun delete(name: String)

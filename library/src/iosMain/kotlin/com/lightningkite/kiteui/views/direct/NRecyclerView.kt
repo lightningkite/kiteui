@@ -91,7 +91,7 @@ fun <T> Indexed<T>.columned(count: Int): Indexed<Indexed<T>> = object : Indexed<
     override fun copy(): Indexed<Indexed<T>> = original.copy().columned(count)
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<Indexed<T>>(
     create = { parent, data ->
         LinearLayout().apply {
@@ -132,7 +132,7 @@ fun <T> ItemRenderer<T>.columned(count: Int, vertical: Boolean) = ItemRenderer<I
 )
 
 private val reservedScrollingSpace: CGFloat = 50000.0
-@OptIn(ExperimentalForeignApi::class)
+
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     UIScrollViewDelegateProtocol,

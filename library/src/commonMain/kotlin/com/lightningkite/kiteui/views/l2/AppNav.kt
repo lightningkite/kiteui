@@ -151,7 +151,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
         expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
-            ::exists { appNav.existsProperty() && !SoftInputOpen() }
+            ::exists { appNav.existsProperty() && !AppState.softInputOpen() }
         }
     }
 }

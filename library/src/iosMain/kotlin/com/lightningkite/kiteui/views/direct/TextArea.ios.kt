@@ -16,7 +16,7 @@ import platform.darwin.NSObject
 actual class TextArea actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
-    @OptIn(ExperimentalForeignApi::class)
+
     val textField = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
