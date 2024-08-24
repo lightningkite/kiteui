@@ -32,9 +32,7 @@ actual class RequestResponse {
     actual val headers: HttpHeaders = TODO()
 }
 
-actual class Blob(val file: File, val type: String) {
-
-}
+actual class Blob(val data: ByteArray, val type: String)
 actual typealias FileReference = File
 
 actual fun FileReference.mimeType(): String {
@@ -48,3 +46,14 @@ actual fun FileReference.fileName(): String {
 actual fun websocket(url: String): WebSocket = TODO()
 actual fun Blob.bytes(): Long = -1L
 actual fun FileReference.bytes(): Long = -1L
+
+//actual suspend fun Blob.byteArray(): ByteArray = data
+/*actual suspend fun FileReference.byteArray(): ByteArray = TODO()*/ /*withContext(Dispatchers.IO) {
+    AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.readBytes()
+}*/
+
+actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+actual suspend fun FileReference.text(): String = TODO() /*withContext(Dispatchers.IO) {
+    AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
+}*/
+actual fun String.toBlob(contentType: String): Blob = TODO()
