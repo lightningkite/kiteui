@@ -8,10 +8,9 @@ import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
-
 
 actual class Button actual constructor(context: RContext): RView(context) {
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
@@ -53,6 +52,12 @@ actual class Button actual constructor(context: RContext): RView(context) {
             native.isEnabled = value
             refreshTheming()
         }
+
+    init {
+        reactiveScope {
+            opacity = if (working()) 0.7 else 1.0
+        }
+    }
 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {

@@ -11,8 +11,6 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.view.ScrollingView
-import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -41,6 +39,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun existsSet(value: Boolean) {
+        // Setting visibility to GONE does not work if an animation is running
+        if (!exists) {
+            native.clearAnimation()
+        }
         native.visibility = if (value) {
             View.VISIBLE
         } else {
