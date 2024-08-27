@@ -8,9 +8,9 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.lensing.WritableList
+import com.lightningkite.kiteui.reactive.lensing.WritableListWithoutMap
+import com.lightningkite.kiteui.reactive.lensing.lensByElement
 import com.lightningkite.kiteui.reactive.lensing.map
-import com.lightningkite.kiteui.reactive.lensing.perElement
-import com.lightningkite.kiteui.reactive.lensing.remove
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
@@ -61,11 +61,11 @@ object NestingEditsScreen: Screen {
             set = { old: TestData, value: String -> old.copy(name = value) }
         )
 
-    private fun Writable<TestData>.getNested(): WritableList<TestData, TestData> =
+    private fun Writable<TestData>.getNested(): WritableListWithoutMap<TestData, TestData> =
         map(
             get = { it.nested },
             set = { old: TestData, it: List<TestData> -> old.copy(nested = it) }
-        ).perElement()
+        ).lensByElement { it }
 
     private fun RView.child(data: Writable<TestData>, remove: suspend () -> Unit) {
         card - col {
@@ -100,7 +100,7 @@ object NestingEditsScreen: Screen {
                         if (dataExists()) {
                             forEachUpdating(nested) {
                                 child(it.flatten()) {
-                                    nested.remove(it)
+//                                    nested.remove(it)
                                 }
                             }
                         }

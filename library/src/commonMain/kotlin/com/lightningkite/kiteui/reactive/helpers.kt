@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.utils.commaString
+import com.lightningkite.kiteui.views.flattenState
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 
@@ -148,7 +149,12 @@ fun <T, WRITE: Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Un
         }
     }
 
-fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }.withWrite { this@flatten() set it }
+fun <T> Readable<Writable<T>>.flatten(): Writable<T> =
+    object : Writable<T>, Readable<T> by this.flattenState() {
+        override suspend fun set(value: T) {
+            this@flatten.await().set(value)
+        }
+    }
 
 interface ReadableEmitter<T> {
     fun emit(value: T)

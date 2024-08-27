@@ -10,6 +10,13 @@ class Draft<T> private constructor(
 
     val changesMade = shared { draft() != published() }
 
-    suspend fun publish() { published.set(draft.awaitOnce()) }
+    suspend fun publish(): T {
+        published.set(draft.awaitOnce())
+        draft.reset()
+        return awaitOnce()
+    }
     fun cancel() { draft.reset() }
 }
+
+fun <T> draftOf(getWritable: suspend CalculationContext.() -> Writable<T>): Draft<T> =
+    Draft(shared(true, getWritable).flatten())

@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.validation
 
 import com.lightningkite.kiteui.reactive.*
-import kotlin.coroutines.coroutineContext
 
 class SignalingList<T>
     private constructor(private val list: MutableList<T>)
@@ -48,7 +47,7 @@ class SignallingSet<T>
     constructor(startingItems: List<T>) : this(HashSet(startingItems))
     constructor(vararg startingItems: T) : this(HashSet(startingItems.toList()))
 
-    override val value: Set<T> get() = set
+    override val value: Set<T> get() = this.set
 
     private val listeners = ArrayList<() -> Unit>()
     override fun addListener(listener: () -> Unit): () -> Unit {

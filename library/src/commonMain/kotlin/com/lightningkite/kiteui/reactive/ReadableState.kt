@@ -17,20 +17,20 @@ value class ReadableState<out T>(val raw: T) {
     }
     inline val error: ErrorState? get() = raw as? ErrorState
     inline val exception: Exception? get() = (raw as? ErrorState.ThrownException)?.exception
-    inline val invalid: ErrorState.Invalid? get() = raw as? ErrorState.Invalid
+    inline val invalid: ErrorState.Invalid<T>? get() = raw as? ErrorState.Invalid<T>
 
     inline fun get(): T {
         if(raw is NotReady) throw NotReadyException()
         if(raw is ErrorState) when (raw) {
+            is ErrorState.HasDataAttached<*> -> raw.data as T
             is ErrorState.ThrownException -> throw raw.exception
-            is ErrorState.HasDataAttached -> raw.data as T
         }
         return raw
     }
     inline fun getOrNull(): T? {
         if (raw is NotReady) return null
         if (raw is ErrorState) return when(raw) {
-            is ErrorState.HasDataAttached -> raw.data as? T
+            is ErrorState.HasDataAttached<*> -> raw.data as? T
             else -> null
         }
         return raw
@@ -42,22 +42,21 @@ value class ReadableState<out T>(val raw: T) {
         fun <T> warning(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Warning(data, summary, description)) as ReadableState<T>
         fun <T> invalid(data: T, summary: String, description: String = summary) = ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
         fun <T> exception(exception: Exception) = ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
-        internal fun <T> wrap(error: ErrorState) = ReadableState<Any?>(error) as ReadableState<T>
     }
 
     @Suppress("UNCHECKED_CAST")
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
         if(raw is NotReady) return this as ReadableState<B>
         if (raw is ErrorState) when (raw) {
-            is ErrorState.HasDataAttached -> {
+            is ErrorState.HasDataAttached<*> -> {
                 val t = raw.data as? T ?: return exception(ClassCastException("Raw data ${raw.data} could not be mapped to type T"))
                 try {
                     val b = mapper(t)
                     return when (raw) {
-                        is ErrorState.Warning -> {
+                        is ErrorState.Warning<*> -> {
                             warning(b, raw.errorSummary, "Mapped from warning data ($t) -> ($b): " + raw.errorDescription)
                         }
-                        is ErrorState.Invalid -> {
+                        is ErrorState.Invalid<*> -> {
                             invalid(b, raw.errorSummary, "Mapped from invalid data ($t) -> ($b): " + raw.errorDescription)
                         }
                     }
@@ -77,34 +76,39 @@ value class ReadableState<out T>(val raw: T) {
 
     override fun toString(): String = when(raw) {
         is NotReady -> "NotReady"
+        is ErrorState.Warning<*> -> raw.toString()
+        is ErrorState.Invalid<*> -> raw.toString()
         is ErrorState.ThrownException -> "ThrownException(${raw.exception})"
-        is ErrorState.Invalid -> "Invalid(${raw.errorSummary}, ${raw.errorDescription}"
         else -> "Ready($raw)"
     }
 }
+
+
+class WarningException(val summary: String, val description: String = summary): Exception()
+class InvalidException(val summary: String, val description: String = summary): Exception()
 
 sealed interface ErrorState {
     enum class Severity { Low, Medium, High }
 
     val severity: Severity
 
-    sealed interface HasDataAttached: ErrorState {
-        val data: Any?
+    sealed interface HasDataAttached<out T>: ErrorState {
+        val data: T
     }
 
-    class Warning(
-        override val data: Any?,
+    data class Warning<out T>(
+        override val data: T,
         val errorSummary: String,
         val errorDescription: String = errorSummary
-    ): HasDataAttached, Exception() {
+    ): HasDataAttached<T> {
         override val severity: Severity get() = Severity.Low
     }
 
-    class Invalid(
-        override val data: Any?,
+    data class Invalid<out T>(
+        override val data: T,
         val errorSummary: String,
         val errorDescription: String = errorSummary
-    ): HasDataAttached, Exception() {
+    ): HasDataAttached<T> {
         override val severity: Severity get() = Severity.Medium
     }
 
