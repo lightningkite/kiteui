@@ -44,6 +44,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
                             xmlns = "http://www.w3.org/2000/svg"
                             setStyleProperty("stroke-width", path.strokeWidth.px.toString())
                             setStyleProperty("fill", "none")
+                            setStyleProperty("stroke-linecap", path.strokeLineCap.toString().lowercase())
                             setAttribute("d", path.path)
                         })
                     }
