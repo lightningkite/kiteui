@@ -10,6 +10,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "textarea"
         native.classes.add("editable")
+        native.style.resize = "none"
     }
     actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     actual var keyboardHints: KeyboardHints = KeyboardHints()
