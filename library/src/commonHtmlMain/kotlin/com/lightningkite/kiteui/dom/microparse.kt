@@ -108,8 +108,13 @@ internal inline fun String.starts(
             onContent(substring(current, nextStart))
         }
         val nextEnd = this.indexOf('>', nextStart + 1) + 1
-        onTag(substring(nextStart + 1, nextEnd - 1))
-        current = nextEnd
+        if (nextEnd == 0) {
+            onTag(substring(nextStart + 1))
+            break
+        } else {
+            onTag(substring(nextStart + 1, nextEnd - 1))
+            current = nextEnd
+        }
     }
 }
 

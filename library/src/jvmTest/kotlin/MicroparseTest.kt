@@ -16,6 +16,15 @@ class MicroparseTest {
         base.let { println(it) }
     }
 
+    @Test fun malformed() {
+        val base = """
+            Something <
+        """.trimIndent().parseMPNodes()
+        base.let { println(it) }
+        base.forEach { it.secure() }
+        base.let { println(it) }
+    }
+
     @Test fun full() {
         """
             <div class="UF5u5" other = "x" otheasr = "x" yet="another"><div class="ZHUJ9 _2SqQ">All the errors detected are listed below, from left to right, as they appear in the pattern.</div><div><span class="KrSXE w_XEF YmAvV">/</span> <span>An unescaped delimiter must be escaped; in most languages with a backslash (<span class="T0laQ"><span>\</span></span>)</span></div><div><span class="KrSXE w_XEF YmAvV">?</span> The preceding token is not quantifiable</div><div><span class="KrSXE w_XEF YmAvV">/</span> <span>An unescaped delimiter must be escaped; in most languages with a backslash (<span class="T0laQ"><span>\</span></span>)</span></div><div><span class="KrSXE w_XEF YmAvV">?</span> The preceding token is not quantifiable</div></div>
