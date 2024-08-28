@@ -73,8 +73,8 @@ data class Icon(
         viewBoxMinY,
         viewBoxWidth,
         viewBoxHeight,
-        pathDatas.map { ImageVector.Path(color, null, 0.0, it) } + strokePathDatas.map {
-            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.path)
+        pathDatas.map { ImageVector.Path(color, null, 0.dp.value, null, it) } + strokePathDatas.map {
+            ImageVector.Path(null, color.closestColor(), it.strokeWidth.value, it.strokeLineCap, it.path)
         }
     )
 
@@ -405,13 +405,14 @@ data class ImageVector(
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
     val paths: List<Path>,
 ) : ImageSource() {
-    fun color(fillColor: Paint? = null, strokeColor: Color? = null, strokeWidth: Double? = null) =
+    fun color(fillColor: Paint? = null, strokeColor: Color? = null, strokeWidth: DimensionRaw? = null) =
         copy(paths = paths.map { it.copy(fillColor = fillColor, strokeColor = strokeColor, strokeWidth = strokeWidth) })
 
     data class Path(
         val fillColor: Paint? = null,
         val strokeColor: Color? = null,
-        val strokeWidth: Double? = null,
+        val strokeWidth: DimensionRaw? = null,
+        val strokeCap: Icon.StrokeLineCap? = null,
         val path: String
     )
 }

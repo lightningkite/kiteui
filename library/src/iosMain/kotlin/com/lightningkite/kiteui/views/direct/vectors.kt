@@ -98,6 +98,7 @@ fun angle(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat): CGFloat {
 
 @OptIn(ExperimentalForeignApi::class)
 private fun CGMutablePathRef.render(pathData: String, translateX: CGFloat = 0.0, translateY: CGFloat = 0.0, scaleX: CGFloat = 1.0, scaleY: CGFloat = 1.0) {
+    // TODO: Handle StrokeLineCap
     fun CGFloat.posX() = ((this + translateX) * scaleX)
     fun CGFloat.posY() = ((this + translateY) * scaleY)
     fun CGFloat.sizeX() = (this * scaleX)

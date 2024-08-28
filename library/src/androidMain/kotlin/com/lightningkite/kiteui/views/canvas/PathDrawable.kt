@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.views.Path
 
 import android.graphics.*
+import android.graphics.Paint
 import android.graphics.drawable.Drawable
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.RadialGradient
+import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.*
 
@@ -90,7 +92,14 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                             vector.height.value,
                         )
                         style = Paint.Style.STROKE
-                        strokeWidth = it.strokeWidth?.times(scaleX)?.toFloat() ?: 0f
+                        strokeWidth = it.strokeWidth?.times(scaleX)?.div(AndroidAppContext.density) ?: 0f
+                        it.strokeCap?.let {
+                            strokeCap = when (it) {
+                                Icon.StrokeLineCap.Square -> Paint.Cap.SQUARE
+                                Icon.StrokeLineCap.Butt -> Paint.Cap.BUTT
+                                Icon.StrokeLineCap.Round -> Paint.Cap.ROUND
+                            }
+                        }
                     }
                 },
                 fill = it.fillColor?.let { color ->
