@@ -1,14 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.ImageVector
-import com.lightningkite.kiteui.models.LinearGradient
-import com.lightningkite.kiteui.models.RadialGradient
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
@@ -98,7 +93,6 @@ fun angle(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat): CGFloat {
 
 @OptIn(ExperimentalForeignApi::class)
 private fun CGMutablePathRef.render(pathData: String, translateX: CGFloat = 0.0, translateY: CGFloat = 0.0, scaleX: CGFloat = 1.0, scaleY: CGFloat = 1.0) {
-    // TODO: Handle StrokeLineCap
     fun CGFloat.posX() = ((this + translateX) * scaleX)
     fun CGFloat.posY() = ((this + translateY) * scaleY)
     fun CGFloat.sizeX() = (this * scaleX)
@@ -306,13 +300,22 @@ fun ImageVector.caLayer(): CALayer {
     for(path in paths) {
         val p = CGPathCreateMutable()!!
         p.render(path.path, translateX, translateY, scaleX, scaleY)
+        fun makeCAShapeLayer() = CAShapeLayer().apply {
+            frame = layer.bounds
+            this.path = p
+            this.lineWidth = path.strokeWidth?.times(scaleX) ?: 0.0
+            path.strokeCap?.let {
+                lineCap = when (it) {
+                    Icon.StrokeLineCap.Butt -> kCALineCapButt
+                    Icon.StrokeLineCap.Square -> kCALineCapSquare
+                    Icon.StrokeLineCap.Round -> kCALineCapRound
+                }
+            }
+        }
         layer.addSublayer(when(val f = path.fillColor) {
             is LinearGradient -> CAGradientLayer.layer().apply {
                 frame = layer.bounds
-                this.mask = CAShapeLayer().apply {
-                    frame = layer.bounds
-                    this.path = p
-                }
+                this.mask = makeCAShapeLayer()
                 this.type = kCAGradientLayerAxial
                 this.locations = f.stops.map {
                     NSNumber.numberWithFloat(it.ratio)
@@ -323,10 +326,7 @@ fun ImageVector.caLayer(): CALayer {
             }
             is RadialGradient -> CAGradientLayer.layer().apply {
                 frame = layer.bounds
-                this.mask = CAShapeLayer().apply {
-                    frame = layer.bounds
-                    this.path = p
-                }
+                this.mask = makeCAShapeLayer()
                 this.type = kCAGradientLayerRadial
                 this.locations = f.stops.map {
                     NSNumber.numberWithFloat(it.ratio)
@@ -335,19 +335,13 @@ fun ImageVector.caLayer(): CALayer {
                 this.startPoint = CGPointMake(0.5, 0.5)
                 this.endPoint = CGPointMake(0.0, 0.0)
             }
-            is Color -> CAShapeLayer().apply {
-                frame = layer.bounds
-                this.path = p
+            is Color -> makeCAShapeLayer().apply {
                 this.fillColor = f.toUiColor().CGColor
                 this.strokeColor = path.strokeColor?.toUiColor()?.CGColor ?: UIColor.blackColor.CGColor
-                this.lineWidth = path.strokeWidth?.times(scaleX) ?: 0.0
             }
-            null -> CAShapeLayer().apply {
-                frame = layer.bounds
-                this.path = p
+            null -> makeCAShapeLayer().apply {
                 this.fillColor = UIColor.clearColor.CGColor
                 this.strokeColor = path.strokeColor?.toUiColor()?.CGColor ?: UIColor.blackColor.CGColor
-                this.lineWidth = path.strokeWidth?.times(scaleX) ?: 0.0
             }
         })
     }
