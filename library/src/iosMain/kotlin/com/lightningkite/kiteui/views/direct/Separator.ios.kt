@@ -18,9 +18,6 @@ actual class Separator actual constructor(context: RContext): RView(context) {
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
-        native.backgroundColor = theme.foreground.closestColor().toUiColor()
-    }
-    init {
-//        sizeConstraints =
+        native.backgroundColor = theme.foreground.closestColor().applyAlpha(SEPARATOR_ALPHA).toUiColor()
     }
 }

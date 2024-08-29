@@ -53,8 +53,13 @@ abstract class KiteUiActivity : AppCompatActivity() {
         window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         Timber.plant(Timber.DebugTree())
 
+        val explicitStatusBarColorings = mapOf(
+            Color.white to Color.white
+        )
         CalculationContext.NeverEnds.reactiveScope {
-            window?.statusBarColor = theme().let { it.bar() }.background.closestColor().darken(0.3f).toInt()
+            val backgroundColor = theme()[BarSemantic].theme.background.closestColor()
+            window?.statusBarColor = explicitStatusBarColorings
+                .getOrElse(backgroundColor) { backgroundColor.darken(0.3f) }.toInt()
         }
 
         savedInstanceState?.getStringArray("navStack")?.let {
