@@ -63,7 +63,8 @@ data class Icon(
     val pathDatas: List<String> = listOf(),
     val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
-    data class StrokePathData(val strokeWidth: Dimension, val path: String)
+    enum class StrokeLineCap { Butt, Round, Square }
+    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt)
 
     fun toImageSource(color: Paint) = ImageVector(
         width,
