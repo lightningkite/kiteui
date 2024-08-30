@@ -2,7 +2,6 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.ValueAnimator
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
@@ -13,6 +12,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
@@ -53,13 +53,17 @@ abstract class KiteUiActivity : AppCompatActivity() {
         window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         Timber.plant(Timber.DebugTree())
 
-        val explicitStatusBarColorings = mapOf(
-            Color.white to Color.white
-        )
         CalculationContext.NeverEnds.reactiveScope {
             val backgroundColor = theme()[BarSemantic].theme.background.closestColor()
-            window?.statusBarColor = explicitStatusBarColorings
-                .getOrElse(backgroundColor) { backgroundColor.darken(0.3f) }.toInt()
+            val systemBarColor = backgroundColor.toInt()
+            window?.statusBarColor = systemBarColor
+            window?.navigationBarColor = systemBarColor
+            if (backgroundColor.perceivedBrightness > 0.5f) {
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = true
+                    isAppearanceLightNavigationBars = true
+                }
+            }
         }
 
         savedInstanceState?.getStringArray("navStack")?.let {
