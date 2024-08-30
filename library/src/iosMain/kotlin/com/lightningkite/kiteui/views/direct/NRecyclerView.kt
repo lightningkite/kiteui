@@ -793,7 +793,7 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             it.measure()
         }
         viewportSize = bounds.useContents { if(vertical) size.height else size.width }
-        updateFakeScroll()
+        populate()
     }
 
     init {
@@ -814,7 +814,6 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                 )
             )
             ready = true
-            populate()
         }
     }
 }
