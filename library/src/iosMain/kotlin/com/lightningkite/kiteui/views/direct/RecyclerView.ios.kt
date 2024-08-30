@@ -1,25 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
-import platform.UIKit.*
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.absoluteValue
-import kotlin.native.ref.WeakReference
 
-@OptIn(ExperimentalNativeApi::class)
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {
     val newViews = NewViewWriter(context)
     override val native = NRecyclerView()
@@ -54,7 +40,9 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 (children.find { it.native === element }?.tag as? Property<T>)?.value = value
             },
             shutdown = { parent, element ->
-                removeChild(children.indexOfFirst { it.native === element })
+                // Shutdown may be called for fake space elements created by a columned ItemRenderer (see
+                // NRecyclerView.rendererDirect) that this RView is unaware of so we require a greater than zero check
+                children.indexOfFirst { it.native === element }.takeUnless { it < 0 }?.let(::removeChild)
             }
         )
         reactiveScope {
