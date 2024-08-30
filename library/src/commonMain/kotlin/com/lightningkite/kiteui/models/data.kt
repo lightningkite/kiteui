@@ -497,6 +497,10 @@ data class PopoverPreferredDirection(
         val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
     }
+    fun forceLeft(): PopoverPreferredDirection = if(horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
+    fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
 }
 
 data class KeyboardHints(
