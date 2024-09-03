@@ -14,81 +14,95 @@ import kotlin.contracts.contract
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.subtext(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.subtext(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += SubtextSemantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h1(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h1(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H1Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h2(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h2(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H2Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h3(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h3(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H3Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h4(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h4(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H4Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h5(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h5(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H5Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.h6(crossinline setup: TextView.()->Unit = {}): TextView {
+inline fun ViewWriter.h6(crossinline setup: TextView.() -> Unit = {}): TextView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return text {
         themeChoice += HeaderSemantic + H6Semantic
         setup(this)
     }
 }
+
 @ViewDsl
 fun ViewWriter.h1(text: String) = h1 { content = text }
+
 @ViewDsl
 fun ViewWriter.h2(text: String) = h2 { content = text }
+
 @ViewDsl
 fun ViewWriter.h3(text: String) = h3 { content = text }
+
 @ViewDsl
 fun ViewWriter.h4(text: String) = h4 { content = text }
+
 @ViewDsl
 fun ViewWriter.h5(text: String) = h5 { content = text }
+
 @ViewDsl
 fun ViewWriter.h6(text: String) = h6 { content = text }
+
 @ViewDsl
 fun ViewWriter.text(text: String) = text { content = text }
+
 @ViewDsl
 fun ViewWriter.subtext(text: String) = subtext { content = text }
 
@@ -127,6 +141,7 @@ fun ViewWriter.confirmDanger(
         }
     })
 }
+
 fun ViewWriter.alert(
     title: String,
     body: String,
@@ -160,27 +175,48 @@ fun Button.onClickAssociatedField(
     icon: Icon = Icon.done,
     action: suspend () -> Unit
 ) {
+    var going = false
+    suspend fun guarded() {
+        if (going) return@guarded
+        going = true
+        try {
+            action()
+        } finally {
+            going = false
+        }
+    }
     field.action = Action(
         title = title,
         icon = icon,
         onSelect = {
-            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
+            this@onClickAssociatedField.launchManualCancel(::guarded)
         }
     )
-    onClick { action() }
+    onClick(::guarded)
 }
+
 fun Button.onClickAssociatedField(
     field: NumberField,
     title: String = "Submit",
     icon: Icon = Icon.done,
     action: suspend () -> Unit
 ) {
+    var going = false
+    suspend fun guarded() {
+        if (going) return@guarded
+        going = true
+        try {
+            action()
+        } finally {
+            going = false
+        }
+    }
     field.action = Action(
         title = title,
         icon = icon,
         onSelect = {
-            this@onClickAssociatedField.calculationContext.launchManualCancel(action)
+            this@onClickAssociatedField.launchManualCancel(::guarded)
         }
     )
-    onClick { action() }
+    onClick(::guarded)
 }
