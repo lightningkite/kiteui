@@ -125,10 +125,17 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             native.background = value
         }
     protected var backgroundBlock: GradientDrawable? = null
+    private var layoutChangeListenerAdded = false
     protected fun updateCorners() {
+        if (!layoutChangeListenerAdded) {
+            native.addOnLayoutChangeListener { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+                updateCorners()
+            }
+            layoutChangeListenerAdded = true
+        }
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> 10000f
+            is CornerRadii.RatioOfSize -> it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
         }
