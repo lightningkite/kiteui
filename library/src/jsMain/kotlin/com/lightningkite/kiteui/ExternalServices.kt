@@ -24,6 +24,7 @@ actual object ExternalServices {
         lastFileInput?.let { document.body!!.removeChild(it) }
         lastFileInput = null
     }
+
     suspend fun requestFileInput(mimeTypes: List<String>, setup: HTMLInputElement.() -> Unit): List<FileReference> =
         suspendCoroutineCancellable {
             removeFileInput()
@@ -68,10 +69,12 @@ actual object ExternalServices {
     ) {
         if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
-        a.href = url
+
+        a.href = com.lightningkite.kiteui.fetch(url).let { URL.createObjectURL(it.blob()) }
         a.download = name
-        a.target = "_blank"
+        document.body?.appendChild(a)
         a.click()
+        document.body?.removeChild(a)
     }
 
     @JsName("downloadBlob")
