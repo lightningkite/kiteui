@@ -20,7 +20,7 @@ import com.lightningkite.kiteui.views.direct.setPaddingAll
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual abstract class RView(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
     open fun defaultLayoutParams(): LayoutParams =

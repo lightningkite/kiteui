@@ -117,7 +117,7 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual val ViewWriter.scrolls: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native: View = NestedScrollView(context.activity).apply {
                 isFillViewport = true
             }
@@ -137,7 +137,7 @@ actual val ViewWriter.scrolls: ViewWrapper
 @ViewModifierDsl3
 actual val ViewWriter.scrollsHorizontally: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native: View = HorizontalScrollView(context.activity).apply {
                 isFillViewport = true
             }
@@ -157,7 +157,7 @@ actual val ViewWriter.scrollsHorizontally: ViewWrapper
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
@@ -181,7 +181,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
-    wrapNextIn(object : RView(context) {
+    wrapNextIn(object : RViewWrapper(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
                 this.constraints = constraints()

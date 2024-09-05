@@ -31,7 +31,7 @@ abstract class ViewWriter {
     }
 
     var _wrapElement: RView? = null
-    fun wrapNextIn(view: RView) {
+    fun wrapNextIn(view: RViewWrapper) {
         val p = _wrapElement ?: this
         p.willAddChild(view)
         _wrapElement = view
