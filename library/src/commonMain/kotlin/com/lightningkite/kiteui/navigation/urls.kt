@@ -44,7 +44,7 @@ fun <T> Properties.encodeToString(serializer: KSerializer<T>, value: T): String 
     return if(serializer.descriptor.kind is StructureKind) {
         encodeToStringMap(serializer, value).entries.joinToString("&") { "${it.key}=${encodeURIComponent(it.value)}" }
     } else {
-        encodeToStringMap(Wrapper.serializer(serializer), Wrapper(value))["value"] ?: "NULL"
+        encodeURIComponent(encodeToStringMap(Wrapper.serializer(serializer), Wrapper(value))["value"] ?: "NULL")
     }
 }
 fun <T> Properties.decodeFromString(serializer: KSerializer<T>, value: String): T {
@@ -56,7 +56,7 @@ fun <T> Properties.decodeFromString(serializer: KSerializer<T>, value: String): 
     } else {
         @Suppress("UNCHECKED_CAST")
         if(value == "NULL" && serializer.descriptor.isNullable) return null as T
-        return decodeFromStringMap(Wrapper.serializer(serializer), mapOf("value" to value)).value
+        return decodeFromStringMap(Wrapper.serializer(serializer), mapOf("value" to decodeURIComponent(value))).value
     }
 }
 

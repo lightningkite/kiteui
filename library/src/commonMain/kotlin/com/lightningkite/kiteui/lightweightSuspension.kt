@@ -64,9 +64,7 @@ fun CalculationContext.launch(action: suspend () -> Unit): Job {
             if (!justStarted) notifyLongComplete(Result.success(Unit))
             else done = true
         },
-        start = if (coroutineContext[CoroutineDispatcher.Key]?.also {
-            if(it == Dispatchers.Default) throw Exception()
-        }?.isDispatchNeeded(
+        start = if (coroutineContext[CoroutineDispatcher.Key]?.isDispatchNeeded(
                 coroutineContext
             ) == false
         ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
