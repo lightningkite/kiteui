@@ -125,19 +125,22 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.background = value
         }
     protected var backgroundBlock: GradientDrawable? = null
-    private var layoutChangeListenerAdded = false
-    protected fun updateCorners() {
-        if (!layoutChangeListenerAdded) {
-            native.addOnLayoutChangeListener { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-                updateCorners()
-            }
-            layoutChangeListenerAdded = true
+    private val layoutChangeListener by lazy {
+        { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+            updateCorners()
         }
+    }
+    protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
             is CornerRadii.RatioOfSize -> it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+        }
+        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
+            native.addOnLayoutChangeListener(layoutChangeListener)
+        } else {
+            native.removeOnLayoutChangeListener(layoutChangeListener)
         }
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)

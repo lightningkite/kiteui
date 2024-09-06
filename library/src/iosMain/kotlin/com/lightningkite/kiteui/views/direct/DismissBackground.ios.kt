@@ -36,8 +36,7 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        val color = if (fullyApply) theme.background.closestColor() else Color.black
-        native.backgroundColor = color.copy(alpha = 0.5f).toUiColor()
+        native.backgroundColor = theme.background.closestColor().withAlpha(0.5f).toUiColor()
     }
 }
 
