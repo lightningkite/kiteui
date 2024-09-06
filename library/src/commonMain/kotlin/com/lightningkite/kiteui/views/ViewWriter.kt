@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
 import com.lightningkite.kiteui.reactive.CalculationContextStack.start
@@ -68,6 +69,7 @@ abstract class ViewWriter: CalculationContext {
             writePost(p, view)
         } catch(e: Exception) {
             ConsoleRoot.warn("Failed to setup $view: $e")
+            e.printStackTrace2()
             throw e
         } finally {
             end(view)

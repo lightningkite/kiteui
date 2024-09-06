@@ -31,6 +31,36 @@ class ReactivitySuspendingTests {
         cont?.resume("Success")
 
     }
+
+    @Test fun invokeAdapter() {
+        testContext {
+            val value = Property(1)
+            val runner: ReactiveContext.()->Int = {
+                value()
+            }
+            var read = -1
+            launch {
+                read = runner()
+            }
+            assertEquals(read, value.value)
+        }
+    }
+    @Test fun invokeAdapterSlow() {
+        testContext {
+            val value = LateInitProperty<Int>()
+            val runner: ReactiveContext.()->Int = {
+                value()
+            }
+            var read = -1
+            launch {
+                read = runner()
+            }
+            assertEquals(read, -1)
+            value.value = 1
+            assertEquals(read, value.value)
+        }
+    }
+
     @Test
     fun waitingTest() {
         val property = Property<Int?>(null)

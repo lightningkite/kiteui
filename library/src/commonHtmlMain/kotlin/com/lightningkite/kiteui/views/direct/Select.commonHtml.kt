@@ -17,7 +17,6 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         render: (T) -> String
     ) {
         var list: List<T> = listOf()
-        println("BIND STARTED")
         reactiveScope {
             list = data()
             val v = edits()

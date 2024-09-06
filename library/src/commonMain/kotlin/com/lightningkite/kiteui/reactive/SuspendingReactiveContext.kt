@@ -306,3 +306,16 @@ suspend operator fun <T> Flow<T>.invoke(): T {
         return first()
     }
 }
+
+suspend operator fun <R> (ReactiveContext.()->R).invoke(): R {
+    return shared { this@invoke() }.awaitOnce()
+}
+suspend operator fun <A, R> (ReactiveContext.(A)->R).invoke(a: A): R {
+    return shared { this@invoke(a) }.awaitOnce()
+}
+suspend operator fun <A, B, R> (ReactiveContext.(A, B)->R).invoke(a: A, b: B): R {
+    return shared { this@invoke(a, b) }.awaitOnce()
+}
+suspend operator fun <A, B, C, R> (ReactiveContext.(A, B, C)->R).invoke(a: A, b: B, c: C): R {
+    return shared { this@invoke(a, b, c) }.awaitOnce()
+}
