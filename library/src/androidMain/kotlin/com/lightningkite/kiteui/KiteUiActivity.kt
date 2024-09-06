@@ -54,15 +54,15 @@ abstract class KiteUiActivity : AppCompatActivity() {
         Timber.plant(Timber.DebugTree())
 
         CalculationContext.NeverEnds.reactiveScope {
-            val backgroundColor = theme()[BarSemantic].theme.background.closestColor()
-            val systemBarColor = backgroundColor.toInt()
+            val systemBarColor = theme()[SystemBarSemantic].theme.background.closestColor().toInt()
             window?.statusBarColor = systemBarColor
             window?.navigationBarColor = systemBarColor
-            if (backgroundColor.perceivedBrightness > 0.5f) {
-                WindowCompat.getInsetsController(window, window.decorView).apply {
-                    isAppearanceLightStatusBars = true
-                    isAppearanceLightNavigationBars = true
-                }
+
+            val systemBarForegroundColor = theme()[SystemBarSemantic].theme.foreground.closestColor()
+            val useLightAppearance = systemBarForegroundColor.perceivedBrightness < 0.5f
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                isAppearanceLightStatusBars = useLightAppearance
+                isAppearanceLightNavigationBars = useLightAppearance
             }
         }
 

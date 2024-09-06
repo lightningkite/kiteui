@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
@@ -55,13 +56,15 @@ actual class Button actual constructor(context: RContext): RView(context) {
 
     init {
         reactiveScope {
-            opacity = if (working()) 0.7 else 1.0
+            working()
+            refreshTheming()
         }
     }
 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
+        if(working.value) t = t[WorkingSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return t
     }
