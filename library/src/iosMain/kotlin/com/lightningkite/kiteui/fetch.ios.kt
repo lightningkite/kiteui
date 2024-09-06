@@ -341,3 +341,33 @@ fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt())
 
 actual fun Blob.bytes(): Long = this.data.length.toLong()
 actual fun FileReference.bytes(): Long = -1L
+
+//actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
+//actual suspend fun FileReference.byteArray(): ByteArray {
+//    val mime = suggestedType
+//        ?: (provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
+//    // Type is dyn.age8u (null)
+//    return suspendCoroutine {
+//        provider.loadDataRepresentationForContentType(mime) { data, error ->
+//            if (error != null) throw Exception(error.description)
+//            val rawData = data?.toByteArray() ?: throw Exception("Data is null")
+//            it.resume(rawData)
+//        }
+//    }
+//}
+
+actual suspend fun Blob.text(): String = data.string()!!
+actual suspend fun FileReference.text(): String {
+    val mime = suggestedType
+        ?: (provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
+    // Type is dyn.age8u (null)
+    return suspendCoroutine {
+        provider.loadDataRepresentationForContentType(mime) { data, error ->
+            if (error != null) throw Exception(error.description)
+            val rawData = data?.string() ?: throw Exception("Data is null")
+            it.resume(rawData)
+        }
+    }
+}
+
+actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)

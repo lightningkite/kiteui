@@ -29,7 +29,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
         }
 
         override var value: LocalDateTime?
-            get() = native.attributes.valueString?.let { LocalDateTime.parse(it) }
+            get() = native.attributes.valueString?.takeUnless { it.isEmpty() }?.let { LocalDateTime.parse(it) }
             set(value) { native.attributes.valueString = value?.toString()?.take(charCount) }
     }
     actual var action: Action? = null
@@ -95,7 +95,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
         }
 
         override var value: LocalDate?
-            get() = native.attributes.valueString?.let { LocalDate.parse(it) }
+            get() = native.attributes.valueString?.takeUnless { it.isEmpty() }?.let { LocalDate.parse(it) }
             set(value) {
                 native.attributes.valueString = value?.toString()?.take(charCount)
             }
@@ -162,7 +162,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
             }
         }
         override var value: LocalTime?
-            get() = native.attributes.valueString?.let { LocalTime.parse(it) }
+            get() = native.attributes.valueString?.takeUnless { it.isEmpty() }?.let { LocalTime.parse(it) }
             set(value) {
                 native.attributes.valueString = value?.toString()?.take(charCount)
             }

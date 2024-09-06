@@ -64,7 +64,8 @@ data class Icon(
     val pathDatas: List<String> = listOf(),
     val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
-    data class StrokePathData(val strokeWidth: Dimension, val path: String)
+    enum class StrokeLineCap { Butt, Round, Square }
+    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt, val fill: Paint? = null)
 
     fun toImageSource(color: Paint) = ImageVector(
         width,
@@ -422,6 +423,7 @@ data class ImageRemote(val url: String) : ImageSource() {
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
     override fun toString(): String = "ImageRemote($url)"
 }
+
 data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
@@ -455,7 +457,7 @@ data class SizeConstraints(
         aspectRatio: Pair<Int, Int>,
         width: Dimension? = null,
         height: Dimension? = null,
-    ):this(
+    ) : this(
         minWidth = minWidth,
         maxWidth = maxWidth,
         minHeight = minHeight,
@@ -475,7 +477,7 @@ enum class TextOverflow {
     Ellipsis
 }
 
-enum class WordBreak { Normal, BreakAll  }
+enum class WordBreak { Normal, BreakAll }
 
 data class PopoverPreferredDirection(
     val horizontal: Boolean = false,
@@ -498,6 +500,10 @@ data class PopoverPreferredDirection(
         val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
     }
+    fun forceLeft(): PopoverPreferredDirection = if(horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
+    fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
 }
 
 data class KeyboardHints(

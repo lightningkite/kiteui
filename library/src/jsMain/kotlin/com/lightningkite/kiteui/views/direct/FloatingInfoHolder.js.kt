@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.DOMRect
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -24,15 +25,16 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     var existingView: RView? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
+    var currentDirection: PopoverPreferredDirection = preferredDirection
     actual var menuGenerator: Stack.() -> Unit = { space() }
 
     actual fun block() {
-        if(blockView != null) return
+        if (blockView != null) return
         val o = source.overlayStack ?: return
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
-            object: RView(o.context) {
+            object : RView(o.context) {
                 init {
                     native.tag = "div"
                     native.addEventListener("click") {
@@ -77,6 +79,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         writer.popoverClosers = childCloser
         with(writer) {
             stack {
+                currentDirection = preferredDirection
                 existingView = this
                 themeChoice = DialogSemantic
                 native.style.position = "absolute"
@@ -84,108 +87,102 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 native.style.height = "auto"
                 native.style.width = "unset"
                 native.style.height = "unset"
+                var tx = 0.0
+                var txm = 0
+                var ty = 0.0
+                var tym = 0
+
+                // Corrective measures: force it back on-screen
+//                native.onElement { e ->
+//                    e as HTMLElement
+//                    ResizeObserver { entry, observer ->
+//                        if (altered)
+//                            reposition()
+//                    }.observe(e)
+//                }
+
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
                         with(e) {
-                            val r = source.native.element!!.getBoundingClientRect()
-                            style.removeProperty("top")
-                            style.removeProperty("left")
-                            style.removeProperty("right")
-                            style.removeProperty("bottom")
-                            style.removeProperty("transform")
-                            if (preferredDirection.horizontal) {
-                                if (preferredDirection.after) {
-                                    style.left = "${r.right}px"
-                                } else {
-                                    style.right = "${window.innerWidth - r.left}px"
-                                }
-                                when (preferredDirection.align) {
-                                    Align.Start -> style.bottom =
-                                        "${window.innerHeight - r.bottom}px"
+                            for(i in 0..1) {
+                                val r = source.native.element!!.getBoundingClientRect()
+                                style.removeProperty("top")
+                                style.removeProperty("left")
+                                style.removeProperty("right")
+                                style.removeProperty("bottom")
+                                style.removeProperty("transform")
+                                if (currentDirection.horizontal) {
+                                    if (currentDirection.after) {
+                                        tx = r.right
+                                        txm = 0
+                                    } else {
+                                        tx = r.left
+                                        txm = -100
+                                    }
+                                    when (currentDirection.align) {
+                                        Align.Start -> {
+                                            ty = r.bottom
+                                            tym = -100
+                                        }
 
-                                    Align.End -> style.top = "${r.top}px"
-                                    else -> {
-                                        style.top = "${(r.top + r.bottom) / 2}px"
-                                        style.transform = "translateY(-50%)"
-                                    }
-                                }
-                            } else {
-                                if (preferredDirection.after) {
-                                    style.top = "${r.bottom}px"
-                                } else {
-                                    style.bottom = "${window.innerHeight - r.top}px"
-                                }
-                                when (preferredDirection.align) {
-                                    Align.Start -> style.right =
-                                        "${window.innerWidth - r.right}px"
+                                        Align.End -> {
+                                            ty = r.top
+                                            tym = 0
+                                        }
 
-                                    Align.End -> style.left = "${r.left}px"
-                                    else -> {
-                                        style.left = "${(r.left + r.right) / 2}px"
-                                        style.transform = "translateX(-50%)"
+                                        else -> {
+                                            ty = (r.top + r.bottom) / 2
+                                            tym = -50
+                                        }
                                     }
-                                }
-                            }
+                                } else {
+                                    if (currentDirection.after) {
+                                        ty = r.bottom
+                                        tym = 0
+                                    } else {
+                                        ty = r.top
+                                        tym = -100
+                                    }
+                                    when (currentDirection.align) {
+                                        Align.Start -> {
+                                            tx = r.right
+                                            txm = -100
+                                        }
 
-                            // Corrective measures: force it back on-screen
-                            val screen = document.body!!.getBoundingClientRect()
-                            val rect = e.getBoundingClientRect()
-                            if(preferredDirection.horizontal) {
-                                if(preferredDirection.after) {
-                                    if (rect.right > screen.right) {
-                                        style.removeProperty("left")
-                                        style.right = "${window.innerWidth - r.left}px"
-                                    }
-                                } else {
-                                    if (rect.left < screen.left) {
-                                        style.removeProperty("right")
-                                        style.left = "${r.right}px"
-                                    }
-                                }
-                                when(preferredDirection.align) {
-                                    Align.Start -> {
-                                        if(rect.top < screen.top) {
-                                            style.removeProperty("bottom")
-                                            style.top = "0px"
+                                        Align.End -> {
+                                            tx = r.left
+                                            txm = 0
+                                        }
+
+                                        else -> {
+                                            tx = (r.left + r.right) / 2
+                                            txm = -50
                                         }
                                     }
-                                    Align.End -> {
-                                        if(rect.bottom > screen.bottom) {
-                                            style.removeProperty("top")
-                                            style.bottom = "0px"
-                                        }
-                                    }
-                                    else -> {}
                                 }
-                            } else {
-                                if(preferredDirection.after) {
-                                    // 2nd check is to see if there is enough room to move the element above
-                                    if (rect.bottom > screen.bottom && r.top > r.height) {
-                                        style.removeProperty("top")
-                                        style.bottom = "${window.innerHeight - r.top}px"
-                                    }
-                                } else {
-                                    if (rect.top < screen.top && r.bottom > r.height) {
-                                        style.removeProperty("bottom")
-                                        style.top = "${r.bottom}px"
-                                    }
+                                style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
+
+                                val screen = document.body!!.getBoundingClientRect()
+                                val rect = e.getBoundingClientRect()
+                                var altered = false
+                                if (rect.right > screen.right) {
+                                    currentDirection = currentDirection.forceLeft()
+                                    altered = true
                                 }
-                                when(preferredDirection.align) {
-                                    Align.Start -> {
-                                        if(rect.left < screen.left) {
-                                            style.removeProperty("right")
-                                            style.left = "0px"
-                                        }
-                                    }
-                                    Align.End -> {
-                                        if(rect.right > screen.right) {
-                                            style.removeProperty("left")
-                                            style.right = "0px"
-                                        }
-                                    }
-                                    else -> {}
+                                if (rect.left < screen.left) {
+                                    currentDirection = currentDirection.forceRight()
+                                    altered = true
                                 }
+                                if (rect.bottom > screen.bottom) {
+                                    currentDirection = currentDirection.forceTop()
+                                    altered = true
+                                }
+                                if (rect.top < screen.top) {
+                                    currentDirection = currentDirection.forceBottom()
+                                    altered = true
+                                }
+                                if(!altered) break
                             }
                         }
                     }
@@ -227,9 +224,11 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         (e as HTMLElement)
                         window.getComputedStyle(e).getPropertyValue("transition-duration")
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
-                            .let { window.setTimeout({
-                                source.overlayStack!!.removeChild(this)
-                            }, it.inWholeMilliseconds.toInt()) }
+                            .let {
+                                window.setTimeout({
+                                    source.overlayStack!!.removeChild(this)
+                                }, it.inWholeMilliseconds.toInt())
+                            }
                         e.style.opacity = "0"
                     }
                     existingView = null

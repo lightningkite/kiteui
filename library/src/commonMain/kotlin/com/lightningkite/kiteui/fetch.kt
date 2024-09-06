@@ -56,11 +56,14 @@ expect class RequestResponse {
 expect class Blob
 expect class FileReference
 
+expect fun String.toBlob(contentType: String = "text/plain"): Blob
 expect fun Blob.mimeType(): String
 expect fun Blob.bytes(): Long
+expect suspend fun Blob.text(): String
 expect fun FileReference.mimeType():String
 expect fun FileReference.bytes():Long
 expect fun FileReference.fileName():String
+expect suspend fun FileReference.text(): String
 
 sealed interface RequestBody {
     val type: String

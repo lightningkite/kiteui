@@ -46,7 +46,7 @@ interface AppNav {
 
 val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Property(
-        ViewWriter::appNavHamburger
+        ViewWriter::appNavBottomTabs
     )
 )
 
