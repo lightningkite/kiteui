@@ -15,6 +15,7 @@ private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (
         set(_) = TODO()
 
     private var myListen: (() -> Unit)? = null
+
     override fun activate() {
         super.activate()
         myListen = source.addListener {
@@ -258,9 +259,7 @@ class WritableList<E, ID, T>(
             private set
         private val listeners = ArrayList<() -> Unit>()
         override val state: ReadableState<E>
-            get() = if (dead) ReadableState.exception(NoSuchElementException("Element with value $value has been removed")) else ReadableState(
-                value
-            )
+            get() = ReadableState(value)
         override var value: E = valueInit
             set(value) {
                 if (field != value) {

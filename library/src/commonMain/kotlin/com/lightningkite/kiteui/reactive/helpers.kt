@@ -112,7 +112,9 @@ infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
         var setting = false
         this@bind.value = master.value
         master.addListener {
-            if (setting) return@addListener
+            if (setting) {
+                return@addListener
+            }
             master.state.onSuccess {
                 setting = true
                 this@bind.value = it
@@ -121,12 +123,13 @@ infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
             }
         }.also { onRemove(it) }
         this@bind.addListener {
-            if (setting) return@addListener
+            if (setting) {
+                return@addListener
+            }
             this@bind.state.onSuccess {
                 setting = true
                 master.value = it
                 setting = false
-
             }
         }.also { onRemove(it) }
     }

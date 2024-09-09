@@ -43,7 +43,7 @@ fun ViewWriter.appBase(main: ScreenNavigator, dialog: ScreenNavigator? = null, m
         overlayStack = this
         mainLayout()
         dialog?.let {
-            navigatorViewDialog() in DialogSemantic.onNext
+            navigatorViewDialog()
         }
 //        baseStack = this
 //        baseStackWriter = split()

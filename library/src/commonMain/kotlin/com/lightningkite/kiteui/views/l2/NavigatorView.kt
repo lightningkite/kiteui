@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
@@ -54,7 +55,7 @@ fun ViewWriter.navigatorViewDialog() {
                 with(split()) {
                     this.screenNavigator = n
                     if (screen != null)
-                        with(screen) { padded; render() }
+                        with(screen) { DialogSemantic.onNext; render() }
                 }
             }
         )

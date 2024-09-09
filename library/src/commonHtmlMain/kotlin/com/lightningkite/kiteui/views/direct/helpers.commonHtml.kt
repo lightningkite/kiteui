@@ -18,7 +18,10 @@ fun <V> HtmlElementLike.vprop(
 
         override var value: V
             get() = get(this@vprop)
-            set(value) { set(this@vprop, value) }
+            set(value) {
+                set(this@vprop, value)
+                invokeAllListeners()
+            }
         override suspend fun set(value: V) {
             set(this@vprop, value)
             invokeAllListeners()
