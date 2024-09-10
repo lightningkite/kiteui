@@ -83,6 +83,7 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+                implementation("com.google.firebase:firebase-analytics-ktx:22.1.0")
             }
         }
         val androidUnitTest by getting {
