@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "GCM_SENDER_ID",
+    "project_id": "PROJECT_ID",
+    "storage_bucket": "STORAGE_BUCKET"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "APPLICATION_ID",
+        "android_client_info": {
+          "package_name": "UNUSED"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

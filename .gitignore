@@ -12,3 +12,4 @@ local.properties
 /gradle-plugin/gradle/wrapper/gradle-wrapper.jar
 /gradle-plugin/gradle/wrapper/gradle-wrapper.properties
 .kotlin
+example-app/src/commonMain/kotlin/com/lightningkite/mppexampleapp/firebaseConfiguration.kt
