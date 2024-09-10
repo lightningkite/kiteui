@@ -23,13 +23,6 @@ fun UIView.sizeThatFits2(
         it.maxHeight?.let { h = h.coerceAtMost(it.value) }
         it.minWidth?.let { w = w.coerceAtLeast(it.value) }
         it.minHeight?.let { h = h.coerceAtLeast(it.value) }
-        it.aspectRatio?.let { aspectRatio ->
-            if (w / h > aspectRatio) {
-                w = h * aspectRatio
-            } else {
-                h = w / aspectRatio
-            }
-        }
         it.width?.let { w = it.value }
         it.height?.let { h = it.value }
         CGSizeMake(w, h)
