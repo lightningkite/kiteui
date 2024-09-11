@@ -23,6 +23,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     abstract val native: UIView
     var tag: Any? = null
 
+    actual override var showOnPrint: Boolean = true
+
     var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
         set(value) {

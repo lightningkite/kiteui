@@ -64,7 +64,7 @@ data class Icon(
     val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
     enum class StrokeLineCap { Butt, Round, Square }
-    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt)
+    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt, val fill: Paint? = null)
 
     fun toImageSource(color: Paint) = ImageVector(
         width,
@@ -423,6 +423,7 @@ data class ImageRemote(val url: String) : ImageSource() {
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
     override fun toString(): String = "ImageRemote($url)"
 }
+
 data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
@@ -456,7 +457,7 @@ data class SizeConstraints(
         aspectRatio: Pair<Int, Int>,
         width: Dimension? = null,
         height: Dimension? = null,
-    ):this(
+    ) : this(
         minWidth = minWidth,
         maxWidth = maxWidth,
         minHeight = minHeight,
@@ -476,7 +477,7 @@ enum class TextOverflow {
     Ellipsis
 }
 
-enum class WordBreak { Normal, BreakAll  }
+enum class WordBreak { Normal, BreakAll }
 
 data class PopoverPreferredDirection(
     val horizontal: Boolean = false,

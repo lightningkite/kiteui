@@ -15,6 +15,33 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         // basis rules
         //language=CSS
         @Suppress("CssUnresolvedCustomProperty")
+        dynamicCss.rule("""
+            @media print {
+                .do-not-print{
+                    display: none !important;
+                }
+                .scroll-vertical {
+                    overflow: hidden auto;
+                }
+                body > div {
+                    height: unset;
+                    max-width: 100vw;
+                }
+    
+                body {
+                    height: unset;
+                    max-height: unset;
+                    max-width: 100vw;
+                    overflow: visible;
+                }
+                .kiteui-col > * {
+                    flex-grow: 0 !important;
+                    flex-shrink: 0 !important;
+                    flex-basis: unset !important;
+                }
+            }
+        """.trimIndent())
+        @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
             /*noinspection ALL*/@media {
@@ -805,6 +832,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         )
                     },
                     includeMaybeTransition = dis.useBackground
+                )
+                val print = subtheme[PrintSemantic]
+                theme(
+                    print.theme,
+                    diff = theme,
+                    asSelectors = asSelectors.map { "$it$cs$cs" },
+                    includeMaybeTransition = print.useBackground,
+                    mediaQuery = "print"
                 )
             }
             sub(null, asSelectors = listOf(""))

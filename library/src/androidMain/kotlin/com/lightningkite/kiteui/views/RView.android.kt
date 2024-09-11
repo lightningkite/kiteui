@@ -23,6 +23,8 @@ import kotlin.math.roundToInt
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
+    actual override var showOnPrint: Boolean = true
+
     open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
