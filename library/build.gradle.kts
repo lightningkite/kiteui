@@ -112,6 +112,9 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(npm("firebase","10.13.1"))
+            }
         }
 
 //        val wasmJsMain by getting {
@@ -119,17 +122,20 @@ kotlin {
 //        }
     }
 
-//    cocoapods {
+    cocoapods {
 //        summary = "KiteUI"
 //        homepage = "https://github.com/lightningkite/kiteui"
-//        ios.deploymentTarget = "12.0"
+        ios.deploymentTarget = "11.0"
+
+        pod("FirebaseCore")
+        pod("FirebaseAnalytics")
 //
 //        pod("FlexLayout") { version = "2.0.03" }
 //        pod("PinLayout") {
 //            version = "1.10.5"
 //            extraOpts += listOf("-compiler-option", "-fmodules")
 //        }
-//    }
+    }
 }
 
 //tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask>().configureEach {
