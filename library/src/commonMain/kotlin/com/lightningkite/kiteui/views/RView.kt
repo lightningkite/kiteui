@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.*
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
+    override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
     override fun existsSet(value: Boolean)
     override fun visibleSet(value: Boolean)
@@ -40,6 +41,8 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 expect inline fun RView.withoutAnimation(action: () -> Unit)
 abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
     var additionalTestingData: Any? = null
+
+    abstract var showOnPrint: Boolean
 
     var opacity: Double = 1.0
         set(value) {

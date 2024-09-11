@@ -228,7 +228,7 @@ data object SubtextSemantic : Semantic {
     ).withoutBack
 }
 
-data object InvalidSemantic: Semantic {
+data object InvalidSemantic : Semantic {
     override val key: String = "ivd"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -237,7 +237,7 @@ data object InvalidSemantic: Semantic {
     ).withBack
 }
 
-data object EmphasizedSemantic: Semantic {
+data object EmphasizedSemantic : Semantic {
     override val key: String = "emf"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -245,7 +245,7 @@ data object EmphasizedSemantic: Semantic {
     ).withoutBack
 }
 
-data object EmbeddedSemantic: Semantic {
+data object EmbeddedSemantic : Semantic {
     override val key: String = "ebd"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -253,6 +253,16 @@ data object EmbeddedSemantic: Semantic {
     ).withBack
 }
 
+data object PrintSemantic : Semantic {
+    override val key: String = "print"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = Color.white,
+        foreground = Color.black,
+        outline = theme.background,
+        outlineWidth = 2.px,
+    ).withBack
+}
 
 
 val H1Semantic = HeaderSizeSemantic(1)
@@ -528,7 +538,7 @@ class Theme(
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
         revert = if (revert) this else this.revert,
-        derivations = this.derivations + derivations
+        derivations = this.derivations + derivations,
     )
 
     fun copy(

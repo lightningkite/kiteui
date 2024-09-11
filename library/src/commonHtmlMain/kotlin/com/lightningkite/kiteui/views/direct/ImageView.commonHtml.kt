@@ -25,32 +25,32 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             } else if(value == field) return
             field = value
             when (value) {
-                null -> setSrc("")
+                null -> setSrc(value, "")
                 is ImageRemote -> {
-                    setSrc(value.url)
+                    setSrc(value, value.url)
                 }
 
                 is ImageRaw -> {
-                    setSrc(createObjectURL(value.data))
+                    setSrc(value, createObjectURL(value.data))
                 }
 
                 is ImageResource -> {
-                    setSrc(context.basePath + value.relativeUrl)
+                    setSrc(value, context.basePath + value.relativeUrl)
                 }
 
                 is ImageLocal -> {
-                    setSrc(createObjectURL(value.file))
+                    setSrc(value, createObjectURL(value.file))
                 }
 
                 is ImageVector -> {
-                    setSrc(value.vectorToSvgDataUrl())
+                    setSrc(value, value.vectorToSvgDataUrl())
                 }
 
                 else -> {}
             }
         }
 
-    fun setSrc(url: String) = nativeSetSrc(url, onError = { source = null }, onSuccess = {})
+    fun setSrc(source: ImageSource?, url: String) = nativeSetSrc(url, onError = { if(source == this.source) this.source = null }, onSuccess = {})
 
     actual var scaleType: ImageScaleType = ImageScaleType.Fit
         set(value) {
