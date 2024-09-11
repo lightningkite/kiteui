@@ -141,19 +141,19 @@ class ReactivitySuspendingTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = sharedSuspending(Dispatchers.Unconfined) { println("CALC a"); a.await() }
-        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
+        val b = SharedSuspendingReadable(Dispatchers.Unconfined, debug = ConsoleRoot.tag("b")) { println("CALC a"); a.await() }
+//        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
         var hits = 0
 
         testContext {
-            reactiveSuspending {
-                println("#1 Got ${c.await()}")
+            SuspendingReactiveContext(this, action = {
+                println("#1 Got ${b.await()}")
                 hits++
-            }
-            reactiveSuspending {
-                println("#2 Got ${c.await()}")
+            }, debug = ConsoleRoot.tag("#1"))
+            SuspendingReactiveContext(this, action = {
+                println("#2 Got ${b.await()}")
                 hits++
-            }
+            }, debug = ConsoleRoot.tag("#2"))
             assertEquals(2, hits)
             a.value = 2
             assertEquals(4, hits)

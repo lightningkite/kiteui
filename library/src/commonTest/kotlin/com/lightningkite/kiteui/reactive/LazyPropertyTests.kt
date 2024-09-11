@@ -285,4 +285,20 @@ class LazyPropertyTests {
             }
         }
     }
+
+    @Test fun testStupidCase2() {
+        val basis = Property("Test")
+        val lazy = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot) { basis() }
+        val lensed = lazy.lens { it.take(3) }
+        var value = ""
+        testContext {
+            println(lensed.state)
+            reactive {
+                println("Starting")
+                value = lensed()
+                println(value)
+            }
+            assertEquals("Tes", value)
+        }
+    }
 }

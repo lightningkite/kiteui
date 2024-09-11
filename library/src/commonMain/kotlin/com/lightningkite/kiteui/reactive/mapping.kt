@@ -18,10 +18,10 @@ private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (
 
     override fun activate() {
         super.activate()
+        super.state = source.state.map(get)
         myListen = source.addListener {
             super.state = source.state.map(get)
         }
-        super.state = source.state.map(get)
     }
 
     override fun deactivate() {
@@ -57,10 +57,10 @@ private open class ImmediateReadableLens<S : ImmediateReadable<O>, O, T>(val sou
     private var myListen: (() -> Unit)? = null
     override fun activate() {
         super.activate()
+        super.value = source.value.let(get)
         myListen = source.addListener {
             super.value = source.value.let(get)
         }
-        super.value = source.value.let(get)
     }
 
     override fun deactivate() {

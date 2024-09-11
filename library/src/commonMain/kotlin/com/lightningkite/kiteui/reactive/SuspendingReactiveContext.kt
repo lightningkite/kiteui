@@ -139,10 +139,9 @@ suspend inline fun <T> Readable<T>.exception(): Exception? = state { it.exceptio
 suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
-        val s = state.let(get)
+        var last = state.let(get)
         if (!it.removers.containsKey(this)) {
             it.debug?.log("adding listener to $this")
-            var last = s
             it.removers[this] = this.addListener {
                 val newVal = state.let(get)
                 if (last != newVal) {
@@ -150,11 +149,13 @@ suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
                     it.run()
                 }
             }
+            // Repull in case of activation
+            last = state.let(get)
         } else {
             it.debug?.log("already depends on $this")
         }
         it.latestPass.add(this)
-        return s
+        return last
     } ?: return state.let(get)
 }
 
@@ -192,58 +193,43 @@ suspend fun <T> ImmediateReadable<T>.await(): T {
 
 suspend fun <T> Readable<T>.await(): T {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
-        // If we're in a reactive scope,
-        val state = state
-        if (state.ready) {
-            // and the value is ready to go, just add the listener and proceed with the value.
-            if (!it.removers.containsKey(this)) {
-                it.debug?.log("adding listener to $this")
-                it.removers[this] = this.addListener {
-                    it.debug?.log("READABLE LISTENER HIT A")
-                    if (this.state.ready) {
-                        it.run()
-                    } else {
-                        // Don't even bother trying to calculate, since we don't have data yet.
-                        it.setLoading()
+        var cont: Continuation<T>? = null
+        if (!it.removers.containsKey(this)) {
+            it.debug?.log("adding listener to $this")
+            it.removers[this] = this.addListener {
+                it.debug?.log("READABLE LISTENER HIT A")
+                state.handle(
+                    success = { r ->
+                        cont?.let { c ->
+                            c.resume(r)
+                            cont = null
+                        } ?: it.run()
+                    },
+                    exception = { r ->
+                        cont?.let { c ->
+                            c.resumeWithException(r)
+                            cont = null
+                        } ?: it.run()
+                    },
+                    notReady = {
+                        if(cont == null) it.setLoading()
                     }
-                }
-            } else {
-                it.debug?.log("already depends on $this")
+                )
             }
-            it.latestPass.add(this)
-            return state.get()
         } else {
-            val listenable = this@await
-            if (it.removers.containsKey(listenable)) {
-//                println("ReactiveScope $it already depends on $this")
-                return awaitOnce()
-            }
-            // otherwise, wait for the first instance of it
-            return suspendCoroutineCancellable { cont ->
-                var runOnce = false
-                it.debug?.log("adding listener to $this")
-                val remover = listenable.addListener {
-                    it.debug?.log("READABLE LISTENER HIT B")
-                    // The first time the listener runs, resume.  After that, rerun the whole scope.
-                    val state = this@await.state
-                    if (runOnce) {
-                        if (state.ready) {
-                            it.run()
-                        } else {
-                            it.setLoading()
-                        }
-                    } else if (state.ready) {
-                        runOnce = true
-                        cont.resumeState(state)
-                    } else {
-                        it.debug?.log("no resume")
-                    }
-                }
-                it.latestPass.add(listenable)
-                it.removers[listenable] = remover
-                return@suspendCoroutineCancellable remover
-            }
+            it.debug?.log("already depends on $this")
         }
+        it.latestPass.add(this)
+
+        this.state.handle(
+            success = { return@let it },
+            exception = { throw it },
+            notReady = {
+                return@let suspendCancellableCoroutine {
+                    cont = it
+                }
+            }
+        )
     }
     return awaitOnce()
 }
@@ -259,7 +245,7 @@ suspend fun <T> Readable<T>.awaitOnce(): T {
         var remover: (() -> Unit)? = null
         var alreadyRun = false
         var done = false
-        remover = addListener {
+        remover = addAndRunListener {
             val state = this.state
             if (state.ready && !done) {
                 done = true

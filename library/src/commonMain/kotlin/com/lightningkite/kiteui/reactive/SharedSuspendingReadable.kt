@@ -12,7 +12,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
 
-class SharedSuspendingReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default, val useLastWhileLoading: Boolean = false, private val action: suspend CalculationContext.() -> T) : Readable<T> {
+class SharedSuspendingReadable<T>(
+    coroutineContext: CoroutineContext = Dispatchers.Default,
+    val useLastWhileLoading: Boolean = false,
+    var debug: Console? = null,
+    private val action: suspend CalculationContext.() -> T
+) : BaseReadable<T>() {
     var job = Job()
     val ctx = object: CalculationContext {
         override val coroutineContext = (coroutineContext ?: EmptyCoroutineContext) +
@@ -23,25 +28,11 @@ class SharedSuspendingReadable<T>(coroutineContext: CoroutineContext = Dispatche
                     }
                 }
     }
-    override var state: ReadableState<T> = ReadableState.notReady
-    var listening = false
-    var debug: Console? = null
     val me = Random.nextInt()
 
-    private val listeners = ArrayList<() -> Unit>()
-    private var iterating = false
-
-    private fun notifyListeners() {
-        iterating = true
-        debug?.log("Informing ${listeners.size} listeners of new state $state...")
-        listeners.invokeAllSafe()
-        iterating = false
-    }
-
-    private fun startupIfNeeded() {
-        if (listening) return
+    override fun activate() {
+        super.activate()
         debug?.log("Starting up...")
-        listening = true
         SuspendingReactiveContext(ctx, action = {
             try {
                 val result = ReadableState(action(ctx))
@@ -53,40 +44,19 @@ class SharedSuspendingReadable<T>(coroutineContext: CoroutineContext = Dispatche
             } catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
-            notifyListeners()
-            shutdownIfNotNeeded()
         }, onLoad = {
             if(!useLastWhileLoading) {
                 state = ReadableState.notReady
-                notifyListeners()
             }
         }, debug = debug)
     }
 
-    private fun shutdownIfNotNeeded() {
-        if(listeners.isNotEmpty()) return
-        if (!listening) return
+    override fun deactivate() {
+        super.deactivate()
         debug?.log("Shutting down...")
-        listening = false
         job.cancel()
         job = Job()
         state = ReadableState.notReady
-    }
-
-    override fun addListener(listener: () -> Unit): () -> Unit {
-        listeners.add(listener)
-        startupIfNeeded()
-        return {
-            removeListener(listener)
-        }
-    }
-
-    private fun removeListener(listener: () -> Unit) {
-        val pos = listeners.indexOfFirst { it === listener }
-        if (pos != -1) {
-            listeners.removeAt(pos)
-            if(!iterating) shutdownIfNotNeeded()
-        }
     }
 }
 /**

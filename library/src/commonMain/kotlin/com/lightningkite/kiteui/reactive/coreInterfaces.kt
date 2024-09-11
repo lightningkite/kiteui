@@ -16,6 +16,11 @@ interface Listenable : ResourceUse {
     fun addListener(listener: () -> Unit): () -> Unit
     override fun start(): () -> Unit = addListener { }
 }
+fun Listenable.addAndRunListener(listener: () -> Unit): () -> Unit {
+    val remover = addListener(listener)
+    listener()
+    return remover
+}
 
 interface Readable<out T> : Listenable {
     val state: ReadableState<T>

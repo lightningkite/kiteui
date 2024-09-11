@@ -1,11 +1,10 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import com.lightningkite.kiteui.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -307,6 +306,32 @@ class ReactivityTests {
                 println(flow())
             }
             repeat(5) { flow.value = it }
+        }
+    }
+
+    @Test fun deferredTest() {
+        testContext {
+            val other = Property(0)
+            var starts = 0
+            var completes = 0
+            val wait = WaitGate()
+            val deferred = (GlobalScope + Dispatchers.Unconfined).asyncReadable {
+                println("Calculating...")
+                wait.await()
+                println("Going...")
+                "OK"
+            }
+            reactive {
+                starts++
+                other()
+                println(deferred())
+                completes++
+            }
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            wait.permitOnce()
+            assertEquals(2, starts)
+            assertEquals(1, completes)
         }
     }
 }
