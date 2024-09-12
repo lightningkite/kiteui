@@ -205,17 +205,17 @@ data class HeaderSizeSemantic(val level: Int) : Semantic {
     override val key: String = "h$level"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
-        font = theme.font.copy(size = lookup[level - 1]),
+        font = theme.font.copy(size = lookup[level - 1].rem),
     ).withoutBack
 
     companion object {
         val lookup = arrayOf(
-            2.rem,
-            1.6.rem,
-            1.4.rem,
-            1.3.rem,
-            1.2.rem,
-            1.1.rem,
+            2.0,
+            1.6,
+            1.4,
+            1.3,
+            1.2,
+            1.1,
         )
     }
 }
