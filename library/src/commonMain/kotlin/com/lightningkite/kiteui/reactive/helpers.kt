@@ -162,6 +162,16 @@ fun <T : Any> Writable<T?>.notNull(default: T): Writable<T> = lens(
     set = { it }
 )
 
+val <T: Any> Writable<T?>.waitForNotNull: Writable<T> get() =
+    object : Writable<T>, Readable<T> by (this as Readable<T?>).waitForNotNull {
+        override suspend fun set(value: T) = this@waitForNotNull.set(value)
+    }
+
+fun Writable<String?>.nullToBlank(): Writable<String> = lens(
+    get = { it ?: "" },
+    set = { it.takeUnless { it.isBlank() } }
+)
+
 @JvmName("writableStringAsDouble") fun Writable<String>.asDouble(): Writable<Double?> = lens(get = { it.filter { it.isDigit() || it == '.' }.toDoubleOrNull() }, set = { it?.commaString() ?: "" })
 @JvmName("writableStringAsFloat") fun Writable<String>.asFloat(): Writable<Float?> = lens(get = { it.filter { it.isDigit() || it == '.' }.toFloatOrNull() }, set = { it?.toDouble()?.commaString() ?: "" })
 @JvmName("writableStringAsByte") fun Writable<String>.asByte(): Writable<Byte?> = lens(get = { it.filter { it.isDigit() || it == '.' }.toByteOrNull() }, set = { it?.toInt()?.commaString() ?: "" })
