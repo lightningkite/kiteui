@@ -13,7 +13,6 @@ val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
 //    rootTheme = { appTheme() }
-    setupExampleAppAnalytics()
     appNav(navigator, dialog) {
         appName = "KiteUI Sample App"
         ::navItems {
@@ -43,4 +42,5 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
             )
         )
     }
+    setupExampleAppAnalytics()
 }

@@ -1,11 +1,15 @@
 package com.lightningkite.kiteui
 
-actual fun setupAnalytics(
+import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.views.ViewWriter
+
+actual fun ViewWriter.setupAnalytics(
     apiKey: Map<Platform, String>,
     applicationId: Map<Platform, String>,
     gcmSenderId: String,
     storageBucket: String,
     projectId: String,
-    measurementId: Map<Platform, String>?
+    measurementId: Map<Platform, String>?,
+    userId: Readable<String>?
 ) {
 }
