@@ -95,7 +95,9 @@ actual object ExternalServices {
     actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
         val files = namesToBlobs.map {
             val name = it.first
+            println("Name: ${name}")
             val blob = it.second
+            println("blob.type: ${blob.type}")
 
             val type = blob.type.split("/").lastOrNull() ?: "png"
             val fileName = if (name.contains(".")) name else "${name}.${type}"
