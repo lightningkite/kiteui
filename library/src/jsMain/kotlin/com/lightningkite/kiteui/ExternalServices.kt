@@ -8,6 +8,7 @@ import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLScriptElement
 import org.w3c.dom.url.URL
+import org.w3c.fetch.Headers
 import org.w3c.files.File
 import org.w3c.files.FileList
 import org.w3c.files.FilePropertyBag
@@ -70,7 +71,16 @@ actual object ExternalServices {
         if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
 
-        a.href = com.lightningkite.kiteui.fetch(url).let { URL.createObjectURL(it.blob()) }
+        a.href = com.lightningkite.kiteui.fetch(
+            url, method = HttpMethod.GET,
+            httpHeaders().apply {
+                append("mode", "cors")
+                append("cache", "no-cache")
+                append("Cache-Control", "no-cache")
+            },
+        ).let { URL.createObjectURL(it.blob()) }
+
+        a.style.display = "none"
         a.download = name
         document.body?.appendChild(a)
         a.click()
@@ -95,9 +105,7 @@ actual object ExternalServices {
     actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
         val files = namesToBlobs.map {
             val name = it.first
-            println("Name: ${name}")
             val blob = it.second
-            println("blob.type: ${blob.type}")
 
             val type = blob.type.split("/").lastOrNull() ?: "png"
             val fileName = if (name.contains(".")) name else "${name}.${type}"
