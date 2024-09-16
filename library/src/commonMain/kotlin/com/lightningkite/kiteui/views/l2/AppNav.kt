@@ -66,6 +66,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val showMenu = Property(false)
     padded - navSpacing - col {
         bar - row {
+            showOnPrint = false
             setup(appNav)
             toggleButton {
                 checked bind showMenu
@@ -102,6 +103,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     // Nav 2 top, horizontal
     padded - navSpacing  - col {
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -131,6 +133,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -151,6 +154,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
         expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
+            showOnPrint = false
             ::exists { appNav.existsProperty.await() && !SoftInputOpen.await() }
         }
     }
@@ -161,6 +165,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     padded - navSpacing  - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
@@ -182,6 +187,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
         }
         navSpacing  - row {
             navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
+                showOnPrint = false
                 ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
             }
             expanding - navigatorView(screenNavigator)

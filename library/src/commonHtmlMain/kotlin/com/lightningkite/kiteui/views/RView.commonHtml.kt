@@ -9,6 +9,14 @@ import kotlin.random.Random
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
 
+    actual override var showOnPrint: Boolean = true
+        set(value) {
+            if(value)
+                native.classes.remove("do-not-print")
+            else
+                native.classes.add("do-not-print")
+        }
+
     protected actual override fun opacitySet(value: Double) {
         native.style.opacity = value.toString()
     }

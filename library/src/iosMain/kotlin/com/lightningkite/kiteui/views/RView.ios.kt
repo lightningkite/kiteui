@@ -31,6 +31,8 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
     var tag: Any? = null
 
+    actual override var showOnPrint: Boolean = true
+
     var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
         set(value) {
