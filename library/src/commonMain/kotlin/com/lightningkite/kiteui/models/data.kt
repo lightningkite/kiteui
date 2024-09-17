@@ -147,9 +147,25 @@ data class Icon(
             listOf("m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z")
         )
         val chevronRight =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
+            Icon(
+                width = 1.8.rem,
+                height = 1.8.rem,
+                viewBoxMinX = 0,
+                viewBoxMinY = 0,
+                viewBoxWidth = 24,
+                viewBoxHeight = 24,
+                strokePathDatas = listOf(StrokePathData(strokeWidth = 2.5.dp, path = "M8.25 19.5L15.75 12L8.25 4.5", strokeLineCap = StrokeLineCap.Round))
+            )
         val chevronLeft =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
+            Icon(
+                width = 1.8.rem,
+                height = 1.8.rem,
+                viewBoxMinX = 0,
+                viewBoxMinY = 0,
+                viewBoxWidth = 24,
+                viewBoxHeight = 24,
+                strokePathDatas = listOf(StrokePathData(strokeWidth = 2.5.dp, path = "M15.75 19.5L8.25 12L15.75 4.5", strokeLineCap = StrokeLineCap.Round))
+            )
         val logout = Icon(
             2.rem,
             2.rem,
