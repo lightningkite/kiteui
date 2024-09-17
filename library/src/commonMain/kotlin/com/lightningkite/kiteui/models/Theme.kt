@@ -216,6 +216,8 @@ data class HeaderSizeSemantic(val level: Int) : Semantic {
             1.3,
             1.2,
             1.1,
+            1.0,
+            0.8
         )
     }
 }
