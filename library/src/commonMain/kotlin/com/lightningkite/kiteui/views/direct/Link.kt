@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.RView
 
 
 expect class Link(context: RContext) : RView {
-    var to: () -> Screen
+    var to: (() -> Screen)?
     var onNavigator: ScreenNavigator
     var newTab: Boolean
     var resetsStack: Boolean

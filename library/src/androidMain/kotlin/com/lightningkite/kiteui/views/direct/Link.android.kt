@@ -16,16 +16,18 @@ actual class Link actual constructor(context: RContext): RView(context) {
         isClickable = true
     }
 
-    actual var to: ()->Screen = { Screen.Empty }
+    actual var to: (() -> Screen)? = null
         set(value) {
             field = value
             native.setOnClickListener { view ->
-                if(resetsStack) {
-                    onNavigator.reset(value())
-                } else {
-                    onNavigator.navigate(value())
+                value?.invoke()?.let { it ->
+                    if (resetsStack) {
+                        onNavigator.reset(it)
+                    } else {
+                        onNavigator.navigate(it)
+                    }
+                    launchManualCancel { onNavigate() }
                 }
-                launchManualCancel { onNavigate() }
             }
         }
     actual var newTab: Boolean = false

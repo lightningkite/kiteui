@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.kiteui.views.l2.toast
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
@@ -90,8 +91,7 @@ object ControlsScreen : Screen {
                     button {
                         onClick {
                             delay(1000L);
-                            val x = fetch("https://sitedoesnotexist.com")
-                            println(x.text())
+                            toast("OK!")
                         }; text {
                         content = "Sample"
                     }; ::enabled { booleanContent() }

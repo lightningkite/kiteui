@@ -14,18 +14,18 @@ actual class Link actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton(this)
     init {
         native.onClick = {
-            to().let {
+            to?.invoke()?.let {
                 if(resetsStack) {
                     onNavigator.reset(it)
                 } else {
                     onNavigator.navigate(it)
                 }
+                onNavigate()
             }
-            onNavigate()
         }
     }
 
-    actual var to: ()->Screen = { Screen.Empty }
+    actual var to: (() -> Screen)? = null
     actual var onNavigator: ScreenNavigator = mainScreenNavigator
     actual var newTab: Boolean = false
     actual var resetsStack: Boolean = false

@@ -214,6 +214,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 height: 100%;
                 position: relative;
                 overflow-x: scroll;
+                overflow-y: hidden;
                 overflow-anchor: none;
                 scrollbar-width: none;
             }
@@ -223,6 +224,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 height: 100%;
                 position: relative;
                 overflow-y: scroll;
+                overflow-x: hidden;
                 overflow-anchor: none;
                 scrollbar-width: none;
             }
@@ -566,6 +568,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             a {
                 text-decoration: none;
                 color: unset;
+                display: block;
             }
 
             body > div {

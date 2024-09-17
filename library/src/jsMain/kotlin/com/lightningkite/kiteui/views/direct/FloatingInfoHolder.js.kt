@@ -92,15 +92,6 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 var ty = 0.0
                 var tym = 0
 
-                // Corrective measures: force it back on-screen
-//                native.onElement { e ->
-//                    e as HTMLElement
-//                    ResizeObserver { entry, observer ->
-//                        if (altered)
-//                            reposition()
-//                    }.observe(e)
-//                }
-
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
@@ -186,6 +177,14 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                             }
                         }
                     }
+                }
+
+                // Corrective measures: force it back on-screen
+                native.onElement { e ->
+                    e as HTMLElement
+                    ResizeObserver { entry, observer ->
+                        reposition()
+                    }.observe(e)
                 }
 
                 menuGenerator(this)
