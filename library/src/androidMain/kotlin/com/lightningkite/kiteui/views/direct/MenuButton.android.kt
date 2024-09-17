@@ -1,18 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.BasicListenable
+import androidx.core.view.doOnLayout
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
-import kotlin.random.Random
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
@@ -29,7 +22,21 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    centered - card - stack {
+                    atTopStart - card - stack {
+                        this@dismissBackground.native.doOnLayout { dismissBackground ->
+                            val overlayContainer = this@stack.native
+                            val anchor = this@MenuButton.native
+
+                            val parentBoundsInWindow = dismissBackground.getBoundariesInWindow()
+                            val offset = preferredDirection.calculatePopoverPosition(
+                                anchor.getBoundariesInWindow(),
+                                overlayContainer.getBoundariesInWindow(),
+                                parentBoundsInWindow
+                            )
+
+                            overlayContainer.offsetLeftAndRight((offset.first - parentBoundsInWindow.left).toInt())
+                            overlayContainer.offsetTopAndBottom((offset.second - parentBoundsInWindow.top).toInt())
+                        }
                         createMenu()
                     }
                 }
