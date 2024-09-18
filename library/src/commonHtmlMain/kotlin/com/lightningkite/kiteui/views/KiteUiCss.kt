@@ -334,7 +334,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kiteui-separator {
                 background-color: currentcolor;
-                opacity: $SEPARATOR_ALPHA;
                 min-width: 1px;
                 min-height: 1px;
             }

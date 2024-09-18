@@ -10,7 +10,7 @@ actual class Separator actual constructor(context: RContext): RView(context) {
     override val native = NSeparator(context.activity)
 
     override fun applyForeground(theme: Theme) {
-        native.setBackgroundColor(theme.foreground.closestColor().applyAlpha(SEPARATOR_ALPHA).colorInt())
+        native.setBackgroundColor(theme.foreground.closestColor().colorInt())
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
