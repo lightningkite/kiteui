@@ -146,6 +146,41 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px !important;
                 appearance: none;
             }
+            
+           .progress-ring {
+              align-self: center !important;
+              width: 120px;
+              height: 120px;
+            }
+            
+            .progress-ring__svg {
+              width: 100%;
+              height: 100%;
+            }
+
+            .progress-ring__circle {
+              stroke: #4caf50; /* Green progress bar */
+              stroke-width: 10;
+              stroke-linecap: round; /* Rounded endcaps */
+              fill: transparent;
+              r: 52; /* Circle radius */
+              cx: 60; /* Center X */
+              cy: 60; /* Center Y */
+              stroke-dasharray: 326; /* Circle circumference */
+              stroke-dashoffset: 326; /* Hide by default */
+              transition: stroke-dashoffset 0.6s ease;
+            }
+
+            .progress-ring__content {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              text-align: center;
+              font-size: 1.5rem;
+              font-weight: bold;
+            }
+
 
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
