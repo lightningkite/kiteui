@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.views.direct.SEPARATOR_ALPHA
 import kotlin.math.absoluteValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds

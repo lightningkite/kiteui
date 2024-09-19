@@ -19,10 +19,16 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 willRemove?.let { overlayStack!!.removeChild(it) }
             }.run {
                 willRemove = dismissBackground {
+                    themeChoice += ThemeDerivation {
+                        it.copy(background = Color.transparent).withBack
+                    }
                     onClick {
                         closePopovers()
                     }
                     atTopStart - card - stack {
+                        themeChoice += ThemeDerivation {
+                            it.copy(elevation = 5.dp, revert = true).withBack
+                        }
                         this@dismissBackground.native.doOnLayout { dismissBackground ->
                             val overlayContainer = this@stack.native
                             val anchor = this@MenuButton.native

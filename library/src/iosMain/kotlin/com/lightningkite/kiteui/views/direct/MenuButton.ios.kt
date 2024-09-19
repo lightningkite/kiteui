@@ -24,7 +24,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     }
                     card - stack {
                         themeChoice += ThemeDerivation {
-                            it.copy(elevation = 5.dp).withBack
+                            it.copy(elevation = 5.dp, revert = true).withBack
                         }
                         createMenu()
                     }
