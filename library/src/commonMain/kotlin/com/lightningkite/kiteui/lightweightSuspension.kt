@@ -83,7 +83,7 @@ fun CalculationContext.launchManualCancel(action: suspend () -> Unit): Job {
     var justStarted = true
     var done = false
 //    println("$id will start")
-    val result = GlobalScope.launch(
+    val result = (if(requireMainThread) GlobalScope + Dispatchers.Main else GlobalScope + Dispatchers.Default).launch(
         block = {
 //            println("$id launched")
             action()

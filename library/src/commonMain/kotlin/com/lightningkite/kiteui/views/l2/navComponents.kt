@@ -42,7 +42,10 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                 exists = false
                 ::exists { it.hidden?.invoke(this) != true }
                 display(it)
-                onClick { it.onSelect() }
+                onClick {
+                    it.onSelect()
+                    onNavigate()
+                }
             }
 
             is NavExternal -> externalLink {
