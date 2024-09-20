@@ -84,12 +84,11 @@ value class ReadableState<out T>(val raw: T) {
 }
 
 
-class WarningException(val summary: String, val description: String = summary): Exception()
-class InvalidException(val summary: String, val description: String = summary): Exception()
+class WarningException(val summary: String, val description: String = summary): Exception(description)
+class InvalidException(val summary: String, val description: String = summary): Exception(description)
 
 sealed interface ErrorState {
     enum class Severity { Low, Medium, High }
-
     val severity: Severity
 
     sealed interface HasDataAttached<out T>: ErrorState {
