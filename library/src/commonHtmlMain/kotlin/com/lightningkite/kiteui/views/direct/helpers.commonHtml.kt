@@ -12,16 +12,19 @@ fun <V> HtmlElementLike.vprop(
     return object : ImmediateWritable<V>, BaseListenable() {
         init {
             addEventListener(eventName) {
-                invokeAll()
+                invokeAllListeners()
             }
         }
 
         override var value: V
             get() = get(this@vprop)
-            set(value) { set(this@vprop, value) }
+            set(value) {
+                set(this@vprop, value)
+                invokeAllListeners()
+            }
         override suspend fun set(value: V) {
             set(this@vprop, value)
-            invokeAll()
+            invokeAllListeners()
         }
     }
 }

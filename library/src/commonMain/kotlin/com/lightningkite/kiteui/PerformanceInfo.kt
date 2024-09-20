@@ -57,20 +57,20 @@ class PerformanceInfo(val key: String, val immediate: Boolean = false) {
         fun trace(key: String) = get(key).trace()
     }
 
-    inner class Trace(): Cancellable {
+    inner class Trace() {
         var going = true
         var time = TimeSource.Monotonic.markNow()
         fun pause() {
-            if(!going) throw Exception()
+            if(!going) throw Exception("Trace mess up")
             going = false
             this@PerformanceInfo.sum += time.elapsedNow()
         }
         fun resume() {
-            if(going) throw Exception()
+            if(going) throw Exception("Trace mess up")
             going = true
             time = TimeSource.Monotonic.markNow()
         }
-        override fun cancel() {
+        fun cancel() {
             if(going) this@PerformanceInfo.sum += time.elapsedNow()
             going = false
             this@PerformanceInfo.count++

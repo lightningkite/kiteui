@@ -10,7 +10,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class Switch actual constructor(context: RContext): RView(context) {
     override val native = UISwitch()
 

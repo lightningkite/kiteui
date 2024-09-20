@@ -15,7 +15,7 @@ import platform.UIKit.UIWindow
 import kotlin.test.Test
 
 class LayoutTest {
-    @OptIn(ExperimentalForeignApi::class)
+
     @Test
     fun test() {
         val s = LayoutsTestScreen()

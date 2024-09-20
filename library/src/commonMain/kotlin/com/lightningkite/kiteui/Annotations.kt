@@ -12,3 +12,10 @@ annotation class QueryParameter(val name: String = "")
 
 @Target(AnnotationTarget.PROPERTY)
 annotation class Hash
+
+@Target(AnnotationTarget.CLASS)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This may change, use it at your own risk"
+)
+annotation class InternalKiteUi

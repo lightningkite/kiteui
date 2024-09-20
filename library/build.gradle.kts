@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -66,19 +67,27 @@ kotlin {
 //        browser()
 //    }
 
+//    explicitApi = ExplicitApiMode.Warning
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.BetaInteropApi")
+        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+    }
     sourceSets {
         applyDefaultHierarchyTemplate()
 
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.6.3")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.7.1")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
             }
         }
         val androidMain by getting {

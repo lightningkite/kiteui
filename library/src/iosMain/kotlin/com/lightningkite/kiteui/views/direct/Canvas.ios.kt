@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -56,7 +56,7 @@ actual object KeyCodes {
     actual val period: KeyCode get() = "."
 }
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+
 class CanvasView : UIView(CGRectZero.readValue()) {
     init {
         opaque = false
@@ -81,23 +81,28 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 
     // todo mouse wheel
 
-    val touchIds = HashMap<UITouch, Int>()
-    var currentTouchId: Int = 0
+    private val touchIds = HashMap<UITouch, Int>()
+    private var currentTouchId: Int = 0
+
+    @Suppress("UNCHECKED_CAST")
     override fun touchesBegan(touches: Set<*>, withEvent: UIEvent?) {
         if (!handle(touches as Set<UITouch>))
             super.touchesBegan(touches, withEvent)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun touchesMoved(touches: Set<*>, withEvent: UIEvent?) {
         if (!handle(touches as Set<UITouch>))
             super.touchesMoved(touches, withEvent)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun touchesEnded(touches: Set<*>, withEvent: UIEvent?) {
         if (!handle(touches as Set<UITouch>))
             super.touchesEnded(touches, withEvent)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun touchesCancelled(touches: Set<*>, withEvent: UIEvent?) {
         if (!handle(touches as Set<UITouch>))
             super.touchesCancelled(touches, withEvent)

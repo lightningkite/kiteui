@@ -41,7 +41,7 @@ object ViewPagerElementScreen: DocScreen {
                     // Define what to show here
                     children(items) {
                         stack {
-                            centered - text { ::content { "Screen ${it.await()}" } }
+                            centered - text { ::content { "Screen ${it()}" } }
                         }
                     }
                 }

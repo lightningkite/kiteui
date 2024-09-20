@@ -24,15 +24,19 @@ fun Color.toUiColor(): UIColor = UIColor(
 )
 
 
-@OptIn(ExperimentalForeignApi::class)
+
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun CALayer.matchParentSize(context: String) {
     superlayer?.bounds?.let {
         frame = it
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun UIView.layoutSubviewsAndLayers() {
-    if(this != null) {
+    // Fixes a really cursed crash where "this" is null due to GC interactions
+    @Suppress("SENSELESS_COMPARISON")
+    if (this != null) {
         layoutSubviews()
         layoutLayers()
     }
@@ -58,7 +62,7 @@ internal fun UIView.layoutLayers(parentSpacing: Double) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+
 class CAGradientLayerResizing: CAGradientLayer {
 
     @OverrideInit constructor():super()

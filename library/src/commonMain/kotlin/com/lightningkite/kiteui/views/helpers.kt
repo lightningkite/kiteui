@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.LateInitProperty
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.math.min
 
@@ -26,7 +23,7 @@ import kotlin.math.min
 @ViewModifierDsl3 fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
-fun ViewWriter.icon(icon: suspend ()->Icon, description: String, setup: IconView.()->Unit = {}) {
+fun ViewWriter.icon(icon: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
     icon {
         ::source { icon() }
         this.description = description

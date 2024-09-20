@@ -47,7 +47,7 @@ object ImageElementScreen: DocScreen {
                 col {
                     expanding - image {
                         scaleType = ImageScaleType.Crop
-                        ::source { currentImage.await() }
+                        ::source { currentImage() }
                     }
                     row {
                         expanding - button {

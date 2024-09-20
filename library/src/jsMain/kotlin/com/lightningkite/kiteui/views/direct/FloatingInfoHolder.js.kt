@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.reactive.BasicListenable
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlinx.browser.document
@@ -24,6 +25,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     var existingView: RView? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
+    var currentDirection: PopoverPreferredDirection = preferredDirection
     actual var menuGenerator: Stack.() -> Unit = { space() }
 
     actual fun block() {
@@ -54,7 +56,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
 
     actual fun open() {
         if (existingView != null) return
-        val writer = object : ViewWriter() {
+        val writer = object : ViewWriter(), CalculationContext by source {
             override val context: RContext = source.context.split()
             override fun addChild(view: RView) = source.overlayStack!!.addChild(view)
         }
@@ -77,6 +79,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         writer.popoverClosers = childCloser
         with(writer) {
             stack {
+                currentDirection = preferredDirection
                 existingView = this
                 themeChoice = DialogSemantic
                 native.style.position = "absolute"
@@ -89,96 +92,99 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 var ty = 0.0
                 var tym = 0
 
-                // Corrective measures: force it back on-screen
-                native.onElement { e ->
-                    e as HTMLElement
-                    ResizeObserver { entry, observer ->
-                        val screen = document.body!!.getBoundingClientRect()
-                        val rect = e.getBoundingClientRect()
-                        var altered = false
-                        if (rect.right > screen.right) {
-                            tx -= rect.right - screen.right
-                            altered = true
-                        }
-                        if (rect.left < screen.left) {
-                            tx -= rect.left - screen.left
-                            altered = true
-                        }
-                        if (rect.bottom > screen.bottom) {
-                            ty -= rect.bottom - screen.bottom
-                            altered = true
-                        }
-                        if (rect.top < screen.top) {
-                            ty -= rect.top - screen.top
-                            altered = true
-                        }
-                        if (altered)
-                            e.style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
-                    }.observe(e)
-                }
-
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
                         with(e) {
-                            val r = source.native.element!!.getBoundingClientRect()
-                            style.removeProperty("top")
-                            style.removeProperty("left")
-                            style.removeProperty("right")
-                            style.removeProperty("bottom")
-                            style.removeProperty("transform")
-                            if (preferredDirection.horizontal) {
-                                if (preferredDirection.after) {
-                                    tx = r.right
-                                    txm = 0
-                                } else {
-                                    tx = r.left
-                                    txm = -100
-                                }
-                                when (preferredDirection.align) {
-                                    Align.Start -> {
-                                        ty = r.bottom
-                                        tym = -100
-                                    }
-
-                                    Align.End -> {
-                                        ty = r.top
-                                        tym = 0
-                                    }
-
-                                    else -> {
-                                        ty = (r.top + r.bottom) / 2
-                                        tym = -50
-                                    }
-                                }
-                            } else {
-                                if (preferredDirection.after) {
-                                    ty = r.bottom
-                                    tym = 0
-                                } else {
-                                    ty = r.top
-                                    tym = -100
-                                }
-                                when (preferredDirection.align) {
-                                    Align.Start -> {
+                            for(i in 0..1) {
+                                val r = source.native.element!!.getBoundingClientRect()
+                                style.removeProperty("top")
+                                style.removeProperty("left")
+                                style.removeProperty("right")
+                                style.removeProperty("bottom")
+                                style.removeProperty("transform")
+                                if (currentDirection.horizontal) {
+                                    if (currentDirection.after) {
                                         tx = r.right
+                                        txm = 0
+                                    } else {
+                                        tx = r.left
                                         txm = -100
                                     }
+                                    when (currentDirection.align) {
+                                        Align.Start -> {
+                                            ty = r.bottom
+                                            tym = -100
+                                        }
 
-                                    Align.End -> {
-                                        tx = r.left
-                                        txm = 0
+                                        Align.End -> {
+                                            ty = r.top
+                                            tym = 0
+                                        }
+
+                                        else -> {
+                                            ty = (r.top + r.bottom) / 2
+                                            tym = -50
+                                        }
                                     }
+                                } else {
+                                    if (currentDirection.after) {
+                                        ty = r.bottom
+                                        tym = 0
+                                    } else {
+                                        ty = r.top
+                                        tym = -100
+                                    }
+                                    when (currentDirection.align) {
+                                        Align.Start -> {
+                                            tx = r.right
+                                            txm = -100
+                                        }
 
-                                    else -> {
-                                        tx = (r.left + r.right) / 2
-                                        txm = -50
+                                        Align.End -> {
+                                            tx = r.left
+                                            txm = 0
+                                        }
+
+                                        else -> {
+                                            tx = (r.left + r.right) / 2
+                                            txm = -50
+                                        }
                                     }
                                 }
+                                style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
+
+                                val screen = document.body!!.getBoundingClientRect()
+                                val rect = e.getBoundingClientRect()
+                                var altered = false
+                                if (rect.right > screen.right) {
+                                    currentDirection = currentDirection.forceLeft()
+                                    altered = true
+                                }
+                                if (rect.left < screen.left) {
+                                    currentDirection = currentDirection.forceRight()
+                                    altered = true
+                                }
+                                if (rect.bottom > screen.bottom) {
+                                    currentDirection = currentDirection.forceTop()
+                                    altered = true
+                                }
+                                if (rect.top < screen.top) {
+                                    currentDirection = currentDirection.forceBottom()
+                                    altered = true
+                                }
+                                if(!altered) break
                             }
-                            style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
                         }
                     }
+                }
+
+                // Corrective measures: force it back on-screen
+                native.onElement { e ->
+                    e as HTMLElement
+                    ResizeObserver { entry, observer ->
+                        reposition()
+                    }.observe(e)
                 }
 
                 menuGenerator(this)

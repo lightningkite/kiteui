@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 actual object PlatformStorage {
 
     private val preferences: SharedPreferences by lazy {

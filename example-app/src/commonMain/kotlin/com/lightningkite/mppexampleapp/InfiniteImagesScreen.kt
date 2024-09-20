@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.delay
 
 @Routable("recycler-view-infinite-images")
 object InfiniteImagesScreen : Screen {
@@ -54,7 +55,7 @@ object InfiniteImagesScreen : Screen {
                     ::transitionId { it().toString() }
                     sizeConstraints(aspectRatio = 1.0) - image {
                         scaleType = ImageScaleType.Crop
-                        ::source { ImageRemote("https://picsum.photos/seed/${it.await()}/100/100") }
+                        ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
                     }
                     onClick {
                         dialogScreenNavigator.navigate(ImageViewPager(it.await()))
@@ -81,14 +82,14 @@ class ImageViewPager(val initialIndex: Int) : Screen {
                         zoomableImage {
                             reactiveScope {
                                 renders.value++
-                                val index = currImage.await()
+                                val index = currImage()
                                 source = ImageRemote("https://picsum.photos/seed/${index}/100/100")
-                                delay(1)
+                                async(index) { delay(1) }
                                 source = ImageRemote("https://picsum.photos/seed/${index}/1000/1000")
                             }
                             scaleType = ImageScaleType.Fit
                         }
-                        centered - h2 { ::content { renders.await().toString() } }
+                        centered - h2 { ::content { renders().toString() } }
                     }
                 }
                 index bind currentPage
@@ -101,11 +102,11 @@ class ImageViewPager(val initialIndex: Int) : Screen {
             }
             atBottomCenter - row {
                 text {
-                    ::content { "currentPage ${currentPage.await()}" }
+                    ::content { "currentPage ${currentPage()}" }
                 }
                 text {
                     content = "I never update because I'm a loser"
-                    ::content { "rv.index ${rv.index.await()}" }
+                    ::content { "rv.index ${rv.index()}" }
                 }
             }
             atBottomStart - button {

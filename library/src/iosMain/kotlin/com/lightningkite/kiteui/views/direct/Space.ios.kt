@@ -13,7 +13,7 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
     override val native = NSpace()
     override fun applyForeground(theme: Theme) {
@@ -24,7 +24,7 @@ actual class Space actual constructor(context: RContext, private val multiplier:
 //        sizeConstraints =
     }
 }
-@OptIn(ExperimentalForeignApi::class)
+
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = natSize

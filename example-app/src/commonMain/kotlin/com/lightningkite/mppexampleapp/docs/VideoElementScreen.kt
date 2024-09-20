@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoRemote
 import com.lightningkite.kiteui.models.rem
@@ -50,7 +51,7 @@ object VideoElementScreen: DocScreen {
                 }
                 """.trimIndent()) {
                 col {
-                    text { ::content { "Time: ${time.await()}" } }
+                    text { ::content { "Time: ${time()}" } }
                     button {
                         text("Restart")
                         onClick { time set 0.0 }
@@ -72,7 +73,7 @@ object VideoElementScreen: DocScreen {
                 }
                 """.trimIndent()) {
                 col {
-                    text { ::content { if(playing.await()) "Playing" else "Paused" } }
+                    text { ::content { if (playing()) "Playing" else "Paused" } }
                     button {
                         text("Play")
                         onClick { playing set true }

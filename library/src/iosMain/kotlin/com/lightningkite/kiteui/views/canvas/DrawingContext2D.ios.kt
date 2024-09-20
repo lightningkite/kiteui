@@ -110,7 +110,7 @@ actual abstract class DrawingContext2D {
 //    actual abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val height: Double) : DrawingContext2D() {
     override fun save() = CGContextSaveGState(wraps)
     override fun restore() = CGContextRestoreGState(wraps)
@@ -188,7 +188,7 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
     internal var stroke: Paint = Color.black
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
@@ -208,7 +208,7 @@ actual fun DrawingContext2D.appendArc(
     )
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
@@ -246,7 +246,7 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
     )
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
@@ -294,11 +294,11 @@ actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {
     (this as DrawingContext2DImpl).textAlign = alignment
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.fill(): Unit = CGContextFillPath((this as DrawingContext2DImpl).wraps)
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.fillEvenOdd(): Unit = CGContextEOFillPath((this as DrawingContext2DImpl).wraps)
-@OptIn(ExperimentalForeignApi::class)
+
 actual var DrawingContext2D.strokePaint: Paint
     get() = TODO()
     set(value) {
@@ -312,7 +312,7 @@ actual var DrawingContext2D.strokePaint: Paint
             c.alpha.toDouble()
         )
     }
-@OptIn(ExperimentalForeignApi::class)
+
 actual var DrawingContext2D.fillPaint: Paint
     get() = TODO()
     set(value) {
@@ -326,12 +326,12 @@ actual var DrawingContext2D.fillPaint: Paint
             c.alpha.toDouble()
         )
     }
-@OptIn(ExperimentalForeignApi::class)
+
 actual val DrawingContext2D.width: Double get() = (this as DrawingContext2DImpl).width
-@OptIn(ExperimentalForeignApi::class)
+
 actual val DrawingContext2D.height: Double get() = (this as DrawingContext2DImpl).height
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual fun DrawingContext2D.clear() {
     (this as DrawingContext2DImpl).wraps.let {
         CGContextClearRect(it, CGRectMake(0.0, 0.0, width, height))

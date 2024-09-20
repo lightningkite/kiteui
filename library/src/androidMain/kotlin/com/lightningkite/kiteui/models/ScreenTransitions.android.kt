@@ -8,7 +8,7 @@ import androidx.transition.*
 import androidx.transition.Visibility.MODE_IN
 import androidx.transition.Visibility.MODE_OUT
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 actual class ScreenTransition(
     val name: String,
     val enter: () -> Transition?,

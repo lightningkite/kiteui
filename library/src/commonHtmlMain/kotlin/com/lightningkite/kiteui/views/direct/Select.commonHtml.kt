@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.reactiveScope
 
 
 actual class Select actual constructor(context: RContext) : RView(context) {
@@ -18,10 +17,9 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         render: (T) -> String
     ) {
         var list: List<T> = listOf()
-        println("BIND STARTED")
         reactiveScope {
-            list = data.await()
-            val v = edits.await()
+            list = data()
+            val v = edits()
             native.clearChildren()
             list.mapIndexed { index, it ->
                 native.appendChild(FutureElement().apply {
@@ -34,9 +32,9 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         }
         var alreadyHandled = false
         reactiveScope {
-            val newValue = edits.await()
-            val list = data.await()
-            if(alreadyHandled) return@reactiveScope
+            val newValue = edits()
+            val list = data()
+            if (alreadyHandled) return@reactiveScope
             alreadyHandled = true
             val index = list.indexOf(newValue).toString()
             native.children.find { it.attributes.valueString == index }

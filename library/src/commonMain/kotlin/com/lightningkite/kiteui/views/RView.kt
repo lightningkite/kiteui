@@ -4,11 +4,17 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.validation.SignalingList
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
+    override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
     override fun existsSet(value: Boolean)
     override fun visibleSet(value: Boolean)
@@ -39,8 +45,10 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
-abstract class RViewHelper(override val context: RContext) : CalculationContext, ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     var additionalTestingData: Any? = null
+
+    abstract var showOnPrint: Boolean
 
     var opacity: Double = 1.0
         set(value) {
@@ -161,7 +169,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
             field = value
             if (parent != null) refreshTheming()
         }
-    private val internalChildren = SignalingList<RView>()
+    private val internalChildren = ArrayList<RView>()
     val children: List<RView> get() = internalChildren
     override fun willAddChild(view: RView) {
         view.parent = this as RView
@@ -204,9 +212,14 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
     }
 
+    private val job = Job()
+    override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
+        if(throwable !is CancellationException) {
+            throwable.printStackTrace2()
+        }
+    }
     open fun shutdown() {
-        onRemoveSet.invokeAllSafe()
-        onRemoveSet.clear()
+        job.cancel()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
@@ -238,11 +251,6 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
     val calculationContext: CalculationContext get() = this
-
-    private val onRemoveSet = ArrayList<() -> Unit>()
-    override fun onRemove(action: () -> Unit) {
-        onRemoveSet.add(action)
-    }
 
     val working = Property(false)
     private var loadCount = 0

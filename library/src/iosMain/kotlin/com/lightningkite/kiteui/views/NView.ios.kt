@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.Cancellable
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Angle
@@ -21,7 +20,8 @@ import platform.QuartzCore.CATransaction
 
 typealias NView = UIView
 
-@OptIn(ExperimentalForeignApi::class)
+
+@Suppress("UNCHECKED_CAST")
 val UIView.spacingOverride: Property<Dimension?>?
     get() = (this as? UIViewWithSpacingRulesProtocol)
         ?.getSpacingOverrideProperty()

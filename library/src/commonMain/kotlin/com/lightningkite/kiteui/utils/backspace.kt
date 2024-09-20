@@ -80,7 +80,7 @@ inline fun numberAutocommaRepair(
     }
 }
 
-inline fun Double.toStringNoExponential(): String {
+fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
     if (r == 0.0) return preDecimal
@@ -95,4 +95,10 @@ fun Double.commaString(): String {
     val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
     val postDecimal = clean.substringAfter('.', "")
     return if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
+}
+fun Int.commaString(): String {
+    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+}
+fun Long.commaString(): String {
+    return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
 }

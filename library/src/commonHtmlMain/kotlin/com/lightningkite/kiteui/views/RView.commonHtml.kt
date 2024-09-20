@@ -4,10 +4,19 @@ import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
+
+    actual override var showOnPrint: Boolean = true
+        set(value) {
+            if(value)
+                native.classes.remove("do-not-print")
+            else
+                native.classes.add("do-not-print")
+        }
 
     protected actual override fun opacitySet(value: Double) {
         native.style.opacity = value.toString()
@@ -107,13 +116,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         if(this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }
 
-    companion object { private var viewCounter: Int = 0 }
-    override fun postSetup() {
-        super.postSetup()
-        native.id = "${native.tag}${viewCounter++}"
-    }
-
-    override fun toString(): String = "${native.id}"
+    companion object { private var idCounter: Int = 0 }
+    private val randomId = idCounter++
+    fun toStringWithoutParent(): String = "${this::class.simpleName}#${randomId}"
+    override fun toString(): String = "${toStringWithoutParent()}, child of ${parent?.toStringWithoutParent()}"
 }
 
 typealias HtmlElementLike = FutureElement

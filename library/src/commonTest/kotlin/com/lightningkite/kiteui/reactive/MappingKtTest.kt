@@ -16,49 +16,168 @@ class MappingKtTest {
         val y: List<Int>
     )
 
-    @Test fun subfield() {
-        val source = Property(Sample(42, listOf(1, 2, 3)))
-        val view = source.lens(
-            get = { it.x },
-            modify = { old, it -> old.copy(x = it) }
+    @Test fun readableLenses() {
+        val source = Property(42)
+        val lenses = listOf(
+            source.lens(
+                get = { it + 1 },
+                set = { it - 1 }
+            ),
+            (source as Writable<Int>).lens(
+                get = { it + 1 },
+                set = { it - 1 }
+            ),
+            source.lens(
+                get = { it + 1 },
+                modify = { _, it -> it - 1 }
+            ),
+            (source as Writable<Int>).lens(
+                get = { it + 1 },
+                modify = { _, it -> it - 1 }
+            ),
+            (source as Readable<Int>).lens(
+                get = { it + 1 },
+            ),
+            (source as ImmediateReadable<Int>).lens(
+                get = { it + 1 },
+            )
         )
-        assertEquals(ReadableState(42), view.state)
-        testContext {
-            var seen = -1
-            var sets = 0
-            reactiveScope {
-                seen = view()
-                sets++
+        for (view in lenses) {
+            source.value = 41
+            assertEquals(ReadableState(42), view.state)
+            testContext {
+                var seen = -1
+                var sets = 0
+                reactiveScope {
+                    seen = view()
+                    sets++
+                }
+                assertEquals(42, seen)
+                assertEquals(1, sets)
+                source.value = 42
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                source.value = 42
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                source.value = 43
+                assertEquals(44, seen)
+                assertEquals(3, sets)
             }
-            assertEquals(42, seen)
-            assertEquals(1, sets)
-            launch { view.set(43) }
-            assertEquals(43, seen)
-            assertEquals(2, sets)
-            launch { view.set(43) }
-            assertEquals(43, seen)
-            assertEquals(2, sets)
-            source.value = source.value.copy(y = source.value.y + 4)
-            assertEquals(43, seen)
-            assertEquals(2, sets)
-            source.value = source.value.copy(x = source.value.x + 1)
-            assertEquals(44, seen)
-            assertEquals(3, sets)
         }
     }
 
-    @Test fun subfieldLate() {
+    @Test
+    fun writableLenses() {
+        val source = Property(42)
+        val lenses = listOf(
+            source.lens(
+                get = { it + 1 },
+                set = { it - 1 }
+            ),
+            (source as Writable<Int>).lens(
+                get = { it + 1 },
+                set = { it - 1 }
+            ),
+            source.lens(
+                get = { it + 1 },
+                modify = { _, it -> it - 1 }
+            ),
+            (source as Writable<Int>).lens(
+                get = { it + 1 },
+                modify = { _, it -> it - 1 }
+            )
+        )
+        for (view in lenses) {
+            source.value = 41
+            assertEquals(ReadableState(42), view.state)
+            testContext {
+                var seen = -1
+                var sets = 0
+                reactiveScope {
+                    seen = view()
+                    sets++
+                }
+                assertEquals(42, seen)
+                assertEquals(1, sets)
+                launch { view.set(43) }
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                launch { view.set(43) }
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                source.value += 1
+                assertEquals(44, seen)
+                assertEquals(3, sets)
+            }
+        }
+    }
+
+    @Test
+    fun subfield() {
+        val source = Property(Sample(42, listOf(1, 2, 3)))
+        val lenses = listOf(
+            source.lens(
+                get = { it.x },
+                modify = { old, it -> old.copy(x = it) }
+            ),
+            (source as Writable<Sample>).lens(
+                get = { it.x },
+                modify = { old, it -> old.copy(x = it) }
+            )
+        )
+        for (view in lenses) {
+            source.value = Sample(42, listOf(1, 2, 3))
+            assertEquals(ReadableState(42), view.state)
+            testContext {
+                var seen = -1
+                var sets = 0
+                reactiveScope {
+                    seen = view()
+                    sets++
+                }
+                assertEquals(42, seen)
+                assertEquals(1, sets)
+                launch { view.set(43) }
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                launch { view.set(43) }
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                source.value = source.value.copy(y = source.value.y + 4)
+                assertEquals(43, seen)
+                assertEquals(2, sets)
+                source.value = source.value.copy(x = source.value.x + 1)
+                assertEquals(44, seen)
+                assertEquals(3, sets)
+            }
+        }
+    }
+
+    @Test
+    fun subfieldLate() {
         val source = LateInitProperty<Sample>()
         val view = source.lens(
             get = { it.x },
-            modify = { old, it -> old.copy(x = it) }
+            modify = { old, it ->
+                println("Modify $old $it")
+                old.copy(x = it)
+            }
         )
+        source.addListener {
+            println("source raw: ${source.state}")
+        }
+//        view.addListener {
+//            println("View raw: ${view.state}")
+//        }
         assertEquals(ReadableState.notReady, view.state)
         testContext {
             var seen = -1
             var sets = 0
             reactiveScope {
+                println("Rerunning...")
                 seen = view()
+                println("Got $seen")
                 sets++
             }
             assertEquals(-1, seen)
@@ -88,19 +207,28 @@ class MappingKtTest {
                 println("source: $value")
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(
+            source,
+            ConsoleRoot,
+            identity = { it },
+            elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
             assertEquals(source.value, view.state.get().map { it.value }.also { println("Before: $it") })
             action(source, view)
-            assertEquals(source.value, view.state.get().map { it.value }.also { println("After: $it") })
+            println("After values: ${source.value}")
+            assertEquals(source.value, view.state.get().map {
+                println("Checking item ${it.id}")
+                it.value
+            }.also { println("After: $it") })
         }
     }
 
 
     // Identity of sub writables remains the same for same elements
-    @Test fun listIdentityWithoutListen() = perElementTest { source, view ->
+    @Test
+    fun listIdentityWithoutListen() = perElementTest { source, view ->
         val two = view.state.get().find { it.value == 2 }!!
         val three = view.state.get().find { it.value == 3 }!!
         source.value = listOf(2, 3, 4)
@@ -109,7 +237,8 @@ class MappingKtTest {
     }
 
     // Identity of sub writables remains the same for same elements
-    @Test fun listIdentity() = perElementTest { source, view ->
+    @Test
+    fun listIdentity() = perElementTest { source, view ->
         val two = view.state.get().find { it.value == 2 }!!
         val three = view.state.get().find { it.value == 3 }!!
         reactiveScope { three() }
@@ -119,7 +248,8 @@ class MappingKtTest {
     }
 
     // Setting a sub writable updates the source
-    @Test fun listSettingWithoutListen() = perElementTest { source, view ->
+    @Test
+    fun listSettingWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         launch {
             sub.set(4)
@@ -129,7 +259,8 @@ class MappingKtTest {
     }
 
     // Setting a sub writable updates the source
-    @Test fun listSettingWithListen() = perElementTest { source, view ->
+    @Test
+    fun listSettingWithListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
         launch {
@@ -140,63 +271,82 @@ class MappingKtTest {
     }
 
     // Insertion works
-    @Test fun listInsertionWithoutListen() = perElementTest { source, view ->
+    @Test
+    fun listInsertionWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements() + view.newElement(4)) }
+        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
-    @Test fun listInsertion() = perElementTest { source, view ->
+
+    @Test
+    fun listInsertion() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.elements.set(view.elements() + view.newElement(4)) }
+        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 
     // Removal works
-    @Test fun listRemovalWithoutListen() = perElementTest { source, view ->
+    @Test
+    fun listRemovalWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
+        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
-    @Test fun listRemoval() = perElementTest { source, view ->
+
+    @Test
+    fun listRemoval() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        reactiveScope { sub() }
-        launch { view.elements.set(view.elements().filter { it.value != 3 }) }
+        reactiveScope {
+            try {
+                sub()
+            } catch (e: Exception) {
+                println("Blocked $e")
+            }
+        }
+        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
 
     // Removal works by identity
-    @Test fun listRemovalByIdentityWithoutListen() = perElementTest { source, view ->
+    @Test
+    fun listRemovalByIdentityWithoutListen() = perElementTest { source, view ->
         launch { view.remove(3) }
         assertEquals(2, source.value.size)
     }
-    @Test fun listRemovalByIdentity() = perElementTest { source, view ->
+
+    @Test
+    fun listRemovalByIdentity() = perElementTest { source, view ->
         reactiveScope { sub() }
         launch { view.remove(3) }
         assertEquals(2, source.value.size)
     }
 
     // Rearranging works and retains identity
-    @Test fun listRearrangingWithoutListening() = perElementTest { source, view ->
+    @Test
+    fun listRearrangingWithoutListening() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements().reversed()) }
-        assertEquals(3, sub.value)
-    }
-    @Test fun listRearranging() = perElementTest { source, view ->
-        val sub = view.state.get().find { it.value == 3 }!!
-        reactiveScope { sub() }
-        launch { view.elements.set(view.elements().reversed()) }
+        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
         assertEquals(3, sub.value)
     }
 
-    @Test fun listSetWaitsForCompletion() {
+    @Test
+    fun listRearranging() = perElementTest { source, view ->
+        val sub = view.state.get().find { it.value == 3 }!!
+        reactiveScope { sub() }
+        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
+        assertEquals(3, sub.value)
+    }
+
+    @Test
+    fun listSetWaitsForCompletion() {
         val backing = Property(listOf(1, 2, 3)).apply {
             addListener {
                 println("backing: $value")
             }
         }
         val setGate = WaitGate()
-        val source = object: ImmediateReadable<List<Int>>, Writable<List<Int>> {
+        val source = object : ImmediateReadable<List<Int>>, Writable<List<Int>> {
             override val value: List<Int> get() = backing.value
             override fun addListener(listener: () -> Unit): () -> Unit = backing.addListener(listener)
 
@@ -205,7 +355,11 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(
+            source,
+            ConsoleRoot,
+            identity = { it },
+            elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source
@@ -225,14 +379,15 @@ class MappingKtTest {
         }
     }
 
-    @Test fun listConcurrentWorks() {
+    @Test
+    fun listConcurrentWorks() {
         val backing = Property(listOf(1, 2, 3)).apply {
             addListener {
                 println("backing: $value")
             }
         }
         val setGate = WaitGate()
-        val source = object: ImmediateReadable<List<Int>>, Writable<List<Int>> {
+        val source = object : ImmediateReadable<List<Int>>, Writable<List<Int>> {
             override val value: List<Int> get() = backing.value
             override fun addListener(listener: () -> Unit): () -> Unit = backing.addListener(listener)
 
@@ -241,7 +396,11 @@ class MappingKtTest {
                 backing.value = value
             }
         }
-        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(source, ConsoleRoot, identity = { it }, elementLens = { it })
+        val view = WritableList<Int, Int, WritableList<Int, Int, *>.ElementWritable>(
+            source,
+            ConsoleRoot,
+            identity = { it },
+            elementLens = { it })
         assertEquals(source.value, view.state.get().map { it.value })
         testContext {
             // The state of each subwritable always matches the source

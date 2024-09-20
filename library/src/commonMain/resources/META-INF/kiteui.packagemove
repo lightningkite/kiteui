@@ -1,0 +1,7 @@
+
+MOVE com.lightningkite.kiteui.delay -> kotlinx.coroutines.delay
+MOVE com.lightningkite.lightningdb.lensPath -> com.lightningkite.serialization.lensPath
+MOVE com.lightningkite.lightningdb.map -> com.lightningkite.serialization.map
+MOVE com.lightningkite.kiteui.views.launch -> com.lightningkite.kiteui.launch
+MOVE com.lightningkite.kiteui.reactiveScope -> com.lightningkite.kiteui.reactive.reactiveScope
+MOVE com.lightningkite.kiteui.views.reactiveScope -> com.lightningkite.kiteui.reactive.reactiveScope

@@ -6,6 +6,11 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.yield
 
 @Routable("reactivity")
 object ReactivityScreen : Screen {
@@ -15,11 +20,12 @@ object ReactivityScreen : Screen {
     override fun ViewWriter.render() {
         val local = Property("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
+        val dependency = Property(0)
         val fetching = shared {
-            delay(1000)
+            async(dependency()) { delay(1000) }
             "Loaded!"
         }
-        col {
+        scrolls - col {
             col {
                 h1 { content = "This screen demonstrates various forms of reactivity." }
                 text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }
@@ -38,10 +44,21 @@ object ReactivityScreen : Screen {
                 button {
                     text { content = "Reload 'fetching'" }
                     onClick {
-                        // TODO
+                        dependency.value++
                     }
                 } in important
             } in card
+
+            text {
+                val timerFlow = flow<Int> {
+                    var it = 0
+                    while(true) {
+                        emit(it++)
+                        delay(it * 10L)
+                    }
+                }
+                ::content { timerFlow().toString() }
+            }
 
             col {
                 h2 { content = "Using reactiveScope()" }
@@ -52,9 +69,9 @@ object ReactivityScreen : Screen {
 
             col {
                 h2 { content = "Using reactiveScope()" }
-                text { reactiveScope { content = local.await() } }
-                text { reactiveScope { content = persist.await() } }
-                text { reactiveScope { content = fetching.await() } }
+                text { reactiveScope { content = local() } }
+                text { reactiveScope { content = persist() } }
+                text { reactiveScope { content = fetching() } }
             } in card
 
             col {
@@ -66,9 +83,9 @@ object ReactivityScreen : Screen {
 
             col {
                 h2 { content = "Using ::content {}" }
-                text { ::content { local.await() } }
-                text { ::content { persist.await() } }
-                text { ::content { fetching.await() } }
+                text { ::content { local() } }
+                text { ::content { persist() } }
+                text { ::content { fetching() } }
             } in card
         }
     }

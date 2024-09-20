@@ -38,69 +38,62 @@ actual suspend fun fetch(
     onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
-    return withContext(Dispatchers.Main) {
-        try {
-            val response = withContext(Dispatchers.IO) {
-                client.request(url) {
-                    this.method = when (method) {
-                        HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                        HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                        HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                        HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                        HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                        HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
-                    }
-                    headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
-                    when (body) {
-                        is RequestBodyBlob -> {
-                            contentType(ContentType.parse(body.content.type))
-                            setBody(body.content.data)
-                        }
+    try {
+        val response = client.request(url) {
+            this.method = when (method) {
+                HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
+            }
+            headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
+            when (body) {
+                is RequestBodyBlob -> {
+                    contentType(ContentType.parse(body.content.type))
+                    setBody(body.content.data)
+                }
 
-                        is RequestBodyFile -> {
-                            contentType(ContentType.parse(body.content.mimeType()))
-                            with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
-                                this?.readBytes()?.let { setBody(it) }
-                            }
-                        }
-
-                        is RequestBodyText -> {
-                            contentType(ContentType.parse(body.type))
-                            setBody(body.content)
-                        }
-
-                        null -> {}
-                    }
-                    onUploadProgress?.let {
-                        onUpload { a, b ->
-                            withContext(Dispatchers.Main) {
-                                it(a.toInt(), b.toInt())
-                            }
-                        }
-                    }
-                    onDownloadProgress?.let {
-                        onDownload { a, b ->
-                            withContext(Dispatchers.Main) {
-                                it(a.toInt(), b.toInt())
-                            }
-                        }
+                is RequestBodyFile -> {
+                    contentType(ContentType.parse(body.content.mimeType()))
+                    with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
+                        this?.readBytes()?.let { setBody(it) }
                     }
                 }
+
+                is RequestBodyText -> {
+                    contentType(ContentType.parse(body.type))
+                    setBody(body.content)
+                }
+
+                null -> {}
             }
-            RequestResponse(response)
-        } catch (e: Exception) {
-            throw ConnectionException("Network request failed", e)
+            onUploadProgress?.let {
+                onUpload { a, b ->
+                    it(a.toInt(), b.toInt())
+                }
+            }
+            onDownloadProgress?.let {
+                onDownload { a, b ->
+                    it(a.toInt(), b.toInt())
+                }
+            }
         }
+        return RequestResponse(response)
+    } catch (e: Exception) {
+        throw ConnectionException("Network request failed", e)
     }
 }
 
-actual inline fun httpHeaders(map: Map<String, String>): HttpHeaders =
+actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual inline fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
-actual inline fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual inline fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+
+actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
 actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
@@ -124,11 +117,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
     actual val ok: Boolean get() = wraps.status.isSuccess()
     actual suspend fun text(): String {
         try {
-            val result = withContext(Dispatchers.Main) {
-                withContext(Dispatchers.IO) {
-                    wraps.bodyAsText()
-                }
-            }
+            val result = wraps.bodyAsText()
             return result
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
@@ -137,19 +126,17 @@ actual class RequestResponse(val wraps: HttpResponse) {
 
     actual suspend fun blob(): Blob {
         try {
-            val result = withContext(Dispatchers.Main) {
-                withContext(Dispatchers.IO) {
-                    wraps.body<ByteArray>()
-                        .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
-                }
-            }
+            val result = wraps.body<ByteArray>()
+                .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
             return result
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
     }
 
-    actual val headers: HttpHeaders get() = HttpHeaders(wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
+    actual val headers: HttpHeaders
+        get() = HttpHeaders(
+            wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
 actual fun websocket(url: String): WebSocket {
@@ -186,12 +173,11 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 
     init {
+        @Suppress("OPT_IN_USAGE")
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    withContext(Dispatchers.Main) {
-                        onOpen.forEach { it() }
-                    }
+                    onOpen.forEach { it() }
                     launch {
                         try {
                             while (stayOn) {
@@ -204,9 +190,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
-                                withContext(Dispatchers.Main) {
-                                    onClose.forEach { it(reason.code) }
-                                }
+                                onClose.forEach { it(reason.code) }
                             }
                         } catch (e: ClosedReceiveChannelException) {
                         }
@@ -217,16 +201,12 @@ class WebSocketWrapper(val url: String) : WebSocket {
                             when (val x = incoming.receive()) {
                                 is Frame.Binary -> {
                                     val data = Blob(x.data, "application/octet-stream")
-                                    withContext(Dispatchers.Main) {
-                                        onBinaryMessage.forEach { it(data) }
-                                    }
+                                    onBinaryMessage.forEach { it(data) }
                                 }
 
                                 is Frame.Text -> {
                                     val text = x.readText()
-                                    withContext(Dispatchers.Main) {
-                                        onMessage.forEach { it(text) }
-                                    }
+                                    onMessage.forEach { it(text) }
                                 }
 
                                 is Frame.Close -> {
@@ -239,14 +219,10 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         } catch (e: ClosedReceiveChannelException) {
                         }
                     }
-                    withContext(Dispatchers.Main) {
-                        onClose.forEach { it(reason?.code ?: 0) }
-                    }
+                    onClose.forEach { it(reason?.code ?: 0) }
                 }
-            } catch(e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onClose.forEach { it(0) }
-                }
+            } catch (e: Exception) {
+                onClose.forEach { it(0) }
             }
         }
     }
@@ -285,10 +261,11 @@ actual class FileReference(val uri: Uri)
 
 
 actual fun Blob.mimeType() = type
-actual fun FileReference.mimeType() = when(uri.scheme) {
+actual fun FileReference.mimeType() = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
     ContentResolver.SCHEME_FILE ->
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
+
     ContentResolver.SCHEME_ANDROID_RESOURCE -> null
     else -> null
 } ?: "*/*"

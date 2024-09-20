@@ -35,13 +35,13 @@ class WaitGate(permit: Boolean = false) {
     }
     fun abandon() {
         for (continuation in continuations) {
-            continuation.resumeWithException(CancelledException())
+            continuation.resumeWithException(CancelledException("abandoned as requested"))
         }
         continuations.clear()
     }
 }
 
-class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: Long) -> Unit = { ms -> com.lightningkite.kiteui.delay(ms) }) {
+class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: Long) -> Unit = { ms -> kotlinx.coroutines.delay(ms) }) {
     val gate = WaitGate(true)
     val baseRetry = 10.seconds
     var nextRetry = baseRetry

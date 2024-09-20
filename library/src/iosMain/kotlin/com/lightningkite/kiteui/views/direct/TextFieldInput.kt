@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -14,7 +14,7 @@ import platform.objc.sel_registerName
 import com.lightningkite.kiteui.reactive.Property
 import kotlin.experimental.ExperimentalNativeApi
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class, ExperimentalNativeApi::class)
+@OptIn(ExperimentalNativeApi::class)
 class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
     val calculationContextWeak = WeakReference(calculationContext)
 

@@ -16,7 +16,7 @@ import platform.UIKit.UIView
 import kotlin.math.max
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
     if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
@@ -60,7 +60,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
     if (hidden) return null
     if (bounds.useContents {
@@ -88,7 +88,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.frameLayoutSizeThatFits(
     size: CValue<CGSize>,
     childSizeCache: ArrayList<HashMap<Size, Size>>
@@ -108,7 +108,7 @@ fun UIView.frameLayoutSizeThatFits(
     return measuredSize.objc
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
     var t = PerformanceInfo.trace("calcSizeFrame")
     val padding = extensionPadding ?: 0.0
@@ -164,9 +164,9 @@ fun UIView.frameLayoutWillRemoveSubview(subview: UIView, childSizeCache: ArrayLi
 data class Size(var width: Double = 0.0, var height: Double = 0.0) {
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 val Size.objc get() = CGSizeMake(width, height)
 val CGSize.local get() = Size(width, height)
 
-@OptIn(ExperimentalForeignApi::class)
+
 val CValue<CGSize>.local get() = useContents { local }

@@ -17,11 +17,11 @@ import platform.UIKit.UISwitch
 import platform.UIKit.UIView
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class SwapView actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout()
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {
         clearChildren()
         createNewView()

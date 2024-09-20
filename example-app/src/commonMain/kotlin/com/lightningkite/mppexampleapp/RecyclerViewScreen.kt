@@ -56,10 +56,10 @@ object RecyclerViewScreen : Screen {
                             else null
                         }
                         row {
-                            expanding - centered - text { ::content { "Item ${it.await()}" } }
+                            expanding - centered - text { ::content { "Item ${it()}" } }
                             centered - button {
                                 text {
-                                    ::content { if (expanded.await() == it.await()) "Expanded" else "Expand" }
+                                    ::content { if (expanded() == it()) "Expanded" else "Expand" }
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
@@ -67,8 +67,8 @@ object RecyclerViewScreen : Screen {
                                 }
                             }
                         }
-                        onlyWhen { expanded.await() == it.await() } - col {
-                            text { ::content { "Content for ${it.await()} == ${expanded.await()}" } }
+                        onlyWhen { expanded() == it() } - col {
+                            text { ::content { "Content for ${it()} == ${expanded()}" } }
                             text("More Content")
                             text("More Content")
                             text("More Content")
@@ -82,7 +82,7 @@ object RecyclerViewScreen : Screen {
             row {
                 text {
                     ::content {
-                        "Min: ${recyclerView!!.firstVisibleIndex.await()}, Max: ${recyclerView!!.lastVisibleIndex.await()}"
+                        "Min: ${recyclerView!!.firstVisibleIndex()}, Max: ${recyclerView!!.lastVisibleIndex()}"
                     }
                 }
             }

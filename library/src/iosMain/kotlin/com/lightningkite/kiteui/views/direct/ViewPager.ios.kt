@@ -14,7 +14,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         forceCentering = true
         elementsMatchSize = true
     }
-    val newViews = NewViewWriter(context)
+    val newViews = NewViewWriter(this, context)
 
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -29,7 +29,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         // Do nothing.  All children are virtual and managed by the native recycler view.
     }
 
-    @OptIn(ExperimentalForeignApi::class)
+
     actual val index: Writable<Int>
         get() = native.centerVisible
             .withWrite { native.jump(it, Align.Center, animationsEnabled) }
@@ -57,7 +57,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             }
         )
         reactiveScope {
-            native.data = items.await().asIndexed()
+            native.data = items().asIndexed()
         }
     }
 

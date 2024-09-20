@@ -9,7 +9,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class Separator actual constructor(context: RContext): RView(context) {
     override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
     init {

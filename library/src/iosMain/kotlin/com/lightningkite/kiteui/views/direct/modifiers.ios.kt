@@ -1,4 +1,5 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
+@file:Suppress("OPT_IN_USAGE")
 
 package com.lightningkite.kiteui.views.direct
 
@@ -9,6 +10,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
@@ -18,7 +20,7 @@ import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-@OptIn(ExperimentalForeignApi::class)
+
 @ViewModifierDsl3
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -40,7 +42,7 @@ actual fun ViewWriter.hintPopover(
     return ViewWrapper
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 @ViewModifierDsl3
 actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -58,7 +60,7 @@ actual fun ViewWriter.hasPopover(
                                 screenNavigator = originalNavigator
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
-                                        get() = this@beforeNextElementSetup.calculationContext
+                                        get() = this@beforeNextElementSetup
 
                                     override fun close() {
                                         dialogScreenNavigator.dismiss()
@@ -96,9 +98,9 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
-        calculationContext.reactiveScope {
+        reactiveScope {
             native.extensionWeight = amount()
         }
     }
@@ -149,7 +151,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
@@ -161,7 +163,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeCon
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         exists = default
         ::exists.invoke(condition)

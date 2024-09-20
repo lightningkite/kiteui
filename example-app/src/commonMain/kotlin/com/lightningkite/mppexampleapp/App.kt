@@ -34,7 +34,7 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
         }
 
         ::exists {
-            navigator.currentScreen.await() !is UseFullScreen
+            navigator.currentScreen() !is UseFullScreen
         }
 
         actions = listOf(

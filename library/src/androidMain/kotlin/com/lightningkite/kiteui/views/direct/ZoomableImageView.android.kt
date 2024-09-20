@@ -24,6 +24,7 @@ import androidx.core.view.children
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
+import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
@@ -47,10 +48,18 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
-            fun target() = object : SimpleTarget<Drawable>() {
+            fun target() = object : CustomViewTarget<TouchImageView, Drawable>(native) {
                 override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
                     println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
                     native.setImageDrawable(p0)
+                }
+
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    native.setImageDrawable(errorDrawable)
+                }
+
+                override fun onResourceCleared(placeholder: Drawable?) {
+                    native.setImageDrawable(placeholder)
                 }
             }
             when (value) {

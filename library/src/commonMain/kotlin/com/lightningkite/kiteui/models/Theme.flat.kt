@@ -14,8 +14,7 @@ fun Theme.Companion.flat(
     body: FontAndStyle = FontAndStyle(),
 ) = Theme(
     id = id,
-    title = title,
-    body = body,
+    font = body,
     elevation = 0.dp,
     cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
     spacing = 0.75.rem,
@@ -24,105 +23,109 @@ fun Theme.Companion.flat(
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
-    important = {
-        val existing = background.closestColor().toHSP()
-        if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
-            val b = existing.copy(brightness = 0.5f).toRGB()
-            copy(
-                id = "imp",
-                foreground = b.highlight(1f),
-                background = b,
-                outline = b,
-            )
-        } else {
-            val closerToAccent = (existing.hue angleTo hue).turns.absoluteValue > (existing.hue angleTo accentHue).turns.absoluteValue
-            val b = HSPColor(hue = if(closerToAccent) hue else accentHue, saturation = saturation, brightness = 0.5f).toRGB()
-            copy(
-                id = "imp",
-                foreground = b.highlight(1f),
-                background = b,
-                outline = b,
-            )
-        }
-    },
-    dialog = { card() },
-    card = {
-        copy(id = "crd", background = this.background.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB() )
-    },
-    unselected = {
-        val existing = background.closestColor().toHSP()
-        if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
-            null
-        } else {
-            copy(
-                id = "uns",
-                background = background.closestColor().copy(alpha = 0f),
-                foreground = outline.closestColor(),
-                outlineWidth = 1.dp
-            )
-        }
-    },
-    selected = {
-        copy(id = "sel", background = this.background.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 2)
-        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 2)
-        }.toRGB(), outlineWidth = outlineWidth * 2)
-    },
-    hover = {
-        copy(id = "hov", background = this.background.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep)
-        }.toRGB(), outlineWidth = outlineWidth * 2)
-    },
-    focus = {
-        val o = outline.closestColor()
-        val b = background.closestColor()
-        if(b.alpha == 0f || abs(o.perceivedBrightness - b.perceivedBrightness) > 0.4) {
-            copy(
-                id = "fcs",
-                outlineWidth = outlineWidth + 3.dp,
-            )
-        } else {
-            copy(
-                id = "fcs",
-                outlineWidth = outlineWidth + 3.dp,
-                outline = Color.gray(baseBrightness).highlight(1f)
-            )
-        }
-    },
-    down = {
-        copy(id = "dwn", background = this.background.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 3)
-        }.toRGB(), outline = this.outline.closestColor().toHSP().let {
-            it.copy(brightness = it.brightness + brightnessStep * 3)
-        }.toRGB(), outlineWidth = outlineWidth * 2)
-    },
+    derivations = mapOf(
+        ImportantSemantic to {
+            val existing = it.background.closestColor().toHSP()
+            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
+                val b = existing.copy(brightness = 0.5f).toRGB()
+                it.copy(
+                    id = "imp",
+                    foreground = b.highlight(1f),
+                    background = b,
+                    outline = b,
+                )
+            } else {
+                val closerToAccent = (existing.hue angleTo hue).turns.absoluteValue > (existing.hue angleTo accentHue).turns.absoluteValue
+                val b = HSPColor(hue = if(closerToAccent) hue else accentHue, saturation = saturation, brightness = 0.5f).toRGB()
+                it.copy(
+                    id = "imp",
+                    foreground = b.highlight(1f),
+                    background = b,
+                    outline = b,
+                )
+            }.withBack
+        },
+        CardSemantic to {
+            it.copy(id = "crd", background = it.background.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep)
+            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep)
+            }.toRGB() ).withBack
+        },
+        UnselectedSemantic to {
+            val existing = it.background.closestColor().toHSP()
+            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
+                it.withoutBack
+            } else {
+                it.copy(
+                    id = "uns",
+                    background = it.background.closestColor().copy(alpha = 0f),
+                    foreground = it.outline.closestColor(),
+                    outlineWidth = 1.dp
+                ).withBack
+            }
+        },
+        SelectedSemantic to {
+            it.copy(id = "sel", background = it.background.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep * 2)
+            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep * 2)
+            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
+        },
+        HoverSemantic to {
+            it.copy(id = "hov", background = it.background.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep)
+            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep)
+            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
+        },
+        FocusSemantic to {
+            val o = it.outline.closestColor()
+            val b = it.background.closestColor()
+            if(b.alpha == 0f || abs(o.perceivedBrightness - b.perceivedBrightness) > 0.4) {
+                it.copy(
+                    id = "fcs",
+                    outlineWidth = it.outlineWidth + 3.dp,
+                )
+            } else {
+                it.copy(
+                    id = "fcs",
+                    outlineWidth = it.outlineWidth + 3.dp,
+                    outline = Color.gray(baseBrightness).highlight(1f)
+                )
+            }.withBack
+        },
+        DownSemantic to {
+            it.copy(id = "dwn", background = it.background.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep * 3)
+            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
+                it.copy(brightness = it.brightness + brightnessStep * 3)
+            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
+        },
 
-    field = {
-        copy(
-            id = "fld",
-            outlineWidth = 1.px,
-            background = background.closestColor(),
-        )
-    },
-    bar = { null },
-    nav = { card() },
-    mainContent = {
-        copy(
-            id = "con",
-            background = RadialGradient(
-                stops = listOf(
-                    GradientStop(0f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep * 2).toRGB()),
-                    GradientStop(0.4f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep).toRGB()),
-                    GradientStop(1f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep).toRGB()),
-                ),
-            )
-        )
-    }
+        FieldSemantic to {
+            it.copy(
+                id = "fld",
+                outlineWidth = 1.px,
+                background = it.background.closestColor(),
+            ).withBack
+        },
+        BarSemantic to { it.withoutBack },
+        NavSemantic to { it[CardSemantic] },
+        MainContentSemantic to {
+            it.copy(
+                id = "con",
+                background = RadialGradient(
+                    stops = listOf(
+                        GradientStop(0f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep * 2).toRGB()),
+                        GradientStop(0.4f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep).toRGB()),
+                        GradientStop(1f, HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness + brightnessStep).toRGB()),
+                    ),
+                )
+            ).withBack
+        },
+        DialogSemantic to {
+            it.copy(outlineWidth = 1.dp, spacing = 2.rem, revert = true).withBack
+        },
+    ),
 )

@@ -14,7 +14,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
     private fun onController(action: (RecyclerController2)->Unit) {
         controller?.let(action) ?: onController.add(action)
     }
-    private val newViews = NewViewWriter(context)
+    private val newViews = NewViewWriter(this, context)
     private val buttons = ArrayList<RView>()
     init {
         native.tag = "div"
@@ -28,7 +28,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             onController.clear()
         }
 
-        with(object: ViewWriter() {
+        with(object: ViewWriter(), CalculationContext by this {
             override val context: RContext = context
             override fun willAddChild(view: RView) {
                 super.willAddChild(view)
@@ -117,7 +117,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 }
             )
             reactiveScope {
-                controller.data = items.await().asIndexed()
+                controller.data = items().asIndexed()
             }
         }
     }

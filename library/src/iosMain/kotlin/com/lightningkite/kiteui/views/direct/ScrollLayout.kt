@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -21,7 +21,7 @@ object ScrollLayoutMeta {
     val unboundSize = 10_000.0
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
     var horizontal: Boolean = true
     var padding: Double

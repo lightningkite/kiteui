@@ -14,7 +14,7 @@ fun UIView.findFirstResponderChild(): UIView? {
     else return subviews.asSequence().mapNotNull { (it as UIView).findFirstResponderChild() }.firstOrNull()
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.scrollToMe(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal
@@ -48,7 +48,7 @@ fun UIView.scrollToMe(animated: Boolean = false) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.scrollToMeCenter(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal

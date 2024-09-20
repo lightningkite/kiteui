@@ -18,7 +18,7 @@ import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.*
 import platform.objc.sel_registerName
 
-@OptIn(ExperimentalForeignApi::class)
+
 class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     init {
@@ -106,7 +106,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
     }
 
 
-    @OptIn(BetaInteropApi::class)
+
     @ObjCAction
     fun handleLink() {
         val text = label.attributedText ?: return

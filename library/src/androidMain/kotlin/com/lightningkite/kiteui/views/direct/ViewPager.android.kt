@@ -50,7 +50,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                     loading = true
                     notifyDataSetChanged()
                 }) {
-                    val new = items.await().toList()
+                    val new = items().toList()
                     loading = false
                     lastPublished = new
                     notifyDataSetChanged()

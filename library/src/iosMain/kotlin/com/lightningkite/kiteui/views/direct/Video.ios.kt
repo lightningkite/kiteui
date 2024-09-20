@@ -29,7 +29,7 @@ import platform.darwin.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class Video actual constructor(context: RContext) : RView(context) {
 
     inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
@@ -76,7 +76,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                     } else {
                         if (_playing.value != value) _playing.value = value
                         if (player.rate > 0f) {
-                            animationFrameRateClose = AnimationFrame.addListener {
+                            animationFrameRateClose = AppState.animationFrame.addListener {
                                 _time.value = CMTimeGetSeconds(player.currentTime())
                             }
                         } else {
@@ -94,7 +94,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    @OptIn(BetaInteropApi::class)
+    
     val playerCallbackHolder = object: NSObject() {
         @ObjCAction
         fun playerItemDidReachEnd(notification: NSNotification?) {
@@ -164,14 +164,14 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    @OptIn(ExperimentalForeignApi::class)
+    
     actual val time: Writable<Double>
         get() = _time
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
-    @OptIn(ExperimentalForeignApi::class)
+    
     actual val playing: Writable<Boolean>
         get() = _playing
             .withWrite {

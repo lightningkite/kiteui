@@ -13,22 +13,25 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import timber.log.Timber
 
 abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: suspend () -> Theme get() = { Theme.placeholder }
+    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
     abstract val mainNavigator : ScreenNavigator
 
     lateinit var root: RView
-    val viewWriter = object: ViewWriter() {
+    val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
             root = view
@@ -53,8 +56,8 @@ abstract class KiteUiActivity : AppCompatActivity() {
         window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         Timber.plant(Timber.DebugTree())
 
-        CalculationContext.NeverEnds.reactiveScope {
-            window?.statusBarColor = theme().let { it.bar() }.background.closestColor().darken(0.3f).toInt()
+        viewWriter.reactiveScope {
+            window?.statusBarColor = theme().let { it[BarSemantic].theme }.background.closestColor().darken(0.3f).toInt()
         }
 
         savedInstanceState?.getStringArray("navStack")?.let {
@@ -81,6 +84,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         ActivityCompat.startActivityForResult(this, intent, requestCode, options)
         return requestCode
     }
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         onResults[requestCode]?.invoke(resultCode, data)
         onResults.remove(requestCode)

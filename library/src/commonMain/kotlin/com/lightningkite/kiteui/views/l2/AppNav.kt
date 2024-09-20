@@ -54,7 +54,7 @@ fun ViewWriter.appNav(main: ScreenNavigator, dialog: ScreenNavigator? = null, se
     appBase(main, dialog) {
         swapView {
             swapping(
-                current = { appNavFactory.await() },
+                current = { appNavFactory() },
                 views = { it(this, setup) }
             )
         }
@@ -66,6 +66,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val showMenu = Property(false)
     padded - navSpacing - col {
         bar - row {
+            showOnPrint = false
             setup(appNav)
             toggleButton {
                 checked bind showMenu
@@ -73,11 +74,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             }
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { screenNavigator.canGoBack.await() }
+                ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -85,11 +86,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
                 Align.Center
             ) in weight(1f)
             navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty.await() }
+            ::exists { appNav.existsProperty() }
         }
         expanding - navSpacing - stack {
             navigatorView(screenNavigator)
-            atStart - navSpacing - onlyWhen(false) { showMenu.await() && appNav.existsProperty.await() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+            atStart - navSpacing - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 spacing = 0.px
             }
         }
@@ -102,14 +103,15 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     // Nav 2 top, horizontal
     padded - navSpacing  - col {
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { screenNavigator.canGoBack.await() }
+                ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -120,7 +122,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
             expanding - centered - navGroupTop(appNav.navItemsProperty)
             space()
             centered - navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty.await() }
+            ::exists { appNav.existsProperty() }
         }
         expanding - navigatorView(screenNavigator)
     }
@@ -131,14 +133,15 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { screenNavigator.canGoBack.await() }
+                ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -146,12 +149,13 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
                 Align.Center
             ) in weight(1f)
             navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty.await() }
+            ::exists { appNav.existsProperty() }
         }
         expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
-            ::exists { appNav.existsProperty.await() && !SoftInputOpen.await() }
+            showOnPrint = false
+            ::exists { appNav.existsProperty() && !AppState.softInputOpen() }
         }
     }
 }
@@ -161,14 +165,15 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     padded - navSpacing  - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
+            showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
                 icon(Icon.arrowBack, "Go Back")
-                ::visible { screenNavigator.canGoBack.await() }
+                ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
             h2 {
-                ::content.invoke { screenNavigator.currentScreen.await()?.title?.await() ?: "" }
+                ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             } in gravity(
@@ -178,11 +183,12 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
             space {} in weight(1f)
             navGroupActions(appNav.actionsProperty)
 
-            ::exists { appNav.existsProperty.await() }
+            ::exists { appNav.existsProperty() }
         }
         navSpacing  - row {
             navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
-                ::exists { appNav.navItemsProperty.await().size > 1 && appNav.existsProperty.await() }
+                ::exists { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
+                showOnPrint = false
             }
             expanding - navigatorView(screenNavigator)
         } in weight(1f)

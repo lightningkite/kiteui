@@ -9,6 +9,8 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.kiteui.views.l2.toast
+import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 import kotlin.properties.ReadWriteProperty
@@ -89,36 +91,35 @@ object ControlsScreen : Screen {
                     button {
                         onClick {
                             delay(1000L);
-                            val x = fetch("https://sitedoesnotexist.com")
-                            println(x.text())
+                            toast("OK!")
                         }; text {
                         content = "Sample"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     card - button {
                         onClick { delay(1000L) }; text {
                         content = "Card"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     important - button {
                         onClick { delay(1000L) }; text {
                         content = "Important"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     critical - button {
                         onClick { delay(1000L) }; text {
                         content = "Critical"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     warning - button {
                         onClick { delay(1000L) }; text {
                         content = "Warning"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     danger - button {
                         onClick { delay(1000L) }; text {
                         content = "Danger"
-                    }; ::enabled { booleanContent.await() }
+                    }; ::enabled { booleanContent() }
                     }
                     expanding - space {}
                 } in scrollsHorizontally
@@ -362,7 +363,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDate?>(null)
                 h2 { content = "Date Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
@@ -376,7 +377,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalTime?>(null)
                 h2 { content = "Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time }
@@ -390,7 +391,7 @@ object ControlsScreen : Screen {
             col {
                 val date = Property<LocalDateTime?>(null)
                 h2 { content = "Date Time Fields" }
-                text { ::content { date.await()?.renderToString() ?: "Not Selected" } }
+                text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
                     text("Set to now")
                     onClick { date set Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
@@ -404,7 +405,7 @@ object ControlsScreen : Screen {
             col {
                 val number = Property<Double?>(1.0)
                 h2 { content = "Number Fields" }
-                text { ::content { "Value: ${number.await()}" } }
+                text { ::content { "Value: ${number()}" } }
                 fieldTheme - numberField { content bind number }
                 fieldTheme - numberField { content bind number } in card
                 fieldTheme - numberField { content bind number } in important
@@ -415,7 +416,7 @@ object ControlsScreen : Screen {
                 val number = Property(1)
                 val text = Property("text")
                 h2 { content = "Text Fields" }
-                text { ::content { "Text: ${text.await()}" } }
+                text { ::content { "Text: ${text()}" } }
                 fieldTheme - textField { content bind text }
                 fieldTheme - textField { content bind text } in card
                 fieldTheme - textField { content bind text } in important

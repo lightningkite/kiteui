@@ -10,7 +10,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIView
 
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton(this)
     actual inline var enabled: Boolean

@@ -34,8 +34,8 @@ class ArgumentsExampleScreen(val id: String): Screen {
         link {
             text { content = "Append '-plus'" }
             ::to label@{
-                val a = toAdd.await()
-                val b = list.await()
+                val a = toAdd()
+                val b = list()
                 return@label {
                     ArgumentsExampleScreen("$id-plus").also {
                         it.toAdd.value = a
@@ -47,7 +47,7 @@ class ArgumentsExampleScreen(val id: String): Screen {
         h2 { content = "The list so far" }
         col {
             forEachUpdating(list) {
-                text { ::content { it.await() } }
+                text { ::content { it() } }
             }
         }
         h2 { content = "Add more" }

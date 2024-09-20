@@ -19,7 +19,7 @@ object RootScreen : Screen {
     override fun ViewWriter.render() {
         scrolls - col {
             col {
-                h1 { content = "Beautiful by default." }
+                h1 { launch { content = "Beautiful by default." } }
                 separator()
                 text {
                     content =
@@ -39,7 +39,7 @@ object RootScreen : Screen {
                     to = screen
                     row {
                         text {
-                            ::content{ screen().title.await() }
+                            ::content{ screen().title() }
 //                            content  = screen.toString()
                         } in weight(1f)
                         icon(Icon.chevronRight, "Open")
@@ -82,7 +82,7 @@ object RootScreen : Screen {
                         to = screen
                         row {
                             text {
-                                ::content{ screen().title.await() }
+                                ::content{ screen().title() }
 //                            content  = screen.toString()
                             } in weight(1f)
                             icon(Icon.chevronRight, "Open")

@@ -2,12 +2,15 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
+import kotlinx.coroutines.DelicateCoroutinesApi
 
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
-    object : ViewWriter() {
+    @OptIn(DelicateCoroutinesApi::class)
+    object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
         override val context: RContext = RContext("/")
 
         override fun addChild(view: RView) {

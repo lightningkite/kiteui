@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -25,7 +25,7 @@ import kotlin.native.ref.WeakReference
 //
 //class LayoutParams()
 
-@OptIn(ExperimentalForeignApi::class)
+
 class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0
@@ -43,7 +43,9 @@ class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CG
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
     override fun willRemoveSubview(subview: UIView) {
-        if(this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
+        // Fixes a really cursed crash where "this" is null due to GC interactions
+        @Suppress("SENSELESS_COMPARISON")
+        if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
 

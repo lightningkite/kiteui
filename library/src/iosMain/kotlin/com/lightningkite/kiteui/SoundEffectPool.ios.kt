@@ -33,7 +33,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual suspend fun AudioSource.load(): PlayableAudio {
     AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, null)
     AVAudioSession.sharedInstance().setActive(true, null)

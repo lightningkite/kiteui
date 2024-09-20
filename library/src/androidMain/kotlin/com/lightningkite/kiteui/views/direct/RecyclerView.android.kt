@@ -96,7 +96,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                     notifyDataSetChanged()
 //                    println("Data set to loading complete")
                 }) {
-                    val new = items.await().toList()
+                    val new = items().toList()
 //                    println("Data set to $new")
                     loading = false
                     lastPublished = new
@@ -162,7 +162,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AndroidRecyclerView.ViewHolder {
             val event = LateInitProperty<T>()
             var newView: RView? = null
-            val w = object: ViewWriter() {
+            val w = object: ViewWriter(), CalculationContext by recyclerView {
                 override val context: RContext
                     get() = recyclerView.context
 

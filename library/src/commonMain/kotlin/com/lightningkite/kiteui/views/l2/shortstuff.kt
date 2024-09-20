@@ -22,9 +22,9 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
         var noViewCreated = true
         var view: RView? = null
         reactiveScope {
-            val v = visible.await()
-            if(v) {
-                if(noViewCreated) {
+            val v = visible()
+            if (v) {
+                if (noViewCreated) {
                     noViewCreated = false
                     withoutAnimation {
                         sub()

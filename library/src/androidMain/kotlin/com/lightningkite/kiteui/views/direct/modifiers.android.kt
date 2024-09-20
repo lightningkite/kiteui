@@ -22,6 +22,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 
@@ -46,7 +47,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: suspend () -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -180,11 +181,11 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: suspend () -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     wrapNextIn(object : RView(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
-                this.constraints = constraints()
+                this@apply.constraints = constraints()
             }
         }
     })
@@ -376,7 +377,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolean): ViewWrapper {
+actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)
@@ -473,7 +474,7 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
     }
     return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
         layoutParams.height = it
-        if (!ViewCompat.isInLayout(this@heightAnimator)) requestLayout()
+        if (!this@heightAnimator.isInLayout) requestLayout()
     }.apply {
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
@@ -512,15 +513,13 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     }
     return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {
         layoutParams.width = it
-        println("SETTING WIDTH TO $it")
-        if (!ViewCompat.isInLayout(this@widthAnimator)) requestLayout()
+        if (!this@widthAnimator.isInLayout) requestLayout()
     }.apply {
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                println("ENDING, set to $toWidth")
                 layoutParams.width = toWidth
             }
         })

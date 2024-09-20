@@ -29,6 +29,7 @@ interface ThemeDerivation {
             }
         }
 
+        @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(theme: Theme): ThemeDerivation = Set(theme)
         val none = ThemeDerivation.None
     }
@@ -204,17 +205,19 @@ data class HeaderSizeSemantic(val level: Int) : Semantic {
     override val key: String = "h$level"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
-        font = theme.font.copy(size = lookup[level - 1]),
+        font = theme.font.copy(size = lookup[level - 1].rem),
     ).withoutBack
 
     companion object {
         val lookup = arrayOf(
-            2.rem,
-            1.6.rem,
-            1.4.rem,
-            1.3.rem,
-            1.2.rem,
-            1.1.rem,
+            2.0,
+            1.6,
+            1.4,
+            1.3,
+            1.2,
+            1.1,
+            1.0,
+            0.8
         )
     }
 }
@@ -228,7 +231,7 @@ data object SubtextSemantic : Semantic {
     ).withoutBack
 }
 
-data object InvalidSemantic: Semantic {
+data object InvalidSemantic : Semantic {
     override val key: String = "ivd"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -237,7 +240,7 @@ data object InvalidSemantic: Semantic {
     ).withBack
 }
 
-data object EmphasizedSemantic: Semantic {
+data object EmphasizedSemantic : Semantic {
     override val key: String = "emf"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -245,7 +248,7 @@ data object EmphasizedSemantic: Semantic {
     ).withoutBack
 }
 
-data object EmbeddedSemantic: Semantic {
+data object EmbeddedSemantic : Semantic {
     override val key: String = "ebd"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
@@ -253,6 +256,16 @@ data object EmbeddedSemantic: Semantic {
     ).withBack
 }
 
+data object PrintSemantic : Semantic {
+    override val key: String = "print"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = Color.white,
+        foreground = Color.black,
+        outline = theme.background,
+        outlineWidth = 2.px,
+    ).withBack
+}
 
 
 val H1Semantic = HeaderSizeSemantic(1)
@@ -528,7 +541,7 @@ class Theme(
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
         revert = if (revert) this else this.revert,
-        derivations = this.derivations + derivations
+        derivations = this.derivations + derivations,
     )
 
     fun copy(
@@ -607,57 +620,57 @@ class Theme(
     override fun toString(): String = id
 }
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[CardSemantic].theme", "com.lightningkite.kiteui.models.CardSemantic"))
 fun Theme.card() = this[CardSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[FieldSemantic].theme", "com.lightningkite.kiteui.models.FieldSemantic"))
 fun Theme.field() = this[FieldSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[ButtonSemantic].theme", "com.lightningkite.kiteui.models.ButtonSemantic"))
 fun Theme.button() = this[ButtonSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[HoverSemantic].theme", "com.lightningkite.kiteui.models.HoverSemantic"))
 fun Theme.hover() = this[HoverSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[FocusSemantic].theme", "com.lightningkite.kiteui.models.FocusSemantic"))
 fun Theme.focus() = this[FocusSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[DialogSemantic].theme", "com.lightningkite.kiteui.models.DialogSemantic"))
 fun Theme.dialog() = this[DialogSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[DownSemantic].theme", "com.lightningkite.kiteui.models.DownSemantic"))
 fun Theme.down() = this[DownSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[UnselectedSemantic].theme", "com.lightningkite.kiteui.models.UnselectedSemantic"))
 fun Theme.unselected() = this[UnselectedSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[SelectedSemantic].theme", "com.lightningkite.kiteui.models.SelectedSemantic"))
 fun Theme.selected() = this[SelectedSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[DisabledSemantic].theme", "com.lightningkite.kiteui.models.DisabledSemantic"))
 fun Theme.disabled() = this[DisabledSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[MainContentSemantic].theme", "com.lightningkite.kiteui.models.MainContentSemantic"))
 fun Theme.mainContent() = this[MainContentSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[BarSemantic].theme", "com.lightningkite.kiteui.models.BarSemantic"))
 fun Theme.bar() = this[BarSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[NavSemantic].theme", "com.lightningkite.kiteui.models.NavSemantic"))
 fun Theme.nav() = this[NavSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[ImportantSemantic].theme", "com.lightningkite.kiteui.models.ImportantSemantic"))
 fun Theme.important() = this[ImportantSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[CriticalSemantic].theme", "com.lightningkite.kiteui.models.CriticalSemantic"))
 fun Theme.critical() = this[CriticalSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[WarningSemantic].theme", "com.lightningkite.kiteui.models.WarningSemantic"))
 fun Theme.warning() = this[WarningSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[DangerSemantic].theme", "com.lightningkite.kiteui.models.DangerSemantic"))
 fun Theme.danger() = this[DangerSemantic].theme
 
-@Deprecated("Use the new theme derivation system")
+@Deprecated("Use the new theme derivation system", ReplaceWith("this[AffirmativeSemantic].theme", "com.lightningkite.kiteui.models.AffirmativeSemantic"))
 fun Theme.affirmative() = this[AffirmativeSemantic].theme
 

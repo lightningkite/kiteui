@@ -81,12 +81,21 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
+        native.classes += "kiteui-flex"
+        native.classes += "kiteui-col"
     }
     private var complex = false
     actual var vertical: Boolean = true
         set(value) {
             field = value
             native.style.flexDirection = if(value) "column" else "row"
+            if(value) {
+                native.classes -= "kiteui-row"
+                native.classes += "kiteui-col"
+            } else {
+                native.classes -= "kiteui-col"
+                native.classes += "kiteui-row"
+            }
         }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)

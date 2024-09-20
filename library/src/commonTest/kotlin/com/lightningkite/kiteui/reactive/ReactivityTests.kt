@@ -1,7 +1,12 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,23 +36,54 @@ class ReactivityTests {
     fun waitingTest() {
         val property = Property<Int?>(null)
         val emissions = ArrayList<Int>()
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
-                emissions.add(property.waitForNotNull.await())
+                emissions.add(property.waitForNotNull())
             }
             repeat(10) {
-                property.value = it
                 property.value = null
+                property.value = it
             }
-            cancel()
         }
         assertEquals((0..9).toList(), emissions)
+    }
+
+    @Test fun baselineScope() {
+        testContext {
+            val a = Property(0)
+            var received = -1
+            DirectReactiveContext(this, action = {
+                received = a()
+            }).start()
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+            a.value++
+            assertEquals(a.value, received)
+        }
+    }
+
+    @Test fun launchReadableAwait() {
+        testContext {
+            val a = LateInitProperty<Int>()
+            var received = -1
+            onRemove { println("Shutting down...") }
+            launch {
+                println("Started...")
+                received = a.await()
+            }
+            println("Setting...")
+            a.value = 42
+            assertEquals(a.value, received)
+        }
     }
 
     @Test fun sharedShutdownTest() {
         var onRemoveCalled = 0
         var scopeCalled = 0
-        val shared = shared {
+        val shared = shared(Dispatchers.Unconfined) {
             scopeCalled++
             onRemove { onRemoveCalled++ }
             42
@@ -66,9 +102,9 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
-                println("Got ${a.await() + b.await()}")
+                println("Got ${a() + b()}")
             }
         }
         println("Done.")
@@ -76,17 +112,17 @@ class ReactivityTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = shared { println("CALC a"); a.await() }
-        val c = shared { println("CALC b"); b.await() }
+        val b = shared(Dispatchers.Unconfined) { println("CALC a"); a() }
+        val c = shared(Dispatchers.Unconfined) { println("CALC b"); b() }
         var hits = 0
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
-                println("#1 Got ${c.await()}")
+                println("#1 Got ${c()}")
                 hits++
             }
             reactiveScope {
-                println("#2 Got ${c.await()}")
+                println("#2 Got ${c()}")
                 hits++
             }
             assertEquals(2, hits)
@@ -100,13 +136,13 @@ class ReactivityTests {
         val a = LateInitProperty<Int>()
         var hits = 0
 
-        with(CalculationContext.Standard()) {
+        testContext {
             launch {
                 println("launch ${a.await()}")
                 hits++
             }
             reactiveScope {
-                println("scope ${a.await()}")
+                println("scope ${a()}")
                 hits++
             }
 
@@ -123,18 +159,18 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
-        val c = shared { cInvocations++; println("cInvocations: $cInvocations"); a.await() + b.await() }
+        val c = shared(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a() + b() }
         println("$c: c")
         var dInvocations = 0
-        val d = shared { dInvocations++; println("dInvocations: $dInvocations"); c.await() + c.await() }
+        val d = shared(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c() + c() }
         println("$d: d")
         var eInvocations = 0
-        val e = shared { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
+        val e = shared(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d() / 2 }
         println("$e: e")
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
-                e.await()
+                e()
             }
             assertEquals(1, cInvocations)
             assertEquals(1, dInvocations)
@@ -157,18 +193,18 @@ class ReactivityTests {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
-        val c = shared { cInvocations++; println("cInvocations: $cInvocations"); a.await() + b.await() }
+        val c = shared(Dispatchers.Unconfined) { cInvocations++; println("cInvocations: $cInvocations"); a() + b() }
         println("$c: c")
         var dInvocations = 0
-        val d = shared { dInvocations++; println("dInvocations: $dInvocations"); c.await() + b.await() }
+        val d = shared(Dispatchers.Unconfined) { dInvocations++; println("dInvocations: $dInvocations"); c() + b() }
         println("$d: d")
         var eInvocations = 0
-        val e = shared { eInvocations++; println("eInvocations: $eInvocations"); d.await() / 2 }
+        val e = shared(Dispatchers.Unconfined) { eInvocations++; println("eInvocations: $eInvocations"); d() / 2 }
         println("$e: e")
 
-        with(CalculationContext.Standard()) {
+        testContext {
             reactiveScope {
-                e.await()
+                e()
             }
             assertEquals(1, cInvocations)
             assertEquals(1, dInvocations)
@@ -188,11 +224,11 @@ class ReactivityTests {
 
     @Test fun sharedTest3() {
         val a = VirtualDelay { 1 }
-        val c = shared { a.await() }
-        val d = shared { c.await() }
+        val c = SharedReadable(Dispatchers.Unconfined) { async { a.await() } }
+        val d = SharedReadable(Dispatchers.Unconfined) { c() }
         testContext {
             launch { println("launch got " + d.await()) }
-            reactiveScope { println("reactiveScope got " + d.await()) }
+            reactiveScope { println("reactiveScope got " + d()) }
             println("Ready... GO!")
             a.go()
         }
@@ -200,10 +236,10 @@ class ReactivityTests {
 
     @Test fun sharedTest4() {
         val property = LateInitProperty<LateInitProperty<Int>>()
-        val shared = shared { property.await().await() }
+        val shared = shared(Dispatchers.Unconfined) { property()() }
         var completions = 0
         testContext {
-            reactiveScope { println("reactiveScope got " + shared.await()); completions++ }
+            reactiveScope { println("reactiveScope got " + shared()); completions++ }
             launch { println("launch got " + shared.await()); completions++ }
             println("Ready... GO!")
             val lp2 = LateInitProperty<Int>()
@@ -215,7 +251,7 @@ class ReactivityTests {
 
     @Test fun sharedTest5() {
         val property = LateInitProperty<Int>()
-        val shared = shared { property.await() }
+        val shared = shared(Dispatchers.Unconfined) { property() }
         var completions = 0
         testContext {
             launch { println("launchA got " + shared.await()); completions++ }
@@ -228,40 +264,16 @@ class ReactivityTests {
 
     @Test fun websocketLikeTest() {
         val source = LateInitProperty<LateInitProperty<String>>()
-        val socket = shared { source.await() }
-        val sublistener = shared { socket.await().await() }
+        val socket = shared(Dispatchers.Unconfined) { source() }
+        val sublistener = shared(Dispatchers.Unconfined) { socket()() }
         testContext {
-            reactiveScope { println(sublistener.await()) }
+            reactiveScope { println(sublistener()) }
             println("Ready")
             val s2 = LateInitProperty<String>()
             source.value = s2
             s2.value = "A"
             s2.value = "B"
             s2.value = "C"
-        }
-    }
-
-    @Test fun scopeSkippedIfLoading() {
-        val source = LateInitProperty<Int>()
-        var starts = 0
-        var hits = 0
-        testContext {
-            reactiveScope {
-                starts++
-                source()
-                hits++
-            }
-            assertEquals(1, starts)
-            assertEquals(0, hits)
-            source.value = 1
-            assertEquals(1, starts)
-            assertEquals(1, hits)
-            source.unset()
-            assertEquals(1, starts)
-            assertEquals(1, hits)
-            source.value = 2
-            assertEquals(2, starts)
-            assertEquals(2, hits)
         }
     }
 
@@ -284,6 +296,42 @@ class ReactivityTests {
         testContext {
             reactiveScope { println(listItem() == selected()) }
             listItem.value = 1
+        }
+    }
+
+    @Test fun flowtest() {
+        testContext {
+            val flow = MutableStateFlow(0)
+            reactiveScope {
+                println(flow())
+            }
+            repeat(5) { flow.value = it }
+        }
+    }
+
+    @Test fun deferredTest() {
+        testContext {
+            val other = Property(0)
+            var starts = 0
+            var completes = 0
+            val wait = WaitGate()
+            val deferred = (GlobalScope + Dispatchers.Unconfined).asyncReadable {
+                println("Calculating...")
+                wait.await()
+                println("Going...")
+                "OK"
+            }
+            reactive {
+                starts++
+                other()
+                println(deferred())
+                completes++
+            }
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            wait.permitOnce()
+            assertEquals(2, starts)
+            assertEquals(1, completes)
         }
     }
 }
@@ -329,21 +377,21 @@ class VirtualDelayer() {
     }
 }
 
-fun testContext(action: CalculationContext.()->Unit): Cancellable {
+fun testContext(action: CalculationContext.()->Unit): Job {
     var error: Throwable? = null
-    val onRemoveSet = HashSet<()->Unit>()
+    val job = Job()
     var numOutstandingContracts = 0
     with(object: CalculationContext {
-        override fun onRemove(action: () -> Unit) {
-            onRemoveSet.add(action)
-        }
+        override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined
 
         override fun notifyLongComplete(result: Result<Unit>) {
             numOutstandingContracts--
+            println("Long load complete")
         }
 
         override fun notifyStart() {
             numOutstandingContracts++
+            println("Long load start")
         }
 
         override fun notifyComplete(result: Result<Unit>) {
@@ -356,13 +404,9 @@ fun testContext(action: CalculationContext.()->Unit): Cancellable {
         CalculationContextStack.useIn(this) {
             action()
         }
+        job.cancel()
         if(error != null) throw error!!
-        assertEquals(numOutstandingContracts, 0)
+        assertEquals(0, numOutstandingContracts, "Some work was not completed.")
     }
-    return object: Cancellable {
-        override fun cancel() {
-            onRemoveSet.forEach { it() }
-            onRemoveSet.clear()
-        }
-    }
+    return job
 }

@@ -1,21 +1,26 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.CalculationContextStack.end
 import com.lightningkite.kiteui.reactive.CalculationContextStack.start
+import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter {
+abstract class ViewWriter: CalculationContext {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
-    fun split(): ViewWriter = object : ViewWriter() {
+    fun split(): ViewWriter = object : ViewWriter(), CalculationContext by this {
         override val context: RContext = this@ViewWriter.context.split()
         override fun addChild(view: RView) {
             this@ViewWriter.addChild(view)
@@ -42,8 +47,8 @@ abstract class ViewWriter {
     }
 
     fun <T : RView> writePre(p: ViewWriter, view: T) {
-        start(view)
         p.willAddChild(view)
+        start(view)
         _wrapElement = null
         beforeNextElementSetup?.invoke(view)
         beforeNextElementSetup = null
@@ -54,12 +59,18 @@ abstract class ViewWriter {
         p.addChild(view)
     }
 
+    @OptIn(ExperimentalContracts::class)
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
+        contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
         val p = _wrapElement ?: this
         writePre(p, view)
         try {
             setup(view)
             writePost(p, view)
+        } catch(e: Exception) {
+            ConsoleRoot.warn("Failed to setup $view: $e")
+            e.printStackTrace2()
+            throw e
         } finally {
             end(view)
         }
@@ -131,7 +142,7 @@ abstract class ViewWriter {
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
 }
 
-class NewViewWriter(override val context: RContext) : ViewWriter() {
+class NewViewWriter(val calculationContext: CalculationContext, override val context: RContext) : ViewWriter(), CalculationContext by calculationContext {
     var newView: RView? = null
     override fun addChild(view: RView) {
         newView = view

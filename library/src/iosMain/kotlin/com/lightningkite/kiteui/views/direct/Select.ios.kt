@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.Writable
@@ -13,7 +14,7 @@ import platform.UIKit.*
 import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
-@OptIn(ExperimentalForeignApi::class)
+
 actual class Select actual constructor(context: RContext): RView(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
@@ -33,10 +34,10 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
             init {
                 reactiveScope {
-                    list = data.await()
+                    list = data()
                     picker.reloadAllComponents()
                 }
-                reactiveScope { textField.text = render(edits.await()) }
+                reactiveScope { textField.text = render(edits()) }
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L

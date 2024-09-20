@@ -151,7 +151,6 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             Unit
         }
         when (val value = this) {
-            null -> native.src = ""
             is AudioRemote -> native.src = value.url
             is AudioRaw -> native.src = URL.createObjectURL(Blob(arrayOf(value.data)))
             is AudioResource -> native.src = basePath + value.relativeUrl

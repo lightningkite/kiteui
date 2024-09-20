@@ -118,6 +118,7 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
 
     override fun setAlpha(alpha: Int) {}
     override fun setColorFilter(colorFilter: ColorFilter?) {}
+    @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 
     override fun getIntrinsicHeight(): Int = vector.height.value.toInt()

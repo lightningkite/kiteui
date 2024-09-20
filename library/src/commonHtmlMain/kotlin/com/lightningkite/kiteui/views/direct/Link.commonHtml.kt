@@ -13,22 +13,26 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
         native.addEventListener("click") {
+            if(newTab) return@addEventListener
             it.preventDefault()
-            val destination = to()
-            if(resetsStack) {
-                ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
-                onNavigator.reset(destination)
-                ConsoleRoot.log("Result is ", onNavigator.stack.value)
-            } else {
-                ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
-                onNavigator.navigate(destination)
-                ConsoleRoot.log("Result is ", onNavigator.stack.value)
-            }
-            onNavigate?.let {
-                launchManualCancel(it)
+            val destination = to?.invoke()
+            if(destination != null) {
+                if (resetsStack) {
+                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
+                    onNavigator.reset(destination)
+                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
+                } else {
+                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
+                    onNavigator.navigate(destination)
+                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
+                }
+                onNavigate?.let {
+                    launchManualCancel(it)
+                }
             }
         }
     }
+
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Stack.internalAddChildStack(this, index, view)
@@ -36,13 +40,15 @@ actual class Link actual constructor(context: RContext) : RView(context) {
 
     override fun hasAlternateBackedStates(): Boolean = true
 
-    actual var onNavigator: KiteUiNavigator = (this as RView).screenNavigator
-    actual var to: ()->Screen = { Screen.Empty }
+    actual var onNavigator: ScreenNavigator = (this as RView).screenNavigator
+    actual var to: (() -> Screen)? = null
         set(value) {
             field = value
-            onNavigator.routes.render(value())?.let {
-                native.attributes.href = context.basePath + it.urlLikePath.render()
-            }
+            value?.invoke()?.let {
+                onNavigator.routes.render(it)?.let {
+                    native.attributes.href = context.basePath + it.urlLikePath.render()
+                }
+            } ?: run { native.attributes.href = "" }
         }
     actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"

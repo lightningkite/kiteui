@@ -1,12 +1,16 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { com.lightningkite.kiteui.delay(it) }) {
+suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCoroutineCancellable<Unit> {
         onOpen {
             launchGlobal {
@@ -59,7 +63,7 @@ fun retryWebsocket(
         val id = instanceCount++
         currentWebSocketId = id
         currentWebSocket = underlyingSocket().also { socket ->
-            var pings: Cancellable? = null
+            var pings: Job? = null
             socket.onOpen {
                 log?.log("$id onOpen")
                 onOpenList.toList().forEach { l -> l() }
@@ -120,26 +124,30 @@ fun retryWebsocket(
             }
         }
 
+        override val coroutineContext: CoroutineContext = Job()
+
         init {
             var starting = false
             reactiveScope {
-                val shouldBeOn = shouldBeOn.await()
-                val isOn = connected.await()
+                val shouldBeOn = shouldBeOn()
+                val isOn = connected()
                 if (shouldBeOn && !isOn && !starting) {
                     starting = true
-                    try {
-                        gate.run("WS") {
-                            log?.log("starting")
-                            reset()
-                            currentWebSocket?.waitUntilConnect(gate.delay)
-                            log?.log("started A")
+                    launch {
+                        try {
+                            gate.run("WS") {
+                                log?.log("starting")
+                                reset()
+                                currentWebSocket?.waitUntilConnect(gate.delay)
+                                log?.log("started A")
+                            }
+                        } catch (e: Exception) {
+                            if (e is CancelledException) return@launch
+                            log?.log("start fail: $e")
+                            e.printStackTrace2()
+                        } finally {
+                            starting = false
                         }
-                    } catch(e: Exception) {
-                        if(e is CancelledException) return@reactiveScope
-                        log?.log("start fail: $e")
-                        e.printStackTrace2()
-                    } finally {
-                        starting = false
                     }
                 } else if (!shouldBeOn && isOn) {
                     currentWebSocket?.close(1000, "OK")
@@ -180,7 +188,6 @@ fun retryWebsocket(
             onCloseList.add(action)
         }
 
-        override fun notifyStart() {}
         override fun onRemove(action: () -> Unit) {
         }
     }
@@ -203,6 +210,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
             try {
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
+                @OptIn(ExperimentalSerializationApi::class)
                 Exception("Failed to decode message; expected a ${receive.descriptor.serialName} but got '${it.take(150)}'", e).report()
             }
         }

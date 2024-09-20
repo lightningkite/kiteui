@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
@@ -25,5 +26,12 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
 
     actual fun onClick(action: suspend () -> Unit): Unit {
         native.replaceEventListener("click") { launchManualCancel(action) }
+    }
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        native.classes.removeAll { it.startsWith("t-") }
+        native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
+
+        native.setStyleProperty("--parentSpacing", parentSpacing.value)
     }
 }

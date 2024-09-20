@@ -14,6 +14,33 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         // basis rules
         //language=CSS
         @Suppress("CssUnresolvedCustomProperty")
+        dynamicCss.rule("""
+            @media print {
+                .do-not-print{
+                    display: none !important;
+                }
+                .scroll-vertical {
+                    overflow: hidden auto;
+                }
+                body > div {
+                    height: unset;
+                    max-width: 100vw;
+                }
+    
+                body {
+                    height: unset;
+                    max-height: unset;
+                    max-width: 100vw;
+                    overflow: visible;
+                }
+                .kiteui-col > * {
+                    flex-grow: 0 !important;
+                    flex-shrink: 0 !important;
+                    flex-basis: unset !important;
+                }
+            }
+        """.trimIndent())
+        @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
             /*noinspection ALL*/@media {
@@ -113,7 +140,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             progress {
-                height: 0.5rem;
+                background: none;
+                max-height: 0.25rem !important;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
@@ -187,6 +215,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 height: 100%;
                 position: relative;
                 overflow-x: scroll;
+                overflow-y: hidden;
                 overflow-anchor: none;
                 scrollbar-width: none;
             }
@@ -196,6 +225,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 height: 100%;
                 position: relative;
                 overflow-y: scroll;
+                overflow-x: hidden;
                 overflow-anchor: none;
                 scrollbar-width: none;
             }
@@ -539,6 +569,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             a {
                 text-decoration: none;
                 color: unset;
+                display: block;
             }
 
             body > div {
@@ -804,6 +835,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         )
                     },
                     includeMaybeTransition = dis.useBackground
+                )
+                val print = subtheme[PrintSemantic]
+                theme(
+                    print.theme,
+                    diff = theme,
+                    asSelectors = asSelectors.map { "$it$cs$cs" },
+                    includeMaybeTransition = print.useBackground,
+                    mediaQuery = "print"
                 )
             }
             sub(null, asSelectors = listOf(""))

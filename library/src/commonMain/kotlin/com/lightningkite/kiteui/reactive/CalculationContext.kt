@@ -1,13 +1,16 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KMutableProperty0
 
-interface CalculationContext {
+interface CalculationContext: CoroutineScope {
+    @OptIn(ExperimentalStdlibApi::class)
+    val requireMainThread: Boolean get() = coroutineContext[CoroutineDispatcher.Key] is MainCoroutineDispatcher
     fun notifyStart() {}
     fun notifyLongComplete(result: Result<Unit>) {
         notifyComplete(result)
@@ -19,112 +22,39 @@ interface CalculationContext {
             }
         }
     }
-    fun onRemove(action: () -> Unit)
+
+//    fun startReporting(): Reporter = NoOpReporter
+//    interface Reporter {
+//        fun willDelay()
+//        fun complete(result: Result<Unit>)
+//        fun invalidate()
+//    }
+//    object NoOpReporter: Reporter {
+//        override fun willDelay() {}
+//        override fun complete(result: Result<Unit>) {}
+//        override fun invalidate() {}
+//    }
+
+    fun onRemove(action: () -> Unit) {
+        this.coroutineContext[Job]?.invokeOnCompletion { action() }
+    }
     companion object {
     }
-    object NeverEnds: CalculationContext {
-        override fun onRemove(action: () -> Unit) {}
+    @DelicateCoroutinesApi
+    object NeverEnds: CalculationContext, CoroutineScope by GlobalScope {
     }
-    class Standard: CalculationContext, Cancellable {
-        val onRemoveSet = ArrayList<()->Unit>()
-        override fun onRemove(action: () -> Unit) {
-            onRemoveSet.add(action)
-        }
-        override fun cancel() {
-            onRemoveSet.invokeAllSafe()
-            onRemoveSet.clear()
-        }
+    class Standard: CalculationContext {
+        val job = Job()
+        override val coroutineContext: CoroutineContext get() = job
+        fun cancel() = job.cancel()
     }
-//    abstract class WithLoadTracking: CalculationContext {
-//
-//        var loadShown: Boolean = false
-//            private set
-//        var loadCount = 0
-//            set(value) {
-//                field = value
-//                if(value == 0 && loadShown) {
-//                    loadShown = false
-//                    hideLoad()
-//                } else if(value > 0 && !loadShown) {
-//                    loadShown = true
-//                    showLoad()
-//                }
-//            }
-//        abstract fun showLoad()
-//        abstract fun hideLoad()
-//
-//        override fun notifyStart() {
-//            super.notifyStart()
-//            loadCount++
-//        }
-//
-//        override fun notifyLongComplete(result: Result<Unit>) {
-//            loadCount--
-//            super.notifyLongComplete(result)
-//        }
-//    }
-//    class StandardWithLoadTracking: CalculationContext, Cancellable {
-//        val onRemoveSet = ArrayList<()->Unit>()
-//        override fun onRemove(action: () -> Unit) {
-//            onRemoveSet.add(action)
-//        }
-//        override fun cancel() {
-//            onRemoveSet.invokeAllSafe()
-//            onRemoveSet.clear()
-//        }
-//
-//        val loadShown = Property(false)
-//        var loadCount = 0
-//            set(value) {
-//                field = value
-//                if(value == 0 && loadShown.value) {
-//                    loadShown.value = false
-//                } else if(value > 0 && !loadShown.value) {
-//                    loadShown.value = true
-//                }
-//            }
-//
-//        override fun notifyStart() {
-//            super.notifyStart()
-//            loadCount++
-//        }
-//
-//        override fun notifyLongComplete(result: Result<Unit>) {
-//            loadCount--
-//            super.notifyLongComplete(result)
-//        }
-//    }
 }
 
 fun CalculationContext.sub(): SubCalculationContext = SubCalculationContext(this)
 
-class SubCalculationContext(val parent: CalculationContext) : CalculationContext, Cancellable {
-//    override fun notifyStart() {
-//        super.notifyStart()
-//    }
-
-    init {
-        parent.onRemove {
-            cancel()
-        }
-    }
-
-    val onRemoveSet = ArrayList<()->Unit>()
-    override fun onRemove(action: () -> Unit) {
-        onRemoveSet.add(action)
-    }
-    override fun cancel() {
-        onRemoveSet.forEach { it() }
-        onRemoveSet.clear()
-    }
-
-//    override fun notifyComplete(result: Result<Unit>) {
-//        super.notifyComplete(result)
-//    }
-//
-//    override fun notifyLongComplete(result: Result<Unit>) {
-//        super.notifyLongComplete(result)
-//    }
+class SubCalculationContext(parent: CalculationContext) : CalculationContext {
+    private val sub = Job(parent.coroutineContext[Job])
+    override val coroutineContext: CoroutineContext = parent.coroutineContext + sub
 }
 
 object CalculationContextStack {
@@ -139,6 +69,8 @@ object CalculationContextStack {
             end(handler)
         }
     }
+    // Performance is very sensitive here, and this is a one-liner.  No need to perform a whole call for this.
+    @Suppress("NOTHING_TO_INLINE")
     inline fun start(handler: CalculationContext) {
         stack.add(handler)
     }
@@ -149,14 +81,14 @@ object CalculationContextStack {
 }
 
 @DslMarker
-annotation class ReactiveB
+annotation class Reactive
 
-@ReactiveB
-inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: suspend () -> T) = CalculationContextStack.current().reactiveScope {
-    this@invoke(actionToCalculate())
+@Reactive
+inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
+    this@invoke(actionToCalculate(this))
 }
 
-@ReactiveB
-inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: suspend () -> T) = CalculationContextStack.current().reactiveScope {
-    this@invoke.set(actionToCalculate())
+@Reactive
+inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
+    this@invoke.set(actionToCalculate(this))
 }

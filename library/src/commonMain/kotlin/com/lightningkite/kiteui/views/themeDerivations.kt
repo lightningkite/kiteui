@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 
@@ -73,49 +74,49 @@ inline val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNex
 
 @ViewModifierDsl3
 val ViewWriter.compact: ViewWrapper
-    get() = tweakTheme {
+    get() = ThemeDerivation {
         it.copy(
             id = "compact",
             spacing = it.spacing / 2
-        )
-    }
+        ).withoutBack
+    }.onNext
 
 @ViewModifierDsl3
 val ViewWriter.bold: ViewWrapper
-    get() = tweakTheme {
+    get() = ThemeDerivation {
         it.copy(
             id = "bold",
             font = it.font.copy(bold = true)
-        )
-    }
+        ).withoutBack
+    }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.textSize(size: Dimension): ViewWrapper = tweakTheme {
+fun ViewWriter.textSize(size: Dimension): ViewWrapper = ThemeDerivation {
     it.copy(
         font = it.font.copy(size = size)
-    )
-}
+    ).withoutBack
+}.onNext
 
 @ViewModifierDsl3
 val ViewWriter.italic: ViewWrapper
-    get() = tweakTheme {
+    get() = ThemeDerivation {
         it.copy(
             id = "italic",
             font = it.font.copy(italic = true)
-        )
-    }
+        ).withoutBack
+    }.onNext
 
 @ViewModifierDsl3
 val ViewWriter.allCaps: ViewWrapper
-    get() = tweakTheme {
+    get() = ThemeDerivation {
         it.copy(
             id = "allCaps",
             font = it.font.copy(allCaps = true)
-        )
-    }
+        ).withoutBack
+    }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = tweakTheme { it.copy(spacing = it.spacing * multiplier) }
+fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(spacing = it.spacing * multiplier).withoutBack }.onNext
 
 @ViewModifierDsl3
 val ViewWriter.navSpacing: ViewWrapper
@@ -127,7 +128,7 @@ val ViewWriter.navSpacing: ViewWrapper
     }
 
 
-fun RView.dynamicTheme(calculate: suspend () -> ThemeDerivation?) {
+fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     val existing = themeChoice
     reactiveScope {
         themeChoice = existing + (calculate() ?: ThemeDerivation.none)

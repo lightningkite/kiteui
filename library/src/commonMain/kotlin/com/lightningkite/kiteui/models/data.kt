@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
 
@@ -63,7 +64,8 @@ data class Icon(
     val pathDatas: List<String> = listOf(),
     val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
-    data class StrokePathData(val strokeWidth: Dimension, val path: String)
+    enum class StrokeLineCap { Butt, Round, Square }
+    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt, val fill: Paint? = null)
 
     fun toImageSource(color: Paint) = ImageVector(
         width,
@@ -146,9 +148,25 @@ data class Icon(
             listOf("m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z")
         )
         val chevronRight =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
+            Icon(
+                width = 1.8.rem,
+                height = 1.8.rem,
+                viewBoxMinX = 0,
+                viewBoxMinY = 0,
+                viewBoxWidth = 24,
+                viewBoxHeight = 24,
+                strokePathDatas = listOf(StrokePathData(strokeWidth = 2.5.dp, path = "M8.25 19.5L15.75 12L8.25 4.5", strokeLineCap = StrokeLineCap.Round))
+            )
         val chevronLeft =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
+            Icon(
+                width = 1.8.rem,
+                height = 1.8.rem,
+                viewBoxMinX = 0,
+                viewBoxMinY = 0,
+                viewBoxWidth = 24,
+                viewBoxHeight = 24,
+                strokePathDatas = listOf(StrokePathData(strokeWidth = 2.5.dp, path = "M15.75 19.5L8.25 12L15.75 4.5", strokeLineCap = StrokeLineCap.Round))
+            )
         val logout = Icon(
             2.rem,
             2.rem,
@@ -421,6 +439,7 @@ data class ImageRemote(val url: String) : ImageSource() {
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
     override fun toString(): String = "ImageRemote($url)"
 }
+
 data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
@@ -454,7 +473,7 @@ data class SizeConstraints(
         aspectRatio: Pair<Int, Int>,
         width: Dimension? = null,
         height: Dimension? = null,
-    ):this(
+    ) : this(
         minWidth = minWidth,
         maxWidth = maxWidth,
         minHeight = minHeight,
@@ -474,7 +493,7 @@ enum class TextOverflow {
     Ellipsis
 }
 
-enum class WordBreak { Normal, BreakAll  }
+enum class WordBreak { Normal, BreakAll }
 
 data class PopoverPreferredDirection(
     val horizontal: Boolean = false,
@@ -497,6 +516,10 @@ data class PopoverPreferredDirection(
         val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
     }
+    fun forceLeft(): PopoverPreferredDirection = if(horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
+    fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
 }
 
 data class KeyboardHints(
@@ -522,18 +545,18 @@ enum class KeyboardCase { None, Letters, Words, Sentences }
 enum class KeyboardType { Text, Integer, Phone, Decimal, Email }
 
 sealed interface NavElement {
-    val title: suspend () -> String
-    val icon: suspend () -> Icon
-    val count: (suspend () -> Int?)?
-    val hidden: (suspend () -> Boolean)?
+    val title: ReactiveContext.() -> String
+    val icon: ReactiveContext.() -> Icon
+    val count: (ReactiveContext.() -> Int?)?
+    val hidden: (ReactiveContext.() -> Boolean)?
 }
 
 data class NavGroup(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val children: suspend () -> List<NavElement>,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val children: ReactiveContext.() -> List<NavElement>,
 ) : NavElement {
     constructor(title: String, icon: Icon, children: List<NavElement> = listOf()) : this(
         { title },
@@ -547,11 +570,11 @@ data class NavGroup(
 typealias NavItem = NavLink
 
 data class NavLink(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val destination: suspend () -> () -> Screen,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val destination: ReactiveContext.() -> () -> Screen,
 ) : NavElement {
     constructor(title: String, icon: Icon, destination: () -> Screen) : this(
         { title },
@@ -564,26 +587,26 @@ data class NavLink(
 typealias ExternalNav = NavExternal
 
 data class NavExternal(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
-    val to: suspend () -> String,
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    val to: ReactiveContext.() -> String,
 ) : NavElement
 
 data class NavAction(
-    override val title: suspend () -> String,
-    override val icon: suspend () -> Icon,
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
+    override val title: ReactiveContext.() -> String,
+    override val icon: ReactiveContext.() -> Icon,
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
     val onSelect: suspend () -> Unit,
 ) : NavElement
 
 data class NavCustom(
-    override val title: suspend () -> String = { "" },
-    override val icon: suspend () -> Icon = { Icon.moreHoriz },
-    override val count: (suspend () -> Int?)? = null,
-    override val hidden: (suspend () -> Boolean)? = { false },
+    override val title: ReactiveContext.() -> String = { "" },
+    override val icon: ReactiveContext.() -> Icon = { Icon.moreHoriz },
+    override val count: (ReactiveContext.() -> Int?)? = null,
+    override val hidden: (ReactiveContext.() -> Boolean)? = { false },
     val square: ViewWriter.() -> Unit,
     val long: ViewWriter.() -> Unit = square,
     val tall: ViewWriter.() -> Unit = square,
@@ -612,13 +635,14 @@ expect val Int.dp: Dimension
 expect val Double.rem: Dimension
 expect val Double.dp: Dimension
 expect val Dimension.px: Double
-expect inline operator fun Dimension.plus(other: Dimension): Dimension
-expect inline operator fun Dimension.minus(other: Dimension): Dimension
-expect inline operator fun Dimension.times(other: Float): Dimension
-inline operator fun Dimension.times(other: Int): Dimension = this * other.toFloat()
-inline operator fun Dimension.times(other: Double): Dimension = this * other.toFloat()
-expect inline operator fun Dimension.div(other: Float): Dimension
-inline operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
-inline operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
-expect inline fun Dimension.coerceAtMost(other: Dimension): Dimension
-expect inline fun Dimension.coerceAtLeast(other: Dimension): Dimension
+
+expect operator fun Dimension.plus(other: Dimension): Dimension
+expect operator fun Dimension.minus(other: Dimension): Dimension
+expect operator fun Dimension.times(other: Float): Dimension
+operator fun Dimension.times(other: Int): Dimension = this * other.toFloat()
+operator fun Dimension.times(other: Double): Dimension = this * other.toFloat()
+expect operator fun Dimension.div(other: Float): Dimension
+operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
+operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
+expect fun Dimension.coerceAtMost(other: Dimension): Dimension
+expect fun Dimension.coerceAtLeast(other: Dimension): Dimension

@@ -43,7 +43,7 @@ object LeakCheckerScreen : Screen {
                         removeChild(0)
                     }
                     val m = makers[index() % makers.size]
-                    m.second(this)
+                    m.second(this@stack)
                 }
             }
         }

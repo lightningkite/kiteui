@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+
 
 package com.lightningkite.kiteui.views.direct
 
@@ -21,7 +21,7 @@ import kotlin.math.max
 //
 //class LayoutParams()
 
-@OptIn(ExperimentalForeignApi::class)
+
 class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var horizontal: Boolean = true
     var padding: Double
@@ -121,7 +121,8 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     }
 
     override fun willRemoveSubview(subview: UIView) {
-        // Fixes a really cursed crash where "this" is null
+        // Fixes a really cursed crash where "this" is null due to GC interactions
+        @Suppress("SENSELESS_COMPARISON")
         if (this != null) {
             lastLaidOutSize = null
             val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }

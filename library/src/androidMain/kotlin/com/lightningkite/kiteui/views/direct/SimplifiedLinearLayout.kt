@@ -515,10 +515,8 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         var matchHeight = false
         var skippedMeasure = false
-        if (mMaxAscent == null || mMaxDescent == null) {
-            mMaxAscent = IntArray(4)
-            mMaxDescent = IntArray(4)
-        }
+        mMaxAscent = IntArray(4)
+        mMaxDescent = IntArray(4)
         val maxAscent: IntArray = mMaxAscent
         val maxDescent: IntArray = mMaxDescent
         maxAscent[3] = -1

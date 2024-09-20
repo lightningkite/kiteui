@@ -11,7 +11,7 @@ import platform.UIKit.UIView
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.viewDebugTarget
 
-@OptIn(ExperimentalForeignApi::class)
+
 fun UIView.sizeThatFits2(
     size: CValue<CGSize>,
     sizeConstraints: SizeConstraints?

@@ -40,13 +40,14 @@ import kotlin.reflect.KProperty
 //    }
 //}
 class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
-    @OptIn(ExperimentalForeignApi::class)
+    
     val key = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
     override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
     override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
-    @OptIn(ExperimentalForeignApi::class)
+    
+    @Suppress("UNCHECKED_CAST")
     fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
-    @OptIn(ExperimentalForeignApi::class)
+    
     fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
     companion object {
         fun debug() {}

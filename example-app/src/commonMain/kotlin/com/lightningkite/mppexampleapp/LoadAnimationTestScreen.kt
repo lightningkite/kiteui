@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Routable("load-animation-test")
@@ -43,19 +44,19 @@ object LoadAnimationTestScreen : Screen {
                     }
                     onClick { delay(5000) }
                 }
-                text { ::content { loading.await() } }
-                subtext { ::content { loading.await() } }
-                h1 { ::content { loading.await() } }
-                h2 { ::content { loading.await() } }
-                h3 { ::content { loading.await() } }
-                h4 { ::content { loading.await() } }
-                h5 { ::content { loading.await() } }
-                h6 { ::content { loading.await() } }
-                select { bind(writable, shared { loading.await().let(::listOf) }, { it }) }
+                text { ::content { loading() } }
+                subtext { ::content { loading() } }
+                h1 { ::content { loading() } }
+                h2 { ::content { loading() } }
+                h3 { ::content { loading() } }
+                h4 { ::content { loading() } }
+                h5 { ::content { loading() } }
+                h6 { ::content { loading() } }
+                select { bind(writable, shared { loading().let(::listOf) }, { it }) }
                 textField { content bind loading.withWrite {  } }
                 textArea { content bind loading.withWrite {  } }
                 sizedBox(SizeConstraints(height = 5.rem)) - image {
-                    ::source { loading.await(); Resources.imagesSolera }
+                    ::source { loading(); Resources.imagesSolera }
                     scaleType = ImageScaleType.Fit
                 }
             }
