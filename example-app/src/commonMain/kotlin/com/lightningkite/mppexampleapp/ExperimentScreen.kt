@@ -14,16 +14,14 @@ object ExperimentScreen : Screen {
         get() = super.title
 
     override fun ViewWriter.render() {
-        scrolls - col {
+        col {
             val value = Property(false)
-            card - radioToggleButton {
+            card - toggleButton {
                 checked bind value
-                text("OK")
+                text("Show")
             }
-            card - radioToggleButton {
-                checked bind value
-                text("OK")
-            }
+            onlyWhen { value() } - text("hidden item")
+            text("Lower item")
         }
     }
 }

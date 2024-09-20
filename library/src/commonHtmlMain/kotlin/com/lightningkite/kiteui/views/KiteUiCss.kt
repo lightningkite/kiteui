@@ -140,7 +140,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             progress {
-                height: 0.5rem;
+                background: none;
+                max-height: 0.25rem !important;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
