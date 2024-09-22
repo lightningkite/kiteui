@@ -5,10 +5,9 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.Draft
-import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.flatten
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.lensing.*
+import com.lightningkite.kiteui.reactive.lensing.lens
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -38,7 +37,7 @@ class ValidationTestScreen: Screen {
             ).validate {
                 if (it == null) "Cannot be blank"
                 else {
-                    if (it != it.toInt().toDouble()) "Must be an integer"
+                    if (it.toString().contains('.')) "Must be an integer"
                     else null
                 }
             }
@@ -49,61 +48,47 @@ class ValidationTestScreen: Screen {
                     if (it == null) throw InvalidException("Cannot be empty")
                     else {
                         val int = it.toInt()
-                        if (it != int.toDouble()) throw InvalidException("Must be an integer")
+                        if (it.toString().contains('.')) throw InvalidException("Must be an integer")
                         else if (int == 0) throw WarningException("Should be larger than 0", "0 does nothing here")
                         else o.copy(number = int)
                     }
                 }
             )
 
-            val list = draft.lens(
-                get = { it.list },
-                modify = { o, it -> o.copy(list = it) }
-            ).lensByElement(
-                { it },
-                { it.validateNotBlank() }
-            )
-
-            fieldTheme - textField {
-                hint = "Name"
-                validates(name)
-                content bind name
-            }
-
-            fieldTheme - numberField {
-                hint = "ID"
-                validates(id)
-                content bind id
-            }
-
-            fieldTheme - numberField {
-                hint = "Number"
-                validates(number)
-                content bind number
+            col {
+                spacing = 0.2.rem
+                fieldTheme - textField {
+                    hint = "Name"
+                    validates(name)
+                    content bind name
+                }
+                onlyWhen { name.invalid() != null } - text { ::content { name.invalid()?.errorSummary ?: "" } }
             }
 
             col {
-                row {
-                    expanding - centered - h5("List")
-
-                    atTopEnd - sizeConstraints(width = 5.rem) - card - button {
-                        spacing = 0.px
-                        centered - icon { source = Icon.add }
-                        onClick {
-                            list.add("")
-                        }
-                    }
+                spacing = 0.2.rem
+                fieldTheme - numberField {
+                    hint = "ID"
+                    validates(id)
+                    content bind id
                 }
-                separator()
+                onlyWhen { id.invalid() != null } - text { ::content { id.invalid()?.errorSummary ?: "" } }
+            }
 
-                expanding - card - recyclerView {
-                    children(list) { item ->
-                        val flat = item.flatten()
-                        fieldTheme - textField {
-                            validates(flat)
-                            content bind flat
-                        }
-                    }
+            col {
+                spacing = 0.2.rem
+                fieldTheme - numberField {
+                    hint = "Number"
+                    validates(number)
+                    content bind number
+                }
+                onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.errorSummary ?: "" } }
+            }
+
+            col {
+                h6("Current Value:")
+                text {
+                    ::content { draft().toString() }
                 }
             }
         }

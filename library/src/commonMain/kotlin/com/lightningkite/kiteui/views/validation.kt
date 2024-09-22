@@ -3,18 +3,16 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.DangerSemantic
 import com.lightningkite.kiteui.models.InvalidSemantic
 import com.lightningkite.kiteui.models.WarningSemantic
-import com.lightningkite.kiteui.reactive.ErrorState
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.state
+import com.lightningkite.kiteui.reactive.*
 
 suspend fun allValid(readables: List<Readable<*>>): Boolean =
     readables.all { r -> r.state { it.invalid == null } }
 
 suspend fun allValid(vararg readables: Readable<*>): Boolean = allValid(readables.toList())
 
-suspend fun errors(readables: List<Readable<*>>): List<ErrorState> =
+fun ReactiveContext.errors(readables: List<Readable<*>>): List<ErrorState> =
     readables.mapNotNull { r -> r.state { it.error } }
+fun ReactiveContext.errors(vararg readables: Readable<*>) = errors(readables.toList())
 
 fun RView.validates(readables: List<Readable<*>>) {
     dynamicTheme {
@@ -38,3 +36,16 @@ fun <T> Readable<Readable<T>>.flattenState(): Readable<T> =
             }
         override fun addListener(listener: () -> Unit): () -> Unit = this@flattenState.addListener(listener)
     }
+
+fun ReactiveContext.errorMessages(readables: List<Readable<*>>): List<String> =
+    readables.mapNotNull { r ->
+        r.state {
+            val raw = it.raw
+            when (raw) {
+                is ErrorState.Invalid<*> -> raw.errorDescription
+                is ErrorState.Warning<*> -> raw.errorDescription
+                else -> null
+            }
+        }
+    }
+fun ReactiveContext.errorMessages(vararg readables: Readable<*>) = errorMessages(readables.toList())

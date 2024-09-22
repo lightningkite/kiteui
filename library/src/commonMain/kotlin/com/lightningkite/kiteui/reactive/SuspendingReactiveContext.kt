@@ -115,7 +115,7 @@ class SuspendingReactiveContext(
 
 private fun <T> Continuation<T>.resumeState(state: ReadableState<T>) {
     state.handle(
-        success = { resume(it) },
+        data = { resume(it) },
         exception = { resumeWithException(it) },
         notReady = { resumeWithException(CancellationException("State not ready")) }
     )
@@ -199,7 +199,7 @@ suspend fun <T> Readable<T>.await(): T {
             it.removers[this] = this.addListener {
                 it.debug?.log("READABLE LISTENER HIT A")
                 state.handle(
-                    success = { r ->
+                    data = { r ->
                         cont?.let { c ->
                             c.resume(r)
                             cont = null
@@ -222,7 +222,7 @@ suspend fun <T> Readable<T>.await(): T {
         it.latestPass.add(this)
 
         this.state.handle(
-            success = { return@let it },
+            data = { return@let it },
             exception = { throw it },
             notReady = {
                 return@let suspendCancellableCoroutine {

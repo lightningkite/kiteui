@@ -80,7 +80,7 @@ abstract class ReactiveContext : CalculationContext {
             registerDependency(this, addListener(rerun))
         }
         return state.handle(
-            success = { it },
+            data = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -90,7 +90,7 @@ abstract class ReactiveContext : CalculationContext {
             registerDependency(this, addListener(rerun))
         }
         return state.handle(
-            success = { it ?: throw ReactiveLoading },
+            data = { it ?: throw ReactiveLoading },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -100,6 +100,22 @@ abstract class ReactiveContext : CalculationContext {
             registerDependency(this, addListener(rerun))
         }
         return state
+    }
+    fun <R, V> Readable<R>.state(get: (ReadableState<R>) -> V): V {
+        var previous = get(state)
+        if (existingDependency(this) == null) {
+            registerDependency(
+                this,
+                addListener {
+                    get(state).let {
+                        if (it == previous) return@let
+                        previous = it
+                        rerun()
+                    }
+                }
+            )
+        }
+        return previous
     }
 
     private data class Once<T>(val wraps: Readable<T>)
@@ -115,7 +131,7 @@ abstract class ReactiveContext : CalculationContext {
             registerDependency(key, remover)
         }
         return state.handle(
-            success = { it },
+            data = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -130,7 +146,6 @@ abstract class ReactiveContext : CalculationContext {
     fun <T> Readable<T>.await(): T = invoke()
     @Deprecated("Just use the once function", ReplaceWith("this.once()"))
     fun <T> Readable<T>.awaitOnce(): T = once()
-
 
     // Suspending calculations
 
@@ -157,7 +172,7 @@ abstract class ReactiveContext : CalculationContext {
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(
-            success = { it },
+            data = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -173,7 +188,7 @@ abstract class ReactiveContext : CalculationContext {
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(
-            success = { it },
+            data = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -210,12 +225,17 @@ abstract class ReactiveContext : CalculationContext {
             else throw ReactiveLoading
         } else {
             return existing.state.handle(
-                success = { it },
+                data = { it },
                 exception = { throw it },
                 notReady = { throw ReactiveLoading }
             )
         }
     }
+
+    // Validation
+
+    fun <T> Readable<T>.warning(): ErrorState.Warning<T>? = state { it.warning }
+    fun <T> Readable<T>.invalid(): ErrorState.Invalid<T>? = state { it.invalid }
 }
 
 @InternalKiteUi
@@ -312,6 +332,18 @@ fun CalculationContext.reactiveScope(action: ReactiveContext.() -> Unit) {
 
 fun CalculationContext.reactiveScope(onLoad: () -> Unit, action: ReactiveContext.() -> Unit) {
     DirectReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).start()
+}
+
+fun <T> Readable<T>.onNextData(action: (T) -> Unit) {
+    if (state.onData(action) == null) {
+        var remover = {}
+        remover = addListener {
+            state.onData {
+                action(it)
+                remover.invoke()
+            }
+        }
+    }
 }
 
 object ReactiveLoading : Throwable()

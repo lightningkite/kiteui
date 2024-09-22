@@ -5,13 +5,12 @@ import com.lightningkite.kiteui.reactive.*
 
 fun <T> Writable<T>.vet(vetter: (T) -> T): Writable<T> = validationLens(get = { it }, set = vetter)
 
-fun <T> Writable<T>.validate(validation: (T) -> String?) =
-    vet {
-        val error = validation(it)
-        if (error != null) throw InvalidException(error)
-        else it
+fun <T> Writable<T>.validate(validation: (T) -> String?) = vet {
+    validation(it)?.let { msg ->
+        throw InvalidException(msg)
     }
-
+    it
+}
 
 // General Helpers
 fun <T: Any> Writable<T>.nullable(): Writable<T?> =
@@ -21,7 +20,7 @@ fun <T: Any> Writable<T>.nullable(): Writable<T?> =
         }
     }
 
-fun <T: Any> Writable<T>.asNullable(errorSummary: String? = null, errorDescription: String? = null): Writable<T?> =
+fun <T: Any> Writable<T>.nullableValidated(errorSummary: String? = null, errorDescription: String? = null): Writable<T?> =
     validationLens(
         get = { it },
         set = { it ?: throw InvalidException(errorSummary ?: "Cannot be null", errorDescription ?: "This field cannot be null") }
@@ -42,7 +41,7 @@ fun <T: Any> Writable<T?>.validateNotNull(fieldName: String? = null): Writable<T
 
 
 // Number field helpers
-fun Writable<Double>.asNullable(fieldName: String? = null): Writable<Double?> =
+fun Writable<Double>.nullableValidated(fieldName: String? = null): Writable<Double?> =
     validationLens(
         get = { it },
         set = { value ->
@@ -59,7 +58,7 @@ fun Writable<Int>.toNullableDouble(): Writable<Double?> =
         set = { it?.toInt() ?: 0 }
     )
 
-fun Writable<Int>.asNullableDouble(fieldName: String? = null): Writable<Double?> =
+fun Writable<Int>.toNullableDoubleValidated(fieldName: String? = null): Writable<Double?> =
     validationLens(
         get = { it.toDouble() },
         set = { value ->
@@ -88,6 +87,10 @@ fun Writable<String?>.nullToBlank(): Writable<String> = lens(
 fun Writable<String>.validateNotBlank(): Writable<String> = validate {
     if (it.isBlank()) "Cannot be blank" else null
 }
+fun Writable<String?>.validateNotNullOrBlank(): Writable<String> = validationLens(
+    get = { it ?: "" },
+    set = { if (it.isBlank()) "Cannot be blank" else null }
+)
 
 
 

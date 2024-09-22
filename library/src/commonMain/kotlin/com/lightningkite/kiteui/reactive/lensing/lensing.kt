@@ -1,47 +1,48 @@
 package com.lightningkite.kiteui.reactive.lensing
 
+import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.ReadableState.Companion.exception
-import com.lightningkite.kiteui.reactive.ReadableState.Companion.invalid
-import com.lightningkite.kiteui.reactive.ReadableState.Companion.warning
 
-private open class ReadableView<O, T>(
-    private val source: Readable<O>,
-    private val get: (O) -> T
-): Readable<T> {
-    protected var _state: ReadableState<T> = ReadableState.notReady
+private abstract class Lens<O, T>(
+    val source: Readable<O>
+) : BaseReadable<T>() {
+    private val debug: Console? = null
+
+    protected abstract fun updateFromSource(state: ReadableState<O>): ReadableState<T>
+
+    private var sourceListen: (() -> Unit)? = null
+
     override var state: ReadableState<T>
         get() {
-            if (myListen == null) _state = source.state.map { get(it) }
-            return _state
+            if (sourceListen == null) super.state = updateFromSource(source.state)
+            return super.state
         }
-        protected set(value) {
-            if (_state != value) {
-                _state = value
-                listeners.invokeAllSafe()
-            }
+        set(value) {
+            super.state = value
         }
 
-    private val listeners = ArrayList<() -> Unit>()
-    private var myListen: (() -> Unit)? = null
-    override fun addListener(listener: () -> Unit): () -> Unit {
-        listeners.add(listener)
-        if (listeners.size == 1) {
-            myListen = source.addListener {
-                state = source.state.map { get(it) }
-            }
-            state = source.state.map { get(it) }
+    override fun activate() {
+        debug?.log("activating")
+        sourceListen = source.addListener {
+            state = updateFromSource(source.state)
         }
-        return {
-            listeners.remove(listener)
-            if (listeners.isEmpty()) {
-                myListen?.invoke()
-                myListen = null
-            }
-        }
+        if (!state.ready) state = updateFromSource(source.state)
+    }
+
+    override fun deactivate() {
+        debug?.log("deactivating")
+        sourceListen?.invoke()
+        sourceListen = null
     }
 }
 
+private open class ReadableLens<O, T>(
+    source: Readable<O>,
+    private val get: (O) -> T
+) : Lens<O, T>(source) {
+    override fun updateFromSource(state: ReadableState<O>): ReadableState<T> = state.map(get)
+}
 
 @Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lensing.lens"))
 fun <O, T> Writable<O>.map(
@@ -51,13 +52,13 @@ fun <O, T> Writable<O>.map(
 
 // Basic lensing
 
-fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = ReadableView(this, get)
+fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = ReadableLens(this, get)
 
 fun <O, T> Writable<O>.lens(
     get: (O) -> T,
     modify: (O, T) -> O
 ): Writable<T> {
-    return object : Writable<T>, ReadableView<O, T>(this, get) {
+    return object : Writable<T>, ReadableLens<O, T>(this, get) {
         /** Queues changes*/
         override suspend fun set(value: T) {
             val old: O = this@lens.await()
@@ -71,7 +72,7 @@ fun <O, T> Writable<O>.lens(
     get: (O) -> T,
     set: (T) -> O
 ): Writable<T> {
-    return object : Writable<T>, ReadableView<O, T>(this, get) {
+    return object : Writable<T>, ReadableLens<O, T>(this, get) {
         /** Queues changes */
         override suspend fun set(value: T) {
             val new: O = set(value)
@@ -80,131 +81,96 @@ fun <O, T> Writable<O>.lens(
     }
 }
 
-
 // Validation lensing
-class WarningException(val summary: String, val description: String = summary): Exception()
-class InvalidException(val summary: String, val description: String = summary): Exception()
 
-private open class ValidatedReadableView<O, T>(
-    private val source: Readable<O>,
-    private val get: (O) -> T,
-    private val vet: (T) -> T
-): Readable<T> {
-    @Suppress("UNCHECKED_CAST")
-    protected inline fun ReadableState<O>.mapValidation(mapper: (T)->T): ReadableState<T> {
-        if(raw is NotReady) return this as ReadableState<T>
-        if (raw is ErrorState) when (raw) {
-            is ErrorState.HasDataAttached<*> -> {
-                val t = raw.data as? T ?: return exception(ClassCastException("Raw data ${raw.data} could not be mapped to type T"))
-                try {
-                    val b = mapper(t)
-                    return when (raw) {
-                        is ErrorState.Warning<*> -> {
-                            warning(b, raw.errorSummary, "Mapped from warning data ($t) -> ($b): " + raw.errorDescription)
-                        }
-                        is ErrorState.Invalid<*> -> {
-                            invalid(b, raw.errorSummary, "Mapped from invalid data ($t) -> ($b): " + raw.errorDescription)
-                        }
-                    }
-                } catch (e: Exception) {
-                    return exception(e)
-                }
-            }
-            else -> return this as ReadableState<B>
+private class ValidationReadable<T>(
+    source: Readable<T>,
+    private val vet: (T) -> T,
+) : Lens<T, T>(source) {
+    override fun updateFromSource(state: ReadableState<T>): ReadableState<T> =
+        state.mapState {
+            readableState(it) { vet(it) }
         }
+}
 
-        return try {
-            ReadableState(mapper(raw))
-        } catch(e: Exception) {
-            exception(e)
-        }
+fun <T> Readable<T>.vet(vetter: (T) -> T): Readable<T> = ValidationReadable(this, vetter)
+fun <T> Readable<T>.validate(validation: (T) -> String?) = vet {
+    validation(it)?.let { message ->
+        throw InvalidException(message)
     }
+    it
+}
 
-    var _state: ReadableState<T> = ReadableState.notReady
-        set(value) {
 
-        }
-    override var state: ReadableState<T>
-        get() {
-            if (myListen == null) _state = source.state.map { get(it) }
-            return _state
-        }
-        protected set(value) {
-            if (_state != value) {
-                _state = value
-                listeners.invokeAllSafe()
+private abstract class ValidationWritable<O, T>(
+    source: Writable<O>,
+    val get: (O) -> T,  // NOTE: get cannot be used for validation
+) : Writable<T>, Lens<O, T>(source) {
+    protected val debug: Console? = ConsoleRoot.tag("ValWritable")
+    abstract fun validate(model: O, value: T)
+    override fun updateFromSource(state: ReadableState<O>): ReadableState<T> =
+        state.mapState {
+            val value = get(it)
+            readableState(value) {
+                validate(it, value)
+                value
             }
         }
 
-    private val listeners = ArrayList<() -> Unit>()
-    private var myListen: (() -> Unit)? = null
-    override fun addListener(listener: () -> Unit): () -> Unit {
-        listeners.add(listener)
-        if (listeners.size == 1) {
-            myListen = source.addListener {
-                state = source.state.map { get(it) }
-            }
-            state = source.state.map { get(it) }
-        }
-        return {
-            listeners.remove(listener)
-            if (listeners.isEmpty()) {
-                myListen?.invoke()
-                myListen = null
-            }
+    protected inline fun catchValidationErrors(value: T, action: () -> Unit) {
+        state = readableState(value) {
+            action()
+            return      // If no errors occurred then just exit
         }
     }
 }
 
 fun <O, T> Writable<O>.validationLens(
     get: (O) -> T,
-    modify: (model: O, value: T) -> O
-): Writable<T> {
-    return object : Writable<T>, ReadableView<O, T>(this, get) {
-        inline fun validate(old: O, value: T, action: (O) -> Unit = {}) {
-            try {
-                val new = modify(old, value)
-                action(new)
-            } catch (e: WarningException) {
-                state = ReadableState.warning(value, e.summary, e.description)
-            } catch (e: InvalidException) {
-                state = ReadableState.invalid(value, e.summary, e.description)
-            } catch (e: Exception) {
-                state = ReadableState.exception(e)
+    modify: (O, T) -> O
+): Writable<T> =
+    object : ValidationWritable<O, T>(this, get) {
+        override fun validate(model: O, value: T) {
+            modify(model, value)
+        }
+        override suspend fun set(value: T) {
+            catchValidationErrors(value) {
+                this@validationLens.set(modify(this@validationLens(), value))
             }
         }
-
-        override suspend fun set(value: T) {
-            val old = this@validationLens.await()
-            validate(old, value) { this@validationLens.set(it) }
-        }
-
-        init {
-            val state = this@validationLens.state
-            if (state.success)
-        }
     }
-}
 
 fun <O, T> Writable<O>.validationLens(
     get: (O) -> T,
     set: (T) -> O
-): Writable<T> {
-    return object : Writable<T>, ReadableView<O, T>(this, get) {
+): Writable<T> =
+    object : ValidationWritable<O, T>(this, get) {
+        override fun validate(model: O, value: T) {
+            set(value)
+        }
         override suspend fun set(value: T) {
-            try {
-                val new = set(value)
-                this@validationLens.set(new)
-            } catch (e: WarningException) {
-                state = ReadableState.warning(value, e.summary, e.description)
-            } catch (e: InvalidException) {
-                state = ReadableState.invalid(value, e.summary, e.description)
-            } catch (e: Exception) {
-                state = ReadableState.exception(e)
+            catchValidationErrors(value) {
+                this@validationLens.set(set(value))
             }
         }
     }
-}
+
 
 // Reactive lensing
+fun <O, T> Writable<O>.dynamicLens(
+    get: ReactiveContext.(O) -> T,
+    modify: suspend (O, T) -> O
+): Writable<T> = shared {
+    get(this@dynamicLens.invoke())
+}.withWrite {
+    this@dynamicLens.set(modify(this@dynamicLens(), it))
+}
 
+fun <O, T> Writable<O>.dynamicLens(
+    get: ReactiveContext.(O) -> T,
+    set: suspend (T) -> O
+): Writable<T> = shared {
+    get(this@dynamicLens.invoke())
+}.withWrite {
+    this@dynamicLens.set(set(it))
+}
