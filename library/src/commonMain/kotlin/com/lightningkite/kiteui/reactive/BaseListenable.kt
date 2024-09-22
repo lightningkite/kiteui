@@ -9,8 +9,8 @@ abstract class BaseListenable : Listenable {
     protected open fun deactivate() {}
     private val listeners = ArrayList<() -> Unit>()
     override fun addListener(listener: () -> Unit): () -> Unit {
-        if (listeners.isEmpty()) activate()
         listeners.add(listener)
+        if (listeners.size == 1) activate()
         return {
             val pos = listeners.indexOfFirst { it === listener }
             if (pos != -1) {
