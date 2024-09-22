@@ -2,7 +2,10 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.launchGlobal
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -26,11 +29,16 @@ fun <T> Readable<T>.debounce(duration: Duration): Readable<T> = DebounceReadable
 fun Listenable.debounce(timeMs: Long): Listenable = DebounceListenable(this, timeMs.milliseconds)
 fun Listenable.debounce(duration: Duration): Listenable = DebounceListenable(this, duration)
 
-fun <T> Writable<T>.debounceWrite(duration: Duration): Writable<T> = object: Writable<T> by this {
-    var setIndex = 0
-    override suspend fun set(value: T) {
-        val mine = ++setIndex
-        delay(duration)
-        if(mine == setIndex) this@debounceWrite.set(value)
+fun <T> Writable<T>.debounceWrite(duration: Duration): Writable<T> =
+    object: Writable<T> by this {
+        var job: Job? = null
+        override suspend fun set(value: T) {
+            job?.cancel()
+            coroutineScope {
+                job = launch {
+                    delay(duration)
+                    this@debounceWrite.set(value)
+                }
+            }
+        }
     }
-}

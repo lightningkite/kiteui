@@ -1,6 +1,4 @@
-package com.lightningkite.kiteui.validation
-
-import com.lightningkite.kiteui.reactive.*
+package com.lightningkite.kiteui.reactive
 
 class SignalingList<T>
     private constructor(private val list: MutableList<T>)
