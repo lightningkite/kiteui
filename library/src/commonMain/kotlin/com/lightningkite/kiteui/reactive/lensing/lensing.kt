@@ -36,12 +36,6 @@ private abstract class Lens<O, T>(
     }
 }
 
-@Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lensing.lens"))
-fun <O, T> Writable<O>.map(
-    get: (O) -> T,
-    set: (O, T) -> O
-): Writable<T> = lens(get, set)
-
 // Basic lensing
 
 private open class BasicLens<O, T>(
@@ -128,6 +122,7 @@ private abstract class ValidationWritable<O, T>(
             if (value == previous) state = ReadableState(value)
             return
         }
+        // This is only reached if the block above threw an error
         debug?.log("validation error caught: ($value) -> ${invalidState.raw}")
         state = invalidState
     }
@@ -138,9 +133,7 @@ fun <O, T> Writable<O>.validationLens(
     modify: (O, T) -> O
 ): Writable<T> =
     object : ValidationWritable<O, T>(this, get) {
-        override fun validate(model: O, value: T) {
-            modify(model, value)
-        }
+        override fun validate(model: O, value: T) { modify(model, value) }
         override suspend fun getSetValue(input: T): O = modify(source.awaitOnce(), input)
     }
 
@@ -149,9 +142,7 @@ fun <O, T> Writable<O>.validationLens(
     set: (T) -> O
 ): Writable<T> =
     object : ValidationWritable<O, T>(this, get) {
-        override fun validate(model: O, value: T) {
-            set(value)
-        }
+        override fun validate(model: O, value: T) { set(value) }
         override suspend fun getSetValue(input: T): O = set(input)
     }
 
