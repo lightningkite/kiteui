@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
@@ -245,7 +246,7 @@ class WritableList<E, ID, T>(
         override val coroutineContext =
             Dispatchers.Default + job + CoroutineExceptionHandler { coroutineContext, throwable ->
                 if (throwable !is CancellationException) {
-                    throwable.printStackTrace2()
+                    throwable.report("WritableList.ElementWritable")
                 }
             }
         internal var dead = false

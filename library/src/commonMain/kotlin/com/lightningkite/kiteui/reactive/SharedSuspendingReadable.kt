@@ -24,7 +24,7 @@ class SharedSuspendingReadable<T>(
                 job +
                 CoroutineExceptionHandler { coroutineContext, throwable ->
                     if (throwable !is CancellationException) {
-                        throwable.printStackTrace2()
+                        throwable.report("SharedSuspendingReadable")
                     }
                 }
     }

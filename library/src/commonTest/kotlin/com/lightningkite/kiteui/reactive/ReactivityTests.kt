@@ -315,7 +315,7 @@ class ReactivityTests {
             var starts = 0
             var completes = 0
             val wait = WaitGate()
-            val deferred = (GlobalScope + Dispatchers.Unconfined).asyncReadable {
+            val deferred = (AppScope + Dispatchers.Unconfined).asyncReadable {
                 println("Calculating...")
                 wait.await()
                 println("Going...")

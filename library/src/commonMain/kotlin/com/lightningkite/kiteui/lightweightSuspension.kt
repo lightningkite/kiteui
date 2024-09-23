@@ -44,11 +44,15 @@ suspend fun stopIfCancelled() = yield()
 
 typealias Async<T> = kotlinx.coroutines.Deferred<T>
 
+val AppScope = GlobalScope + CoroutineExceptionHandler { coroutineContext, throwable ->
+    throwable.report("AppScope")
+}
+
 suspend fun <T> async(action: suspend () -> T): Async<T> = CoroutineScope(coroutineContext).async(block = { action() })
 //fun <T> CoroutineScope.async(action: suspend () -> T): Async<T> = async(block = { action() })
-fun <T> asyncGlobal(action: suspend () -> T): Async<T> = GlobalScope.async(block = { action() })
+fun <T> asyncGlobal(action: suspend () -> T): Async<T> = AppScope.async(block = { action() })
 
-fun launchGlobal(action: suspend () -> Unit) = GlobalScope.launch(block = { action() })
+fun launchGlobal(action: suspend () -> Unit) = AppScope.launch(block = { action() })
 
 @OptIn(ExperimentalStdlibApi::class)
 fun CalculationContext.launch(action: suspend () -> Unit): Job {
@@ -59,9 +63,9 @@ fun CalculationContext.launch(action: suspend () -> Unit): Job {
     val result = launch(
         block = {
 //            println("$id launched")
-            action()
+            val r = runCatching { action() }
 //            println("$id complete")
-            if (!justStarted) notifyLongComplete(Result.success(Unit))
+            if (!justStarted) notifyLongComplete(r)
             else done = true
         },
         start = if (coroutineContext[CoroutineDispatcher.Key]?.isDispatchNeeded(
@@ -83,12 +87,12 @@ fun CalculationContext.launchManualCancel(action: suspend () -> Unit): Job {
     var justStarted = true
     var done = false
 //    println("$id will start")
-    val result = (if(requireMainThread) GlobalScope + Dispatchers.Main else GlobalScope + Dispatchers.Default).launch(
+    val result = (if(requireMainThread) AppScope + Dispatchers.Main else AppScope + Dispatchers.Default).launch(
         block = {
 //            println("$id launched")
-            action()
+            val r = runCatching { action() }
 //            println("$id complete")
-            if (!justStarted) notifyLongComplete(Result.success(Unit))
+            if (!justStarted) notifyLongComplete(r)
             else done = true
         },
         start = if (coroutineContext[CoroutineDispatcher.Key]?.isDispatchNeeded(

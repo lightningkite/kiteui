@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +24,7 @@ class SharedReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default
             job +
             CoroutineExceptionHandler { coroutineContext, throwable ->
             if (throwable !is CancellationException) {
-                throwable.printStackTrace2()
+                throwable.report("SharedReadable")
             }
         }
 

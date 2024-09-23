@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -215,7 +212,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     private val job = Job()
     override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
         if(throwable !is CancellationException) {
-            throwable.printStackTrace2()
+            throwable.report(this.toString())
         }
     }
     open fun shutdown() {

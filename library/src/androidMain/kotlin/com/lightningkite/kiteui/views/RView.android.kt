@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -24,6 +25,11 @@ import kotlin.math.roundToInt
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: View
+
+    init {
+        if(Looper.myLooper() != Looper.getMainLooper())
+            throw Exception("Cannot create views on any thread but the main thread")
+    }
 
     actual override var showOnPrint: Boolean = true
 

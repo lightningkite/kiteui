@@ -41,7 +41,7 @@ interface CalculationContext: CoroutineScope {
     companion object {
     }
     @DelicateCoroutinesApi
-    object NeverEnds: CalculationContext, CoroutineScope by GlobalScope {
+    object NeverEnds: CalculationContext, CoroutineScope by AppScope {
     }
     class Standard: CalculationContext {
         val job = Job()
