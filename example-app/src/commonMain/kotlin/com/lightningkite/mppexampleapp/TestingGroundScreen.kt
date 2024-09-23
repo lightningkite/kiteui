@@ -19,8 +19,9 @@ object TestingGroundScreen: Screen {
             progressBar {
                 ratio = 0.5f
             }
-            sizeConstraints(width=120.px, height = 120.px) - circularProgress {
-                ratio = 0.5f
+               sizeConstraints(width = 5.rem) - circularProgress {
+                    ratio = 0.8f
+                    text("teste")
             }
         }
     }

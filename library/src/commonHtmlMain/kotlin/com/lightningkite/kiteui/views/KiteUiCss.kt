@@ -147,38 +147,40 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 appearance: none;
             }
             
+            
+            
            .progress-ring {
-              align-self: center !important;
-              width: 120px;
-              height: 120px;
+              width: 100%;
+              justify-content: space-around;
             }
             
-            .progress-ring__svg {
-              width: 100%;
-              height: 100%;
+            .progress-ring-svg {
+                display: block;
+                margin: 10px auto;
             }
 
-            .progress-ring__circle {
-              stroke: #4caf50; /* Green progress bar */
-              stroke-width: 10;
-              stroke-linecap: round; /* Rounded endcaps */
-              fill: transparent;
-              r: 52; /* Circle radius */
-              cx: 60; /* Center X */
-              cy: 60; /* Center Y */
-              stroke-dasharray: 326; /* Circle circumference */
-              stroke-dashoffset: 326; /* Hide by default */
-              transition: stroke-dashoffset 0.6s ease;
+            .circle-background {
+                          fill: none;
+                          stroke: #eee;
+                          stroke-width: 3.8;
+            }
+            
+            .circle-progress {
+                fill: none;
+                stroke-width:2.8;
+                stroke-linecap: round;
+                animation: progress 1s ease-out forwards;
+                  stroke: #ff9f00;
+            }
+            
+            @keyframes progress {
+              0% {
+                stroke-dasharray: 0 100;
+              }
             }
 
-            .progress-ring__content {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              text-align: center;
-              font-size: 1.5rem;
-              font-weight: bold;
+            .progress-ring-content {
+                text-anchor: middle;
             }
 
 
