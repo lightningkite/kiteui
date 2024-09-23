@@ -87,7 +87,7 @@ fun Writable<String?>.nullToBlank(): Writable<String> = lens(
 fun Writable<String>.validateNotBlank(): Writable<String> = validate {
     if (it.isBlank()) "Cannot be blank" else null
 }
-fun Writable<String?>.validateNotNullOrBlank(): Writable<String> = validationLens(
+fun Writable<String?>.validateNotBlank(): Writable<String> = validationLens(
     get = { it ?: "" },
     set = { if (it.isBlank()) "Cannot be blank" else null }
 )

@@ -26,7 +26,9 @@ fun RView.validates(readables: List<Readable<*>>) {
         else null
     }
 }
-fun RView.validates(vararg readables: Readable<*>) = validates(readables.toList())
+fun RView.validates(vararg readables: Readable<*>) {
+    if (readables.isNotEmpty()) validates(readables.toList())
+}
 
 fun <T> Readable<Readable<T>>.flattenState(): Readable<T> =
     object : Readable<T> {

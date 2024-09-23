@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
@@ -10,6 +9,29 @@ import com.lightningkite.kiteui.reactive.lensing.*
 import com.lightningkite.kiteui.reactive.lensing.lens
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+
+class WarningText(private val container: RowOrCol): ViewWriter(), CalculationContext by container {
+    override val context: RContext get() = container.context
+    override fun addChild(view: RView) = container.addChild(view)
+
+    private val _content = Property<String?>(null)
+    var content by _content
+    private val _exists = Property(true)
+    var exists by _exists
+
+    fun ViewWriter.render() {
+        onlyWhen { _content() != null && _exists() } - text { ::content { _content() ?: "" } }
+    }
+}
+inline fun ViewWriter.warningText(setup: WarningText.() -> Unit) {
+    col {
+        spacing = 0.px
+        WarningText(this).run {
+            setup()
+            render()
+        }
+    }
+}
 
 @Routable("/validation")
 class ValidationTestScreen: Screen {
@@ -65,6 +87,17 @@ class ValidationTestScreen: Screen {
                 onlyWhen { name.invalid() != null } - text { ::content { name.invalid()?.errorSummary ?: "" } }
             }
 
+            warningText {
+                val otherText = Property("").validate { if (it == "abc") "Cannot be abc" else null }
+                ::content { otherText.invalid()?.errorSummary }
+
+                fieldTheme - textField {
+                    hint = "other text"
+                    validates(otherText)
+                    content bind otherText
+                }
+            }
+
             col {
                 spacing = 0.2.rem
                 fieldTheme - numberField {
@@ -84,6 +117,8 @@ class ValidationTestScreen: Screen {
                 }
                 onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.errorSummary ?: "" } }
             }
+
+
         }
     }
 }
