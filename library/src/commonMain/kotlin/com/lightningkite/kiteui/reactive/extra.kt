@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 class SignalingList<T>
-    private constructor(private val list: MutableList<T>)
-    : MutableList<T> by list, ImmediateReadable<List<T>>
+    private constructor(private val list: MutableList<T>) : MutableList<T> by list, ImmediateReadable<List<T>>
 {
     constructor() : this(ArrayList<T>())
     constructor(startingItems: List<T>) : this(ArrayList(startingItems))
@@ -15,13 +14,13 @@ class SignalingList<T>
         listeners.add(listener)
         return {
             val pos = listeners.indexOfFirst { it === listener }
-            if (pos != -1) {3
+            if (pos != -1) {
                 listeners.removeAt(pos)
             }
         }
     }
 
-    suspend fun watchIsEmpty(): Boolean? = state { state -> state.onData { it.isEmpty() } }
+    fun ReactiveContext.watchIsEmpty(): Boolean? = state { state -> state.onData { it.isEmpty() } }
 
     private fun <V> changeList(action: MutableList<T>.() -> V): V = list.action().also { listeners.invokeAllSafe() }
 
@@ -38,8 +37,7 @@ class SignalingList<T>
 }
 
 class SignallingSet<T>
-    private constructor(private val set: MutableSet<T>)
-    : MutableSet<T> by set, ImmediateReadable<Set<T>>
+    private constructor(private val set: MutableSet<T>) : MutableSet<T> by set, ImmediateReadable<Set<T>>
 {
     constructor() : this(HashSet<T>())
     constructor(startingItems: List<T>) : this(HashSet(startingItems))

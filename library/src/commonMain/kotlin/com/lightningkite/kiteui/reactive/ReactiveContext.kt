@@ -112,6 +112,7 @@ abstract class ReactiveContext : CalculationContext {
                         previous = it
                         rerun()
                     }
+
                 }
             )
         }

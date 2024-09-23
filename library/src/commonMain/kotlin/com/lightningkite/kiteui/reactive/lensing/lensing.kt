@@ -1,11 +1,10 @@
 package com.lightningkite.kiteui.reactive.lensing
 
 import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.reactive.*
 
 private abstract class Lens<O, T>(
-    val source: Readable<O>
+    private val source: Readable<O>
 ) : BaseReadable<T>() {
     private val debug: Console? = null
 
@@ -37,13 +36,6 @@ private abstract class Lens<O, T>(
     }
 }
 
-private open class ReadableLens<O, T>(
-    source: Readable<O>,
-    private val get: (O) -> T
-) : Lens<O, T>(source) {
-    override fun updateFromSource(state: ReadableState<O>): ReadableState<T> = state.map(get)
-}
-
 @Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lensing.lens"))
 fun <O, T> Writable<O>.map(
     get: (O) -> T,
@@ -52,13 +44,20 @@ fun <O, T> Writable<O>.map(
 
 // Basic lensing
 
-fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = ReadableLens(this, get)
+private open class BasicLens<O, T>(
+    source: Readable<O>,
+    private val get: (O) -> T
+) : Lens<O, T>(source) {
+    override fun updateFromSource(state: ReadableState<O>): ReadableState<T> = state.map(get)
+}
+
+fun <O, T> Readable<O>.lens(get: (O) -> T): Readable<T> = BasicLens(this, get)
 
 fun <O, T> Writable<O>.lens(
     get: (O) -> T,
     modify: (O, T) -> O
 ): Writable<T> {
-    return object : Writable<T>, ReadableLens<O, T>(this, get) {
+    return object : Writable<T>, BasicLens<O, T>(this, get) {
         /** Queues changes*/
         override suspend fun set(value: T) {
             val old: O = this@lens.await()
@@ -72,7 +71,7 @@ fun <O, T> Writable<O>.lens(
     get: (O) -> T,
     set: (T) -> O
 ): Writable<T> {
-    return object : Writable<T>, ReadableLens<O, T>(this, get) {
+    return object : Writable<T>, BasicLens<O, T>(this, get) {
         /** Queues changes */
         override suspend fun set(value: T) {
             val new: O = set(value)
@@ -89,7 +88,7 @@ private class ValidationReadable<T>(
 ) : Lens<T, T>(source) {
     override fun updateFromSource(state: ReadableState<T>): ReadableState<T> =
         state.mapState {
-            readableState(it) { vet(it) }
+            readableStateWithValidation(it) { vet(it) }
         }
 }
 
@@ -103,25 +102,34 @@ fun <T> Readable<T>.validate(validation: (T) -> String?) = vet {
 
 
 private abstract class ValidationWritable<O, T>(
-    source: Writable<O>,
+    val source: Writable<O>,
     val get: (O) -> T,  // NOTE: get cannot be used for validation
 ) : Writable<T>, Lens<O, T>(source) {
-    protected val debug: Console? = ConsoleRoot.tag("ValWritable")
+    protected val debug: Console? = null // ConsoleRoot.tag("ValWritable")
+
     abstract fun validate(model: O, value: T)
+
+    private var previous: T? = null
     override fun updateFromSource(state: ReadableState<O>): ReadableState<T> =
         state.mapState {
             val value = get(it)
-            readableState(value) {
+            readableStateWithValidation(value) {
                 validate(it, value)
+                previous = value
                 value
             }
         }
 
-    protected inline fun catchValidationErrors(value: T, action: () -> Unit) {
-        state = readableState(value) {
-            action()
-            return      // If no errors occurred then just exit
+    protected abstract suspend fun getSetValue(input: T): O
+    override suspend fun set(value: T) {
+        val invalidState = readableStateWithValidation(value) {
+            val mapped = getSetValue(value)
+            source.set(mapped)
+            if (value == previous) state = ReadableState(value)
+            return
         }
+        debug?.log("validation error caught: ($value) -> ${invalidState.raw}")
+        state = invalidState
     }
 }
 
@@ -133,11 +141,7 @@ fun <O, T> Writable<O>.validationLens(
         override fun validate(model: O, value: T) {
             modify(model, value)
         }
-        override suspend fun set(value: T) {
-            catchValidationErrors(value) {
-                this@validationLens.set(modify(this@validationLens(), value))
-            }
-        }
+        override suspend fun getSetValue(input: T): O = modify(source.awaitOnce(), input)
     }
 
 fun <O, T> Writable<O>.validationLens(
@@ -148,11 +152,7 @@ fun <O, T> Writable<O>.validationLens(
         override fun validate(model: O, value: T) {
             set(value)
         }
-        override suspend fun set(value: T) {
-            catchValidationErrors(value) {
-                this@validationLens.set(set(value))
-            }
-        }
+        override suspend fun getSetValue(input: T): O = set(input)
     }
 
 

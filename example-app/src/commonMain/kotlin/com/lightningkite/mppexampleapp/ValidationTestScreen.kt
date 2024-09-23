@@ -84,13 +84,6 @@ class ValidationTestScreen: Screen {
                 }
                 onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.errorSummary ?: "" } }
             }
-
-            col {
-                h6("Current Value:")
-                text {
-                    ::content { draft().toString() }
-                }
-            }
         }
     }
 }

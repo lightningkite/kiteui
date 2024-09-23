@@ -7,8 +7,11 @@ import com.lightningkite.kiteui.reactive.*
 
 suspend fun allValid(readables: List<Readable<*>>): Boolean =
     readables.all { r -> r.state { it.invalid == null } }
-
 suspend fun allValid(vararg readables: Readable<*>): Boolean = allValid(readables.toList())
+
+fun ReactiveContext.allValid(readables: List<Readable<*>>): Boolean =
+    readables.all { r -> r.state { it.invalid == null } }
+fun ReactiveContext.allValid(vararg readables: Readable<*>): Boolean = allValid(readables.toList())
 
 fun ReactiveContext.errors(readables: List<Readable<*>>): List<ErrorState> =
     readables.mapNotNull { r -> r.state { it.error } }
@@ -23,7 +26,6 @@ fun RView.validates(readables: List<Readable<*>>) {
         else null
     }
 }
-
 fun RView.validates(vararg readables: Readable<*>) = validates(readables.toList())
 
 fun <T> Readable<Readable<T>>.flattenState(): Readable<T> =

@@ -148,7 +148,7 @@ inline fun <T> readableState(action: () -> T): ReadableState<T> {
         ReadableState.exception(e)
     }
 }
-inline fun <T> readableState(data: T, action: () -> T): ReadableState<T> {
+inline fun <T> readableStateWithValidation(data: T, action: () -> T): ReadableState<T> {
     return try {
         ReadableState(action())
     } catch (e: WarningException) {

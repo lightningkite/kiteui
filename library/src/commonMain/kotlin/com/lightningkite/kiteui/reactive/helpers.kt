@@ -142,20 +142,29 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
         }
     }
 
+fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
+    object : Writable<T>, Readable<T> by this {
+        override suspend fun set(value: T) {
+            action(this@interceptWrite, value)
+        }
+    }
+
 // Lenses
 infix fun <T> Writable<T>.equalTo(value: T): Writable<Boolean> = lens(
     get = { it == value },
     modify = { o, it ->  if(it) value else o }
 )
-infix fun <T> Writable<Set<T>>.contains(value: T): Writable<Boolean> = shared { value in this@contains() }.withWrite { on ->
-    if (on) this@contains.set(this@contains.await() + value)
-    else this@contains.set(this@contains.await() - value)
-}
-
-fun <T : Any> Writable<T>.nullable(): Writable<T?> = lens(
-    get = { it },
-    modify = { o, it -> it ?: o }
+infix fun <T> Writable<Set<T>>.contains(value: T): Writable<Boolean> = lens(
+    get = { value in it },
+    modify = { set, bool -> if (bool) set + value else set - value }
 )
+
+fun <T : Any> Writable<T>.nullable(): Writable<T?> =
+    object : Readable<T?> by this, Writable<T?> {
+        override suspend fun set(value: T?) {
+            if (value != null) this@nullable.set(value)
+        }
+    }
 
 fun <T : Any> Writable<T?>.notNull(default: T): Writable<T> = lens(
     get = { it ?: default },
@@ -211,19 +220,11 @@ suspend infix fun <T> ImmediateWritable<T>.modify(action: suspend (T) -> T) { va
 
 fun CalculationContext.use(resourceUse: ResourceUse) {
     val x = resourceUse.start()
-    onRemove { x() }
+    onRemove(x)
 }
-
-fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
-    object : Writable<T>, Readable<T> by this {
-        override suspend fun set(value: T) {
-            action(this@interceptWrite, value)
-        }
-    }
 
 fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }
     .withWrite { this@flatten.state.onSuccess { s -> s set it } }
-
 
 interface ReadableEmitter<T> {
     fun emit(value: T)
