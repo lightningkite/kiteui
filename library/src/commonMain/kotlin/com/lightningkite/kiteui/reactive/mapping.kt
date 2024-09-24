@@ -217,12 +217,12 @@ private class LensByElementAssumingSetNeverManipulates<E, W>(
             return _state
         }
     var suppress = false
-    var old: CalculationContext.Standard? = null
+    var old: CoroutineScope? = null
 
     fun refresh() {
         if (suppress) return
         old?.cancel()
-        val context = CalculationContext.Standard()
+        val context = CoroutineScope(Job())
         old = context
         _state = source.state.map {
             sources.clear()

@@ -28,7 +28,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class TextField actual constructor(context: RContext): RView(context) {
+actual class TextInput actual constructor(context: RContext): RView(context) {
     override val native = EditText(context.activity)
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)

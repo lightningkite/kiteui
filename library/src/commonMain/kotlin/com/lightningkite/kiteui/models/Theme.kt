@@ -69,7 +69,14 @@ data object FieldSemantic : Semantic {
     override val key: String = "fld"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "fld",
-        outlineWidth = 1.px
+        outlineWidth = 1.px,
+//        spacing = theme.spacing / 2,
+        cornerRadii = when(val base = theme.cornerRadii) {
+            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
+            is CornerRadii.ForceConstant -> base
+            is CornerRadii.RatioOfSize -> base
+            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+        }
     ).withBack
 }
 
@@ -229,6 +236,11 @@ data object SubtextSemantic : Semantic {
         font = theme.font.copy(size = 0.8.rem),
         foreground = theme.foreground.applyAlpha(0.7f)
     ).withoutBack
+}
+
+data object ErrorSemantic : Semantic {
+    override val key: String = "err"
+    override fun default(theme: Theme): ThemeAndBack = theme[DangerSemantic]
 }
 
 data object InvalidSemantic : Semantic {

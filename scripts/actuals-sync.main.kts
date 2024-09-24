@@ -220,7 +220,7 @@ listOf(
     writable("content", "LocalDateTime?", "\"\"")
     prop("range", "ClosedRange<LocalDateTime>?")
 }
-"TextField" {
+"TextInput" {
     writable("content", "String", "\"\"")
     prop("keyboardHints", "KeyboardHints")
     prop("hint", "String")

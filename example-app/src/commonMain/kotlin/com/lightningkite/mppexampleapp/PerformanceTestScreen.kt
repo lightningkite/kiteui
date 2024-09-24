@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Routable("performance")
 object PerformanceTestScreen : Screen {

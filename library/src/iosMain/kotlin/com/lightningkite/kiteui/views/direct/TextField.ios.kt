@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
@@ -15,7 +16,7 @@ import platform.darwin.NSObject
 
 
 
-actual class TextField actual constructor(context: RContext) : RView(context) {
+actual class TextInput actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -56,7 +57,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
 
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@TextField, UIControlEventEditingChanged) {
+            return textField.onEvent(this@TextInput, UIControlEventEditingChanged) {
                 listener()
             }
         }

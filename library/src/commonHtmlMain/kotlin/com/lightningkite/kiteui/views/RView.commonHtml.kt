@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 actual abstract class RView(context: RContext) : RViewHelper(context) {
@@ -58,7 +59,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
-        launchGlobal {
+        launch {
             delay(100)
             native.focus()
         }

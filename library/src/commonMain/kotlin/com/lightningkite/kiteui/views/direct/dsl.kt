@@ -125,9 +125,16 @@ inline fun ViewWriter.menuButton(setup: MenuButton.() -> Unit = {}): MenuButton 
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.numberField(setup: NumberField.() -> Unit = {}): NumberField {
+inline fun ViewWriter.numberInput(setup: NumberInput.() -> Unit = {}): NumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(NumberField(context) , setup)
+    return write(NumberInput(context) , setup)
+}
+@Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.numberField(setup: NumberInput.() -> Unit = {}): NumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(NumberInput(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -221,9 +228,16 @@ inline fun ViewWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.textField(setup: TextField.() -> Unit = {}): TextField {
+inline fun ViewWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(TextField(context) , setup)
+    return write(TextInput(context) , setup)
+}
+@Deprecated("Use textInput instead", ReplaceWith("this.textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(TextInput(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl

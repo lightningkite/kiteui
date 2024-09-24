@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 
+import com.lightningkite.kiteui.AppScope
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.BarSemantic
@@ -37,7 +38,7 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     UIView.setAnimationsEnabled(false)
 
     @OptIn(DelicateCoroutinesApi::class)
-    val writer = object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
+    val writer = object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(this@setup)
         override fun addChild(view: RView) {
             this@setup.view.addSubview(view.native)

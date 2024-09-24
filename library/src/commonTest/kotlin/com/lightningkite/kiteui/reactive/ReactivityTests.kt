@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.launch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -401,7 +400,7 @@ fun testContext(action: CalculationContext.()->Unit): Job {
             }
         }
     }) {
-        CalculationContextStack.useIn(this) {
+        CoroutineScopeStack.useIn(this) {
             action()
         }
         job.cancel()

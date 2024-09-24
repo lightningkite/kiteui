@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.AppJob
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.*
@@ -22,7 +24,7 @@ actual class Button actual constructor(context: RContext): RView(context) {
         var virtualDisable: Boolean = false
         native.addEventListener("click") {
             if(!virtualDisable) {
-                launchManualCancel {
+                launch(AppJob, "click") {
                     try {
                         virtualDisable = true
                         action()

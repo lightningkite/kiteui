@@ -26,35 +26,18 @@ class SharedReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default
             if (throwable !is CancellationException) {
                 throwable.report("SharedReadable")
             }
+        } + object: StatusListener {
+        override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
+            if (lastNotified != state) {
+                lastNotified = state
+                listeners.invokeAllSafe()
+            }
         }
+    }
 
     private fun cancel() {
         job.cancel()
         job = Job()
-    }
-
-    override fun notifyStart() {
-        super.notifyStart()
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    override fun notifyComplete(result: Result<Unit>) {
-        super.notifyComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        super.notifyLongComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
     }
 
     private val scope = DirectReactiveContext(this, scheduled = false, action = action)

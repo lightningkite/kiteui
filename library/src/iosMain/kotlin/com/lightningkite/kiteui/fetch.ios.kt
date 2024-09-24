@@ -241,7 +241,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             when (val x = incoming.receive()) {
                                 is Frame.Binary -> {
-                                    val data = Blob(x.data, "application/octet-stream")
+                                    val data = Blob(x.data.toNSData(), "application/octet-stream")
                                     withContext(Dispatchers.Main) {
                                         onBinaryMessage.forEach { it(data) }
                                     }

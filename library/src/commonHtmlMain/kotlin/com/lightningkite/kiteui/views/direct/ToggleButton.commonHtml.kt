@@ -51,7 +51,6 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
 
     init {
         checked.addListener {
-            println("Checked listener hit for $this")
             if(checked.value)
                 native.classes.add("checked")
             else

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 
 

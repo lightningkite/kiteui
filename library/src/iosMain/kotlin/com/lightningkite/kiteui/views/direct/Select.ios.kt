@@ -2,13 +2,12 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSInteger
@@ -49,7 +48,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
             }
             @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
             override fun pickerView(pickerView: UIPickerView, didSelectRow: NSInteger, inComponent: NSInteger) {
-                launch {
+                launchManualCancel {
                     val item = list[didSelectRow.toInt()]
                     edits set item
                 }

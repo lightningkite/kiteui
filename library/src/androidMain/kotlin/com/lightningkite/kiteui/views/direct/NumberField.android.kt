@@ -23,7 +23,7 @@ import com.lightningkite.kiteui.reactive.asDouble
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberField actual constructor(context: RContext): RView(context) {
+actual class NumberInput actual constructor(context: RContext): RView(context) {
     override val native = EditText(context.activity).apply {
         var block = false
         doAfterTextChanged {

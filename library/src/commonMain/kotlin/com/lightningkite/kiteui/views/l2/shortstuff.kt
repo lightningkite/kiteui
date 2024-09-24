@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.exceptions.ExceptionHandler
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -39,5 +38,38 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
                 view?.exists = false
             }
         }
+    }
+}
+
+@ViewDsl
+fun RView.errorText() {
+    val errors = Property<Set<Exception>>(setOf())
+    onlyWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
+        this@errorText += object: ExceptionHandler {
+            override val priority: Float
+                get() = 1f
+
+            override fun handle(view: RView, exception: Exception): (() -> Unit)? {
+                errors.value += exception
+                return {
+                    errors.value -= exception
+                }
+            }
+        }
+        ::content {
+            errors().joinToString("\n") {
+                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
+            }
+        }
+    }
+}
+
+@ViewDsl
+fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit) {
+    col {
+        spacing = 0.px
+        subtext(label)
+        fieldTheme - content()
+        SubtextSemantic.onNext - errorText()
     }
 }

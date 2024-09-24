@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberField actual constructor(context: RContext) : RView(context) {
+actual class NumberInput actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -126,6 +126,6 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val NumberField.selectionStart: Int?
-expect val NumberField.selectionEnd: Int?
-expect fun NumberField.setSelectionRange(start: Int, end: Int)
+expect val NumberInput.selectionStart: Int?
+expect val NumberInput.selectionEnd: Int?
+expect fun NumberInput.setSelectionRange(start: Int, end: Int)

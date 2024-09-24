@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -186,9 +187,6 @@ fun retryWebsocket(
 
         override fun onClose(action: (Short) -> Unit) {
             onCloseList.add(action)
-        }
-
-        override fun onRemove(action: () -> Unit) {
         }
     }
 }

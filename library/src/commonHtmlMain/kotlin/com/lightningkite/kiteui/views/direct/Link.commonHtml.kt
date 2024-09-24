@@ -18,13 +18,9 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             val destination = to?.invoke()
             if(destination != null) {
                 if (resetsStack) {
-                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
                     onNavigator.reset(destination)
-                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
                 } else {
-                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
                     onNavigator.navigate(destination)
-                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
                 }
                 onNavigate?.let {
                     launchManualCancel(it)

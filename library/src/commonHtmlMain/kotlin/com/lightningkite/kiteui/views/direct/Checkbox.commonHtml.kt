@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 

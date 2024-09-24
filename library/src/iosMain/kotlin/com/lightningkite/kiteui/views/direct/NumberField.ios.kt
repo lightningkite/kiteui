@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
@@ -17,7 +18,7 @@ import platform.darwin.NSObject
 
 
 
-actual class NumberField actual constructor(context: RContext) : RView(context) {
+actual class NumberInput actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -32,7 +33,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
 
     init {
         var block = false
-        textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
+        textField.onEvent(this@NumberInput, UIControlEventEditingChanged) {
             if (block) return@onEvent
             block = true
             try {
@@ -94,7 +95,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) { textField.text = value?.commaString() ?: "" }
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
+            return textField.onEvent(this@NumberInput, UIControlEventEditingChanged) {
                 listener()
             }
         }

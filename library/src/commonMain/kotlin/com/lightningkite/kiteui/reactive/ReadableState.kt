@@ -81,3 +81,9 @@ inline fun <T> readableState(action: () -> T): ReadableState<T> {
         ReadableState.exception(e)
     }
 }
+
+inline fun <T> Result<T>.toReadableState(): ReadableState<T> {
+    @Suppress("UNCHECKED_CAST")
+    return if(this.isFailure) ReadableState.exception(this.exceptionOrNull() as Exception)
+    else ReadableState.wrap(this.getOrNull() as T)
+}

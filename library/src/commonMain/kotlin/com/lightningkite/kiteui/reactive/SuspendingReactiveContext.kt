@@ -17,36 +17,17 @@ class SuspendingReactiveContext(
     internal val latestPass: ArrayList<Any?> = ArrayList()
     override val key: CoroutineContext.Key<SuspendingReactiveContext> = Key
     internal var lastJob: Job? = null
-
-    var runningLong: Result<Unit>? = Result.success(Unit)
-        set(value) {
-            val previous = field
-            field = value
-            if ((previous == null) != (value == null)) {
-                if (value != null) {
-                    calculationContext.notifyLongComplete(value)
-                } else {
-//                    try {
-                    onLoad?.invoke()
-//                    } catch(e: Exception) {
-//                        e.printStackTrace2()
-//                    }
-                    calculationContext.notifyStart()
-                }
-            } else if (value != null) {
-                calculationContext.notifyComplete(value)
-            }
-        }
+    val listener = calculationContext.coroutineContext[StatusListener]
 
     internal fun setLoading() {
-//        println("Skip calc attempt $this")
-        runningLong = null
+        listener?.report(this, ReadableState.notReady, false)
     }
 
     private var executionInstance = 0
 
     @OptIn(ExperimentalStdlibApi::class)
     internal fun run() {
+        var notReadyReported = false
         latestPass.clear()
 
         debug?.log("Calculating")
@@ -59,11 +40,11 @@ class SuspendingReactiveContext(
                 ) == false
             ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
         ) {
-            val result = kotlin.runCatching { action() }
+            val result = readableState { action() }
             if (index != executionInstance) return@launch
             done = true
             debug?.log("Complete, got result $result")
-            runningLong = result
+            listener?.report(this, result, !notReadyReported)
             for (entry in removers.entries.toList()) {
                 if (entry.key !in latestPass) {
                     entry.value()
@@ -76,7 +57,8 @@ class SuspendingReactiveContext(
         if (!done) {
             // start load
             debug?.log("Load started")
-            runningLong = null
+            listener?.report(this, ReadableState.notReady, false)
+            notReadyReported = true
         }
     }
 

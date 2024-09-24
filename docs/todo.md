@@ -34,7 +34,7 @@
   - SwapView
   - Switch
   - TextArea
-  - TextField
+  - TextInput
   - TextView
   - ToggleButton
   - TwoPane

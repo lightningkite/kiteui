@@ -23,7 +23,7 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
         set(value) {
             field = value
             native.setOnClickListener { view ->
-                launch {
+                launchManualCancel {
                     onNavigate.invoke()
                     ExternalServices.openTab(value)
                 }

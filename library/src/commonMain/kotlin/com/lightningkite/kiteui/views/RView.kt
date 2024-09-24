@@ -1,13 +1,12 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.dialog
+import kotlinx.coroutines.*
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
@@ -209,14 +208,76 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
     }
 
+    val working = Property(false)
+    private var exceptionHandlers: ExceptionHandlers? = null
+    operator fun plusAssign(exceptionHandler: ExceptionHandler) {
+        exceptionHandlers?.let {
+            it += exceptionHandler
+        } ?: run {
+            exceptionHandlers = ExceptionHandlers().apply {
+                this += exceptionHandler
+            }
+        }
+    }
+    private var exceptionToMessages: ExceptionToMessages? = null
+    operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
+        exceptionToMessages?.let {
+            it += exceptionToMessage
+        } ?: run {
+            exceptionToMessages = ExceptionToMessages().apply {
+                this += exceptionToMessage
+            }
+        }
+    }
+    private val exceptionCompletions = HashMap<Any, ()->Unit>()
+    private var loadCount = 0
+        set(value) {
+            field = value
+            if (value == 0 && working.value) {
+                working.value = false
+            } else if (value > 0 && !working.value) {
+                working.value = true
+            }
+        }
+
     private val job = Job()
     override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
         if(throwable !is CancellationException) {
             throwable.report(this.toString())
         }
+    } + object: StatusListener {
+        override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
+            if (!fast) {
+                status.handle(
+                    success = { loadCount-- },
+                    exception = { loadCount-- },
+                    notReady = { loadCount++ },
+                )
+            }
+            status.handle(
+                success = { exceptionCompletions.remove(key)?.invoke() },
+                notReady = { exceptionCompletions.remove(key)?.invoke() },
+                exception = {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (()->Unit)? {
+                        return view.exceptionHandlers?.handle(myView, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, it))?.let { exceptionCompletions[key] = it }
+                },
+            )
+        }
+    }
+    fun exceptionToMessage(exception: Exception): ExceptionMessage? {
+        val myView = this@RViewHelper as RView
+        fun handle(view: RViewHelper): ExceptionMessage? {
+            return view.exceptionToMessages?.handle(myView, exception) ?: view.parent?.let { handle(it) }
+        }
+        return (handle(myView) ?: ExceptionToMessages.root.handle(myView, exception))
     }
     open fun shutdown() {
         job.cancel()
+        exceptionCompletions.values.forEach { it() }
+        exceptionCompletions.clear()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
@@ -247,27 +308,5 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     // Calculation context
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
-    val calculationContext: CalculationContext get() = this
-
-    val working = Property(false)
-    private var loadCount = 0
-        set(value) {
-            field = value
-            if (value == 0 && working.value) {
-                working.value = false
-            } else if (value > 0 && !working.value) {
-                working.value = true
-            }
-        }
-
-    override fun notifyStart() {
-        super.notifyStart()
-        loadCount++
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        loadCount--
-        super.notifyLongComplete(result)
-    }
+    val calculationContext: CoroutineScope get() = this
 }
-
