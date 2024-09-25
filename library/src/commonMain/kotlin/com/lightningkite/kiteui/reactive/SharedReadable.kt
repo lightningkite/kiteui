@@ -20,13 +20,12 @@ class SharedReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default
     Readable<T>, CalculationContext {
 
     private var job = Job()
-    override val coroutineContext = (coroutineContext ?: EmptyCoroutineContext) +
-            job +
+    private val restOfContext = (coroutineContext ?: EmptyCoroutineContext) +
             CoroutineExceptionHandler { coroutineContext, throwable ->
-            if (throwable !is CancellationException) {
-                throwable.report("SharedReadable")
-            }
-        } + object: StatusListener {
+                if (throwable !is CancellationException) {
+                    throwable.report("SharedReadable")
+                }
+            } + object: StatusListener {
         override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
             if (lastNotified != state) {
                 lastNotified = state
@@ -34,6 +33,7 @@ class SharedReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default
             }
         }
     }
+    override val coroutineContext = job + restOfContext
 
     private fun cancel() {
         job.cancel()

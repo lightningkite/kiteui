@@ -264,11 +264,8 @@ class DirectReactiveContext<T> constructor(
         lastResult = state
         val listener = context.coroutineContext[StatusListener]
         if (state.ready) {
-            listener?.report(
-                this,
-                state.map { Unit },
-                !slow
-            )
+            listener?.report(this, state.map { Unit }, !slow)
+            slow = false
         } else {
             if (!slow) {
                 slow = true

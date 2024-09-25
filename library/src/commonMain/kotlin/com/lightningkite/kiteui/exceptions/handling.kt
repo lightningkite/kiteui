@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.exceptions
 
+import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.models.Action
+import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
@@ -10,13 +13,20 @@ class ExceptionHandlers {
     companion object {
         val root = object: ExceptionHandler {
             override val priority: Float get() = 0f
+            var open = false
             override fun handle(view: RView, exception: Exception): (() -> Unit)? {
+                if(open) return {}
+                open = true
                 view.closePopovers()
                 val message = view.exceptionToMessage(exception)!!
                 view.dialog {
+                    onRemove { open = false }
                     col {
                         h2(message.title)
                         text(message.body)
+                        if(debugMode) {
+                            subtext(exception.stackTraceToString())
+                        }
                         row {
                             expanding - space()
                             for(action in message.actions) {
@@ -55,6 +65,7 @@ class ExceptionToMessages {
                     get() = 0f
 
                 override fun handle(view: RView, exception: Exception): ExceptionMessage? {
+                    exception.report()
                     return ExceptionMessage(
                         title = "Error",
                         body = "An unknown error occurred.  If this issue persists, please contact the developers."

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
 
+var debugMode: Boolean = false
 expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
 expect fun gc(): GCInfo

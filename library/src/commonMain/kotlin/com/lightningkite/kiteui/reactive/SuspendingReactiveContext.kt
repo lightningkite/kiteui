@@ -30,7 +30,7 @@ class SuspendingReactiveContext(
         var notReadyReported = false
         latestPass.clear()
 
-        debug?.log("Calculating")
+        debug?.log("run")
         var done = false
         var index = ++executionInstance
         lastJob = calculationContext.launch(
@@ -40,13 +40,15 @@ class SuspendingReactiveContext(
                 ) == false
             ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
         ) {
+            debug?.log("run launch")
             val result = readableState { action() }
             if (index != executionInstance) return@launch
             done = true
-            debug?.log("Complete, got result $result")
+            debug?.log("run complete, got result $result")
             listener?.report(this, result, !notReadyReported)
             for (entry in removers.entries.toList()) {
                 if (entry.key !in latestPass) {
+                    debug?.log("removing listener for ${entry.key}")
                     entry.value()
                     removers.remove(entry.key)
                     lastValue.remove(entry.key)
@@ -56,13 +58,14 @@ class SuspendingReactiveContext(
 
         if (!done) {
             // start load
-            debug?.log("Load started")
+            debug?.log("run notReady")
             listener?.report(this, ReadableState.notReady, false)
             notReadyReported = true
         }
     }
 
     internal fun shutdown() {
+        debug?.log("shutdown")
         action = {}
         onLoad = {}
         removers.forEach { it.value() }
@@ -123,7 +126,7 @@ suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
         // and the value is ready to go, just add the listener and proceed with the value.
         var last = state.let(get)
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@state}")
             it.removers[this] = this.addListener {
                 val newVal = state.let(get)
                 if (last != newVal) {
@@ -145,7 +148,7 @@ suspend fun <T> Readable<T>.state(): ReadableState<T> {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@state}")
             it.removers[this] = this.addListener {
                 it.run()
             }
@@ -161,7 +164,7 @@ suspend fun <T> ImmediateReadable<T>.await(): T {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@await}")
             it.removers[this] = this.addListener {
                 it.run()
             }
@@ -177,9 +180,9 @@ suspend fun <T> Readable<T>.await(): T {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         var cont: Continuation<T>? = null
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@await}")
             it.removers[this] = this.addListener {
-                it.debug?.log("READABLE LISTENER HIT A")
+                it.debug?.log("readable listener hit with $state, cont is $cont")
                 state.handle(
                     success = { r ->
                         cont?.let { c ->

@@ -70,7 +70,7 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveScope {
@@ -80,7 +80,7 @@ class SharedTest {
 
             property.value = 2
             assertEquals(2, hits)
-        }.cancel()
+        }
 
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
@@ -90,13 +90,13 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveScope {
                 a()
             }
-        }.cancel()
+        }
         assertEquals(3, hits)
     }
 

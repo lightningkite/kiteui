@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.jvm.JvmInline
 
@@ -28,7 +29,7 @@ value class ReadableState<out T>(val raw: T) {
         @Suppress("UNCHECKED_CAST")
         val notReady: ReadableState<Nothing> = ReadableState<Any?>(InternalReadableNotReady) as ReadableState<Nothing>
         @Suppress("UNCHECKED_CAST")
-        fun <T> exception(exception: Exception) = ReadableState<Any?>(InternalReadableThrownException(exception)) as ReadableState<T>
+        fun <T> exception(exception: Exception) = (if(exception is CancelledException) notReady else ReadableState<Any?>(InternalReadableThrownException(exception))) as ReadableState<T>
         @Suppress("UNCHECKED_CAST")
         fun <T> wrap(value: T) = ReadableState<Any?>(InternalReadableWrapper(value)) as ReadableState<T>
     }
@@ -75,6 +76,8 @@ value class ReadableState<out T>(val raw: T) {
 inline fun <T> readableState(action: () -> T): ReadableState<T> {
     return try {
         ReadableState(action())
+    } catch (e: CancelledException) {
+        ReadableState.notReady
     } catch (e: ReactiveLoading) {
         ReadableState.notReady
     } catch (e: Exception) {

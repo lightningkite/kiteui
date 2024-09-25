@@ -164,11 +164,12 @@ infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
     }
 }
 
-fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable<T> =
+fun <T> Readable<T>.withWrite(reportException: suspend (Exception)->Unit = { throw it }, action: suspend Readable<T>.(T) -> Unit): Writable<T> =
     object : Writable<T>, Readable<T> by this {
         override suspend fun set(value: T) {
             action(this@withWrite, value)
         }
+        override suspend fun reportSetException(exception: Exception) = reportException(exception)
     }
 
 // Lenses

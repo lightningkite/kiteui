@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
@@ -102,7 +103,7 @@ object ControlsScreen : Screen {
                         var error = false
                         onClick {
                             error = !error
-                            if(error) fetch("https://www.lightningkite.com/doesnotexist")
+                            if(error) throw PlainTextException("We broke!")
                             else delay(100)
                         }; text {
                         content = "Card"
@@ -130,7 +131,7 @@ object ControlsScreen : Screen {
                     }
                     expanding - space {}
                 } in scrollsHorizontally
-                errorText()
+//                errorText()
             }
 
             col {

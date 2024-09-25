@@ -35,14 +35,22 @@ private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (
 private open class SetLens<O, T>(source: Writable<O>, get: (O) -> T, val set: (T) -> O) :
     ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
     override suspend fun set(value: T) {
-        source.set(set.invoke(value))
+        try {
+            source.set(set.invoke(value))
+        } catch(e: Exception) {
+            source.reportSetException(e)
+        }
     }
 }
 
 private open class ModifyLens<O, T>(source: Writable<O>, get: (O) -> T, val modify: (O, T) -> O) :
     ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
     override suspend fun set(value: T) {
-        source.set(modify(source.awaitOnce(), value))
+        try {
+            source.set(modify(source.awaitOnce(), value))
+        } catch(e: Exception) {
+            source.reportSetException(e)
+        }
     }
 }
 
@@ -76,7 +84,11 @@ private open class SetImmediateLens<O, T>(source: ImmediateWritable<O>, get: (O)
     override var value: T
         get() = super.value
         set(value) {
-            source.value = set.invoke(value)
+            try {
+                source.value = set.invoke(value)
+            } catch(e: Exception) {
+                source.reportSetExceptionImmediate(e)
+            }
         }
 }
 
@@ -85,7 +97,11 @@ private open class ModifyImmediateLens<O, T>(source: ImmediateWritable<O>, get: 
     override var value: T
         get() = super.value
         set(value) {
-            source.value = modify(source.value, value)
+            try {
+                source.value = modify(source.value, value)
+            } catch(e: Exception) {
+                source.reportSetExceptionImmediate(e)
+            }
         }
 }
 
@@ -243,12 +259,13 @@ class WritableList<E, ID, T>(
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>,
         CalculationContext {
         private var job = Job()
-        override val coroutineContext =
-            Dispatchers.Default + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-                if (throwable !is CancellationException) {
-                    throwable.report("WritableList.ElementWritable")
-                }
+        private val restOfContext = Dispatchers.Default + CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable !is CancellationException) {
+                throwable.report("WritableList.ElementWritable")
             }
+        }
+        override val coroutineContext get() = restOfContext + job
+
         internal var dead = false
             set(value) {
                 field = value

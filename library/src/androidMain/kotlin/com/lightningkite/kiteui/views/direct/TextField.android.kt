@@ -107,10 +107,11 @@ actual class TextInput actual constructor(context: RContext): RView(context) {
                 }
             }
         }
+
+    init {
+        keyboardHints = KeyboardHints(KeyboardCase.Sentences)
+    }
 }
-
-
-
 
 
 
@@ -186,8 +187,6 @@ var EditText.keyboardHints: KeyboardHints
             if (value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword))
                 it or InputType.TYPE_TEXT_VARIATION_PASSWORD
             else it
-        }.let {
-            it or (this.inputType and (InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))
         }
         n.inputType = inputType
         when (value.autocomplete) {

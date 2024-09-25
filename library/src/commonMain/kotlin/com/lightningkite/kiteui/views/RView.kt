@@ -102,7 +102,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     abstract fun requestFocus()
 
     companion object {
-        var animationsEnabled: Boolean = true
         var leakDetection: Boolean = false
         var removeBeforeShutdown: Boolean = false
         val leakLog = ConsoleRoot.tag("RViewLeaks")
@@ -131,6 +130,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
                 }
                 run { applyForeground(value.theme) }
                 run { applyBackground(value.theme, value.useBackground) }
+                if(children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
+                    println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
+                }
                 for (child in internalChildren) {
 //                    if (child.themeChoice !is ThemeChoice.Set)
                     child.refreshTheming()
@@ -146,10 +148,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
-        if (!fullyStarted) return
-        if (parent?.fullyStarted == false) return
-        themeAndBack =
-            applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if(this == viewDebugTarget) println("refreshTheming")
+        if (!fullyStarted) {
+            if(this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
+            return
+        }
+        if (parent?.fullyStarted == false) {
+            if(this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
+            return
+        }
+        if(this == viewDebugTarget) println("refreshTheming will set!")
+        val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if(this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
+        themeAndBack = t
     }
 
     abstract fun applyElevation(dimension: Dimension)
@@ -229,6 +240,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             }
         }
     }
+    fun clearExceptions() {
+        exceptionCompletions.values.forEach { it() }
+        exceptionCompletions.clear()
+        children.forEach { it.clearExceptions() }
+    }
     private val exceptionCompletions = HashMap<Any, ()->Unit>()
     private var loadCount = 0
         set(value) {
@@ -240,7 +256,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             }
         }
 
-    private val job = Job()
+    private val job = SupervisorJob()
     override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
         if(throwable !is CancellationException) {
             throwable.report(this.toString())
@@ -276,8 +292,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     }
     open fun shutdown() {
         job.cancel()
-        exceptionCompletions.values.forEach { it() }
-        exceptionCompletions.clear()
+        clearExceptions()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)

@@ -17,6 +17,8 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
 
 fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->Unit) {
     overlayStack?.run {
+        withoutAnimation {
+
         beforeNextElementSetup {
             opacity = 0.0
             launch {
@@ -34,31 +36,36 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->Uni
             dialog - content()
             space()
         }
+        }
     }
 }
 
 fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit) {
     var willRemove: RView? = null
-    this.overlayStack!!.popoverWriter {
-        willRemove?.let {
-            launch {
-                it.opacity = 0.0
-                delay(it.theme.transitionDuration)
-                overlayStack!!.removeChild(it)
-            }
-        }
-    }.run {
-        beforeNextElementSetup {
-            opacity = 0.0
-            launch {
-                delay(1)
-                opacity = 1.0
-            }
-        }
-        willRemove = dismissBackground {
-            onClick { if(dismissable) closePopovers() }
-            centered - dialog - stack {
-                content()
+    this.overlayStack!!.run {
+        withoutAnimation {
+            popoverWriter {
+                willRemove?.let {
+                    launch {
+                        it.opacity = 0.0
+                        delay(it.theme.transitionDuration)
+                        overlayStack!!.removeChild(it)
+                    }
+                }
+            }.run {
+                beforeNextElementSetup {
+                    opacity = 0.0
+                    launch {
+                        delay(1)
+                        opacity = 1.0
+                    }
+                }
+                willRemove = dismissBackground {
+                    onClick { if (dismissable) closePopovers() }
+                    centered - dialog - stack {
+                        content()
+                    }
+                }
             }
         }
     }

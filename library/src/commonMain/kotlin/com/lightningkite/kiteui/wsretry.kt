@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -125,7 +126,7 @@ fun retryWebsocket(
             }
         }
 
-        override val coroutineContext: CoroutineContext = Job()
+        override val coroutineContext: CoroutineContext = SupervisorJob()
 
         init {
             var starting = false

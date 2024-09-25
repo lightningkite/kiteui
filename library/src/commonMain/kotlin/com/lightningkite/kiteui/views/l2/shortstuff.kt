@@ -5,6 +5,9 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 @ViewDsl
 fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
@@ -65,7 +68,9 @@ fun RView.errorText() {
 }
 
 @ViewDsl
-fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit) {
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit) {
+    contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         spacing = 0.px
         subtext(label)
