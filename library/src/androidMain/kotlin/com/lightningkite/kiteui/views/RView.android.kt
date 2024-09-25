@@ -138,12 +138,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             is CornerRadii.RatioOfSize -> it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+            // TODO: Implement per-corner radii on Android
+            is CornerRadii.PerCorner -> 0f
         }
-        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
+        // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
+        // size on Android
+/*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
             native.addOnLayoutChangeListener(layoutChangeListener)
         } else {
             native.removeOnLayoutChangeListener(layoutChangeListener)
-        }
+        }*/
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }

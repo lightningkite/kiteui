@@ -100,6 +100,8 @@ class CAGradientLayerResizing: CAGradientLayer {
             is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
             is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            // TODO: Implement per-corner radii on iOS
+            is CornerRadii.PerCorner -> 0.0
         }
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         backgroundMask?.cornerRadius = v

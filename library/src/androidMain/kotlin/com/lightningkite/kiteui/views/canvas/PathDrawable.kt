@@ -92,7 +92,7 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                             vector.height.value,
                         )
                         style = Paint.Style.STROKE
-                        strokeWidth = it.strokeWidth?.times(scaleX)?.div(AndroidAppContext.density) ?: 0f
+                        strokeWidth = it.strokeWidth?.times(scaleX)?.div(AndroidAppContext.density)?.toFloat() ?: 0f
                         it.strokeCap?.let {
                             strokeCap = when (it) {
                                 Icon.StrokeLineCap.Square -> Paint.Cap.SQUARE

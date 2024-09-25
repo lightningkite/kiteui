@@ -303,7 +303,7 @@ fun ImageVector.caLayer(): CALayer {
         fun makeCAShapeLayer() = CAShapeLayer().apply {
             frame = layer.bounds
             this.path = p
-            this.lineWidth = path.strokeWidth?.times(scaleX) ?: 0.0
+            this.lineWidth = path.strokeWidth ?: 0.0
             path.strokeCap?.let {
                 lineCap = when (it) {
                     Icon.StrokeLineCap.Butt -> kCALineCapButt
