@@ -20,11 +20,11 @@ object VectorsTestScreen : Screen {
                         paths = listOf(
                             ImageVector.Path(
                                 strokeColor = Color.black,
-                                strokeWidth = 4.px.value,
+                                strokeWidth = 4.0,
                                 path = "M 20 50 A 60 60 0 0 0 80 50"
                             ), ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 2.px.value,
+                                strokeWidth = 2.0,
                                 path = "M 50 0 V 100"
                             )
                         )
@@ -38,7 +38,7 @@ object VectorsTestScreen : Screen {
                         paths = listOf(
                             ImageVector.Path(
                                 strokeColor = Color.black,
-                                strokeWidth = 10.px.value,
+                                strokeWidth = 10.0,
                                 path = "M 10 315\n" +
                                         "           L 110 215\n" +
                                         "           A 30 50 0 0 1 162.55 162.45\n" +
@@ -64,12 +64,12 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M 25, 50 l 50,0 l -50,0 z"
                             ),
                             ImageVector.Path(
                                 fillColor = Color.red,
-                                strokeWidth = 2.px.value,
+                                strokeWidth = 2.0,
                                 path = "M 25, 50 a 25,25 0 1,1 50,0 a 25,25 0 1,1 -50,0z"
                             )
                         )
@@ -88,7 +88,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M 0, 0 Q 100, 0, 100, 100 L 0, 100 z"
                             ),
                         )
@@ -107,7 +107,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M 50, 0 Q 100, 0, 100, 50 T 50 100 T 0 50 z"
                             ),
                         )
@@ -126,7 +126,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M 0, 0 C 100, 0, 0, 100, 100, 100 L 0, 100 z"
                             ),
                         )
@@ -145,7 +145,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.blue,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M 50, 0 C 75, 0, 100, 25, 100, 50 S 100 100 50 100 S 0 100 0 50 z"
                             ),
                         )
@@ -171,7 +171,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.black,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M0,0L100,100"
                             ),
                         )
@@ -195,7 +195,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.black,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M0,0L100,100"
                             ),
                         )
@@ -219,7 +219,7 @@ object VectorsTestScreen : Screen {
                             ),
                             ImageVector.Path(
                                 strokeColor = Color.black,
-                                strokeWidth = 5.px.value,
+                                strokeWidth = 5.0,
                                 path = "M0,0L100,100"
                             ),
                         )
@@ -270,7 +270,7 @@ private fun vec(vararg pathData: String) = ImageVector(
     paths = pathData.map {
         ImageVector.Path(
             strokeColor = Color.black,
-            strokeWidth = 1.px.value,
+            strokeWidth = 1.0,
             path = it
         )
     }
