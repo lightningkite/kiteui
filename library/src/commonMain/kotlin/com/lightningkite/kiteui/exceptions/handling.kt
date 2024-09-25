@@ -15,12 +15,18 @@ class ExceptionHandlers {
             override val priority: Float get() = 0f
             var open = false
             override fun handle(view: RView, exception: Exception): (() -> Unit)? {
-                if(open) return {}
+                if(open) {
+                    println("Blocked $exception; already open")
+                    return {}
+                }
                 open = true
                 view.closePopovers()
                 val message = view.exceptionToMessage(exception)!!
                 view.dialog {
-                    onRemove { open = false }
+                    onRemove {
+                        println("Closing")
+                        open = false
+                    }
                     col {
                         h2(message.title)
                         text(message.body)
@@ -32,7 +38,7 @@ class ExceptionHandlers {
                             for(action in message.actions) {
                                 button {
                                     text(action.title)
-                                    onClick { action.onSelect() }
+                                    onClick { closePopovers(); action.onSelect() }
                                 }
                             }
                             buttonTheme - button {

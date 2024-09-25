@@ -29,21 +29,23 @@ actual class NumberInput actual constructor(context: RContext): RView(context) {
         doAfterTextChanged {
             if(block) return@doAfterTextChanged
             block = true
-            try {
-                if (it == null) return@doAfterTextChanged
-                numberAutocommaRepair(
-                    dirty = it.toString(),
-                    selectionStart = selectionStart,
-                    selectionEnd = selectionEnd,
-                    setResult = {
-                        setText(it)
-                    },
-                    setSelectionRange = { start, end ->
-                        setSelection(start, end)
-                    }
-                )
-            } finally {
-                block = false
+            post {
+                try {
+                    if (it == null) return@post
+                    numberAutocommaRepair(
+                        dirty = it.toString(),
+                        selectionStart = selectionStart,
+                        selectionEnd = selectionEnd,
+                        setResult = {
+                            setText(it)
+                        },
+                        setSelectionRange = { start, end ->
+                            setSelection(start, end)
+                        }
+                    )
+                } finally {
+                    block = false
+                }
             }
         }
     }
