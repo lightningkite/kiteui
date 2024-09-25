@@ -73,8 +73,8 @@ data class Icon(
         viewBoxMinY,
         viewBoxWidth,
         viewBoxHeight,
-        pathDatas.map { ImageVector.Path(color, null, 0.0, it) } + strokePathDatas.map {
-            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.path)
+        pathDatas.map { ImageVector.Path(color, null, 0.0, null, it) } + strokePathDatas.map {
+            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.strokeLineCap, it.path)
         }
     )
 
@@ -428,6 +428,7 @@ data class ImageVector(
         val fillColor: Paint? = null,
         val strokeColor: Color? = null,
         val strokeWidth: Double? = null,
+        val strokeCap: Icon.StrokeLineCap? = null,
         val path: String
     )
 }
@@ -519,6 +520,78 @@ data class PopoverPreferredDirection(
     fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
     fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
     fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
+
+    fun calculatePopoverPosition(anchor: Rect, self: Rect, safeArea: Rect? = null): Pair<Double, Double> {
+        val tx: Double
+        val ty: Double
+        val txm: Double
+        val tym: Double
+        if (horizontal) {
+            if (after) {
+                tx = anchor.right
+                txm = 0.0
+            } else {
+                tx = anchor.left
+                txm = -1.0
+            }
+            when (align) {
+                Align.Start -> {
+                    ty = anchor.bottom
+                    tym = -1.0
+                }
+
+                Align.End -> {
+                    ty = anchor.top
+                    tym = 0.0
+                }
+
+                else -> {
+                    ty = (anchor.top + anchor.bottom) / 2
+                    tym = -0.5
+                }
+            }
+        } else {
+            if (after) {
+                ty = anchor.bottom
+                tym = 0.0
+            } else {
+                ty = anchor.top
+                tym = -1.0
+            }
+            when (align) {
+                Align.Start -> {
+                    tx = anchor.right
+                    txm = -1.0
+                }
+
+                Align.End -> {
+                    tx = anchor.left
+                    txm = 0.0
+                }
+
+                else -> {
+                    tx = (anchor.left + anchor.right) / 2
+                    txm = -0.5
+                }
+            }
+        }
+
+        if (safeArea != null) {
+            if (self.right > safeArea.right) {
+                return forceLeft().calculatePopoverPosition(anchor, self)
+            }
+            if (self.left < safeArea.left) {
+                return forceRight().calculatePopoverPosition(anchor, self)
+            }
+            if (self.bottom > safeArea.bottom) {
+                return forceTop().calculatePopoverPosition(anchor, self)
+            }
+            if (self.top < safeArea.top) {
+                return forceBottom().calculatePopoverPosition(anchor, self)
+            }
+        }
+        return tx + txm * self.width to ty + tym * self.height
+    }
 }
 
 data class KeyboardHints(

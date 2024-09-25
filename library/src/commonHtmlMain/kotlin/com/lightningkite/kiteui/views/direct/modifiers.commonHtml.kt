@@ -3,13 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
-import kotlin.math.min
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 @ViewModifierDsl3
 actual fun ViewWriter.hintPopover(
@@ -209,7 +204,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: suspend () -> Boolea
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
 //    }
-    wrapNextIn(object: RView(context) {
+    wrapNextIn(object: RViewWrapper(context) {
         init {
             native.tag = "div"
             native.classes.add("hidingContainer")

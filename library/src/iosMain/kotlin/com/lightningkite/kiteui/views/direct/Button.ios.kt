@@ -30,13 +30,15 @@ actual class Button actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
         reactiveScope {
-            opacity = if (working()) 0.7 else 1.0
+            working()
+            refreshTheming()
         }
     }
 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
+        if(working.value) t = t[WorkingSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]

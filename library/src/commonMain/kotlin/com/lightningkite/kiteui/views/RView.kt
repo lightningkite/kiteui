@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import kotlin.random.Random
 
-expect abstract class RView : RViewHelper {
+expect abstract class RView(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
     override fun existsSet(value: Boolean)
@@ -65,7 +65,7 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         }
 
     protected abstract fun visibleSet(value: Boolean)
-    var spacing: Dimension? = null
+    open var spacing: Dimension? = null
         set(value) {
             field = value
             spacingSet(value)
@@ -266,5 +266,10 @@ abstract class RViewHelper(override val context: RContext) : CalculationContext,
         loadCount--
         super.notifyLongComplete(result)
     }
+}
+
+abstract class RViewWrapper(context: RContext) : RView(context) {
+    override var spacing: Dimension? = null
+        get() = field ?: parent?.spacing
 }
 

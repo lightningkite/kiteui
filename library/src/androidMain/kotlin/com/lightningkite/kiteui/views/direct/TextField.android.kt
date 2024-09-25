@@ -1,33 +1,22 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.graphics.Typeface
-import android.text.Editable
 import android.text.InputType
-import android.text.TextUtils
-import android.text.TextWatcher
+import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
-import android.widget.TextView as AndroidTextView
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class TextField actual constructor(context: RContext): RView(context) {
+actual open class TextField actual constructor(context: RContext): RView(context) {
     override val native = EditText(context.activity)
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
@@ -41,7 +30,7 @@ actual class TextField actual constructor(context: RContext): RView(context) {
                 theme.font.italic
             )
         )
-        native.isAllCaps = theme.font.allCaps
+        useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
     actual val content: ImmediateWritable<String> = native.contentProperty()
@@ -57,12 +46,34 @@ actual class TextField actual constructor(context: RContext): RView(context) {
         return t
     }
 
+    private var useSensitiveDotMask = false
+        set(value) {
+            field = value
+            updateTransformationMethod()
+        }
+    private var useAllCaps = false
+        set(value) {
+            field = value
+            updateTransformationMethod()
+        }
+    private fun updateTransformationMethod() {
+        // Calling EditText.setAllCaps() calls EditText.setTransformationMethod() under the hood which leads to side
+        // effects when we are using the transformationMethod for password masking; ONLY enforce all caps when we are
+        // not masking passwords as password masking takes priority
+        if (useSensitiveDotMask) {
+            native.transformationMethod = PasswordTransformationMethod.getInstance()
+        } else {
+            native.isAllCaps = theme.font.allCaps
+        }
+    }
+
     actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
         set(value) {
             native.keyboardHints = value
+            useSensitiveDotMask = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
     actual var action: Action? = null
         set(value) {
@@ -107,11 +118,6 @@ actual class TextField actual constructor(context: RContext): RView(context) {
             }
         }
 }
-
-
-
-
-
 
 abstract class EquatableByRef(val key: String, val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
@@ -181,10 +187,6 @@ var EditText.keyboardHints: KeyboardHints
 
             KeyboardType.Phone -> InputType.TYPE_CLASS_PHONE
             KeyboardType.Email -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-        }.let {
-            if (value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword))
-                it or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            else it
         }.let {
             it or (this.inputType and (InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))
         }

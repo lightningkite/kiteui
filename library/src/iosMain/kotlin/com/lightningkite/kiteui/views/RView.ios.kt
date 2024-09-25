@@ -5,29 +5,21 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
-import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
-import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
-import platform.UIKit.UITapGestureRecognizer
 import platform.UIKit.UIView
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.roundToInt
 import kotlin.native.ref.WeakReference
-import kotlin.time.DurationUnit
 
 @OptIn(ExperimentalForeignApi::class)
-actual abstract class RView(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
     var tag: Any? = null
 
@@ -158,14 +150,15 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             if (!fullyApply) {
                 backgroundLayer?.removeFromSuperlayer()
                 backgroundLayer = null
-            } else {
-                val layer = backgroundLayer ?: run {
-                    val newLayer = CAGradientLayerResizing()
-                    backgroundLayer = newLayer
-                    native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
-                    newLayer
-                }
-                with(layer) {
+            }
+            val layer = backgroundLayer ?: run {
+                val newLayer = CAGradientLayerResizing()
+                backgroundLayer = newLayer
+                native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+                newLayer
+            }
+            with(layer) {
+                if (fullyApply) {
                     when (val b = theme.background) {
                         is Color -> {
                             val c = b.toUiColor().CGColor!!
@@ -196,15 +189,15 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
                             this.endPoint = CGPointMake(0.0, 0.0)
                         }
                     }
-                    zPosition = -99999.0
-                    parentSpacing = (parent?.mySpacing ?: theme.spacing).value
-
                     borderWidth = theme.outlineWidth.value
                     borderColor = theme.outline.closestColor().toUiColor().CGColor
-                    desiredCornerRadius = theme.cornerRadii
-
-                    matchParentSize("insert")
                 }
+
+                zPosition = -99999.0
+                parentSpacing = this@RView.parentSpacing.value
+                desiredCornerRadius = theme.cornerRadii
+
+                matchParentSize("insert")
             }
         }
     }

@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import kotlin.random.Random
 
-actual abstract class RView(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
 
     actual override var showOnPrint: Boolean = true

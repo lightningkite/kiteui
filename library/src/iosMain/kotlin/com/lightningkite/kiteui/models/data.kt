@@ -35,14 +35,6 @@ actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimensio
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
 
-@OptIn(ExperimentalForeignApi::class)
-fun CornerRadii.toRawCornerRadius(bounds: CValue<CGRect>, parentSpacing: DimensionRaw): DimensionRaw = when(this) {
-    is CornerRadii.Constant -> value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-    is CornerRadii.ForceConstant -> value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-    is CornerRadii.RatioOfSize -> ratio * bounds.useContents { min(size.width, size.height) }
-    is CornerRadii.RatioOfSpacing -> parentSpacing.times(value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-}
-
 actual data class Font(val get: (size: CGFloat, weight: UIFontWeight, italic: Boolean)->UIFont)
 fun fontFromFamilyInfo(
     normal: String,

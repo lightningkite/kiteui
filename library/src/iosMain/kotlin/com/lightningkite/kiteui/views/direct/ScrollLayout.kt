@@ -60,6 +60,11 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
 
         if (viewDebugTarget?.native === this) println("Total sizeThatFits $subsize")
 
+        // subsize represents the size of the ScrollView content as returned by calcSizes(); the dimensions of the
+        // ScrollView itself should never be bigger than the size passed to sizeThatFits() or the ScrollView will never
+        // scroll
+        subsize.primary = subsize.primary.coerceAtMost(mySizeWithoutPadding.primary)
+
         subsize.primary += padding * 2 + 0.00001
         subsize.secondary += padding * 2 + 0.00001
 
