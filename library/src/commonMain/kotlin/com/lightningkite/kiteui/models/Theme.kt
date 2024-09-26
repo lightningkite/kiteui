@@ -69,7 +69,14 @@ data object FieldSemantic : Semantic {
     override val key: String = "fld"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "fld",
-        outlineWidth = 1.px
+        outlineWidth = 1.px,
+//        spacing = theme.spacing / 2,
+        cornerRadii = when(val base = theme.cornerRadii) {
+            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
+            is CornerRadii.ForceConstant -> base
+            is CornerRadii.RatioOfSize -> base
+            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+        }
     ).withBack
 }
 
@@ -229,6 +236,11 @@ data object SubtextSemantic : Semantic {
         font = theme.font.copy(size = 0.8.rem),
         foreground = theme.foreground.applyAlpha(0.7f)
     ).withoutBack
+}
+
+data object ErrorSemantic : Semantic {
+    override val key: String = "err"
+    override fun default(theme: Theme): ThemeAndBack = theme[DangerSemantic]
 }
 
 data object InvalidSemantic : Semantic {
@@ -447,7 +459,40 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert,
+        revert = if (revert) this else this.revert?.copy(
+            id = id,
+            font = font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            spacing = spacing,
+            navSpacing = navSpacing,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            background = background,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            card = card,
+            field = field,
+            button = button,
+            hover = hover,
+            focus = focus,
+            dialog = dialog,
+            down = down,
+            unselected = unselected,
+            selected = selected,
+            disabled = disabled,
+            mainContent = mainContent,
+            bar = bar,
+            nav = nav,
+            important = important,
+            critical = critical,
+            warning = warning,
+            danger = danger,
+            affirmative = affirmative,
+        ),
         derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
             card?.let { put(CardSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             field?.let { put(FieldSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
@@ -502,7 +547,23 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert,
+        revert = if (revert) this else this.revert?.customize(
+            newId = newId,
+            font = font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            spacing = spacing,
+            navSpacing = navSpacing,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            background = background,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            derivations = derivations,
+        ),
         derivations = this.derivations + derivations
     )
 
@@ -540,7 +601,23 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert,
+        revert = if (revert) this else this.revert?.copy(
+            id = id,
+            font = font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            spacing = spacing,
+            navSpacing = navSpacing,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            background = background,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            derivations = derivations,
+        ),
         derivations = this.derivations + derivations,
     )
 
@@ -598,7 +675,23 @@ class Theme(
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,
-            revert = if (revert) this else this.revert,
+            revert = if (revert) this else this.revert?.copy(
+                font = font,
+                title = title,
+                body = body,
+                elevation = elevation,
+                cornerRadii = cornerRadii,
+                spacing = spacing,
+                navSpacing = navSpacing,
+                foreground = foreground,
+                iconOverride = iconOverride,
+                outline = outline,
+                outlineWidth = outlineWidth,
+                background = background,
+                bodyTransitions = bodyTransitions,
+                dialogTransitions = dialogTransitions,
+                transitionDuration = transitionDuration,
+            ),
             derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
                 title?.let { title ->
                     put(HeaderSemantic) {

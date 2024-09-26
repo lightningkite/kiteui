@@ -10,11 +10,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty1
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
@@ -31,11 +30,11 @@ object ControlPerformanceTesting : Screen {
             BindMode.Instant -> {
                 this@invoke.set(default)
             }
-            BindMode.Launch -> CalculationContextStack.current().launch {
+            BindMode.Launch -> CoroutineScopeStack.current().launch {
 //                this@invoke.set(actionToCalculate(this))
             }
             BindMode.Reactive -> {
-                CalculationContextStack.current().reactiveScope {
+                CoroutineScopeStack.current().reactiveScope {
                     this@invoke.set(actionToCalculate(this))
                 }
             }
@@ -47,15 +46,15 @@ object ControlPerformanceTesting : Screen {
             BindMode.Instant -> {
                 this@bind.value = master.value
             }
-            BindMode.Launch -> CalculationContextStack.current().launch {
-                with(CalculationContextStack.current()) {
+            BindMode.Launch -> CoroutineScopeStack.current().launch {
+                with(CoroutineScopeStack.current()) {
                     launch {
                         this@bind.set(master.await())
                     }
                 }
             }
             BindMode.Reactive -> {
-                with(CalculationContextStack.current()) {
+                with(CoroutineScopeStack.current()) {
                     var setting = false
                     launch {
                         this@bind.set(master.await())

@@ -108,6 +108,13 @@ fun Theme.Companion.flat(
                 id = "fld",
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
+//                spacing = it.spacing / 2,
+                cornerRadii = when(val base = it.cornerRadii) {
+                    is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
+                    is CornerRadii.ForceConstant -> base
+                    is CornerRadii.RatioOfSize -> base
+                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.spacing * base.value)
+                }
             ).withBack
         },
         BarSemantic to { it.withoutBack },

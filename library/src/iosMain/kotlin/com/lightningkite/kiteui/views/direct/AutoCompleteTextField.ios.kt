@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
@@ -100,7 +101,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             textField.delegate = value?.let {
                 val d = object : NSObject(), UITextFieldDelegateProtocol {
                     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launch { it.onSelect() }
+                        launchManualCancel { it.onSelect() }
                         return true
                     }
                 }

@@ -140,7 +140,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             progress {
-                height: 0.5rem;
+                background: none;
+                max-height: 0.25rem !important;
                 border: medium;
                 border-radius: 1rem;
                 padding: 0px !important;
@@ -1027,7 +1028,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         "(max-width: ${it.value})"
                     },
                 ).joinToString(" and ")
-                if(index.rem(2).absoluteValue == 1) {
+                if(index.plus(2).rem(2) == 1) {
                     dynamicCss.rule(
                         """
                     @media $mediaQuery {
@@ -1035,7 +1036,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             flex-direction: column;
                         }
                         .$name.rowCollapsing > * {
-                            display: block;
                             flex-grow: 0 !important;
                             flex-shrink: 0 !important;
                             flex-basis: auto !important;
@@ -1061,9 +1061,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     @media $mediaQuery {
                         .$name.rowCollapsing {
                             flex-direction: row;
-                        }
-                        .$name.rowCollapsing > * {
-                            display: block;
                         }
                         .$name.rowCollapsing > .vStart {
                             align-self: start;

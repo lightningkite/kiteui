@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.report
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
@@ -17,25 +18,24 @@ class SharedSuspendingReadable<T>(
     val useLastWhileLoading: Boolean = false,
     var debug: Console? = null,
     private val action: suspend CalculationContext.() -> T
-) : BaseReadable<T>() {
-    var job = Job()
-    val ctx = object: CalculationContext {
-        override val coroutineContext = (coroutineContext ?: EmptyCoroutineContext) +
-                job +
-                CoroutineExceptionHandler { coroutineContext, throwable ->
-                    if (throwable !is CancellationException) {
-                        throwable.printStackTrace2()
-                    }
+) : BaseReadable<T>(), CalculationContext {
+    private var job = SupervisorJob()
+    private val restOfContext = (coroutineContext ?: EmptyCoroutineContext) +
+            CoroutineExceptionHandler { coroutineContext, throwable ->
+                if (throwable !is CancellationException) {
+                    throwable.report("SharedSuspendingReadable")
                 }
-    }
-    val me = Random.nextInt()
+            }
+    override val coroutineContext: CoroutineContext get() = restOfContext + job
+    private val me = Random.nextInt()
 
+    private var instanceNumber: Int = 1
     override fun activate() {
         super.activate()
-        debug?.log("Starting up...")
-        SuspendingReactiveContext(ctx, action = {
+        debug?.log("Activating...")
+        SuspendingReactiveContext(this, action = {
             try {
-                val result = ReadableState(action(ctx))
+                val result = ReadableState(action(this))
                 if (result == state) return@SuspendingReactiveContext
                 state = result
             } catch (e: CancelledException) {
@@ -48,14 +48,14 @@ class SharedSuspendingReadable<T>(
             if(!useLastWhileLoading) {
                 state = ReadableState.notReady
             }
-        }, debug = debug)
+        }, debug = debug?.tag((instanceNumber++).toString()))
     }
 
     override fun deactivate() {
         super.deactivate()
-        debug?.log("Shutting down...")
+        debug?.log("Deactivating...")
         job.cancel()
-        job = Job()
+        job = SupervisorJob()
         state = ReadableState.notReady
     }
 }

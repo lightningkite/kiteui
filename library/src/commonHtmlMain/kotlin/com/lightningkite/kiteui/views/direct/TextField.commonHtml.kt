@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class TextField actual constructor(context: RContext) : RView(context) {
+actual class TextInput actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")

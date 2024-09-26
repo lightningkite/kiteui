@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
@@ -75,6 +76,9 @@ actual class TextView actual constructor(context: RContext) :
         }
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
+        if (this == viewDebugTarget) {
+            println("native.setTextColor: ${theme.id} ${theme.foreground}")
+        }
         native.setTextColor(theme.foreground.colorInt())
         native.setTypeface(theme.font.typeface(context.activity))
         native.isAllCaps = theme.font.allCaps

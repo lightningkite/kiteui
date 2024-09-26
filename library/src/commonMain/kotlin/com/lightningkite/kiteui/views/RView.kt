@@ -1,16 +1,12 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.dialog
+import kotlinx.coroutines.*
 import kotlin.random.Random
 
 expect abstract class RView : RViewHelper {
@@ -106,7 +102,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     abstract fun requestFocus()
 
     companion object {
-        var animationsEnabled: Boolean = true
         var leakDetection: Boolean = false
         var removeBeforeShutdown: Boolean = false
         val leakLog = ConsoleRoot.tag("RViewLeaks")
@@ -135,6 +130,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
                 }
                 run { applyForeground(value.theme) }
                 run { applyBackground(value.theme, value.useBackground) }
+                if(children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
+                    println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
+                }
                 for (child in internalChildren) {
 //                    if (child.themeChoice !is ThemeChoice.Set)
                     child.refreshTheming()
@@ -150,10 +148,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
-        if (!fullyStarted) return
-        if (parent?.fullyStarted == false) return
-        themeAndBack =
-            applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if(this == viewDebugTarget) println("refreshTheming")
+        if (!fullyStarted) {
+            if(this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
+            return
+        }
+        if (parent?.fullyStarted == false) {
+            if(this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
+            return
+        }
+        if(this == viewDebugTarget) println("refreshTheming will set!")
+        val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if(this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
+        themeAndBack = t
     }
 
     abstract fun applyElevation(dimension: Dimension)
@@ -212,14 +219,80 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
     }
 
-    private val job = Job()
+    val working = Property(false)
+    private var exceptionHandlers: ExceptionHandlers? = null
+    operator fun plusAssign(exceptionHandler: ExceptionHandler) {
+        exceptionHandlers?.let {
+            it += exceptionHandler
+        } ?: run {
+            exceptionHandlers = ExceptionHandlers().apply {
+                this += exceptionHandler
+            }
+        }
+    }
+    private var exceptionToMessages: ExceptionToMessages? = null
+    operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
+        exceptionToMessages?.let {
+            it += exceptionToMessage
+        } ?: run {
+            exceptionToMessages = ExceptionToMessages().apply {
+                this += exceptionToMessage
+            }
+        }
+    }
+    fun clearExceptions() {
+        exceptionCompletions.values.forEach { it() }
+        exceptionCompletions.clear()
+        children.forEach { it.clearExceptions() }
+    }
+    private val exceptionCompletions = HashMap<Any, ()->Unit>()
+    private var loadCount = 0
+        set(value) {
+            field = value
+            if (value == 0 && working.value) {
+                working.value = false
+            } else if (value > 0 && !working.value) {
+                working.value = true
+            }
+        }
+
+    private val job = SupervisorJob()
     override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
         if(throwable !is CancellationException) {
-            throwable.printStackTrace2()
+            throwable.report(this.toString())
         }
+    } + object: StatusListener {
+        override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
+            if (!fast) {
+                status.handle(
+                    success = { loadCount-- },
+                    exception = { loadCount-- },
+                    notReady = { loadCount++ },
+                )
+            }
+            status.handle(
+                success = { exceptionCompletions.remove(key)?.invoke() },
+                notReady = { exceptionCompletions.remove(key)?.invoke() },
+                exception = {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (()->Unit)? {
+                        return view.exceptionHandlers?.handle(myView, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, it))?.let { exceptionCompletions[key] = it }
+                },
+            )
+        }
+    }
+    fun exceptionToMessage(exception: Exception): ExceptionMessage? {
+        val myView = this@RViewHelper as RView
+        fun handle(view: RViewHelper): ExceptionMessage? {
+            return view.exceptionToMessages?.handle(myView, exception) ?: view.parent?.let { handle(it) }
+        }
+        return (handle(myView) ?: ExceptionToMessages.root.handle(myView, exception))
     }
     open fun shutdown() {
         job.cancel()
+        clearExceptions()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
@@ -250,27 +323,5 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     // Calculation context
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
-    val calculationContext: CalculationContext get() = this
-
-    val working = Property(false)
-    private var loadCount = 0
-        set(value) {
-            field = value
-            if (value == 0 && working.value) {
-                working.value = false
-            } else if (value > 0 && !working.value) {
-                working.value = true
-            }
-        }
-
-    override fun notifyStart() {
-        super.notifyStart()
-        loadCount++
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        loadCount--
-        super.notifyLongComplete(result)
-    }
+    val calculationContext: CoroutineScope get() = this
 }
-

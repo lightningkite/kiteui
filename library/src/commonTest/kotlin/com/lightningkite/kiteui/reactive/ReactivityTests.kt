@@ -4,13 +4,10 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.launch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ReactivityTests {
     @Test fun testAsync() {
@@ -315,7 +312,7 @@ class ReactivityTests {
             var starts = 0
             var completes = 0
             val wait = WaitGate()
-            val deferred = (GlobalScope + Dispatchers.Unconfined).asyncReadable {
+            val deferred = (AppScope + Dispatchers.Unconfined).asyncReadable {
                 println("Calculating...")
                 wait.await()
                 println("Going...")
@@ -331,6 +328,34 @@ class ReactivityTests {
             assertEquals(0, completes)
             wait.permitOnce()
             assertEquals(2, starts)
+            assertEquals(1, completes)
+        }
+    }
+
+    @Test fun exceptionReruns() {
+        class PublicReadable: BaseReadable<Int>() {
+            override var state: ReadableState<Int>
+                get() = super.state
+                public set(value) { super.state = value }
+        }
+        val exceptional = PublicReadable()
+        testContext {
+            var starts = 0
+            var completes = 0
+            reactive {
+                starts++
+                exceptional()
+                completes++
+            }
+
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState.exception(Exception())
+            assertIs<Exception>(expectException())
+            assertEquals(2, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState.wrap(1)
+            assertEquals(3, starts)
             assertEquals(1, completes)
         }
     }
@@ -377,36 +402,41 @@ class VirtualDelayer() {
     }
 }
 
-fun testContext(action: CalculationContext.()->Unit): Job {
+class TestContext: CoroutineScope {
     var error: Throwable? = null
     val job = Job()
     var numOutstandingContracts = 0
-    with(object: CalculationContext {
-        override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined
-
-        override fun notifyLongComplete(result: Result<Unit>) {
-            numOutstandingContracts--
-            println("Long load complete")
-        }
-
-        override fun notifyStart() {
-            numOutstandingContracts++
-            println("Long load start")
-        }
-
-        override fun notifyComplete(result: Result<Unit>) {
-            result.onFailure { t ->
+    fun expectException(): Throwable {
+        val e = error ?: fail("Expected exception but there was none")
+        error = null
+        return e
+    }
+    override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined + object: StatusListener {
+        override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
+            if(!fast) {
+                if(status.ready) {
+                    numOutstandingContracts--
+//                        Exception("Long load complete $key $fast").printStackTrace()
+                } else {
+                    numOutstandingContracts++
+//                        Exception("Long load start $key $fast").printStackTrace()
+                }
+            }
+            status.exception?.let { t ->
                 t.printStackTrace()
                 error = t
             }
         }
-    }) {
-        CalculationContextStack.useIn(this) {
+    }
+}
+
+fun testContext(action: TestContext.()->Unit) {
+    with(TestContext()) {
+        CoroutineScopeStack.useIn(this) {
             action()
         }
         job.cancel()
-        if(error != null) throw error!!
+        if(error != null) throw Exception("Unexpected error", error!!)
         assertEquals(0, numOutstandingContracts, "Some work was not completed.")
     }
-    return job
 }

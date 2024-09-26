@@ -42,6 +42,12 @@ abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady)
         }
 }
 
+class RawReadable<T>(start: ReadableState<T> = ReadableState.notReady) : BaseReadable<T>(start) {
+    override var state: ReadableState<T>
+        get() = super.state
+        public set(value) { super.state = value }
+}
+
 abstract class BaseImmediateReadable<T>(start: T) : ImmediateReadable<T>, BaseListenable() {
     override var value: T = start
         set(value) {

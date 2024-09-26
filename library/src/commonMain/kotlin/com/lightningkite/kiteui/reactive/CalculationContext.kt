@@ -1,67 +1,33 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.startCoroutine
 import kotlin.reflect.KMutableProperty0
 
-interface CalculationContext: CoroutineScope {
-    @OptIn(ExperimentalStdlibApi::class)
-    val requireMainThread: Boolean get() = coroutineContext[CoroutineDispatcher.Key] is MainCoroutineDispatcher
-    fun notifyStart() {}
-    fun notifyLongComplete(result: Result<Unit>) {
-        notifyComplete(result)
-    }
-    fun notifyComplete(result: Result<Unit>) {
-        result.onFailure {
-            if(it !is CancelledException) {
-                it.report()
-            }
-        }
-    }
+public interface StatusListener : CoroutineContext.Element {
+    override val key: CoroutineContext.Key<*> get() = Key
+    /**
+     * Key for [Job] instance in the coroutine context.
+     */
+    public companion object Key : CoroutineContext.Key<StatusListener>
 
-//    fun startReporting(): Reporter = NoOpReporter
-//    interface Reporter {
-//        fun willDelay()
-//        fun complete(result: Result<Unit>)
-//        fun invalidate()
-//    }
-//    object NoOpReporter: Reporter {
-//        override fun willDelay() {}
-//        override fun complete(result: Result<Unit>) {}
-//        override fun invalidate() {}
-//    }
-
-    fun onRemove(action: () -> Unit) {
-        this.coroutineContext[Job]?.invokeOnCompletion { action() }
-    }
-    companion object {
-    }
-    @DelicateCoroutinesApi
-    object NeverEnds: CalculationContext, CoroutineScope by GlobalScope {
-    }
-    class Standard: CalculationContext {
-        val job = Job()
-        override val coroutineContext: CoroutineContext get() = job
-        fun cancel() = job.cancel()
-    }
+    fun report(key: Any, status: ReadableState<Unit>, fast: Boolean,)
 }
 
-fun CalculationContext.sub(): SubCalculationContext = SubCalculationContext(this)
-
-class SubCalculationContext(parent: CalculationContext) : CalculationContext {
-    private val sub = Job(parent.coroutineContext[Job])
-    override val coroutineContext: CoroutineContext = parent.coroutineContext + sub
+fun CoroutineScope.onRemove(action: () -> Unit) {
+    coroutineContext[CoroutineName.Key]
+    this.coroutineContext[Job]?.invokeOnCompletion { action() }
 }
 
-object CalculationContextStack {
-    val stack = ArrayList<CalculationContext>()
+typealias CalculationContext = CoroutineScope
+@OptIn(ExperimentalStdlibApi::class)
+val CoroutineScope.requireMainThread: Boolean get() = coroutineContext[CoroutineDispatcher.Key] is MainCoroutineDispatcher
+
+object CoroutineScopeStack {
+    val stack = ArrayList<CoroutineScope>()
     fun current() = stack.lastOrNull() ?: throw IllegalStateException("CalculationContextStack.onRemove called outside of a builder.")
 
-    inline fun useIn(handler: CalculationContext, action: () -> Unit) {
+    inline fun useIn(handler: CoroutineScope, action: () -> Unit) {
         start(handler)
         try {
             action()
@@ -71,10 +37,10 @@ object CalculationContextStack {
     }
     // Performance is very sensitive here, and this is a one-liner.  No need to perform a whole call for this.
     @Suppress("NOTHING_TO_INLINE")
-    inline fun start(handler: CalculationContext) {
+    inline fun start(handler: CoroutineScope) {
         stack.add(handler)
     }
-    fun end(handler: CalculationContext) {
+    fun end(handler: CoroutineScope) {
         if (stack.removeLast() != handler)
             throw ConcurrentModificationException("Multiple threads have been attempting to instantiate views at the same time.")
     }
@@ -84,11 +50,11 @@ object CalculationContextStack {
 annotation class Reactive
 
 @Reactive
-inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
+inline operator fun <T, IGNORED> ((T) -> IGNORED).invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CoroutineScopeStack.current().reactiveScope {
     this@invoke(actionToCalculate(this))
 }
 
 @Reactive
-inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CalculationContextStack.current().reactiveScope {
+inline operator fun <T> KMutableProperty0<T>.invoke(crossinline actionToCalculate: ReactiveContext.() -> T) = CoroutineScopeStack.current().reactiveScope {
     this@invoke.set(actionToCalculate(this))
 }

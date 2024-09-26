@@ -6,21 +6,19 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.CalculationContextStack.end
-import com.lightningkite.kiteui.reactive.CalculationContextStack.start
-import com.lightningkite.kiteui.reactive.reactiveScope
-import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.reactive.CoroutineScopeStack.end
+import com.lightningkite.kiteui.reactive.CoroutineScopeStack.start
+import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter: CalculationContext {
+abstract class ViewWriter: CoroutineScope {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
-    fun split(): ViewWriter = object : ViewWriter(), CalculationContext by this {
+    fun split(): ViewWriter = object : ViewWriter(), CoroutineScope by this {
         override val context: RContext = this@ViewWriter.context.split()
         override fun addChild(view: RView) {
             this@ViewWriter.addChild(view)
@@ -142,7 +140,7 @@ abstract class ViewWriter: CalculationContext {
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
 }
 
-class NewViewWriter(val calculationContext: CalculationContext, override val context: RContext) : ViewWriter(), CalculationContext by calculationContext {
+class NewViewWriter(val calculationContext: CoroutineScope, override val context: RContext) : ViewWriter(), CoroutineScope by calculationContext {
     var newView: RView? = null
     override fun addChild(view: RView) {
         newView = view

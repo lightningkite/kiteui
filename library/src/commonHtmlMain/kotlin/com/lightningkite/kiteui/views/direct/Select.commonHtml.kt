@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.AppJob
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -41,7 +42,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
             alreadyHandled = false
         }
         native.addEventListener("change") {
-            launch {
+            launch(AppJob, Unit) {
                 if(alreadyHandled) return@launch
                 alreadyHandled = true
                 native.attributes.valueString?.toIntOrNull()?.let { edits set list[it] }

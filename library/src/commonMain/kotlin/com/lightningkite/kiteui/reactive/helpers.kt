@@ -6,7 +6,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.launch
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
-import kotlin.time.Duration
 
 @JsName("invokeAllSafeMutable")
 @JvmName("invokeAllSafeMutable")
@@ -21,17 +20,20 @@ fun List<() -> Unit>.invokeAllSafe() = forEach {
 }
 
 infix fun <T> Writable<T>.bind(master: Writable<T>) {
-    with(CalculationContextStack.current()) {
+    with(CoroutineScopeStack.current()) {
         var setting = false
-        launch {
+        launch(key = this@bind) {
             this@bind.set(master.await())
             master.addListener {
                 if (setting) return@addListener
                 master.state.onSuccess {
                     setting = true
-                    this@with.launch {
-                        this@bind.set(it)
-                        setting = false
+                    this@with.launch(key = this@bind) {
+                        try {
+                            this@bind.set(it)
+                        } finally {
+                            setting = false
+                        }
                     }
                 }
             }.also { onRemove(it) }
@@ -39,9 +41,12 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
                 if (setting) return@addListener
                 this@bind.state.onSuccess {
                     setting = true
-                    this@with.launch {
-                        master.set(it)
-                        setting = false
+                    this@with.launch(key = this@bind) {
+                        try {
+                            master.set(it)
+                        } finally {
+                            setting = false
+                        }
                     }
                 }
             }.also { onRemove(it) }
@@ -51,25 +56,33 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
 }
 
 infix fun <T> ImmediateWritable<T>.bind(master: Writable<T>) {
-    with(CalculationContextStack.current()) {
+    with(CoroutineScopeStack.current()) {
         var setting = false
-        launch {
+        launch(key = this@bind) {
             this@bind.set(master.await())
             master.addListener {
                 if (setting) return@addListener
                 master.state.onSuccess {
                     setting = true
-                    this@bind.value = (it)
-                    setting = false
+                    this@with.reporting(key = this@bind) {
+                        try {
+                            this@bind.value = (it)
+                        } finally {
+                            setting = false
+                        }
+                    }
                 }
             }.also { onRemove(it) }
             this@bind.addListener {
                 if (setting) return@addListener
                 this@bind.state.onSuccess {
                     setting = true
-                    this@with.launch {
-                        master.set(it)
-                        setting = false
+                    this@with.launch(key = this@bind) {
+                        try {
+                            master.set(it)
+                        } finally {
+                            setting = false
+                        }
                     }
                 }
             }.also { onRemove(it) }
@@ -79,17 +92,20 @@ infix fun <T> ImmediateWritable<T>.bind(master: Writable<T>) {
 }
 
 infix fun <T> Writable<T>.bind(master: ImmediateWritable<T>) {
-    with(CalculationContextStack.current()) {
+    with(CoroutineScopeStack.current()) {
         var setting = false
-        launch {
+        launch(key = this@bind) {
             this@bind.set(master.value)
             master.addListener {
                 if (setting) return@addListener
                 master.state.onSuccess {
                     setting = true
-                    this@with.launch {
-                        this@bind.set(it)
-                        setting = false
+                    this@with.launch(key = this@bind) {
+                        try {
+                            this@bind.set(it)
+                        } finally {
+                            setting = false
+                        }
                     }
 
                 }
@@ -98,9 +114,13 @@ infix fun <T> Writable<T>.bind(master: ImmediateWritable<T>) {
                 if (setting) return@addListener
                 this@bind.state.onSuccess {
                     setting = true
-                    master.value = it
-                    setting = false
-
+                    this@with.reporting(key = this@bind) {
+                        try {
+                            master.value = it
+                        } finally {
+                            setting = false
+                        }
+                    }
                 }
             }.also { onRemove(it) }
         }
@@ -108,7 +128,7 @@ infix fun <T> Writable<T>.bind(master: ImmediateWritable<T>) {
 }
 
 infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
-    with(CalculationContextStack.current()) {
+    with(CoroutineScopeStack.current()) {
         var setting = false
         this@bind.value = master.value
         master.addListener {
@@ -117,9 +137,13 @@ infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
             }
             master.state.onSuccess {
                 setting = true
-                this@bind.value = it
-                setting = false
-
+                this@with.reporting(key = this@bind) {
+                    try {
+                        this@bind.value = it
+                    } finally {
+                        setting = false
+                    }
+                }
             }
         }.also { onRemove(it) }
         this@bind.addListener {
@@ -128,18 +152,24 @@ infix fun <T> ImmediateWritable<T>.bind(master: ImmediateWritable<T>) {
             }
             this@bind.state.onSuccess {
                 setting = true
-                master.value = it
-                setting = false
+                this@with.reporting(key = this@bind) {
+                    try {
+                        master.value = it
+                    } finally {
+                        setting = false
+                    }
+                }
             }
         }.also { onRemove(it) }
     }
 }
 
-fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable<T> =
+fun <T> Readable<T>.withWrite(reportException: suspend (Exception)->Unit = { throw it }, action: suspend Readable<T>.(T) -> Unit): Writable<T> =
     object : Writable<T>, Readable<T> by this {
         override suspend fun set(value: T) {
             action(this@withWrite, value)
         }
+        override suspend fun reportSetException(exception: Exception) = reportException(exception)
     }
 
 // Lenses

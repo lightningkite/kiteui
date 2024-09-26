@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
@@ -8,9 +9,11 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.errorText
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.toast
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 import kotlin.properties.ReadWriteProperty
@@ -97,7 +100,13 @@ object ControlsScreen : Screen {
                     }; ::enabled { booleanContent() }
                     }
                     card - button {
-                        onClick { delay(1000L) }; text {
+                        var error = false
+                        onClick {
+                            throw PlainTextException("We broke!")
+//                            error = !error
+//                            if(error) throw PlainTextException("We broke!")
+//                            else delay(100)
+                        }; text {
                         content = "Card"
                     }; ::enabled { booleanContent() }
                     }
@@ -123,6 +132,7 @@ object ControlsScreen : Screen {
                     }
                     expanding - space {}
                 } in scrollsHorizontally
+//                errorText()
             }
 
             col {

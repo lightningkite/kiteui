@@ -17,39 +17,20 @@ class SuspendingReactiveContext(
     internal val latestPass: ArrayList<Any?> = ArrayList()
     override val key: CoroutineContext.Key<SuspendingReactiveContext> = Key
     internal var lastJob: Job? = null
-
-    var runningLong: Result<Unit>? = Result.success(Unit)
-        set(value) {
-            val previous = field
-            field = value
-            if ((previous == null) != (value == null)) {
-                if (value != null) {
-                    calculationContext.notifyLongComplete(value)
-                } else {
-//                    try {
-                    onLoad?.invoke()
-//                    } catch(e: Exception) {
-//                        e.printStackTrace2()
-//                    }
-                    calculationContext.notifyStart()
-                }
-            } else if (value != null) {
-                calculationContext.notifyComplete(value)
-            }
-        }
+    val listener = calculationContext.coroutineContext[StatusListener]
 
     internal fun setLoading() {
-//        println("Skip calc attempt $this")
-        runningLong = null
+        listener?.report(this, ReadableState.notReady, false)
     }
 
     private var executionInstance = 0
 
     @OptIn(ExperimentalStdlibApi::class)
     internal fun run() {
+        var notReadyReported = false
         latestPass.clear()
 
-        debug?.log("Calculating")
+        debug?.log("run")
         var done = false
         var index = ++executionInstance
         lastJob = calculationContext.launch(
@@ -59,13 +40,15 @@ class SuspendingReactiveContext(
                 ) == false
             ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
         ) {
-            val result = kotlin.runCatching { action() }
+            debug?.log("run launch")
+            val result = readableState { action() }
             if (index != executionInstance) return@launch
             done = true
-            debug?.log("Complete, got result $result")
-            runningLong = result
+            debug?.log("run complete, got result $result")
+            listener?.report(this, result, !notReadyReported)
             for (entry in removers.entries.toList()) {
                 if (entry.key !in latestPass) {
+                    debug?.log("removing listener for ${entry.key}")
                     entry.value()
                     removers.remove(entry.key)
                     lastValue.remove(entry.key)
@@ -75,12 +58,14 @@ class SuspendingReactiveContext(
 
         if (!done) {
             // start load
-            debug?.log("Load started")
-            runningLong = null
+            debug?.log("run notReady")
+            listener?.report(this, ReadableState.notReady, false)
+            notReadyReported = true
         }
     }
 
     internal fun shutdown() {
+        debug?.log("shutdown")
         action = {}
         onLoad = {}
         removers.forEach { it.value() }
@@ -141,7 +126,7 @@ suspend fun <T, V> Readable<T>.state(get: (ReadableState<T>) -> V): V {
         // and the value is ready to go, just add the listener and proceed with the value.
         var last = state.let(get)
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@state}")
             it.removers[this] = this.addListener {
                 val newVal = state.let(get)
                 if (last != newVal) {
@@ -163,7 +148,7 @@ suspend fun <T> Readable<T>.state(): ReadableState<T> {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@state}")
             it.removers[this] = this.addListener {
                 it.run()
             }
@@ -179,7 +164,7 @@ suspend fun <T> ImmediateReadable<T>.await(): T {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         // and the value is ready to go, just add the listener and proceed with the value.
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@await}")
             it.removers[this] = this.addListener {
                 it.run()
             }
@@ -195,9 +180,9 @@ suspend fun <T> Readable<T>.await(): T {
     coroutineContext[SuspendingReactiveContext.Key]?.let {
         var cont: Continuation<T>? = null
         if (!it.removers.containsKey(this)) {
-            it.debug?.log("adding listener to $this")
+            it.debug?.log("adding listener for ${this@await}")
             it.removers[this] = this.addListener {
-                it.debug?.log("READABLE LISTENER HIT A")
+                it.debug?.log("readable listener hit with $state, cont is $cont")
                 state.handle(
                     success = { r ->
                         cont?.let { c ->

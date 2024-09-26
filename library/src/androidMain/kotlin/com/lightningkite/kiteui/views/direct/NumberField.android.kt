@@ -23,27 +23,29 @@ import com.lightningkite.kiteui.reactive.asDouble
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberField actual constructor(context: RContext): RView(context) {
+actual class NumberInput actual constructor(context: RContext): RView(context) {
     override val native = EditText(context.activity).apply {
         var block = false
         doAfterTextChanged {
             if(block) return@doAfterTextChanged
             block = true
-            try {
-                if (it == null) return@doAfterTextChanged
-                numberAutocommaRepair(
-                    dirty = it.toString(),
-                    selectionStart = selectionStart,
-                    selectionEnd = selectionEnd,
-                    setResult = {
-                        setText(it)
-                    },
-                    setSelectionRange = { start, end ->
-                        setSelection(start, end)
-                    }
-                )
-            } finally {
-                block = false
+            post {
+                try {
+                    if (it == null) return@post
+                    numberAutocommaRepair(
+                        dirty = it.toString(),
+                        selectionStart = selectionStart,
+                        selectionEnd = selectionEnd,
+                        setResult = {
+                            setText(it)
+                        },
+                        setSelectionRange = { start, end ->
+                            setSelection(start, end)
+                        }
+                    )
+                } finally {
+                    block = false
+                }
             }
         }
     }

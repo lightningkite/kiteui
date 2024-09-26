@@ -18,16 +18,19 @@ internal fun Theme.backgroundClippingDrawableWithoutCorners(): GradientDrawable 
     }
 }
 
-internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null): GradientDrawable {
+internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null): GradientDrawable
+    = drawableWithoutCorners(background, outline, outlineWidth, existing)
+
+internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null): GradientDrawable {
     return GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
-        setStroke(outlineWidth.value.toInt(), outline.colorInt())
+        setStroke(strokeWidth.value.toInt(), stroke.colorInt())
 
-        when (background) {
+        when (fill) {
             is Color -> {
                 val oldColor: Int? =
                     existing?.colors?.get(0)
-                val newColor = background.colorInt()
+                val newColor = fill.colorInt()
 
                 if (oldColor != null && animationsEnabled) {
                     // Run the animation from old colors to new colors
@@ -50,10 +53,10 @@ internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? 
 
             is LinearGradient -> {
                 if(Build.VERSION.SDK_INT >= 29)
-                    setColors(background.stops.map { it.color.toInt() }.toIntArray(), background.stops.map { it.ratio }.toFloatArray())
+                    setColors(fill.stops.map { it.color.toInt() }.toIntArray(), fill.stops.map { it.ratio }.toFloatArray())
                 else
-                    colors = background.stops.map { it.color.toInt() }.toIntArray()
-                orientation = when ((background.angle angleTo Angle.zero).turns.times(8).roundToInt()) {
+                    colors = fill.stops.map { it.color.toInt() }.toIntArray()
+                orientation = when ((fill.angle angleTo Angle.zero).turns.times(8).roundToInt()) {
                     -3 -> GradientDrawable.Orientation.TR_BL
                     -2 -> GradientDrawable.Orientation.TOP_BOTTOM
                     -1 -> GradientDrawable.Orientation.TL_BR
@@ -68,9 +71,9 @@ internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? 
 
             is RadialGradient -> {
                 if(Build.VERSION.SDK_INT >= 29)
-                    setColors(background.stops.map { it.color.toInt() }.toIntArray(), background.stops.map { it.ratio }.toFloatArray())
+                    setColors(fill.stops.map { it.color.toInt() }.toIntArray(), fill.stops.map { it.ratio }.toFloatArray())
                 else
-                    colors = background.stops.map { it.color.toInt() }.toIntArray()
+                    colors = fill.stops.map { it.color.toInt() }.toIntArray()
                 gradientType = GradientDrawable.RADIAL_GRADIENT
             }
         }

@@ -170,7 +170,7 @@ fun ViewWriter.alert(
 
 
 fun Button.onClickAssociatedField(
-    field: TextField,
+    field: TextInput,
     title: String = "Submit",
     icon: Icon = Icon.done,
     action: suspend () -> Unit
@@ -196,7 +196,7 @@ fun Button.onClickAssociatedField(
 }
 
 fun Button.onClickAssociatedField(
-    field: NumberField,
+    field: NumberInput,
     title: String = "Submit",
     icon: Icon = Icon.done,
     action: suspend () -> Unit

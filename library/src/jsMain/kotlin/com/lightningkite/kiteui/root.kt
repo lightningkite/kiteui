@@ -10,7 +10,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 
 fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
-    object : ViewWriter(), CalculationContext by CalculationContext.NeverEnds {
+    object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext("/")
 
         override fun addChild(view: RView) {

@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 
-actual class ToggleButton actual constructor(context: RContext): RView(context) {
+actual class ToggleButton actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }
@@ -32,9 +32,9 @@ actual class ToggleButton actual constructor(context: RContext): RView(context) 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(checkedProp.value) t = t[SelectedSemantic]
+        if (checkedProp.value) t = t[SelectedSemantic]
         else t = t[UnselectedSemantic]
-        if(!enabled) t = t[DisabledSemantic]
+        if (!enabled) t = t[DisabledSemantic]
         return t
     }
 

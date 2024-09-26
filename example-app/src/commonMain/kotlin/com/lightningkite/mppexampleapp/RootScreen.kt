@@ -19,7 +19,7 @@ object RootScreen : Screen {
     override fun ViewWriter.render() {
         scrolls - col {
             col {
-                h1 { launch { content = "Beautiful by default." } }
+                h1 { content = "Beautiful by default." }
                 separator()
                 text {
                     content =

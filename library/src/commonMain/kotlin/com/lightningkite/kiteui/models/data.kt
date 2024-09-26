@@ -147,10 +147,8 @@ data class Icon(
             960,
             listOf("m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z")
         )
-        val chevronRight =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
-        val chevronLeft =
-            Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
+        val chevronRight = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
+        val chevronLeft = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
         val logout = Icon(
             2.rem,
             2.rem,

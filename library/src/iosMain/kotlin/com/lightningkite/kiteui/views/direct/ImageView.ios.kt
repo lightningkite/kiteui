@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
-import com.lightningkite.kiteui.reactive.sub
 import kotlinx.cinterop.*
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
@@ -72,7 +72,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
             is ImageRemote -> {
                 native.startLoad()
-                sub().launch {
+                launch {
                     val image = ImageCache.get(
                         value,
                         native.bounds.useContents { size.width.toInt() },
@@ -107,7 +107,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
             is ImageLocal -> {
                 native.startLoad()
-                sub().launch {
+                launch {
                     if (native.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,
@@ -393,7 +393,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
             is ImageRemote -> {
                 native.imageView.startLoad()
-                sub().launch {
+                launch {
                     val image = ImageCache.get(
                         value,
                         native.bounds.useContents { size.width.toInt() },
@@ -428,7 +428,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
 
             is ImageLocal -> {
                 native.imageView.startLoad()
-                sub().launch {
+                launch {
                     if (native.imageView.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,

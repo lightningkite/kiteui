@@ -16,10 +16,12 @@ actual class Separator actual constructor(context: RContext): RView(context) {
         minimumWidth = 1
         minimumHeight = 1
     }
+
+    override fun applyBackground(theme: Theme, fullyApply: Boolean) {}
     override fun applyForeground(theme: Theme) {
         val c = native.parent as? SimplifiedLinearLayout
         val v = native
-        v.background = ColorDrawable(theme.foreground.closestColor().colorInt())
+        v.setBackgroundColor(theme.foreground.closestColor().colorInt())
         v.alpha = 0.25f
         val size = theme.outlineWidth.value.coerceAtLeast(1f).toInt()
         v.thickness = size
@@ -44,9 +46,18 @@ class NSeparator(context: Context) : View(context) {
             field = value
             requestLayout()
         }
-    val containerHorizontal: Boolean get() = (parent as? SimplifiedLinearLayout)?.orientation == SimplifiedLinearLayout.HORIZONTAL
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(if(containerHorizontal) thickness else measuredWidth, if(!containerHorizontal) measuredHeight else thickness)
+//        setMeasuredDimension(if(containerHorizontal) thickness else measuredWidth, if(!containerHorizontal) measuredHeight else thickness)
+        setMeasuredDimension(
+            when(MeasureSpec.getMode(widthMeasureSpec)) {
+                MeasureSpec.EXACTLY -> MeasureSpec.getSize(widthMeasureSpec)
+                else -> thickness
+            },
+            when(MeasureSpec.getMode(heightMeasureSpec)) {
+                MeasureSpec.EXACTLY -> MeasureSpec.getSize(heightMeasureSpec)
+                else -> thickness
+            }
+        )
     }
 }

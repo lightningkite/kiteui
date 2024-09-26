@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.views.*
@@ -36,7 +37,7 @@ class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRect
     @ObjCAction
     fun done() {
         resignFirstResponder()
-        calculationContextWeak.get()?.launch { action?.onSelect?.invoke() }
+        calculationContextWeak.get()?.launchManualCancel { action?.onSelect?.invoke() }
     }
 
     var action: Action? = null

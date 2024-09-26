@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.AppJob
+import com.lightningkite.kiteui.AppScope
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
@@ -63,7 +66,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
              if (value != null) native.addEventListener("keyup") { ev ->
                 ev as KeyboardEvent
                 if (ev.code == KeyCodes.enter) {
-                    launchGlobal {
+                    launch(AppJob, Unit) {
                         value.onSelect()
                     }
                 }

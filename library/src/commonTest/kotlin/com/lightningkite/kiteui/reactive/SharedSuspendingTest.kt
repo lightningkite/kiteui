@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +74,7 @@ class SharedSuspendingTest {
             reactiveSuspending {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveSuspending {
@@ -83,7 +84,7 @@ class SharedSuspendingTest {
 
             property.value = 2
             assertEquals(2, hits)
-        }.cancel()
+        }
 
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
@@ -93,13 +94,13 @@ class SharedSuspendingTest {
             reactiveSuspending {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveSuspending {
                 a()
             }
-        }.cancel()
+        }
         assertEquals(3, hits)
     }
 
@@ -107,20 +108,26 @@ class SharedSuspendingTest {
         val late = LateInitProperty<Int>()
         var starts = 0
         var hits = 0
-        val a = sharedSuspending(Dispatchers.Unconfined) {
+        val a = SharedSuspendingReadable(coroutineContext = Dispatchers.Unconfined, useLastWhileLoading = false) {
             starts++
             val r = late()
             hits++
             r
-        }
+        }.apply { debug = ConsoleRoot }
         testContext {
             late.addListener {}
             a.addListener {}
 
+            println("listeners added")
+
+            println("late.value = 1")
             late.value = 1
+            println("late.value = 1 done")
             assertEquals(ReadableState(1), a.state)
 
+            println("late.unset()")
             late.unset()
+            println("late.unset() done")
             assertEquals(ReadableState.notReady, a.state)
 
             late.value = 2

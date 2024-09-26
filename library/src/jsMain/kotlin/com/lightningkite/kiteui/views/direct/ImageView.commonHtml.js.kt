@@ -22,7 +22,7 @@ actual fun createObjectURL(fileReference: FileReference): String {
 }
 
 actual fun RView.nativeSetSrc(url: String?, onSuccess: ()->Unit, onError: ()->Unit) {
-    val animating = RViewHelper.animationsEnabled
+    val animating = animationsEnabled
     val urlOrBlank = url ?: ""
     val element = native.element
     if (element == null){

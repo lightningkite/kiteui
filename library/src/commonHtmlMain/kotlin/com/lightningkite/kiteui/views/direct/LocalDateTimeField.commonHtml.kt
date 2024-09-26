@@ -1,7 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.AppJob
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BaseListenable
@@ -38,7 +40,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
              if (value != null) native.addEventListener("keyup") { ev ->
                 ev as KeyboardEvent
                 if (ev.code == KeyCodes.enter) {
-                    launchGlobal {
+                    launch(AppJob, Unit) {
                         value.onSelect()
                     }
                 }
@@ -106,7 +108,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
              if (value != null) native.addEventListener("keyup") { ev ->
                 ev as KeyboardEvent
                 if (ev.code == KeyCodes.enter) {
-                    launchGlobal {
+                    launch(AppJob, Unit) {
                         value.onSelect()
                     }
                 }
@@ -173,7 +175,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
              if (value != null) native.addEventListener("keyup") { ev ->
                 ev as KeyboardEvent
                 if (ev.code == KeyCodes.enter) {
-                    launchGlobal {
+                    launch(AppJob, Unit) {
                         value.onSelect()
                     }
                 }

@@ -229,7 +229,6 @@ class DirectReactiveContext<T> constructor(
     var lastResult: ReadableState<T> = ReadableState.notReady
 
     override val coroutineContext: CoroutineContext get() = context.coroutineContext
-    override val requireMainThread: Boolean get() = context.requireMainThread
 
     companion object {
         internal var queue = HashSet<DirectReactiveContext<*>>()
@@ -263,25 +262,14 @@ class DirectReactiveContext<T> constructor(
 
     fun setResult(state: ReadableState<T>) {
         lastResult = state
+        val listener = context.coroutineContext[StatusListener]
         if (state.ready) {
-            if (slow) {
-                slow = false
-                context.notifyLongComplete(
-                    if (state.success) Result.success(Unit) else Result.failure(
-                        state.exception ?: NotReadyException()
-                    )
-                )
-            } else {
-                context.notifyComplete(
-                    if (state.success) Result.success(Unit) else Result.failure(
-                        state.exception ?: NotReadyException()
-                    )
-                )
-            }
+            listener?.report(this, state.map { Unit }, !slow)
+            slow = false
         } else {
             if (!slow) {
                 slow = true
-                context.notifyStart()
+                listener?.report(this, ReadableState.notReady, false)
                 onLoad?.invoke()
             }
         }

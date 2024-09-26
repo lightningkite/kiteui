@@ -70,7 +70,7 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveScope {
@@ -80,7 +80,7 @@ class LazyPropertySharedBehaviorTests {
 
             property.value = 2
             assertEquals(2, hits)
-        }.cancel()
+        }
 
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
@@ -90,13 +90,13 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch {
+            launch(key = Unit) {
                 a.await()
             }
             reactiveScope {
                 a()
             }
-        }.cancel()
+        }
         assertEquals(3, hits)
     }
 
@@ -279,7 +279,7 @@ class LazyPropertyTests {
         val lensed = lazy.lens { it.take(3) }
         testContext {
             println(lensed.state)
-            launch {
+            launch(key = Unit) {
                 println("Starting")
                 println(lensed())
             }

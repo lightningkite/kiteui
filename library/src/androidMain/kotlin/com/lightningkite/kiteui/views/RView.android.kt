@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -25,14 +26,22 @@ import kotlin.math.roundToInt
 actual abstract class RView(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
+    init {
+        if(Looper.myLooper() != Looper.getMainLooper())
+            throw Exception("Cannot create views on any thread but the main thread")
+    }
+
     actual override var showOnPrint: Boolean = true
 
     open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override fun opacitySet(value: Double) {
+        println("opacitySet: $value $animationsEnabled")
         if (animationsEnabled) {
+            println("Animating ${native.alpha}, ${value.toFloat()}")
             ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
+                duration = theme.transitionDuration.inWholeMilliseconds
                 addUpdateListener {
                     native.alpha = animatedValue as Float
                 }

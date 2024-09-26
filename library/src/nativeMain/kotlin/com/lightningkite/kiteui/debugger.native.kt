@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.identityHashCode as idhc
 
 actual fun Throwable.printStackTrace2() = printStackTrace()
 actual object ConsoleRoot: Console {
@@ -32,3 +33,6 @@ private class PlatformConsole(val tag: String): Console {
 
 @OptIn(ExperimentalNativeApi::class)
 actual typealias WeakReference<T> = kotlin.native.ref.WeakReference<T>
+
+@OptIn(ExperimentalNativeApi::class)
+actual fun Any?.identityHashCode(): Int = idhc()
