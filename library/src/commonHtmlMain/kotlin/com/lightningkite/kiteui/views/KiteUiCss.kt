@@ -162,7 +162,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .circle-background {
                           fill: none;
-                          stroke: #eee;
+                          stroke:color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent);
                           stroke-width: 3.8;
             }
             
@@ -171,17 +171,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 stroke-width:2.8;
                 stroke-linecap: round;
                 animation: progress 1s ease-out forwards;
-                  stroke: #ff9f00;
+                  stroke: currentcolor;
             }
-            
-            @keyframes progress {
-              0% {
-                stroke-dasharray: 0 100;
-              }
-            }
+         
 
             .progress-ring-content {
                 text-anchor: middle;
+                
+            }
+            
+            .progress-ring-content {
+              fill: #666;
+              font-family: sans-serif;
+              font-size: 0.5em;
+              text-anchor: middle;
             }
 
 
