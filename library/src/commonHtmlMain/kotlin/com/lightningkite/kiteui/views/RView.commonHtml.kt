@@ -1,14 +1,10 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.delay
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.random.Random
 
-actual abstract class RView(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
 
     actual override var showOnPrint: Boolean = true
@@ -59,8 +55,7 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
 
     actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
-        launch {
-            delay(100)
+        afterTimeout(100) {
             native.focus()
         }
     }
@@ -110,9 +105,13 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     init {
-        this.working.addListener {
-            if(working.value) native.classes.add("loading")
+        this.loading.addListener {
+            if(loading.value) native.classes.add("loading")
             else native.classes.remove("loading")
+        }
+        this.working.addListener {
+            if(working.value) native.classes.add("working")
+            else native.classes.remove("working")
         }
         if(this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }

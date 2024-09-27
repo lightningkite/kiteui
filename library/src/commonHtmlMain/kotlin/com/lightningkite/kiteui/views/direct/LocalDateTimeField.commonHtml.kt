@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.AppJob
 import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BaseListenable
@@ -14,7 +13,7 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
-actual class LocalDateTimeField actual constructor(context: RContext) : RView(context) {
+actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "2024-06-01T08:30".length
     }
@@ -34,18 +33,14 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
             get() = native.attributes.valueString?.takeUnless { it.isEmpty() }?.let { LocalDateTime.parse(it) }
             set(value) { native.attributes.valueString = value?.toString()?.take(charCount) }
     }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-             if (value != null) native.addEventListener("keyup") { ev ->
-                ev as KeyboardEvent
-                if (ev.code == KeyCodes.enter) {
-                    launch(AppJob, Unit) {
-                        value.onSelect()
-                    }
-                }
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
             }
         }
+    }
     inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
@@ -80,7 +75,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
 }
 
 
-actual class LocalDateField actual constructor(context: RContext) : RView(context) {
+actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "2024-06-01".length
     }
@@ -102,18 +97,14 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
                 native.attributes.valueString = value?.toString()?.take(charCount)
             }
     }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-             if (value != null) native.addEventListener("keyup") { ev ->
-                ev as KeyboardEvent
-                if (ev.code == KeyCodes.enter) {
-                    launch(AppJob, Unit) {
-                        value.onSelect()
-                    }
-                }
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
             }
         }
+    }
     inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
@@ -147,7 +138,7 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
         }
 }
 
-actual class LocalTimeField actual constructor(context: RContext) : RView(context) {
+actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "08:30".length
     }
@@ -169,18 +160,14 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
                 native.attributes.valueString = value?.toString()?.take(charCount)
             }
     }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-             if (value != null) native.addEventListener("keyup") { ev ->
-                ev as KeyboardEvent
-                if (ev.code == KeyCodes.enter) {
-                    launch(AppJob, Unit) {
-                        value.onSelect()
-                    }
-                }
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
             }
         }
+    }
     inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {

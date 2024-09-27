@@ -119,7 +119,7 @@ fun retryWebsocket(
         var listenerCounter = 0
         val shouldBeOn = Property(false)
 
-        override fun start(): () -> Unit {
+        override fun beginUse(): () -> Unit {
             if(listenerCounter++ == 0) shouldBeOn.value = true
             return {
                 if(--listenerCounter == 0) shouldBeOn.value = false
@@ -200,7 +200,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
     override val connected: Readable<Boolean>
         get() = this@typed.connected
 
-    override fun start(): () -> Unit = this@typed.start()
+    override fun beginUse(): () -> Unit = this@typed.beginUse()
     override fun close(code: Short, reason: String) = this@typed.close(code, reason)
     override fun onOpen(action: () -> Unit) = this@typed.onOpen(action)
     override fun onClose(action: (Short) -> Unit) = this@typed.onClose(action)
@@ -257,7 +257,7 @@ val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             listeners.add(listener)
-            val parent = this@mostRecentMessage.start()
+            val parent = this@mostRecentMessage.beginUse()
             return { listeners.remove(listener); parent() }
         }
     }

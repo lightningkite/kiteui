@@ -18,9 +18,8 @@ import android.widget.TextView as AndroidTextView
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.ReadableState
@@ -28,7 +27,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class TextInput actual constructor(context: RContext): RView(context) {
+actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity)
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
@@ -45,6 +44,7 @@ actual class TextInput actual constructor(context: RContext): RView(context) {
         native.isAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
+
     actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var enabled: Boolean
         get() = native.isEnabled
@@ -52,9 +52,10 @@ actual class TextInput actual constructor(context: RContext): RView(context) {
             native.isEnabled = value
             refreshTheming()
         }
+
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!enabled) t = t[DisabledSemantic]
+        if (!enabled) t = t[DisabledSemantic]
         return t
     }
 
@@ -65,17 +66,16 @@ actual class TextInput actual constructor(context: RContext): RView(context) {
         set(value) {
             native.keyboardHints = value
         }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-            native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-            native.setOnEditorActionListener { v, actionId, event ->
-                launchManualCancel {
-                    value?.onSelect?.invoke()
-                }
-                value != null
-            }
+
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+        native.setOnEditorActionListener { v, actionId, event ->
+            value?.startAction(this)
+            value != null
         }
+    }
+
     actual var hint: String
         get() {
             return native.hint.toString()
@@ -114,11 +114,11 @@ actual class TextInput actual constructor(context: RContext): RView(context) {
 }
 
 
-
 abstract class EquatableByRef(val key: String, val ref: Any) {
     override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
+
 var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {

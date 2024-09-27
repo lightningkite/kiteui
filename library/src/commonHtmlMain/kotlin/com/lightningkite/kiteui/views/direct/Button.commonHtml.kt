@@ -1,12 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.AppJob
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
-actual class Button actual constructor(context: RContext): RView(context) {
+actual class Button actual constructor(context: RContext): RViewWithAction(context) {
     init {
         native.tag = "button"
         native.classes.add("kiteui-stack")
@@ -20,19 +17,9 @@ actual class Button actual constructor(context: RContext): RView(context) {
 
     override fun hasAlternateBackedStates(): Boolean = true
 
-    actual fun onClick(action: suspend () -> Unit): Unit {
-        var virtualDisable: Boolean = false
+    init {
         native.addEventListener("click") {
-            if(!virtualDisable) {
-                launch(AppJob, "click") {
-                    try {
-                        virtualDisable = true
-                        action()
-                    } finally {
-                        virtualDisable = false
-                    }
-                }
-            }
+            action?.startAction(this)
         }
     }
 

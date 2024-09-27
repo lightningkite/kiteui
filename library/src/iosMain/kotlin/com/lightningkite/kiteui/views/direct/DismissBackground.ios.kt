@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
@@ -11,6 +10,7 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
@@ -113,19 +113,8 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
 
-    var virtualEnable = true
-
     @ObjCAction
     fun onclick() {
-        if (enabled && virtualEnable) {
-            calculationContext.launchManualCancel {
-                virtualEnable = false
-                try {
-                    onClick()
-                } finally {
-                    virtualEnable = true
-                }
-            }
-        }
+        this.calculationContext.launch { onClick() }
     }
 }

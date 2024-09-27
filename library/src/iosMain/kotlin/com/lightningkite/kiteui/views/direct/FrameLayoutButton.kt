@@ -2,23 +2,17 @@
 
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
-import platform.QuartzCore.CATextLayer
 import platform.UIKit.*
 import platform.darwin.sel_registerName
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.max
-import kotlin.native.ref.WeakReference
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
 //val UIView.layoutParams: LayoutParams by UIViewLayoutParams
@@ -31,7 +25,7 @@ class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CG
         get() = extensionPadding ?: 0.0
         set(value) { extensionPadding = value }
 
-    var onClick: suspend ()->Unit = {}
+    var onClick: ()->Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
@@ -56,14 +50,10 @@ class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CG
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
 
-    var virtualEnable = true
     @ObjCAction
     fun onclick() {
-        if (enabled && virtualEnable) {
-            calculationContext?.launchManualCancel {
-                virtualEnable = false
-                try { onClick() } finally { virtualEnable = true }
-            }
+        if (enabled) {
+            onClick()
         }
     }
 }

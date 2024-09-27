@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*

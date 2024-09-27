@@ -8,14 +8,14 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWithAction
 
 typealias NumberField = NumberInput
-expect class NumberInput(context: RContext) : RView {
+expect class NumberInput(context: RContext) : RViewWithAction {
 
     var enabled: Boolean
     val content: ImmediateWritable<Double?>
     var keyboardHints: KeyboardHints
-    var action: Action?
     var hint: String
     var range: ClosedRange<Double>?
     var align: Align

@@ -63,7 +63,10 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = textField.text
-            set(value) { textField.text = value }
+            set(value) {
+                if(textField.text != value)
+                    textField.text = value
+            }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)
             return {

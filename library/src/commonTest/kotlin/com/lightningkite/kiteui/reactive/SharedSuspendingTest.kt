@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.load
 import kotlinx.coroutines.Dispatchers
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,7 +73,7 @@ class SharedSuspendingTest {
             reactiveSuspending {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveSuspending {
@@ -94,7 +93,7 @@ class SharedSuspendingTest {
             reactiveSuspending {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveSuspending {
@@ -113,7 +112,7 @@ class SharedSuspendingTest {
             val r = late()
             hits++
             r
-        }.apply { debug = ConsoleRoot }
+        }.apply { log = ConsoleRoot }
         testContext {
             late.addListener {}
             a.addListener {}

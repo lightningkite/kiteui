@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext): RView(context) {
+actual class AutoCompleteTextField actual constructor(context: RContext): RViewWithAction(context) {
     override val native = AndroidAutocompleteTextView(context.activity)
     actual val content: ImmediateWritable<String> = native.contentProperty()
     actual var keyboardHints: KeyboardHints
@@ -25,13 +25,6 @@ actual class AutoCompleteTextField actual constructor(context: RContext): RView(
         }
         set(value) {
             native.keyboardHints = value
-        }
-    actual var action: Action?
-        get() {
-            return native.tag as? Action
-        }
-        set(value) {
-            native.tag = value
         }
 
     private class KiteUiStringAdapter(context: Context, resource: Int, objects: List<String>) :

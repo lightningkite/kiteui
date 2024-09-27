@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
@@ -169,54 +168,34 @@ fun ViewWriter.alert(
 }
 
 
+@Deprecated("Use a shared action instead")
 fun Button.onClickAssociatedField(
     field: TextInput,
     title: String = "Submit",
     icon: Icon = Icon.done,
     action: suspend () -> Unit
 ) {
-    var going = false
-    suspend fun guarded() {
-        if (going) return@guarded
-        going = true
-        try {
-            action()
-        } finally {
-            going = false
-        }
-    }
-    field.action = Action(
+    val action = Action(
         title = title,
         icon = icon,
-        onSelect = {
-            this@onClickAssociatedField.launchManualCancel(::guarded)
-        }
+        action = action
     )
-    onClick(::guarded)
+    field.action = action
+    this.action = action
 }
 
+@Deprecated("Use a shared action instead")
 fun Button.onClickAssociatedField(
     field: NumberInput,
     title: String = "Submit",
     icon: Icon = Icon.done,
     action: suspend () -> Unit
 ) {
-    var going = false
-    suspend fun guarded() {
-        if (going) return@guarded
-        going = true
-        try {
-            action()
-        } finally {
-            going = false
-        }
-    }
-    field.action = Action(
+    val action = Action(
         title = title,
         icon = icon,
-        onSelect = {
-            this@onClickAssociatedField.launchManualCancel(::guarded)
-        }
+        action = action
     )
-    onClick(::guarded)
+    field.action = action
+    this.action = action
 }

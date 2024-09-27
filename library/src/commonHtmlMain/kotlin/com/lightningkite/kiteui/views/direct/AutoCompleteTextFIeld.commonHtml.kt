@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.AppJob
 import com.lightningkite.kiteui.AppScope
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.ImmediateWritable
@@ -11,7 +10,7 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext) : RView(context) {
+actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -60,18 +59,14 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
                 }
             }
         }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-             if (value != null) native.addEventListener("keyup") { ev ->
-                ev as KeyboardEvent
-                if (ev.code == KeyCodes.enter) {
-                    launch(AppJob, Unit) {
-                        value.onSelect()
-                    }
-                }
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
             }
         }
+    }
     inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {

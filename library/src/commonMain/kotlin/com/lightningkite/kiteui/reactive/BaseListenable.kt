@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random

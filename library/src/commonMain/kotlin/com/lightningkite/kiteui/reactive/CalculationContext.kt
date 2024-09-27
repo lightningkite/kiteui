@@ -11,7 +11,8 @@ public interface StatusListener : CoroutineContext.Element {
      */
     public companion object Key : CoroutineContext.Key<StatusListener>
 
-    fun report(key: Any, status: ReadableState<Unit>, fast: Boolean,)
+    fun loading(readable: Readable<*>)
+    fun working(readable: Readable<*>) = loading(readable)
 }
 
 fun CoroutineScope.onRemove(action: () -> Unit) {
@@ -22,6 +23,15 @@ fun CoroutineScope.onRemove(action: () -> Unit) {
 typealias CalculationContext = CoroutineScope
 @OptIn(ExperimentalStdlibApi::class)
 val CoroutineScope.requireMainThread: Boolean get() = coroutineContext[CoroutineDispatcher.Key] is MainCoroutineDispatcher
+@OptIn(ExperimentalStdlibApi::class)
+inline fun CoroutineScope.onThread(crossinline action: ()->Unit) {
+    val d = coroutineContext[CoroutineDispatcher.Key] ?: return action()
+    if(d.isDispatchNeeded(coroutineContext)) {
+        d.dispatch(coroutineContext, Runnable(action))
+    } else {
+        action()
+    }
+}
 
 object CoroutineScopeStack {
     val stack = ArrayList<CoroutineScope>()

@@ -13,7 +13,7 @@ object ListEditScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
-    val data = Property(beeMovieScript.split('\n').toList())
+    val data = Property(beeMovieScript.split('\n').take(5).toList())
 
     override fun ViewWriter.render() {
         row {
@@ -21,6 +21,12 @@ object ListEditScreen : Screen {
             expanding - recyclerView {
                 children(data.lensByElementAssumingSetNeverManipulates()) { itemObs ->
                     row {
+                        var old: Int? = null
+                        reactive {
+                            val new = itemObs().index()
+                            println("Index has shifted from ${old} to ${new}")
+                            old = new
+                        }
                         expanding - fieldTheme - textField {
                             content bind itemObs.flatten()
                         }

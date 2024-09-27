@@ -11,7 +11,7 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 
 
-actual class Switch actual constructor(context: RContext): RView(context) {
+actual class Switch actual constructor(context: RContext) : RView(context) {
     override val native = UISwitch()
 
     actual inline var enabled: Boolean
@@ -23,12 +23,15 @@ actual class Switch actual constructor(context: RContext): RView(context) {
         get() {
             return object : ImmediateWritable<Boolean> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
-                    return native.onEvent(this@Switch, UIControlEventValueChanged) { listener() }
+                    return native.onEvent(this@Switch, UIControlEventValueChanged, listener)
                 }
 
                 override var value: Boolean
                     get() = native.on
-                    set(value) { native.on = value }
+                    set(value) {
+                        if (native.on != value)
+                            native.on = value
+                    }
             }
         }
 }

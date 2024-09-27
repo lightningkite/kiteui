@@ -4,12 +4,25 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.reactive.Action
 import kotlinx.coroutines.*
 import kotlin.random.Random
 
-expect abstract class RView : RViewHelper {
+abstract class RViewWithAction(context: RContext) : RView(context) {
+    private var actionStatusRemove: (() -> Unit)? = null
+    var action: Action? = null
+        set(value) {
+            field = value
+            actionSet(value)
+        }
+
+    open fun actionSet(value: Action?) {
+        actionStatusRemove?.invoke()
+        actionStatusRemove = value?.let { listenForWorking(it) }
+    }
+}
+
+expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
     override fun existsSet(value: Boolean)
@@ -130,7 +143,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
                 }
                 run { applyForeground(value.theme) }
                 run { applyBackground(value.theme, value.useBackground) }
-                if(children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
+                if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
                     println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
                 }
                 for (child in internalChildren) {
@@ -148,18 +161,18 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
-        if(this == viewDebugTarget) println("refreshTheming")
+        if (this == viewDebugTarget) println("refreshTheming")
         if (!fullyStarted) {
-            if(this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
+            if (this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
             return
         }
         if (parent?.fullyStarted == false) {
-            if(this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
+            if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
             return
         }
-        if(this == viewDebugTarget) println("refreshTheming will set!")
+        if (this == viewDebugTarget) println("refreshTheming will set!")
         val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
-        if(this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
+        if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
         themeAndBack = t
     }
 
@@ -219,7 +232,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
     }
 
-    val working = Property(false)
     private var exceptionHandlers: ExceptionHandlers? = null
     operator fun plusAssign(exceptionHandler: ExceptionHandler) {
         exceptionHandlers?.let {
@@ -230,6 +242,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             }
         }
     }
+
     private var exceptionToMessages: ExceptionToMessages? = null
     operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
         exceptionToMessages?.let {
@@ -240,13 +253,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             }
         }
     }
-    fun clearExceptions() {
-        exceptionCompletions.values.forEach { it() }
-        exceptionCompletions.clear()
-        children.forEach { it.clearExceptions() }
-    }
-    private val exceptionCompletions = HashMap<Any, ()->Unit>()
+
+    val loading = Property(false)
     private var loadCount = 0
+        set(value) {
+            field = value
+            if (value == 0 && loading.value) {
+                loading.value = false
+            } else if (value > 0 && !loading.value) {
+                loading.value = true
+            }
+        }
+    val working = Property(false)
+    private var workCount = 0
         set(value) {
             field = value
             if (value == 0 && working.value) {
@@ -258,31 +277,75 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
 
     private val job = SupervisorJob()
     override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-        if(throwable !is CancellationException) {
+        if (throwable !is CancellationException) {
             throwable.report(this.toString())
         }
-    } + object: StatusListener {
-        override fun report(key: Any, status: ReadableState<Unit>, fast: Boolean) {
-            if (!fast) {
-                status.handle(
-                    success = { loadCount-- },
-                    exception = { loadCount-- },
-                    notReady = { loadCount++ },
-                )
-            }
-            status.handle(
-                success = { exceptionCompletions.remove(key)?.invoke() },
-                notReady = { exceptionCompletions.remove(key)?.invoke() },
-                exception = {
-                    val myView = this@RViewHelper as RView
-                    fun handle(view: RViewHelper): (()->Unit)? {
-                        return view.exceptionHandlers?.handle(myView, it) ?: view.parent?.let { handle(it) }
-                    }
-                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, it))?.let { exceptionCompletions[key] = it }
-                },
-            )
+    } + object : StatusListener {
+        override fun working(readable: Readable<*>) {
+            listenForWorking(readable)
+        }
+
+        override fun loading(readable: Readable<*>) {
+            listenForStatus(readable)
         }
     }
+
+    fun listenForWorking(readable: Readable<*>): () -> Unit {
+        var loading = false
+        var excEnder: (() -> Unit)? = null
+        val r = readable.addAndRunListener {
+            onMainThread {
+                val s = readable.state
+                if (loading != !s.ready) {
+                    if (s.ready) {
+                        workCount--
+                    } else {
+                        workCount++
+                    }
+                    loading = !s.ready
+                }
+                excEnder?.invoke()
+                s.exception?.let {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (() -> Unit)? {
+                        return view.exceptionHandlers?.handle(myView, true, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, true, it))?.let { excEnder = it }
+                }
+            }
+        }
+        onRemove(r)
+        return r
+    }
+
+    fun listenForStatus(readable: Readable<*>): () -> Unit {
+        var loading = false
+        var excEnder: (() -> Unit)? = null
+        val r = readable.addAndRunListener {
+            onMainThread {
+                val s = readable.state
+                if (loading != !s.ready) {
+                    if (s.ready) {
+                        loadCount--
+                    } else {
+                        loadCount++
+                    }
+                    loading = !s.ready
+                }
+                excEnder?.invoke()
+                s.exception?.let {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (() -> Unit)? {
+                        return view.exceptionHandlers?.handle(myView, false, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, false, it))?.let { excEnder = it }
+                }
+            }
+        }
+        onRemove(r)
+        return r
+    }
+
     fun exceptionToMessage(exception: Exception): ExceptionMessage? {
         val myView = this@RViewHelper as RView
         fun handle(view: RViewHelper): ExceptionMessage? {
@@ -290,9 +353,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
         return (handle(myView) ?: ExceptionToMessages.root.handle(myView, exception))
     }
+
     open fun shutdown() {
         job.cancel()
-        clearExceptions()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
                 internalRemoveChild(index)
@@ -324,4 +387,5 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
     val calculationContext: CoroutineScope get() = this
+
 }

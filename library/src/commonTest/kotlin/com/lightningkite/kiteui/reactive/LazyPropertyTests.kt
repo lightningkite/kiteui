@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.load
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,7 +70,7 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveScope {
@@ -90,7 +90,7 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveScope {
@@ -275,11 +275,11 @@ class LazyPropertyTests {
 
     @Test fun testStupidCase() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false, log = ConsoleRoot) { basis() }
         val lensed = lazy.lens { it.take(3) }
         testContext {
             println(lensed.state)
-            launch(key = Unit) {
+            load {
                 println("Starting")
                 println(lensed())
             }
@@ -288,7 +288,7 @@ class LazyPropertyTests {
 
     @Test fun testStupidCase2() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false, log = ConsoleRoot) { basis() }
         val lensed = lazy.lens { it.take(3) }
         var value = ""
         testContext {

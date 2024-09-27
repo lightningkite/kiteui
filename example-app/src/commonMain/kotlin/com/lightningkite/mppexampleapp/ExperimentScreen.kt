@@ -21,32 +21,35 @@ object ExperimentScreen : Screen {
     override fun ViewWriter.render() {
         stack {
             centered - sizeConstraints(width = 40.rem) - col {
-                val value = Property(false)
-                card - toggleButton {
-                    checked bind value
-                    text("Show")
+                numberInput {
+                    content bind Property(5.0)
                 }
-                onlyWhen { value() } - text("hidden item")
-                text("Lower item")
-
-                field("Email") {
-                    row {
-                        val text = Property("").also { it.addListener { println("text: ${it.value}") } }.lens(
-                            get = { it },
-                            set = {
-                                if(it.isBlank()) throw PlainTextException("Cannot be blank")
-                                it
-                            }
-                        )
-                        expanding
-                        val tf = textInput { content bind text }
-                        button {
-                            spacing = 0.px
-                            icon(Icon.close.copy(1.5.rem, 1.5.rem), "Clear")
-                            onClick { tf.content.value = "" }
-                        }
-                    }
-                }
+//                val value = Property(false)
+//                card - toggleButton {
+//                    checked bind value
+//                    text("Show")
+//                }
+//                onlyWhen { value() } - text("hidden item")
+//                text("Lower item")
+//
+//                field("Email") {
+//                    row {
+//                        val text = Property("").also { it.addListener { println("text: ${it.value}") } }.lens(
+//                            get = { it },
+//                            set = {
+//                                if(it.isBlank()) throw PlainTextException("Cannot be blank")
+//                                it
+//                            }
+//                        )
+//                        expanding
+//                        val tf = textInput { content bind text }
+//                        button {
+//                            spacing = 0.px
+//                            icon(Icon.close.copy(1.5.rem, 1.5.rem), "Clear")
+//                            onClick { tf.content.value = "" }
+//                        }
+//                    }
+//                }
             }
         }
     }

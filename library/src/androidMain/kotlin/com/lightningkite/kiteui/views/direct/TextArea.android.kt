@@ -12,9 +12,8 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable
@@ -22,11 +21,12 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
 
-actual class TextArea actual constructor(context: RContext): RView(context) {
+actual class TextArea actual constructor(context: RContext) : RView(context) {
     override val native = EditText(context.activity).apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE
     }
+
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
@@ -42,6 +42,7 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
         native.isAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
+
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -59,21 +60,10 @@ actual class TextArea actual constructor(context: RContext): RView(context) {
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!enabled) t = t[DisabledSemantic]
+        if (!enabled) t = t[DisabledSemantic]
         return t
     }
 
-    var action: Action? = null
-        set(value) {
-            field = value
-            native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-            native.setOnEditorActionListener { v, actionId, event ->
-                launchManualCancel {
-                    value?.onSelect?.invoke()
-                }
-                value != null
-            }
-        }
     actual var hint: String
         get() {
             return native.hint.toString()

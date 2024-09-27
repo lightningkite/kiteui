@@ -5,7 +5,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 
-internal actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
+actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
     val handle = window.setTimeout({ ->
         action()
     }, milliseconds.toInt())

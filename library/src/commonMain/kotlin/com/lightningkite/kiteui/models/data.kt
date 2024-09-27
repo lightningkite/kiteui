@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.jvm.JvmInline
@@ -594,11 +595,7 @@ data class NavCustom(
     val tall: ViewWriter.() -> Unit = square,
 ) : NavElement
 
-data class Action(
-    val title: String,
-    val icon: Icon,
-    val onSelect: suspend () -> Unit,
-)
+typealias Action = Action
 
 
 enum class ImageScaleType { Fit, Crop, Stretch, NoScale }
