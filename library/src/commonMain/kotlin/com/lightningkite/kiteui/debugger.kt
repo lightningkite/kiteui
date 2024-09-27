@@ -23,7 +23,6 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
         gcIfNotVeryRecent()
         get()?.let {
             leaks.add(this)
-            println("Leaked ${it}, total ${leaks.size} leaks")
             recheckLeakAfterDelay(milliseconds)
         }
     }
@@ -33,7 +32,6 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         gcIfNotVeryRecent()
         if (get() == null) {
             leaks.remove(this)
-            println("Recovered item, total ${leaks.size} leaks")
         } else {
             recheckLeakAfterDelay(milliseconds)
         }
