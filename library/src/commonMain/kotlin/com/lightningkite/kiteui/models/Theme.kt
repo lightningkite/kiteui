@@ -111,6 +111,7 @@ data object DisabledSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "dis",
         foreground = theme.foreground.applyAlpha(alpha = 0.25f),
+        iconOverride = theme.iconOverride?.applyAlpha(alpha = 0.25f),
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
     ).withBack
