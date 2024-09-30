@@ -23,7 +23,7 @@ private fun <T> Continuation<T>.resumeState(state: ReadableState<T>) {
 suspend fun rerunOn(listenable: Listenable) {
     coroutineContext[DependencyChangeListener.Key]?.let {
         if(it.existingDependency(listenable) == null) {
-            it.registerDependency(listenable) { it.onDependencyChange() }
+            it.registerDependency(listenable, listenable.addListener { it.onDependencyChange() })
         }
     }
 }
