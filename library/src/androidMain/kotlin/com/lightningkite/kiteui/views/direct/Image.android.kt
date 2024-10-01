@@ -74,6 +74,10 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         centerRadius = 30f
         start()
     }
+    actual var useLoadingSpinners: Boolean = true
+
+    private fun RequestBuilder<Drawable>.placeholderIf(drawable: Drawable, predicate: Boolean) =
+        if (predicate) placeholder(drawable) else this
 
     actual var source: ImageSource? = null
         set(value) {
@@ -106,9 +110,9 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             requestOptions.into(native.target)
         }
         when (value) {
-            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).load()
-            is ImageRaw -> Glide.with(native).load(value.data.data).placeholder(placeholder).load()
-            is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).load()
+            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholderIf(placeholder, useLoadingSpinners).load()
+            is ImageRaw -> Glide.with(native).load(value.data.data).placeholderIf(placeholder, useLoadingSpinners).load()
+            is ImageRemote -> Glide.with(native).load(value.url).placeholderIf(placeholder, useLoadingSpinners).load()
             is ImageResource -> Glide.with(native).load(value.resource).load()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
             null -> native.setImageDrawable(null)

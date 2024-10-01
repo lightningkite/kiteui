@@ -16,7 +16,7 @@ actual class RContext(val activity: KiteUiActivity): RContextHelper() {
             Configuration.UI_MODE_NIGHT_YES -> true
             else -> null
         }
-    private val insetsController = WindowInsetsControllerCompat(activity.window, activity.root.native)
+    private val insetsController by lazy { WindowInsetsControllerCompat(activity.window, activity.root.native) }
     private var insetsListener: OnControllableInsetsChangedListener? = null
         set(value) {
             if (value == null) {
