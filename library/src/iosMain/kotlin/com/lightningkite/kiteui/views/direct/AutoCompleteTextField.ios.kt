@@ -96,10 +96,12 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual var action: Action?
         get() = TODO()
         set(value) {
-            textField.delegate = value?.let {
+            textField.delegate = value?.onSelect?.let {
                 val d = object : NSObject(), UITextFieldDelegateProtocol {
                     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launch { it.onSelect() }
+                        // Design decision: whenever an action is set on a TextField, we will release focus first
+                        textField.resignFirstResponder()
+                        launch { it() }
                         return true
                     }
                 }

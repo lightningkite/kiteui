@@ -686,8 +686,8 @@ data class NavCustom(
 
 data class Action(
     val title: String,
-    val icon: Icon,
-    val onSelect: suspend () -> Unit,
+    val icon: Icon? = null,
+    val onSelect: (suspend () -> Unit),
 )
 
 

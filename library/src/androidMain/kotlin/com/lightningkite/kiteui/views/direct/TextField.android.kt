@@ -79,11 +79,13 @@ actual open class TextField actual constructor(context: RContext): RView(context
         set(value) {
             field = value
             native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-            native.setOnEditorActionListener { v, actionId, event ->
-                launch {
-                    value?.onSelect?.invoke()
-                }
-                value != null
+            native.setOnEditorActionListener { _, _, _ ->
+                value?.onSelect?.let {
+                    // Design decision: whenever an action is set on a TextField, we will release focus first
+                    native.clearFocus()
+                    launch { it() }
+                    true
+                } ?: false
             }
         }
     actual var hint: String
