@@ -25,7 +25,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
                 outline = it.foreground,
                 outlineWidth = maxOf(it.outlineWidth, 1.dp),
                 spacing = it.spacing / 4,
-                cornerRadii = CornerRadii.RatioOfSize(0.5f),
+                cornerRadii = CornerRadius.RatioOfSize(0.5f),
                 derivations = mapOf(
                     SelectedSemantic to { it.withBack },
                     UnselectedSemantic to { it.withBack },

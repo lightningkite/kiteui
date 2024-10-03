@@ -25,12 +25,12 @@ actual inline operator fun Dimension.div(other: Float): Dimension = Dimension("c
 actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension("calc(min(${this.value}, ${other.value}))")
 actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension("calc(max(${this.value}, ${other.value}))")
 
-fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
-    is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
-    is CornerRadii.ForceConstant -> value.value
-    is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
-    is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
-    is CornerRadii.PerCorner -> "${topLeft.toRawCornerRadius()} ${topRight.toRawCornerRadius()} ${bottomRight.toRawCornerRadius()} ${bottomLeft.toRawCornerRadius()}"
+fun CornerRadiusOptions.toRawCornerRadius(): DimensionRaw = when (this) {
+    is CornerRadius.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
+    is CornerRadius.ForceConstant -> value.value
+    is CornerRadius.RatioOfSize -> "${ratio.times(100).toInt()}%"
+    is CornerRadius.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
+    is CornerRadii -> "${topStart.toRawCornerRadius()} ${topEnd.toRawCornerRadius()} ${bottomEnd.toRawCornerRadius()} ${bottomStart.toRawCornerRadius()}"
 }
 
 actual data class Font(
