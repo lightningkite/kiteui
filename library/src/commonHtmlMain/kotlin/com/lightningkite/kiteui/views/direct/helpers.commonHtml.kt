@@ -24,12 +24,14 @@ fun <V> HtmlElementLike.vprop(
         override var value: V
             get() = get(this@vprop)
             set(value) {
+                println("VPROP SET $eventName: ${get(this@vprop)} != ${value}")
                 if(get(this@vprop) != value) {
                     set(this@vprop, value)
                     invokeAllListeners()
                 }
             }
         override suspend fun set(value: V) {
+            println("VPROP SET $eventName: ${get(this@vprop)} != ${value}")
             if(get(this@vprop) != value) {
                 set(this@vprop, value)
                 invokeAllListeners()

@@ -78,10 +78,12 @@ fun String.parseMPNodes(): List<MPNode> {
                 }
 
                 if (end || tagName == "br") {
-                    repeat(
-                        stack.size - stack.indexOfLast { it.tagName == tagName }
-                    ) {
-                        stack.removeLast()
+                    if(stack.any { it.tagName == tagName }) {
+                        repeat(
+                            stack.size - stack.indexOfLast { it.tagName == tagName }
+                        ) {
+                            stack.removeLast()
+                        }
                     }
                 }
             }

@@ -18,7 +18,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
 
     actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
-        { attributes.checked != false },
+        { attributes.checked == true },
         { value -> attributes.checked = value }
     )
 
