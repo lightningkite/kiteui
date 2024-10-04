@@ -35,7 +35,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         if (checkedProp.value) t = t[SelectedSemantic]
         else t = t[UnselectedSemantic]
         if (!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)

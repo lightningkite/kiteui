@@ -13,7 +13,6 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
@@ -48,7 +47,7 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if (!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     private var useSensitiveDotMask = false

@@ -1,14 +1,21 @@
 package com.lightningkite.kiteui.models
 
-import kotlin.js.JsName
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-data class ThemeAndBack(val theme: Theme, val useBackground: Boolean) {
-    operator fun get(semantic: Semantic): ThemeAndBack {
-        val b = theme[semantic]
-        return if (useBackground) b.theme.withBack
-        else b
+enum class UseBackground {
+    No, WithoutPadding, Yes
+}
+
+data class ThemeAndBack(val theme: Theme, val useBackground: UseBackground) {
+    operator fun get(semantic: Semantic): ThemeAndBack = this + semantic
+    operator fun plus(other: ThemeDerivation): ThemeAndBack {
+        val b = other(theme)
+        return when(useBackground) {
+            UseBackground.No -> b
+            UseBackground.WithoutPadding -> if(b.useBackground == UseBackground.No) b.theme.withBackNoPadding else b
+            UseBackground.Yes -> b.theme.withBack
+        }
     }
 }
 
@@ -46,10 +53,7 @@ interface ThemeDerivation {
     open operator fun plus(other: ThemeDerivation): ThemeDerivation {
         return ThemeDerivation {
             if (other is Set) return@ThemeDerivation other.theme.withBack
-            val a = this(it)
-            val b = other(a.theme)
-            if (a.useBackground) b.theme.withBack
-            else b
+            this(it) + other
         }
     }
 }
@@ -62,12 +66,22 @@ interface Semantic : ThemeDerivation {
 
 data object LoadingSemantic : Semantic {
     override val key: String = "ld"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = FadingColor(theme.background.closestColor().highlight(0.1f), theme.background.closestColor().highlight(0.2f)),
+        outline = FadingColor(theme.outline.closestColor().highlight(0.1f), theme.outline.closestColor().highlight(0.2f)),
+        foreground = theme.foreground.applyAlpha(0.3f),
+        iconOverride = theme.iconOverride?.applyAlpha(0.3f),
+    ).withBackNoPadding
 }
 
 data object WorkingSemantic : Semantic {
     override val key: String = "wrk"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        foreground = theme.foreground.applyAlpha(0.5f),
+        iconOverride = theme.iconOverride?.applyAlpha(0.5f),
+    ).withoutBack
 }
 
 data object CardSemantic : Semantic {
@@ -86,6 +100,7 @@ data object FieldSemantic : Semantic {
             is CornerRadii.ForceConstant -> base
             is CornerRadii.RatioOfSize -> base
             is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+            is CornerRadii.PerCorner -> base
         }
     ).withBack
 }
@@ -132,11 +147,6 @@ data object DisabledSemantic : Semantic {
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
     ).withBack
-}
-
-data object WorkingSemantic : Semantic {
-    override val key: String = "wor"
-    override fun default(theme: Theme): ThemeAndBack = theme[DisabledSemantic]
 }
 
 data object SelectedSemantic : Semantic {
@@ -330,8 +340,10 @@ class Theme(
     val derivations: Map<Semantic, (theme: Theme) -> ThemeAndBack> = mapOf(),
 ) {
     val icon: Paint get() = iconOverride ?: foreground
-    val withBack = ThemeAndBack(this, true)
-    val withoutBack = ThemeAndBack(this, false)
+
+    val withBack = ThemeAndBack(this, UseBackground.Yes)
+    val withBackNoPadding = ThemeAndBack(this, UseBackground.WithoutPadding)
+    val withoutBack = ThemeAndBack(this, UseBackground.No)
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
     operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {

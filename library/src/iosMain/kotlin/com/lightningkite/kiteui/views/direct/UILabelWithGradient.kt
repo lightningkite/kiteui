@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.LinearGradient
-import com.lightningkite.kiteui.models.Paint
-import com.lightningkite.kiteui.models.RadialGradient
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.toUiColor
@@ -51,6 +48,10 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                 is Color -> {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.toUiColor()
+                }
+                is FadingColor -> {
+                    gradientLayer = null
+                    uiViewWithLabelMask.backgroundColor = f.base.toUiColor()
                 }
                 is LinearGradient -> gradientLayer = CAGradientLayer().apply {
                     this.type = kCAGradientLayerAxial

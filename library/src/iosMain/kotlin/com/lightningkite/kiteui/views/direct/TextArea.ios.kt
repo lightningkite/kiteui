@@ -141,7 +141,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         var t = theme
         if(!textField.editable) t = t[DisabledSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 

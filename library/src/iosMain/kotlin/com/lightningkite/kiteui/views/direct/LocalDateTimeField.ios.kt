@@ -73,7 +73,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 
@@ -140,7 +140,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 
@@ -207,6 +207,6 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

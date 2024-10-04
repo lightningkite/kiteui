@@ -28,6 +28,7 @@ actual var DrawingContext2D.strokePaint: Paint
     set(value) {
         when(value) {
             is Color -> strokeStyle = value.toWeb()
+            is FadingColor -> TODO()
             is LinearGradient -> TODO()
             is RadialGradient -> TODO()
         }
@@ -40,6 +41,7 @@ actual var DrawingContext2D.fillPaint: Paint
     set(value) {
         when(value) {
             is Color -> fillStyle = value.toWeb()
+            is FadingColor -> TODO()
             is LinearGradient -> TODO()
             is RadialGradient -> TODO()
         }

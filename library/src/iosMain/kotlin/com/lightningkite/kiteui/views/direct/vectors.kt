@@ -5,7 +5,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.toUiColor
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.*
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
@@ -314,7 +313,7 @@ fun ImageVector.caLayer(): CALayer {
                 }
             }
         }
-        layer.addSublayer(when(val f = path.fillColor) {
+        layer.addSublayer(when (val f = path.fillColor) {
             is LinearGradient -> CAGradientLayer.layer().apply {
                 frame = layer.bounds
                 this.mask = makeCAShapeLayer()
@@ -341,7 +340,11 @@ fun ImageVector.caLayer(): CALayer {
                 this.fillColor = f.toUiColor().CGColor
                 this.strokeColor = path.strokeColor?.toUiColor()?.CGColor ?: UIColor.blackColor.CGColor
             }
-            null -> makeCAShapeLayer().apply {
+            is FadingColor -> makeCAShapeLayer().apply {
+                this.fillColor = f.base.toUiColor().CGColor
+                this.strokeColor = path.strokeColor?.toUiColor()?.CGColor ?: UIColor.blackColor.CGColor
+            }
+            else -> makeCAShapeLayer().apply {
                 this.fillColor = UIColor.clearColor.CGColor
                 this.strokeColor = path.strokeColor?.toUiColor()?.CGColor ?: UIColor.blackColor.CGColor
             }

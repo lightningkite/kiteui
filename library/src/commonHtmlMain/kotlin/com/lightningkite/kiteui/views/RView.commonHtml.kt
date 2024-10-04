@@ -72,6 +72,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun applyPadding(dimension: Dimension?) {
+        if(dimension != null) native.classes.add("padded")
+        else native.classes.remove("padded")
         if (useNavSpacing) native.classes.add("useNavSpacing")
         else native.classes.remove("useNavSpacing")
     }
@@ -79,9 +81,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         if (fullyApply) native.classes.add("transition")
         else native.classes.remove("transition")
-        if (fullyApply) {
-            native.classes.add("mightTransition")
-        }
 
         native.classes.removeAll { it.startsWith("t-") }
         native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
@@ -105,10 +104,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     init {
-        this.loading.addListener {
-            if(loading.value) native.classes.add("loading")
-            else native.classes.remove("loading")
-        }
         this.working.addListener {
             if(working.value) native.classes.add("working")
             else native.classes.remove("working")

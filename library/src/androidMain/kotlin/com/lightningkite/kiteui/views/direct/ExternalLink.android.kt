@@ -45,7 +45,7 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)

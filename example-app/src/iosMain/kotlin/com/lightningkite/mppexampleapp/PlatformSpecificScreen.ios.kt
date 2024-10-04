@@ -4,10 +4,7 @@ import com.lightningkite.kiteui.ObjCountTrackers
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.navigatorView

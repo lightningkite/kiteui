@@ -58,32 +58,37 @@ private fun <A> CalculationContext.oneAtATime(work: Boolean, action: suspend (A)
 }
 
 infix fun <T> Writable<T>.bind(master: Writable<T>) {
+    var reportTo = RawReadable(ReadableState(Unit))
     with(CoroutineScopeStack.current()) {
+        coroutineContext[StatusListener]?.loading(reportTo)
         launch {
-            var intendedValue: T = master.await()
-            this@bind.set(intendedValue)
-            val setReplica = this@with.oneAtATime(false) { value: T ->
-                this@bind.set(value)
-            }
-            val setMaster = this@with.oneAtATime(true) { value: T ->
-                master.set(value)
-            }
-            master.addListener {
-                master.state.onSuccess {
-                    if (intendedValue != it) {
-                        intendedValue = it
-                        setReplica(it)
-                    }
+            reportTo.state = ReadableState.notReady
+            reportTo.state = readableState {
+                var intendedValue: T = master.await()
+                this@bind.set(intendedValue)
+                val setReplica = this@with.oneAtATime(false) { value: T ->
+                    this@bind.set(value)
                 }
-            }.also { this@with.onRemove(it) }
-            this@bind.addListener {
-                this@bind.state.onSuccess {
-                    if (intendedValue != it) {
-                        intendedValue = it
-                        setMaster(it)
-                    }
+                val setMaster = this@with.oneAtATime(true) { value: T ->
+                    master.set(value)
                 }
-            }.also { this@with.onRemove(it) }
+                master.addListener {
+                    master.state.onSuccess {
+                        if (intendedValue != it) {
+                            intendedValue = it
+                            setReplica(it)
+                        }
+                    }
+                }.also { this@with.onRemove(it) }
+                this@bind.addListener {
+                    this@bind.state.onSuccess {
+                        if (intendedValue != it) {
+                            intendedValue = it
+                            setMaster(it)
+                        }
+                    }
+                }.also { this@with.onRemove(it) }
+            }
         }
     }
 }

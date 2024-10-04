@@ -33,6 +33,7 @@ val spaceOrComma = Regex("[ ,]+")
 fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
     when (val it = kiteui) {
         is Color -> this.color = it.colorInt()
+        is FadingColor -> match(it.base, parentOffsetX, parentWidth, parentOffsetY, parentHeight)
         is LinearGradient -> {
             val smallest = min(parentWidth, parentHeight) / 2
             val x0 = parentOffsetX + parentWidth / 2 - it.angle.cos() * smallest

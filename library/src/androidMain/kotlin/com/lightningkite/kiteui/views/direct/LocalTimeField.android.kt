@@ -52,7 +52,7 @@ actual class LocalTimeField actual constructor(context: RContext) :
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun hasAlternateBackedStates(): Boolean = true

@@ -35,6 +35,6 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

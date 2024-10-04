@@ -4,15 +4,20 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.time.Duration
 
 sealed interface Paint {
     fun closestColor(): Color
     fun map(mapper: (Color)->Color): Paint
-    fun applyAlpha(alpha: Float): Paint
-    fun lighten(ratio: Float): Paint
-    fun darken(ratio: Float): Paint
 }
+fun Paint.applyAlpha(alpha: Float): Paint = map { it.applyAlpha(alpha) }
+fun Paint.lighten(ratio: Float): Paint = map { it.lighten(ratio) }
+fun Paint.darken(ratio: Float): Paint = map { it.darken(ratio) }
 
+data class FadingColor(val base: Color, val alternate: Color): Paint {
+    override fun closestColor(): Color = base
+    override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
+}
 data class GradientStop(val ratio: Float, val color: Color)
 data class LinearGradient(
     val stops: List<GradientStop>,
@@ -42,11 +47,7 @@ data class LinearGradient(
         )
     }
 
-    override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
-
     fun toGrayscale() = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
-    override fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
-    override fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
     fun toWhite(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
     fun toBlack(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
     fun highlight(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
@@ -76,10 +77,6 @@ data class RadialGradient(
             }.sum(),
         )
     }
-
-    override fun applyAlpha(alpha: Float) = copy(stops = stops.map { it.copy(color = it.color.applyAlpha(alpha)) })
-    override fun darken(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.darken(ratio)) })
-    override fun lighten(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.lighten(ratio)) })
 }
 
 data class Color(
@@ -88,7 +85,7 @@ data class Color(
 
     override fun map(mapper: (Color) -> Color): Paint = let(mapper)
     override fun closestColor(): Color = this
-    override fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
+    fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
 
     fun toInt(): Int {
         return (alpha.byteize() shl 24) or (red.byteize() shl 16) or (green.byteize() shl 8) or (blue.byteize())
@@ -107,11 +104,11 @@ data class Color(
         )
     }
 
-    override fun darken(ratio: Float): Color = copy(
+    fun darken(ratio: Float): Color = copy(
         red = red * (1f - ratio), green = green * (1f - ratio), blue = blue * (1f - ratio)
     )
 
-    override fun lighten(ratio: Float): Color = copy(
+    fun lighten(ratio: Float): Color = copy(
         red = red + (1f - red) * ratio, green = green + (1f - green) * ratio, blue = blue + (1f - blue) * ratio
     )
 

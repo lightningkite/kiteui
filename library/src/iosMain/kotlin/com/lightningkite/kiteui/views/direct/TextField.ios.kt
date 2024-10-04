@@ -170,7 +170,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         if (!textField.enabled) t = t[DisabledSemantic]
         if (textField.highlighted) t = t[DownSemantic]
         if (textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 

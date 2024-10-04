@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
-import kotlinx.cinterop.ExperimentalForeignApi
+import com.lightningkite.kiteui.reactive.AppState
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
@@ -16,6 +16,8 @@ import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
+import kotlin.math.PI
+import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 
 
@@ -141,6 +143,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         native.extensionPadding = dimension?.value
     }
 
+    var previousLoadAnimationHandle: (()->Unit)? = null
     var backgroundLayer: CAGradientLayerResizing? = null
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
         native.animateIfAllowed {
@@ -157,6 +160,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
                 newLayer
             }
+            previousLoadAnimationHandle?.invoke()
+            previousLoadAnimationHandle = null
             with(layer) {
                 if (fullyApply) {
                     when (val b = theme.background) {
@@ -167,6 +172,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             this.colors = listOf(c, c).map { it.toObjcId() }
                             this.startPoint = CGPointMake(0.0, 0.0)
                             this.endPoint = CGPointMake(1.0, 1.0)
+                        }
+
+                        is FadingColor -> {
+                            val c = b.base.toUiColor().CGColor!!
+                            this.type = kCAGradientLayerAxial
+                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                            this.colors = listOf(c, c).map { it.toObjcId() }
+                            this.startPoint = CGPointMake(0.0, 0.0)
+                            this.endPoint = CGPointMake(1.0, 1.0)
+                            previousLoadAnimationHandle = AppState.animationFrame.addListener {
+                                val i = Color.interpolate(b.base, b.alternate, (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()).toUiColor().CGColor!!
+                                this.colors = listOf(i, i).map { it.toObjcId() }
+                            }
                         }
 
                         is LinearGradient -> {

@@ -59,7 +59,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if (!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyForeground(theme: Theme) {
