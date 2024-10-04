@@ -31,7 +31,7 @@ object ControlPerformanceTesting : Screen {
                 this@invoke.set(default)
             }
             BindMode.Launch -> CoroutineScopeStack.current().launch {
-//                this@invoke.set(actionToCalculate(this))
+//                this@invoke.set(actionToCalculate.invoke(this))
             }
             BindMode.Reactive -> {
                 CoroutineScopeStack.current().reactiveScope {

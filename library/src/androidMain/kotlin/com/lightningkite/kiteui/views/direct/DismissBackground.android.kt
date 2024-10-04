@@ -1,11 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 
 
@@ -16,8 +16,9 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
         }
     }
     actual fun onClick(action: suspend () -> Unit) {
+        val action = Action("Dismiss", Icon.close, action = action)
         native.setOnClickListener { _ ->
-            launchManualCancel { action() }
+            action.startAction(this)
         }
     }
 

@@ -60,6 +60,16 @@ interface Semantic : ThemeDerivation {
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
 }
 
+data object LoadingSemantic : Semantic {
+    override val key: String = "ld"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object WorkingSemantic : Semantic {
+    override val key: String = "wrk"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
 data object CardSemantic : Semantic {
     override val key: String = "crd"
     override fun default(theme: Theme): ThemeAndBack = theme.withBack

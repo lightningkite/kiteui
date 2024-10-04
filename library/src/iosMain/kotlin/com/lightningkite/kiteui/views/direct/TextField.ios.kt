@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
@@ -15,8 +14,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-
-actual class TextInput actual constructor(context: RContext) : RView(context) {
+actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -57,14 +55,16 @@ actual class TextInput actual constructor(context: RContext) : RView(context) {
 
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@TextInput, UIControlEventEditingChanged) {
-                listener()
-            }
+            var lastValue = value
+            return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)
         }
 
         override var value: String
             get() = textField.text ?: ""
-            set(value) { textField.text = value }
+            set(value) {
+                if(textField.text == value) return
+                textField.text = value
+            }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
@@ -90,35 +90,36 @@ actual class TextInput actual constructor(context: RContext) : RView(context) {
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-    actual var action: Action?
-        get() = TODO()
-        set(value) {
-            textField.delegate = value?.let {
-                val d = object : NSObject(), UITextFieldDelegateProtocol {
-                    override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launchManualCancel { it.onSelect() }
-                        return true
-                    }
+
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        textField.delegate = value?.let {
+            val d = object : NSObject(), UITextFieldDelegateProtocol {
+                override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    it.startAction(this@TextInput)
+                    return true
                 }
-                textField.extensionStrongRef = d
-                d
-            } ?: NextFocusDelegateShared
-            textField.returnKeyType = when (value?.title) {
-                "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
-                "Go" -> UIReturnKeyType.UIReturnKeyGo
-                "Next" -> UIReturnKeyType.UIReturnKeyNext
-                "Continue" -> UIReturnKeyType.UIReturnKeyContinue
-                "Default" -> UIReturnKeyType.UIReturnKeyDefault
-                "Join" -> UIReturnKeyType.UIReturnKeyJoin
-                "Done" -> UIReturnKeyType.UIReturnKeyDone
-                "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
-                "Send" -> UIReturnKeyType.UIReturnKeySend
-                "Google" -> UIReturnKeyType.UIReturnKeyGoogle
-                "Route" -> UIReturnKeyType.UIReturnKeyRoute
-                "Search" -> UIReturnKeyType.UIReturnKeySearch
-                else -> UIReturnKeyType.UIReturnKeyDone
             }
+            textField.extensionStrongRef = d
+            d
+        } ?: NextFocusDelegateShared
+        textField.returnKeyType = when (value?.title) {
+            "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
+            "Go" -> UIReturnKeyType.UIReturnKeyGo
+            "Next" -> UIReturnKeyType.UIReturnKeyNext
+            "Continue" -> UIReturnKeyType.UIReturnKeyContinue
+            "Default" -> UIReturnKeyType.UIReturnKeyDefault
+            "Join" -> UIReturnKeyType.UIReturnKeyJoin
+            "Done" -> UIReturnKeyType.UIReturnKeyDone
+            "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
+            "Send" -> UIReturnKeyType.UIReturnKeySend
+            "Google" -> UIReturnKeyType.UIReturnKeyGoogle
+            "Route" -> UIReturnKeyType.UIReturnKeyRoute
+            "Search" -> UIReturnKeyType.UIReturnKeySearch
+            else -> UIReturnKeyType.UIReturnKeyDone
         }
+    }
+
     actual var hint: String = ""
         set(value) {
             field = value
@@ -152,17 +153,19 @@ actual class TextInput actual constructor(context: RContext) : RView(context) {
             textField.enabled = value
             refreshTheming()
         }
+
     init {
         onRemove { textField.delegate = null }
         onRemove(textField.observe("highlighted", { refreshTheming() }))
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
+
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!textField.enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
+        if (!textField.enabled) t = t[DisabledSemantic]
+        if (textField.highlighted) t = t[DownSemantic]
+        if (textField.focused) t = t[FocusSemantic]
         return t
     }
 }

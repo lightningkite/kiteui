@@ -12,13 +12,14 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWithAction
 import kotlinx.datetime.*
 
 actual class LocalTimeField actual constructor(context: RContext) :
-    RView(context) {
+    RViewWithAction(context) {
     private val property: Property<LocalTime?> = Property(null)
     actual val content: ImmediateWritable<LocalTime?> = property
-    actual var action: Action? = null
+    
     actual var range: ClosedRange<LocalTime>? = null
 
     override val native = FrameLayout(context.activity).apply {
@@ -30,6 +31,7 @@ actual class LocalTimeField actual constructor(context: RContext) :
                 range?.endInclusive
             ) { time ->
                 property.value = time
+                action?.startAction(this@LocalTimeField)
             }
         }
     }

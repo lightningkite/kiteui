@@ -14,9 +14,9 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
 
 class SharedSuspendingReadable<T>(
-    coroutineContext: CoroutineContext = Dispatchers.Default,
+    coroutineContext: CoroutineContext = Dispatchers.Unconfined,
     val useLastWhileLoading: Boolean = false,
-    var debug: Console? = null,
+    var log: Console? = null,
     private val action: suspend CalculationContext.() -> T
 ) : BaseReadable<T>(), CalculationContext {
     private var job = SupervisorJob()
@@ -32,15 +32,15 @@ class SharedSuspendingReadable<T>(
     private var instanceNumber: Int = 1
     override fun activate() {
         super.activate()
-        debug?.log("Activating...")
-        SuspendingReactiveContext(this, action = {
+        log?.log("Activating...")
+        reactiveSuspending(action = {
             try {
                 val result = ReadableState(action(this))
-                if (result == state) return@SuspendingReactiveContext
+                if (result == state) return@reactiveSuspending
                 state = result
             } catch (e: CancelledException) {
                 // just bail, since either we're already rerunning or this stuff doesn't matter anymore
-                return@SuspendingReactiveContext
+                return@reactiveSuspending
             } catch (e: Exception) {
                 state = ReadableState.exception(e)
             }
@@ -48,12 +48,12 @@ class SharedSuspendingReadable<T>(
             if(!useLastWhileLoading) {
                 state = ReadableState.notReady
             }
-        }, debug = debug?.tag((instanceNumber++).toString()))
+        })
     }
 
     override fun deactivate() {
         super.deactivate()
-        debug?.log("Deactivating...")
+        log?.log("Deactivating...")
         job.cancel()
         job = SupervisorJob()
         state = ReadableState.notReady
@@ -65,6 +65,6 @@ class SharedSuspendingReadable<T>(
  * - Outside a reactive scope, [Readable.await] invokes the action with no sharing
  * - Inside a reactive scope, [Readable.await] starts the whole system listening and sharing the calculation.
  */
-fun <T> sharedSuspending(coroutineContext: CoroutineContext = Dispatchers.Default, useLastWhileLoading: Boolean = false, action: suspend CalculationContext.() -> T): Readable<T> {
-    return SharedSuspendingReadable(coroutineContext = coroutineContext, useLastWhileLoading = useLastWhileLoading, action = action)
+fun <T> sharedSuspending(coroutineContext: CoroutineContext = Dispatchers.Unconfined, useLastWhileLoading: Boolean = false, log: Console? = null, action: suspend CalculationContext.() -> T): Readable<T> {
+    return SharedSuspendingReadable(coroutineContext = coroutineContext, useLastWhileLoading = useLastWhileLoading, log = log, action = action)
 }

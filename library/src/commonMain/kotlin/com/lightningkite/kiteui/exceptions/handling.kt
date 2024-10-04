@@ -11,10 +11,11 @@ import com.lightningkite.kiteui.views.l2.dialog
 
 class ExceptionHandlers {
     companion object {
+        var clearErrorOnDependencyChange: Boolean = true
         val root = object: ExceptionHandler {
             override val priority: Float get() = 0f
             var open = false
-            override fun handle(view: RView, exception: Exception): (() -> Unit)? {
+            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
                 if(open) {
                     println("Blocked $exception; already open")
                     return {}
@@ -38,7 +39,7 @@ class ExceptionHandlers {
                             for(action in message.actions) {
                                 button {
                                     text(action.title)
-                                    onClick { closePopovers(); action.onSelect() }
+                                    onClick { closePopovers(); action.startAction(view) }
                                 }
                             }
                             buttonTheme - button {
@@ -53,7 +54,7 @@ class ExceptionHandlers {
         }
     }
     private val handlers: ArrayList<ExceptionHandler> = arrayListOf()
-    fun handle(view: RView, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, exception) }
+    fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
     operator fun plusAssign(other: ExceptionHandler) {
         handlers.add(other)
         handlers.sortByDescending { it.priority }
@@ -61,7 +62,7 @@ class ExceptionHandlers {
 }
 interface ExceptionHandler {
     val priority: Float
-    fun handle(view: RView, exception: Exception): (() -> Unit)?
+    fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)?
 }
 class ExceptionToMessages {
     companion object {

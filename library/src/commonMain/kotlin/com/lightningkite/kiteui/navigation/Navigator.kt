@@ -15,8 +15,8 @@ class ScreenNavigator(private val routesGetter: ()->Routes) {
     val stack: Property<List<Screen>> = Property(listOf())
     fun wrap(screen: Screen): Screen = screen
     
-    val currentScreen: Readable<Screen?> get() = shared { stack().lastOrNull() }
-    val canGoBack: Readable<Boolean> get() = shared { stack().size > 1 }
+    val currentScreen: Readable<Screen?> = shared { stack().lastOrNull() }
+    val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
     
     fun navigate(screen: Screen) = navigateRaw(wrap(screen))
     fun replace(screen: Screen) = replaceRaw(wrap(screen))

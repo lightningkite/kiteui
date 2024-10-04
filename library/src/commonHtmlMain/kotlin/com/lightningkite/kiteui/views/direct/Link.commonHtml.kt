@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext) : RView(context) {
@@ -23,7 +23,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
                     onNavigator.navigate(destination)
                 }
                 onNavigate?.let {
-                    launchManualCancel(it)
+                    launch { it() }
                 }
             }
         }

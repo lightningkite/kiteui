@@ -7,14 +7,14 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWithAction
 
 typealias TextField = TextInput
-expect class TextInput(context: RContext) : RView {
+expect class TextInput(context: RContext) : RViewWithAction {
 
     var enabled: Boolean
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
-    var action: Action?
     var hint: String
     var align: Align
 }

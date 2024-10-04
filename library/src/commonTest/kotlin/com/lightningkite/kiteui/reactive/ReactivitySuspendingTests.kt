@@ -2,10 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,7 +37,7 @@ class ReactivitySuspendingTests {
                 value()
             }
             var read = -1
-            launch(key = Unit) {
+            load {
                 read = runner()
             }
             assertEquals(read, value.value)
@@ -53,7 +50,7 @@ class ReactivitySuspendingTests {
                 value()
             }
             var read = -1
-            launch(key = Unit) {
+            load {
                 read = runner()
             }
             assertEquals(read, -1)
@@ -67,11 +64,13 @@ class ReactivitySuspendingTests {
         val property = Property<Int?>(null)
         val emissions = ArrayList<Int>()
         testContext {
-            reactiveSuspending {
+            reactiveSuspending(log = ConsoleRoot) {
                 emissions.add(property.waitForNotNull.await())
             }
             repeat(10) {
+                println("Set to null")
                 property.value = null
+                println("Set to $it")
                 property.value = it
             }
         }
@@ -100,7 +99,7 @@ class ReactivitySuspendingTests {
             val a = LateInitProperty<Int>()
             var received = -1
             onRemove { println("Shutting down...") }
-            launch(key = Unit) {
+            load {
                 println("Started...")
                 received = a.await()
             }
@@ -142,19 +141,19 @@ class ReactivitySuspendingTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = SharedSuspendingReadable(Dispatchers.Unconfined, debug = ConsoleRoot.tag("b")) { println("CALC a"); a.await() }
+        val b = sharedSuspending(Dispatchers.Unconfined, log = ConsoleRoot.tag("b")) { println("CALC a"); a.await() }
 //        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
         var hits = 0
 
         testContext {
-            SuspendingReactiveContext(this, action = {
+            reactiveSuspending(action = {
                 println("#1 Got ${b.await()}")
                 hits++
-            }, debug = ConsoleRoot.tag("#1"))
-            SuspendingReactiveContext(this, action = {
+            }, log = ConsoleRoot.tag("#1"))
+            reactiveSuspending(action = {
                 println("#2 Got ${b.await()}")
                 hits++
-            }, debug = ConsoleRoot.tag("#2"))
+            }, log = ConsoleRoot.tag("#2"))
             assertEquals(2, hits)
             a.value = 2
             assertEquals(4, hits)
@@ -167,7 +166,7 @@ class ReactivitySuspendingTests {
         var hits = 0
 
         testContext {
-            launch(key = Unit) {
+            load {
                 println("launch ${a.await()}")
                 hits++
             }
@@ -257,7 +256,7 @@ class ReactivitySuspendingTests {
         val c = sharedSuspending(Dispatchers.Unconfined) { a.await() }
         val d = sharedSuspending(Dispatchers.Unconfined) { c.await() }
         testContext {
-            launch(key = Unit) { println("launch got " + d.await()) }
+            load { println("launch got " + d.await()) }
             reactiveSuspending { println("reactiveScope got " + d.await()) }
             println("Ready... GO!")
             a.go()
@@ -270,7 +269,7 @@ class ReactivitySuspendingTests {
         var completions = 0
         testContext {
             reactiveSuspending { println("reactiveScope got " + shared.await()); completions++ }
-            launch(key = Unit) { println("launch got " + shared.await()); completions++ }
+            load { println("launch got " + shared.await()); completions++ }
             println("Ready... GO!")
             val lp2 = LateInitProperty<Int>()
             property.value = lp2
@@ -284,8 +283,8 @@ class ReactivitySuspendingTests {
         val shared = sharedSuspending(Dispatchers.Unconfined) { property.await() }
         var completions = 0
         testContext {
-            launch(key = Unit) { println("launchA got " + shared.await()); completions++ }
-            launch(key = Unit) { println("launchB got " + shared.await()); completions++ }
+            load { println("launchA got " + shared.await()); completions++ }
+            load { println("launchB got " + shared.await()); completions++ }
             println("Ready... GO!")
             property.value = 1
         }
@@ -372,11 +371,11 @@ class ReactivitySuspendingTests {
         testContext {
             var starts = 0
             var completes = 0
-            SuspendingReactiveContext(calculationContext = this, action =  {
+            reactiveSuspending(action =  {
                 starts++
                 exceptional()
                 completes++
-            }, debug = ConsoleRoot.tag("SuspendingReactiveContext"))
+            }, log = ConsoleRoot.tag("SuspendingReactiveContext"))
 
             assertEquals(1, starts)
             assertEquals(0, completes)

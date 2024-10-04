@@ -1,14 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 
-actual class Button actual constructor(context: RContext): RView(context) {
+actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = FrameLayoutButton(this)
+
     init {
         activityIndicator {
             ::opacity.invoke { if (this@Button.working()) 1.0 else 0.0 }
@@ -16,8 +17,11 @@ actual class Button actual constructor(context: RContext): RView(context) {
         }
     }
 
-    actual fun onClick(action: suspend () -> Unit): Unit {
-        native.onClick = action
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        native.onClick = {
+            value?.startAction(this)
+        }
     }
 
     actual var enabled: Boolean
@@ -31,16 +35,16 @@ actual class Button actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
         reactiveScope {
-            opacity = if (working()) 0.7 else 1.0
+            opacity = if (loading()) 0.7 else 1.0
         }
     }
 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!enabled) t = t[DisabledSemantic]
-        if(native.highlighted) t = t[DownSemantic]
-        if(native.focused) t = t[FocusSemantic]
+        if (!enabled) t = t[DisabledSemantic]
+        if (native.highlighted) t = t[DownSemantic]
+        if (native.focused) t = t[FocusSemantic]
         return t
     }
 }

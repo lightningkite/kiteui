@@ -4,16 +4,13 @@ import android.content.res.ColorStateList
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 
 
-actual class Button actual constructor(context: RContext): RView(context) {
+actual class Button actual constructor(context: RContext): RViewWithAction(context) {
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
@@ -35,14 +32,10 @@ actual class Button actual constructor(context: RContext): RView(context) {
         progress.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
     }
 
-    private var virtualEnable = true
-    actual fun onClick(action: suspend () -> Unit) {
-        native.setOnClickListener { view ->
-        if (enabled && virtualEnable) {
-                launchManualCancel {
-                virtualEnable = false
-                try { action() } finally { virtualEnable = true }
-                }
+    init {
+        native.setOnClickListener {
+            if (enabled) {
+                action?.startAction(this)
             }
         }
     }

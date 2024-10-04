@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.res.ColorStateList
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.DisabledSemantic
@@ -16,10 +15,9 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
 actual class LocalDateField actual constructor(context: RContext) :
-    RView(context) {
+    RViewWithAction(context) {
     private val property: Property<LocalDate?> = Property(null)
     actual val content: ImmediateWritable<LocalDate?> = property
-    actual var action: Action? = null
     actual var range: ClosedRange<LocalDate>? = null
 
     override val native = FrameLayout(context.activity).apply {
@@ -31,6 +29,7 @@ actual class LocalDateField actual constructor(context: RContext) :
                 range?.endInclusive
             ) { date ->
                 property.value = date
+                action?.startAction(this@LocalDateField)
 //                showTimePicker(
 //                    prop.value?.time ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
 //                    range?.start,

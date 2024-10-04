@@ -527,7 +527,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
             }
 
-            button.loading > * {
+            button.working > * {
                 opacity: 0.15;
             }
 
@@ -535,7 +535,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 position: relative;
             }
 
-            button.loading::after {
+            button.working::after {
                 opacity: 0.5 !important;
                 content: "";
                 pointer-events: none;

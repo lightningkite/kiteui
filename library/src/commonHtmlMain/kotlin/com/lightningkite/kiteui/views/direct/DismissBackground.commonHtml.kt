@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class DismissBackground actual constructor(context: RContext) : RView(context) {
@@ -25,7 +25,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
     }
 
     actual fun onClick(action: suspend () -> Unit): Unit {
-        native.replaceEventListener("click") { launchManualCancel(action) }
+        native.replaceEventListener("click") { launch { action() } }
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {

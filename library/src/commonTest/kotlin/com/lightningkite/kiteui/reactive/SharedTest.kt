@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.load
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,7 +69,7 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveScope {
@@ -90,7 +89,7 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch(key = Unit) {
+            load {
                 a.await()
             }
             reactiveScope {

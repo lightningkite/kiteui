@@ -12,6 +12,8 @@ import com.lightningkite.kiteui.views.*
 expect class RecyclerView(context: RContext) : RView {
     var columns: Int
     fun <T> children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> Unit): Unit
+    // TODO: Diffing
+//    fun <T, ID> children(items: Readable<List<T>>, identity: (T)->ID, render: ViewWriter.(value: Readable<T>) -> Unit): Unit
     fun scrollToIndex(index: Int, align: Align? = null, animate: Boolean = true)
     val firstVisibleIndex: Readable<Int>
     val lastVisibleIndex: Readable<Int>
