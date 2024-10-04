@@ -162,7 +162,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .circle-background {
                           fill: none;
-                          stroke:color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent);
+                          stroke: --background-color;
                           stroke-width: 3.8;
             }
             

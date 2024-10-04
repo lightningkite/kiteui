@@ -45,7 +45,7 @@ object TestingGroundScreen: Screen {
                 }
             }
 //            stack {
-                sizeConstraints(width = 10.rem, height = 10.rem) -
+                sizeConstraints(width = 6.rem, height = 6.rem) -
                         circularProgress {
                     ::ratio {
                         progressRatio.invoke()
