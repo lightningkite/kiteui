@@ -69,6 +69,24 @@ class CAGradientLayerResizing: CAGradientLayer {
     @OverrideInit constructor(coder: platform.Foundation.NSCoder):super(coder)
     @OverrideInit constructor(layer: kotlin.Any):super(layer)
 
+    private var backgroundMask: CALayer? = null
+
+    /**
+     * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
+     * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
+     */
+    fun getOrInitBackgroundMask(): CALayer {
+        if (backgroundMask == null) {
+            val whiteLayer = CALayer().apply {
+                backgroundColor = UIColor.whiteColor.CGColor
+                frame = this@CAGradientLayerResizing.frame
+            }
+            backgroundMask = whiteLayer
+            refreshCorners()
+        }
+        return backgroundMask!!
+    }
+
     var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
         set(value) {
             field = value
@@ -86,13 +104,17 @@ class CAGradientLayerResizing: CAGradientLayer {
             is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
             is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            // TODO: Implement per-corner radii on iOS
+            is CornerRadii.PerCorner -> 0.0
         }
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
+        backgroundMask?.cornerRadius = v
         cornerRadius = v
     }
 
     override fun layoutSublayers() {
         super.layoutSublayers()
+        backgroundMask?.frame = frame
         refreshCorners()
     }
 

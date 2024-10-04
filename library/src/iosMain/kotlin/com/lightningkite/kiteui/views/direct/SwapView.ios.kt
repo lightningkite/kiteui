@@ -25,6 +25,7 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
     actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {
         clearChildren()
         createNewView()
+        native.informParentOfSizeChange()
 //        native.hidden = false
 //        val oldView = children.lastOrNull()
 //        oldView?.let { oldView ->

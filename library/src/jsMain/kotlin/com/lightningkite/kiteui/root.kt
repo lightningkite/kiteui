@@ -19,9 +19,7 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
         }
 
         init {
-            println("Root")
             beforeNextElementSetup {
-                println("Set the theme")
                 themeChoice = ThemeDerivation { theme.withBack }
             }
         }

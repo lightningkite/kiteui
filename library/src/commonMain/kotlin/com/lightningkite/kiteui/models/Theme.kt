@@ -134,6 +134,11 @@ data object DisabledSemantic : Semantic {
     ).withBack
 }
 
+data object WorkingSemantic : Semantic {
+    override val key: String = "wor"
+    override fun default(theme: Theme): ThemeAndBack = theme[DisabledSemantic]
+}
+
 data object SelectedSemantic : Semantic {
     override val key: String = "sel"
     override fun default(theme: Theme): ThemeAndBack = theme[DownSemantic]
@@ -157,6 +162,11 @@ data object MainContentSemantic : Semantic {
 data object BarSemantic : Semantic {
     override val key: String = "bar"
     override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+}
+
+data object SystemBarSemantic : Semantic {
+    override val key: String = "sba"
+    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
 }
 
 data object NavSemantic : Semantic {

@@ -119,7 +119,7 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual val ViewWriter.scrolls: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native = ScrollLayout()
 
             init {
@@ -132,7 +132,7 @@ actual val ViewWriter.scrolls: ViewWrapper
 @ViewModifierDsl3
 actual val ViewWriter.scrollsHorizontally: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native = ScrollLayout()
 
             init {

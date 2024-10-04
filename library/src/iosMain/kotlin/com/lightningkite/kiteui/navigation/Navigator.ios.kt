@@ -4,8 +4,10 @@ import com.lightningkite.kiteui.views.RContext
 import platform.Foundation.NSUserActivity
 
 private var postedLandingUrl: UrlLikePath? = null
+private var lastBoundScreenNavigator: ScreenNavigator? = null
 
 actual fun ScreenNavigator.bindToPlatform(context: RContext) {
+    lastBoundScreenNavigator = this
     val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
 }
@@ -19,9 +21,11 @@ fun postUserActivity(activity: NSUserActivity) {
 }
 
 // To be called from scene(_:continue:)
-fun handleUserActivity(main: ScreenNavigator, activity: NSUserActivity) {
-    activity.webpageUrlLikePath()?.let {
-        main.navigate(main.routes.parse(it) ?: return)
+fun handleUserActivity(activity: NSUserActivity) {
+    activity.webpageUrlLikePath()?.let { path ->
+        lastBoundScreenNavigator?.let { screenNavigator ->
+            screenNavigator.navigate(screenNavigator.routes.parse(path) ?: return)
+        }
     }
 }
 

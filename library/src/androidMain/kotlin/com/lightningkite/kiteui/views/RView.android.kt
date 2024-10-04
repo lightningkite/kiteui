@@ -12,8 +12,6 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.view.ScrollingView
-import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -52,6 +50,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun existsSet(value: Boolean) {
+        // Setting visibility to GONE does not work if an animation is running
+        if (!exists) {
+            native.clearAnimation()
+        }
         native.visibility = if (value) {
             View.VISIBLE
         } else {
@@ -134,13 +136,27 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.background = value
         }
     protected var backgroundBlock: GradientDrawable? = null
+    private val layoutChangeListener by lazy {
+        { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+            updateCorners()
+        }
+    }
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> 10000f
+            is CornerRadii.RatioOfSize -> it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+            // TODO: Implement per-corner radii on Android
+            is CornerRadii.PerCorner -> 0f
         }
+        // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
+        // size on Android
+/*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
+            native.addOnLayoutChangeListener(layoutChangeListener)
+        } else {
+            native.removeOnLayoutChangeListener(layoutChangeListener)
+        }*/
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }

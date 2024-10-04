@@ -2,12 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.utils.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
-import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UICoordinateSpaceProtocol
@@ -53,6 +54,35 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
                 heightSize,
             )
             if (oldSize.first != widthSize || oldSize.second != heightSize) {
+                view.layoutSubviewsAndLayers()
+            }
+        }
+        Unit
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+    val frameLayout = this
+    subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
+        view as UIView
+        if (view.hidden) return@zip
+        val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
+        val (offsetH, offsetV) = anchor.first.calculatePopoverPosition(
+            anchorPositionInFrameLayout,
+            view.bounds.local,
+            frameLayout.bounds.local
+        )
+        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+
+        run {
+            view.setPsuedoframe(
+                offsetH,
+                offsetV,
+                size.width,
+                size.height,
+            )
+            if (oldSize.first != size.width || oldSize.second != size.height) {
                 view.layoutSubviewsAndLayers()
             }
         }

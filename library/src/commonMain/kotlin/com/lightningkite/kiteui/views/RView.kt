@@ -80,7 +80,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
 
     protected abstract fun visibleSet(value: Boolean)
-    var spacing: Dimension? = null
+    open var spacing: Dimension? = null
         set(value) {
             field = value
             spacingSet(value)
@@ -389,3 +389,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     val calculationContext: CoroutineScope get() = this
 
 }
+
+abstract class RViewWrapper(context: RContext) : RView(context) {
+    override var spacing: Dimension? = null
+        get() = field ?: parent?.spacing
+}
+
