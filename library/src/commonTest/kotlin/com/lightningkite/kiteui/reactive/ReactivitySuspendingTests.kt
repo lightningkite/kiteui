@@ -10,25 +10,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ReactivitySuspendingTests {
-    @Test fun testAsync() {
-
-        var cont: Continuation<String>? = null
-        val item = asyncGlobal<String> {
-            println("Calculating...")
-            suspendCoroutineCancellable {
-                cont = it
-                return@suspendCoroutineCancellable {}
-            }
-        }
-        launchGlobal {
-            println("A: ${item.await()}")
-        }
-        launchGlobal {
-            println("B: ${item.await()}")
-        }
-        cont?.resume("Success")
-
-    }
 
     @Test fun invokeAdapter() {
         testContext {
@@ -64,7 +45,7 @@ class ReactivitySuspendingTests {
         val property = Property<Int?>(null)
         val emissions = ArrayList<Int>()
         testContext {
-            reactiveSuspending(log = ConsoleRoot) {
+            reactiveSuspending {
                 emissions.add(property.waitForNotNull.await())
             }
             repeat(10) {
@@ -141,7 +122,7 @@ class ReactivitySuspendingTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = sharedSuspending(Dispatchers.Unconfined, log = ConsoleRoot.tag("b")) { println("CALC a"); a.await() }
+        val b = sharedSuspending(Dispatchers.Unconfined) { println("CALC a"); a.await() }
 //        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
         var hits = 0
 
@@ -149,11 +130,11 @@ class ReactivitySuspendingTests {
             reactiveSuspending(action = {
                 println("#1 Got ${b.await()}")
                 hits++
-            }, log = ConsoleRoot.tag("#1"))
+            })
             reactiveSuspending(action = {
                 println("#2 Got ${b.await()}")
                 hits++
-            }, log = ConsoleRoot.tag("#2"))
+            })
             assertEquals(2, hits)
             a.value = 2
             assertEquals(4, hits)
@@ -359,10 +340,8 @@ class ReactivitySuspendingTests {
                 public set(value) { super.state = value }
 
             override fun addListener(listener: () -> Unit): () -> Unit {
-                ConsoleRoot.tag("PublicReadable").log("Listener $listener added")
                 val r = super.addListener(listener)
                 return {
-                    ConsoleRoot.tag("PublicReadable").log("Listener $listener removed")
                     r()
                 }
             }
@@ -375,7 +354,7 @@ class ReactivitySuspendingTests {
                 starts++
                 exceptional()
                 completes++
-            }, log = ConsoleRoot.tag("SuspendingReactiveContext"))
+            })
 
             assertEquals(1, starts)
             assertEquals(0, completes)

@@ -275,7 +275,7 @@ class LazyPropertyTests {
 
     @Test fun testStupidCase() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, log = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
         testContext {
             println(lensed.state)
@@ -288,7 +288,7 @@ class LazyPropertyTests {
 
     @Test fun testStupidCase2() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, log = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
         var value = ""
         testContext {
