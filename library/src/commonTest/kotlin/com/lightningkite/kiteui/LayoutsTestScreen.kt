@@ -1,9 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.dp
-import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.shared
 import com.lightningkite.kiteui.views.ViewWriter
@@ -26,7 +23,7 @@ class LayoutsTestScreen : Screen {
             }
             h2("Sample").apply {
                 checks += {
-                    assertEquals(true, parent?.themeAndBack?.useBackground)
+                    assertEquals(UseBackground.Yes, parent?.themeAndBack?.useBackground)
                     assertEquals(
                         theme.spacing.px,
                         screenRectangle()?.top?.minus(above?.screenRectangle()?.bottom ?: 0.0) ?: 0.0,
