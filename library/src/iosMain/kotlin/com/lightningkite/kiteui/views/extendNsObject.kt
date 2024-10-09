@@ -78,5 +78,8 @@ var UIView.extensionTextSize: Double? by UIViewTextSize
 private val UIViewForcePadding = ExtensionProperty<UIView, Boolean>()
 var UIView.extensionForcePadding: Boolean? by UIViewForcePadding
 
+private val UIViewCollapsed = ExtensionProperty<UIView, Boolean>()
+var UIView.extensionCollapsed: Boolean? by UIViewCollapsed
+
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
 var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder

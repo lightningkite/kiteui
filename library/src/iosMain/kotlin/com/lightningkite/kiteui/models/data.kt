@@ -36,6 +36,7 @@ var remMultiplier: Double = 0.75
 @Suppress("NOTHING_TO_INLINE") actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension(this.value.coerceAtMost(other.value))
 @Suppress("NOTHING_TO_INLINE") actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
+actual val Dimension.canvasUnits: Double get() = value
 
 actual data class Font(val get: (size: CGFloat, weight: UIFontWeight, italic: Boolean)->UIFont)
 fun fontFromFamilyInfo(

@@ -24,7 +24,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     var padding = extensionPadding ?: 0.0
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
-        if (view.hidden) return@zip
+        if (view.hidden || view.extensionCollapsed == true) return@zip
         val h = view.extensionHorizontalAlign ?: Align.Stretch
         val v = view.extensionVerticalAlign ?: Align.Stretch
         val offsetH = when (h) {
@@ -66,7 +66,7 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
     val frameLayout = this
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
-        if (view.hidden) return@zip
+        if (view.hidden || view.extensionCollapsed == true) return@zip
         val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
         val (offsetH, offsetV) = anchor.first.calculatePopoverPosition(
             anchorPositionInFrameLayout,
@@ -92,7 +92,7 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
 
 
 fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
-    if (hidden) return null
+    if (hidden || extensionCollapsed == true) return null
     if (bounds.useContents {
             val rect = this
             point.useContents {
@@ -105,7 +105,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         }) {
         subviews.asReversed().forEach {
             it as UIView
-            if (it.hidden) return@forEach
+            if (it.hidden || it.extensionCollapsed == true) return@forEach
             it.hitTest(
                 it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol),
                 withEvent
@@ -146,7 +146,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
 
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
-        if (it.hidden) return@mapIndexed Size()
+        if (it.hidden || it.extensionCollapsed == true) return@mapIndexed Size()
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
         t.pause()
         val required = childSizeCache[index].getOrPut(measureInput) {

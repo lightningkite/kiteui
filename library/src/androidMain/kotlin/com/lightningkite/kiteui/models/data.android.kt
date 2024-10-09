@@ -49,3 +49,4 @@ actual sealed class AudioSource actual constructor()
 actual class AudioResource(val resource: Int) : AudioSource()
 
 actual val Dimension.px: Double get() = value.toDouble()
+actual val Dimension.canvasUnits: Double get() = value.toDouble()

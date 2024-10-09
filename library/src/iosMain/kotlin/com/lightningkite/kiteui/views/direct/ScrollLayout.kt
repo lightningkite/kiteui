@@ -23,10 +23,6 @@ object ScrollLayoutMeta {
 
 
 class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
-    init {
-        setCanCancelContentTouches(false)
-//        gestureRecognizers?.forEach { (it as UIGestureRecognizer).cancelsTouchesInView = false }
-    }
     var horizontal: Boolean = true
     var padding: Double
         get() = extensionPadding ?: 0.0

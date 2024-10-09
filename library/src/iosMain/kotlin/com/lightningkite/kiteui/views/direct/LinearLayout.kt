@@ -95,7 +95,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.zip(sizes) { view, size ->
             view as UIView
-            if (view.hidden) return@zip
+            if (view.hidden || view.extensionCollapsed == true) return@zip
             if (first) {
                 first = false
             } else {
@@ -148,7 +148,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.forEachIndexed { index, it ->
             it as UIView
-            if (it.hidden) {
+            if (it.hidden || it.extensionCollapsed == true) {
                 out[index] = Size(0.0, 0.0)
                 return@forEachIndexed
             }
@@ -187,7 +187,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         subviews.forEachIndexed { index, it ->
             it as UIView
             if (out[index] != null) return@forEachIndexed
-            if (it.hidden) return@forEachIndexed
+            if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
             val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             t.pause()
@@ -215,14 +215,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val mySize = bounds.useContents { size.local }
         if (lastLaidOutSize == mySize) return
         var t = PerformanceInfo.trace("layoutLinear")
-        var t2 = PerformanceInfo.trace("layoutLinearPart")
-        t2.pause()
-        var t3 = PerformanceInfo.trace("layoutLinearPart3")
-        t3.pause()
-        var t4 = PerformanceInfo.trace("layoutLinearPart4")
-        t4.pause()
-        var t5 = PerformanceInfo.trace("layoutLinearPart5")
-        t5.pause()
 
         lastLaidOutSize = mySize
         var primary = padding
@@ -233,7 +225,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         for (index in subviews.indices) {
             val view = subviews[index] as UIView
             val size = sizes[index]
-            if (!view.hidden) {
+            if (!(view.hidden || view.extensionCollapsed == true)) {
                 if (first) {
                     first = false
                 } else {
@@ -241,18 +233,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                 }
             }
             val ps = primary
-            t2.resume()
-            view.bounds
-            t2.pause()
-            t3.resume()
-            view.bounds.useContents { this.size.width }
-            t3.pause()
-            t4.resume()
-            view.bounds.useContents { this.size.width to this.size.height }
-            t4.pause()
-            t5.resume()
             val a = view.secondaryAlign ?: Align.Stretch
-            t5.pause()
             val offset = when (a) {
                 Align.Start -> padding
                 Align.Stretch -> padding
@@ -279,10 +260,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         }
         primary += padding
         t.cancel()
-        t2.cancel()
-        t3.cancel()
-        t4.cancel()
-        t5.cancel()
     }
 
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {

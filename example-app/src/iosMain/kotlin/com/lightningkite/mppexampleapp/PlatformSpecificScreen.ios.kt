@@ -19,18 +19,22 @@ val subnav = ScreenNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
 actual fun ViewWriter.platformSpecific() {
     col {
-        text("TEST")
-        card - button {
-            text("memory view toggle")
-            var last: MemoryView? = null
-            onClick {
-                if(subnav.stack.value.lastOrNull() is MemoryScreen)
-                    subnav.reset(PlaceholderScreen())
-                else
-                    subnav.reset(MemoryScreen())
-            }
+        repeat(10) {
+            text("TEST")
+            separator()
         }
-        expanding - navigatorView(subnav)
+//        text("TEST")
+//        card - button {
+//            text("memory view toggle")
+//            var last: MemoryView? = null
+//            onClick {
+//                if(subnav.stack.value.lastOrNull() is MemoryScreen)
+//                    subnav.reset(PlaceholderScreen())
+//                else
+//                    subnav.reset(MemoryScreen())
+//            }
+//        }
+//        expanding - navigatorView(subnav)
     }
 }
 

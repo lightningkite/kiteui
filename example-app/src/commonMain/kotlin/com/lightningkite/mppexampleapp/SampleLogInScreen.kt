@@ -35,6 +35,7 @@ object SampleLogInScreen : Screen {
                     label {
                         content = "Email"
                         sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                            hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
@@ -42,6 +43,7 @@ object SampleLogInScreen : Screen {
                     label {
                         content = "Password"
                         sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                            hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
                             action = Action(

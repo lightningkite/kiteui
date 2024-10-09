@@ -19,6 +19,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.native.ref.WeakReference
+import kotlin.time.DurationUnit
 
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -34,14 +35,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
     protected actual override fun opacitySet(value: Double) {
-        native.animateIfAllowed {
+        animateIfAllowed {
             native.alpha = value
         }
     }
 
     protected actual override fun existsSet(value: Boolean) {
         native.hidden = !value
-        if(fullyStarted) {
+        if (fullyStarted) {
             native.informParentOfSizeChange()
         }
 //        if (animationsEnabled) {
@@ -61,7 +62,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected actual override fun visibleSet(value: Boolean) {
-        native.animateIfAllowed {
+        animateIfAllowed {
             native.alpha = if (value) 1.0 else 0.0
         }
     }
@@ -143,10 +144,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         native.extensionPadding = dimension?.value
     }
 
-    var previousLoadAnimationHandle: (()->Unit)? = null
+    var previousLoadAnimationHandle: (() -> Unit)? = null
     var backgroundLayer: CAGradientLayerResizing? = null
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.animateIfAllowed {
+        animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.spacing)
 //            native.layoutLayers()
@@ -236,15 +237,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
-        if(index == native.subviews.size)
+        if (index == native.subviews.size)
             native.addSubview(view.native)
         else
             native.insertSubview(view.native, index.toLong())
-        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
         if (index >= native.subviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.subviews.size}")
         }
@@ -263,34 +264,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 var animationsEnabled: Boolean = true
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
-//    if (!animationsEnabled) {
-//        CATransaction.begin()
-//        CATransaction.disableActions()
-//        try {
-//            action()
-//        } finally {
-//            CATransaction.commit()
-//        }
-//        return
-//    }
-//    try {
-//        animationsEnabled = false
-//        CATransaction.begin()
-//        CATransaction.disableActions()
-//        try {
-//            action()
-//        } finally {
-//            CATransaction.commit()
-//        }
-//    } finally {
-//        animationsEnabled = true
-//    }
 }
 
 inline fun UIView.withoutAnimation(action: () -> Unit) {
-    if (!animationsEnabled) {
-        action()
-    }
     try {
         animationsEnabled = false
         CATransaction.begin()
@@ -304,10 +280,22 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
         animationsEnabled = true
     }
 }
+
 inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.15) {
+    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         action()
     } else {
         action()
+    }
+}
+
+inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+    if (animationsEnabled) UIView.animateWithDuration(
+        duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
+        completion = { onComplete() },
+        animations = { action() }
+    ) else {
+        action()
+        onComplete()
     }
 }

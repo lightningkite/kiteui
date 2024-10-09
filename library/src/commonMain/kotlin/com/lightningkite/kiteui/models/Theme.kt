@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.probablyAppleUser
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -62,6 +64,25 @@ interface Semantic : ThemeDerivation {
     val key: String
     fun default(theme: Theme): ThemeAndBack
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
+}
+
+data object InteractiveSemantic: Semantic {
+    override val key: String = "int"
+    override fun default(theme: Theme): ThemeAndBack {
+        // iOS switch?
+        if(Platform.probablyAppleUser) {
+            return theme.copy(
+                foreground = if(theme.background.closestColor().perceivedBrightness in 0.1f..0.9f)
+                    theme.foreground
+                else
+                    Color(1f, 0f, 122f/255f, 255f)
+                ,
+                iconOverride = null,
+            ).withoutBack
+        } else {
+            return theme.withoutBack
+        }
+    }
 }
 
 data object LoadingSemantic : Semantic {
@@ -331,7 +352,7 @@ class Theme(
     val background: Paint = Color.white,
     val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
-    val transitionDuration: Duration = 0.15.seconds,
+    val transitionDuration: Duration = 0.25.seconds,
 
     val derivedFrom: Theme? = null,
     val derivationId: String? = null,
