@@ -77,7 +77,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
             
             p, h1, h2, h3, h4, h5, h6, .subtext {
-                white-space: pre;
+                white-space: pre-wrap;
             }
             
             p li {

@@ -11,31 +11,20 @@ fun <V> HtmlElementLike.vprop(
 ): ImmediateWritable<V> {
     return object : ImmediateWritable<V>, BaseListenable() {
         init {
-            var last: V? = null
             addEventListener(eventName) {
-                val v = get(this@vprop)
-                if(last != v) {
-                    last = v
-                    invokeAllListeners()
-                }
+                invokeAllListeners()
             }
         }
 
         override var value: V
             get() = get(this@vprop)
             set(value) {
-                println("VPROP SET $eventName: ${get(this@vprop)} != ${value}")
-                if(get(this@vprop) != value) {
-                    set(this@vprop, value)
-                    invokeAllListeners()
-                }
-            }
-        override suspend fun set(value: V) {
-            println("VPROP SET $eventName: ${get(this@vprop)} != ${value}")
-            if(get(this@vprop) != value) {
                 set(this@vprop, value)
                 invokeAllListeners()
             }
+        override suspend fun set(value: V) {
+            set(this@vprop, value)
+            invokeAllListeners()
         }
     }
 }
