@@ -46,11 +46,15 @@ fun Theme.Companion.flat(
             }.withBack
         },
         CardSemantic to {
-            it.copy(id = "crd", background = it.background.closestColor().toHSP().let {
-                it.copy(brightness = it.brightness + brightnessStep)
-            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
-                it.copy(brightness = it.brightness + brightnessStep)
-            }.toRGB() ).withBack
+            it.copy(
+                id = "crd",
+                background = it.background.closestColor().toHSP().let {
+                    it.copy(brightness = it.brightness + brightnessStep)
+                }.toRGB(),
+                outline = it.outline.closestColor().toHSP().let {
+                    it.copy(brightness = it.brightness + brightnessStep)
+                }.toRGB()
+            ).withBack
         },
         UnselectedSemantic to {
             val existing = it.background.closestColor().toHSP()
