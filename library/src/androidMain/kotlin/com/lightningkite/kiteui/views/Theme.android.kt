@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 internal fun Theme.backgroundClippingDrawableWithoutCorners(): GradientDrawable {
-    return GradientDrawable().apply {
+    return MyGradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         val barelyColor = 0x01808080
         setStroke(0, barelyColor)
@@ -31,7 +31,10 @@ internal fun Theme.backgroundClippingDrawableWithoutCorners(): GradientDrawable 
 private class MyGradientDrawable(): GradientDrawable() {
     var colorsOverTime: Array<Pair<IntArray, FloatArray>>? = null
     private var animator: ValueAnimator? = null
+    private var setInstance = 0
     fun animateColorsTo(goal: IntArray, ratios: FloatArray, duration: Duration) {
+        val myInstance = ++setInstance
+        animator?.cancel()
         if(!animationsEnabled || colors?.size != goal.size) {
             if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
                 setColors(goal, ratios)
@@ -39,19 +42,20 @@ private class MyGradientDrawable(): GradientDrawable() {
                 colors = goal
             }
             afterTimeout(100) {
+                if(setInstance > myInstance) return@afterTimeout
                 colorsOverTime?.let {
                     animateColorsTo(it[1].first, it[1].second, 2.seconds)
                 }
             }
             return
         }
-        animator?.cancel()
         val animationStartColors = colors ?: intArrayOf(0, 0)
         val animationGoalColors = goal
         animator = ValueAnimator.ofFloat(0f, 1f).also {
             it.duration = duration.inWholeMilliseconds
             it.interpolator = AccelerateDecelerateInterpolator()
             it.addUpdateListener { it ->
+                if(setInstance > myInstance) return@addUpdateListener
                 val f = it.animatedFraction
                 colors = IntArray(animationStartColors.size) { index ->
                     Color.hsvInterpolate(
@@ -62,6 +66,7 @@ private class MyGradientDrawable(): GradientDrawable() {
                 }
             }
             it.doOnEnd {
+                if(setInstance > myInstance) return@doOnEnd
                 if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
                     setColors(goal, ratios)
                 } else {

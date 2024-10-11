@@ -30,6 +30,8 @@ val client: HttpClient
         return AndroidAppContext.ktorClient
     }
 
+private val fetchLog = ConsoleRoot.tag("fetch")
+
 actual suspend fun fetch(
     url: String,
     method: HttpMethod,
@@ -39,6 +41,7 @@ actual suspend fun fetch(
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
     try {
+        fetchLog.log("-> $method $url")
         val response = client.request(url) {
             this.method = when (method) {
                 HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -80,6 +83,7 @@ actual suspend fun fetch(
                 }
             }
         }
+        fetchLog.log("<- $method $url ${response.status}")
         return RequestResponse(response)
     } catch (e: Exception) {
         throw ConnectionException("Network request failed", e)

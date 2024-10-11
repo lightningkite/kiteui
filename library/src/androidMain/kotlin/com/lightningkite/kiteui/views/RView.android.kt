@@ -144,7 +144,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> it.ratio * min(native.width, native.height)
+            is CornerRadii.RatioOfSize -> if(it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
             // TODO: Implement per-corner radii on Android

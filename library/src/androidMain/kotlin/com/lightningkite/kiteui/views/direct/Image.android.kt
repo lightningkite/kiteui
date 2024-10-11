@@ -27,13 +27,17 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         var widthMeasureSpecLast = 0
         var heightMeasureSpecLast = 0
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            widthMeasureSpecLast = widthMeasureSpec
-            heightMeasureSpecLast = heightMeasureSpec
-            if(callbacks.isNotEmpty()) {
-                val w = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0 ) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
-                val h = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0 ) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                callbacks.toList().forEach { cb -> cb.onSizeReady(w, h) }
-                callbacks.clear()
+            if(this !in animatingSize) {
+                widthMeasureSpecLast = widthMeasureSpec
+                heightMeasureSpecLast = heightMeasureSpec
+                if (callbacks.isNotEmpty()) {
+                    val width = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
+                    val height = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
+                    if (width != 0 && height != 0) {
+                        callbacks.toList().forEach { cb -> cb.onSizeReady(width, height) }
+                        callbacks.clear()
+                    }
+                }
             }
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
@@ -47,10 +51,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             @SuppressLint("MissingSuperCall")
             override fun getSize(cb: SizeReadyCallback) {
                 if(widthMeasureSpecLast != 0) {
-                    cb.onSizeReady(
-                        if (MeasureSpec.getMode(widthMeasureSpecLast) > 0 ) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt(),
-                        if (MeasureSpec.getMode(heightMeasureSpecLast) > 0 ) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt(),
-                    )
+                    val width = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0 ) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
+                    val height = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0 ) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
+                    if(width != 0 && height != 0) {
+                        cb.onSizeReady(width, height)
+                    }
                 } else {
                     callbacks.add(cb)
                 }

@@ -14,14 +14,21 @@ import kotlin.coroutines.resumeWithException
 
 suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCoroutineCancellable<Unit> {
+        var alreadyResumed = false
         onOpen {
             launchGlobal {
-                delay(1000L)
-                it.resume(Unit)
+                delay(100L)
+                if(!alreadyResumed) {
+                    alreadyResumed = true
+                    it.resume(Unit)
+                }
             }
         }
         onClose { code ->
-            it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
+            if(!alreadyResumed) {
+                alreadyResumed = true
+                it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
+            }
         }
         return@suspendCoroutineCancellable {}
     }

@@ -28,7 +28,7 @@ kotlin {
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
             api("com.github.bumptech.glide:glide:5.0.0-rc01")
-            api("com.github.MikeOrtiz:TouchImageView:3.6")
+            api("com.github.chrisbanes:PhotoView:2.3.0")
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")

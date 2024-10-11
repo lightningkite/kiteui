@@ -448,6 +448,8 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
     return ViewWrapper
 }
 
+internal val animatingSize = HashSet<View>()
+
 /**
  * Creates an animator that will animate from the current height to a new height.
  */
@@ -476,11 +478,15 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
         layoutParams.height = it
         if (!this@heightAnimator.isInLayout) requestLayout()
     }.apply {
+        animatingSize.add(this@heightAnimator)
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
-            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {
+                animatingSize.remove(this@heightAnimator)
+            }
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
+                animatingSize.remove(this@heightAnimator)
                 layoutParams.height = toHeight
             }
         })
@@ -514,13 +520,17 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {
         layoutParams.width = it
         if (!this@widthAnimator.isInLayout) requestLayout()
+        animatingSize.add(this@widthAnimator)
     }.apply {
         addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
-            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {
+                animatingSize.remove(this@widthAnimator)
+            }
             override fun onAnimationRepeat(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
                 layoutParams.width = toWidth
+                animatingSize.remove(this@widthAnimator)
             }
         })
     }

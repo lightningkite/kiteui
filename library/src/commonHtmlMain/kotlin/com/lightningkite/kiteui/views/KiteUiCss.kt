@@ -56,25 +56,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 font-size: revert;
                 vertical-align: revert;
             }
-
-            @property --animated-color-level {
-                syntax: "<percentage>";
-                inherits: true;
-                initial-value: 20%;
-            }
-
-            :root {
-                animation: animate-color-level 2s alternate ease-in-out infinite;
-            }
-
-            @keyframes animate-color-level {
-                0% {
-                    --animated-color-level: 0%;
-                }
-                100% {
-                    --animated-color-level: 100%;
-                }
-            }
             
             p, h1, h2, h3, h4, h5, h6, .subtext {
                 white-space: pre-wrap;
@@ -881,8 +862,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
-    private fun FadingColor.toWeb() = "color-mix(in srgb, ${base.toWeb()} var(--animated-color-level), ${alternate.toWeb()})"
-
     fun theme(
         theme: Theme,
         diff: Theme? = null,
@@ -904,14 +883,30 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
 
+
         theme.diff(diff) { background }?.let {
+            if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
             when (it) {
                 is Color -> {
                     addToCss(backSel, "background-color", it.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
                 is FadingColor -> {
-                    addToCss(backSel, "background-color", it.toWeb())
+                    dynamicCss.rule("""
+                        @keyframes ${theme.id}-flickerAnimation {
+                        0% {
+                            background-color: ${it.base.toWeb()};
+                        }
+                        50% {
+                            background-color: ${it.alternate.toWeb()};
+                        }
+                        100% {
+                            background-color: ${it.base.toWeb()};
+                        }
+                    }
+                    """.trimIndent())
+                    addToCss(backSel, "animation", "2s infinite ${theme.id}-flickerAnimation")
+                    addToCss(backSel, "background-color", it.base.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
 
@@ -967,7 +962,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { foreground }?.let {
             when (it) {
                 is Color -> addToCss(directSel, "color", it.toWeb())
-                is FadingColor -> addToCss(directSel, "color", it.toWeb())
+                is FadingColor -> addToCss(directSel, "color", it.base.toWeb())
                 is LinearGradient -> {
                     addToCss(directSel, "color", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
                     addToCss(directSel, "background", "-webkit-linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")

@@ -191,7 +191,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 native.create()
 
                 reposition()
-                window.addEventListener("scroll", { reposition() }, true)
+                val repos = { ev: Event -> reposition() }
+                window.addEventListener("scroll", repos, true)
 
                 val mouseMove = { it: Event ->
                     it as MouseEvent
@@ -217,6 +218,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 window.addEventListener("mousemove", mouseMove)
 
                 closeCurrent = {
+                    window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
                         this.shutdown()

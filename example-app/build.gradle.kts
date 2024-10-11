@@ -145,7 +145,7 @@ configure<KiteUiPluginExtension> {
 }
 
 android {
-    namespace = "$group.mppexampleapp.old"
+    namespace = "$group.mppexampleapp"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 31
 
