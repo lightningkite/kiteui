@@ -144,7 +144,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     protected fun updateCorners() {
         fun CornerRadius.toRawValue() = when (this) {
             is CornerRadius.ForceConstant -> value.value
-            is CornerRadius.RatioOfSize -> if(it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
+            is CornerRadius.RatioOfSize -> if(ratio >= 0.5f) 9999f else ratio * min(native.width, native.height)
             is CornerRadius.Constant -> min(parentSpacing.value, value.value)
             is CornerRadius.RatioOfSpacing -> value * parentSpacing.value
         }

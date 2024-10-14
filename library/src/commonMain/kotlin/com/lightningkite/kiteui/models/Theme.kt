@@ -117,11 +117,11 @@ data object FieldSemantic : Semantic {
         outlineWidth = 1.px,
 //        spacing = theme.spacing / 2,
         cornerRadii = when(val base = theme.cornerRadii) {
-            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-            is CornerRadii.ForceConstant -> base
-            is CornerRadii.RatioOfSize -> base
-            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
-            is CornerRadii.PerCorner -> base
+            is CornerRadius.Constant -> CornerRadius.ForceConstant(base.value)
+            is CornerRadius.ForceConstant -> base
+            is CornerRadius.RatioOfSize -> base
+            is CornerRadius.RatioOfSpacing -> CornerRadius.ForceConstant(theme.spacing * base.value)
+            is CornerRadii -> base
         }
     ).withBack
 }

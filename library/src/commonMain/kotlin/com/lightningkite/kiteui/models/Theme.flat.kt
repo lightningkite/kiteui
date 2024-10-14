@@ -114,11 +114,11 @@ fun Theme.Companion.flat(
                 background = it.background.closestColor(),
 //                spacing = it.spacing / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
-                    is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-                    is CornerRadii.ForceConstant -> base
-                    is CornerRadii.RatioOfSize -> base
-                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.spacing * base.value)
-                    is CornerRadii.PerCorner -> base
+                    is CornerRadius.Constant -> CornerRadius.ForceConstant(base.value)
+                    is CornerRadius.ForceConstant -> base
+                    is CornerRadius.RatioOfSize -> base
+                    is CornerRadius.RatioOfSpacing -> CornerRadius.ForceConstant(it.spacing * base.value)
+                    is CornerRadii -> base
                 }
             ).withBack
         },
