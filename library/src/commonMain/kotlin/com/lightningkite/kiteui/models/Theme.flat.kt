@@ -16,7 +16,7 @@ fun Theme.Companion.flat(
     id = id,
     font = body,
     elevation = 0.dp,
-    cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
+    cornerRadii = CornerRadius.RatioOfSpacing(0.8f),
     spacing = 0.75.rem,
     navSpacing = 1.rem,
     outlineWidth = 0.px,

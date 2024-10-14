@@ -50,27 +50,48 @@ actual object ExternalServices {
     )
     var currentPresenter: (UIViewController) -> Unit = {}
     lateinit var rootView: UIView
-    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCoroutineCancellable { cont ->
-        val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
-        if (imagePickerCompat) {
-            val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
-                filter = PHPickerFilter.anyFilterMatchingSubfilters(
-                    listOfNotNull(
-                        PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
-                        PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
+    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? =
+        openPhotoPickerOrFilePicker(mimeTypes, false).firstOrNull()
+
+    actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
+        openPhotoPickerOrFilePicker(mimeTypes, true)
+
+    private suspend fun openPhotoPickerOrFilePicker(
+        mimeTypes: List<String>,
+        allowMultipleSelection: Boolean
+    ): List<FileReference> = suspendCoroutineCancellable { cont ->
+        val preferImagePickerOverFilePicker =
+            mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
+        if (preferImagePickerOverFilePicker) {
+            val controller =
+                PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
+                    filter = PHPickerFilter.anyFilterMatchingSubfilters(
+                        listOfNotNull(
+                            PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
+                            PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
+                        )
                     )
-                )
-                preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
-                selectionLimit = 1
-            })
+                    preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
+                    selectionLimit = if (allowMultipleSelection) Int.MAX_VALUE.toLong() else 1
+                })
             val delegate =
-                object : NSObject(), PHPickerViewControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+                object : NSObject(), PHPickerViewControllerDelegateProtocol,
+                    UINavigationControllerDelegateProtocol {
                     override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                         picker.dismissViewControllerAnimated(true) {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-                                    cont.resume(FileReference(result.itemProvider))
-                                } ?: cont.resume(null)
+                                didFinishPicking.filterIsInstance<PHPickerResult>()
+                                    .map { result ->
+                                        val suggestedType = result.itemProvider.registeredContentTypes
+                                            .filterIsInstance<UTType>()
+                                            .first { type ->
+                                                mimeTypes.any { mimeType ->
+                                                    type.matchesMimeType(mimeType)
+                                                }
+                                            }
+                                        FileReference(result.itemProvider, suggestedType)
+                                    }
+                                    .let { cont.resume(it) }
                             })
                         }
                     }
@@ -89,9 +110,10 @@ actual object ExternalServices {
                 if (it == "*/*") mostTypes
                 else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
             }, asCopy = true)
-            controller.allowsMultipleSelection = false
+            controller.allowsMultipleSelection = allowMultipleSelection
             val delegate =
-                object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol,
+                object : NSObject(), UIDocumentMenuDelegateProtocol,
+                    UIDocumentPickerDelegateProtocol,
                     UINavigationControllerDelegateProtocol {
                     override fun documentMenu(
                         documentMenu: UIDocumentMenuViewController,
@@ -102,7 +124,7 @@ actual object ExternalServices {
                     }
 
                     override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                        cont.resume(null)
+                        cont.resume(listOf())
                         controller.dismissViewControllerAnimated(true, {})
                     }
 
@@ -110,7 +132,15 @@ actual object ExternalServices {
                         controller: UIDocumentPickerViewController,
                         didPickDocumentAtURL: NSURL
                     ) {
-                        cont.resume(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL)))
+                        cont.resume(
+                            listOf(
+                                FileReference(
+                                    NSItemProvider(
+                                        contentsOfURL = didPickDocumentAtURL
+                                    )
+                                )
+                            )
+                        )
                         controller.dismissViewControllerAnimated(true, {})
                     }
 
@@ -119,8 +149,14 @@ actual object ExternalServices {
                         didPickDocumentsAtURLs: List<*>
                     ) {
                         cont.resume(
-                            didPickDocumentsAtURLs.filterIsInstance<NSURL>().firstOrNull()
-                                ?.let { FileReference(NSItemProvider(contentsOfURL = it)) })
+                            didPickDocumentsAtURLs.filterIsInstance<NSURL>()
+                                .map {
+                                    FileReference(
+                                        NSItemProvider(
+                                            contentsOfURL = it
+                                        )
+                                    )
+                                })
                         controller.dismissViewControllerAnimated(true, {})
                     }
 //                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
@@ -144,113 +180,6 @@ actual object ExternalServices {
             }
         }
     }
-
-    actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
-        suspendCoroutineCancellable { cont ->
-            val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
-            if (imagePickerCompat) {
-                val controller =
-                    PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
-                        filter = PHPickerFilter.anyFilterMatchingSubfilters(
-                            listOfNotNull(
-                                PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
-                                PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
-                            )
-                        )
-                        preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
-                        selectionLimit = Int.MAX_VALUE.toLong()
-                    })
-                val delegate =
-                    object : NSObject(), PHPickerViewControllerDelegateProtocol,
-                        UINavigationControllerDelegateProtocol {
-                        override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-                            picker.dismissViewControllerAnimated(true) {
-                                dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                    didFinishPicking.filterIsInstance<PHPickerResult>()
-                                        .map { result ->
-                                            val suggestedType = result.itemProvider.registeredContentTypes
-                                                .filterIsInstance<UTType>()
-                                                .first { type ->
-                                                    mimeTypes.any { mimeType ->
-                                                        type.matchesMimeType(mimeType)
-                                                    }
-                                                }
-                                            FileReference(result.itemProvider, suggestedType)
-                                        }
-                                        .let { cont.resume(it) }
-                                })
-                            }
-                        }
-                    }
-                controller.delegate = delegate
-                controller.extensionStrongRef = delegate
-                currentPresenter(controller)
-                return@suspendCoroutineCancellable {
-                    try {
-                        controller.dismissViewControllerAnimated(true, {})
-                    } catch (e: Exception) { /*squish*/
-                    }
-                }
-            } else {
-                val controller = UIDocumentPickerViewController(forOpeningContentTypes = mimeTypes.flatMap {
-                    if (it == "*/*") mostTypes
-                    else UTType.typeWithMIMEType(it)?.let { listOf(it) } ?: listOf()
-                }, asCopy = true)
-                controller.allowsMultipleSelection = true
-                val delegate =
-                    object : NSObject(), UIDocumentMenuDelegateProtocol, UIDocumentPickerDelegateProtocol,
-                        UINavigationControllerDelegateProtocol {
-                        override fun documentMenu(
-                            documentMenu: UIDocumentMenuViewController,
-                            didPickDocumentPicker: UIDocumentPickerViewController
-                        ) {
-                            didPickDocumentPicker.delegate = this
-                            currentPresenter(didPickDocumentPicker)
-                        }
-
-                        override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                            cont.resume(listOf())
-                            controller.dismissViewControllerAnimated(true, {})
-                        }
-
-                        override fun documentPicker(
-                            controller: UIDocumentPickerViewController,
-                            didPickDocumentAtURL: NSURL
-                        ) {
-                            cont.resume(listOf(FileReference(NSItemProvider(contentsOfURL = didPickDocumentAtURL))))
-                            controller.dismissViewControllerAnimated(true, {})
-                        }
-
-                        override fun documentPicker(
-                            controller: UIDocumentPickerViewController,
-                            didPickDocumentsAtURLs: List<*>
-                        ) {
-                            cont.resume(
-                                didPickDocumentsAtURLs.filterIsInstance<NSURL>()
-                                    .map { FileReference(NSItemProvider(contentsOfURL = it)) })
-                            controller.dismissViewControllerAnimated(true, {})
-                        }
-//                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-//                        picker.dismissViewControllerAnimated(true) {
-//                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-//                                (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-//                                    cont.resume(FileReference(result.itemProvider))
-//                                } ?: cont.resume(null)
-//                            })
-//                        }
-//                    }
-                    }
-                controller.delegate = delegate
-                controller.extensionStrongRef = delegate
-                currentPresenter(controller)
-                return@suspendCoroutineCancellable {
-                    try {
-                        controller.dismissViewControllerAnimated(true, {})
-                    } catch (e: Exception) { /*squish*/
-                    }
-                }
-            }
-        }
 
     private fun UTType.matchesMimeType(mimeType: String): Boolean {
         val a = mimeType.split("/", limit = 2)
