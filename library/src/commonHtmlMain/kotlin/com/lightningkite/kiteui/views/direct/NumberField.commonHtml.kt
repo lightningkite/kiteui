@@ -95,6 +95,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     actual var align: Align = Align.Start
         set(value) {
+            field = value
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
                 Align.Center -> "center"

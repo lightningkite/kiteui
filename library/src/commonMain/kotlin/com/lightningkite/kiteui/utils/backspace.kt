@@ -102,3 +102,62 @@ fun Int.commaString(): String {
 fun Long.commaString(): String {
     return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
 }
+
+
+// Phone-number formatting
+fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
+    if (startIndex !in indices) return null
+    if (endIndex > length) return substring(startIndex, length)
+
+    return substring(startIndex, endIndex)
+}
+
+fun String.formatUSPhoneNumber(): String {
+    val clean = filter { it.isDigit() }
+    val area = clean.substringOrNull(0, 3)?.takeUnless { it.isBlank() } ?: return ""
+    val g1 = clean.substringOrNull(3,6)
+    val g2 = clean.substringOrNull(6,10)
+
+    return buildString {
+        append('(')
+        append(area)
+        if (g1 == null) return@buildString
+        append(") ")
+        append(g1)
+        if (g2 == null) return@buildString
+        append('-')
+        append(g2)
+    }
+}
+
+inline fun USPhoneNumberRepair(
+    dirty: String,
+    selectionStart: Int? = null,
+    selectionEnd: Int? = selectionStart,
+    setResult: (String) -> Unit,
+    setSelectionRange: (Int, Int) -> Unit
+) {
+    // Welcome to formatting HELL-V2!
+    setResult(dirty.formatUSPhoneNumber())
+//    val chars = setOf('(',')','-',' ')
+//    val clean = dirty.filter { it.isDigit() || it in chars }
+
+
+//    println("start: $selectionStart ${selectionStart?.let { dirty[it-1] }}  end: $selectionEnd ${selectionEnd?.let { dirty[it-1] }}")
+
+    if (selectionStart != null && selectionEnd != null && selectionStart != dirty.length) {
+        setSelectionRange(selectionStart-1, selectionEnd-1)
+    }
+
+//    val newStart = selectionStart?.let {
+//    }
+//    val newEnd = selectionEnd?.let {
+//        dirty.substring(0, selectionEnd+2).indexOfLast { it.isDigit() }
+//    }
+//
+//    if (newStart != null && newEnd != null) {
+//        println("start: $selectionStart -> $newStart")
+//        println("end: $selectionEnd -> $newEnd")
+//        setSelectionRange(newStart, newEnd)
+//    }
+}

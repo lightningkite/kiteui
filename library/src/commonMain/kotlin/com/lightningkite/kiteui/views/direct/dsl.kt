@@ -239,6 +239,14 @@ inline fun ViewWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(TextInput(context) , setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+/**WARN: This is unfinished*/
+inline fun ViewWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(PhoneNumberInput(context) , setup)
+}
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.text(setup: TextView.() -> Unit = {}): TextView {

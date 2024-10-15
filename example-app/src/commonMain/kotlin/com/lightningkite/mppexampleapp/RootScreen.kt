@@ -46,6 +46,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen { PhoneNumberInputTest() }
                 linkScreen { TestingGroundScreen }
                 linkScreen { ListEditScreen }
                 linkScreen { LeakCheckerScreen }
