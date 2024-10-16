@@ -17,10 +17,16 @@ import kotlinx.serialization.serializer
 var DefaultSerializersModule: SerializersModule = EmptySerializersModule()
     set(value) {
         field = value
-        DefaultJsonCurrent = Json { serializersModule = DefaultSerializersModule }
+        DefaultJsonCurrent = Json {
+            serializersModule = DefaultSerializersModule
+            ignoreUnknownKeys = true
+        }
         UrlPropertiesCurrent = Properties(DefaultSerializersModule)
     }
-private var DefaultJsonCurrent: Json = Json { serializersModule = DefaultSerializersModule }
+private var DefaultJsonCurrent: Json = Json {
+    serializersModule = DefaultSerializersModule
+    ignoreUnknownKeys = true
+}
 val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
 val UrlProperties: Properties get() = UrlPropertiesCurrent
