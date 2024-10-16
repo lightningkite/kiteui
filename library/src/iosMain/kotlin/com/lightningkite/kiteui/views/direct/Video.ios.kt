@@ -162,6 +162,9 @@ actual class Video actual constructor(context: RContext) : RView(context) {
 
                 else -> {}
             }
+            // Whenever we update the video source, the video stops playing so we need to restart it if playing is set
+            // to true
+            launch { if (playing()) controller.player?.play() }
         }
 
     @OptIn(ExperimentalForeignApi::class)
