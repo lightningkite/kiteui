@@ -347,11 +347,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 opacity: 0.3;
             }
 
-            input {
-                min-height: 1.5rem;
-                min-width: 1.5rem;
-            }
-
             * {
                 scrollbar-color: rgb(153, 153, 153) rgba(0, 0, 0, 0);
                 scrollbar-width: thin;
