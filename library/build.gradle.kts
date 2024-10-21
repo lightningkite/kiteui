@@ -13,7 +13,7 @@ plugins {
     id("signing")
 }
 
-val ktorVersion = "2.3.7"
+val ktorVersion = "2.3.12"
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
@@ -24,17 +24,18 @@ kotlin {
             api("androidx.recyclerview:recyclerview:1.3.2")
             api("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
             api("com.google.android.material:material:1.12.0")
-            api("androidx.transition:transition:1.5.0")
+            api("androidx.transition:transition:1.5.1")
             api("androidx.cardview:cardview:1.0.0")
             api("com.jakewharton.timber:timber:5.0.1")
             api("com.github.bumptech.glide:glide:5.0.0-rc01")
             api("com.github.chrisbanes:PhotoView:2.3.0")
             api("io.ktor:ktor-client-core:$ktorVersion")
             api("io.ktor:ktor-client-cio:$ktorVersion")
+            api("io.ktor:ktor-client-okhttp:$ktorVersion")
             api("io.ktor:ktor-client-websockets:$ktorVersion")
-            api("androidx.media3:media3-exoplayer:1.3.1")
-            api("androidx.media3:media3-ui:1.3.1")
-            api("androidx.media3:media3-common:1.3.1")
+            api("androidx.media3:media3-exoplayer:1.4.1")
+            api("androidx.media3:media3-ui:1.4.1")
+            api("androidx.media3:media3-common:1.4.1")
         }
         this.compilerOptions {
             this.jvmTarget.set(JvmTarget.JVM_1_8)
@@ -81,7 +82,7 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.7.1")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
             }
         }
         val commonTest by getting {
