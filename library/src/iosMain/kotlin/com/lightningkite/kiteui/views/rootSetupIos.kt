@@ -33,7 +33,11 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
     setup({ themeReadable.invoke() }, app)
 }
 
+var rootViewController: UIViewController? = null
+    private set
+
 fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
+    rootViewController = this
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
 //    UIView.setAnimationsEnabled(false)
 
