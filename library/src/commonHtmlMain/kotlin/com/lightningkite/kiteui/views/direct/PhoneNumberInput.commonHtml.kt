@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BaseListenable
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.utils.USPhoneNumberRepair
+import com.lightningkite.kiteui.utils.autoRepairFormatAndPosition
 import com.lightningkite.kiteui.utils.formatUSPhoneNumber
 import com.lightningkite.kiteui.views.*
 
@@ -26,8 +27,26 @@ actual class PhoneNumberInput actual constructor(context: RContext) : RViewWithA
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                // TODO: Need to fix selection issues
-                native.attributes.valueString = native.attributes.valueString?.formatUSPhoneNumber()
+//                USPhoneNumberRepair(
+//                    dirty = native.attributes.valueString ?: "",
+//                    selectionStart = selectionStart,
+//                    selectionEnd = selectionEnd,
+//                    setResult = {
+//                        native.attributes.valueString = it
+//                    },
+//                    setSelectionRange = { start, end, -> setSelectionRange(start, end) }
+//                )
+                autoRepairFormatAndPosition(
+                    dirty = native.attributes.valueString ?: "",
+                    selectionStart = selectionStart,
+                    selectionEnd = selectionEnd,
+                    setResult = {
+                        native.attributes.valueString = it
+                    },
+                    setSelectionRange = { start, end, -> setSelectionRange(start, end) },
+                    formatter = { it.formatUSPhoneNumber() },
+                    isRawData = { it.isDigit() }
+                )
                 invokeAllListeners()
             }
         }

@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.views.l2.field
 @Routable("test/phone-number")
 class PhoneNumberInputTest : Screen {
     val phone = Property("")
+    val general = Property("")
     override fun ViewWriter.render() {
         col {
             field("Phone Number") {
@@ -25,6 +26,25 @@ class PhoneNumberInputTest : Screen {
             row {
                 bold - text("Stored:")
                 text { ::content { phone() } }
+            }
+
+            space()
+
+            field("General Formatted Input") {
+                formattedTextInput {
+                    hint = "(Whatever you typed)"
+                    content bind general
+
+                    format(
+                        isRawData = { it != '(' && it != ')' },
+                        formatter = { if (it.isNotBlank()) "($it)" else "" }
+                    )
+                }
+            }
+
+            row {
+                bold - text("Stored:")
+                text { ::content { general() } }
             }
 
             space()

@@ -1,32 +1,41 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.reactive.BaseListenable
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.utils.autoRepairFormatAndPosition
 import com.lightningkite.kiteui.utils.commaString
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
+
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
+            }
+        }
+    }
+
+    private var formatter: (String) -> String = { it }
+    private var isRawData: (Char) -> Boolean = { true }
+    actual fun format(
+        isRawData: (Char) -> Boolean,
+        formatter: (clean: String) -> String,
+    ) {
+        this.formatter = formatter
+        this.isRawData = isRawData
+    }
+
+    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
-//                numberAutocommaRepair(
-//                    dirty = native.attributes.valueString ?: "",
-//                    selectionStart = selectionStart,
-//                    selectionEnd = selectionEnd,
-//                    setResult = {
-//                        native.attributes.valueString = it
-//                    },
-//                    setSelectionRange = {start, end, -> setSelectionRange(start, end)}
-//                )
                 autoRepairFormatAndPosition(
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
@@ -34,23 +43,22 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     setResult = {
                         native.attributes.valueString = it
                     },
-                    setSelectionRange = {start, end, -> setSelectionRange(start, end)},
-                    isRawData = { it.isDigit() || it == '.' },
-                    formatter = { clean ->
-                        val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
-                        val postDecimal = clean.substringAfter('.', "")
-                        if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
-                    },
+                    setSelectionRange = { start, end, -> setSelectionRange(start, end) },
+                    isRawData = isRawData,
+                    formatter = formatter,
                 )
                 invokeAllListeners()
             }
         }
 
-        override var value: Double?
-            get() = native.attributes.valueString?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()
+        override var value: String
+            get() = native.attributes.valueString?.filter(isRawData) ?: ""
             set(value) {
-                if(native.attributes.valueString != value?.commaString())
-                    native.attributes.valueString = value?.commaString()
+                val clean = value.filter(isRawData)
+                val formatted = formatter(clean)
+                if (native.attributes.valueString != formatted)
+                    native.attributes.valueString = formatted
+                    invokeAllListeners()
             }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
@@ -96,14 +104,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 }
             }
         }
-    init {
-        native.addEventListener("keyup") { ev ->
-            ev as KeyboardEvent
-            if (ev.code == KeyCodes.enter) {
-                action?.startAction(this)
-            }
-        }
-    }
+
     actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
@@ -125,23 +126,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             native.style.fontSize = value.value
         }
 
-    actual var range: ClosedRange<Double>? = null
-        set(value) {
-            field = value
-            value?.let {
-                native.attributes.maxDouble = it.start
-                native.attributes.maxDouble = it.endInclusive
-            } ?: run {
-                native.attributes.maxDouble = null
-                native.attributes.maxDouble = null
-            }
-        }
-
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val NumberInput.selectionStart: Int?
-expect val NumberInput.selectionEnd: Int?
-expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+expect val FormattedTextInput.selectionStart: Int?
+expect val FormattedTextInput.selectionEnd: Int?
+expect fun FormattedTextInput.setSelectionRange(start: Int, end: Int)

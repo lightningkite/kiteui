@@ -105,14 +105,14 @@ fun Long.commaString(): String {
 
 
 // Phone-number formatting
-fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
+inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
     if (startIndex !in indices) return null
     if (endIndex > length) return substring(startIndex, length)
 
     return substring(startIndex, endIndex)
 }
 
-fun String.formatUSPhoneNumber(): String {
+inline fun String.formatUSPhoneNumber(): String {
     val clean = filter { it.isDigit() }
     val area = clean.substringOrNull(0, 3)?.takeUnless { it.isBlank() } ?: return ""
     val g1 = clean.substringOrNull(3,6)
@@ -121,11 +121,11 @@ fun String.formatUSPhoneNumber(): String {
     return buildString {
         append('(')
         append(area)
+        if (area.length == 3) append(") ")
         if (g1 == null) return@buildString
-        append(") ")
         append(g1)
+        if (g1.length == 3) append('-')
         if (g2 == null) return@buildString
-        append('-')
         append(g2)
     }
 }
@@ -137,27 +137,50 @@ inline fun USPhoneNumberRepair(
     setResult: (String) -> Unit,
     setSelectionRange: (Int, Int) -> Unit
 ) {
-    // Welcome to formatting HELL-V2!
-    setResult(dirty.formatUSPhoneNumber())
-//    val chars = setOf('(',')','-',' ')
-//    val clean = dirty.filter { it.isDigit() || it in chars }
+    // Welcome to formatting hell-V2!
+    val clean = dirty.filter { it.isDigit() }
 
+    val startPosOnClean = selectionStart?.minus(dirty.substring(0, selectionStart).count { !it.isDigit() })
+    val endPosOnClean = selectionEnd?.minus(dirty.substring(0, selectionEnd).count { !it.isDigit() })
 
-//    println("start: $selectionStart ${selectionStart?.let { dirty[it-1] }}  end: $selectionEnd ${selectionEnd?.let { dirty[it-1] }}")
+    val result = clean.formatUSPhoneNumber()
 
-    if (selectionStart != null && selectionEnd != null && selectionStart != dirty.length) {
-        setSelectionRange(selectionStart-1, selectionEnd-1)
+    val resultUpToStart = startPosOnClean?.let { pos ->
+        clean.substring(0, pos).formatUSPhoneNumber().dropLastWhile { !it.isDigit() }
     }
+    val resultUpToEnd = endPosOnClean?.let { pos ->
+        clean.substring(0, pos).formatUSPhoneNumber().dropLastWhile { !it.isDigit() }
+    }
+    setResult(result)
+    if (resultUpToStart != null && resultUpToEnd != null) {
+        setSelectionRange(resultUpToStart.length, resultUpToEnd.length)
+    }
+}
 
-//    val newStart = selectionStart?.let {
-//    }
-//    val newEnd = selectionEnd?.let {
-//        dirty.substring(0, selectionEnd+2).indexOfLast { it.isDigit() }
-//    }
-//
-//    if (newStart != null && newEnd != null) {
-//        println("start: $selectionStart -> $newStart")
-//        println("end: $selectionEnd -> $newEnd")
-//        setSelectionRange(newStart, newEnd)
-//    }
+inline fun autoRepairFormatAndPosition(
+    dirty: String,
+    selectionStart: Int? = null,
+    selectionEnd: Int? = selectionStart,
+    setResult: (String) -> Unit,
+    setSelectionRange: (Int, Int) -> Unit,
+    isRawData: (Char) -> Boolean,
+    formatter: (clean: String) -> String,
+) {
+    val clean = dirty.filter(isRawData)
+
+    val startPosOnClean = selectionStart?.minus(dirty.substring(0, selectionStart).count { !isRawData(it) })
+    val endPosOnClean = selectionEnd?.minus(dirty.substring(0, selectionEnd).count { !isRawData(it) })
+
+    val result = formatter(clean)
+
+    val resultUpToStart = startPosOnClean?.let { pos ->
+        formatter(clean.substring(0, pos)).dropLastWhile { !isRawData(it) }
+    }
+    val resultUpToEnd = endPosOnClean?.let { pos ->
+        formatter(clean.substring(0, pos)).dropLastWhile { !isRawData(it) }
+    }
+    setResult(result)
+    if (resultUpToStart != null && resultUpToEnd != null) {
+        setSelectionRange(resultUpToStart.length, resultUpToEnd.length)
+    }
 }
