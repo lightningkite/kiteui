@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import androidx.core.view.doOnLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
@@ -29,19 +28,19 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         themeChoice += ThemeDerivation {
                             it.copy(elevation = 5.dp, revert = true).withBack
                         }
-                        this@dismissBackground.native.doOnLayout { dismissBackground ->
+                        this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
                             val overlayContainer = this@stack.native
                             val anchor = this@MenuButton.native
 
-                            val parentBoundsInWindow = dismissBackground.getBoundariesInWindow()
+                            val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
                             val offset = preferredDirection.calculatePopoverPosition(
                                 anchor.getBoundariesInWindow(),
-                                overlayContainer.getBoundariesInWindow(),
-                                parentBoundsInWindow
+                                overlayBoundsInWindow,
+                                dismissBackground.getBoundariesInWindow()
                             )
 
-                            overlayContainer.offsetLeftAndRight((offset.first - parentBoundsInWindow.left).toInt())
-                            overlayContainer.offsetTopAndBottom((offset.second - parentBoundsInWindow.top).toInt())
+                            overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
+                            overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
                         }
                         createMenu()
                     }
