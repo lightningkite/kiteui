@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 
@@ -19,6 +20,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 willRemove = null
             }.run {
                 willRemove = dismissBackground {
+                    viewDebugTarget = this
                     themeChoice += ThemeDerivation {
                         it.copy(background = Color.transparent).withBack
                     }

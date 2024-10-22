@@ -33,15 +33,21 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                             val overlayContainer = this@stack.native
                             val anchor = this@MenuButton.native
 
+                            val anchorBoundsInWindow = anchor.getBoundariesInWindow()
+                            val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
+
                             val parentBoundsInWindow = dismissBackground.getBoundariesInWindow()
+                            println("Anchor bounds = $anchorBoundsInWindow\nOverlay bounds = $overlayBoundsInWindow\nParent bounds = $parentBoundsInWindow")
+                            println("preferredDirection=$preferredDirection")
                             val offset = preferredDirection.calculatePopoverPosition(
-                                anchor.getBoundariesInWindow(),
-                                overlayContainer.getBoundariesInWindow(),
+                                anchorBoundsInWindow,
+                                overlayBoundsInWindow,
                                 parentBoundsInWindow
                             )
+                            println("Calculated offset: $offset")
 
-                            overlayContainer.offsetLeftAndRight((offset.first - parentBoundsInWindow.left).toInt())
-                            overlayContainer.offsetTopAndBottom((offset.second - parentBoundsInWindow.top).toInt())
+                            overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
+                            overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
                         }
                         createMenu()
                     }

@@ -560,21 +560,32 @@ data class PopoverPreferredDirection(
             }
         }
 
+        println("tx=$tx, ty=$ty")
+        println("txm=$txm, tym=$tym")
+
+        val x = tx + txm * self.width
+        val y = ty + tym * self.height
+        val repositionedSelf = Rect(x, y, x + self.width, y + self.height)
+
         if (safeArea != null) {
-            if (self.right > safeArea.right) {
+            if (repositionedSelf.right > safeArea.right) {
+                println("Force left")
                 return forceLeft().calculatePopoverPosition(anchor, self)
             }
-            if (self.left < safeArea.left) {
+            if (repositionedSelf.left < safeArea.left) {
+                println("Force right")
                 return forceRight().calculatePopoverPosition(anchor, self)
             }
-            if (self.bottom > safeArea.bottom) {
+            if (repositionedSelf.bottom > safeArea.bottom) {
+                println("Force top")
                 return forceTop().calculatePopoverPosition(anchor, self)
             }
-            if (self.top < safeArea.top) {
+            if (repositionedSelf.top < safeArea.top) {
+                println("Force bottom")
                 return forceBottom().calculatePopoverPosition(anchor, self)
             }
         }
-        return tx + txm * self.width to ty + tym * self.height
+        return x to y
     }
 }
 
