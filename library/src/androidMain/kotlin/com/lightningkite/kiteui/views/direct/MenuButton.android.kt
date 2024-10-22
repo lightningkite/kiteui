@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import androidx.core.view.doOnLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
@@ -29,22 +28,17 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         themeChoice += ThemeDerivation {
                             it.copy(elevation = 5.dp, revert = true).withBack
                         }
-                        this@dismissBackground.native.doOnLayout { dismissBackground ->
+                        this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
                             val overlayContainer = this@stack.native
                             val anchor = this@MenuButton.native
 
-                            val anchorBoundsInWindow = anchor.getBoundariesInWindow()
                             val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
 
-                            val parentBoundsInWindow = dismissBackground.getBoundariesInWindow()
-                            println("Anchor bounds = $anchorBoundsInWindow\nOverlay bounds = $overlayBoundsInWindow\nParent bounds = $parentBoundsInWindow")
-                            println("preferredDirection=$preferredDirection")
                             val offset = preferredDirection.calculatePopoverPosition(
-                                anchorBoundsInWindow,
+                                anchor.getBoundariesInWindow(),
                                 overlayBoundsInWindow,
-                                parentBoundsInWindow
+                                dismissBackground.getBoundariesInWindow()
                             )
-                            println("Calculated offset: $offset")
 
                             overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
                             overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
