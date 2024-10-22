@@ -10,26 +10,12 @@ import com.lightningkite.kiteui.views.bold
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
 
-@Routable("test/phone-number")
-class PhoneNumberInputTest : Screen {
+@Routable("test/formatted-input")
+class FormattedInputTests : Screen {
     val phone = Property("")
     val general = Property("")
     override fun ViewWriter.render() {
         col {
-            field("Phone Number") {
-                phoneNumberInput {
-                    hint = "(123) 456-7890"
-                    content bind phone
-                }
-            }
-
-            row {
-                bold - text("Stored:")
-                text { ::content { phone() } }
-            }
-
-            space()
-
             field("General Formatted Input") {
                 formattedTextInput {
                     hint = "(Whatever you typed)"
@@ -37,7 +23,7 @@ class PhoneNumberInputTest : Screen {
 
                     format(
                         isRawData = { it != '(' && it != ')' },
-                        formatter = { if (it.isNotBlank()) "($it)" else "" }
+                        formatter = { clean -> if (clean.isNotBlank()) "($clean)" else "" }
                     )
                 }
             }
@@ -45,6 +31,21 @@ class PhoneNumberInputTest : Screen {
             row {
                 bold - text("Stored:")
                 text { ::content { general() } }
+            }
+
+            space()
+
+            field("US Phone Number") {
+                phoneNumberInput {
+                    format = PhoneNumberFormat.USA
+                    hint = "(123) 456-7890"
+                    content bind phone
+                }
+            }
+
+            row {
+                bold - text("Stored: ")
+                text { ::content { phone() } }
             }
 
             space()

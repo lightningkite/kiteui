@@ -4,8 +4,7 @@ import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BaseListenable
 import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.utils.autoRepairFormatAndPosition
-import com.lightningkite.kiteui.utils.commaString
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
@@ -36,7 +35,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
-                autoRepairFormatAndPosition(
+                repairFormatAndPosition(
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
                     selectionEnd = selectionEnd,

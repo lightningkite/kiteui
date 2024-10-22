@@ -1,11 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.utils.autoRepairFormatAndPosition
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
@@ -18,29 +16,14 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
-//                numberAutocommaRepair(
-//                    dirty = native.attributes.valueString ?: "",
-//                    selectionStart = selectionStart,
-//                    selectionEnd = selectionEnd,
-//                    setResult = {
-//                        native.attributes.valueString = it
-//                    },
-//                    setSelectionRange = {start, end, -> setSelectionRange(start, end)}
-//                )
-                autoRepairFormatAndPosition(
+                numberAutocommaRepair(
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
                     selectionEnd = selectionEnd,
                     setResult = {
                         native.attributes.valueString = it
                     },
-                    setSelectionRange = {start, end, -> setSelectionRange(start, end)},
-                    isRawData = { it.isDigit() || it == '.' },
-                    formatter = { clean ->
-                        val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
-                        val postDecimal = clean.substringAfter('.', "")
-                        if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
-                    },
+                    setSelectionRange = {start, end, -> setSelectionRange(start, end)}
                 )
                 invokeAllListeners()
             }

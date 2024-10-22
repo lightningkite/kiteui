@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.EditText
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
@@ -28,5 +29,9 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
 
     actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
     }
+
+    actual var keyboardHints: KeyboardHints
+        get() = TODO("Not yet implemented")
+        set(value) {}
 
 }

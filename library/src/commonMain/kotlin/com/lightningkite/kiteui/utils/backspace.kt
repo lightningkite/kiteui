@@ -80,6 +80,26 @@ inline fun numberAutocommaRepair(
     }
 }
 
+//inline fun numberAutocommaRepair(
+//    dirty: String,
+//    selectionStart: Int? = null,
+//    selectionEnd: Int? = selectionStart,
+//    setResult: (String) -> Unit,
+//    setSelectionRange: (Int, Int) -> Unit
+//) = repairFormatAndPosition(
+//    dirty,
+//    selectionStart,
+//    selectionEnd,
+//    setResult,
+//    setSelectionRange,
+//    isRawData = { it.isDigit() || it == '.' },
+//    formatter = { clean ->
+//        val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+//        val postDecimal = clean.substringAfter('.', "")
+//        if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
+//    }
+//)
+
 fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
@@ -104,60 +124,7 @@ fun Long.commaString(): String {
 }
 
 
-// Phone-number formatting
-inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
-    if (startIndex !in indices) return null
-    if (endIndex > length) return substring(startIndex, length)
-
-    return substring(startIndex, endIndex)
-}
-
-inline fun String.formatUSPhoneNumber(): String {
-    val clean = filter { it.isDigit() }
-    val area = clean.substringOrNull(0, 3)?.takeUnless { it.isBlank() } ?: return ""
-    val g1 = clean.substringOrNull(3,6)
-    val g2 = clean.substringOrNull(6,10)
-
-    return buildString {
-        append('(')
-        append(area)
-        if (area.length == 3) append(") ")
-        if (g1 == null) return@buildString
-        append(g1)
-        if (g1.length == 3) append('-')
-        if (g2 == null) return@buildString
-        append(g2)
-    }
-}
-
-inline fun USPhoneNumberRepair(
-    dirty: String,
-    selectionStart: Int? = null,
-    selectionEnd: Int? = selectionStart,
-    setResult: (String) -> Unit,
-    setSelectionRange: (Int, Int) -> Unit
-) {
-    // Welcome to formatting hell-V2!
-    val clean = dirty.filter { it.isDigit() }
-
-    val startPosOnClean = selectionStart?.minus(dirty.substring(0, selectionStart).count { !it.isDigit() })
-    val endPosOnClean = selectionEnd?.minus(dirty.substring(0, selectionEnd).count { !it.isDigit() })
-
-    val result = clean.formatUSPhoneNumber()
-
-    val resultUpToStart = startPosOnClean?.let { pos ->
-        clean.substring(0, pos).formatUSPhoneNumber().dropLastWhile { !it.isDigit() }
-    }
-    val resultUpToEnd = endPosOnClean?.let { pos ->
-        clean.substring(0, pos).formatUSPhoneNumber().dropLastWhile { !it.isDigit() }
-    }
-    setResult(result)
-    if (resultUpToStart != null && resultUpToEnd != null) {
-        setSelectionRange(resultUpToStart.length, resultUpToEnd.length)
-    }
-}
-
-inline fun autoRepairFormatAndPosition(
+inline fun repairFormatAndPosition(
     dirty: String,
     selectionStart: Int? = null,
     selectionEnd: Int? = selectionStart,

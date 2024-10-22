@@ -93,6 +93,14 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     }
     return l
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return PhoneNumberInput(this).apply(setup)
+}
+
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.link(setup: Link.() -> Unit = {}): Link {
@@ -240,12 +248,6 @@ inline fun ViewWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
     return write(TextInput(context) , setup)
 }
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
-inline fun ViewWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(PhoneNumberInput(context) , setup)
-}
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.formattedTextInput(setup: FormattedTextInput.() -> Unit = {}): FormattedTextInput {
