@@ -187,7 +187,7 @@ fun ImageVector.vectorToSvgDataUrl(): String {
                         is RadialGradient -> "url(#fill$index)"
                         is FadingColor -> f.base.toWeb()
                         is Color -> f.toWeb()
-                        else -> Color.transparent.toWeb()
+                        else -> Color.white.applyAlpha(0.0f).toWeb()
                     }
                 }\"/>"
             )

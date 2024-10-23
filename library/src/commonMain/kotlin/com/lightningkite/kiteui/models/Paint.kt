@@ -29,7 +29,7 @@ data class LinearGradient(
 ) : Paint {
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
-        if (stops.isEmpty()) return Color.transparent
+        if (stops.isEmpty()) return Color.white.applyAlpha(0.0f)
         if (stops.size == 1) return stops[0].color
         return Color(
             alpha = stops.asSequence().zipWithNext { a, b ->
@@ -60,7 +60,7 @@ data class RadialGradient(
 ) : Paint {
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
-        if (stops.isEmpty()) return Color.transparent
+        if (stops.isEmpty()) return Color.white.applyAlpha(0.0f)
         if (stops.size == 1) return stops[0].color
         return Color(
             alpha = stops.asSequence().zipWithNext { a, b ->
@@ -283,7 +283,7 @@ data class HSVColor(
             3 -> Color(alpha = alpha, red = p, green = q, blue = value)
             4 -> Color(alpha = alpha, red = t, green = p, blue = value)
             5 -> Color(alpha = alpha, red = value, green = p, blue = q)
-            else -> Color.transparent
+            else -> Color.white.applyAlpha(0.0f)
         }
     }
 

@@ -19,7 +19,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
-                        it.copy(background = Color.transparent).withBack
+                        it.copy(background = Color.white.applyAlpha(0.0f)).withBack
                     }
                     onClick {
                         closePopovers()
