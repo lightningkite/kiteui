@@ -138,7 +138,7 @@ data object HoverSemantic : Semantic {
         background = theme.background.map { it.highlight(0.2f) },
         outline = theme.background.map { it.highlight(0.2f).highlight(0.1f) },
         elevation = theme.elevation * 2f,
-    ).withBack
+    ).withoutBack
 }
 
 data object DownSemantic : Semantic {
@@ -148,7 +148,7 @@ data object DownSemantic : Semantic {
         background = theme.background.map { it.highlight(0.3f) },
         outline = theme.background.map { it.highlight(0.3f).highlight(0.1f) },
         elevation = theme.elevation / 2f,
-    ).withBack
+    ).withoutBack
 }
 
 data object FocusSemantic : Semantic {
@@ -157,7 +157,7 @@ data object FocusSemantic : Semantic {
         id = "fcs",
         outlineWidth = theme.outlineWidth + 2.dp,
         outline = theme.outline.map { it.highlight(1f) },
-    ).withBack
+    ).withoutBack
 }
 
 data object DisabledSemantic : Semantic {
@@ -168,7 +168,7 @@ data object DisabledSemantic : Semantic {
         iconOverride = theme.iconOverride?.applyAlpha(alpha = 0.25f),
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
-    ).withBack
+    ).withoutBack
 }
 
 data object SelectedSemantic : Semantic {
