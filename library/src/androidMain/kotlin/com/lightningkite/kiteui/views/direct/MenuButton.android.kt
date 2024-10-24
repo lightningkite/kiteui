@@ -37,7 +37,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                             val anchor = this@MenuButton.native
 
                             val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-                            val offset = preferredDirection.calculatePopoverPosition(
+                            val offset = preferredDirection.calculatePopoverOffset(
                                 anchor.getBoundariesInWindow(),
                                 overlayBoundsInWindow,
                                 dismissBackground.getBoundariesInWindow()
