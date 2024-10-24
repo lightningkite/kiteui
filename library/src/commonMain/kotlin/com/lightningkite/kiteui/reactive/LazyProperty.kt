@@ -18,7 +18,7 @@ class LazyProperty<T>(
     private val useLastWhileLoading: Boolean = false,
     private val log: Console? = null,
     initialValue: ReactiveContext.() -> T
-): Writable<T> {
+): ReadableWithImmediateWrite<T> {
 
     private val shared = SharedReadable(useLastWhileLoading = useLastWhileLoading, action = initialValue)
 
@@ -89,7 +89,7 @@ class LazyProperty<T>(
             state = ReadableState(value)
         }
 
-    override suspend fun set(value: T) { this.value = value }
+    override fun setImmediate(value: T) { this.value = value }
 
     /**
      * Resets the LazyProperty to the initial value calculation.
