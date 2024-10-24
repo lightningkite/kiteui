@@ -9,8 +9,10 @@ actual object Resources {
     actual val fontsMontserrat: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_montserrat)
     actual val fontsOpensans: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_opensans)
     actual val fontsRoboto: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_roboto)
-    actual val imagesGraph126: ImageResource = ImageResource(R.drawable.images_graph126)
+//    actual val imagesGraph126: ImageResource = ImageResource(R.drawable.images_graph126)
     actual val imagesMammoth: ImageResource = ImageResource(R.drawable.images_mammoth)
     actual val imagesSolera: ImageResource = ImageResource(R.drawable.images_solera)
     actual val videoBack: VideoResource = VideoResource(R.raw.video_back)
+    actual val imagesGraph126: ImageResource
+        get() = TODO("Not yet implemented")
 }
