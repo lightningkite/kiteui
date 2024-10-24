@@ -80,6 +80,26 @@ inline fun numberAutocommaRepair(
     }
 }
 
+//inline fun numberAutocommaRepair(
+//    dirty: String,
+//    selectionStart: Int? = null,
+//    selectionEnd: Int? = selectionStart,
+//    setResult: (String) -> Unit,
+//    setSelectionRange: (Int, Int) -> Unit
+//) = repairFormatAndPosition(
+//    dirty,
+//    selectionStart,
+//    selectionEnd,
+//    setResult,
+//    setSelectionRange,
+//    isRawData = { it.isDigit() || it == '.' },
+//    formatter = { clean ->
+//        val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+//        val postDecimal = clean.substringAfter('.', "")
+//        if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
+//    }
+//)
+
 fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
@@ -101,4 +121,33 @@ fun Int.commaString(): String {
 }
 fun Long.commaString(): String {
     return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
+}
+
+
+inline fun repairFormatAndPosition(
+    dirty: String,
+    selectionStart: Int? = null,
+    selectionEnd: Int? = selectionStart,
+    setResult: (String) -> Unit,
+    setSelectionRange: (Int, Int) -> Unit,
+    isRawData: (Char) -> Boolean,
+    formatter: (clean: String) -> String,
+) {
+    val clean = dirty.filter(isRawData)
+
+    val startPosOnClean = selectionStart?.minus(dirty.substring(0, selectionStart).count { !isRawData(it) })
+    val endPosOnClean = selectionEnd?.minus(dirty.substring(0, selectionEnd).count { !isRawData(it) })
+
+    val result = formatter(clean)
+
+    val resultUpToStart = startPosOnClean?.let { pos ->
+        formatter(clean.substring(0, pos)).dropLastWhile { !isRawData(it) }
+    }
+    val resultUpToEnd = endPosOnClean?.let { pos ->
+        formatter(clean.substring(0, pos)).dropLastWhile { !isRawData(it) }
+    }
+    setResult(result)
+    if (resultUpToStart != null && resultUpToEnd != null) {
+        setSelectionRange(resultUpToStart.length, resultUpToEnd.length)
+    }
 }
