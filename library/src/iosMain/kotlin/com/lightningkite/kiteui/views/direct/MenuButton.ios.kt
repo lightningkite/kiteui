@@ -20,7 +20,6 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 willRemove = null
             }.run {
                 willRemove = dismissBackground {
-                    viewDebugTarget = this
                     themeChoice += ThemeDerivation {
                         it.copy(background = Color.white.applyAlpha(0.0f)).withBack
                     }
