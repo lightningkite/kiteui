@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import androidx.core.view.doOnLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
@@ -28,13 +29,16 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         themeChoice += ThemeDerivation {
                             it.copy(elevation = 5.dp, revert = true).withBack
                         }
+                        this@dismissBackground.native.apply {
+                            clipChildren = false
+                            clipToPadding = false
+                        }
                         this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
                             val overlayContainer = this@stack.native
                             val anchor = this@MenuButton.native
 
                             val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
-
-                            val offset = preferredDirection.calculatePopoverPosition(
+                            val offset = preferredDirection.calculatePopoverOffset(
                                 anchor.getBoundariesInWindow(),
                                 overlayBoundsInWindow,
                                 dismissBackground.getBoundariesInWindow()
