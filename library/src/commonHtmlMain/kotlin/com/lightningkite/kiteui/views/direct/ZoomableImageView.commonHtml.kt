@@ -64,4 +64,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
     actual var refreshOnParamChange: Boolean = false
 
 //    actual suspend fun setSourceAndWaitForResult(source: ImageSource) {}
+    actual var useLoadingSpinners: Boolean
+        get() = TODO("Not yet implemented")
+        set(value) {}
 }

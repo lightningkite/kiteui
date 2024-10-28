@@ -42,9 +42,13 @@ actual object ExternalServices {
     ): List<FileReference> = suspendCoroutineCancellable {
 
         val type = mimeTypes.joinToString(",")
-
         val getIntent = Intent(Intent.ACTION_GET_CONTENT)
-        getIntent.type = type
+        if (mimeTypes.size > 1) {
+            getIntent.type = "*/*"
+        } else {
+            getIntent.type = mimeTypes.first()
+            getIntent.putExtra(Intent.EXTRA_MIME_TYPES, type)
+        }
         getIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
 
         val chooserIntent = Intent.createChooser(getIntent, "Select items")
