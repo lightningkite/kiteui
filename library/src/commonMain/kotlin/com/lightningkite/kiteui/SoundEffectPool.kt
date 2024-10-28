@@ -2,11 +2,12 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.AudioResource
 import com.lightningkite.kiteui.models.AudioSource
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactiveScope
-import com.lightningkite.kiteui.reactive.shared
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+
 //import com.lightningkite.kiteui.views.reactiveScope
 
 expect class SoundEffectPool(concurrency: Int = 4) {
@@ -33,37 +34,23 @@ interface PlayableAudio {
     }
 }
 
-fun RView.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: ReactiveContext.() -> Boolean) {
-    // TODO
-//    val backgroundAudioShared = asyncGlobal {
-//        audio.load().apply { volume = backgroundVolume }
-//    }
-//    // Loop and cancel the background sound
-//    reactiveScope {
-//        if (playBackgroundAudio()) {
-//            val backgroundAudio = backgroundAudioShared()
-//            suspendCoroutineCancellable<Unit> {
-//                backgroundAudio.onComplete {
-//                    backgroundAudio.play()
-//                }
-//                return@suspendCoroutineCancellable {
-//                    backgroundAudio.stop()
-//                }
-//            }
-//        }
-//    }
-//    // Trigger the background sound once every five seconds until it successfully starts
-//    reactiveScope {
-//        if (playBackgroundAudio()) {
-//            val backgroundAudio = backgroundAudioShared()
-//            while (true) {
-//                if (!backgroundAudio.isPlaying) {
-//                    backgroundAudio.play()
-//                    delay(5000)
-//                } else {
-//                    break
-//                }
-//            }
-//        }
-//    }
+fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
+    val backgroundAudioShared = CoroutineScope(coroutineContext).async {
+        audio.load().apply {
+            volume = backgroundVolume
+            onComplete { play() }
+        }
+    }
+    reactiveSuspending {
+        val backgroundAudio = backgroundAudioShared.await()
+        if (playBackgroundAudio()) {
+            backgroundAudio.play()
+            while (!backgroundAudio.isPlaying) {
+                delay(5000)
+                backgroundAudio.play()
+            }
+        } else {
+            backgroundAudio.stop()
+        }
+    }
 }
