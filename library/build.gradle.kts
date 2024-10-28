@@ -13,7 +13,7 @@ plugins {
     id("signing")
 }
 
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.0"
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {

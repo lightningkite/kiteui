@@ -8,4 +8,11 @@ data class Rect(
 ) {
     val width: Double get() = right - left
     val height: Double get() = bottom - top
+
+    fun shift(dx: Double, dy: Double) = copy(
+        left = left + dx,
+        top = top + dy,
+        right = right + dx,
+        bottom = bottom + dy
+    )
 }

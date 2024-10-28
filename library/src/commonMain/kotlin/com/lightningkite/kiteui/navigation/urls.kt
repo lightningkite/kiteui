@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
+import com.lightningkite.kiteui.reactive.ImmediateWritable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -41,6 +42,9 @@ fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, 
     val filtered = source.filterKeys { it.startsWith(key) }.mapKeys { it.key.replaceFirst(key, "value") }
     if(filtered.isEmpty()) return null
     return decodeFromStringMap(Wrapper.serializer(serializer), filtered).value
+}
+inline fun <reified T> Properties.decodeFromStringMap(key: String, source: Map<String, String>, into: ImmediateWritable<T>) {
+    decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.value = it }
 }
 inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) = encodeToStringMap(UrlProperties.serializersModule.serializer<T>(), value, key, out)
 inline fun <reified T> Properties.decodeFromStringMap(key: String, source: Map<String, String>): T? = decodeFromStringMap(UrlProperties.serializersModule.serializer<T>(), key, source)

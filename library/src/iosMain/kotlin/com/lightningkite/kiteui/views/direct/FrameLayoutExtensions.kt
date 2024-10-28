@@ -68,7 +68,7 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
         val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
-        val (offsetH, offsetV) = anchor.first.calculatePopoverPosition(
+        val (offsetH, offsetV) = anchor.first.calculatePopoverOffset(
             anchorPositionInFrameLayout,
             view.bounds.local,
             frameLayout.bounds.local

@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.direct.*
 object TestingGroundScreen: Screen {
     override fun ViewWriter.render() {
         scrolls - col {
-            h1("Experiments tests")
+            h1("Experiments test")
             centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
         }
     }

@@ -504,8 +504,7 @@ data class PopoverPreferredDirection(
     fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
     fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
     fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
-
-    fun calculatePopoverPosition(anchor: Rect, self: Rect, safeArea: Rect? = null): Pair<Double, Double> {
+    fun calculatePopoverPosition(anchor: Rect, self: Rect): Rect {
         val tx: Double
         val ty: Double
         val txm: Double
@@ -560,21 +559,39 @@ data class PopoverPreferredDirection(
             }
         }
 
-        if (safeArea != null) {
-            if (self.right > safeArea.right) {
-                return forceLeft().calculatePopoverPosition(anchor, self)
+        val x = tx + txm * self.width
+        val y = ty + tym * self.height
+        return Rect(x, y, x + self.width, y + self.height)
+    }
+
+    fun calculatePopoverOffset(anchor: Rect, self: Rect, safeArea: Rect): Pair<Double, Double> {
+        calculatePopoverPosition(anchor, self).let { preferredPopoverPosition ->
+            // If the popover is outside the safe area, force the popover direction
+            var forcedPopoverDirection: PopoverPreferredDirection? = null
+            if (preferredPopoverPosition.right > safeArea.right) {
+                forcedPopoverDirection = this.forceLeft()
             }
-            if (self.left < safeArea.left) {
-                return forceRight().calculatePopoverPosition(anchor, self)
+            if (preferredPopoverPosition.left < safeArea.left) {
+                forcedPopoverDirection = (forcedPopoverDirection ?: this).forceRight()
             }
-            if (self.bottom > safeArea.bottom) {
-                return forceTop().calculatePopoverPosition(anchor, self)
+            if (preferredPopoverPosition.bottom > safeArea.bottom) {
+                forcedPopoverDirection = (forcedPopoverDirection ?: this).forceTop()
             }
-            if (self.top < safeArea.top) {
-                return forceBottom().calculatePopoverPosition(anchor, self)
+            if (preferredPopoverPosition.top < safeArea.top) {
+                forcedPopoverDirection = (forcedPopoverDirection ?: this).forceBottom()
             }
+
+            // If the popover is still outside the safe area, shift it so that it is inside the safe area
+            forcedPopoverDirection?.calculatePopoverPosition(anchor, self)?.let { forcedPopoverPosition ->
+                val horizontalShift = (safeArea.right - forcedPopoverPosition.right).takeIf { it < 0 } ?:
+                    (safeArea.left - forcedPopoverPosition.left).takeIf { it > 0 } ?: 0.0
+                val verticalShift = (safeArea.bottom - forcedPopoverPosition.bottom).takeIf { it < 0 } ?:
+                    (safeArea.top - forcedPopoverPosition.top).takeIf { it > 0 } ?: 0.0
+                forcedPopoverPosition.shift(horizontalShift, verticalShift)
+            } ?: preferredPopoverPosition
+        }.apply {
+            return left to top
         }
-        return tx + txm * self.width to ty + tym * self.height
     }
 }
 
