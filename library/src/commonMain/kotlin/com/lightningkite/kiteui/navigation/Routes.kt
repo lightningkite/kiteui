@@ -2,15 +2,31 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
+import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.h1
+import com.lightningkite.kiteui.views.direct.stack
+import com.lightningkite.kiteui.views.direct.text
 import kotlin.reflect.KClass
 
 class Routes(
     val parsers: List<(UrlLikePath) -> Screen?>,
     val renderers: Map<KClass<out Screen>, (Screen) -> RouteRendered?>,
-    val fallback: Screen
+    val fallback: Screen = object: Screen {
+        override val title = Constant("Not Found")
+        override fun ViewWriter.render() {
+            stack {
+                centered - col {
+                    h1("Not Found")
+                    text("Sorry, we couldn't find the page you're looking for.")
+                }
+            }
+        }
+    }
 ) {
     fun render(screen: Screen) = renderers.get(screen::class)?.invoke(screen)
     fun parse(path: UrlLikePath) = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()

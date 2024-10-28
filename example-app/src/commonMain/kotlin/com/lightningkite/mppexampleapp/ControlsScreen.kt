@@ -94,7 +94,7 @@ object ControlsScreen : Screen {
                     button {
                         onClick {
                             delay(1000L);
-                            toast("OK!")
+                            toast("OK! RUN!")
                         }; text {
                         content = "Sample"
                     }; ::enabled { booleanContent() }
