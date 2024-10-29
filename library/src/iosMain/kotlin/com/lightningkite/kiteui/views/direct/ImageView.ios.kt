@@ -486,4 +486,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         set(value) {
             native.accessibilityLabel = value
         }
+    actual var useLoadingSpinners: Boolean
+        get() = TODO("Not yet implemented")
+        set(value) {}
 }
