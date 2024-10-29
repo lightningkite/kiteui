@@ -9,26 +9,6 @@ import kotlin.coroutines.resume
 import kotlin.test.*
 
 class ReactivityTests {
-    @Test
-    fun testAsync() {
-
-        var cont: Continuation<String>? = null
-        val item = asyncGlobal<String> {
-            println("Calculating...")
-            suspendCoroutineCancellable {
-                cont = it
-                return@suspendCoroutineCancellable {}
-            }
-        }
-        launchGlobal {
-            println("A: ${item.await()}")
-        }
-        launchGlobal {
-            println("B: ${item.await()}")
-        }
-        cont?.resume("Success")
-
-    }
 
     @Test
     fun waitingTest() {

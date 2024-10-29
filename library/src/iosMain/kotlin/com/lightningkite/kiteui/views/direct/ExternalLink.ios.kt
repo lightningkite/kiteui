@@ -18,7 +18,7 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     override val native = FrameLayoutButton(this)
     init {
         native.onClick = {
-            to?.let { UIApplication.sharedApplication.openURL(NSURL(string = it)) }
+            to.let { UIApplication.sharedApplication.openURL(NSURL(string = it), mapOf<Any?, Any?>()) {} }
             launch { onNavigate() }
         }
     }
@@ -49,6 +49,6 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

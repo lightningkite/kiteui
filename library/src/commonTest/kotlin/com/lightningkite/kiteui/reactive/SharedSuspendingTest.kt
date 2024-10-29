@@ -112,7 +112,7 @@ class SharedSuspendingTest {
             val r = late()
             hits++
             r
-        }.apply { log = ConsoleRoot }
+        }
         testContext {
             late.addListener {}
             a.addListener {}

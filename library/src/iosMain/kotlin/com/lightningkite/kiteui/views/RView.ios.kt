@@ -4,25 +4,20 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
+import com.lightningkite.kiteui.reactive.AppState
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
-import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
-import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
-import platform.UIKit.UITapGestureRecognizer
 import platform.UIKit.UIView
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.roundToInt
+import kotlin.math.PI
+import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
@@ -40,14 +35,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
     protected actual override fun opacitySet(value: Double) {
-        native.animateIfAllowed {
+        animateIfAllowed {
             native.alpha = value
         }
     }
 
     protected actual override fun existsSet(value: Boolean) {
         native.hidden = !value
-        if(fullyStarted) {
+        if (fullyStarted) {
             native.informParentOfSizeChange()
         }
 //        if (animationsEnabled) {
@@ -67,7 +62,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected actual override fun visibleSet(value: Boolean) {
-        native.animateIfAllowed {
+        animateIfAllowed {
             native.alpha = if (value) 1.0 else 0.0
         }
     }
@@ -149,23 +144,27 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         native.extensionPadding = dimension?.value
     }
 
+    var previousLoadAnimationHandle: (() -> Unit)? = null
     var backgroundLayer: CAGradientLayerResizing? = null
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.animateIfAllowed {
+        animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.spacing)
 //            native.layoutLayers()
             if (!fullyApply) {
                 backgroundLayer?.removeFromSuperlayer()
                 backgroundLayer = null
-            } else {
-                val layer = backgroundLayer ?: run {
-                    val newLayer = CAGradientLayerResizing()
-                    backgroundLayer = newLayer
-                    native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
-                    newLayer
-                }
-                with(layer) {
+            }
+            val layer = backgroundLayer ?: run {
+                val newLayer = CAGradientLayerResizing()
+                backgroundLayer = newLayer
+                native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
+                newLayer
+            }
+            previousLoadAnimationHandle?.invoke()
+            previousLoadAnimationHandle = null
+            with(layer) {
+                if (fullyApply) {
                     when (val b = theme.background) {
                         is Color -> {
                             val c = b.toUiColor().CGColor!!
@@ -174,6 +173,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             this.colors = listOf(c, c).map { it.toObjcId() }
                             this.startPoint = CGPointMake(0.0, 0.0)
                             this.endPoint = CGPointMake(1.0, 1.0)
+                        }
+
+                        is FadingColor -> {
+                            val c = b.base.toUiColor().CGColor!!
+                            this.type = kCAGradientLayerAxial
+                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                            this.colors = listOf(c, c).map { it.toObjcId() }
+                            this.startPoint = CGPointMake(0.0, 0.0)
+                            this.endPoint = CGPointMake(1.0, 1.0)
+                            previousLoadAnimationHandle = AppState.animationFrame.addListener {
+                                val i = Color.interpolate(b.base, b.alternate, (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()).toUiColor().CGColor!!
+                                this.colors = listOf(i, i).map { it.toObjcId() }
+                            }
                         }
 
                         is LinearGradient -> {
@@ -196,15 +208,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             this.endPoint = CGPointMake(0.0, 0.0)
                         }
                     }
-                    zPosition = -99999.0
-                    parentSpacing = (parent?.mySpacing ?: theme.spacing).value
-
                     borderWidth = theme.outlineWidth.value
                     borderColor = theme.outline.closestColor().toUiColor().CGColor
-                    desiredCornerRadius = theme.cornerRadii
-
-                    matchParentSize("insert")
                 }
+
+                zPosition = -99999.0
+                parentSpacing = this@RView.parentSpacing.value
+                desiredCornerRadius = theme.cornerRadii
+
+                matchParentSize("insert")
             }
         }
     }
@@ -225,15 +237,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
-        if(index == native.subviews.size)
+        if (index == native.subviews.size)
             native.addSubview(view.native)
         else
             native.insertSubview(view.native, index.toLong())
-        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if(children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
         if (index >= native.subviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.subviews.size}")
         }
@@ -252,34 +264,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 var animationsEnabled: Boolean = true
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
-//    if (!animationsEnabled) {
-//        CATransaction.begin()
-//        CATransaction.disableActions()
-//        try {
-//            action()
-//        } finally {
-//            CATransaction.commit()
-//        }
-//        return
-//    }
-//    try {
-//        animationsEnabled = false
-//        CATransaction.begin()
-//        CATransaction.disableActions()
-//        try {
-//            action()
-//        } finally {
-//            CATransaction.commit()
-//        }
-//    } finally {
-//        animationsEnabled = true
-//    }
 }
 
 inline fun UIView.withoutAnimation(action: () -> Unit) {
-    if (!animationsEnabled) {
-        action()
-    }
     try {
         animationsEnabled = false
         CATransaction.begin()
@@ -293,10 +280,22 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
         animationsEnabled = true
     }
 }
+
 inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
-    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.15) {
+    if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         action()
     } else {
         action()
+    }
+}
+
+inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+    if (animationsEnabled) UIView.animateWithDuration(
+        duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
+        completion = { onComplete() },
+        animations = { action() }
+    ) else {
+        action()
+        onComplete()
     }
 }

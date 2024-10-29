@@ -208,7 +208,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
 //    }
-    wrapNextIn(object: RView(context) {
+    wrapNextIn(object: RViewWrapper(context) {
         init {
             native.tag = "div"
             native.classes.add("hidingContainer")

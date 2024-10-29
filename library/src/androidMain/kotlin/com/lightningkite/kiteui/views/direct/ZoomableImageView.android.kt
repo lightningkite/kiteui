@@ -30,15 +30,15 @@ import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
+import com.github.chrisbanes.photoview.PhotoView
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.views.*
-import com.ortiz.touchview.TouchImageView
 import android.widget.ImageView as AImageView
 
 
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
-    override val native = TouchImageView(context.activity)
+    override val native = PhotoView(context.activity)
     var placeholder = CircularProgressDrawable(context.activity)
     actual var refreshOnParamChange: Boolean = false
 
@@ -48,25 +48,12 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
-            fun target() = object : CustomViewTarget<TouchImageView, Drawable>(native) {
-                override fun onResourceReady(p0: Drawable, p1: Transition<in Drawable>?) {
-                    println("Setting ${native.width} x ${native.height} to drawable ${p0} ${(p0 as? BitmapDrawable)?.run { "$intrinsicWidth x $intrinsicHeight" }}")
-                    native.setImageDrawable(p0)
-                }
-
-                override fun onLoadFailed(errorDrawable: Drawable?) {
-                    native.setImageDrawable(errorDrawable)
-                }
-
-                override fun onResourceCleared(placeholder: Drawable?) {
-                    native.setImageDrawable(placeholder)
-                }
-            }
+            println("Loading $value")
             when (value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(target())
-                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(target())
-                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(target())
-                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(target())
+                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(native)
+                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(native)
+                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(native)
+                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(native)
                 is ImageVector -> native.setImageDrawable(PathDrawable(value))
                 null -> native.setImageDrawable(null)
                 else -> TODO()

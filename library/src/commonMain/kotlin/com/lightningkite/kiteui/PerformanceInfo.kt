@@ -48,9 +48,7 @@ class PerformanceInfo(val key: String, val immediate: Boolean = false) {
             val now = clockMillis()
             if(now - lastReport > 5000) {
                 lastReport = now
-                println("---PERFORMANCE REPORT---")
                 all.values.filter { it.count > 0 }.sortedByDescending { it.sum }.forEach { it.print() }
-                println("---PERFORMANCE REPORT END---")
             }
         }
         operator fun get(key: String) = all.getOrPut(key) { PerformanceInfo(key) }

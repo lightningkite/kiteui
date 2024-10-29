@@ -40,11 +40,11 @@ object DataScreen: DocScreen {
             text("Anyone who listens to the property will be notified when the value changes.  Now, how do we observe it?  We can use what's called a reactive scope:")
             example("""
                 text {
-                    reactiveScope { content = "The current counter value is ${'$'}{counter.await()}" }
+                    reactive { content = "The current counter value is ${'$'}{counter()}" }
                 }
                 """.trimIndent()) {
                 text {
-                    reactiveScope { content = "The current counter value is ${counter()}" }
+                    reactive { content = "The current counter value is ${counter()}" }
                 }
             }
 

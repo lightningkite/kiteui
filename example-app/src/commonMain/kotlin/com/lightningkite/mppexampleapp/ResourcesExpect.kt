@@ -8,6 +8,7 @@ expect object Resources {
     val fontsMontserrat: Font
     val fontsOpensans: Font
     val fontsRoboto: Font
+    val imagesGraph126: ImageResource
     val imagesMammoth: ImageResource
     val imagesSolera: ImageResource
     val videoBack: VideoResource

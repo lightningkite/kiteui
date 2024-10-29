@@ -92,15 +92,15 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             determineType = { 0 },
             makeView = { _, obs -> render(obs) }) {
             init {
-                reactiveScope(onLoad = {
+                reactiveScope(/*onLoad = {
 //                    println("Data set to loading")
                     loading = true
                     notifyDataSetChanged()
 //                    println("Data set to loading complete")
-                }) {
+                }*/) {
                     val new = items().toList()
 //                    println("Data set to $new")
-                    loading = false
+//                    loading = false
                     lastPublished = new
                     notifyDataSetChanged()
 //                    println("Data set to new complete")

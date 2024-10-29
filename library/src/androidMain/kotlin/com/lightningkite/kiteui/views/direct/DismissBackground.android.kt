@@ -23,7 +23,8 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.setBackgroundColor(theme.background.closestColor().copy(alpha = 0.5f).toInt())
+        val color = theme.background.closestColor()
+        native.setBackgroundColor(color.withAlpha(0.5f).toInt())
     }
     override fun postSetup() {
         super.postSetup()

@@ -80,7 +80,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
 
     protected abstract fun visibleSet(value: Boolean)
-    var spacing: Dimension? = null
+    open var spacing: Dimension? = null
         set(value) {
             field = value
             spacingSet(value)
@@ -134,15 +134,15 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         private set(value) {
             if (value != field) {
                 field = value
-                run { applyElevation(if (value.useBackground) value.theme.elevation else 0.px) }
+                run { applyElevation(if (value.useBackground == UseBackground.Yes) value.theme.elevation else 0.px) }
                 run {
                     applyPadding(
-                        if (forcePadding ?: (value.useBackground || hasAlternateBackedStates())) (spacing
+                        if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (spacing
                             ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
                     )
                 }
                 run { applyForeground(value.theme) }
-                run { applyBackground(value.theme, value.useBackground) }
+                run { applyBackground(value.theme, value.useBackground != UseBackground.No) }
                 if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
                     println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
                 }
@@ -159,6 +159,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             ?: 0.px)
     protected var fullyStarted = false
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
+        .let { if(working.value) it[WorkingSemantic] else it }
+        .let { if(loading.value) it[LoadingSemantic] else it }
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
         if (this == viewDebugTarget) println("refreshTheming")
@@ -260,8 +262,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             field = value
             if (value == 0 && loading.value) {
                 loading.value = false
+                refreshTheming()
             } else if (value > 0 && !loading.value) {
                 loading.value = true
+                refreshTheming()
             }
         }
     val working = Property(false)
@@ -270,8 +274,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             field = value
             if (value == 0 && working.value) {
                 working.value = false
+                refreshTheming()
             } else if (value > 0 && !working.value) {
                 working.value = true
+                refreshTheming()
             }
         }
 
@@ -389,3 +395,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     val calculationContext: CoroutineScope get() = this
 
 }
+
+abstract class RViewWrapper(context: RContext) : RView(context) {
+    override var spacing: Dimension? = null
+        get() = field ?: parent?.spacing
+}
+

@@ -35,7 +35,7 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
 
 fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
-    UIView.setAnimationsEnabled(false)
+//    UIView.setAnimationsEnabled(false)
 
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext by AppScope {

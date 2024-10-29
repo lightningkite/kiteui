@@ -4,10 +4,7 @@ import com.lightningkite.kiteui.ObjCountTrackers
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.navigatorView
@@ -22,18 +19,22 @@ val subnav = ScreenNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
 actual fun ViewWriter.platformSpecific() {
     col {
-        text("TEST")
-        card - button {
-            text("memory view toggle")
-            var last: MemoryView? = null
-            onClick {
-                if(subnav.stack.value.lastOrNull() is MemoryScreen)
-                    subnav.reset(PlaceholderScreen())
-                else
-                    subnav.reset(MemoryScreen())
-            }
+        repeat(10) {
+            text("TEST")
+            separator()
         }
-        expanding - navigatorView(subnav)
+//        text("TEST")
+//        card - button {
+//            text("memory view toggle")
+//            var last: MemoryView? = null
+//            onClick {
+//                if(subnav.stack.value.lastOrNull() is MemoryScreen)
+//                    subnav.reset(PlaceholderScreen())
+//                else
+//                    subnav.reset(MemoryScreen())
+//            }
+//        }
+//        expanding - navigatorView(subnav)
     }
 }
 

@@ -23,12 +23,15 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 
 val client: HttpClient
     get() {
         return AndroidAppContext.ktorClient
     }
+
+private val fetchLog = ConsoleRoot.tag("fetch")
 
 actual suspend fun fetch(
     url: String,
@@ -39,6 +42,7 @@ actual suspend fun fetch(
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
     try {
+        fetchLog.log("-> $method $url")
         val response = client.request(url) {
             this.method = when (method) {
                 HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -71,17 +75,19 @@ actual suspend fun fetch(
             }
             onUploadProgress?.let {
                 onUpload { a, b ->
-                    it(a.toInt(), b.toInt())
+                    it(a.toInt(), b?.toInt() ?: -1)
                 }
             }
             onDownloadProgress?.let {
                 onDownload { a, b ->
-                    it(a.toInt(), b.toInt())
+                    it(a.toInt(), b?.toInt() ?: -1)
                 }
             }
         }
+        fetchLog.log("<- $method $url ${response.status}")
         return RequestResponse(response)
     } catch (e: Exception) {
+        fetchLog.log("<X $method $url ${e::class} ${e.message}")
         throw ConnectionException("Network request failed", e)
     }
 }
@@ -298,7 +304,7 @@ actual class Blob(val data: ByteArray, val type: String)
 val webSocketClient: HttpClient by lazy {
     HttpClient(CIO) {
         install(WebSockets) {
-            pingInterval = 20_000
+            pingInterval = 20_000.milliseconds
         }
     }
 }

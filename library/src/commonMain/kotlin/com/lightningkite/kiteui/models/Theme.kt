@@ -1,14 +1,23 @@
 package com.lightningkite.kiteui.models
 
-import kotlin.js.JsName
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.probablyAppleUser
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-data class ThemeAndBack(val theme: Theme, val useBackground: Boolean) {
-    operator fun get(semantic: Semantic): ThemeAndBack {
-        val b = theme[semantic]
-        return if (useBackground) b.theme.withBack
-        else b
+enum class UseBackground {
+    No, WithoutPadding, Yes
+}
+
+data class ThemeAndBack(val theme: Theme, val useBackground: UseBackground) {
+    operator fun get(semantic: Semantic): ThemeAndBack = this + semantic
+    operator fun plus(other: ThemeDerivation): ThemeAndBack {
+        val b = other(theme)
+        return when(useBackground) {
+            UseBackground.No -> b
+            UseBackground.WithoutPadding -> if(b.useBackground == UseBackground.No) b.theme.withBackNoPadding else b
+            UseBackground.Yes -> b.theme.withBack
+        }
     }
 }
 
@@ -46,10 +55,7 @@ interface ThemeDerivation {
     open operator fun plus(other: ThemeDerivation): ThemeDerivation {
         return ThemeDerivation {
             if (other is Set) return@ThemeDerivation other.theme.withBack
-            val a = this(it)
-            val b = other(a.theme)
-            if (a.useBackground) b.theme.withBack
-            else b
+            this(it) + other
         }
     }
 }
@@ -60,14 +66,43 @@ interface Semantic : ThemeDerivation {
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
 }
 
+data object InteractiveSemantic: Semantic {
+    override val key: String = "int"
+    override fun default(theme: Theme): ThemeAndBack {
+        // iOS switch?
+        if(Platform.probablyAppleUser) {
+            return theme.copy(
+                foreground = if(theme.background.closestColor().perceivedBrightness in 0.1f..0.9f)
+                    theme.foreground
+                else
+                    Color(1f, 0f, 122f/255f, 255f)
+                ,
+                iconOverride = null,
+            ).withoutBack
+        } else {
+            return theme.withoutBack
+        }
+    }
+}
+
 data object LoadingSemantic : Semantic {
     override val key: String = "ld"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        background = FadingColor(theme.background.closestColor().highlight(0.1f), theme.background.closestColor().highlight(0.2f)),
+        outline = FadingColor(theme.outline.closestColor().highlight(0.1f), theme.outline.closestColor().highlight(0.2f)),
+        foreground = theme.foreground.applyAlpha(0.3f),
+        iconOverride = theme.iconOverride?.applyAlpha(0.3f),
+    ).withBackNoPadding
 }
 
 data object WorkingSemantic : Semantic {
     override val key: String = "wrk"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        foreground = theme.foreground.applyAlpha(0.5f),
+        iconOverride = theme.iconOverride?.applyAlpha(0.5f),
+    ).withoutBack
 }
 
 data object CardSemantic : Semantic {
@@ -86,6 +121,7 @@ data object FieldSemantic : Semantic {
             is CornerRadii.ForceConstant -> base
             is CornerRadii.RatioOfSize -> base
             is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+            is CornerRadii.PerCorner -> base
         }
     ).withBack
 }
@@ -157,6 +193,11 @@ data object MainContentSemantic : Semantic {
 data object BarSemantic : Semantic {
     override val key: String = "bar"
     override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+}
+
+data object SystemBarSemantic : Semantic {
+    override val key: String = "sba"
+    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
 }
 
 data object NavSemantic : Semantic {
@@ -311,7 +352,7 @@ class Theme(
     val background: Paint = Color.white,
     val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
-    val transitionDuration: Duration = 0.15.seconds,
+    val transitionDuration: Duration = 0.25.seconds,
 
     val derivedFrom: Theme? = null,
     val derivationId: String? = null,
@@ -320,8 +361,10 @@ class Theme(
     val derivations: Map<Semantic, (theme: Theme) -> ThemeAndBack> = mapOf(),
 ) {
     val icon: Paint get() = iconOverride ?: foreground
-    val withBack = ThemeAndBack(this, true)
-    val withoutBack = ThemeAndBack(this, false)
+
+    val withBack = ThemeAndBack(this, UseBackground.Yes)
+    val withBackNoPadding = ThemeAndBack(this, UseBackground.WithoutPadding)
+    val withoutBack = ThemeAndBack(this, UseBackground.No)
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
     operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {

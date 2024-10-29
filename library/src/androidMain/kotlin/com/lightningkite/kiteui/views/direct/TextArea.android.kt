@@ -61,7 +61,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if (!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     actual var hint: String

@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.models.Color
-import com.lightningkite.kiteui.models.LinearGradient
-import com.lightningkite.kiteui.models.Paint
-import com.lightningkite.kiteui.models.RadialGradient
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.toUiColor
@@ -52,6 +49,10 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.toUiColor()
                 }
+                is FadingColor -> {
+                    gradientLayer = null
+                    uiViewWithLabelMask.backgroundColor = f.base.toUiColor()
+                }
                 is LinearGradient -> gradientLayer = CAGradientLayer().apply {
                     this.type = kCAGradientLayerAxial
                     this.locations = f.stops.map {
@@ -83,7 +84,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         }
         return label.sizeThatFits(smallerSize).useContents {
             CGSizeMake(
-                width = width.coerceAtLeast(label.font.lineHeight) + padding * 2,
+                width = width + padding * 2,
                 height = height.coerceAtLeast(label.font.lineHeight) + padding * 2,
             )
         }
@@ -94,14 +95,20 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         val padding = extensionPadding ?: 0.0
         gradientLayer?.frame = bounds
         bounds.useContents {
-            val childFrame = cValue<CGRect> {
-                origin.x = padding
-                origin.y = padding
-                size.width = this@useContents.size.width - 2 * padding
-                size.height = this@useContents.size.height - 2 * padding
-            }
-            uiViewWithLabelMask.setFrame(childFrame)
-            label.setFrame(uiViewWithLabelMask.bounds)
+            val insetWidth = this@useContents.size.width - 2 * padding
+            val insetHeight = this@useContents.size.height - 2 * padding
+            uiViewWithLabelMask.setFrame(CGRectMake(
+                padding,
+                padding,
+                insetWidth,
+                insetHeight
+            ))
+            label.setFrame(CGRectMake(
+                0.0,
+                0.0,
+                insetWidth,
+                insetHeight
+            ))
         }
     }
 

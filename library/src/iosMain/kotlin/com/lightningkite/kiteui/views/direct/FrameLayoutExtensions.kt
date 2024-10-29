@@ -2,12 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.PopoverPreferredDirection
+import com.lightningkite.kiteui.utils.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
-import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UICoordinateSpaceProtocol
@@ -23,7 +24,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     var padding = extensionPadding ?: 0.0
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
-        if (view.hidden) return@zip
+        if (view.hidden || view.extensionCollapsed == true) return@zip
         val h = view.extensionHorizontalAlign ?: Align.Stretch
         val v = view.extensionVerticalAlign ?: Align.Stretch
         val offsetH = when (h) {
@@ -60,9 +61,38 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
+fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+    val frameLayout = this
+    subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
+        view as UIView
+        if (view.hidden || view.extensionCollapsed == true) return@zip
+        val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
+        val (offsetH, offsetV) = anchor.first.calculatePopoverOffset(
+            anchorPositionInFrameLayout,
+            view.bounds.local,
+            frameLayout.bounds.local
+        )
+        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+
+        run {
+            view.setPsuedoframe(
+                offsetH,
+                offsetV,
+                size.width,
+                size.height,
+            )
+            if (oldSize.first != size.width || oldSize.second != size.height) {
+                view.layoutSubviewsAndLayers()
+            }
+        }
+        Unit
+    }
+}
+
 
 fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
-    if (hidden) return null
+    if (hidden || extensionCollapsed == true) return null
     if (bounds.useContents {
             val rect = this
             point.useContents {
@@ -75,7 +105,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         }) {
         subviews.asReversed().forEach {
             it as UIView
-            if (it.hidden) return@forEach
+            if (it.hidden || it.extensionCollapsed == true) return@forEach
             it.hitTest(
                 it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol),
                 withEvent
@@ -116,7 +146,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
 
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
-        if (it.hidden) return@mapIndexed Size()
+        if (it.hidden || it.extensionCollapsed == true) return@mapIndexed Size()
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
         t.pause()
         val required = childSizeCache[index].getOrPut(measureInput) {

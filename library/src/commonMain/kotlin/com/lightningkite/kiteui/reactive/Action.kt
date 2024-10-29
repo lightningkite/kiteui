@@ -78,7 +78,7 @@ class RetryableAction(
     override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         lastJob?.cancel()
-        lastJob = (keepRunningWhile ?: scope).also { println("Running with dispatcher ${it.coroutineContext[CoroutineDispatcher]}") }.let { calculationContext ->
+        lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(
@@ -136,7 +136,7 @@ class DependentAction(
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
-        lastJob = (keepRunningWhile ?: scope).also { println("Running with dispatcher ${it.coroutineContext[CoroutineDispatcher]}") }.let { calculationContext ->
+        lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
             var done = false
             val job = calculationContext.launch(
                 start = if (calculationContext.coroutineContext[CoroutineDispatcher]?.isDispatchNeeded(

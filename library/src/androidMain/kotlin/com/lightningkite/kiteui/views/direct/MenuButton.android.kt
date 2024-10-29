@@ -1,18 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.BasicListenable
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
-import kotlin.random.Random
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
@@ -26,10 +18,34 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 willRemove?.let { overlayStack!!.removeChild(it) }
             }.run {
                 willRemove = dismissBackground {
+                    themeChoice += ThemeDerivation {
+                        it.copy(background = Color.transparent, revert = true).withBack
+                    }
                     onClick {
                         closePopovers()
                     }
-                    centered - card - stack {
+                    atTopStart - card - stack {
+                        themeChoice += ThemeDerivation {
+                            it.copy(elevation = 5.dp, revert = true).withBack
+                        }
+                        this@dismissBackground.native.apply {
+                            clipChildren = false
+                            clipToPadding = false
+                        }
+                        this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
+                            val overlayContainer = this@stack.native
+                            val anchor = this@MenuButton.native
+
+                            val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
+                            val offset = preferredDirection.calculatePopoverOffset(
+                                anchor.getBoundariesInWindow(),
+                                overlayBoundsInWindow,
+                                dismissBackground.getBoundariesInWindow()
+                            )
+
+                            overlayContainer.offsetLeftAndRight((offset.first - overlayBoundsInWindow.left).toInt())
+                            overlayContainer.offsetTopAndBottom((offset.second - overlayBoundsInWindow.top).toInt())
+                        }
                         createMenu()
                     }
                 }
@@ -51,7 +67,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)

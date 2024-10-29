@@ -30,6 +30,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
+        updateHint()
     }
 
     fun updateFont() {
@@ -41,9 +42,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
     }
 
     fun updateHint() {
-        textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+        textField.attributedPlaceholder = NSAttributedString.create(hint, mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor()))
     }
 
     var fontAndStyle: FontAndStyle? = null
@@ -87,6 +86,10 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 AutoComplete.Password -> UITextContentTypePassword
                 AutoComplete.NewPassword -> UITextContentTypeNewPassword
                 else -> null
+            }
+            textField.autocorrectionType = when (value.type) {
+                KeyboardType.Text -> UITextAutocorrectionType.UITextAutocorrectionTypeDefault
+                else -> UITextAutocorrectionType.UITextAutocorrectionTypeNo
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
@@ -166,7 +169,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         if (!textField.enabled) t = t[DisabledSemantic]
         if (textField.highlighted) t = t[DownSemantic]
         if (textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 

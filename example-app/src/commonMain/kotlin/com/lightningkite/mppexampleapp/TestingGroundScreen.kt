@@ -26,7 +26,7 @@ object TestingGroundScreen: Screen {
 
 
         scrolls - col {
-            h1("Experiments tests")
+            h1("Experiments test")
             centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
 
             launch {

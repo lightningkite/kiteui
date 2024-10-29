@@ -49,10 +49,4 @@ actual sealed class AudioSource actual constructor()
 actual class AudioResource(val resource: Int) : AudioSource()
 
 actual val Dimension.px: Double get() = value.toDouble()
-
-fun CornerRadii.toRawCornerRadius(parentSpacing: DimensionRaw): DimensionRaw = when (this) {
-    is CornerRadii.ForceConstant -> value.value
-    is CornerRadii.RatioOfSize -> 10000f
-    is CornerRadii.Constant -> min(parentSpacing, value.value)
-    is CornerRadii.RatioOfSpacing -> value * parentSpacing
-}
+actual val Dimension.canvasUnits: Double get() = value.toDouble()
