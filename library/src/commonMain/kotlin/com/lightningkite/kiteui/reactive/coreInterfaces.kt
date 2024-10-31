@@ -28,7 +28,6 @@ interface Readable<out T> : Listenable {
 
 interface WriteOnly<T> {
     suspend infix fun set(value: T)
-    suspend fun reportSetException(exception: Exception) { throw exception }
 }
 
 interface Writable<T> : Readable<T>, WriteOnly<T>
@@ -41,8 +40,6 @@ interface ImmediateReadable<out T> : Readable<T>, ReadOnlyProperty<Any?, T> {
 
 interface ImmediateWriteOnly<T>: WriteOnly<T> {
     fun setImmediate(value: T)
-    fun reportSetExceptionImmediate(exception: Exception) { throw exception }
-    override suspend fun reportSetException(exception: Exception) = reportSetExceptionImmediate(exception)
     override suspend fun set(value: T) { setImmediate(value) }
 }
 
