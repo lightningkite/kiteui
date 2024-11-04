@@ -4,10 +4,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.AppScope
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.models.BarSemantic
-import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.bar
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.invoke
@@ -36,6 +33,9 @@ fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() ->
 var rootViewController: UIViewController? = null
     private set
 
+private val systemBarBackground = UIView()
+val setSystemBarBackground = systemBarBackground::setBackgroundColor
+
 fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     rootViewController = this
     ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
@@ -63,6 +63,16 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     subview.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
+
+    view.addSubview(systemBarBackground)
+    systemBarBackground.translatesAutoresizingMaskIntoConstraints = false
+    systemBarBackground.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
+    systemBarBackground.leftAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.leftAnchor).setActive(true)
+    systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
+    systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
+    writer.reactiveScope {
+        systemBarBackground.backgroundColor = themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
+    }
 
     writer.reactiveScope {
         view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()

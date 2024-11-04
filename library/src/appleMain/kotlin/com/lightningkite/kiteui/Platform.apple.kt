@@ -5,14 +5,6 @@ import com.lightningkite.kiteui.models.Color
 actual val Platform.Companion.current: Platform
     get() = Platform.iOS
 
-
-
-// https://developer.apple.com/documentation/technotes/tn3105-customizing-uistatusbar-syle
-actual fun setStatusBarColor(color: Color) {
-
-}
-
-
 // possible solutions:
 
 //override var preferredStatusBarStyle: UIStatusBarStyle {
