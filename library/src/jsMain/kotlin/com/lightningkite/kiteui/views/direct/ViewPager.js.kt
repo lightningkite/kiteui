@@ -8,24 +8,28 @@ import com.lightningkite.kiteui.views.*
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 
+
+@JsModule("glider-js")
+@JsNonModule
+external val glider: dynamic
+
 actual class ViewPager actual constructor(context: RContext): RView(context) {
-    private var controller: RecyclerController2? = null
-    private var onController = ArrayList<(RecyclerController2)->Unit>()
-    private fun onController(action: (RecyclerController2)->Unit) {
-        controller?.let(action) ?: onController.add(action)
-    }
-    private val newViews = NewViewWriter(this, context)
+//    private var controller: RecyclerController2? = null
+//    private var onController = ArrayList<(RecyclerController2)->Unit>()
+//    private fun onController(action: (RecyclerController2)->Unit) {
+//        controller?.let(action) ?: onController.add(action)
+//    }
+//    private val newViews = NewViewWriter(this, context)
+
+
+
     private val buttons = ArrayList<RView>()
     init {
         native.tag = "div"
-        native.classes.add("recyclerView")
+        native.classes.add("viewPager")
+        glider
         native.onElement {
-            val controller = RecyclerController2(it as HTMLDivElement, false)
-            controller.forceCentering = true
-            controller.contentHolder.classList.add("viewPager")
-            this.controller = controller
-            onController.forEach { it(controller) }
-            onController.clear()
+//            js("")
         }
 
         with(object: ViewWriter(), CalculationContext by this {
@@ -53,7 +57,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                     source = Icon.chevronLeft
                 }
                 onClick {
-                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
+//                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
                 }
             }
             buttonTheme - button {
@@ -70,7 +74,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                     source = Icon.chevronRight
                 }
                 onClick {
-                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
+//                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
                 }
             }
         }
@@ -98,33 +102,33 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
-        onController { controller ->
-            controller.renderer = ItemRenderer<T>(
-                create = { value ->
-                    val prop = Property(value)
-                    render(newViews, prop)
-                    val new = newViews.newView!!
-                    addChild(new)
-                    new.asDynamic().__ROCK__prop = prop
-                    new.native.create() as HTMLElement
-                },
-                update = { element, value ->
-                    @Suppress("UNCHECKED_CAST")
-                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value = value
-                },
-                shutdown = { element ->
-                    removeChild(children.indexOfFirst { it.native.element === element })
-                }
-            )
-            reactiveScope {
-                controller.data = items().asIndexed()
-            }
-        }
+//        onController { controller ->
+//            controller.renderer = ItemRenderer<T>(
+//                create = { value ->
+//                    val prop = Property(value)
+//                    render(newViews, prop)
+//                    val new = newViews.newView!!
+//                    addChild(new)
+//                    new.asDynamic().__ROCK__prop = prop
+//                    new.native.create() as HTMLElement
+//                },
+//                update = { element, value ->
+//                    @Suppress("UNCHECKED_CAST")
+//                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value = value
+//                },
+//                shutdown = { element ->
+//                    removeChild(children.indexOfFirst { it.native.element === element })
+//                }
+//            )
+//            reactiveScope {
+//                controller.data = items().asIndexed()
+//            }
+//        }
     }
 
     init {
         onRemove {
-            controller?.shutdown()
+//            controller?.shutdown()
         }
         native.onElement {
             it as HTMLElement
@@ -137,101 +141,12 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         }
     }
 
-//    private val _lastVisibleIndex = Property(0)
-//    actual val lastVisibleIndex: Readable<Int> = _lastVisibleIndex
-//    init { onController { it.lastVisible.addListener { _lastVisibleIndex.value = it.lastVisible.value } } }
-
     private val _index = Property<Int>(0)
     actual val index: Writable<Int> = _index.withWrite { index ->
-        onController { it.jump(index, Align.Center, animationsEnabled) }
+//        onController { it.jump(index, Align.Center, animationsEnabled) }
     }
-    init { onController { it.centerVisible.addListener { _index.value = it.centerVisible.value } } }
+//    init { onController { it.centerVisible.addListener { _index.value = it.centerVisible.value } } }
 }
 
-//@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NViewPager = HTMLDivElement
-//
-//@ViewDsl
-//actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> Unit) {
-//    themedElement<HTMLDivElement>("div", viewDraws = false) {
-//        classList.add("recyclerView")
-//        val newViews: ViewWriter = newViews()
-//        ResizeObserver { entries, obs ->
-//            style.setProperty("--pager-width", "calc(${clientWidth}px")
-//            style.setProperty("--pager-height", "calc(${clientHeight}px")
-//        }.observe(this)
-//        style.setProperty("--pager-width", "calc(${clientWidth}px")
-//        style.setProperty("--pager-height", "calc(${clientHeight}px")
-//        val rc = RecyclerController2(
-//            root = this,
-//            newViews = newViews,
-//            vertical = false
-//        ).apply {
-//            this.contentHolder.classList.add("viewPager")
-//        }
-//        rc.forceCentering = true
-//        this.asDynamic().__ROCK__controller = rc
-//
-//        button {
-//            native.addClass("touchscreenOnly")
-//            native.style.run {
-//                position = "absolute"
-//                left = "0"
-//                top = "50%"
-//                transform = "translateY(-50%)"
-//            }
-//            icon {
-//                source = Icon.chevronLeft
-//            }
-//            onClick {
-//                rc.jump(rc.centerVisible.value - 1, Align.Center, true)
-//            }
-//        }
-//        button {
-//            native.addClass("touchscreenOnly")
-//            native.style.run {
-//                position = "absolute"
-//                right = "0"
-//                top = "50%"
-//                transform = "translateY(-50%)"
-//            }
-//            icon {
-//                source = Icon.chevronRight
-//            }
-//            onClick {
-//                rc.jump(rc.centerVisible.value + 1, Align.Center, true)
-//            }
-//        }
-//        setup(ViewPager(this))
-//    }
-//}
-//
-//actual val ViewPager.index: Writable<Int> get() {
-//    return (native.asDynamic().__ROCK__controller as RecyclerController2).centerVisible
-//        .withWrite {
-//            (native.asDynamic().__ROCK__controller as RecyclerController2).jump(it, Align.Center, animationsEnabled)
-//        }
-//}
-//
-//actual fun <T> ViewPager.children(
-//    items: Readable<List<T>>,
-//    render: ViewWriter.(value: Readable<T>) -> Unit
-//) {
-//    (native.asDynamic().__ROCK__controller as RecyclerController2).let {
-//        it.renderer = ItemRenderer<T>(
-//            create = { value ->
-//                val prop = Property(value)
-//                render(it.newViews, prop)
-//                it.newViews.rootCreated!!.also {
-//                    it.asDynamic().__ROCK_prop__ = prop
-//                }
-//            },
-//            update = { element, value ->
-//                (element.asDynamic().__ROCK_prop__ as Property<T>).value = value
-//            }
-//        )
-//        reactiveScope {
-//            it.data = items.await().asIndexed()
-//        }
-//    }
+
 //}

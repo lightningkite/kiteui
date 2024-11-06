@@ -121,6 +121,9 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(npm("glider-js","1.7.8"))
+            }
         }
 
 //        val wasmJsMain by getting {
