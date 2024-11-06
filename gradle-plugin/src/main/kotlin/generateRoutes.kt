@@ -70,7 +70,7 @@ fun generateAutoroutes(sources: File, out: File) {
                         if(declstart == -1) continue
                         val nameStart = text.indexOf(' ', declstart) + 1
                         if(nameStart == -1) continue
-                        val nameEnd = text.indexOf(' ', nameStart)
+                        val nameEnd = text.indexOf(nameStart, ' ', ':')
                         if(nameEnd == -1) continue
                         val codename = text.substring(nameStart, nameEnd)
                         out[codename] = annoArgs?.getOrNull(0) ?: codename
@@ -108,7 +108,7 @@ fun generateAutoroutes(sources: File, out: File) {
             }
             appendLine("")
             appendLine("")
-                        appendLine("val AutoRoutes = Routes(")
+            appendLine("val AutoRoutes = Routes(")
             tab {
                 appendLine("parsers = listOf(")
                 tab {
