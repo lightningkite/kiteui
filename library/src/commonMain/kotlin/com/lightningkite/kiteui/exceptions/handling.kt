@@ -85,8 +85,8 @@ class ExceptionToMessages {
     private val handlers: ArrayList<ExceptionToMessage> = arrayListOf()
     fun handle(view: RView, exception: Exception): ExceptionMessage? = handlers.firstNotNullOfOrNull { it.handle(view, exception) }
     operator fun plusAssign(other: ExceptionToMessage) {
-        handlers.add(other)
-        handlers.sortByDescending { it.priority }
+//        handlers.add(other)
+//        handlers.sortByDescending { it.priority }
     }
 }
 interface ExceptionToMessage {
