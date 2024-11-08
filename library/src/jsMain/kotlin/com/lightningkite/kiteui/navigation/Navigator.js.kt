@@ -113,7 +113,7 @@ external interface BaseUrlScript {
 
 var basePath = (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
     JSON.parse<BaseUrlScript>(it).baseUrl
-} ?: "/"
+} ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 } ?: "/"
 
 private fun Location.urlLike() = UrlLikePath(
     segments = pathname.removePrefix(basePath).split('/').filter { it.isNotBlank() },

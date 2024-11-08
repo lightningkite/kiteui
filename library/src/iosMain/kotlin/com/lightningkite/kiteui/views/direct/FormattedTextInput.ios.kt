@@ -6,7 +6,11 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import platform.Foundation.*
+import platform.UIKit.*
+import platform.darwin.NSObject
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
@@ -23,11 +27,11 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
 
     init {
         var block = false
-        textField.onEvent(this@NumberInput, UIControlEventEditingChanged) {
+        textField.onEvent(this@FormattedTextInput, UIControlEventEditingChanged) {
             if (block) return@onEvent
             block = true
             try {
-                numberAutocommaRepair(
+                repairFormatAndPosition(
                     dirty = textField.text ?: "",
                     selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
                     selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
@@ -36,16 +40,19 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
                     },
                     setSelectionRange = { start, end ->
                         textField.selectedTextRange = textField.textRangeFromPosition(
-                            textField.positionFromPosition(textField.beginningOfDocument, start.toLong()) ?: return@numberAutocommaRepair,
-                            textField.positionFromPosition(textField.beginningOfDocument, end.toLong()) ?: return@numberAutocommaRepair,
+                            textField.positionFromPosition(textField.beginningOfDocument, start.toLong()) ?: return@repairFormatAndPosition,
+                            textField.positionFromPosition(textField.beginningOfDocument, end.toLong()) ?: return@repairFormatAndPosition,
                         )
-                    }
+                    },
+                    isRawData = isRawData,
+                    formatter = formatter,
                 )
             } finally {
                 block = false
             }
         }
     }
+
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
@@ -86,6 +93,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         this.isRawData = isRawData
         this.formatter = formatter
     }
+
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = (textField.text ?: "").filter(isRawData)
@@ -96,7 +104,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
 
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
+            return textField.onEvent(this@FormattedTextInput, UIControlEventEditingChanged, listener)
         }
     }
 
@@ -125,12 +133,13 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
+
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.delegate = value?.let {
             val d = object : NSObject(), UITextFieldDelegateProtocol {
                 override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                    it?.startAction(this@NumberInput)
+                    it?.startAction(this@FormattedTextInput)
                     return true
                 }
             }
@@ -153,6 +162,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             else -> UIReturnKeyType.UIReturnKeyDone
         }
     }
+
     actual var hint: String = ""
         set(value) {
             field = value
@@ -187,16 +197,18 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             textField.enabled = value
             refreshTheming()
         }
+
     init {
         onRemove(textField.observe("highlighted", { refreshTheming() }))
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
+
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!textField.enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
+        if (!textField.enabled) t = t[DisabledSemantic]
+        if (textField.highlighted) t = t[DownSemantic]
+        if (textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
 }

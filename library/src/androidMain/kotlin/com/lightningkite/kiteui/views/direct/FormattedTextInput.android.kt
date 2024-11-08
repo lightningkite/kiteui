@@ -10,15 +10,45 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.lens
+import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity)
+    override val native = EditText(context.activity).apply {
+        var block = false
+        doAfterTextChanged { _ ->
+            if(block) return@doAfterTextChanged
+            block = true
+            post {
+                val str = this.text.toString()
+                try {
+                    if (str == null) return@post
+                    repairFormatAndPosition(
+                        dirty = str,
+                        selectionStart = selectionStart,
+                        selectionEnd = selectionEnd,
+                        setResult = {
+                            setText(it)
+                        },
+                        setSelectionRange = { start, end ->
+                            setSelection(start, end)
+                        },
+                        isRawData = isRawData,
+                        formatter = formatter,
+                    )
+                } finally {
+                    block = false
+                }
+            }
+        }
+    }
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())

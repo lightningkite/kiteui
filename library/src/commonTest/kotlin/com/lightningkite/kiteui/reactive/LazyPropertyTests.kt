@@ -277,11 +277,14 @@ class LazyPropertyTests {
         val basis = Property("Test")
         val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
+        val lensed2 = lazy.lens(get = { it.take(3) }, modify = { o, it -> it })
         testContext {
             println(lensed.state)
             load {
-                println("Starting")
-                println(lensed())
+                assertEquals("Tes", lensed())
+            }
+            load {
+                assertEquals("Tes", lensed2())
             }
         }
     }
@@ -290,7 +293,9 @@ class LazyPropertyTests {
         val basis = Property("Test")
         val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
+        val lensed2 = lazy.lens(get = { it.take(3) }, modify = { o, it -> it })
         var value = ""
+        var value2 = ""
         testContext {
             println(lensed.state)
             reactive {
@@ -298,7 +303,13 @@ class LazyPropertyTests {
                 value = lensed()
                 println(value)
             }
+            reactive {
+                println("Starting")
+                value2 = lensed2()
+                println(value2)
+            }
             assertEquals("Tes", value)
+            assertEquals("Tes", value2)
         }
     }
 }
