@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
@@ -67,3 +68,9 @@ class PhoneNumberInput(container: ViewWriter) {
     var align: Align by input::align
     var textSize: Dimension by input::textSize
 }
+
+operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }
+operator fun Boolean.minus(view: PhoneNumberInput): Boolean { return true }
+
+operator fun ViewWrapper.contains(view: PhoneNumberInput): Boolean { return true }
+operator fun Boolean.contains(view: PhoneNumberInput): Boolean { return true }
