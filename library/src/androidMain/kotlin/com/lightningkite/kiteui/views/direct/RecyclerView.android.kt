@@ -12,9 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlin.math.roundToInt
@@ -88,6 +86,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             recyclerView = this,
             calculationContext = this,
             layoutManager = native.layoutManager,
+            columns = columns,
             placeholderCount = 5,
             determineType = { 0 },
             makeView = { _, obs -> render(obs) }) {
@@ -180,6 +179,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         val recyclerView: RView,
         val calculationContext: CalculationContext,
         val layoutManager: LayoutManager?,
+        val columns: Int,
         val placeholderCount: Int = 0,
         val determineType: (T) -> Int,
         val makeView: ViewWriter.(Int, Readable<T>) -> Unit
@@ -211,11 +211,30 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 w.makeView(viewType, event)
             }
             val subview = newView?.native ?: throw IllegalArgumentException("makeView created no views in a RecyclerView!")
+
+            val layoutParamWidth = when {
+                layoutManager is GridLayoutManager && columns> 1  ->{
+                    val screenWidth = AndroidAppContext.res.displayMetrics.widthPixels
+                     (screenWidth / columns) - (this.recyclerView.spacing?.px?.toInt()?:0)
+                }
+                layoutManager is LinearLayoutManager -> if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                else -> AndroidRecyclerView.LayoutParams.MATCH_PARENT
+            }
+
+            val layoutParmsHieght = when {
+               layoutManager is GridLayoutManager && columns> 1  ->{
+                    val screenWidth = AndroidAppContext.res.displayMetrics.widthPixels
+                    (screenWidth / columns) - (this.recyclerView.spacing?.px?.toInt()?:0)
+                }
+                layoutManager is LinearLayoutManager -> if ((layoutManager as? LinearLayoutManager)?.orientation == LinearLayoutManager.HORIZONTAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                else -> AndroidRecyclerView.LayoutParams.MATCH_PARENT
+            }
+
             subview.layoutParams = AndroidRecyclerView.LayoutParams(
-                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
-                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
-                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.VERTICAL)
-                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
+                layoutParamWidth,
+               layoutParmsHieght
             )
             subview.tag = event
 //            calculationContext.onRemove { newView?.shutdown() }

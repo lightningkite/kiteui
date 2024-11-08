@@ -163,18 +163,18 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         .let { if(loading.value) it[LoadingSemantic] else it }
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
-        if (this == viewDebugTarget) println("refreshTheming")
+//        if (this == viewDebugTarget) println("refreshTheming")
         if (!fullyStarted) {
-            if (this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
+//            if (this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
             return
         }
         if (parent?.fullyStarted == false) {
-            if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
+//            if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
             return
         }
-        if (this == viewDebugTarget) println("refreshTheming will set!")
+//        if (this == viewDebugTarget) println("refreshTheming will set!")
         val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
-        if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
+//        if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
         themeAndBack = t
     }
 

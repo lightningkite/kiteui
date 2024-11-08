@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.direct.ImageView
 
 var debugMode: Boolean = false
 expect fun debugger(): Unit
