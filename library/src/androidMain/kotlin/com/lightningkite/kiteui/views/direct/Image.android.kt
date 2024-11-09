@@ -32,17 +32,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             if(this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
                 heightMeasureSpecLast = heightMeasureSpec
-//                if(this ==  viewDebugTarget?.native){
-//                    println("widthMeasureSpec ${widthMeasureSpec},  MeasureSpec.getMode( ${
-//                        MeasureSpec.getMode(heightMeasureSpec)}")
-//                }
 
                     if (callbacks.isNotEmpty()) {
                     val width = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
                     val height = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-//                    if(this ==  viewDebugTarget?.native){
-//                        println(" MeasureSpec.getMode(widthMeasureSpecLast): ${MeasureSpec.getMode(widthMeasureSpecLast)}, MeasureSpec.getMode(heightMeasureSpecLast): ${MeasureSpec.getMode(heightMeasureSpecLast)}")
-//                    }
+
 
                         if (width != 0 && height != 0) {
                         callbacks.toList().forEach { cb -> cb.onSizeReady(width, height) }

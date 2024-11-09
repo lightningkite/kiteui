@@ -223,11 +223,6 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
 
 
-        if(this.children.contains(viewDebugTarget?.native)) {
-            println("modifier.android $l $t $r $b")
-        }
-
-
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
@@ -274,9 +269,6 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-//        if(this.children.contains(viewDebugTarget?.native)){
-//            println(" modifies widthmeasureSpec: ${widthMeasureSpec.measureSpecString} / ${heightMeasureSpec.measureSpecString}")
-//        }
         val f = getChildAt(0)
         f.minimumWidth = constraints.minWidth?.value?.toInt() ?: 0
         f.minimumHeight = constraints.minHeight?.value?.toInt() ?: 0
@@ -295,9 +287,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 
         val xConstrained = widthMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
         val yConstrained = heightMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
-        if(this.children.contains(viewDebugTarget?.native)) {
-            println("xConstrained")
-        }
+
 
         constraints.aspectRatio?.let { aspectRatio ->
             if (xConstrained && !yConstrained) {
@@ -313,9 +303,6 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             }
 
         }
-//        if(this.children.contains(viewDebugTarget?.native)){
-//            println("widthmeasureSpec2: ${widthMeasureSpec2.measureSpecString} / ${heightMeasureSpec2.measureSpecString}")
-//        }
         f.measure(
             widthMeasureSpec2,
             heightMeasureSpec2,
@@ -332,9 +319,6 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
                 mHeight = (mHeight * aspectRatio).toInt()
             }
         }
-//        if(this.children.contains(viewDebugTarget?.native)){
-//        println("$f mWidth2: ${mWidth} / ${mHeight}")
-//        }
             setMeasuredDimension(
                 mWidth,
                 mHeight,
