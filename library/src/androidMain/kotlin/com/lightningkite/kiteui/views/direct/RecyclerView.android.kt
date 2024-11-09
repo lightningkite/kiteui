@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import okhttp3.internal.notify
 import kotlin.math.roundToInt
 import androidx.recyclerview.widget.RecyclerView as AndroidRecyclerView
 
@@ -31,6 +31,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         set(value) {
             field = value
             (native.layoutManager as? GridLayoutManager)?.spanCount = value
+            native.adapter?.notifyDataSetChanged()
         }
     actual var vertical: Boolean = true
         set(value) {
@@ -88,6 +89,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             recyclerView = this,
             calculationContext = this,
             layoutManager = native.layoutManager,
+            columns = columns,
             placeholderCount = 5,
             determineType = { 0 },
             makeView = { _, obs -> render(obs) }) {
@@ -108,40 +110,8 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             }
         }
     }
-//    actual fun <T, ID> children(
-//        items: Readable<List<T>>,
-//        identity: (T) -> ID,
-//        render: ViewWriter.(value: Readable<T>) -> Unit
-//    ): Unit {
-//        native.adapter = object : ObservableRVA<T>(
-//            recyclerView = this,
-//            calculationContext = this,
-//            layoutManager = native.layoutManager,
-//            placeholderCount = 5,
-//            determineType = { 0 },
-//            makeView = { _, obs -> render(obs) }) {
-//            init {
-//                val differ = AsyncListDiffer(this, object: DiffUtil.ItemCallback<T>() {
-//                    override fun areContentsTheSame(oldItem: T & Any, newItem: T & Any): Boolean = identity(oldItem) == identity(newItem)
-//                    override fun areItemsTheSame(oldItem: T & Any, newItem: T & Any): Boolean = oldItem == newItem
-//                })
-//                reactiveScope(onLoad = {
-////                    println("Data set to loading")
-//                    loading = true
-//                    notifyDataSetChanged()
-////                    println("Data set to loading complete")
-//                }) {
-//                    val new = items().toList()
-////                    println("Data set to $new")
-//                    loading = false
-//                    lastPublished = new
-//                    differ.submitList(new)
-//                    notifyDataSetChanged()
-////                    println("Data set to new complete")
-//                }
-//            }
-//        }
-//    }
+
+
 
 
     class SpacingItemDecoration(var spacing: Int) : AndroidRecyclerView.ItemDecoration() {
@@ -152,19 +122,6 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             state: androidx.recyclerview.widget.RecyclerView.State
         ) {
             when(val m = parent.layoutManager) {
-                is GridLayoutManager -> {
-                    val horizontal = m.orientation == GridLayoutManager.HORIZONTAL
-                    val pos = parent.getChildAdapterPosition(view)
-                    val firstSpan = pos / m.spanCount == 0
-                    val firstInSpan = pos % m.spanCount == 0
-                    if (horizontal) {
-                        outRect.left = if(firstSpan) 0 else spacing
-                        outRect.top = if(firstInSpan) 0 else spacing
-                    } else {
-                        outRect.left = if(firstInSpan) 0 else spacing
-                        outRect.top = if(firstSpan) 0 else spacing
-                    }
-                }
                 is LinearLayoutManager -> {
                     val horizontal = m.orientation == LinearLayoutManager.HORIZONTAL
                     val first = parent.getChildAdapterPosition(view) == 0
@@ -180,6 +137,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         val recyclerView: RView,
         val calculationContext: CalculationContext,
         val layoutManager: LayoutManager?,
+        val columns: Int,
         val placeholderCount: Int = 0,
         val determineType: (T) -> Int,
         val makeView: ViewWriter.(Int, Readable<T>) -> Unit
@@ -207,16 +165,12 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                     newView = view
                 }
             }
+
             recyclerView.withoutAnimation {
                 w.makeView(viewType, event)
             }
             val subview = newView?.native ?: throw IllegalArgumentException("makeView created no views in a RecyclerView!")
-            subview.layoutParams = AndroidRecyclerView.LayoutParams(
-                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
-                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
-                if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.VERTICAL)
-                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT,
-            )
+            subview.layoutParams =calculateLayoutParams()
             subview.tag = event
 //            calculationContext.onRemove { newView?.shutdown() }
             return object : AndroidRecyclerView.ViewHolder(subview) {}
@@ -236,7 +190,44 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
                 else
                     prop?.value = (lastPublished[position])
             }
+            holder.itemView.layoutParams = calculateLayoutParams()
+            holder.itemView.requestLayout()
         }
+
+        fun calculateLayoutParams(): RecyclerView.LayoutParams {
+            val screenWidth = AndroidAppContext.res.displayMetrics.widthPixels
+            val layoutParamWidth = when {
+                layoutManager is GridLayoutManager && layoutManager.spanCount> 1  ->{
+                    if (layoutManager.orientation != GridLayoutManager.HORIZONTAL) {
+                        println("teset ${(screenWidth / layoutManager.spanCount) - (this.recyclerView.spacing?.px?.toInt() ?: 0)}")
+                        (screenWidth / layoutManager.spanCount) - (this.recyclerView.spacing?.px?.toInt() ?: 0)
+                    } else AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                }
+                layoutManager is LinearLayoutManager -> if ((layoutManager as? LinearLayoutManager)?.orientation != LinearLayoutManager.HORIZONTAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                else -> AndroidRecyclerView.LayoutParams.MATCH_PARENT
+            }
+
+            val layoutParmsHieght = when {
+                layoutManager is GridLayoutManager && layoutManager.spanCount> 1  ->{
+                    if (layoutManager.orientation != GridLayoutManager.HORIZONTAL) {
+                        AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                    } else {
+                        (screenWidth / layoutManager.spanCount) - (this.recyclerView.spacing?.px?.toInt()?:0)
+                    }
+
+
+                }
+                layoutManager is LinearLayoutManager -> if ((layoutManager as? LinearLayoutManager)?.orientation == LinearLayoutManager.HORIZONTAL)
+                    AndroidRecyclerView.LayoutParams.MATCH_PARENT else AndroidRecyclerView.LayoutParams.WRAP_CONTENT
+                else -> AndroidRecyclerView.LayoutParams.MATCH_PARENT
+            }
+            return AndroidRecyclerView.LayoutParams(
+                layoutParamWidth,
+                layoutParmsHieght
+            )
+        }
+
     }
 
 actual fun scrollToIndex(

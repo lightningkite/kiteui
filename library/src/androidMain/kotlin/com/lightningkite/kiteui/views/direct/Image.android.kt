@@ -12,8 +12,10 @@ import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.Path.PathDrawable
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
 import android.widget.ImageView as AImageView
 
 
@@ -30,10 +32,13 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             if(this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
                 heightMeasureSpecLast = heightMeasureSpec
-                if (callbacks.isNotEmpty()) {
+
+                    if (callbacks.isNotEmpty()) {
                     val width = if (MeasureSpec.getMode(widthMeasureSpecLast) > 0) MeasureSpec.getSize(widthMeasureSpecLast) else AppState.windowInfo.value.width.value.toInt()
                     val height = if (MeasureSpec.getMode(heightMeasureSpecLast) > 0) MeasureSpec.getSize(heightMeasureSpecLast) else AppState.windowInfo.value.height.value.toInt()
-                    if (width != 0 && height != 0) {
+
+
+                        if (width != 0 && height != 0) {
                         callbacks.toList().forEach { cb -> cb.onSizeReady(width, height) }
                         callbacks.clear()
                     }
