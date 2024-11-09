@@ -150,6 +150,14 @@ inline fun ViewWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressB
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgressBar(context) , setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(CircularProgress(context), setup)
+}
+
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
