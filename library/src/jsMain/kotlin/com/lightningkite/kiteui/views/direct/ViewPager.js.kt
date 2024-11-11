@@ -5,13 +5,13 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlinx.serialization.json.buildJsonObject
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 
 
-@JsModule("glider-js")
-@JsNonModule
-external val glider: dynamic
+@JsModule("swiper")
+external val Swiper: dynamic
 
 actual class ViewPager actual constructor(context: RContext): RView(context) {
 //    private var controller: RecyclerController2? = null
@@ -27,10 +27,16 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
     init {
         native.tag = "div"
         native.classes.add("viewPager")
-        glider
-        native.onElement {
-//            js("")
+        native.appendChild(FutureElement().apply {
+            classes.add("swiper-viewpager")
         }
+        )
+        native.appendChild(FutureElement().apply {
+            println("Swiper test")
+            println(Swiper)
+           Swiper(".swiper-viewpager", buildJsonObject {  })
+        })
+
 
         with(object: ViewWriter(), CalculationContext by this {
             override val context: RContext = context
@@ -79,6 +85,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             }
         }
     }
+
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)

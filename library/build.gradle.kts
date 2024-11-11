@@ -55,6 +55,7 @@ kotlin {
 //        }
 //    }
     js(IR) {
+        useEsModules()  // Ensure you're using ES modules
         browser {
             testTask {
                 useKarma {
@@ -122,7 +123,7 @@ kotlin {
         val jsMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
-                implementation(npm("glider-js","1.7.8"))
+                implementation(npm("swiper","11.1.14"))
             }
         }
 
