@@ -122,6 +122,11 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             state: androidx.recyclerview.widget.RecyclerView.State
         ) {
             when(val m = parent.layoutManager) {
+                is GridLayoutManager -> {
+                    val horizontal = m.orientation == LinearLayoutManager.HORIZONTAL
+                    outRect.left = if (horizontal) spacing else 0
+                    outRect.top = if (!horizontal) spacing else 0
+                }
                 is LinearLayoutManager -> {
                     val horizontal = m.orientation == LinearLayoutManager.HORIZONTAL
                     val first = parent.getChildAdapterPosition(view) == 0
