@@ -172,7 +172,7 @@ class KiteUiPlugin : Plugin<Project> {
                 generateAutoroutes(sources, out)
             }
             afterEvaluate {
-                tasks.findByName("compileKotlinMetadata")?.dependsOn(task)
+                tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
             }
         }
 
