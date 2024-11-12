@@ -172,7 +172,14 @@ class KiteUiPlugin : Plugin<Project> {
                 generateAutoroutes(sources, out)
             }
             afterEvaluate {
-                tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
+                afterEvaluate {
+                    tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
+                    tasks.filter {
+                        it.name.contains("kspKotlin")
+                    }.forEach {
+                        it.dependsOn(task)
+                    }
+                }
             }
         }
 

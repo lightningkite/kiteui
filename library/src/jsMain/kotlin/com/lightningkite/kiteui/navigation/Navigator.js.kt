@@ -119,7 +119,7 @@ var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElemen
     .also { println("Base path is $it") }
 
 private fun Location.urlLike() = UrlLikePath(
-    segments = pathname.removePrefix(basePath).split('/').filter { it.isNotBlank() },
+    segments = pathname.removePrefix("/" + basePath.substringAfter("://").substringAfter('/')).split('/').filter { it.isNotBlank() },
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
         .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
 )
