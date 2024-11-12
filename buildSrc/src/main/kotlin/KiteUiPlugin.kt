@@ -47,6 +47,7 @@ class KiteUiPlugin : Plugin<Project> {
             group = "kiteui"
             from("src/commonMain/resources")
             into("src/jsMain/resources/common")
+            into("src/jsMain/resources/public/common")
             afterEvaluate {
 //                tasks.findByName("compileKotlinJs")?.dependsOn(task)
 
@@ -171,7 +172,7 @@ class KiteUiPlugin : Plugin<Project> {
                 generateAutoroutes(sources, out)
             }
             afterEvaluate {
-                tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
+                tasks.findByName("compileKotlinMetadata")?.dependsOn(task)
             }
         }
 

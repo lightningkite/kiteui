@@ -111,9 +111,12 @@ external interface BaseUrlScript {
     val baseUrl: String
 }
 
-var basePath = (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
-    JSON.parse<BaseUrlScript>(it).baseUrl
-} ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 } ?: "/"
+var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
+    ?.innerText
+    ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
+    ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }
+    ?: "/")
+    .also { println("Base path is $it") }
 
 private fun Location.urlLike() = UrlLikePath(
     segments = pathname.removePrefix(basePath).split('/').filter { it.isNotBlank() },
