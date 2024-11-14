@@ -124,6 +124,7 @@ kotlin {
             dependsOn(commonHtmlMain)
             dependencies {
                 implementation(npm("swiper","11.1.14"))
+                implementation(npm("ssr-window","4.0.2"))
             }
         }
 

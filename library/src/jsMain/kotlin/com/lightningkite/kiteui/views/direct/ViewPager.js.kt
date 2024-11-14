@@ -1,41 +1,89 @@
+
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Align
+import SwiperCSS
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import kotlinx.serialization.json.buildJsonObject
-import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLElement
-
-
-@JsModule("swiper")
-external val Swiper: dynamic
-
-actual class ViewPager actual constructor(context: RContext): RView(context) {
-//    private var controller: RecyclerController2? = null
-//    private var onController = ArrayList<(RecyclerController2)->Unit>()
-//    private fun onController(action: (RecyclerController2)->Unit) {
-//        controller?.let(action) ?: onController.add(action)
-//    }
-//    private val newViews = NewViewWriter(this, context)
+import kotlinx.browser.document
+import kotlinx.coroutines.delay
+import kotlinx.serialization.json.*
+import org.w3c.dom.*
 
 
 
+actual class ViewPager actual constructor(context: RContext):
+    RView(context) {
     private val buttons = ArrayList<RView>()
+    private val slides:MutableList<HTMLElement> = mutableListOf()
+    private var loaded = false
     init {
         native.tag = "div"
         native.classes.add("viewPager")
-        native.appendChild(FutureElement().apply {
-            classes.add("swiper-viewpager")
+        val swiperViewPagerContainer = FutureElement().apply {
+            tag = "div"
+            classes.add("swiper-viewpager-container")
+            setStyleProperty("height", "100%")
+            setStyleProperty("width", "100%")
+            setStyleProperty("overflow", "hidden")
         }
-        )
-        native.appendChild(FutureElement().apply {
-            println("Swiper test")
-            println(Swiper)
-           Swiper(".swiper-viewpager", buildJsonObject {  })
-        })
+
+        val swiperViewPager = FutureElement().apply {
+            tag = "div"
+            classes.add("swiper-viewpager")
+            SwiperCSS
+            innerHtmlUnsafe = """
+                        <div class="swiper-wrapper">
+                                <div class="swiper-slide">Slide 1</div>
+                                <div class="swiper-slide">Slide 2</div>
+                                <div class="swiper-slide" >Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+                                                                <div class="swiper-slide">Slide 3</div>
+
+
+                        </div>
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-scrollbar"></div>
+        """.trimIndent()
+
+        }
+
+
+        swiperViewPager.onElement {
+//            js("console.log(getWindow().getComputedStyle(it))")
+            val test:HTMLElement = it as HTMLElement
+            println(test)
+            val options = buildJsonObject {
+                put("direction","horizontal")
+                put("slidesPerView", 1)
+                put("centeredSlides", true)
+                put("freeMode", true)
+                put("freeModeSticky", true)
+                put("mousewheel", true)
+                put("slideToClickedSlide",true)
+                put("scrollbar", buildJsonObject {
+                    put("el", "swiper-scrollbar")
+                    put("hide", true)
+                })
+                put("keyboard", buildJsonObject { put("enabled", true) })
+                put("virtual", buildJsonObject { put("slides", buildJsonArray { slides.forEach { add(it.toString()) } }) })
+            }
+            js("console.log(it.parent)")
+                val testSwiper = Swiper(it as HTMLElement, options)
+                println(testSwiper.update())
+                js("console.log(testSwiper)")
+            testSwiper.update()
+//
+        }
+
+        swiperViewPagerContainer.appendChild(swiperViewPager)
+        native.appendChild(swiperViewPagerContainer)
+
 
 
         with(object: ViewWriter(), CalculationContext by this {
@@ -45,22 +93,22 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 view.parent = this@ViewPager
             }
             override fun addChild(view: RView) {
-                native.appendChild(view.native)
+                native .appendChild(view.native)
             }
         }) {
 
             buttonTheme - button {
                 buttons += this
                 native.classes.add("touchscreenOnly")
+                icon {
+                    source = Icon.chevronLeft
+                }
                 native.style.run {
                     position = "absolute"
-                    left = "0"
+                    right = "0"
                     top = "50%"
                     transform = "translateY(-50%)"
                     zIndex = "99"
-                }
-                icon {
-                    source = Icon.chevronLeft
                 }
                 onClick {
 //                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
@@ -71,11 +119,12 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                 native.classes.add("touchscreenOnly")
                 native.style.run {
                     position = "absolute"
-                    right = "0"
+                    left = "0"
                     top = "50%"
                     transform = "translateY(-50%)"
                     zIndex = "99"
                 }
+
                 icon {
                     source = Icon.chevronRight
                 }
@@ -83,6 +132,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
 //                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
                 }
             }
+
         }
     }
 
@@ -109,28 +159,12 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
-//        onController { controller ->
-//            controller.renderer = ItemRenderer<T>(
-//                create = { value ->
-//                    val prop = Property(value)
-//                    render(newViews, prop)
-//                    val new = newViews.newView!!
-//                    addChild(new)
-//                    new.asDynamic().__ROCK__prop = prop
-//                    new.native.create() as HTMLElement
-//                },
-//                update = { element, value ->
-//                    @Suppress("UNCHECKED_CAST")
-//                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value = value
-//                },
-//                shutdown = { element ->
-//                    removeChild(children.indexOfFirst { it.native.element === element })
-//                }
-//            )
-//            reactiveScope {
-//                controller.data = items().asIndexed()
-//            }
-//        }
+        reactiveScope {
+            items().map {
+//                render(it)
+            }
+        }
+        slides
     }
 
     init {
