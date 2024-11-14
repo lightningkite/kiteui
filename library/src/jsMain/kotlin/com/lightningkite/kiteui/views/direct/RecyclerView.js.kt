@@ -961,7 +961,9 @@ class RecyclerController2(
 
     fun updateVisibleIndexes() {
         firstVisible.let {
-            val v = allSubviews.firstOrNull()?.index?.times(columns) ?: -1
+            val v = allSubviews.firstOrNull {
+                it.startPosition + it.size > viewportOffset + padding
+            }?.index?.times(columns) ?: -1
             if (v != it.value) it.value = v
         }
         centerVisible.let {
@@ -972,7 +974,9 @@ class RecyclerController2(
                 }
         }
         lastVisible.let {
-            val v = allSubviews.lastOrNull()?.index?.times(columns)?.plus(columns - 1) ?: -1
+            val v = allSubviews.lastOrNull {
+                it.startPosition < viewportOffset + viewportSize
+            }?.index?.times(columns)?.plus(columns - 1) ?: -1
             if (v != it.value) it.value = v
         }
     }
