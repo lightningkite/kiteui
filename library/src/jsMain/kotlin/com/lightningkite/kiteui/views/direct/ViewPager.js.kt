@@ -17,6 +17,7 @@ actual class ViewPager actual constructor(context: RContext):
     RView(context) {
     private val buttons = ArrayList<RView>()
     private val slides:MutableList<HTMLElement> = mutableListOf()
+    private val newView = NewViewWriter(this, context)
     private var loaded = false
     init {
         native.tag = "div"
@@ -44,7 +45,6 @@ actual class ViewPager actual constructor(context: RContext):
                                                                 <div class="swiper-slide">Slide 3</div>
                                                                 <div class="swiper-slide">Slide 3</div>
                                                                 <div class="swiper-slide">Slide 3</div>
-
 
                         </div>
                         <div class="swiper-pagination"></div>
@@ -160,26 +160,31 @@ actual class ViewPager actual constructor(context: RContext):
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
         reactiveScope {
-            items().map {
-//                render(it)
+            val tempSlides = items().map {
+                val prop = Property(it)
+                render(newView,prop)
+                val new = newView.newView
+                new.asDynamic().__ROCK__PROP = prop
+                new!!.native.create() as HTMLElement
             }
+            slides.addAll(tempSlides)
         }
         slides
     }
 
     init {
-        onRemove {
-//            controller?.shutdown()
-        }
-        native.onElement {
-            it as HTMLElement
-            ResizeObserver { entries, obs ->
-                it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-                it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-            }.observe(it)
-            it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-            it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-        }
+//        onRemove {
+////            controller?.shutdown()
+//        }
+//        native.onElement {
+//            it as HTMLElement
+//            ResizeObserver { entries, obs ->
+//                it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
+//                it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
+//            }.observe(it)
+//            it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
+//            it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
+//        }
     }
 
     private val _index = Property<Int>(0)

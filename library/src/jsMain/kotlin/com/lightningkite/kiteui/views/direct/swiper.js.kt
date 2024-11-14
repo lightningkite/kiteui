@@ -12,6 +12,9 @@ external class Swiper(container: HTMLElement, options: dynamic) {
 
 
 
-//external interface SwiperOptions {
-//    val modules: Array
-//}
+external interface SwiperOptions {
+    val direction:String?
+    val slidesPerView:Int?
+    val centeredSlides:Boolean?
+    val freeMode:Boolean?
+}
