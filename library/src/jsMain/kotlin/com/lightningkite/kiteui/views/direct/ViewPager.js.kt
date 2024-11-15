@@ -1,43 +1,90 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.views.direct.swiper.SwiperCSS
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLElement
+import com.lightningkite.kiteui.views.direct.swiper.Swiper
+import org.w3c.dom.*
+import kotlin.js.json
 
-actual class ViewPager actual constructor(context: RContext): RView(context) {
-    private var controller: RecyclerController2? = null
-    private var onController = ArrayList<(RecyclerController2)->Unit>()
-    private fun onController(action: (RecyclerController2)->Unit) {
-        controller?.let(action) ?: onController.add(action)
-    }
-    private val newViews = NewViewWriter(this, context)
+
+actual class ViewPager actual constructor(context: RContext) :
+    RView(context) {
     private val buttons = ArrayList<RView>()
+    private val slides: MutableList<HTMLElement> = mutableListOf()
+    private val newView = NewViewWriter(this, context)
+    private val transitionDuration:Int = 300 //in ms
+    private var swiper: Swiper? = null
+
     init {
         native.tag = "div"
-        native.classes.add("recyclerView")
+        native.classes.add("viewPager")
+        native.setStyleProperty("height", "100vh")
+        native.setStyleProperty("width", "auto")
+        native.setStyleProperty("display", "flex")
+        native.setStyleProperty("overflow", "hidden")
+        native.setStyleProperty("align-items", "center")
+        SwiperCSS
+        native.innerHtmlUnsafe = """
+            <style>
+             .swiper-slide {
+                    flex-shrink: 0;
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                    transition-property: transform;
+                    display: flex;
+                    justify-content: center;
+                }
+            </style>
+            <div class="swiper-wrapper" style="display:flex; width: 100%; height:100%; >
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-scrollbar"></div>
+            """.trimIndent()
         native.onElement {
-            val controller = RecyclerController2(it as HTMLDivElement, false)
-            controller.forceCentering = true
-            controller.contentHolder.classList.add("viewPager")
-            this.controller = controller
-            onController.forEach { it(controller) }
-            onController.clear()
-        }
+            val json = json(
+                        "direction" to "horizontal",
+                        "spaceBetween" to 0,
+                        "slidesPerView" to 1,
+                        "centeredSlides" to true,
+                        "autoHeight" to false,
+                        "initialSlide" to _index.value ,
+                        "speed" to transitionDuration,
+                        "keyboardControl" to true,
+                        "virtual" to json (
+                            "slides" to slides.map { it.outerHTML }.toTypedArray()
 
-        with(object: ViewWriter(), CalculationContext by this {
+                        )
+                    )
+                    if(_index.value != 0) {
+                        native.setStyleProperty("justify-content", "center")
+                    }
+                    swiper = Swiper(it as HTMLElement, json)
+                    swiper?.on("slideChange", {
+                        _index.value =  swiper?.realIndex ?: 0
+                        if(swiper?.previousIndex == 0 && swiper?.realIndex != 0){
+                            native.setStyleProperty("justify-content", "center")
+                        }
+                        if (swiper?.realIndex == 0) {
+                            native.setStyleProperty("justify-content", "left")
+                        }
+                    })
+                }
+        with(object : ViewWriter(), CalculationContext by this {
             override val context: RContext = context
             override fun willAddChild(view: RView) {
                 super.willAddChild(view)
                 view.parent = this@ViewPager
             }
+
             override fun addChild(view: RView) {
                 native.appendChild(view.native)
             }
         }) {
+
 
             buttonTheme - button {
                 buttons += this
@@ -48,33 +95,47 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
                     top = "50%"
                     transform = "translateY(-50%)"
                     zIndex = "99"
+                    width="2.7rem"
+                    height="2.7rem"
                 }
+
                 icon {
+
                     source = Icon.chevronLeft
                 }
                 onClick {
-                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
+                    if (swiper != null) {
+                        swiper?.slidePrev(transitionDuration,true)
+                    }
                 }
             }
+
             buttonTheme - button {
                 buttons += this
                 native.classes.add("touchscreenOnly")
+                icon {
+                    source = Icon.chevronRight
+
+                }
                 native.style.run {
                     position = "absolute"
                     right = "0"
                     top = "50%"
                     transform = "translateY(-50%)"
                     zIndex = "99"
-                }
-                icon {
-                    source = Icon.chevronRight
+                    width="2.7rem"
+                    height="2.7rem"
                 }
                 onClick {
-                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
+                    if (swiper != null) {
+                        swiper?.slideNext(transitionDuration,true)
+                    }
                 }
             }
+
         }
     }
+
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
@@ -98,140 +159,24 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
-        onController { controller ->
-            controller.renderer = ItemRenderer<T>(
-                create = { value ->
-                    val prop = Property(value)
-                    render(newViews, prop)
-                    val new = newViews.newView!!
-                    addChild(new)
-                    new.asDynamic().__ROCK__prop = prop
-                    new.native.create() as HTMLElement
-                },
-                update = { element, value ->
-                    @Suppress("UNCHECKED_CAST")
-                    (children.find { it.native.element === element }?.asDynamic().__ROCK__prop as? Property<T>)?.value = value
-                },
-                shutdown = { element ->
-                    removeChild(children.indexOfFirst { it.native.element === element })
-                }
-            )
-            reactiveScope {
-                controller.data = items().asIndexed()
+        reactiveScope {
+            val tempSlides = items().map {
+                val prop = Property(it)
+                render(newView, prop)
+                val new = newView.newView
+                new.asDynamic().__ROCK__PROP = prop
+                new!!.native.create() as HTMLElement
             }
+            slides.addAll(tempSlides)
         }
+        slides
     }
-
-    init {
-        onRemove {
-            controller?.shutdown()
-        }
-        native.onElement {
-            it as HTMLElement
-            ResizeObserver { entries, obs ->
-                it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-                it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-            }.observe(it)
-            it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-            it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-        }
-    }
-
-//    private val _lastVisibleIndex = Property(0)
-//    actual val lastVisibleIndex: Readable<Int> = _lastVisibleIndex
-//    init { onController { it.lastVisible.addListener { _lastVisibleIndex.value = it.lastVisible.value } } }
 
     private val _index = Property<Int>(0)
     actual val index: Writable<Int> = _index.withWrite { index ->
-        onController { it.jump(index, Align.Center, animationsEnabled) }
+        _index.value = index
+        if (swiper != null ) {
+            swiper?.slideTo(index,transitionDuration,false)
+        }
     }
-    init { onController { it.centerVisible.addListener { _index.value = it.centerVisible.value } } }
 }
-
-//@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NViewPager = HTMLDivElement
-//
-//@ViewDsl
-//actual inline fun ViewWriter.viewPagerActual(crossinline setup: ViewPager.() -> Unit) {
-//    themedElement<HTMLDivElement>("div", viewDraws = false) {
-//        classList.add("recyclerView")
-//        val newViews: ViewWriter = newViews()
-//        ResizeObserver { entries, obs ->
-//            style.setProperty("--pager-width", "calc(${clientWidth}px")
-//            style.setProperty("--pager-height", "calc(${clientHeight}px")
-//        }.observe(this)
-//        style.setProperty("--pager-width", "calc(${clientWidth}px")
-//        style.setProperty("--pager-height", "calc(${clientHeight}px")
-//        val rc = RecyclerController2(
-//            root = this,
-//            newViews = newViews,
-//            vertical = false
-//        ).apply {
-//            this.contentHolder.classList.add("viewPager")
-//        }
-//        rc.forceCentering = true
-//        this.asDynamic().__ROCK__controller = rc
-//
-//        button {
-//            native.addClass("touchscreenOnly")
-//            native.style.run {
-//                position = "absolute"
-//                left = "0"
-//                top = "50%"
-//                transform = "translateY(-50%)"
-//            }
-//            icon {
-//                source = Icon.chevronLeft
-//            }
-//            onClick {
-//                rc.jump(rc.centerVisible.value - 1, Align.Center, true)
-//            }
-//        }
-//        button {
-//            native.addClass("touchscreenOnly")
-//            native.style.run {
-//                position = "absolute"
-//                right = "0"
-//                top = "50%"
-//                transform = "translateY(-50%)"
-//            }
-//            icon {
-//                source = Icon.chevronRight
-//            }
-//            onClick {
-//                rc.jump(rc.centerVisible.value + 1, Align.Center, true)
-//            }
-//        }
-//        setup(ViewPager(this))
-//    }
-//}
-//
-//actual val ViewPager.index: Writable<Int> get() {
-//    return (native.asDynamic().__ROCK__controller as RecyclerController2).centerVisible
-//        .withWrite {
-//            (native.asDynamic().__ROCK__controller as RecyclerController2).jump(it, Align.Center, animationsEnabled)
-//        }
-//}
-//
-//actual fun <T> ViewPager.children(
-//    items: Readable<List<T>>,
-//    render: ViewWriter.(value: Readable<T>) -> Unit
-//) {
-//    (native.asDynamic().__ROCK__controller as RecyclerController2).let {
-//        it.renderer = ItemRenderer<T>(
-//            create = { value ->
-//                val prop = Property(value)
-//                render(it.newViews, prop)
-//                it.newViews.rootCreated!!.also {
-//                    it.asDynamic().__ROCK_prop__ = prop
-//                }
-//            },
-//            update = { element, value ->
-//                (element.asDynamic().__ROCK_prop__ as Property<T>).value = value
-//            }
-//        )
-//        reactiveScope {
-//            it.data = items.await().asIndexed()
-//        }
-//    }
-//}
