@@ -16,10 +16,10 @@ object TestingGroundScreen: Screen {
             h1("Experiments tests")
 //            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
             val items = Constant((1..30).toList())
-            important-viewPager {
+             important-viewPager {
                   children(items) {
                       stack {
-                          centered - text { ::content { "Screen ${it()}" } }
+                          important- centered - expanding - text { ::content { "Screen ${it()}" } }
                       }
                   }
 
