@@ -124,11 +124,13 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     }
 }
 
+var disableAppleStyleAppBar = false
+
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
-        if (Platform.probablyAppleUser) {
+        if (Platform.probablyAppleUser && !disableAppleStyleAppBar) {
             compact - bar - stack {
                 showOnPrint = false
                 setup(appNav)
