@@ -1,13 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import SwiperCSS
+import com.lightningkite.kiteui.views.direct.swiper.SwiperCSS
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import kotlinx.browser.document
-import kotlinx.coroutines.delay
-import kotlinx.serialization.json.*
+import com.lightningkite.kiteui.views.direct.swiper.Swiper
 import org.w3c.dom.*
 import kotlin.js.json
 
@@ -17,52 +15,64 @@ actual class ViewPager actual constructor(context: RContext) :
     private val buttons = ArrayList<RView>()
     private val slides: MutableList<HTMLElement> = mutableListOf()
     private val newView = NewViewWriter(this, context)
-    private var loaded = false
+    private val transitionDuration:Int = 300 //in ms
+    private var swiper: Swiper? = null
 
     init {
         native.tag = "div"
         native.classes.add("viewPager")
-        native.appendChild(FutureElement().apply {
-            tag = "div"
-            classes.add("swiper-viewpager-container")
-            setStyleProperty("height", "100%")
-            setStyleProperty("width", "100%")
-            setStyleProperty("overflow", "hidden")
-            appendChild(FutureElement().apply {
-                tag = "div"
-                classes.add("swiper-viewpager")
-                SwiperCSS
-                innerHtmlUnsafe = """
-                        <div class="swiper-wrapper">
-                        </div>
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-scrollbar"></div>
-                """.trimIndent()
-                onElement {
-                    val json = json(
+        native.setStyleProperty("height", "100vh")
+        native.setStyleProperty("width", "auto")
+        native.setStyleProperty("display", "flex")
+        native.setStyleProperty("overflow", "hidden")
+        native.setStyleProperty("align-items", "center")
+        SwiperCSS
+        native.innerHtmlUnsafe = """
+            <style>
+             .swiper-slide {
+                    flex-shrink: 0;
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                    transition-property: transform;
+                    display: flex;
+                    justify-content: center;
+                }
+            </style>
+            <div class="swiper-wrapper" style="display:flex; width: 100%; height:100%; >
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-scrollbar"></div>
+            """.trimIndent()
+        native.onElement {
+            val json = json(
                         "direction" to "horizontal",
                         "spaceBetween" to 0,
                         "slidesPerView" to 1,
-                        "mouseWheel" to json (
-                            "enabled" to true,
-                            "eventsTarge" to "swiper-viewpager"
-                        ),
-                        "keyboardControl" to true,
                         "centeredSlides" to true,
+                        "autoHeight" to false,
+                        "initialSlide" to _index.value ,
+                        "speed" to transitionDuration,
+                        "keyboardControl" to true,
                         "virtual" to json (
                             "slides" to slides.map { it.outerHTML }.toTypedArray()
+
                         )
                     )
-                    js("console.log(json)")
-                    val testSwiper = Swiper(it as HTMLElement, json)
-                    js("console.log(testSwiper)")
-                    testSwiper.update()
+                    if(_index.value != 0) {
+                        native.setStyleProperty("justify-content", "center")
+                    }
+                    swiper = Swiper(it as HTMLElement, json)
+                    swiper?.on("slideChange", {
+                        _index.value =  swiper?.realIndex ?: 0
+                        if(swiper?.previousIndex == 0 && swiper?.realIndex != 0){
+                            native.setStyleProperty("justify-content", "center")
+                        }
+                        if (swiper?.realIndex == 0) {
+                            native.setStyleProperty("justify-content", "left")
+                        }
+                    })
                 }
-            })
-        })
-
-
-
         with(object : ViewWriter(), CalculationContext by this {
             override val context: RContext = context
             override fun willAddChild(view: RView) {
@@ -75,23 +85,7 @@ actual class ViewPager actual constructor(context: RContext) :
             }
         }) {
 
-            buttonTheme - button {
-                buttons += this
-                native.classes.add("touchscreenOnly")
-                icon {
-                    source = Icon.chevronLeft
-                }
-                native.style.run {
-                    position = "absolute"
-                    right = "0"
-                    top = "50%"
-                    transform = "translateY(-50%)"
-                    zIndex = "99"
-                }
-                onClick {
-//                    onController { rc -> rc.jump(rc.centerVisible.value - 1, Align.Center, true) }
-                }
-            }
+
             buttonTheme - button {
                 buttons += this
                 native.classes.add("touchscreenOnly")
@@ -101,13 +95,41 @@ actual class ViewPager actual constructor(context: RContext) :
                     top = "50%"
                     transform = "translateY(-50%)"
                     zIndex = "99"
+                    width="2.7rem"
+                    height="2.7rem"
                 }
 
                 icon {
-                    source = Icon.chevronRight
+
+                    source = Icon.chevronLeft
                 }
                 onClick {
-//                    onController { rc -> rc.jump(rc.centerVisible.value + 1, Align.Center, true) }
+                    if (swiper != null) {
+                        swiper?.slidePrev(transitionDuration,true)
+                    }
+                }
+            }
+
+            buttonTheme - button {
+                buttons += this
+                native.classes.add("touchscreenOnly")
+                icon {
+                    source = Icon.chevronRight
+
+                }
+                native.style.run {
+                    position = "absolute"
+                    right = "0"
+                    top = "50%"
+                    transform = "translateY(-50%)"
+                    zIndex = "99"
+                    width="2.7rem"
+                    height="2.7rem"
+                }
+                onClick {
+                    if (swiper != null) {
+                        swiper?.slideNext(transitionDuration,true)
+                    }
                 }
             }
 
@@ -150,27 +172,11 @@ actual class ViewPager actual constructor(context: RContext) :
         slides
     }
 
-    init {
-//        onRemove {
-////            controller?.shutdown()
-//        }
-//        native.onElement {
-//            it as HTMLElement
-//            ResizeObserver { entries, obs ->
-//                it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-//                it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-//            }.observe(it)
-//            it.style.setProperty("--pager-width", "calc(${it.clientWidth}px")
-//            it.style.setProperty("--pager-height", "calc(${it.clientHeight}px")
-//        }
-    }
-
     private val _index = Property<Int>(0)
     actual val index: Writable<Int> = _index.withWrite { index ->
-//        onController { it.jump(index, Align.Center, animationsEnabled) }
+        _index.value = index
+        if (swiper != null ) {
+            swiper?.slideTo(index,transitionDuration,false)
+        }
     }
-//    init { onController { it.centerVisible.addListener { _index.value = it.centerVisible.value } } }
 }
-
-
-//}
