@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.InvalidSemantic
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
@@ -33,6 +34,8 @@ inline fun ViewWriter.warningText(setup: WarningText.() -> Unit) {
     }
 }
 
+
+
 @Routable("/validation")
 class ValidationTestScreen: Screen {
     data class TestModel(
@@ -42,7 +45,11 @@ class ValidationTestScreen: Screen {
         val list: List<String> = emptyList()
     )
 
-    val draft = Draft(TestModel())
+    val draft = Draft(
+        TestModel(
+            list = List(30) { "" }
+        )
+    )
 
     override fun ViewWriter.render() {
         col {
@@ -76,6 +83,14 @@ class ValidationTestScreen: Screen {
                     }
                 }
             )
+
+            val strings = draft
+                .lens(
+                    get = { it.list },
+                    modify = { o, it -> o.copy(list = it) }
+                )
+                .lensByElementAssumingSetNeverManipulates { it.vet { if (it.isBlank()) throw InvalidException("Cannot be blank"); it } }
+
 
             col {
                 spacing = 0.2.rem
@@ -118,7 +133,18 @@ class ValidationTestScreen: Screen {
                 onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.errorSummary ?: "" } }
             }
 
-
+            expanding - scrolls - card - recyclerView {
+                spacing = 1.rem
+                children(strings) { str ->
+                    col {
+                        fieldTheme - textField {
+                            content bind str.flatten()
+                            dynamicTheme { if (str().invalid() != null) InvalidSemantic else null }
+                        }
+                        onlyWhen { str().invalid() != null } - text { ::content { str().invalid()?.errorSummary ?: "" } }
+                    }
+                }
+            }
         }
     }
 }
