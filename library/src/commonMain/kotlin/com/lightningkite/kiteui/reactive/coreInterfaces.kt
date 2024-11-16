@@ -31,7 +31,7 @@ interface WriteOnly<T> {
 }
 
 interface Writable<T> : Readable<T>, WriteOnly<T> {
-    suspend infix fun setState(state: ReadableState<T>)
+    suspend fun setState(name: String, state: ReadableState<T>)
 }
 
 interface ImmediateReadable<out T> : Readable<T>, ReadOnlyProperty<Any?, T> {

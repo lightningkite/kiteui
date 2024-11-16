@@ -28,8 +28,8 @@ value class ReadableState<out T>(val raw: T) {
 
     inline val error: ErrorState? get() = raw as? ErrorState
     inline val exception: Exception? get() = (raw as? ErrorState.ThrownException)?.exception
-    inline val invalid: ErrorState.Invalid<T>? get() = raw as? ErrorState.Invalid<T>
-    inline val warning: ErrorState.Warning<T>? get() = raw as? ErrorState.Warning<T>
+    inline val invalid: ErrorState.Invalid<out T>? get() = raw as? ErrorState.Invalid<T>
+    inline val warning: ErrorState.Warning<out T>? get() = raw as? ErrorState.Warning<T>
 
     @Suppress("UNCHECKED_CAST")
     companion object {
@@ -43,7 +43,8 @@ value class ReadableState<out T>(val raw: T) {
             ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
 
         fun <T> exception(exception: Exception) =
-            ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
+            if (exception is CancelledException) notReady
+            else ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
     }
 
     inline fun <B> map(mapper: (T)->B): ReadableState<B> {
@@ -77,7 +78,7 @@ value class ReadableState<out T>(val raw: T) {
             InternalReadableNotReady -> notReady()
             is ErrorState.ThrownException -> exception(raw.exception)
             is InternalReadableWrapper<*> -> data(raw.other as T)
-            is ErrorState.HasDataAttached<*> -> data(raw.data as T)
+            is ErrorState.MetaData<*> -> data(raw.data as T)
             else -> data(raw)
         }
     }
@@ -105,35 +106,101 @@ value class ReadableState<out T>(val raw: T) {
     }
 }
 
+@OptIn(InternalKiteUi::class)
+inline fun <T> resolveLensState(
+    original: ReadableState<T>,
+    new: ReadableState<T>,
+    lensName: String,
+): ReadableState<T> =
+    try {
+        new.handle<ReadableState<T>>(
+            success = { data ->
+                if (original.raw is ErrorState.FromLensing<*>) {
+                    (original.raw as ErrorState.FromLensing<T>)
+                        .removeError(lensName, data)
+                        ?.let { ReadableState(it) as ReadableState<T> }
+                        ?: ReadableState(data)
+                } else
+                    ReadableState(data)
+            },
+            error = { error ->
+                if (error !is ErrorState.MetaData<*>) return@handle original
+                if (original.raw is ErrorState.FromLensing<*>) {
+                    (original.raw as ErrorState.FromLensing<T>)
+                        .addError(lensName, error as ErrorState.MetaData<T>)
+                        .let { ReadableState(it) as ReadableState<T> }
+                }
+                else ReadableState(ErrorState.FromLensing(lensName, error)) as ReadableState<T>
+            },
+            notReady = { original }
+        )
+    } catch (e: Exception) {
+        ReadableState.exception(e)
+    }
+
 class WarningException(val summary: String, val description: String = summary) : Exception(description)
 class InvalidException(val summary: String, val description: String = summary) : Exception(description)
+
 
 sealed interface ErrorState {
     enum class Severity { Low, Medium, High }
     val severity: Severity
+    val errorSummary: String
+    val errorDescription: String
 
-    sealed interface HasDataAttached<out T>: ErrorState {
+    sealed interface MetaData<T> : ErrorState {
         val data: T
     }
 
-    data class Warning<out T>(
+    data class Warning<T>(
         override val data: T,
-        val errorSummary: String,
-        val errorDescription: String = errorSummary
-    ): HasDataAttached<T> {
+        override val errorSummary: String,
+        override val errorDescription: String = errorSummary
+    ): MetaData<T> {
         override val severity: Severity get() = Severity.Low
     }
 
-    data class Invalid<out T>(
+    data class Invalid<T>(
         override val data: T,
-        val errorSummary: String,
-        val errorDescription: String = errorSummary
-    ): HasDataAttached<T> {
+        override val errorSummary: String,
+        override val errorDescription: String = errorSummary
+    ): MetaData<T> {
         override val severity: Severity get() = Severity.Medium
+    }
+
+    @InternalKiteUi class FromLensing<T> private constructor(
+        override val data: T,
+        val errors: Map<String, MetaData<T>>
+    ): MetaData<T> {
+        constructor(name: String, error: MetaData<T>) : this(error.data, mapOf(name to error))
+
+        override val severity: Severity get() =
+            errors.values.fold(Severity.Low) { acc, it -> if (it.severity > acc) it.severity else acc }
+
+        override val errorSummary: String =
+            errors.asIterable().joinToString(separator = "\n- ") { (name, state) -> "$name : ${state.errorSummary}" }
+
+        override val errorDescription: String =
+            errors.asIterable().joinToString(separator = "\n- ") { (name, state) -> "$name : ${state.errorDescription}" }
+
+        fun addError(name: String, error: MetaData<T>): FromLensing<T> =
+            FromLensing(
+                error.data,
+                errors + (name to error)
+            )
+
+        fun removeError(name: String, data: T): FromLensing<T>? {
+            val updated = errors - name
+            return if (updated.isEmpty()) null
+            else FromLensing(data, updated)
+        }
     }
 
     @InternalKiteUi class ThrownException(val exception: Exception): ErrorState {
         override val severity: Severity get() = Severity.High
+
+        override val errorSummary: String get() = exception.message ?: "Encountered an Exception: $exception"
+        override val errorDescription: String get() = errorSummary
     }
 }
 
