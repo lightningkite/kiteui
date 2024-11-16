@@ -2,10 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.invokeAllSafe
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSNotificationCenter
@@ -66,7 +63,10 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = textField.text
-            set(value) { textField.text = value }
+            set(value) {
+                if(textField.text != value)
+                    textField.text = value
+            }
         override fun addListener(listener: () -> Unit): () -> Unit {
             delegate.listeners.add(listener)
             return {
@@ -141,7 +141,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         var t = theme
         if(!textField.editable) t = t[DisabledSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 

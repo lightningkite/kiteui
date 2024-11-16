@@ -1,37 +1,15 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.launch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ReactivityTests {
-    @Test fun testAsync() {
 
-        var cont: Continuation<String>? = null
-        val item = asyncGlobal<String> {
-            println("Calculating...")
-            suspendCoroutineCancellable {
-                cont = it
-                return@suspendCoroutineCancellable {}
-            }
-        }
-        launchGlobal {
-            println("A: ${item.await()}")
-        }
-        launchGlobal {
-            println("B: ${item.await()}")
-        }
-        cont?.resume("Success")
-
-    }
     @Test
     fun waitingTest() {
         val property = Property<Int?>(null)
@@ -48,13 +26,14 @@ class ReactivityTests {
         assertEquals((0..9).toList(), emissions)
     }
 
-    @Test fun baselineScope() {
+    @Test
+    fun baselineScope() {
         testContext {
             val a = Property(0)
             var received = -1
-            DirectReactiveContext(this, action = {
+            TypedReactiveContext(this, action = {
                 received = a()
-            }).start()
+            }).startCalculation()
             assertEquals(a.value, received)
             a.value++
             assertEquals(a.value, received)
@@ -65,7 +44,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun launchReadableAwait() {
+    @Test
+    fun launchReadableAwait() {
         testContext {
             val a = LateInitProperty<Int>()
             var received = -1
@@ -80,7 +60,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun sharedShutdownTest() {
+    @Test
+    fun sharedShutdownTest() {
         var onRemoveCalled = 0
         var scopeCalled = 0
         val shared = shared(Dispatchers.Unconfined) {
@@ -90,7 +71,7 @@ class ReactivityTests {
         }
         assertEquals(0, scopeCalled)
         assertEquals(0, onRemoveCalled)
-        val removeListener = shared.addListener {  }
+        val removeListener = shared.addListener { }
         assertEquals(1, scopeCalled)
         assertEquals(0, onRemoveCalled)
         removeListener()
@@ -98,7 +79,8 @@ class ReactivityTests {
         assertEquals(1, onRemoveCalled)
     }
 
-    @Test fun basicer() {
+    @Test
+    fun basicer() {
         val a = Property(1)
         val b = Property(2)
 
@@ -110,10 +92,11 @@ class ReactivityTests {
         println("Done.")
     }
 
-    @Test fun basics() {
+    @Test
+    fun basics() {
         val a = Property(1)
-        val b = shared(Dispatchers.Unconfined) { println("CALC a"); a() }
-        val c = shared(Dispatchers.Unconfined) { println("CALC b"); b() }
+        val b = shared(Dispatchers.Unconfined) { Exception("CALC a").printStackTrace(); a() }
+        val c = shared(Dispatchers.Unconfined) { Exception("CALC b").printStackTrace(); b() }
         var hits = 0
 
         testContext {
@@ -132,7 +115,8 @@ class ReactivityTests {
         println("Done.")
     }
 
-    @Test fun lateinit() {
+    @Test
+    fun lateinit() {
         val a = LateInitProperty<Int>()
         var hits = 0
 
@@ -155,7 +139,8 @@ class ReactivityTests {
         println("Done.")
     }
 
-    @Test fun sharedTest() {
+    @Test
+    fun sharedTest() {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
@@ -189,7 +174,8 @@ class ReactivityTests {
         println("Done.")
     }
 
-    @Test fun sharedTest2() {
+    @Test
+    fun sharedTest2() {
         val a = Property(1)
         val b = Property(2)
         var cInvocations = 0
@@ -222,7 +208,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun sharedTest3() {
+    @Test
+    fun sharedTest3() {
         val a = VirtualDelay { 1 }
         val c = SharedReadable(Dispatchers.Unconfined) { async { a.await() } }
         val d = SharedReadable(Dispatchers.Unconfined) { c() }
@@ -234,7 +221,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun sharedTest4() {
+    @Test
+    fun sharedTest4() {
         val property = LateInitProperty<LateInitProperty<Int>>()
         val shared = shared(Dispatchers.Unconfined) { property()() }
         var completions = 0
@@ -249,7 +237,8 @@ class ReactivityTests {
         assertEquals(completions, 2)
     }
 
-    @Test fun sharedTest5() {
+    @Test
+    fun sharedTest5() {
         val property = LateInitProperty<Int>()
         val shared = shared(Dispatchers.Unconfined) { property() }
         var completions = 0
@@ -262,7 +251,8 @@ class ReactivityTests {
         assertEquals(completions, 2)
     }
 
-    @Test fun websocketLikeTest() {
+    @Test
+    fun websocketLikeTest() {
         val source = LateInitProperty<LateInitProperty<String>>()
         val socket = shared(Dispatchers.Unconfined) { source() }
         val sublistener = shared(Dispatchers.Unconfined) { socket()() }
@@ -277,7 +267,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun bindTest() {
+    @Test
+    fun bindTest() {
         val master = LateInitProperty<Int>()
         val secondary = Property<Int>(0)
         testContext {
@@ -290,7 +281,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun dumbtest() {
+    @Test
+    fun dumbtest() {
         val listItem = LateInitProperty<Int>()
         val selected = Property<Int>(0)
         testContext {
@@ -299,7 +291,8 @@ class ReactivityTests {
         }
     }
 
-    @Test fun flowtest() {
+    @Test
+    fun flowtest() {
         testContext {
             val flow = MutableStateFlow(0)
             reactiveScope {
@@ -309,13 +302,14 @@ class ReactivityTests {
         }
     }
 
-    @Test fun deferredTest() {
+    @Test
+    fun deferredTest() {
         testContext {
             val other = Property(0)
             var starts = 0
             var completes = 0
             val wait = WaitGate()
-            val deferred = (GlobalScope + Dispatchers.Unconfined).asyncReadable {
+            val deferred = (AppScope + Dispatchers.Unconfined).asyncReadable {
                 println("Calculating...")
                 wait.await()
                 println("Going...")
@@ -334,6 +328,57 @@ class ReactivityTests {
             assertEquals(1, completes)
         }
     }
+
+    @Test
+    fun exceptionReruns() {
+        val exceptional = RawReadable<Int>()
+        testContext {
+            var starts = 0
+            var completes = 0
+            reactive {
+                starts++
+                exceptional()
+                completes++
+            }
+
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState.exception(Exception())
+            assertIs<Exception>(expectException())
+            assertEquals(2, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState.wrap(1)
+            assertEquals(3, starts)
+            assertEquals(1, completes)
+        }
+    }
+
+    @Test
+    fun bind() {
+        val waitGates = ArrayList<WaitGate>()
+        fun permit(count: Int) {
+            repeat(count) { println("Permit one"); waitGates.removeFirstOrNull()?.permit = true }
+        }
+
+        fun permitAll() {
+            waitGates.removeAll { println("Permit one"); it.permit = true; true }
+        }
+
+        val a = Property(1)
+        val b = Property(1).interceptWrite {
+            WaitGate().also { waitGates += it }.await()
+            set(it)
+        }
+        testContext {
+            reactive { println("A: ${a()}, B: ${b()}") }
+            a bind b
+            launch { a set 2 }
+            permitAll()
+            launch { a set 3 }
+            launch { a set 4 }
+            permitAll()
+        }
+    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {
@@ -341,20 +386,22 @@ class VirtualDelay<T>(val action: () -> T) {
     var value: T? = null
     var ready: Boolean = false
     suspend fun await(): T {
-        if(ready) return value as T
+        if (ready) return value as T
         return suspendCoroutineCancellable {
             continuations.add(it)
             return@suspendCoroutineCancellable {}
         }
     }
+
     fun clear() {
         ready = false
     }
+
     fun go() {
         val value = action()
         this.value = value
         ready = true
-        for(continuation in continuations) {
+        for (continuation in continuations) {
             continuation.resume(value)
         }
         continuations.clear()
@@ -369,44 +416,58 @@ class VirtualDelayer() {
             return@suspendCoroutineCancellable {}
         }
     }
+
     fun go() {
-        for(continuation in continuations) {
+        for (continuation in continuations) {
             continuation.resume(Unit)
         }
         continuations.clear()
     }
 }
 
-fun testContext(action: CalculationContext.()->Unit): Job {
+class TestContext : CoroutineScope {
     var error: Throwable? = null
     val job = Job()
-    var numOutstandingContracts = 0
-    with(object: CalculationContext {
-        override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined
+    var loadCount = 0
+    fun expectException(): Throwable {
+        val e = error ?: fail("Expected exception but there was none")
+        error = null
+        return e
+    }
 
-        override fun notifyLongComplete(result: Result<Unit>) {
-            numOutstandingContracts--
-            println("Long load complete")
+    val incompleteKeys = HashSet<Any>()
+    override val coroutineContext: CoroutineContext = job + Dispatchers.Unconfined + object : StatusListener {
+        override fun loading(readable: Readable<*>) {
+            var loading = false
+            var excEnder: (() -> Unit)? = null
+            readable.addAndRunListener {
+                val s = readable.state
+                println("${readable} reports ${s}")
+                if (loading != !s.ready) {
+                    if (s.ready) {
+                        loadCount--
+                    } else {
+                        loadCount++
+                    }
+                    loading = !s.ready
+                }
+                excEnder?.invoke()
+                s.exception?.let { t ->
+                    t.printStackTrace()
+                    error = t
+                }
+            }.let { onRemove(it) }
         }
+    }
+}
 
-        override fun notifyStart() {
-            numOutstandingContracts++
-            println("Long load start")
-        }
-
-        override fun notifyComplete(result: Result<Unit>) {
-            result.onFailure { t ->
-                t.printStackTrace()
-                error = t
-            }
-        }
-    }) {
-        CalculationContextStack.useIn(this) {
+fun testContext(action: TestContext.() -> Unit) {
+    with(TestContext()) {
+        CoroutineScopeStack.useIn(this) {
             action()
         }
         job.cancel()
-        if(error != null) throw error!!
-        assertEquals(0, numOutstandingContracts, "Some work was not completed.")
+        if (error != null) throw Exception("Unexpected error", error!!)
+        assertEquals(0, loadCount, "Some work was not completed: ${incompleteKeys}")
     }
-    return job
 }

@@ -12,7 +12,6 @@ import android.widget.*
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import com.lightningkite.kiteui.R
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -38,7 +37,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyPadding(dimension: Dimension?) {
@@ -105,13 +104,15 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
             }
 
+            var index = 0
+            val set = Action("Set Value", Icon.send, frequencyCap = null, ignoreRetryWhileRunning = false) {
+                val item = list[index]
+                edits set item
+            }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if(!suppressChange) {
-                    launch {
-                        suppressChange = true
-                        edits set list[position]
-                        suppressChange = false
-                    }
+                    index = position
+                    set.startAction(this@Select)
                 }
             }
         }

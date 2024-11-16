@@ -1,8 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import kotlin.time.Duration.Companion.milliseconds
 
 
 actual class Select actual constructor(context: RContext) : RView(context) {
@@ -40,13 +41,14 @@ actual class Select actual constructor(context: RContext) : RView(context) {
             native.children.find { it.attributes.valueString == index }
             alreadyHandled = false
         }
+        val setAction = Action("Set Value", Icon.send, frequencyCap = 0.milliseconds, ignoreRetryWhileRunning = true) {
+            if(alreadyHandled) return@Action
+            alreadyHandled = true
+            native.attributes.valueString?.toIntOrNull()?.let { edits set list[it] }
+            alreadyHandled = false
+        }
         native.addEventListener("change") {
-            launch {
-                if(alreadyHandled) return@launch
-                alreadyHandled = true
-                native.attributes.valueString?.toIntOrNull()?.let { edits set list[it] }
-                alreadyHandled = false
-            }
+            setAction.startAction(this)
         }
     }
 

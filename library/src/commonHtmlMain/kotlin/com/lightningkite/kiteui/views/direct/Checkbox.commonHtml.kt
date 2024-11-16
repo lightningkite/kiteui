@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
@@ -19,7 +18,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
 
     actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
-        { attributes.checked != false },
+        { attributes.checked == true },
         { value -> attributes.checked = value }
     )
 

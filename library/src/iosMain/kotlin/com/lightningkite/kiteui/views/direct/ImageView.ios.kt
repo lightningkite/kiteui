@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
-import com.lightningkite.kiteui.reactive.sub
 import kotlinx.cinterop.*
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
@@ -58,13 +58,13 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.imageSource = value
         when (value) {
             null -> {
-                native.animateIfAllowed { native.image = null }
+                animateIfAllowed { native.image = null }
                 native.informParentOfSizeChange()
             }
 
             is ImageRaw -> {
                 try {
-                    native.animateIfAllowed { native.image = UIImage(data = value.data.data) }
+                    animateIfAllowed { native.image = UIImage(data = value.data.data) }
                     native.informParentOfSizeChange()
                 } catch (_: Exception) {
                 }
@@ -72,7 +72,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
 
             is ImageRemote -> {
                 native.startLoad()
-                sub().launch {
+                launch {
                     val image = ImageCache.get(
                         value,
                         native.bounds.useContents { size.width.toInt() },
@@ -88,7 +88,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                     }
                     if (native.imageSource != value) return@launch
                     native.endLoad()
-                    native.animateIfAllowed {
+                    animateIfAllowed {
                         native.image = image
                     }
                     native.informParentOfSizeChange()
@@ -96,18 +96,18 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             }
 
             is ImageResource -> {
-                native.animateIfAllowed { native.image = UIImage.imageNamed(value.name) }
+                animateIfAllowed { native.image = UIImage.imageNamed(value.name) }
                 native.informParentOfSizeChange()
             }
 
             is ImageVector -> {
-                native.animateIfAllowed { native.image = ImageCache.get(value) { value.render() } }
+                animateIfAllowed { native.image = ImageCache.get(value) { value.render() } }
                 native.informParentOfSizeChange()
             }
 
             is ImageLocal -> {
                 native.startLoad()
-                sub().launch {
+                launch {
                     if (native.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,
@@ -130,7 +130,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                         }
                     }
                     native.endLoad()
-                    native.animateIfAllowed {
+                    animateIfAllowed {
                         native.image = image
                     }
                     native.informParentOfSizeChange()
@@ -382,20 +382,21 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         native.imageView.imageSource = value
         when (value) {
             null -> {
-                native.animateIfAllowed { native.imageView.image = null }
+                animateIfAllowed { native.imageView.image = null }
                 native.informParentOfSizeChange()
             }
 
             is ImageRaw -> {
-                native.animateIfAllowed { native.imageView.image = UIImage(data = value.data.data) }
+                animateIfAllowed { native.imageView.image = UIImage(data = value.data.data) }
                 native.informParentOfSizeChange()
             }
 
             is ImageRemote -> {
                 native.imageView.startLoad()
-                sub().launch {
+                launch {
                     val image = ImageCache.get(
                         value,
+                        // TODO: Cyclical requirement for size!!!
                         native.bounds.useContents { size.width.toInt() },
                         native.bounds.useContents { size.height.toInt() }) {
                         inBackground {
@@ -409,7 +410,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
                     }
                     if (native.imageView.imageSource != value) return@launch
                     native.imageView.endLoad()
-                    native.animateIfAllowed {
+                    animateIfAllowed {
                         native.imageView.image = image
                     }
                     native.informParentOfSizeChange()
@@ -417,18 +418,18 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
             }
 
             is ImageResource -> {
-                native.animateIfAllowed { native.imageView.image = UIImage.imageNamed(value.name) }
+                animateIfAllowed { native.imageView.image = UIImage.imageNamed(value.name) }
                 native.informParentOfSizeChange()
             }
 
             is ImageVector -> {
-                native.animateIfAllowed { native.imageView.image = ImageCache.get(value) { value.render() } }
+                animateIfAllowed { native.imageView.image = ImageCache.get(value) { value.render() } }
                 native.informParentOfSizeChange()
             }
 
             is ImageLocal -> {
                 native.imageView.startLoad()
-                sub().launch {
+                launch {
                     if (native.imageView.imageSource != value) return@launch
                     val image = ImageCache.get(
                         value,
@@ -451,7 +452,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
                         }
                     }
                     native.imageView.endLoad()
-                    native.animateIfAllowed {
+                    animateIfAllowed {
                         native.imageView.image = image
                     }
                     native.informParentOfSizeChange()

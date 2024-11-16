@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoRemote
 import com.lightningkite.kiteui.models.rem
@@ -10,6 +9,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
+import kotlinx.coroutines.launch
 
 @Routable("docs/video")
 object VideoElementScreen: DocScreen {
@@ -98,7 +98,7 @@ object VideoElementScreen: DocScreen {
                         this.loop = true
                         scaleType = ImageScaleType.Crop
                         launch {
-                            this.playing set true
+                            playing set true
                         }
                     }
                 }

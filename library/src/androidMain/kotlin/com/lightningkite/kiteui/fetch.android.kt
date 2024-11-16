@@ -23,12 +23,15 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 
 val client: HttpClient
     get() {
         return AndroidAppContext.ktorClient
     }
+
+private val fetchLog = ConsoleRoot.tag("fetch")
 
 actual suspend fun fetch(
     url: String,
@@ -39,6 +42,7 @@ actual suspend fun fetch(
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
     try {
+        fetchLog.log("-> $method $url")
         val response = client.request(url) {
             this.method = when (method) {
                 HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -71,17 +75,19 @@ actual suspend fun fetch(
             }
             onUploadProgress?.let {
                 onUpload { a, b ->
-                    it(a.toInt(), b.toInt())
+                    it(a.toInt(), b?.toInt() ?: -1)
                 }
             }
             onDownloadProgress?.let {
                 onDownload { a, b ->
-                    it(a.toInt(), b.toInt())
+                    it(a.toInt(), b?.toInt() ?: -1)
                 }
             }
         }
+        fetchLog.log("<- $method $url ${response.status}")
         return RequestResponse(response)
     } catch (e: Exception) {
+        fetchLog.log("<X $method $url ${e::class} ${e.message}")
         throw ConnectionException("Network request failed", e)
     }
 }
@@ -174,10 +180,12 @@ class WebSocketWrapper(val url: String) : WebSocket {
 
     init {
         @Suppress("OPT_IN_USAGE")
-        GlobalScope.launch(Dispatchers.IO) {
+        AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    onOpen.forEach { it() }
+                    withContext(Dispatchers.Main) {
+                        onOpen.forEach { it() }
+                    }
                     launch {
                         try {
                             while (stayOn) {
@@ -190,7 +198,9 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
-                                onClose.forEach { it(reason.code) }
+                                withContext(Dispatchers.Main) {
+                                    onClose.forEach { it(reason.code) }
+                                }
                             }
                         } catch (e: ClosedReceiveChannelException) {
                         }
@@ -201,12 +211,16 @@ class WebSocketWrapper(val url: String) : WebSocket {
                             when (val x = incoming.receive()) {
                                 is Frame.Binary -> {
                                     val data = Blob(x.data, "application/octet-stream")
-                                    onBinaryMessage.forEach { it(data) }
+                                    withContext(Dispatchers.Main) {
+                                        onBinaryMessage.forEach { it(data) }
+                                    }
                                 }
 
                                 is Frame.Text -> {
                                     val text = x.readText()
-                                    onMessage.forEach { it(text) }
+                                    withContext(Dispatchers.Main) {
+                                        onMessage.forEach { it(text) }
+                                    }
                                 }
 
                                 is Frame.Close -> {
@@ -219,10 +233,14 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         } catch (e: ClosedReceiveChannelException) {
                         }
                     }
-                    onClose.forEach { it(reason?.code ?: 0) }
+                    withContext(Dispatchers.Main) {
+                        onClose.forEach { it(reason?.code ?: 0) }
+                    }
                 }
-            } catch (e: Exception) {
-                onClose.forEach { it(0) }
+            } catch(e: Exception) {
+                withContext(Dispatchers.Main) {
+                    onClose.forEach { it(0) }
+                }
             }
         }
     }
@@ -286,7 +304,7 @@ actual class Blob(val data: ByteArray, val type: String)
 val webSocketClient: HttpClient by lazy {
     HttpClient(CIO) {
         install(WebSockets) {
-            pingInterval = 20_000
+            pingInterval = 20_000.milliseconds
         }
     }
 }

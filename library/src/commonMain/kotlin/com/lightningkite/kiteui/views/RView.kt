@@ -1,19 +1,28 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.exceptions.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
+import com.lightningkite.kiteui.reactive.Action
+import kotlinx.coroutines.*
 import kotlin.random.Random
 
-expect abstract class RView : RViewHelper {
+abstract class RViewWithAction(context: RContext) : RView(context) {
+    private var actionStatusRemove: (() -> Unit)? = null
+    var action: Action? = null
+        set(value) {
+            field = value
+            actionSet(value)
+        }
+
+    open fun actionSet(value: Action?) {
+        actionStatusRemove?.invoke()
+        actionStatusRemove = value?.let { listenForWorking(it) }
+    }
+}
+
+expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
     override fun existsSet(value: Boolean)
@@ -71,7 +80,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
 
     protected abstract fun visibleSet(value: Boolean)
-    var spacing: Dimension? = null
+    open var spacing: Dimension? = null
         set(value) {
             field = value
             spacingSet(value)
@@ -106,7 +115,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     abstract fun requestFocus()
 
     companion object {
-        var animationsEnabled: Boolean = true
         var leakDetection: Boolean = false
         var removeBeforeShutdown: Boolean = false
         val leakLog = ConsoleRoot.tag("RViewLeaks")
@@ -126,15 +134,18 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         private set(value) {
             if (value != field) {
                 field = value
-                run { applyElevation(if (value.useBackground) value.theme.elevation else 0.px) }
+                run { applyElevation(if (value.useBackground == UseBackground.Yes) value.theme.elevation else 0.px) }
                 run {
                     applyPadding(
-                        if (forcePadding ?: (value.useBackground || hasAlternateBackedStates())) (spacing
+                        if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (spacing
                             ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
                     )
                 }
                 run { applyForeground(value.theme) }
-                run { applyBackground(value.theme, value.useBackground) }
+                run { applyBackground(value.theme, value.useBackground != UseBackground.No) }
+                if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
+                    println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
+                }
                 for (child in internalChildren) {
 //                    if (child.themeChoice !is ThemeChoice.Set)
                     child.refreshTheming()
@@ -148,12 +159,23 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             ?: 0.px)
     protected var fullyStarted = false
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
+        .let { if(working.value) it[WorkingSemantic] else it }
+        .let { if(loading.value) it[LoadingSemantic] else it }
     open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
-        if (!fullyStarted) return
-        if (parent?.fullyStarted == false) return
-        themeAndBack =
-            applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if (this == viewDebugTarget) println("refreshTheming")
+        if (!fullyStarted) {
+            if (this == viewDebugTarget) println("refreshThemeing abandoned due to not fullyStarted")
+            return
+        }
+        if (parent?.fullyStarted == false) {
+            if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
+            return
+        }
+        if (this == viewDebugTarget) println("refreshTheming will set!")
+        val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
+        themeAndBack = t
     }
 
     abstract fun applyElevation(dimension: Dimension)
@@ -212,12 +234,132 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
         }
     }
 
-    private val job = Job()
-    override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-        if(throwable !is CancellationException) {
-            throwable.printStackTrace2()
+    private var exceptionHandlers: ExceptionHandlers? = null
+    operator fun plusAssign(exceptionHandler: ExceptionHandler) {
+        exceptionHandlers?.let {
+            it += exceptionHandler
+        } ?: run {
+            exceptionHandlers = ExceptionHandlers().apply {
+                this += exceptionHandler
+            }
         }
     }
+
+    private var exceptionToMessages: ExceptionToMessages? = null
+    operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
+        exceptionToMessages?.let {
+            it += exceptionToMessage
+        } ?: run {
+            exceptionToMessages = ExceptionToMessages().apply {
+                this += exceptionToMessage
+            }
+        }
+    }
+
+    val loading = Property(false)
+    private var loadCount = 0
+        set(value) {
+            field = value
+            if (value == 0 && loading.value) {
+                loading.value = false
+                refreshTheming()
+            } else if (value > 0 && !loading.value) {
+                loading.value = true
+                refreshTheming()
+            }
+        }
+    val working = Property(false)
+    private var workCount = 0
+        set(value) {
+            field = value
+            if (value == 0 && working.value) {
+                working.value = false
+                refreshTheming()
+            } else if (value > 0 && !working.value) {
+                working.value = true
+                refreshTheming()
+            }
+        }
+
+    private val job = SupervisorJob()
+    override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
+        if (throwable !is CancellationException) {
+            throwable.report(this.toString())
+        }
+    } + object : StatusListener {
+        override fun working(readable: Readable<*>) {
+            listenForWorking(readable)
+        }
+
+        override fun loading(readable: Readable<*>) {
+            listenForStatus(readable)
+        }
+    }
+
+    fun listenForWorking(readable: Readable<*>): () -> Unit {
+        var loading = false
+        var excEnder: (() -> Unit)? = null
+        val r = readable.addAndRunListener {
+            onMainThread {
+                val s = readable.state
+                if (loading != !s.ready) {
+                    if (s.ready) {
+                        workCount--
+                    } else {
+                        workCount++
+                    }
+                    loading = !s.ready
+                }
+                excEnder?.invoke()
+                s.exception?.let {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (() -> Unit)? {
+                        return view.exceptionHandlers?.handle(myView, true, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, true, it))?.let { excEnder = it }
+                }
+            }
+        }
+        onRemove(r)
+        return r
+    }
+
+    fun listenForStatus(readable: Readable<*>): () -> Unit {
+        var loading = false
+        var excEnder: (() -> Unit)? = null
+        val r = readable.addAndRunListener {
+            onMainThread {
+                val s = readable.state
+                if (loading != !s.ready) {
+                    if (s.ready) {
+                        loadCount--
+                    } else {
+                        loadCount++
+                    }
+                    loading = !s.ready
+                }
+                excEnder?.invoke()
+                s.exception?.let {
+                    val myView = this@RViewHelper as RView
+                    fun handle(view: RViewHelper): (() -> Unit)? {
+                        return view.exceptionHandlers?.handle(myView, false, it) ?: view.parent?.let { handle(it) }
+                    }
+                    (handle(myView) ?: ExceptionHandlers.root.handle(myView, false, it))?.let { excEnder = it }
+                }
+            }
+        }
+        onRemove(r)
+        return r
+    }
+
+    fun exceptionToMessage(exception: Exception): ExceptionMessage? {
+        val myView = this@RViewHelper as RView
+        fun handle(view: RViewHelper): ExceptionMessage? {
+            return view.exceptionToMessages?.handle(myView, exception) ?: view.parent?.let { handle(it) }
+        }
+        return (handle(myView) ?: ExceptionToMessages.root.handle(myView, exception))
+    }
+
     open fun shutdown() {
         job.cancel()
         if (removeBeforeShutdown) {
@@ -250,27 +392,12 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     // Calculation context
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
-    val calculationContext: CalculationContext get() = this
+    val calculationContext: CoroutineScope get() = this
 
-    val working = Property(false)
-    private var loadCount = 0
-        set(value) {
-            field = value
-            if (value == 0 && working.value) {
-                working.value = false
-            } else if (value > 0 && !working.value) {
-                working.value = true
-            }
-        }
+}
 
-    override fun notifyStart() {
-        super.notifyStart()
-        loadCount++
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        loadCount--
-        super.notifyLongComplete(result)
-    }
+abstract class RViewWrapper(context: RContext) : RView(context) {
+    override var spacing: Dimension? = null
+        get() = field ?: parent?.spacing
 }
 

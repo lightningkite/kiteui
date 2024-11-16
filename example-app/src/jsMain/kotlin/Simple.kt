@@ -4,12 +4,22 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.basePath
+import com.lightningkite.kiteui.navigation.render
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.KeyCodes
+import com.lightningkite.kiteui.views.direct.swapView
+import com.lightningkite.kiteui.views.direct.swapping
+import com.lightningkite.kiteui.views.direct.text
+import com.lightningkite.kiteui.views.l2.appBase
+import com.lightningkite.kiteui.views.l2.navigatorView
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.BlobPropertyBag
 
@@ -19,7 +29,7 @@ fun main() {
         println("ON ERROR HANDLER $a $b $c $d $e")
         if (e is Exception) e.printStackTrace2()
     }
-    val context = RContext("/")
+    val context = RContext(basePath)
     root(appTheme.value) {
         beforeNextElementSetup {
             ::themeChoice { ThemeDerivation(appTheme()) }

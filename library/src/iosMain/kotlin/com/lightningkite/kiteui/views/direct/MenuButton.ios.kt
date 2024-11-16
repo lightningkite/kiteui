@@ -1,16 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlin.experimental.ExperimentalNativeApi
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton(this)
 
@@ -22,10 +19,17 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                 willRemove = null
             }.run {
                 willRemove = dismissBackground {
+                    themeChoice += ThemeDerivation {
+                        it.copy(background = Color.transparent).withBack
+                    }
+                    native.anchor = preferredDirection to this@MenuButton.native
                     onClick {
                         closePopovers()
                     }
-                    centered - card - stack {
+                    card - stack {
+                        themeChoice += ThemeDerivation {
+                            it.copy(elevation = 5.dp, revert = true).withBack
+                        }
                         createMenu()
                     }
                 }
@@ -51,6 +55,6 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

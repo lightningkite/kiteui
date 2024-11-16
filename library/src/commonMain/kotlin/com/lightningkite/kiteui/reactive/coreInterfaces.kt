@@ -5,7 +5,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 interface ResourceUse {
-    fun start(): () -> Unit
+    fun beginUse(): () -> Unit
 }
 
 interface Listenable : ResourceUse {
@@ -14,7 +14,7 @@ interface Listenable : ResourceUse {
      * @return a function to remove the [listener] that was added.  Removing multiple times should not cause issues.
      */
     fun addListener(listener: () -> Unit): () -> Unit
-    override fun start(): () -> Unit = addListener { }
+    override fun beginUse(): () -> Unit = addListener { }
 }
 fun Listenable.addAndRunListener(listener: () -> Unit): () -> Unit {
     val remover = addListener(listener)

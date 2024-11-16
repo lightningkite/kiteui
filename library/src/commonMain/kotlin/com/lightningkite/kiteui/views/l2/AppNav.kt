@@ -1,15 +1,11 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.Platform
-import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.current
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -77,7 +73,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            h2 {
+            HeaderSemantic.onNext - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -110,7 +106,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            h2 {
+            HeaderSemantic.onNext - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -132,24 +128,54 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
-        bar - row {
-            showOnPrint = false
-            setup(appNav)
-            if (Platform.current != Platform.Web) button {
-                icon(Icon.arrowBack, "Go Back")
-                ::visible { screenNavigator.canGoBack() }
-                onClick { screenNavigator.goBack() }
+        if (Platform.probablyAppleUser) {
+            compact - bar - stack {
+                showOnPrint = false
+                setup(appNav)
+                atStart - InteractiveSemantic.onNext - button {
+                    row {
+                        spacing = 0.px
+                        centered - icon(Icon.chevronLeft, "Go Back")
+                        centered - text {
+                            ::content {
+                                screenNavigator.stack()?.let { it.getOrNull(it.size - 2) }?.title?.let { it() } ?: ""
+                            }
+                        }
+                    }
+                    ::visible { screenNavigator.canGoBack() }
+                    onClick { screenNavigator.goBack() }
+                }
+                centered - HeaderSemantic.onNext - text {
+                    ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
+                    wraps = false
+                    ellipsis = true
+                } in gravity(
+                    Align.Center,
+                    Align.Center
+                ) in weight(1f)
+                atEnd - navGroupActions(appNav.actionsProperty)
+                ::exists { appNav.existsProperty() }
             }
-            h2 {
-                ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
-                wraps = false
-                ellipsis = true
-            } in gravity(
-                Align.Center,
-                Align.Center
-            ) in weight(1f)
-            navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty() }
+        } else {
+            bar - row {
+                showOnPrint = false
+                setup(appNav)
+                if (Platform.current != Platform.Web) button {
+                    icon(Icon.arrowBack, "Go Back")
+                    ::visible { screenNavigator.canGoBack() }
+                    onClick { screenNavigator.goBack() }
+                }
+                HeaderSemantic.onNext - text {
+                    ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
+                    wraps = false
+                    ellipsis = true
+                } in gravity(
+                    Align.Center,
+                    Align.Center
+                ) in weight(1f)
+                navGroupActions(appNav.actionsProperty)
+                ::exists { appNav.existsProperty() }
+            }
         }
         expanding - navigatorView(screenNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
@@ -172,7 +198,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            h2 {
+            HeaderSemantic.onNext - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true

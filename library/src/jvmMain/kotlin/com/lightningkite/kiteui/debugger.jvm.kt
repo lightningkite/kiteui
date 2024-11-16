@@ -48,3 +48,5 @@ private class PlatformConsole(val tag: String): Console {
         println("$tag: " + entries.joinToString(" "))
     }
 }
+
+actual fun Any?.identityHashCode(): Int = System.identityHashCode(this)

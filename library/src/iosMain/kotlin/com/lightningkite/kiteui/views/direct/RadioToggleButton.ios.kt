@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
@@ -35,6 +32,6 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

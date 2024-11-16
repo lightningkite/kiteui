@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -9,6 +8,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
@@ -21,12 +21,12 @@ actual class Link actual constructor(context: RContext): RView(context) {
             field = value
             native.setOnClickListener { view ->
                 value?.invoke()?.let { it ->
+                    launch { onNavigate() }
                     if (resetsStack) {
                         onNavigator.reset(it)
                     } else {
                         onNavigator.navigate(it)
                     }
-                    launchManualCancel { onNavigate() }
                 }
             }
         }
@@ -50,7 +50,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)

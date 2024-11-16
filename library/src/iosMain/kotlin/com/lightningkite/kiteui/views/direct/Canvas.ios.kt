@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -64,9 +65,48 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         setMultipleTouchEnabled(true)
     }
 
+    @ObjCAction fun gestureSink() {
+    }
 
     init {
         clipsToBounds = true
+
+        addGestureRecognizer(object: UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
+            override fun touchesBegan(began: Any?, withEvent: Any?) {
+                val touches = began as Set<UITouch>
+                withEvent as UIEvent
+                if(handle(touches)) {
+                    setState(UIGestureRecognizerStateBegan)
+                }
+            }
+
+            override fun touchesMoved(moved: Any?, withEvent: Any?) {
+                val touches = moved as Set<UITouch>
+                withEvent as UIEvent
+                if(handle(touches)) {
+                    setState(UIGestureRecognizerStateChanged)
+                }
+            }
+
+            override fun touchesEnded(ended: Any?, withEvent: Any?) {
+                val touches = ended as Set<UITouch>
+                withEvent as UIEvent
+                if(handle(touches)) {
+                    setState(UIGestureRecognizerStateEnded)
+                }
+            }
+
+            override fun touchesCancelled(cancelled: Any?, withEvent: Any?) {
+                val touches = cancelled as Set<UITouch>
+                withEvent as UIEvent
+                if(handle(touches)) {
+                    setState(UIGestureRecognizerStateCancelled)
+                }
+            }
+
+            override fun reset() {
+            }
+        })
     }
 
     var delegate: CanvasDelegate? = null
@@ -83,30 +123,6 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 
     private val touchIds = HashMap<UITouch, Int>()
     private var currentTouchId: Int = 0
-
-    @Suppress("UNCHECKED_CAST")
-    override fun touchesBegan(touches: Set<*>, withEvent: UIEvent?) {
-        if (!handle(touches as Set<UITouch>))
-            super.touchesBegan(touches, withEvent)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun touchesMoved(touches: Set<*>, withEvent: UIEvent?) {
-        if (!handle(touches as Set<UITouch>))
-            super.touchesMoved(touches, withEvent)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun touchesEnded(touches: Set<*>, withEvent: UIEvent?) {
-        if (!handle(touches as Set<UITouch>))
-            super.touchesEnded(touches, withEvent)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun touchesCancelled(touches: Set<*>, withEvent: UIEvent?) {
-        if (!handle(touches as Set<UITouch>))
-            super.touchesCancelled(touches, withEvent)
-    }
 
     override fun pressesBegan(presses: Set<*>, withEvent: UIPressesEvent?) {
         var handled = false

@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.res.ColorStateList
 import android.widget.FrameLayout
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.DisabledSemantic
@@ -16,10 +15,10 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
 actual class LocalDateTimeField actual constructor(context: RContext) :
-    RView(context) {
+    RViewWithAction(context) {
     private val property: Property<LocalDateTime?> = Property(null)
     actual val content: ImmediateWritable<LocalDateTime?> = property
-    actual var action: Action? = null
+    
     actual var range: ClosedRange<LocalDateTime>? = null
 
     override val native = FrameLayout(context.activity).apply {
@@ -36,6 +35,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) :
                     range?.endInclusive?.time
                 ) { time ->
                     property.value = date.atTime(time)
+                    action?.startAction(this@LocalDateTimeField)
                 }
             }
         }
@@ -57,7 +57,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) :
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     override fun hasAlternateBackedStates(): Boolean = true

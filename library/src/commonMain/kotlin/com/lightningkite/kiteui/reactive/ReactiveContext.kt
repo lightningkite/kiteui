@@ -3,65 +3,62 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.launch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
 var reactiveContext: ReactiveContext? = null
 
-abstract class ReactiveContext : CalculationContext {
+typealias ReactiveContext = TypedReactiveContext<*>
+class TypedReactiveContext<T>(
+    val scope: CalculationContext,
+    override val log: Console? = null,
+    private val reportTo: RawReadable<T> = RawReadable<T>(),
+    val action: TypedReactiveContext<T>.() -> T
+): DependencyTracker(), CalculationContext by scope, Readable<T> by reportTo {
     companion object {
     }
-    var log: Console? = null
-    // Dependency management
+
     var active = false
         private set
-    private val dependencies = ArrayList<Pair<Any, () -> Unit>>()
-    private val usedDependencies = ArrayList<Any?>()
-    abstract val rerun: () -> Unit
+    val rerun: () -> Unit = ::startCalculation
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> existingDependency(listenable: T): T? {
-        usedDependencies.add(listenable)
-        if (dependencies.size > usedDependencies.size) {
-            val maybe = dependencies[usedDependencies.size].first
-            if (maybe == listenable) return maybe as T
-        }
-        return dependencies.find { it.first == listenable }?.first as? T
-    }
+    private var queued = false
 
-    fun registerDependency(any: Any, remove: () -> Unit) {
-        this.dependencies += any to remove
-        log?.log("Registered dependency on $any")
-    }
-
-    protected fun runStart() {
+    fun startCalculation() {
         active = true
-        usedDependencies.clear()
-        log?.log("Run start")
-    }
-
-    protected fun runComplete() {
-        log?.log("Run complete")
-        val iter = dependencies.iterator()
-        while (iter.hasNext()) {
-            val entry = iter.next()
-            if (entry.first !in usedDependencies) {
-                log?.log("Dependency on ${entry.first} no longer used")
-                entry.second()
-                iter.remove()
+        if (queued) return
+        queued = true
+        scope.onThread {
+            queued = false
+            if (!active) {
+                return@onThread
             }
+            val old = reactiveContext
+            reactiveContext = this
+            dependencyBlockStart()
+            log?.log("Run start")
+            reportTo.state = readableState { action(this@TypedReactiveContext) }
+            log?.log("Run complete")
+            dependencyBlockEnd()
+            reactiveContext = old
         }
     }
 
-    protected open fun cancel() {
+    fun runOnceWhileDead() {
+        reportTo.state = readableState { action(this) }
+    }
+
+    init {
+        scope.onRemove { cancel() }
+    }
+
+    override fun cancel() {
         active = false
-        dependencies.forEach { it.second() }
-        dependencies.clear()
+        queued = false
+        super.cancel()
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +82,7 @@ abstract class ReactiveContext : CalculationContext {
             notReady = { throw ReactiveLoading }
         )
     }
+
     fun <R> Readable<R?>.awaitNotNull(): R {
         if (existingDependency(this) == null) {
             registerDependency(this, addListener(rerun))
@@ -95,6 +93,7 @@ abstract class ReactiveContext : CalculationContext {
             notReady = { throw ReactiveLoading }
         )
     }
+
     fun <R> Readable<R>.state(): ReadableState<R> {
         if (existingDependency(this) == null) {
             registerDependency(this, addListener(rerun))
@@ -139,12 +138,18 @@ abstract class ReactiveContext : CalculationContext {
     }
 
     // Hack: fixes compiler weirdness around lambdas with 'this'
-    @Suppress("NOTHING_TO_INLINE") inline operator fun <T> (ReactiveContext.() -> T).invoke(): T = invoke(this@ReactiveContext)
-    @Suppress("NOTHING_TO_INLINE") inline operator fun <A, T> (ReactiveContext.(A) -> T).invoke(a: A): T = invoke(this@ReactiveContext, a)
-    @Suppress("NOTHING_TO_INLINE") inline operator fun <A, B, T> (ReactiveContext.(A, B) -> T).invoke(a: A, b: B): T = invoke(this@ReactiveContext, a, b)
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun <T> (ReactiveContext.() -> T).invoke(): T = invoke(this@TypedReactiveContext)
+
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun <A, T> (ReactiveContext.(A) -> T).invoke(a: A): T = invoke(this@TypedReactiveContext, a)
+
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun <A, B, T> (ReactiveContext.(A, B) -> T).invoke(a: A, b: B): T = invoke(this@TypedReactiveContext, a, b)
 
     @Deprecated("Just use the invoke operator", ReplaceWith("this()"))
     fun <T> Readable<T>.await(): T = invoke()
+
     @Deprecated("Just use the once function", ReplaceWith("this.once()"))
     fun <T> Readable<T>.awaitOnce(): T = once()
 
@@ -168,7 +173,7 @@ abstract class ReactiveContext : CalculationContext {
         existingDependency(calc)?.let {
             return it.invoke()
         }
-        launch {
+        scope.launch {
             calc.state = readableState { action() }
         }
         registerDependency(calc, calc.addListener(rerun))
@@ -184,7 +189,7 @@ abstract class ReactiveContext : CalculationContext {
         existingDependency(calc)?.let {
             return it.invoke()
         }
-        launch {
+        scope.launch {
             calc.state = readableState { this@invoke.await() }
         }
         registerDependency(calc, calc.addListener(rerun))
@@ -212,7 +217,7 @@ abstract class ReactiveContext : CalculationContext {
         if (existing == null) {
             var job: Job? = null
             registerDependency(new, { job?.cancel() })
-            job = CoroutineScope(coroutineContext).launch {
+            job = scope.launch {
                 collect { v ->
                     try {
                         new.state = ReadableState(v)
@@ -239,101 +244,34 @@ abstract class ReactiveContext : CalculationContext {
     fun <T> Readable<T>.invalid(): ErrorState.Invalid<T>? = state { it.invalid }
 }
 
-@InternalKiteUi
-class DirectReactiveContext<T> constructor(
-    val context: CalculationContext,
-    val scheduled: Boolean = false,
-    val onLoad: (() -> Unit)? = null,
-    val action: DirectReactiveContext<T>.() -> T
-) : ReactiveContext() {
-    private var slow = false
-    var lastResult: ReadableState<T> = ReadableState.notReady
+fun <T> CalculationContext.reactive(log: Console? = null, action: ReactiveContext.() -> T): TypedReactiveContext<T> {
+    val trc = TypedReactiveContext(this, action = action, log = log)
+    trc.startCalculation()
+    coroutineContext[StatusListener.Key]?.loading(trc)
+    return trc
+}
 
-    override val coroutineContext: CoroutineContext get() = context.coroutineContext
-    override val requireMainThread: Boolean get() = context.requireMainThread
-
-    companion object {
-        internal var queue = HashSet<DirectReactiveContext<*>>()
-        fun runScheduled() {
-            val old = queue
-            queue = HashSet()
-            old.forEach { it.start() }
-        }
-    }
-
-    override val rerun: () -> Unit = when {
-        scheduled -> { -> queue.add(this) }
-        context.requireMainThread -> { -> onMainThread { runInternal() } }
-        else -> { -> runInternal() }
-    }
-    fun start() {
-        if(context.requireMainThread) onMainThread {
-            runInternal()
-        } else {
-            runInternal()
-        }
-    }
-    fun runInternal() {
-        val old = reactiveContext
-        reactiveContext = this
-        runStart()
-        setResult(readableState { action(this@DirectReactiveContext) })
-        runComplete()
-        reactiveContext = old
-    }
-
-    fun setResult(state: ReadableState<T>) {
-        lastResult = state
-        if (state.ready) {
-            if (slow) {
-                slow = false
-                context.notifyLongComplete(
-                    if (state.success) Result.success(Unit) else Result.failure(
-                        state.exception ?: NotReadyException()
-                    )
-                )
-            } else {
-                context.notifyComplete(
-                    if (state.success) Result.success(Unit) else Result.failure(
-                        state.exception ?: NotReadyException()
-                    )
-                )
+inline fun <T> CalculationContext.reactive(log: Console? = null, crossinline onLoad: () -> Unit, crossinline action: ReactiveContext.() -> Unit): TypedReactiveContext<Unit> {
+    var wasLoadingLastTime = false
+    return reactive(log) {
+        try {
+            action(this)
+            wasLoadingLastTime = false
+        } catch(e: ReactiveLoading) {
+            if(wasLoadingLastTime) {
+                onLoad()
+                wasLoadingLastTime = true
             }
-        } else {
-            if (!slow) {
-                slow = true
-                context.notifyStart()
-                onLoad?.invoke()
-            }
+            throw e
+        } catch(e: Exception) {
+            wasLoadingLastTime = false
         }
     }
-
-    fun runOnceWhileDead() {
-        lastResult = readableState { action(this) }
-    }
-
-    init { context.onRemove { cancel() } }
-    override fun cancel() {
-        super.cancel()
-        if (scheduled) queue.remove(this)
-    }
 }
 
-fun CalculationContext.reactive(action: ReactiveContext.() -> Unit) {
-    DirectReactiveContext(this, scheduled = false, action = action).start()
-}
+fun CalculationContext.reactiveScope(action: ReactiveContext.() -> Unit) = reactive(action = action)
 
-fun CalculationContext.reactive(onLoad: () -> Unit, action: ReactiveContext.() -> Unit) {
-    DirectReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).start()
-}
-
-fun CalculationContext.reactiveScope(action: ReactiveContext.() -> Unit) {
-    DirectReactiveContext(this, scheduled = false, action = action).start()
-}
-
-fun CalculationContext.reactiveScope(onLoad: () -> Unit, action: ReactiveContext.() -> Unit) {
-    DirectReactiveContext(this, onLoad = onLoad, scheduled = false, action = action).start()
-}
+inline fun CalculationContext.reactiveScope(crossinline onLoad: () -> Unit, crossinline action: ReactiveContext.() -> Unit) = reactive<Unit>(onLoad = onLoad, action = action)
 
 fun <T> Readable<T>.onNextData(action: (T) -> Unit) {
     if (state.onData(action) == null) {

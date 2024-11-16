@@ -1,15 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launchGlobal
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberField actual constructor(context: RContext) : RView(context) {
+actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -32,7 +31,10 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
 
         override var value: Double?
             get() = native.attributes.valueString?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()
-            set(value) { native.attributes.valueString = value?.commaString() }
+            set(value) {
+                if(native.attributes.valueString != value?.commaString())
+                    native.attributes.valueString = value?.commaString()
+            }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
@@ -77,18 +79,14 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
                 }
             }
         }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-             if (value != null) native.addEventListener("keyup") { ev ->
-                ev as KeyboardEvent
-                if (ev.code == KeyCodes.enter) {
-                    launchManualCancel {
-                        value.onSelect()
-                    }
-                }
+    init {
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
             }
         }
+    }
     actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
@@ -96,6 +94,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
         }
     actual var align: Align = Align.Start
         set(value) {
+            field = value
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
                 Align.Center -> "center"
@@ -126,6 +125,6 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val NumberField.selectionStart: Int?
-expect val NumberField.selectionEnd: Int?
-expect fun NumberField.setSelectionRange(start: Int, end: Int)
+expect val NumberInput.selectionStart: Int?
+expect val NumberInput.selectionEnd: Int?
+expect fun NumberInput.setSelectionRange(start: Int, end: Int)

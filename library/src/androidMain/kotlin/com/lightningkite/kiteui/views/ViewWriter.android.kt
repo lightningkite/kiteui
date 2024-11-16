@@ -21,6 +21,8 @@ import com.lightningkite.kiteui.suspendCoroutineCancellable
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
@@ -41,7 +43,7 @@ object AndroidAppContext {
     val oneRem: Float by lazy { density * 14 }
     var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
     val ktorClient: HttpClient by lazy {
-        HttpClient() {
+        HttpClient(OkHttp) {
             install(WebSockets)
             install(HttpCache) {
                 publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttp")))

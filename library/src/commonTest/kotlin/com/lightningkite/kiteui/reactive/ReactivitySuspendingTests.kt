@@ -2,35 +2,14 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.yield
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ReactivitySuspendingTests {
-    @Test fun testAsync() {
-
-        var cont: Continuation<String>? = null
-        val item = asyncGlobal<String> {
-            println("Calculating...")
-            suspendCoroutineCancellable {
-                cont = it
-                return@suspendCoroutineCancellable {}
-            }
-        }
-        launchGlobal {
-            println("A: ${item.await()}")
-        }
-        launchGlobal {
-            println("B: ${item.await()}")
-        }
-        cont?.resume("Success")
-
-    }
 
     @Test fun invokeAdapter() {
         testContext {
@@ -39,7 +18,7 @@ class ReactivitySuspendingTests {
                 value()
             }
             var read = -1
-            launch {
+            load {
                 read = runner()
             }
             assertEquals(read, value.value)
@@ -52,7 +31,7 @@ class ReactivitySuspendingTests {
                 value()
             }
             var read = -1
-            launch {
+            load {
                 read = runner()
             }
             assertEquals(read, -1)
@@ -70,7 +49,9 @@ class ReactivitySuspendingTests {
                 emissions.add(property.waitForNotNull.await())
             }
             repeat(10) {
+                println("Set to null")
                 property.value = null
+                println("Set to $it")
                 property.value = it
             }
         }
@@ -99,7 +80,7 @@ class ReactivitySuspendingTests {
             val a = LateInitProperty<Int>()
             var received = -1
             onRemove { println("Shutting down...") }
-            launch {
+            load {
                 println("Started...")
                 received = a.await()
             }
@@ -141,19 +122,19 @@ class ReactivitySuspendingTests {
 
     @Test fun basics() {
         val a = Property(1)
-        val b = SharedSuspendingReadable(Dispatchers.Unconfined, debug = ConsoleRoot.tag("b")) { println("CALC a"); a.await() }
+        val b = sharedSuspending(Dispatchers.Unconfined) { println("CALC a"); a.await() }
 //        val c = sharedSuspending(Dispatchers.Unconfined) { println("CALC b"); b.await() }
         var hits = 0
 
         testContext {
-            SuspendingReactiveContext(this, action = {
+            reactiveSuspending(action = {
                 println("#1 Got ${b.await()}")
                 hits++
-            }, debug = ConsoleRoot.tag("#1"))
-            SuspendingReactiveContext(this, action = {
+            })
+            reactiveSuspending(action = {
                 println("#2 Got ${b.await()}")
                 hits++
-            }, debug = ConsoleRoot.tag("#2"))
+            })
             assertEquals(2, hits)
             a.value = 2
             assertEquals(4, hits)
@@ -166,7 +147,7 @@ class ReactivitySuspendingTests {
         var hits = 0
 
         testContext {
-            launch {
+            load {
                 println("launch ${a.await()}")
                 hits++
             }
@@ -256,7 +237,7 @@ class ReactivitySuspendingTests {
         val c = sharedSuspending(Dispatchers.Unconfined) { a.await() }
         val d = sharedSuspending(Dispatchers.Unconfined) { c.await() }
         testContext {
-            launch { println("launch got " + d.await()) }
+            load { println("launch got " + d.await()) }
             reactiveSuspending { println("reactiveScope got " + d.await()) }
             println("Ready... GO!")
             a.go()
@@ -269,7 +250,7 @@ class ReactivitySuspendingTests {
         var completions = 0
         testContext {
             reactiveSuspending { println("reactiveScope got " + shared.await()); completions++ }
-            launch { println("launch got " + shared.await()); completions++ }
+            load { println("launch got " + shared.await()); completions++ }
             println("Ready... GO!")
             val lp2 = LateInitProperty<Int>()
             property.value = lp2
@@ -283,8 +264,8 @@ class ReactivitySuspendingTests {
         val shared = sharedSuspending(Dispatchers.Unconfined) { property.await() }
         var completions = 0
         testContext {
-            launch { println("launchA got " + shared.await()); completions++ }
-            launch { println("launchB got " + shared.await()); completions++ }
+            load { println("launchA got " + shared.await()); completions++ }
+            load { println("launchB got " + shared.await()); completions++ }
             println("Ready... GO!")
             property.value = 1
         }
@@ -349,6 +330,41 @@ class ReactivitySuspendingTests {
         testContext {
             reactiveSuspending { println(listItem() == selected()) }
             listItem.value = 1
+        }
+    }
+
+    @Test fun exceptionReruns() {
+        class PublicReadable: BaseReadable<Int>() {
+            override var state: ReadableState<Int>
+                get() = super.state
+                public set(value) { super.state = value }
+
+            override fun addListener(listener: () -> Unit): () -> Unit {
+                val r = super.addListener(listener)
+                return {
+                    r()
+                }
+            }
+        }
+        val exceptional = PublicReadable()
+        testContext {
+            var starts = 0
+            var completes = 0
+            reactiveSuspending(action =  {
+                starts++
+                exceptional()
+                completes++
+            })
+
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState.exception(Exception())
+            assertIs<Exception>(expectException())
+            assertEquals(1, starts)
+            assertEquals(0, completes)
+            exceptional.state = ReadableState(1)
+            assertEquals(2, starts)
+            assertEquals(1, completes)
         }
     }
 }

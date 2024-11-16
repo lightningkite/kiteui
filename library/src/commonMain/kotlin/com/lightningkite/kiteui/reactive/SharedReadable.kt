@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,70 +12,49 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
-fun <T> shared(coroutineContext: CoroutineContext = Dispatchers.Default, useLastWhileLoading: Boolean = false, action: ReactiveContext.() -> T): Readable<T> {
+fun <T> shared(coroutineContext: CoroutineContext = Dispatchers.Unconfined, useLastWhileLoading: Boolean = false, action: ReactiveContext.() -> T): Readable<T> {
     return SharedReadable(coroutineContext = coroutineContext, useLastWhileLoading = useLastWhileLoading, action = action)
 }
 
-class SharedReadable<T>(coroutineContext: CoroutineContext = Dispatchers.Default, useLastWhileLoading: Boolean = false, private val action: ReactiveContext.() -> T) :
-    Readable<T>, CalculationContext {
+class SharedReadable<T>(
+    coroutineContext: CoroutineContext = Dispatchers.Unconfined,
+    useLastWhileLoading: Boolean = false,
+    private val action: ReactiveContext.() -> T
+) : Readable<T>, CalculationContext {
 
     private var job = Job()
-    override val coroutineContext = (coroutineContext ?: EmptyCoroutineContext) +
-            job +
+    private val restOfContext = coroutineContext +
             CoroutineExceptionHandler { coroutineContext, throwable ->
-            if (throwable !is CancellationException) {
-                throwable.printStackTrace2()
+                if (throwable !is CancellationException) {
+                    throwable.report("SharedReadable")
+                }
             }
-        }
+    override val coroutineContext = job + restOfContext
 
     private fun cancel() {
         job.cancel()
         job = Job()
     }
 
-    override fun notifyStart() {
-        super.notifyStart()
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
+    private val scope = TypedReactiveContext(this, action = action)
 
-    override fun notifyComplete(result: Result<Unit>) {
-        super.notifyComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    override fun notifyLongComplete(result: Result<Unit>) {
-        super.notifyLongComplete(result)
-        if (lastNotified != state) {
-            lastNotified = state
-            listeners.invokeAllSafe()
-        }
-    }
-
-    private val scope = DirectReactiveContext(this, scheduled = false, action = action)
     override val state: ReadableState<T>
         get() {
             if (!scope.active) scope.runOnceWhileDead()
-            return scope.lastResult
+            return scope.state
         }
-    private var lastNotified: ReadableState<T> = ReadableState.notReady
-    val listeners = ArrayList<() -> Unit>()
+    private var lcount = 0
     override fun addListener(listener: () -> Unit): () -> Unit {
-        if (listeners.size == 0) {
-            scope.start()
+        if (lcount++ == 0) {
+            scope.startCalculation()
         }
-        listeners.add(listener)
-        return {
-            val pos = listeners.indexOfFirst { it === listener }
-            if (pos != -1) {
-                listeners.removeAt(pos)
-            }
-            if (listeners.size == 0) {
+        val r = scope.addListener(listener)
+        var removed = false
+        return label@{
+            if(removed) return@label
+            removed = true
+            r()
+            if (--lcount == 0) {
                 cancel()
             }
         }

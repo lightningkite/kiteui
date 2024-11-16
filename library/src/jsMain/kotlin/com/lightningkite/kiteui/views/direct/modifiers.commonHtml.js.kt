@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.RViewHelper.Companion.animationsEnabled
+import com.lightningkite.kiteui.views.animationsEnabled
 import com.lightningkite.kiteui.views.hidden
 import kotlinx.browser.window
 import kotlinx.dom.addClass

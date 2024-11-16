@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -41,7 +42,7 @@ actual fun ViewWriter.hasPopover(
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = {
             setup(this, object : PopoverContext {
-                override val calculationContext: CalculationContext
+                override val calculationContext: CoroutineScope
                     get() = this@beforeNextElementSetup
 
                 override fun close() {
@@ -207,7 +208,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
 //    }
-    wrapNextIn(object: RView(context) {
+    wrapNextIn(object: RViewWrapper(context) {
         init {
             native.tag = "div"
             native.classes.add("hidingContainer")

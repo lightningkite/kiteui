@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.load
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,7 +69,7 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch {
+            load {
                 a.await()
             }
             reactiveScope {
@@ -80,7 +79,7 @@ class SharedTest {
 
             property.value = 2
             assertEquals(2, hits)
-        }.cancel()
+        }
 
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
@@ -90,13 +89,13 @@ class SharedTest {
             reactiveScope {
                 a()
             }
-            launch {
+            load {
                 a.await()
             }
             reactiveScope {
                 a()
             }
-        }.cancel()
+        }
         assertEquals(3, hits)
     }
 

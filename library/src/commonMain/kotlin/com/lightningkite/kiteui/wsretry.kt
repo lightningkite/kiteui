@@ -2,7 +2,9 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.reactive.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -12,14 +14,21 @@ import kotlin.coroutines.resumeWithException
 
 suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCoroutineCancellable<Unit> {
+        var alreadyResumed = false
         onOpen {
             launchGlobal {
-                delay(1000L)
-                it.resume(Unit)
+                delay(100L)
+                if(!alreadyResumed) {
+                    alreadyResumed = true
+                    it.resume(Unit)
+                }
             }
         }
         onClose { code ->
-            it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
+            if(!alreadyResumed) {
+                alreadyResumed = true
+                it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
+            }
         }
         return@suspendCoroutineCancellable {}
     }
@@ -117,14 +126,14 @@ fun retryWebsocket(
         var listenerCounter = 0
         val shouldBeOn = Property(false)
 
-        override fun start(): () -> Unit {
+        override fun beginUse(): () -> Unit {
             if(listenerCounter++ == 0) shouldBeOn.value = true
             return {
                 if(--listenerCounter == 0) shouldBeOn.value = false
             }
         }
 
-        override val coroutineContext: CoroutineContext = Job()
+        override val coroutineContext: CoroutineContext = SupervisorJob()
 
         init {
             var starting = false
@@ -187,9 +196,6 @@ fun retryWebsocket(
         override fun onClose(action: (Short) -> Unit) {
             onCloseList.add(action)
         }
-
-        override fun onRemove(action: () -> Unit) {
-        }
     }
 }
 
@@ -201,7 +207,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
     override val connected: Readable<Boolean>
         get() = this@typed.connected
 
-    override fun start(): () -> Unit = this@typed.start()
+    override fun beginUse(): () -> Unit = this@typed.beginUse()
     override fun close(code: Short, reason: String) = this@typed.close(code, reason)
     override fun onOpen(action: () -> Unit) = this@typed.onOpen(action)
     override fun onClose(action: (Short) -> Unit) = this@typed.onClose(action)
@@ -258,7 +264,7 @@ val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             listeners.add(listener)
-            val parent = this@mostRecentMessage.start()
+            val parent = this@mostRecentMessage.beginUse()
             return { listeners.remove(listener); parent() }
         }
     }

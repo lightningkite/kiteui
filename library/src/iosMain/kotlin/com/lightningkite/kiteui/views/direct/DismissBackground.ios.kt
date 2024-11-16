@@ -1,9 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launchManualCancel
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
@@ -11,6 +9,7 @@ import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
@@ -35,7 +34,8 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.backgroundColor = theme.background.closestColor().copy(alpha = 0.5f).toUiColor()
+        val color = theme.background.closestColor()
+        native.backgroundColor = color.withAlpha(0.5f).toUiColor()
     }
 }
 
@@ -53,10 +53,18 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
 
     var onClick: suspend () -> Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    var anchor: Pair<PopoverPreferredDirection, UIView>? = null
     override fun getSpacingOverrideProperty() = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
+    override fun layoutSubviews() {
+        val anchor = anchor
+        if (anchor == null) {
+            frameLayoutLayoutSubviews(childSizeCache)
+        } else {
+            frameLayoutLayoutAnchoredSubviews(childSizeCache, anchor)
+        }
+    }
     override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
@@ -113,19 +121,8 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
 
-    var virtualEnable = true
-
     @ObjCAction
     fun onclick() {
-        if (enabled && virtualEnable) {
-            calculationContext.launchManualCancel {
-                virtualEnable = false
-                try {
-                    onClick()
-                } finally {
-                    virtualEnable = true
-                }
-            }
-        }
+        this.calculationContext.launch { onClick() }
     }
 }

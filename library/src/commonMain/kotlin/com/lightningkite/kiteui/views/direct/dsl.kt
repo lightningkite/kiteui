@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
@@ -93,6 +92,14 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     }
     return l
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.phoneNumberInput(setup: PhoneNumberInput.() -> Unit = {}): PhoneNumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return PhoneNumberInput(this).apply(setup)
+}
+
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.link(setup: Link.() -> Unit = {}): Link {
@@ -125,9 +132,16 @@ inline fun ViewWriter.menuButton(setup: MenuButton.() -> Unit = {}): MenuButton 
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.numberField(setup: NumberField.() -> Unit = {}): NumberField {
+inline fun ViewWriter.numberInput(setup: NumberInput.() -> Unit = {}): NumberInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(NumberField(context) , setup)
+    return write(NumberInput(context) , setup)
+}
+@Deprecated("Use numberInput instead", ReplaceWith("this.numberInput(setup)", "com.lightningkite.kiteui.views.direct.numberInput"))
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.numberField(setup: NumberInput.() -> Unit = {}): NumberInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(NumberInput(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -135,6 +149,14 @@ inline fun ViewWriter.progressBar(setup: ProgressBar.() -> Unit = {}): ProgressB
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgressBar(context) , setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.circularProgress(setup: CircularProgress.() -> Unit = {}): CircularProgress {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(CircularProgress(context), setup)
+}
+
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.radioButton(setup: RadioButton.() -> Unit = {}): RadioButton {
@@ -221,9 +243,23 @@ inline fun ViewWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.textField(setup: TextField.() -> Unit = {}): TextField {
+inline fun ViewWriter.textInput(setup: TextInput.() -> Unit = {}): TextInput {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(TextField(context) , setup)
+    return write(TextInput(context) , setup)
+}
+@Deprecated("Use textInput instead", ReplaceWith("this.textInput(setup)", "com.lightningkite.kiteui.views.direct.textInput"))
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.textField(setup: TextInput.() -> Unit = {}): TextInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(TextInput(context) , setup)
+}
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.formattedTextInput(setup: FormattedTextInput.() -> Unit = {}): FormattedTextInput {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(FormattedTextInput(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl

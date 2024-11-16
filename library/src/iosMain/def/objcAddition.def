@@ -59,3 +59,11 @@ id cgColorRefasIdType(CGColorRef color) {
 - (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset
                                  withScrollingVelocity:(CGPoint)velocity;
 @end
+
+@protocol UIGestureRecognizerCustomP
+- (void)touchesBegan:(id)began withEvent:(id)event;	// 0x32db3eb9
+- (void)touchesCancelled:(id)cancelled withEvent:(id)event;	// 0x32db3ec5
+- (void)touchesEnded:(id)ended withEvent:(id)event;	// 0x32db3ec1
+- (void)touchesMoved:(id)moved withEvent:(id)event;	// 0x32db3ebd
+- (void)reset;	// 0x32b6b499
+@end

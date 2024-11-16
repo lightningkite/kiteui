@@ -32,6 +32,7 @@ fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
     is CornerRadii.ForceConstant -> value.value
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
+    is CornerRadii.PerCorner -> "${topLeft.toRawCornerRadius()} ${topRight.toRawCornerRadius()} ${bottomRight.toRawCornerRadius()} ${bottomLeft.toRawCornerRadius()}"
 }
 
 actual data class Font(
@@ -184,8 +185,9 @@ fun ImageVector.vectorToSvgDataUrl(): String {
                     when(val f = path.fillColor) {
                         is LinearGradient -> "url(#fill$index)"
                         is RadialGradient -> "url(#fill$index)"
+                        is FadingColor -> f.base.toWeb()
                         is Color -> f.toWeb()
-                        null -> Color.transparent.toWeb()
+                        else -> Color.transparent.toWeb()
                     }
                 }\"/>"
             )

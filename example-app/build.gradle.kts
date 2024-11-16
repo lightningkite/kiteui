@@ -10,9 +10,9 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
     kotlin("native.cocoapods")
     id("com.android.library")
+    id("dev.opensavvy.vite.kotlin") version "0.4.0"
 }
 apply<KiteUiPlugin>()
 
@@ -48,13 +48,7 @@ kotlin {
 //    }
     js {
         binaries.executable()
-        browser {
-            commonWebpackConfig {
-                cssSupport {
-                    enabled.set(true)
-                }
-            }
-        }
+        browser()
     }
 //    wasmJs {
 //        binaries.executable()
@@ -86,7 +80,7 @@ kotlin {
                 api(project(":library"))
             }
             kotlin {
-                srcDir(file("build/generated/ksp/common/commonMain/kotlin"))
+                srcDir(file("build/generated/kiteui"))
             }
         }
 //        val commonJvmMain by creating {
@@ -129,15 +123,6 @@ kotlin {
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
     }
 }
-ksp {
-    arg("generateFields", "true")
-}
-
-dependencies {
-    configurations.filter { it.name.startsWith("ksp") && it.name != "ksp" }.forEach {
-        add(it.name, project(":processor"))
-    }
-}
 
 configure<KiteUiPluginExtension> {
     this.packageName = "com.lightningkite.mppexampleapp"
@@ -145,7 +130,7 @@ configure<KiteUiPluginExtension> {
 }
 
 android {
-    namespace = "$group.mppexampleapp.old"
+    namespace = "$group.mppexampleapp"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 31
 
@@ -159,7 +144,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
     }
 }
 
@@ -181,7 +166,7 @@ kotlin {
 fun env(name: String, profile: String) {
     tasks.create("deployWeb${name}Init", Exec::class.java) {
         group = "deploy"
-        this.dependsOn("jsBrowserProductionWebpack")
+        this.dependsOn("viteBuild")
         this.environment("AWS_PROFILE", "$profile")
         val props = Properties()
         props.entries.forEach {

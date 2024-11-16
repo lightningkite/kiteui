@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
@@ -40,6 +41,12 @@ abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady)
                 invokeAllListeners()
             }
         }
+}
+
+class RawReadable<T>(start: ReadableState<T> = ReadableState.notReady) : BaseReadable<T>(start) {
+    override var state: ReadableState<T>
+        get() = super.state
+        public set(value) { super.state = value }
 }
 
 abstract class BaseImmediateReadable<T>(start: T) : ImmediateReadable<T>, BaseListenable() {

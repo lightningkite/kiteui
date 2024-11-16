@@ -15,26 +15,35 @@ object ThemesScreen : Screen {
     override fun ViewWriter.render() {
         col {
             h1 { content = "Theme Control" }
-            col {
+            card - col {
                 h2 {
                     content = "Theme Sampling"
                 }
                 row {
-                    space {} in weight(1f)
-                    text { content = "Sample" } in padded
-                    text { content = "Card" } in card
-                    text { content = "Important" } in important
-                    text { content = "Critical" } in critical
-                    space {} in weight(1f)
+                    expanding - space {}
+                    padded - text { content = "Sample" }
+                    card - text { content = "Card" }
+                    important - text { content = "Important" }
+                    critical - text { content = "Critical" }
+                    expanding - space {}
                 } in scrollsHorizontally
                 row {
-                    space {} in weight(1f)
-                    text { content = "Warning" } in warning
-                    text { content = "Danger" } in danger
-                    text { content = "Affirmitive" } in affirmative
-                    space {} in weight(1f)
+                    weight(1f) - space {}
+                    warning - text { content = "Warning" }
+                    danger - text { content = "Danger" }
+                    affirmative - text { content = "Affirmative" }
+                    weight(1f) - space {}
                 } in scrollsHorizontally
-            } in card
+            }
+            card - stack {
+                card - stack {
+                    card - stack {
+                        card - stack {
+                            text("HI")
+                        }
+                    }
+                }
+            }
             col {
                 h2 { content = "Randomly Generate Themes" }
 

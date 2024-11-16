@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -90,15 +92,15 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             determineType = { 0 },
             makeView = { _, obs -> render(obs) }) {
             init {
-                reactiveScope(onLoad = {
+                reactiveScope(/*onLoad = {
 //                    println("Data set to loading")
                     loading = true
                     notifyDataSetChanged()
 //                    println("Data set to loading complete")
-                }) {
+                }*/) {
                     val new = items().toList()
 //                    println("Data set to $new")
-                    loading = false
+//                    loading = false
                     lastPublished = new
                     notifyDataSetChanged()
 //                    println("Data set to new complete")
@@ -106,6 +108,40 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             }
         }
     }
+//    actual fun <T, ID> children(
+//        items: Readable<List<T>>,
+//        identity: (T) -> ID,
+//        render: ViewWriter.(value: Readable<T>) -> Unit
+//    ): Unit {
+//        native.adapter = object : ObservableRVA<T>(
+//            recyclerView = this,
+//            calculationContext = this,
+//            layoutManager = native.layoutManager,
+//            placeholderCount = 5,
+//            determineType = { 0 },
+//            makeView = { _, obs -> render(obs) }) {
+//            init {
+//                val differ = AsyncListDiffer(this, object: DiffUtil.ItemCallback<T>() {
+//                    override fun areContentsTheSame(oldItem: T & Any, newItem: T & Any): Boolean = identity(oldItem) == identity(newItem)
+//                    override fun areItemsTheSame(oldItem: T & Any, newItem: T & Any): Boolean = oldItem == newItem
+//                })
+//                reactiveScope(onLoad = {
+////                    println("Data set to loading")
+//                    loading = true
+//                    notifyDataSetChanged()
+////                    println("Data set to loading complete")
+//                }) {
+//                    val new = items().toList()
+////                    println("Data set to $new")
+//                    loading = false
+//                    lastPublished = new
+//                    differ.submitList(new)
+//                    notifyDataSetChanged()
+////                    println("Data set to new complete")
+//                }
+//            }
+//        }
+//    }
 
 
     class SpacingItemDecoration(var spacing: Int) : AndroidRecyclerView.ItemDecoration() {
@@ -144,7 +180,7 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         val recyclerView: RView,
         val calculationContext: CalculationContext,
         val layoutManager: LayoutManager?,
-        val placeholderCount: Int = 5,
+        val placeholderCount: Int = 0,
         val determineType: (T) -> Int,
         val makeView: ViewWriter.(Int, Readable<T>) -> Unit
     ) : AndroidRecyclerView.Adapter<AndroidRecyclerView.ViewHolder>() {

@@ -1,13 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.DownSemantic
-import com.lightningkite.kiteui.models.FocusSemantic
-import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
@@ -20,7 +20,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
                 } else {
                     onNavigator.navigate(it)
                 }
-                onNavigate()
+                launch { onNavigate() }
             }
         }
     }
@@ -53,7 +53,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 

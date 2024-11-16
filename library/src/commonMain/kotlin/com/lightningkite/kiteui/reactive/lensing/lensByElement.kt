@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.report
 import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
@@ -216,12 +217,12 @@ private class LensByElementAssumingSetNeverManipulates<E, W>(
             return _state
         }
     var suppress = false
-    var old: CalculationContext.Standard? = null
+    var old: CoroutineScope? = null
 
     fun refresh() {
         if (suppress) return
         old?.cancel()
-        val context = CalculationContext.Standard()
+        val context = CoroutineScope(Job())
         old = context
         _state = source.state.map {
             sources.clear()
@@ -242,12 +243,13 @@ class WritableList<E, ID, T>(
     inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>,
         CalculationContext {
         private var job = Job()
-        override val coroutineContext =
-            Dispatchers.Default + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-                if (throwable !is CancellationException) {
-                    throwable.printStackTrace2()
-                }
+        private val restOfContext = Dispatchers.Default + CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable !is CancellationException) {
+                throwable.report("WritableList.ElementWritable")
             }
+        }
+        override val coroutineContext get() = restOfContext + job
+
         internal var dead = false
             set(value) {
                 field = value

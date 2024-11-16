@@ -10,11 +10,12 @@ import com.lightningkite.kiteui.views.*
 actual class TextView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "p"
+        native.content = Typography.nbsp.toString()
     }
     actual inline var content: String
         get() = native.content ?: ""
         set(value) {
-            native.content = value
+            native.content = if(value.isEmpty()) Typography.nbsp.toString() else value
         }
     actual var align: Align = Align.Start
         set(value) {

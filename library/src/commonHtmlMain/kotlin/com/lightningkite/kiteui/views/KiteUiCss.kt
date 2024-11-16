@@ -1,12 +1,9 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
-import kotlin.math.absoluteValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
-import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 class KiteUiCss(val dynamicCss: DynamicCss) {
@@ -59,6 +56,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 font-size: revert;
                 vertical-align: revert;
             }
+            
+            p, h1, h2, h3, h4, h5, h6, .subtext {
+                white-space: pre-wrap;
+            }
+            
             p li {
                 margin-inline-start: 1em;
             }
@@ -111,7 +113,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 background-color: color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent);
             }
 
-            .mightTransition:not(.isRoot):not(.swapImage):not(.unpadded), .padded:not(.unpadded):not(.swapImage) {
+            .padded:not(.unpadded):not(.isRoot):not(.swapImage) {
                 padding: var(--spacing, 0px);
             }
 
@@ -147,6 +149,46 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px !important;
                 appearance: none;
             }
+            
+            
+            
+           .progress-ring {
+              width: 100%;
+              justify-content: space-around;
+            }
+            
+            .progress-ring-svg {
+                display: block;
+                margin: 10px auto;
+            }
+
+            .circle-background {
+                          fill: none;
+                          stroke: --background-color;
+                          stroke-width: 3.8;
+            }
+            
+            .circle-progress {
+                fill: none;
+                stroke-width:2.8;
+                stroke-linecap: round;
+                animation: progress 1s ease-out forwards;
+                  stroke: currentcolor;
+            }
+         
+
+            .progress-ring-content {
+                text-anchor: middle;
+                
+            }
+            
+            .progress-ring-content {
+              fill: #666;
+              font-family: sans-serif;
+              font-size: 0.5em;
+              text-anchor: middle;
+            }
+
 
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
@@ -336,7 +378,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kiteui-separator {
                 background-color: currentcolor;
-                opacity: 0.25;
                 min-width: 1px;
                 min-height: 1px;
             }
@@ -344,11 +385,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ::placeholder {
                 color: currentcolor;
                 opacity: 0.3;
-            }
-
-            input {
-                min-height: 1.5rem;
-                min-width: 1.5rem;
             }
 
             * {
@@ -487,15 +523,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
             }
 
-            button.loading > * {
-                opacity: 0.15;
-            }
-
             button {
                 position: relative;
             }
 
-            button.loading::after {
+            button.working::after {
                 opacity: 0.5 !important;
                 content: "";
                 pointer-events: none;
@@ -512,12 +544,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border-radius: 50% !important;
                 transition: 0.3s;
                 animation: 2s linear infinite spin !important;
-            }
-
-            p.loading:not(.inclBack), h1.loading:not(.inclBack), h2.loading:not(.inclBack), h3.loading:not(.inclBack), h4.loading:not(.inclBack), h5.loading:not(.inclBack), h6.loading:not(.inclBack), img.loading:not(.inclBack), input.loading:not(.inclBack), select.loading:not(.inclBack), textarea.loading:not(.inclBack) {
-                min-height: 1.4em;
-                background: color-mix(in srgb, currentcolor 30%, transparent) !important;
-                animation: 2s infinite flickerAnimation !important;
             }
 
             img {
@@ -749,11 +775,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     private fun Duration.toCss() = this.toDouble(DurationUnit.SECONDS).toString() + "s"
-    private fun Paint.toCss() = when (this) {
-        is Color -> this.toWeb()
-        is LinearGradient -> "linear-gradient(${angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(stops)})"
-        is RadialGradient -> "radial-gradient(circle at center, ${joinGradientStops(stops)})"
-    }
 
     private fun BackdropFilter.toCss(): String = when (this) {
         is BackdropFilter.Blur -> "blur(${amount.value})"
@@ -780,7 +801,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         subtheme.theme,
                         diff = theme,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
-                        includeMaybeTransition = subtheme.useBackground
+                        includeMaybeTransition = subtheme.useBackground == UseBackground.Yes
                     )
                 }
                 val hov = subtheme[HoverSemantic]
@@ -793,7 +814,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:hover$it$cs",
                         )
                     },
-                    includeMaybeTransition = hov.useBackground,
+                    includeMaybeTransition = hov.useBackground == UseBackground.Yes,
                     mediaQuery = "(hover : hover)"
                 )
                 val foc = subtheme[FocusSemantic]
@@ -810,7 +831,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".hasNoBackField:focus-within$it$cs",
                         )
                     },
-                    includeMaybeTransition = foc.useBackground
+                    includeMaybeTransition = foc.useBackground == UseBackground.Yes
                 )
                 val dwn = subtheme[DownSemantic]
                 theme(
@@ -822,7 +843,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:active$it$cs",
                         )
                     },
-                    includeMaybeTransition = dwn.useBackground
+                    includeMaybeTransition = dwn.useBackground == UseBackground.Yes
                 )
                 val dis = subtheme[DisabledSemantic]
                 theme(
@@ -834,14 +855,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:disabled$it$cs",
                         )
                     },
-                    includeMaybeTransition = dis.useBackground
+                    includeMaybeTransition = dis.useBackground == UseBackground.Yes
                 )
                 val print = subtheme[PrintSemantic]
                 theme(
                     print.theme,
                     diff = theme,
                     asSelectors = asSelectors.map { "$it$cs$cs" },
-                    includeMaybeTransition = print.useBackground,
+                    includeMaybeTransition = print.useBackground == UseBackground.Yes,
                     mediaQuery = "print"
                 )
             }
@@ -897,15 +918,35 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
 
+
         theme.diff(diff) { background }?.let {
+            if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
             when (it) {
                 is Color -> {
-                    addToCss(backSel, "background-color", it.toCss())
+                    addToCss(backSel, "background-color", it.toWeb())
+                    addToCss(backSel, "background-image", "none")
+                }
+                is FadingColor -> {
+                    dynamicCss.rule("""
+                        @keyframes ${theme.id}-flickerAnimation {
+                        0% {
+                            background-color: ${it.base.toWeb()};
+                        }
+                        50% {
+                            background-color: ${it.alternate.toWeb()};
+                        }
+                        100% {
+                            background-color: ${it.base.toWeb()};
+                        }
+                    }
+                    """.trimIndent())
+                    addToCss(backSel, "animation", "2s infinite ${theme.id}-flickerAnimation")
+                    addToCss(backSel, "background-color", it.base.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
 
                 is LinearGradient -> {
-                    addToCss(backSel, "background-color", it.closestColor().toCss())
+                    addToCss(backSel, "background-color", it.closestColor().toWeb())
                     addToCss(
                         backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
                             joinGradientStops(it.stops)
@@ -915,7 +956,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 }
 
                 is RadialGradient -> {
-                    addToCss(backSel, "background-color", it.closestColor().toCss())
+                    addToCss(backSel, "background-color", it.closestColor().toWeb())
                     addToCss(
                         backSel, "background-image", "radial-gradient(circle at center, ${
                             joinGradientStops(it.stops)
@@ -935,8 +976,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
-        theme.diff(diff) { foreground }?.let { addToCss(directSel, "color", it.toCss()) }
-        theme.diff(diff) { icon }?.let { addToCss(directSel, "--icon-color", it.toCss()) }
         theme.diff(diff) { spacing }?.let { addToCss(directSel, "--spacing", it.value) }
         theme.diff(diff) { navSpacing }?.let { addToCss(directSel, "--navSpacing", it.value) }
         theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
@@ -949,24 +988,35 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
         theme.diff(diff) { font.additionalLetterSpacing }
             ?.let { addToCss(directSel, "letter-spacing", it.toString()) }
-        theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.toCss()) }
+        theme.diff(diff) { outline }?.let { addToCss(directSel, "outline-color", it.closestColor().toWeb()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "transition-duration", it.toCss()) }
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "--transition-duration", it.toCss()) }
         theme.diff(diff) { background }
-            ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toCss()) }
+            ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
         theme.diff(diff) { cornerRadii }?.let { addToCss(directSel, "border-radius", it.toRawCornerRadius()) }
         theme.diff(diff) { foreground }?.let {
             when (it) {
-                is Color -> {
-                    addToCss(directSel, "color", it.toCss())
-                }
-
-                is LinearGradient, is RadialGradient -> {
-                    addToCss(directSel, "color", it.toCss())
-                    addToCss(directSel, "background", "-webkit-${it.toCss()}")
+                is Color -> addToCss(directSel, "color", it.toWeb())
+                is FadingColor -> addToCss(directSel, "color", it.base.toWeb())
+                is LinearGradient -> {
+                    addToCss(directSel, "color", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
+                    addToCss(directSel, "background", "-webkit-linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
                     addToCss(directSel, "-webkit-background-clip", "text")
                     addToCss(directSel, "-webkit-text-fill-color", "transparent")
                 }
+                is RadialGradient -> {
+                    addToCss(directSel, "color", "radial-gradient(circle at center, ${joinGradientStops(it.stops)})")
+                    addToCss(directSel, "background", "-webkit-radial-gradient(circle at center, ${joinGradientStops(it.stops)})")
+                    addToCss(directSel, "-webkit-background-clip", "text")
+                    addToCss(directSel, "-webkit-text-fill-color", "transparent")
+                }
+            }
+        }
+        theme.diff(diff) { icon }?.let {
+            when (it) {
+                is Color -> addToCss(directSel, "--icon-color", it.toWeb())
+                is FadingColor -> addToCss(directSel, "--icon-color", "")
+                else -> addToCss(directSel, "--icon-color", it.closestColor().toWeb())
             }
         }
 
@@ -991,7 +1041,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         "(max-width: ${it.value})"
                     },
                 ).joinToString(" and ")
-                if(index.rem(2).absoluteValue == 1) {
+                if(index.plus(2).rem(2) == 1) {
                     dynamicCss.rule(
                         """
                     @media $mediaQuery {
@@ -999,7 +1049,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             flex-direction: column;
                         }
                         .$name.rowCollapsing > * {
-                            display: block;
                             flex-grow: 0 !important;
                             flex-shrink: 0 !important;
                             flex-basis: auto !important;
@@ -1025,9 +1074,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     @media $mediaQuery {
                         .$name.rowCollapsing {
                             flex-direction: row;
-                        }
-                        .$name.rowCollapsing > * {
-                            display: block;
                         }
                         .$name.rowCollapsing > .vStart {
                             align-self: start;

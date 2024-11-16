@@ -11,39 +11,40 @@ import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
+import androidx.core.text.set
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.asDouble
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberField actual constructor(context: RContext): RView(context) {
+actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).apply {
         var block = false
-        doAfterTextChanged {
+        doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
             block = true
-            try {
-                if (it == null) return@doAfterTextChanged
-                numberAutocommaRepair(
-                    dirty = it.toString(),
-                    selectionStart = selectionStart,
-                    selectionEnd = selectionEnd,
-                    setResult = {
-                        setText(it)
-                    },
-                    setSelectionRange = { start, end ->
-                        setSelection(start, end)
-                    }
-                )
-            } finally {
-                block = false
+            post {
+                val str = this.text.toString()
+                try {
+                    if (str == null) return@post
+                    numberAutocommaRepair(
+                        dirty = str,
+                        selectionStart = selectionStart,
+                        selectionEnd = selectionEnd,
+                        setResult = {
+                            setText(it)
+                        },
+                        setSelectionRange = { start, end ->
+                            setSelection(start, end)
+                        }
+                    )
+                } finally {
+                    block = false
+                }
             }
         }
     }
@@ -54,10 +55,11 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
             native.isEnabled = value
             refreshTheming()
         }
+
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!enabled) t = t[DisabledSemantic]
-        return t
+        if (!enabled) t = t[DisabledSemantic]
+        return super.applyState(t)
     }
 
     override fun applyForeground(theme: Theme) {
@@ -83,17 +85,16 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         set(value) {
             native.keyboardHints = value
         }
-    actual var action: Action? = null
-        set(value) {
-            field = value
-            native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
-            native.setOnEditorActionListener { v, actionId, event ->
-                launchManualCancel {
-                    value?.onSelect?.invoke()
-                }
-                value != null
-            }
+
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+        native.setOnEditorActionListener { v, actionId, event ->
+            value?.startAction(this)
+            value != null
         }
+    }
+
     actual var hint: String
         get() {
             return native.hint.toString()
@@ -101,6 +102,7 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         set(value) {
             native.hint = value
         }
+
     @Suppress("UNCHECKED_CAST")
     actual var range: ClosedRange<Double>?
         get() {
@@ -157,6 +159,7 @@ actual class NumberField actual constructor(context: RContext): RView(context) {
         set(value) {
             native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
         }
+
     init {
         keyboardHints = KeyboardHints.decimal
         align = Align.End

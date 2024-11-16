@@ -210,11 +210,11 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 
     init {
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(Dispatchers.IO) {
+        @Suppress("OPT_IN_USAGE")
+        AppScope.launch(Dispatchers.IO) {
             try {
                 client.webSocket(url) {
-                    run {
+                    withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
                     }
                     launch {
@@ -229,7 +229,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             this@WebSocketWrapper.closeReason.receive().let { reason ->
                                 close(reason)
-                                run {
+                                withContext(Dispatchers.Main) {
                                     onClose.forEach { it(reason.code) }
                                 }
                             }
@@ -241,15 +241,15 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         try {
                             when (val x = incoming.receive()) {
                                 is Frame.Binary -> {
-                                    val data = Blob(x.data.toNSData())
-                                    run {
+                                    val data = Blob(x.data.toNSData(), "application/octet-stream")
+                                    withContext(Dispatchers.Main) {
                                         onBinaryMessage.forEach { it(data) }
                                     }
                                 }
 
                                 is Frame.Text -> {
                                     val text = x.readText()
-                                    run {
+                                    withContext(Dispatchers.Main) {
                                         onMessage.forEach { it(text) }
                                     }
                                 }
@@ -264,12 +264,12 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         } catch (e: ClosedReceiveChannelException) {
                         }
                     }
-                    run {
+                    withContext(Dispatchers.Main) {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
-            } catch (e: Exception) {
-                run {
+            } catch(e: Exception) {
+                withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
                 }
             }

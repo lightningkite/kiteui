@@ -34,45 +34,50 @@ abstract class CommonSymbolProcessor2(
             extensionName = "txt",
             packageName = "com.lightningkite.lightningserver"
         ).writer()
+        log.appendLine("Log started")
         this.log = log
 
-        myCodeGenerator.createNewFile(
-            Dependencies.ALL_FILES,
-            fileName = "$myId",
-            extensionName = "txt",
-            packageName = "com.lightningkite.lightningserver"
-        ).writer().use {
-            it.appendLine("All reported files below")
-            resolver.getAllFiles().forEach { f -> it.appendLine(f.filePath) }
-        }
-        val outSample = myCodeGenerator.generatedFile.first().absoluteFile
-        val projectFolder = generateSequence(outSample) { it.parentFile!! }
-            .first { it.name == "build" }
-            .parentFile!!
-        val common = resolver.getAllFiles().any { it.filePath.contains("/src/common", true) }
-        val flavor = outSample.path.split(File.separatorChar)
-            .dropWhile { it != "ksp" }
-            .drop(2)
-            .first()
-            .let {
-                if (it.contains("test", true)) "Test"
-                else "Main"
-            }
-
-        val interestedIn = interestedIn(object: Resolver by resolver {
-            override fun getAllFiles(): Sequence<KSFile> {
-                return resolver.getAllFiles().filter {
-                    !common || it.filePath.contains("/src/common")
-                }
-            }
-        })
-
         try {
+
+            myCodeGenerator.createNewFile(
+                Dependencies.ALL_FILES,
+                fileName = "$myId",
+                extensionName = "txt",
+                packageName = "com.lightningkite.lightningserver"
+            ).writer().use {
+                it.appendLine("All reported files below")
+                resolver.getAllFiles().forEach { f -> it.appendLine(f.filePath) }
+            }
+            val outSample = myCodeGenerator.generatedFile.first().absoluteFile
+            val projectFolder = generateSequence(outSample) { it.parentFile!! }
+                .first { it.name == "build" }
+                .parentFile!!
+            val common = resolver.getAllFiles().any { it.filePath.contains("/src/common", true) }
+            val flavor = outSample.path.split(File.separatorChar)
+                .dropWhile { it != "ksp" }
+                .drop(2)
+                .first()
+                .let {
+                    if (it.contains("test", true)) "Test"
+                    else "Main"
+                }
+
+            val interestedIn = interestedIn(object : Resolver by resolver {
+                override fun getAllFiles(): Sequence<KSFile> {
+                    return resolver.getAllFiles().filter {
+                        !common || it.filePath.contains("/src/common")
+                    }
+                }
+            })
             val outFolder = projectFolder.resolve("build/generated/ksp/common/common$flavor/kotlin")
             outFolder.mkdirs()
 
+            log.appendLine("Preparing to process ${interestedIn.size} files.")
+            log.appendLine("Common mode: $common")
+
             if (common) {
                 processFiles(
+                    log = log,
                     version = version,
                     dependencies = interestedIn.asSequence().map { it.filePath.let(::File) },
                     lockFile = outFolder.resolve("$myId.lock"),
@@ -106,6 +111,10 @@ abstract class CommonSymbolProcessor2(
                 }
                 process2(resolver, interestedIn)
             }
+        } catch (t: Throwable) {
+            log.appendLine("FAILED WITH:")
+            log.appendLine(t.stackTraceToString())
+            throw t
         } finally {
             log.close()
         }
@@ -130,6 +139,7 @@ interface FileGenerator {
 }
 
 fun processFiles(
+    log: Appendable,
     version: Int,
     dependencies: Sequence<File>,
     lockFile: File,
@@ -138,26 +148,26 @@ fun processFiles(
 ) {
     lockFile.parentFile.mkdirs()
     val dependenciesFile = File(lockFile.absolutePath + ".dependencies")
-    if(!dependenciesFile.exists()) dependenciesFile.createNewFile()
+    if (!dependenciesFile.exists()) dependenciesFile.createNewFile()
     dependenciesFile.appendText(dependencies.joinToString("\n") + "\n\n")
     val hash = dependencies.checksum() + version
     val runningFile = File(lockFile.absolutePath + ".running")
     val pastHashesFile = File(lockFile.absolutePath + ".past")
-    if(!pastHashesFile.exists()) pastHashesFile.createNewFile()
+    if (!pastHashesFile.exists()) pastHashesFile.createNewFile()
     var count = 0
-    while(!runningFile.createNewFile() && count++ < 50) {
+    while (!runningFile.createNewFile() && count++ < 50) {
         Thread.sleep(100)
-        println("Waiting on lock...")
+        log.appendLine("Waiting on lock...")
     }
-    if(count >= 50) throw Exception("Waited, could not get lock")
-    println("Running...")
+    if (count >= 50) throw Exception("Waited, could not get lock")
+    log.appendLine("Running...")
     val hashFromFile = lockFile.takeIf { it.exists() }?.readText()?.toIntOrNull()
     lockFile.writeText(hash.toString())
     pastHashesFile.appendText(hash.toString() + "\n")
     try {
-        println("Hash comparison: $hash vs $hashFromFile")
-        if(hash != hashFromFile) {
-            println("Running the action!")
+        log.appendLine("Hash comparison: $hash vs $hashFromFile")
+        if (hash != hashFromFile) {
+            log.appendLine("Running the action!")
             destinationFolder.deleteRecursively()
             destinationFolder.mkdirs()
             action(object : FileGenerator {
@@ -168,11 +178,8 @@ fun processFiles(
                 }
             })
         }
-    } catch (e: Exception) {
-        // abandon
-        e.printStackTrace()
     } finally {
         runningFile.delete()
-        println("Done.")
+        log.appendLine("Done.")
     }
 }

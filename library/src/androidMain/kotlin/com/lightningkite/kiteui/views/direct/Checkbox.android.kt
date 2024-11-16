@@ -41,7 +41,7 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
         if(!enabled) t = t[DisabledSemantic]
-        return t
+        return super.applyState(t)
     }
 
     actual val checked: ImmediateWritable<Boolean> = native.contentProperty()

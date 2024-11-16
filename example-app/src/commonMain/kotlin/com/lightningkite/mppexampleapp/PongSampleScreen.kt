@@ -15,8 +15,8 @@ import kotlin.math.min
 @Routable("sample/pong")
 object PongSampleScreen : Screen {
 
-    override fun ViewWriter.render() = stack {
-        canvas {
+    override fun ViewWriter.render() = scrolls - col {
+        sizeConstraints(maxHeight = 30.rem) - canvas {
             val dg = PongDelegate()
             delegate = dg
             var last = clockMillis()
@@ -28,6 +28,9 @@ object PongSampleScreen : Screen {
                 dg.frame(diff / 1000.0)
                 dg.invalidate()
             }
+        }
+        repeat(40) {
+            text("More content to test scrolls")
         }
     }
 //    fun Canvas.onPointerHold(action: suspend (get: suspend ()->Point)->Unit) {

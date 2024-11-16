@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
@@ -27,7 +27,7 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         }
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         native.addEventListener("click") {
-            launchManualCancel(action)
+            launch { action() }
         }
     }
 

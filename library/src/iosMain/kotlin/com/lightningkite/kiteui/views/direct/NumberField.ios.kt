@@ -1,12 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
@@ -17,7 +17,7 @@ import platform.darwin.NSObject
 
 
 
-actual class NumberField actual constructor(context: RContext) : RView(context) {
+actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -32,7 +32,7 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
 
     init {
         var block = false
-        textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
+        textField.onEvent(this@NumberInput, UIControlEventEditingChanged) {
             if (block) return@onEvent
             block = true
             try {
@@ -92,11 +92,12 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
     actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?> {
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
-            set(value) { textField.text = value?.commaString() ?: "" }
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@NumberField, UIControlEventEditingChanged) {
-                listener()
+            set(value) {
+                if(textField.text != (value?.commaString() ?: ""))
+                    textField.text = value?.commaString() ?: ""
             }
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
         }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
@@ -123,13 +124,12 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-    actual var action: Action?
-        get() = TODO()
-        set(value) {
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
             textField.delegate = value?.let {
                 val d = object : NSObject(), UITextFieldDelegateProtocol {
                     override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launchManualCancel { it.onSelect() }
+                        it?.startAction(this@NumberInput)
                         return true
                     }
                 }
@@ -197,6 +197,6 @@ actual class NumberField actual constructor(context: RContext) : RView(context) 
         if(!textField.enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

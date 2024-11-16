@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.mppexampleapp.docs.VideoElementScreen
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementScreen
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Screen
@@ -12,14 +11,13 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
-import com.lightningkite.kiteui.views.minus
 
 @Routable("/")
 object RootScreen : Screen {
     override fun ViewWriter.render() {
         scrolls - col {
             col {
-                h1 { launch { content = "Beautiful by default." } }
+                h1 { content = "Beautiful by default." }
                 separator()
                 text {
                     content =
@@ -47,6 +45,7 @@ object RootScreen : Screen {
                 } in card
 
                 linkScreen { ValidationTestScreen() }
+                linkScreen { FormattedInputTests() }
                 linkScreen { TestingGroundScreen }
                 linkScreen { ListEditScreen }
                 linkScreen { LeakCheckerScreen }

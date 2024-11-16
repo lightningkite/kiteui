@@ -16,15 +16,15 @@ import com.lightningkite.kiteui.ConsoleRoot
 class LazyProperty<T>(
     private val stopListeningWhenOverridden: Boolean = true,
     private val useLastWhileLoading: Boolean = false,
-    private val debug: Console? = null,
+    private val log: Console? = null,
     initialValue: ReactiveContext.() -> T
-): Writable<T> {
+): ReadableWithImmediateWrite<T> {
 
     private val shared = SharedReadable(useLastWhileLoading = useLastWhileLoading, action = initialValue)
 
     private val listeners = ArrayList<() -> Unit>()
     override fun addListener(listener: () -> Unit): () -> Unit {
-        debug?.log("LazyProperty Adding listener")
+        log?.log("LazyProperty Adding listener")
 
         listeners.add(listener)
 
@@ -43,7 +43,7 @@ class LazyProperty<T>(
         private set(value) {
             if(field != value) {
                 field = value
-                debug?.log("LazyProperty: Informing ${listeners.size} listeners of new state $value")
+                log?.log("LazyProperty: Informing ${listeners.size} listeners of new state $value")
                 listeners.invokeAllSafe()
                 shutdownIfNotNeeded()
             }
@@ -55,9 +55,9 @@ class LazyProperty<T>(
     private var sharedRemover: (() -> Unit)? = null
 
     private fun startListeningToShared() {
-        debug?.log("Starting listening to shared")
+        log?.log("Starting listening to shared")
         sharedRemover = shared.addListener {
-            debug?.log("Shared sharing result with LazyProperty")
+            log?.log("Shared sharing result with LazyProperty")
             if (!overridden) {
                 state = shared.state
             }
@@ -69,12 +69,12 @@ class LazyProperty<T>(
     private fun stopListeningToShared() {
         sharedRemover?.invoke()
         sharedRemover = null
-        debug?.log("Stopped listening to shared")
+        log?.log("Stopped listening to shared")
     }
     private fun shutdownIfNotNeeded() {
         if (listeners.isNotEmpty()) return
         if (sharedRemover == null) return
-        debug?.log("LazyProperty shutting down shared behavior")
+        log?.log("LazyProperty shutting down shared behavior")
         stopListeningToShared()
         if (!useLastWhileLoading) state = ReadableState.notReady
     }
@@ -89,7 +89,7 @@ class LazyProperty<T>(
             state = ReadableState(value)
         }
 
-    override suspend fun set(value: T) { this.value = value }
+    override fun setImmediate(value: T) { this.value = value }
 
     /**
      * Resets the LazyProperty to the initial value calculation.

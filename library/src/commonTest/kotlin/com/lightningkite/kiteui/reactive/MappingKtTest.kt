@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WaitGate
+import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.reactive.lensing.WritableList
 import com.lightningkite.kiteui.reactive.lensing.map
@@ -100,10 +101,10 @@ class MappingKtTest {
                 }
                 assertEquals(42, seen)
                 assertEquals(1, sets)
-                launch { view.set(43) }
+                load { view.set(43) }
                 assertEquals(43, seen)
                 assertEquals(2, sets)
-                launch { view.set(43) }
+                load { view.set(43) }
                 assertEquals(43, seen)
                 assertEquals(2, sets)
                 source.value += 1
@@ -138,10 +139,10 @@ class MappingKtTest {
                 }
                 assertEquals(42, seen)
                 assertEquals(1, sets)
-                launch { view.set(43) }
+                load { view.set(43) }
                 assertEquals(43, seen)
                 assertEquals(2, sets)
-                launch { view.set(43) }
+                load { view.set(43) }
                 assertEquals(43, seen)
                 assertEquals(2, sets)
                 source.value = source.value.copy(y = source.value.y + 4)
@@ -182,14 +183,14 @@ class MappingKtTest {
             }
             assertEquals(-1, seen)
             assertEquals(0, sets)
-            launch { view.set(43) }
+            load { view.set(43) }
             assertEquals(-1, seen)
             assertEquals(0, sets)
             source.value = Sample(x = 42, y = listOf(1, 2, 3))
             // Weird trait here: set is queued!
             assertEquals(43, seen)
             assertEquals(2, sets)
-            launch { view.set(44) }
+            load { view.set(44) }
             assertEquals(44, seen)
             assertEquals(3, sets)
             source.value = source.value.copy(y = source.value.y + 4)
@@ -251,7 +252,7 @@ class MappingKtTest {
     @Test
     fun listSettingWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch {
+        load {
             sub.set(4)
         }
         assertEquals(4, source.value.last())
@@ -263,7 +264,7 @@ class MappingKtTest {
     fun listSettingWithListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch {
+        load {
             sub.set(4)
         }
         assertEquals(4, source.value.last())
@@ -274,7 +275,7 @@ class MappingKtTest {
     @Test
     fun listInsertionWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
+        load { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 
@@ -282,7 +283,7 @@ class MappingKtTest {
     fun listInsertion() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
+        load { view.elements.set(view.elements.awaitOnce() + view.newElement(4)) }
         assertEquals(4, source.value.size)
     }
 
@@ -290,7 +291,7 @@ class MappingKtTest {
     @Test
     fun listRemovalWithoutListen() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
+        load { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
 
@@ -304,21 +305,20 @@ class MappingKtTest {
                 println("Blocked $e")
             }
         }
-        launch { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
+        load { view.elements.set(view.elements.awaitOnce().filter { it.value != 3 }) }
         assertEquals(2, source.value.size)
     }
 
     // Removal works by identity
     @Test
     fun listRemovalByIdentityWithoutListen() = perElementTest { source, view ->
-        launch { view.remove(3) }
+        load { view.remove(3) }
         assertEquals(2, source.value.size)
     }
 
     @Test
     fun listRemovalByIdentity() = perElementTest { source, view ->
-        reactiveScope { sub() }
-        launch { view.remove(3) }
+        load { view.remove(3) }
         assertEquals(2, source.value.size)
     }
 
@@ -326,7 +326,7 @@ class MappingKtTest {
     @Test
     fun listRearrangingWithoutListening() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
-        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
+        load { view.elements.set(view.elements.awaitOnce().reversed()) }
         assertEquals(3, sub.value)
     }
 
@@ -334,7 +334,7 @@ class MappingKtTest {
     fun listRearranging() = perElementTest { source, view ->
         val sub = view.state.get().find { it.value == 3 }!!
         reactiveScope { sub() }
-        launch { view.elements.set(view.elements.awaitOnce().reversed()) }
+        load { view.elements.set(view.elements.awaitOnce().reversed()) }
         assertEquals(3, sub.value)
     }
 
@@ -367,7 +367,7 @@ class MappingKtTest {
             val third = view.state.get().find { it.value == 3 }!!
             reactiveScope { println("third: ${third()}") }
 
-            launch {
+            load {
                 third.set(4)
                 println("Complete")
             }
@@ -410,11 +410,11 @@ class MappingKtTest {
             reactiveScope { println("second: ${second()}") }
             reactiveScope { println("third: ${third()}") }
 
-            launch {
+            load {
                 third.set(4)
                 println("Complete third")
             }
-            launch {
+            load {
                 second.set(3)
                 println("Complete second")
             }

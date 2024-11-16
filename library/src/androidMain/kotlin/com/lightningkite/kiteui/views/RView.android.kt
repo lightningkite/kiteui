@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -20,8 +21,13 @@ import com.lightningkite.kiteui.views.direct.setPaddingAll
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-actual abstract class RView(context: RContext) : RViewHelper(context) {
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
+
+    init {
+        if(Looper.myLooper() != Looper.getMainLooper())
+            throw Exception("Cannot create views on any thread but the main thread")
+    }
 
     actual override var showOnPrint: Boolean = true
 
@@ -29,8 +35,11 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override fun opacitySet(value: Double) {
+        println("opacitySet: $value $animationsEnabled")
         if (animationsEnabled) {
+            println("Animating ${native.alpha}, ${value.toFloat()}")
             ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
+                duration = theme.transitionDuration.inWholeMilliseconds
                 addUpdateListener {
                     native.alpha = animatedValue as Float
                 }
@@ -41,6 +50,10 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
     }
 
     actual override fun existsSet(value: Boolean) {
+        // Setting visibility to GONE does not work if an animation is running
+        if (!exists) {
+            native.clearAnimation()
+        }
         native.visibility = if (value) {
             View.VISIBLE
         } else {
@@ -123,13 +136,27 @@ actual abstract class RView(context: RContext) : RViewHelper(context) {
             native.background = value
         }
     protected var backgroundBlock: GradientDrawable? = null
+    private val layoutChangeListener by lazy {
+        { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+            updateCorners()
+        }
+    }
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> 10000f
+            is CornerRadii.RatioOfSize -> if(it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+            // TODO: Implement per-corner radii on Android
+            is CornerRadii.PerCorner -> 0f
         }
+        // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
+        // size on Android
+/*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
+            native.addOnLayoutChangeListener(layoutChangeListener)
+        } else {
+            native.removeOnLayoutChangeListener(layoutChangeListener)
+        }*/
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }

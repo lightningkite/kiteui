@@ -7,12 +7,12 @@ actual inline fun RView.withoutAnimation(action: () -> Unit) {
     (native.element as? HTMLElement)?.let { it.withoutAnimation(action) } ?: action()
 }
 
-
+var animationsEnabled: Boolean = true
 inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
-    val animate = RViewHelper.animationsEnabled
+    val animate = animationsEnabled
     try {
         if(animate) {
-            RViewHelper.animationsEnabled = false
+            animationsEnabled = false
             clientWidth
             classList.add("notransition")
             clientWidth
@@ -24,7 +24,7 @@ inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
             kotlinx.browser.window.setTimeout({
                 classList.remove("notransition")
             }, 100)
-            RViewHelper.animationsEnabled = true
+            animationsEnabled = true
         }
     }
 }

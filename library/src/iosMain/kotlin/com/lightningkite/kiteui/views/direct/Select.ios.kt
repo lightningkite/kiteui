@@ -1,14 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launch
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSInteger
@@ -47,12 +44,15 @@ actual class Select actual constructor(context: RContext): RView(context) {
             override fun pickerView(pickerView: UIPickerView, titleForRow: NSInteger, forComponent: NSInteger): String? {
                 return render(list[titleForRow.toInt()])
             }
+            var index = 0
+            val set = Action("Set Value", Icon.send, frequencyCap = null, ignoreRetryWhileRunning = false) {
+                val item = list[index]
+                edits set item
+            }
             @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
             override fun pickerView(pickerView: UIPickerView, didSelectRow: NSInteger, inComponent: NSInteger) {
-                launch {
-                    val item = list[didSelectRow.toInt()]
-                    edits set item
-                }
+                index = didSelectRow.toInt()
+                set.startAction(this@Select)
             }
         }
         picker.setDataSource(source)
@@ -100,6 +100,6 @@ actual class Select actual constructor(context: RContext): RView(context) {
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

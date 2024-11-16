@@ -1,12 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 
-import com.lightningkite.kiteui.launch
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
@@ -14,8 +14,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 
 
-
-actual class TextField actual constructor(context: RContext) : RView(context) {
+actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -31,6 +30,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
+        updateHint()
     }
 
     fun updateFont() {
@@ -42,9 +42,7 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
     }
 
     fun updateHint() {
-        textField.placeholder = hint
-        // TODO: Colored hint
-//        textField.attributedPlaceholder = hint
+        textField.attributedPlaceholder = NSAttributedString.create(hint, mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor()))
     }
 
     var fontAndStyle: FontAndStyle? = null
@@ -56,14 +54,16 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
 
     actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
-            return textField.onEvent(this@TextField, UIControlEventEditingChanged) {
-                listener()
-            }
+            var lastValue = value
+            return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)
         }
 
         override var value: String
             get() = textField.text ?: ""
-            set(value) { textField.text = value }
+            set(value) {
+                if(textField.text == value) return
+                textField.text = value
+            }
     }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
@@ -87,37 +87,42 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
                 AutoComplete.NewPassword -> UITextContentTypeNewPassword
                 else -> null
             }
+            textField.autocorrectionType = when (value.type) {
+                KeyboardType.Text -> UITextAutocorrectionType.UITextAutocorrectionTypeDefault
+                else -> UITextAutocorrectionType.UITextAutocorrectionTypeNo
+            }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-    actual var action: Action?
-        get() = TODO()
-        set(value) {
-            textField.delegate = value?.let {
-                val d = object : NSObject(), UITextFieldDelegateProtocol {
-                    override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                        launchManualCancel { it.onSelect() }
-                        return true
-                    }
+
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        textField.delegate = value?.let {
+            val d = object : NSObject(), UITextFieldDelegateProtocol {
+                override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    it.startAction(this@TextInput)
+                    return true
                 }
-                textField.extensionStrongRef = d
-                d
-            } ?: NextFocusDelegateShared
-            textField.returnKeyType = when (value?.title) {
-                "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
-                "Go" -> UIReturnKeyType.UIReturnKeyGo
-                "Next" -> UIReturnKeyType.UIReturnKeyNext
-                "Continue" -> UIReturnKeyType.UIReturnKeyContinue
-                "Default" -> UIReturnKeyType.UIReturnKeyDefault
-                "Join" -> UIReturnKeyType.UIReturnKeyJoin
-                "Done" -> UIReturnKeyType.UIReturnKeyDone
-                "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
-                "Send" -> UIReturnKeyType.UIReturnKeySend
-                "Google" -> UIReturnKeyType.UIReturnKeyGoogle
-                "Route" -> UIReturnKeyType.UIReturnKeyRoute
-                "Search" -> UIReturnKeyType.UIReturnKeySearch
-                else -> UIReturnKeyType.UIReturnKeyDone
             }
+            textField.extensionStrongRef = d
+            d
+        } ?: NextFocusDelegateShared
+        textField.returnKeyType = when (value?.title) {
+            "Emergency Call" -> UIReturnKeyType.UIReturnKeyEmergencyCall
+            "Go" -> UIReturnKeyType.UIReturnKeyGo
+            "Next" -> UIReturnKeyType.UIReturnKeyNext
+            "Continue" -> UIReturnKeyType.UIReturnKeyContinue
+            "Default" -> UIReturnKeyType.UIReturnKeyDefault
+            "Join" -> UIReturnKeyType.UIReturnKeyJoin
+            "Done" -> UIReturnKeyType.UIReturnKeyDone
+            "Yahoo" -> UIReturnKeyType.UIReturnKeyYahoo
+            "Send" -> UIReturnKeyType.UIReturnKeySend
+            "Google" -> UIReturnKeyType.UIReturnKeyGoogle
+            "Route" -> UIReturnKeyType.UIReturnKeyRoute
+            "Search" -> UIReturnKeyType.UIReturnKeySearch
+            else -> UIReturnKeyType.UIReturnKeyDone
         }
+    }
+
     actual var hint: String = ""
         set(value) {
             field = value
@@ -151,18 +156,20 @@ actual class TextField actual constructor(context: RContext) : RView(context) {
             textField.enabled = value
             refreshTheming()
         }
+
     init {
         onRemove { textField.delegate = null }
         onRemove(textField.observe("highlighted", { refreshTheming() }))
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
+
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!textField.enabled) t = t[DisabledSemantic]
-        if(textField.highlighted) t = t[DownSemantic]
-        if(textField.focused) t = t[FocusSemantic]
-        return t
+        if (!textField.enabled) t = t[DisabledSemantic]
+        if (textField.highlighted) t = t[DownSemantic]
+        if (textField.focused) t = t[FocusSemantic]
+        return super.applyState(t)
     }
 }
 

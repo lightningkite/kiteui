@@ -13,7 +13,7 @@ import kotlin.collections.ArrayList
 class RouterGeneration(
     val codeGenerator: CodeGenerator,
     val logger: KSPLogger,
-) : CommonSymbolProcessor2(codeGenerator, "kiteui", 0) {
+) : CommonSymbolProcessor2(codeGenerator, "kiteui", 1) {
     override fun interestedIn(resolver: Resolver): Set<KSFile> {
         val allRoutables = resolver.getAllFiles().filter {
             it.declarations
@@ -30,7 +30,15 @@ class RouterGeneration(
             .filter { it.annotation("Routable") != null }
             .toList()
             .map { ParsedRoutable(it) }
-        if (allRoutables.isEmpty()) return
+        if (allRoutables.isEmpty()) {
+            createNewFile(
+                dependencies = Dependencies.ALL_FILES,
+                packageName = "notes",
+                fileName = "emptyWarning",
+                extensionName = "txt"
+            ).use { it.appendLine("WARNING! no routables find!\n") }
+            return
+        }
         val fallbackRoute = resolver.getAllFiles()
             .flatMap { it.declarations }
             .filterIsInstance<KSClassDeclaration>()
@@ -196,8 +204,8 @@ class ParsedRoutable(
                     val n = it.trim('{', '}')
                     Segment.Variable(
                         name = n,
-                        type = source.primaryConstructor!!.parameters
-                            .find { it.name!!.asString() == n }!!
+                        type = (source.primaryConstructor?.parameters
+                            ?.find { it.name!!.asString() == n } ?: throw Exception("Could not find parameter named '${n}' for class ${source.qualifiedName?.asString()}"))
                             .type
                             .resolve()
                     )

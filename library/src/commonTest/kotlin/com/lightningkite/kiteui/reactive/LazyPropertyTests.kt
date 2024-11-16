@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launch
+import com.lightningkite.kiteui.load
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,7 +70,7 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch {
+            load {
                 a.await()
             }
             reactiveScope {
@@ -80,7 +80,7 @@ class LazyPropertySharedBehaviorTests {
 
             property.value = 2
             assertEquals(2, hits)
-        }.cancel()
+        }
 
         // Shouldn't be listening anymore, so it does not trigger a hit
         property.value = 3
@@ -90,13 +90,13 @@ class LazyPropertySharedBehaviorTests {
             reactiveScope {
                 a()
             }
-            launch {
+            load {
                 a.await()
             }
             reactiveScope {
                 a()
             }
-        }.cancel()
+        }
         assertEquals(3, hits)
     }
 
@@ -275,22 +275,27 @@ class LazyPropertyTests {
 
     @Test fun testStupidCase() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
+        val lensed2 = lazy.lens(get = { it.take(3) }, modify = { o, it -> it })
         testContext {
             println(lensed.state)
-            launch {
-                println("Starting")
-                println(lensed())
+            load {
+                assertEquals("Tes", lensed())
+            }
+            load {
+                assertEquals("Tes", lensed2())
             }
         }
     }
 
     @Test fun testStupidCase2() {
         val basis = Property("Test")
-        val lazy = LazyProperty(stopListeningWhenOverridden = false, debug = ConsoleRoot) { basis() }
+        val lazy = LazyProperty(stopListeningWhenOverridden = false) { basis() }
         val lensed = lazy.lens { it.take(3) }
+        val lensed2 = lazy.lens(get = { it.take(3) }, modify = { o, it -> it })
         var value = ""
+        var value2 = ""
         testContext {
             println(lensed.state)
             reactive {
@@ -298,7 +303,13 @@ class LazyPropertyTests {
                 value = lensed()
                 println(value)
             }
+            reactive {
+                println("Starting")
+                value2 = lensed2()
+                println(value2)
+            }
             assertEquals("Tes", value)
+            assertEquals("Tes", value2)
         }
     }
 }

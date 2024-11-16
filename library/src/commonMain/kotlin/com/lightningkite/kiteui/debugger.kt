@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
 
+var debugMode: Boolean = false
 expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
 expect fun gc(): GCInfo
@@ -23,7 +24,6 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
         gcIfNotVeryRecent()
         get()?.let {
             leaks.add(this)
-            println("Leaked ${it}, total ${leaks.size} leaks")
             recheckLeakAfterDelay(milliseconds)
         }
     }
@@ -33,7 +33,6 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         gcIfNotVeryRecent()
         if (get() == null) {
             leaks.remove(this)
-            println("Recovered item, total ${leaks.size} leaks")
         } else {
             recheckLeakAfterDelay(milliseconds)
         }
@@ -44,6 +43,8 @@ expect fun assertMainThread()
 expect fun Throwable.printStackTrace2()
 var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
 fun Throwable.report(context: String = "") = Throwable_report(this, context)
+
+expect fun Any?.identityHashCode(): Int
 
 var viewDebugTarget: RView? = null
 

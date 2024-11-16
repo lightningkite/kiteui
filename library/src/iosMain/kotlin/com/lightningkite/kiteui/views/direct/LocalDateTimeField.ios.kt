@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -13,18 +14,13 @@ import platform.UIKit.*
 
 
 
-actual class LocalDateField actual constructor(context: RContext) : RView(context) {
+actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDate?>(null)
     actual val content: ImmediateWritable<LocalDate?> get() = _content
-    actual var action: Action?
-        get() = textField.action
-        set(value) {
-            textField.action = value
-        }
     // TODO
     actual var range: ClosedRange<LocalDate>? = null
 
@@ -77,22 +73,21 @@ actual class LocalDateField actual constructor(context: RContext) : RView(contex
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 
-actual class LocalTimeField actual constructor(context: RContext) : RView(context) {
+actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalTime?>(null)
     actual val content: ImmediateWritable<LocalTime?> get() = _content
-    actual var action: Action?
-        get() = textField.action
-        set(value) {
-            textField.action = value
-        }
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        textField.action = value
+    }
     // TODO
     actual var range: ClosedRange<LocalTime>? = null
 
@@ -145,22 +140,21 @@ actual class LocalTimeField actual constructor(context: RContext) : RView(contex
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }
 
-actual class LocalDateTimeField actual constructor(context: RContext) : RView(context) {
+actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDateTime?>(null)
     actual val content: ImmediateWritable<LocalDateTime?> get() = _content
-    actual var action: Action?
-        get() = textField.action
-        set(value) {
-            textField.action = value
-        }
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        textField.action = value
+    }
     // TODO
     actual var range: ClosedRange<LocalDateTime>? = null
 
@@ -213,6 +207,6 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RView(co
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
-        return t
+        return super.applyState(t)
     }
 }

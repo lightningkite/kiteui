@@ -19,6 +19,7 @@ import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.time.DurationUnit
 
 
 @ViewModifierDsl3
@@ -119,7 +120,7 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual val ViewWriter.scrolls: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native = ScrollLayout()
 
             init {
@@ -132,7 +133,7 @@ actual val ViewWriter.scrolls: ViewWrapper
 @ViewModifierDsl3
 actual val ViewWriter.scrollsHorizontally: ViewWrapper
     get() {
-        wrapNextIn(object : RView(context) {
+        wrapNextIn(object : RViewWrapper(context) {
             override val native = ScrollLayout()
 
             init {
@@ -165,8 +166,38 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 @ViewModifierDsl3
 actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
-        exists = default
-        ::exists.invoke(condition)
+        native.hidden = !default
+        var runNumber = 0
+        var lastCommitted = 0
+        reactiveScope {
+            val value = condition()
+            val myRun = ++runNumber
+            if(animationsEnabled) {
+                if (native.hidden) {
+                    native.alpha = 0.0
+                    native.hidden = false
+                    native.extensionCollapsed = true
+                }
+                animateIfAllowed(onComplete = {
+                    if(myRun < lastCommitted) {
+                        native.hidden = !value
+                        native.extensionCollapsed = false
+                        lastCommitted = myRun
+                    }
+                }) {
+                    if (!value) native.alpha = 0.0
+                    else native.alpha = opacity
+                    native.extensionCollapsed = !value
+                    native.informParentOfSizeChange()
+                    native.superview?.layoutIfNeeded()
+                }
+            } else {
+                native.extensionCollapsed = false
+                native.alpha = opacity
+                native.hidden = !value
+                native.informParentOfSizeChange()
+            }
+        }
     }
     return ViewWrapper
 }

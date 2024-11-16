@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.jvm.JvmInline
 
@@ -142,6 +143,8 @@ sealed interface ErrorState {
 inline fun <T> readableState(action: () -> T): ReadableState<T> {
     return try {
         ReadableState(action())
+    } catch (e: CancelledException) {
+        ReadableState.notReady
     } catch (e: ReactiveLoading) {
         ReadableState.notReady
     } catch (e: Exception) {
@@ -160,4 +163,10 @@ inline fun <T> readableStateWithValidation(data: T, action: () -> T): ReadableSt
     } catch (e: Exception) {
         ReadableState.exception(e)
     }
+}
+
+inline fun <T> Result<T>.toReadableState(): ReadableState<T> {
+    @Suppress("UNCHECKED_CAST")
+    return if(this.isFailure) ReadableState.exception(this.exceptionOrNull() as Exception)
+    else ReadableState.wrap(this.getOrNull() as T)
 }

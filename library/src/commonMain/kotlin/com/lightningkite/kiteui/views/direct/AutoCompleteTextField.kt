@@ -8,13 +8,13 @@ import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWithAction
 import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class AutoCompleteTextField(context: RContext) : RView {
+expect class AutoCompleteTextField(context: RContext) : RViewWithAction {
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
-    var action: Action?
     var suggestions: List<String>
 }

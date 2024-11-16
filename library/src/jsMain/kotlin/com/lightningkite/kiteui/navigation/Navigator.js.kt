@@ -1,17 +1,19 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.decodeURIComponent
+import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.w3c.dom.*
 import kotlin.math.min
 
 actual fun ScreenNavigator.bindToPlatform(context: RContext) {
-    val log: ConsoleRoot? = null//ConsoleRoot.tag("ScreenStack.bindToPlatform")
+    val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
     val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 
     fun guessAndImplementFromUrlBar() {
@@ -51,22 +53,20 @@ actual fun ScreenNavigator.bindToPlatform(context: RContext) {
             suppressNav = false
         }
     })
-    @OptIn(DelicateCoroutinesApi::class)
-    with(CalculationContext.NeverEnds) {
-        reactiveScope {
-            // After boot, we want to make storage ALWAYS match the actual stack.
-            storedStack.value = stack().mapNotNull { routes.render(it)?.urlLikePath?.render() }
-        }
-        var lastStack = stack.value
-        reactiveScope {
-            // Whenever the stack changes, we need to update the history as best we can.
-            val s = stack()
-            if (!suppressNav) {
-                var indexWhereChangesStart = s.zip(lastStack).indexOfFirst { it.first != it.second }
-                if (indexWhereChangesStart == -1) indexWhereChangesStart = min(s.size, lastStack.size)
-                val removed = lastStack.subList(indexWhereChangesStart, lastStack.size)
-                val added = s.subList(indexWhereChangesStart, s.size)
-                log?.log("Nav changed!  Removed $removed, added $added")
+    AppScope.reactiveScope {
+        // After boot, we want to make storage ALWAYS match the actual stack.
+        storedStack.value = stack().mapNotNull { routes.render(it)?.urlLikePath?.render() }
+    }
+    var lastStack = stack.value
+    AppScope.reactiveScope {
+        // Whenever the stack changes, we need to update the history as best we can.
+        val s = stack()
+        if (!suppressNav) {
+            var indexWhereChangesStart = s.zip(lastStack).indexOfFirst { it.first != it.second }
+            if (indexWhereChangesStart == -1) indexWhereChangesStart = min(s.size, lastStack.size)
+            val removed = lastStack.subList(indexWhereChangesStart, lastStack.size)
+            val added = s.subList(indexWhereChangesStart, s.size)
+            log?.log("Nav changed!  Removed $removed, added $added")
 //                if (removed.isNotEmpty()) {
 //                    // Pop the states
 //                    try {
@@ -80,27 +80,26 @@ actual fun ScreenNavigator.bindToPlatform(context: RContext) {
 //                        suppressNav = false
 //                    }
 //                }
-                if (added.isNotEmpty()) {
-                    for ((index, new) in added.withIndex()) {
-                        routes.render(new)?.urlLikePath?.render()?.let {
-                            log?.log("Pushing $it as index ${index + indexWhereChangesStart}...")
-                            window.history.pushState(index + indexWhereChangesStart, "", basePath + it)
-                        }
+            if (added.isNotEmpty()) {
+                for ((index, new) in added.withIndex()) {
+                    routes.render(new)?.urlLikePath?.render()?.let {
+                        log?.log("Pushing $it as index ${index + indexWhereChangesStart}...")
+                        window.history.pushState(index + indexWhereChangesStart, "", basePath + it)
                     }
                 }
             }
-            lastStack = s
         }
-        reactiveScope {
-            // Whenever the stack's top changes, we want to update the URL bar.
-            val s = stack()
-            s.lastOrNull()?.let { routes.render(it) }?.let {
-                it.listenables.forEach { rerunOn(it) }
-                log?.log("Replacing  state as index ${s.lastIndex}")
-                window.history.replaceState(
-                    s.lastIndex, "", basePath + it.urlLikePath.render()
-                )
-            }
+        lastStack = s
+    }
+    AppScope.reactiveScope {
+        // Whenever the stack's top changes, we want to update the URL bar.
+        val s = stack()
+        s.lastOrNull()?.let { routes.render(it) }?.let {
+            it.listenables.forEach { rerunOn(it) }
+            log?.log("Replacing  state as index ${s.lastIndex}")
+            window.history.replaceState(
+                s.lastIndex, "", basePath + it.urlLikePath.render()
+            )
         }
     }
 }
@@ -112,12 +111,15 @@ external interface BaseUrlScript {
     val baseUrl: String
 }
 
-var basePath = (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
-    JSON.parse<BaseUrlScript>(it).baseUrl
-} ?: "/"
+var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
+    ?.innerText
+    ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
+    ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }
+    ?: "/")
+    .also { println("Base path is $it") }
 
 private fun Location.urlLike() = UrlLikePath(
-    segments = pathname.removePrefix(basePath).split('/').filter { it.isNotBlank() },
+    segments = pathname.removePrefix("/" + basePath.substringAfter("://").substringAfter('/')).split('/').filter { it.isNotBlank() },
     parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
         .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
 )

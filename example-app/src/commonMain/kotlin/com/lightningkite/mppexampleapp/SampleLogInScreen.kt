@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.screenNavigator
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.bind
@@ -34,6 +35,7 @@ object SampleLogInScreen : Screen {
                     label {
                         content = "Email"
                         sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                            hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
@@ -41,15 +43,15 @@ object SampleLogInScreen : Screen {
                     label {
                         content = "Password"
                         sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                            hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
                             action = Action(
                                 title = "Log In",
                                 icon = Icon.login,
-                                onSelect = {
-                                    fakeLogin(email)
-                                }
-                            )
+                            ) {
+                                fakeLogin(email)
+                            }
                         }
                     }
                     important - button {
@@ -62,7 +64,7 @@ object SampleLogInScreen : Screen {
                 }
                 expanding - space()
             }
-        } 
+        }
     }
 
     private suspend fun ViewWriter.fakeLogin(email: Property<String>) {

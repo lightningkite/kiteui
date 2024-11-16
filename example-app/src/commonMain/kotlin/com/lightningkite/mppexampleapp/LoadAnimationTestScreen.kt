@@ -44,14 +44,9 @@ object LoadAnimationTestScreen : Screen {
                     }
                     onClick { delay(5000) }
                 }
-                text { ::content { loading() } }
-                subtext { ::content { loading() } }
                 h1 { ::content { loading() } }
-                h2 { ::content { loading() } }
-                h3 { ::content { loading() } }
-                h4 { ::content { loading() } }
-                h5 { ::content { loading() } }
-                h6 { ::content { loading() } }
+                text { ::content { loading() } }
+                card - text { ::content { loading() } }
                 select { bind(writable, shared { loading().let(::listOf) }, { it }) }
                 textField { content bind loading.withWrite {  } }
                 textArea { content bind loading.withWrite {  } }

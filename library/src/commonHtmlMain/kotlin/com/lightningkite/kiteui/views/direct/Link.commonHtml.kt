@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launchManualCancel
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext) : RView(context) {
@@ -18,16 +18,12 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             val destination = to?.invoke()
             if(destination != null) {
                 if (resetsStack) {
-                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
                     onNavigator.reset(destination)
-                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
                 } else {
-                    ConsoleRoot.log("Navigating on ", onNavigator, " to ", destination)
                     onNavigator.navigate(destination)
-                    ConsoleRoot.log("Result is ", onNavigator.stack.value)
                 }
                 onNavigate?.let {
-                    launchManualCancel(it)
+                    launch { it() }
                 }
             }
         }

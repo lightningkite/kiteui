@@ -630,9 +630,11 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     }
 
     fun populate() {
-        populateDown()
-        populateUp()
-        updateFakeScroll()
+        withoutAnimation {
+            populateDown()
+            populateUp()
+            updateFakeScroll()
+        }
     }
 
     fun updateVisibleIndexes() {
@@ -793,7 +795,7 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             it.measure()
         }
         viewportSize = bounds.useContents { if(vertical) size.height else size.width }
-        updateFakeScroll()
+        populate()
     }
 
     init {
@@ -814,7 +816,6 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                 )
             )
             ready = true
-            populate()
         }
     }
 }

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.dp
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -19,8 +20,5 @@ actual class Separator actual constructor(context: RContext): RView(context) {
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.backgroundColor = theme.foreground.closestColor().toUiColor()
-    }
-    init {
-//        sizeConstraints =
     }
 }
