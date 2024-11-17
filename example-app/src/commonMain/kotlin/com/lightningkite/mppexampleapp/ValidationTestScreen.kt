@@ -71,18 +71,17 @@ class ValidationTestScreen: Screen {
                 }
             }
 
-            val number = draft.validationLens(
-                get = { it.number?.toDouble() },
-                modify = { o, it ->
-                    if (it == null) throw InvalidException("Cannot be empty")
-                    else {
-                        val int = it.toInt()
-                        if (it.toString().contains('.')) throw InvalidException("Must be an integer")
-                        else if (int == 0) throw WarningException("Should be larger than 0", "0 does nothing here")
-                        else o.copy(number = int)
-                    }
+            val number = draft
+                .lens(
+                    name = "number",
+                    get = { it.number },
+                    modify = { o, it -> o.copy(number = it) }
+                )
+                .validate {
+                    if (it == null) "Cannot be null"
+                    else if (it <= 0) "Must be greater than 0"
+                    else null
                 }
-            )
 
             val strings = draft
                 .lens(
@@ -99,12 +98,12 @@ class ValidationTestScreen: Screen {
                     validates(name)
                     content bind name
                 }
-                onlyWhen { name.invalid() != null } - text { ::content { name.invalid()?.errorSummary ?: "" } }
+                onlyWhen { name.invalid() != null } - text { ::content { name.invalid()?.summary ?: "" } }
             }
 
             warningText {
                 val otherText = Property("").validate { if (it == "abc") "Cannot be abc" else null }
-                ::content { otherText.invalid()?.errorSummary }
+                ::content { otherText.invalid()?.summary }
 
                 fieldTheme - textField {
                     hint = "other text"
@@ -120,7 +119,7 @@ class ValidationTestScreen: Screen {
                     validates(id)
                     content bind id
                 }
-                onlyWhen { id.invalid() != null } - text { ::content { id.invalid()?.errorSummary ?: "" } }
+                onlyWhen { id.invalid() != null } - text { ::content { id.invalid()?.summary ?: "" } }
             }
 
             col {
@@ -128,9 +127,9 @@ class ValidationTestScreen: Screen {
                 fieldTheme - numberField {
                     hint = "Number"
                     validates(number)
-                    content bind number
+                    content bind number.asDouble()
                 }
-                onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.errorSummary ?: "" } }
+                onlyWhen { number.invalid() != null } - text { ::content { number.invalid()?.summary ?: "" } }
             }
 
             expanding - scrolls - card - recyclerView {
@@ -141,7 +140,7 @@ class ValidationTestScreen: Screen {
                             content bind str.flatten()
                             dynamicTheme { if (str().invalid() != null) InvalidSemantic else null }
                         }
-                        onlyWhen { str().invalid() != null } - text { ::content { str().invalid()?.errorSummary ?: "" } }
+                        onlyWhen { str().invalid() != null } - text { ::content { str().invalid()?.summary ?: "" } }
                     }
                 }
             }

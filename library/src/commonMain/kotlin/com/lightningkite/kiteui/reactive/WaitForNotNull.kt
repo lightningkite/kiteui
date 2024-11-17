@@ -6,7 +6,13 @@ internal class WaitForNotNull<T : Any>(val wraps: Readable<T?>) : Readable<T> {
 
     @Suppress("UNCHECKED_CAST")
     override val state: ReadableState<T>
-        get() = if(wraps.state.raw == null) ReadableState.notReady else wraps.state as ReadableState<T>
+        get() = when (val s = wraps.state) {
+            is ReadableState.Ready -> {
+                if (s.value == null) ReadableState.NotReady else s as ReadableState<T>
+            }
+            is ReadableState.Exception -> s
+            is ReadableState.NotReady -> s
+        }
 
     override fun addListener(listener: () -> Unit): () -> Unit {
         return wraps.addListener(listener)

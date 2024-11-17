@@ -14,7 +14,7 @@ abstract class DependencyChangeListener : DependencyTracker(), CoroutineContext.
 
 private fun <T> Continuation<T>.resumeState(state: ReadableState<T>) {
     state.handle(
-        success = { resume(it) },
+        ready = { resume(it) },
         exception = { resumeWithException(it) },
         notReady = { resumeWithException(CancellationException("State not ready")) }
     )
@@ -96,7 +96,7 @@ suspend fun <T> Readable<T>.await(): T {
             it.registerDependency(this, addListener {
                 it.log?.log("readable listener hit with $state, cont is $cont")
                 state.handle(
-                    success = { r ->
+                    ready = { r ->
                         cont?.let { c ->
                             c.resume(r)
                             cont = null
@@ -118,7 +118,7 @@ suspend fun <T> Readable<T>.await(): T {
         }
 
         this.state.handle(
-            success = { return@let it },
+            ready = { return@let it },
             exception = { throw it },
             notReady = {
                 return@let suspendCancellableCoroutine {

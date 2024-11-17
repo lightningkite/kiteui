@@ -13,16 +13,15 @@ fun ReactiveContext.allValid(readables: List<Readable<*>>): Boolean =
     readables.all { r -> r.state { it.invalid == null } }
 fun ReactiveContext.allValid(vararg readables: Readable<*>): Boolean = allValid(readables.toList())
 
-fun ReactiveContext.errors(readables: List<Readable<*>>): List<ErrorState> =
-    readables.mapNotNull { r -> r.state { it.error } }
-fun ReactiveContext.errors(vararg readables: Readable<*>) = errors(readables.toList())
+fun ReactiveContext.issues(readables: List<Readable<*>>): List<ReadableState.Issue> =
+    readables.mapNotNull { r -> r.state { it.issue } }
+fun ReactiveContext.issues(vararg readables: Readable<*>) = issues(readables.toList())
 
 fun RView.validates(readables: List<Readable<*>>) {
     dynamicTheme {
-        val errors = errors(readables)
-        if (errors.any { it is ErrorState.ThrownException }) DangerSemantic
-        else if (errors.any { it is ErrorState.Invalid<*> }) InvalidSemantic
-        else if (errors.any { it is ErrorState.Warning<*> }) WarningSemantic
+        val errors = issues(readables)
+        if (errors.any { it is ReadableState.Exception }) DangerSemantic
+        else if (errors.any { it is ReadableState.Invalid<*> }) InvalidSemantic
         else null
     }
 }
@@ -44,12 +43,8 @@ fun <T> Readable<Readable<T>>.flattenState(): Readable<T> =
 fun ReactiveContext.errorMessages(readables: List<Readable<*>>): List<String> =
     readables.mapNotNull { r ->
         r.state {
-            val raw = it.raw
-            when (raw) {
-                is ErrorState.Invalid<*> -> raw.errorDescription
-                is ErrorState.Warning<*> -> raw.errorDescription
-                else -> null
-            }
+            if (it is ReadableState.Issue) it.summary
+            else null
         }
     }
 fun ReactiveContext.errorMessages(vararg readables: Readable<*>) = errorMessages(readables.toList())

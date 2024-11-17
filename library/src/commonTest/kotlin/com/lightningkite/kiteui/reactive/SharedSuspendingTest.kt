@@ -127,7 +127,7 @@ class SharedSuspendingTest {
             println("late.unset()")
             late.unset()
             println("late.unset() done")
-            assertEquals(ReadableState.notReady, a.state)
+            assertEquals(ReadableState.NotReady, a.state)
 
             late.value = 2
             assertEquals(ReadableState(2), a.state)

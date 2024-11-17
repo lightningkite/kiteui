@@ -33,27 +33,30 @@ abstract class BaseListenable : Listenable {
     }
 }
 
-abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.notReady) : Readable<T>, BaseListenable() {
+abstract class BaseReadable<T>(start: ReadableState<T> = ReadableState.NotReady) : Readable<T>, BaseListenable() {
     override var state: ReadableState<T> = start
         protected set(value) {
-            if (field.raw !== value.raw && field != value) {
+            if (field != value) {
                 field = value
                 invokeAllListeners()
             }
         }
 }
 
-class RawReadable<T>(start: ReadableState<T> = ReadableState.notReady) : BaseReadable<T>(start) {
+class RawReadable<T>(start: ReadableState<T> = ReadableState.NotReady) : BaseReadable<T>(start) {
     override var state: ReadableState<T>
         get() = super.state
         public set(value) { super.state = value }
 }
 
 abstract class BaseImmediateReadable<T>(start: T) : ImmediateReadable<T>, BaseListenable() {
-    override var value: T = start
-        set(value) {
-            @Suppress("SuspiciousEqualsCombination")
-            if (field !== value && field != value) {
+    override var value: T
+        set(value) { state = ReadableState(value) }
+        get() = state.value
+
+    override var state: ReadableState.Ready<T> = ReadableState(start)
+        protected set(value) {
+            if (field.value !== value.value && field != value) {
                 field = value
                 invokeAllListeners()
             }
@@ -75,6 +78,10 @@ class Property<T>(startValue: T) : ImmediateWritable<T>, BaseImmediateReadable<T
     override suspend infix fun set(value: T) {
         this.value = value
     }
+
+    override suspend fun updateFromLens(name: String, update: ReadableState<T>) {
+        state = state.updateFromLens(name, update)
+    }
 }
 
 class LateInitProperty<T>() : Writable<T>, BaseReadable<T>() {
@@ -88,8 +95,12 @@ class LateInitProperty<T>() : Writable<T>, BaseReadable<T>() {
         this.value = value
     }
 
+    override suspend fun updateFromLens(name: String, update: ReadableState<T>) {
+        state = state.updateFromLens(name, update)
+    }
+
     fun unset() {
-        state = ReadableState.notReady
+        state = ReadableState.NotReady
     }
 }
 
@@ -98,5 +109,6 @@ class Constant<T>(override val value: T) : ImmediateReadable<T> {
         private val NOOP = {}
     }
 
+    override val state: ReadableState.Ready<T> = ReadableState(value)
     override fun addListener(listener: () -> Unit): () -> Unit = NOOP
 }

@@ -2,126 +2,12 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.reactive.lensing.lens
 import com.lightningkite.kiteui.report
 import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
 
-private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (O) -> T) : BaseReadable<T>() {
-    override var state: ReadableState<T>
-        get() {
-            if (myListen == null) super.state = source.state.map(get)
-            return super.state
-        }
-        set(_) = TODO()
-
-    private var myListen: (() -> Unit)? = null
-
-    override fun activate() {
-        super.activate()
-        super.state = source.state.map(get)
-        myListen = source.addListener {
-            super.state = source.state.map(get)
-        }
-    }
-
-    override fun deactivate() {
-        super.deactivate()
-        myListen?.invoke()
-        myListen = null
-    }
-}
-
-private open class SetLens<O, T>(source: Writable<O>, get: (O) -> T, val set: (T) -> O) :
-    ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
-    override suspend fun set(value: T) {
-        source.set(set.invoke(value))
-    }
-}
-
-private open class ModifyLens<O, T>(source: Writable<O>, get: (O) -> T, val modify: (O, T) -> O) :
-    ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
-    override suspend fun set(value: T) {
-        source.set(modify(source.awaitOnce(), value))
-    }
-}
-
-private open class ImmediateReadableLens<S : ImmediateReadable<O>, O, T>(val source: S, val get: (O) -> T) :
-    BaseImmediateReadable<T>(source.value.let(get)) {
-    override var value: T
-        get() {
-            if (myListen == null) super.value = source.value.let(get)
-            return super.value
-        }
-        set(_) = TODO()
-
-    private var myListen: (() -> Unit)? = null
-    override fun activate() {
-        super.activate()
-        super.value = source.value.let(get)
-        myListen = source.addListener {
-            super.value = source.value.let(get)
-        }
-    }
-
-    override fun deactivate() {
-        super.deactivate()
-        myListen?.invoke()
-        myListen = null
-    }
-}
-
-private open class SetImmediateLens<O, T>(source: ImmediateWritable<O>, get: (O) -> T, val set: (T) -> O) :
-    ImmediateReadableLens<ImmediateWritable<O>, O, T>(source, get), ImmediateWritable<T> {
-    override var value: T
-        get() = super.value
-        set(value) {
-            source.value = set.invoke(value)
-        }
-}
-
-private open class ModifyImmediateLens<O, T>(source: ImmediateWritable<O>, get: (O) -> T, val modify: (O, T) -> O) :
-    ImmediateReadableLens<ImmediateWritable<O>, O, T>(source, get), ImmediateWritable<T> {
-    override var value: T
-        get() = super.value
-        set(value) {
-            source.value = modify(source.value, value)
-        }
-}
-
-fun <O, T> Readable<O>.lens(
-    get: (O) -> T
-): Readable<T> = ReadableLens(this, get)
-
-@Deprecated("use the new name, lens, instead", ReplaceWith("lens", "com.lightningkite.kiteui.reactive.lens"))
-fun <O, T> Writable<O>.map(
-    get: (O) -> T,
-    set: (O, T) -> O
-): Writable<T> = lens(get, set)
-
-fun <O, T> Writable<O>.lens(
-    get: (O) -> T,
-    modify: (O, T) -> O
-): Writable<T> = ModifyLens(this, get, modify)
-
-fun <O, T> Writable<O>.lens(
-    get: (O) -> T,
-    set: (T) -> O
-): Writable<T> = SetLens(this, get, set)
-
-fun <O, T> ImmediateReadable<O>.lens(
-    get: (O) -> T
-): ImmediateReadable<T> = ImmediateReadableLens(this, get)
-
-fun <O, T> ImmediateWritable<O>.lens(
-    get: (O) -> T,
-    set: (T) -> O
-): ImmediateWritable<T> = SetImmediateLens(this, get, set)
-
-fun <O, T> ImmediateWritable<O>.lens(
-    get: (O) -> T,
-    modify: (O, T) -> O
-): ImmediateWritable<T> = ModifyImmediateLens(this, get, modify)
 
 @Deprecated("Be specific about what kind you need.")
 fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
@@ -134,12 +20,12 @@ fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) =
 @Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
 fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
-    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
+    lens("", get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
 @Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
 fun <E, ID> Writable<Set<E>>.lensByElement(identity: (E) -> ID) =
-    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
+    lens("", get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
 
 fun <E, ID, W> Writable<List<E>>.lensByElementWithIdentity(
     identity: (E) -> ID,
@@ -155,11 +41,11 @@ fun <E, ID, W> Writable<Set<E>>.lensByElementWithIdentity(
     identity: (E) -> ID,
     map: CalculationContext.(Writable<E>) -> W
 ) =
-    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
+    lens("", get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
 @JvmName("setLensByElementWithIdentity")
 fun <E, ID> Writable<Set<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
-    lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
+    lens("", get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
 
 interface ListItemWritable<E> : ImmediateReadableWithWrite<E> {
     val index: ImmediateReadable<Int>
@@ -183,18 +69,27 @@ private class LensByElementAssumingSetNeverManipulates<E, W>(
 ) :
     Readable<List<W>>, BaseListenable() {
 
-    inner class Instance(calculationContext: CalculationContext, index: Int, value: E) : ListItemWritable<E>,
-        BaseImmediateReadable<E>(value) {
+    inner class Instance(calculationContext: CalculationContext, index: Int, value: E) : ListItemWritable<E>, BaseImmediateReadable<E>(value) {
         val mapped = map(calculationContext, this)
         override val index: ImmediateReadable<Int> = Constant(index)
         override suspend fun set(value: E) {
             this.value = value
             source.set(sources.map { it.value })
         }
+        override suspend fun updateFromLens(name: String, update: ReadableState<E>) {
+            state = state.updateFromLens(name, update)
+            source.updateFromLens(
+                name,
+                ReadableState.Invalid(
+                    sources.map { it.value },
+                    sources.mapNotNull { it.state.invalid?.summary }.toSet().joinToString()
+                )
+            )
+        }
     }
 
     val sources: ArrayList<Instance> = ArrayList()
-    var _state: ReadableState<List<W>> = ReadableState.notReady
+    var _state: ReadableState<List<W>> = ReadableState.NotReady
     private var myListen: (() -> Unit)? = null
     override fun activate() {
         super.activate()
@@ -260,7 +155,7 @@ class WritableList<E, ID, T>(
         var id: ID = identity(valueInit)
             private set
         private val listeners = ArrayList<() -> Unit>()
-        override val state: ReadableState<E>
+        override val state: ReadableState.Ready<E>
             get() = ReadableState(value)
         override var value: E = valueInit
             set(value) {
@@ -270,7 +165,7 @@ class WritableList<E, ID, T>(
                     listeners.invokeAllSafe()
                 }
             }
-        internal var queuedSet: ReadableState<E> = ReadableState.notReady
+        internal var queuedSet: ReadableState<E> = ReadableState.NotReady
         internal val queuedOrValue: E
             get() {
                 val qs = queuedSet
@@ -286,12 +181,16 @@ class WritableList<E, ID, T>(
                 try {
                     source.set(newList)
                 } finally {
-                    queuedSet = ReadableState.notReady
+                    queuedSet = ReadableState.NotReady
                 }
                 if (elements.myListen == null) {
                     this.value = value
                 }
             }
+        }
+
+        override suspend fun updateFromLens(name: String, update: ReadableState<E>) {
+            // TODO: Implement
         }
 
         override fun addListener(listener: () -> Unit): () -> Unit {
@@ -312,8 +211,12 @@ class WritableList<E, ID, T>(
             source.set(value.map { it.queuedOrValue })
         }
 
+        override suspend fun updateFromLens(name: String, update: ReadableState<List<ElementWritable>>) {
+            // TODO: Implement
+        }
+
         private var lastElements: List<ElementWritable> = listOf()
-        private var _state: ReadableState<List<ElementWritable>> = ReadableState.notReady
+        private var _state: ReadableState<List<ElementWritable>> = ReadableState.NotReady
             set(value) {
                 if (value.success) lastElements = value.get()
                 field = value

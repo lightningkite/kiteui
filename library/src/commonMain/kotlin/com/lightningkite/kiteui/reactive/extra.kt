@@ -20,7 +20,7 @@ class SignalingList<T>
         }
     }
 
-    fun ReactiveContext.watchIsEmpty(): Boolean? = state { state -> state.onData { it.isEmpty() } }
+    fun ReactiveContext.watchIsEmpty(): Boolean? = state { state: ReadableState<List<T>> -> state.onReady { it.isEmpty() } }
 
     private fun <V> changeList(action: MutableList<T>.() -> V): V = list.action().also { listeners.invokeAllSafe() }
 

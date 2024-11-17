@@ -171,7 +171,7 @@ class MappingKtTest {
 //        view.addListener {
 //            println("View raw: ${view.state}")
 //        }
-        assertEquals(ReadableState.notReady, view.state)
+        assertEquals(ReadableState.NotReady, view.state)
         testContext {
             var seen = -1
             var sets = 0

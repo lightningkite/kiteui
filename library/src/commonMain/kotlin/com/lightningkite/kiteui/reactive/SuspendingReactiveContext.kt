@@ -12,7 +12,7 @@ class SuspendingReactiveContext<T> constructor(
     internal var lastJob: Job? = null
 
     override fun onDependencyNotReady() {
-        reportTo.state = ReadableState.notReady
+        reportTo.state = ReadableState.NotReady
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -43,7 +43,7 @@ class SuspendingReactiveContext<T> constructor(
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReadableState.NotReady
                 return@let job
             }
         }

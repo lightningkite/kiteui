@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -31,12 +32,12 @@ interface WriteOnly<T> {
 }
 
 interface Writable<T> : Readable<T>, WriteOnly<T> {
-    suspend fun setState(name: String, state: ReadableState<T>)
+    suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
 }
 
-interface ImmediateReadable<out T> : Readable<T>, ReadOnlyProperty<Any?, T> {
+interface ImmediateReadable<T> : Readable<T>, ReadOnlyProperty<Any?, T> {
     val value: T
-    override val state: ReadableState<T> get() = ReadableState(value)
+    override val state: ReadableState.Ready<T> get() = ReadableState(value)
     override fun getValue(thisRef: Any?, property: KProperty<*>): T = value
 }
 

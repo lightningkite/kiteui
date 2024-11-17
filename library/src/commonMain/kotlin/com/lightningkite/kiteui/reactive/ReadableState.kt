@@ -2,238 +2,196 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.CancelledException
 import com.lightningkite.kiteui.InternalKiteUi
+import com.lightningkite.kiteui.reactive.lensing.InvalidException
 import kotlin.jvm.JvmInline
 
 @OptIn(InternalKiteUi::class)
-@JvmInline
-value class ReadableState<out T>(val raw: T) {
-    inline val ready: Boolean get() = raw !is InternalReadableNotReady
-    inline val success: Boolean get() = ready && raw !is ErrorState
-    inline fun get(): T = handle(
-        data = { it },
-        exception = { throw it },
-        notReady = { throw NotReadyException() }
-    )
-    inline fun getOrNull(): T? = handle(
-        data = { it },
-        exception = { null },
-        notReady = { null }
-    )
-    inline fun <R> onSuccess(action: (T)->R): R? = handle(
-        success = { action(it) },
-        error = { null },
-        notReady = { null }
-    )
-    inline fun <R> onData(action: (T)->R): R? = getOrNull()?.let(action)
+sealed interface ReadableState<out T> {
+    fun get(): T
+    fun <R> map(mapper: (T)->R): ReadableState<R>
 
-    inline val error: ErrorState? get() = raw as? ErrorState
-    inline val exception: Exception? get() = (raw as? ErrorState.ThrownException)?.exception
-    inline val invalid: ErrorState.Invalid<out T>? get() = raw as? ErrorState.Invalid<T>
-    inline val warning: ErrorState.Warning<out T>? get() = raw as? ErrorState.Warning<T>
-
-    @Suppress("UNCHECKED_CAST")
-    companion object {
-        val notReady: ReadableState<Nothing> = ReadableState<Any?>(InternalReadableNotReady) as ReadableState<Nothing>
-        fun <T> wrap(value: T) = ReadableState<Any?>(InternalReadableWrapper(value)) as ReadableState<T>
-
-        fun <T> warning(data: T, summary: String, description: String = summary) =
-            ReadableState<Any?>(ErrorState.Warning(data, summary, description)) as ReadableState<T>
-
-        fun <T> invalid(data: T, summary: String, description: String = summary) =
-            ReadableState<Any?>(ErrorState.Invalid(data, summary, description)) as ReadableState<T>
-
-        fun <T> exception(exception: Exception) =
-            if (exception is CancelledException) notReady
-            else ReadableState<Any?>(ErrorState.ThrownException(exception)) as ReadableState<T>
+    data object NotReady : ReadableState<Nothing> {
+        override fun get(): Nothing { throw NotReadyException() }
+        override fun <R> map(mapper: (Nothing) -> R): ReadableState<Nothing> = NotReady
+        override fun toString(): String = "NotReady"
     }
 
-    inline fun <B> map(mapper: (T)->B): ReadableState<B> {
-        return handle(
-            data = { readableState { mapper(it) } },
-            exception = { exception(it) },
-            notReady = { notReady }
-        )
-    }
-    inline fun <B> mapState(mapper: (T)->ReadableState<B>): ReadableState<B> {
-        return handle(
-            data = {
-                try {
-                    mapper(it)
-                } catch (e: Exception) {
-                    exception(e)
-                }
-             },
-            exception = { exception(it) },
-            notReady = { notReady }
-        )
+    sealed interface Ready<T> : ReadableState<T> {
+        val value: T
+        override fun get(): T = value
+        override fun <R> map(mapper: (T)->R): Ready<R>
     }
 
-    @Suppress("UNCHECKED_CAST")
-    inline fun <R> handle(
-        data: (T)->R,
-        exception: (Exception)->R,
-        notReady: ()->R
-    ): R {
-        return when(raw) {
-            InternalReadableNotReady -> notReady()
-            is ErrorState.ThrownException -> exception(raw.exception)
-            is InternalReadableWrapper<*> -> data(raw.other as T)
-            is ErrorState.MetaData<*> -> data(raw.data as T)
-            else -> data(raw)
-        }
-    }
-    inline fun <R> handle(
-        success: (T)->R,
-        error: (ErrorState)->R,
-        notReady: ()->R
-    ): R {
-        return when(raw) {
-            InternalReadableNotReady -> notReady()
-            is ErrorState -> error(raw)
-            is InternalReadableWrapper<*> -> success(raw.other as T)
-            else -> success(raw)
-        }
-    }
-    fun asResult(): Result<T> = handle(data = { Result.success(it) }, exception = { Result.failure(it) }, notReady = { Result.failure(NotReadyException()) })
-
-    override fun toString(): String = when(raw) {
-        is InternalReadableNotReady -> "NotReady"
-        is ErrorState.ThrownException -> "ThrownException(${raw.exception})"
-        is ErrorState.Warning<*> -> raw.toString()
-        is ErrorState.Invalid<*> -> raw.toString()
-        is InternalReadableWrapper<*> -> "ReadyW($raw)"
-        else -> "Ready($raw)"
-    }
-}
-
-@OptIn(InternalKiteUi::class)
-inline fun <T> resolveLensState(
-    original: ReadableState<T>,
-    new: ReadableState<T>,
-    lensName: String,
-): ReadableState<T> =
-    try {
-        new.handle<ReadableState<T>>(
-            success = { data ->
-                if (original.raw is ErrorState.FromLensing<*>) {
-                    (original.raw as ErrorState.FromLensing<T>)
-                        .removeError(lensName, data)
-                        ?.let { ReadableState(it) as ReadableState<T> }
-                        ?: ReadableState(data)
-                } else
-                    ReadableState(data)
-            },
-            error = { error ->
-                if (error !is ErrorState.MetaData<*>) return@handle original
-                if (original.raw is ErrorState.FromLensing<*>) {
-                    (original.raw as ErrorState.FromLensing<T>)
-                        .addError(lensName, error as ErrorState.MetaData<T>)
-                        .let { ReadableState(it) as ReadableState<T> }
-                }
-                else ReadableState(ErrorState.FromLensing(lensName, error)) as ReadableState<T>
-            },
-            notReady = { original }
-        )
-    } catch (e: Exception) {
-        ReadableState.exception(e)
+    @JvmInline
+    value class Success<T>(override val value: T) : Ready<T> {
+        override fun toString(): String = "Success($value)"
+        override fun <R> map(mapper: (T) -> R) = Success(mapper(value))
     }
 
-class WarningException(val summary: String, val description: String = summary) : Exception(description)
-class InvalidException(val summary: String, val description: String = summary) : Exception(description)
-
-
-sealed interface ErrorState {
-    enum class Severity { Low, Medium, High }
-    val severity: Severity
-    val errorSummary: String
-    val errorDescription: String
-
-    sealed interface MetaData<T> : ErrorState {
-        val data: T
-    }
-
-    data class Warning<T>(
-        override val data: T,
-        override val errorSummary: String,
-        override val errorDescription: String = errorSummary
-    ): MetaData<T> {
-        override val severity: Severity get() = Severity.Low
+    sealed interface Issue {
+        val summary: String
+        val description: String
     }
 
     data class Invalid<T>(
-        override val data: T,
-        override val errorSummary: String,
-        override val errorDescription: String = errorSummary
-    ): MetaData<T> {
-        override val severity: Severity get() = Severity.Medium
+        override val value: T,
+        override val summary: String,
+        override val description: String = summary
+    ) : Issue, Ready<T> {
+        override fun <R> map(mapper: (T) -> R) = Invalid(mapper(value), summary, description)
     }
 
-    @InternalKiteUi class FromLensing<T> private constructor(
-        override val data: T,
-        val errors: Map<String, MetaData<T>>
-    ): MetaData<T> {
-        constructor(name: String, error: MetaData<T>) : this(error.data, mapOf(name to error))
+    @InternalKiteUi
+    data class LensingIssues<T> private constructor(
+        override val value: T,
+        val lensIssues: Map<String, Issue>
+    ) : Issue, Ready<T> {
+        constructor(value: T, name: String, issue: Issue) : this(value, mapOf(name to issue))
 
-        override val severity: Severity get() =
-            errors.values.fold(Severity.Low) { acc, it -> if (it.severity > acc) it.severity else acc }
+        override val summary: String = lensIssues
+            .asIterable()
+            .joinToString(separator = "\n -") { (name, issue) ->
+                "$name : ${issue.summary}"
+            }
+        override val description: String = lensIssues
+            .asIterable()
+            .joinToString(separator = "\n -") { (name, issue) ->
+                "$name : ${issue.description}"
+            }
 
-        override val errorSummary: String =
-            errors.asIterable().joinToString(separator = "\n- ") { (name, state) -> "$name : ${state.errorSummary}" }
+        override fun <R> map(mapper: (T) -> R) = LensingIssues(mapper(value), lensIssues)
 
-        override val errorDescription: String =
-            errors.asIterable().joinToString(separator = "\n- ") { (name, state) -> "$name : ${state.errorDescription}" }
-
-        fun addError(name: String, error: MetaData<T>): FromLensing<T> =
-            FromLensing(
-                error.data,
-                errors + (name to error)
+        fun updateLensIssue(updatedValue: T, name: String, issue: Issue): LensingIssues<T> =
+            LensingIssues(
+                updatedValue,
+                lensIssues + Pair(name, issue)
             )
 
-        fun removeError(name: String, data: T): FromLensing<T>? {
-            val updated = errors - name
-            return if (updated.isEmpty()) null
-            else FromLensing(data, updated)
+        fun removeLensIssue(updatedValue: T, name: String): Ready<T> {
+            val updated = lensIssues - name
+            return if (updated.isEmpty()) Success(updatedValue)
+            else LensingIssues(updatedValue, updated)
         }
     }
 
-    @InternalKiteUi class ThrownException(val exception: Exception): ErrorState {
-        override val severity: Severity get() = Severity.High
+    data class Exception(
+        val exception: kotlin.Exception
+    ) : Issue, ReadableState<Nothing> {
+        override fun get(): Nothing { throw exception }
+        override fun <R> map(mapper: (Nothing) -> R) = this
+        override val summary: String
+            get() = exception.message ?: "Exception Occurred: $exception"
+        override val description: String
+            get() = summary
+    }
 
-        override val errorSummary: String get() = exception.message ?: "Encountered an Exception: $exception"
-        override val errorDescription: String get() = errorSummary
+    companion object {
+        inline operator fun <T> invoke(value: T) = Success(value)
     }
 }
 
-@InternalKiteUi data class InternalReadableWrapper<T>(val other: T)
-@InternalKiteUi object InternalReadableNotReady
+inline val ReadableState<*>.ready: Boolean get() = this is ReadableState.Ready
+inline val ReadableState<*>.success: Boolean get() = this is ReadableState.Success
 
-inline fun <T> readableState(action: () -> T): ReadableState<T> {
-    return try {
-        ReadableState(action())
+inline val <T> ReadableState<T>.invalid: ReadableState.Invalid<T>? get() = this as? ReadableState.Invalid<T>
+inline val ReadableState<*>.issue: ReadableState.Issue? get() = this as? ReadableState.Issue
+inline val ReadableState<*>.exception: Exception? get() = (this as? ReadableState.Exception)?.exception
+
+inline fun <T, R> ReadableState<T>.handle(
+    ready: (T)->R,
+    exception: (Exception)->R,
+    notReady: ()->R
+): R = when (this) {
+    is ReadableState.Ready -> ready(value)
+    is ReadableState.Exception -> exception(this.exception)
+    ReadableState.NotReady -> notReady()
+}
+
+inline fun <T, R> ReadableState<T>.handle(
+    success: (T)->R,
+    issue: (ReadableState.Issue)->R,
+    notReady: ()->R
+): R = when (this) {
+    is ReadableState.Success -> success(value)
+    is ReadableState.Issue -> issue(this)
+    ReadableState.NotReady -> notReady()
+}
+
+inline fun <T, R> ReadableState<T>.onReady(action: (T)->R): R? =
+    handle(
+        ready = action,
+        notReady = { null },
+        exception = { null }
+    )
+
+inline fun <T> readableState(action: ()->T): ReadableState<T> =
+    try {
+        ReadableState.Success(action())
     } catch (e: CancelledException) {
-        ReadableState.notReady
+        ReadableState.NotReady
     } catch (e: ReactiveLoading) {
-        ReadableState.notReady
+        ReadableState.NotReady
     } catch (e: Exception) {
-        ReadableState.exception(e)
+        ReadableState.Exception(e)
     }
-}
-inline fun <T> readableStateWithValidation(data: T, action: () -> T): ReadableState<T> {
-    return try {
-        ReadableState(action())
-    } catch (e: WarningException) {
-        ReadableState.warning(data, e.summary, e.description)
-    } catch (e: InvalidException) {
-        ReadableState.invalid(data, e.summary, e.description)
-    } catch (e: ReactiveLoading) {
-        ReadableState.notReady
-    } catch (e: Exception) {
-        ReadableState.exception(e)
-    }
-}
 
-inline fun <T> Result<T>.toReadableState(): ReadableState<T> {
-    @Suppress("UNCHECKED_CAST")
-    return if(this.isFailure) ReadableState.exception(this.exceptionOrNull() as Exception)
-    else ReadableState.wrap(this.getOrNull() as T)
-}
+inline fun <T> readableStateWithValidation(data: T, action: () -> T): ReadableState<T> =
+    try {
+        ReadableState.Success(action())
+    } catch (e: CancelledException) {
+        ReadableState.NotReady
+    } catch (e: ReactiveLoading) {
+        ReadableState.NotReady
+    } catch (e: InvalidException) {
+        ReadableState.Invalid(data, e.summary, e.description)
+    } catch (e: Exception) {
+        ReadableState.Exception(e)
+    }
+
+@OptIn(InternalKiteUi::class)
+inline fun <T> ReadableState<T>.updateFromLens(name: String, updatedState: ReadableState<T>): ReadableState<T> =
+    when(updatedState) {
+        is ReadableState.Success -> {
+            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, name)
+            else updatedState
+        }
+        is ReadableState.Invalid -> {
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+        }
+        is ReadableState.LensingIssues -> {
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+        }
+        is ReadableState.Exception -> this
+        ReadableState.NotReady -> this
+    }
+
+@OptIn(InternalKiteUi::class)
+inline fun <T> ReadableState.Ready<T>.updateFromLens(name: String, updatedState: ReadableState<T>): ReadableState.Ready<T> =
+    when(updatedState) {
+        is ReadableState.Success -> {
+            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, name)
+            else updatedState
+        }
+        is ReadableState.Invalid -> {
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+        }
+        is ReadableState.LensingIssues -> {
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+        }
+        is ReadableState.Exception -> this
+        ReadableState.NotReady -> this
+    }
+
+fun <T> ReadableState<T>.asResult(): Result<T> = handle(
+    ready = { Result.success(it) },
+    exception = { Result.failure(it) },
+    notReady = { Result.failure(NotReadyException()) }
+)
+
+fun <T> Result<T>.toReadableStateV2(): ReadableState<T> =
+    if (isFailure) ReadableState.Exception(exceptionOrNull() as Exception)
+    else ReadableState.Success(getOrNull()!!)

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.reactive.lensing.lens
 import com.lightningkite.kiteui.utils.commaString
 import kotlinx.coroutines.*
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ private fun <A> CalculationContext.oneAtATime(work: Boolean, action: suspend (A)
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReadableState.NotReady
                 return@let job
             }
         }
@@ -62,7 +63,7 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
     with(CoroutineScopeStack.current()) {
         coroutineContext[StatusListener]?.loading(reportTo)
         launch {
-            reportTo.state = ReadableState.notReady
+            reportTo.state = ReadableState.NotReady
             reportTo.state = readableState {
                 var intendedValue: T = master.await()
                 this@bind.set(intendedValue)
@@ -73,7 +74,7 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
                     master.set(value)
                 }
                 master.addListener {
-                    master.state.onSuccess {
+                    master.state.onReady {
                         if (intendedValue != it) {
                             intendedValue = it
                             setReplica(it)
@@ -81,7 +82,7 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
                     }
                 }.also { this@with.onRemove(it) }
                 this@bind.addListener {
-                    this@bind.state.onSuccess {
+                    this@bind.state.onReady {
                         if (intendedValue != it) {
                             intendedValue = it
                             setMaster(it)
@@ -207,6 +208,8 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
         override suspend fun set(value: T) {
             action(this@withWrite, value)
         }
+
+        override suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
     }
 
 fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
@@ -214,6 +217,8 @@ fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> U
         override suspend fun set(value: T) {
             action(this@interceptWrite, value)
         }
+
+        override suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
     }
 
 // Lenses
@@ -242,6 +247,7 @@ val <T : Any> Writable<T?>.waitForNotNull: Writable<T>
     get() =
         object : Writable<T>, Readable<T> by (this as Readable<T?>).waitForNotNull {
             override suspend fun set(value: T) = this@waitForNotNull.set(value)
+
         }
 
 fun Writable<String?>.nullToBlank(): Writable<String> = lens(
@@ -290,6 +296,9 @@ fun Writable<String>.asLongHex(): Writable<Long?> = lens(get = { it.toLongOrNull
 
 @JvmName("writableStringAsULongHex")
 fun Writable<String>.asULongHex(): Writable<ULong?> = lens(get = { it.toULongOrNull(16) }, set = { it?.toString(16) ?: "" })
+
+@JvmName("writableIntAsDouble")
+fun Writable<Int>.nullToZero(): Writable<Double?> = lens(get = { it.toDouble() }, set = { it?.toInt() ?: 0 })
 
 @JvmName("writableIntAsDoubleNullable")
 fun Writable<Int?>.asDouble(): Writable<Double?> = lens(get = { it?.toDouble() }, set = { it?.toInt() })
@@ -353,7 +362,7 @@ fun CalculationContext.use(resourceUse: ResourceUse) {
 }
 
 fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()() }
-    .withWrite { this@flatten.state.onSuccess { s -> s set it } }
+    .withWrite { this@flatten.state.onReady { s -> s set it } }
 
 interface ReadableEmitter<T> {
     fun emit(value: T)
@@ -383,7 +392,7 @@ fun <T> CoroutineScope.asyncReadable(action: suspend () -> T): Readable<T> {
 fun <T> Deferred<T>.readable() = object : BaseReadable<T>() {
     init {
         this@readable[Job]?.invokeOnCompletion {
-            state = if (it == null) ReadableState(getCompleted()) else ReadableState.exception(it as? Exception ?: Exception("Must be exception, not throwable", it))
+            state = if (it == null) ReadableState(getCompleted()) else ReadableState.Exception(it as? Exception ?: Exception("Must be exception, not throwable", it))
         }
     }
 }

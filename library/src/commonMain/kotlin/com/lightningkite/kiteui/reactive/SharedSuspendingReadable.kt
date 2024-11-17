@@ -42,11 +42,11 @@ class SharedSuspendingReadable<T>(
                 // just bail, since either we're already rerunning or this stuff doesn't matter anymore
                 return@reactiveSuspending
             } catch (e: Exception) {
-                state = ReadableState.exception(e)
+                state = ReadableState.Exception(e)
             }
         }, onLoad = {
             if(!useLastWhileLoading) {
-                state = ReadableState.notReady
+                state = ReadableState.NotReady
             }
         })
     }
@@ -56,7 +56,7 @@ class SharedSuspendingReadable<T>(
         log?.log("Deactivating...")
         job.cancel()
         job = SupervisorJob()
-        state = ReadableState.notReady
+        state = ReadableState.NotReady
     }
 }
 /**

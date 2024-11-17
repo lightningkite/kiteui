@@ -77,7 +77,7 @@ class TypedReactiveContext<T>(
             registerDependency(this, addListener(rerun))
         }
         return state.handle(
-            data = { it },
+            ready = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -88,7 +88,7 @@ class TypedReactiveContext<T>(
             registerDependency(this, addListener(rerun))
         }
         return state.handle(
-            data = { it ?: throw ReactiveLoading },
+            ready = { it ?: throw ReactiveLoading },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -131,7 +131,7 @@ class TypedReactiveContext<T>(
             registerDependency(key, remover)
         }
         return state.handle(
-            data = { it },
+            ready = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -178,7 +178,7 @@ class TypedReactiveContext<T>(
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(
-            data = { it },
+            ready = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -194,7 +194,7 @@ class TypedReactiveContext<T>(
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(
-            data = { it },
+            ready = { it },
             exception = { throw it },
             notReady = { throw ReactiveLoading }
         )
@@ -204,7 +204,7 @@ class TypedReactiveContext<T>(
     // Flows
 
     private class FlowLoader<T>(val flow: Flow<T>) {
-        var state: ReadableState<T> = ReadableState.notReady
+        var state: ReadableState<T> = ReadableState.NotReady
         override fun hashCode(): Int = flow.hashCode()
         override fun equals(other: Any?): Boolean = other is FlowLoader<*> && flow == other.flow
         override fun toString(): String = "${super.toString()}/$flow"
@@ -223,7 +223,7 @@ class TypedReactiveContext<T>(
                         new.state = ReadableState(v)
                         rerun()
                     } catch (e: Exception) {
-                        new.state = ReadableState.exception<T>(e)
+                        new.state = ReadableState.Exception(e)
                     }
                 }
             }
@@ -231,7 +231,7 @@ class TypedReactiveContext<T>(
             else throw ReactiveLoading
         } else {
             return existing.state.handle(
-                data = { it },
+                ready = { it },
                 exception = { throw it },
                 notReady = { throw ReactiveLoading }
             )
@@ -240,8 +240,7 @@ class TypedReactiveContext<T>(
 
     // Validation
 
-    fun <T> Readable<T>.warning(): ErrorState.Warning<T>? = state { it.warning }
-    fun <T> Readable<T>.invalid(): ErrorState.Invalid<T>? = state { it.invalid }
+    fun <T> Readable<T>.invalid(): ReadableState.Invalid<T>? = state { it.invalid }
 }
 
 fun <T> CalculationContext.reactive(log: Console? = null, action: ReactiveContext.() -> T): TypedReactiveContext<T> {
@@ -273,11 +272,11 @@ fun CalculationContext.reactiveScope(action: ReactiveContext.() -> Unit) = react
 
 inline fun CalculationContext.reactiveScope(crossinline onLoad: () -> Unit, crossinline action: ReactiveContext.() -> Unit) = reactive<Unit>(onLoad = onLoad, action = action)
 
-fun <T> Readable<T>.onNextData(action: (T) -> Unit) {
-    if (state.onData(action) == null) {
+fun <T> Readable<T>.onNextReady(action: (T) -> Unit) {
+    if (state.onReady(action) == null) {
         var remover = {}
         remover = addListener {
-            state.onData {
+            state.onReady {
                 action(it)
                 remover.invoke()
             }

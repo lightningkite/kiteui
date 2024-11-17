@@ -98,7 +98,7 @@ class RetryableAction(
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReadableState.NotReady
                 return@let job
             }
         }
@@ -124,7 +124,7 @@ class DependentAction(
     internal var lastJob: Job? = null
 
     override fun onDependencyNotReady() {
-        reportTo.state = ReadableState.notReady
+        reportTo.state = ReadableState.NotReady
     }
 
     override fun onDependencyChange() {
@@ -157,7 +157,7 @@ class DependentAction(
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReadableState.NotReady
                 return@let job
             }
         }

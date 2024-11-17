@@ -39,7 +39,7 @@ class LazyProperty<T>(
         }
     }
 
-    override var state: ReadableState<T> = ReadableState.notReady
+    override var state: ReadableState<T> = ReadableState.NotReady
         private set(value) {
             if(field != value) {
                 field = value
@@ -76,7 +76,7 @@ class LazyProperty<T>(
         if (sharedRemover == null) return
         log?.log("LazyProperty shutting down shared behavior")
         stopListeningToShared()
-        if (!useLastWhileLoading) state = ReadableState.notReady
+        if (!useLastWhileLoading) state = ReadableState.NotReady
     }
 
     var value: T

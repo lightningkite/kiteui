@@ -358,7 +358,7 @@ class ReactivitySuspendingTests {
 
             assertEquals(1, starts)
             assertEquals(0, completes)
-            exceptional.state = ReadableState.exception(Exception())
+            exceptional.state = ReadableState.Exception(Exception())
             assertIs<Exception>(expectException())
             assertEquals(1, starts)
             assertEquals(0, completes)

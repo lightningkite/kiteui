@@ -34,7 +34,7 @@ private open class ModifyValidationLens<O, T>(
 //            source.state.handle(
 //                success = { super.state = ReadableState(get(it)) },
 //                exception = {},
-//                notReady = { super.state = ReadableState.notReady }
+//                notReady = { super.state = ReadableState.NotReady }
 //            )
             super.state = source.state.map(get)
 //            source.state.onSuccess { check(it) }

@@ -117,7 +117,7 @@ class SharedTest {
             assertEquals(ReadableState(1), a.state)
 
             late.unset()
-            assertEquals(ReadableState.notReady, a.state)
+            assertEquals(ReadableState.NotReady, a.state)
 
             late.value = 2
             assertEquals(ReadableState(2), a.state)
