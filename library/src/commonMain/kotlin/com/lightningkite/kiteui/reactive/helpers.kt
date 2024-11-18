@@ -7,7 +7,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.launch
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
-import kotlin.random.Random
 
 @JsName("invokeAllSafeMutable")
 @JvmName("invokeAllSafeMutable")
@@ -40,7 +39,7 @@ private fun <A> CalculationContext.oneAtATime(work: Boolean, action: suspend (A)
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = readableState {
+                val result = ReadableState {
                     action(it)
                 }
                 done = true
@@ -64,7 +63,7 @@ infix fun <T> Writable<T>.bind(master: Writable<T>) {
         coroutineContext[StatusListener]?.loading(reportTo)
         launch {
             reportTo.state = ReadableState.NotReady
-            reportTo.state = readableState {
+            reportTo.state = ReadableState {
                 var intendedValue: T = master.await()
                 this@bind.set(intendedValue)
                 val setReplica = this@with.oneAtATime(false) { value: T ->
@@ -208,8 +207,6 @@ fun <T> Readable<T>.withWrite(action: suspend Readable<T>.(T) -> Unit): Writable
         override suspend fun set(value: T) {
             action(this@withWrite, value)
         }
-
-        override suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
     }
 
 fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> Unit): Writable<T> =
@@ -217,8 +214,6 @@ fun <T, WRITE : Writable<T>> WRITE.interceptWrite(action: suspend WRITE.(T) -> U
         override suspend fun set(value: T) {
             action(this@interceptWrite, value)
         }
-
-        override suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
     }
 
 // Lenses

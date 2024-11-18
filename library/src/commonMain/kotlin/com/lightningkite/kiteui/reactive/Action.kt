@@ -86,7 +86,7 @@ class RetryableAction(
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = readableState {
+                val result = ReadableState {
                     action()
                     true
                 }
@@ -144,7 +144,7 @@ class DependentAction(
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = readableState {
+                val result = ReadableState {
                     action()
                     true
                 }

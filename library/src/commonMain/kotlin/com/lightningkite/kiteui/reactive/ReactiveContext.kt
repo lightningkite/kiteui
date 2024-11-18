@@ -40,7 +40,7 @@ class TypedReactiveContext<T>(
             reactiveContext = this
             dependencyBlockStart()
             log?.log("Run start")
-            reportTo.state = readableState { action(this@TypedReactiveContext) }
+            reportTo.state = ReadableState { action(this@TypedReactiveContext) }
             log?.log("Run complete")
             dependencyBlockEnd()
             reactiveContext = old
@@ -48,7 +48,7 @@ class TypedReactiveContext<T>(
     }
 
     fun runOnceWhileDead() {
-        reportTo.state = readableState { action(this) }
+        reportTo.state = ReadableState { action(this) }
     }
 
     init {
@@ -111,7 +111,6 @@ class TypedReactiveContext<T>(
                         previous = it
                         rerun()
                     }
-
                 }
             )
         }
@@ -174,7 +173,7 @@ class TypedReactiveContext<T>(
             return it.invoke()
         }
         scope.launch {
-            calc.state = readableState { action() }
+            calc.state = ReadableState { action() }
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(
@@ -190,7 +189,7 @@ class TypedReactiveContext<T>(
             return it.invoke()
         }
         scope.launch {
-            calc.state = readableState { this@invoke.await() }
+            calc.state = ReadableState { this@invoke.await() }
         }
         registerDependency(calc, calc.addListener(rerun))
         return calc.state.handle(

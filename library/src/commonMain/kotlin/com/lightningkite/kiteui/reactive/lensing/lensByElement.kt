@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.lensing.lens
 import com.lightningkite.kiteui.report
 import kotlinx.coroutines.*

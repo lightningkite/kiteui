@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -32,7 +31,9 @@ interface WriteOnly<T> {
 }
 
 interface Writable<T> : Readable<T>, WriteOnly<T> {
-    suspend fun updateFromLens(name: String, update: ReadableState<T>) {}
+    suspend fun updateFromLens(hash: Int, name: String?, update: ReadableState<T>) {
+        if (update is ReadableState.Ready<T>) set(update.value)
+    }
 }
 
 interface ImmediateReadable<T> : Readable<T>, ReadOnlyProperty<Any?, T> {

@@ -44,31 +44,33 @@ sealed interface ReadableState<out T> {
     @InternalKiteUi
     data class LensingIssues<T> private constructor(
         override val value: T,
-        val lensIssues: Map<String, Issue>
+        val lensIssues: Map<Int, Pair<String?, Issue>>
     ) : Issue, Ready<T> {
-        constructor(value: T, name: String, issue: Issue) : this(value, mapOf(name to issue))
+        constructor(value: T, hash: Int, name: String?, issue: Issue) : this(value, mapOf(hash to Pair(name, issue)))
 
         override val summary: String = lensIssues
-            .asIterable()
+            .values
             .joinToString(separator = "\n -") { (name, issue) ->
-                "$name : ${issue.summary}"
+                if (name == null) issue.summary
+                else "$name : ${issue.summary}"
             }
         override val description: String = lensIssues
-            .asIterable()
+            .values
             .joinToString(separator = "\n -") { (name, issue) ->
-                "$name : ${issue.description}"
+                if (name == null) issue.description
+                else "$name : ${issue.description}"
             }
 
         override fun <R> map(mapper: (T) -> R) = LensingIssues(mapper(value), lensIssues)
 
-        fun updateLensIssue(updatedValue: T, name: String, issue: Issue): LensingIssues<T> =
+        fun updateLensIssue(updatedValue: T, hash: Int, name: String?, issue: Issue): LensingIssues<T> =
             LensingIssues(
                 updatedValue,
-                lensIssues + Pair(name, issue)
+                lensIssues + (hash to Pair(name, issue))
             )
 
-        fun removeLensIssue(updatedValue: T, name: String): Ready<T> {
-            val updated = lensIssues - name
+        fun removeLensIssue(updatedValue: T, hash: Int): Ready<T> {
+            val updated = lensIssues - hash
             return if (updated.isEmpty()) Success(updatedValue)
             else LensingIssues(updatedValue, updated)
         }
@@ -87,6 +89,16 @@ sealed interface ReadableState<out T> {
 
     companion object {
         inline operator fun <T> invoke(value: T) = Success(value)
+        inline operator fun <T> invoke(action: ()->T): ReadableState<T> =
+            try {
+                Success(action())
+            } catch (e: CancelledException) {
+                NotReady
+            } catch (e: ReactiveLoading) {
+                NotReady
+            } catch (e: kotlin.Exception) {
+                Exception(e)
+            }
     }
 }
 
@@ -124,63 +136,39 @@ inline fun <T, R> ReadableState<T>.onReady(action: (T)->R): R? =
         exception = { null }
     )
 
-inline fun <T> readableState(action: ()->T): ReadableState<T> =
-    try {
-        ReadableState.Success(action())
-    } catch (e: CancelledException) {
-        ReadableState.NotReady
-    } catch (e: ReactiveLoading) {
-        ReadableState.NotReady
-    } catch (e: Exception) {
-        ReadableState.Exception(e)
-    }
-
-inline fun <T> readableStateWithValidation(data: T, action: () -> T): ReadableState<T> =
-    try {
-        ReadableState.Success(action())
-    } catch (e: CancelledException) {
-        ReadableState.NotReady
-    } catch (e: ReactiveLoading) {
-        ReadableState.NotReady
-    } catch (e: InvalidException) {
-        ReadableState.Invalid(data, e.summary, e.description)
-    } catch (e: Exception) {
-        ReadableState.Exception(e)
-    }
-
 @OptIn(InternalKiteUi::class)
-inline fun <T> ReadableState<T>.updateFromLens(name: String, updatedState: ReadableState<T>): ReadableState<T> =
+inline fun <T> ReadableState<T>.updateFromLens(hash: Int, name: String?, updatedState: ReadableState<T>): ReadableState<T> =
     when(updatedState) {
         is ReadableState.Success -> {
-            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, name)
+            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, hash)
             else updatedState
         }
         is ReadableState.Invalid -> {
-            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
-            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, hash, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, hash, name, updatedState)
         }
         is ReadableState.LensingIssues -> {
-            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
-            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, hash, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, hash, name, updatedState)
         }
         is ReadableState.Exception -> this
         ReadableState.NotReady -> this
     }
 
 @OptIn(InternalKiteUi::class)
-inline fun <T> ReadableState.Ready<T>.updateFromLens(name: String, updatedState: ReadableState<T>): ReadableState.Ready<T> =
+inline fun <T> ReadableState.Ready<T>.updateFromLens(hash: Int, name: String?, updatedState: ReadableState<T>): ReadableState.Ready<T> =
     when(updatedState) {
         is ReadableState.Success -> {
-            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, name)
+            if (this is ReadableState.LensingIssues) removeLensIssue(updatedState.value, hash)
             else updatedState
         }
         is ReadableState.Invalid -> {
-            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
-            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, hash, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, hash, name, updatedState)
         }
         is ReadableState.LensingIssues -> {
-            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, name, updatedState)
-            else ReadableState.LensingIssues(updatedState.value, name, updatedState)
+            if (this is ReadableState.LensingIssues) updateLensIssue(updatedState.value, hash, name, updatedState)
+            else ReadableState.LensingIssues(updatedState.value, hash, name, updatedState)
         }
         is ReadableState.Exception -> this
         ReadableState.NotReady -> this

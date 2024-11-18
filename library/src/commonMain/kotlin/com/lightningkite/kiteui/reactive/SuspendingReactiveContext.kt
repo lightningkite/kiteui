@@ -30,7 +30,7 @@ class SuspendingReactiveContext<T> constructor(
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
                 log?.log("calculation started")
-                val result = readableState {
+                val result = ReadableState {
                     action()
                 }
                 log?.log("result: $result")

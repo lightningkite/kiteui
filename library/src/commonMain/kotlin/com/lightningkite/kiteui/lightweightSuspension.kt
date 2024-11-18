@@ -58,7 +58,7 @@ fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, actio
     val result = launch(
         context,
         block = {
-            val r = readableState { action() }
+            val r = ReadableState { action() }
             state.state = r
         },
         start = if (coroutineContext[CoroutineDispatcher.Key]?.isDispatchNeeded(
