@@ -50,15 +50,16 @@ class KiteUiPlugin : Plugin<Project> {
             into("src/jsMain/resources/public/common")
             afterEvaluate {
 //                tasks.findByName("compileKotlinJs")?.dependsOn(task)
-
                 val out = project.file("src/jsMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")
+                val publicGitIgnore = project.file("src/jsMain/resources/public/common/.gitignore")
                 outputs.file(out)
                 outputs.file(gitIgnore)
+                outputs.file(publicGitIgnore)
                 val resourceFolder = project.file("src/commonMain/resources")
                 inputs.files(resourceFolder)
                 doLast {
-                    resourcesJs(gitIgnore, resourceFolder, out, ext)
+                    resourcesJs(listOf(gitIgnore, publicGitIgnore), resourceFolder, out, ext)
                 }
             }
         }
@@ -76,7 +77,7 @@ class KiteUiPlugin : Plugin<Project> {
                 val resourceFolder = project.file("src/commonMain/resources")
                 inputs.files(resourceFolder)
                 doLast {
-                    resourcesJs(gitIgnore, resourceFolder, out, ext)
+                    resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
                 }
             }
         }
@@ -97,11 +98,11 @@ class KiteUiPlugin : Plugin<Project> {
                 val outAssets = outProject.resolve("Assets.xcassets")
                 val outNonAssets = outProject.resolve("resourcesFromCommon")
                 val outPlist = outProject.resolve("Info.plist")
-                outputs.files(outAssets)
-                outputs.files(outNonAssets)
+                outputs.dir(outAssets)
+                outputs.dir(outNonAssets)
                 outputs.file(outPlist)
                 val resourceFolder = project.file("src/commonMain/resources")
-                inputs.files(resourceFolder)
+                inputs.dir(resourceFolder)
                 doLast {
                     resourcesIos(resourceFolder, outPlist, outNonAssets, outAssets, outKt, ext)
                 }

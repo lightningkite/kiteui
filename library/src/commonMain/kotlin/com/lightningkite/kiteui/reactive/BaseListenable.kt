@@ -77,14 +77,14 @@ class Property<T>(startValue: T) : ImmediateWritable<T>, BaseImmediateReadable<T
     }
 }
 
-class LateInitProperty<T>() : Writable<T>, BaseReadable<T>() {
+class LateInitProperty<T>() : Writable<T>, ImmediateWriteOnly<T>, BaseReadable<T>() {
     var value: T
         get() = state.get()
         set(value) {
             state = ReadableState(value)
         }
 
-    override suspend infix fun set(value: T) {
+    override fun setImmediate(value: T) {
         this.value = value
     }
 

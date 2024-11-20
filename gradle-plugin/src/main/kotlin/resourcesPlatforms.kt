@@ -40,9 +40,9 @@ internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginE
     )
 }
 
-internal fun resourcesJs(gitIgnore: File, resourceFolder: File, out: File, ext: KiteUiPluginExtension) {
+internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File, ext: KiteUiPluginExtension) {
     var usesBlob = false
-    gitIgnore.writeText("*\n")
+    gitIgnores.forEach { it.writeText("*\n") }
     val lines = resourceFolder.resources()
         .entries
         .sortedBy { it.key }
