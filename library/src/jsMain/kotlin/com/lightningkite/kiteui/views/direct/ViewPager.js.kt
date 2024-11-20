@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.swiper.Swiper
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import org.w3c.dom.*
 import kotlin.js.json
@@ -26,6 +27,7 @@ actual class ViewPager actual constructor(context: RContext) :
         native.classes.add("viewPager")
         native.setStyleProperty("height", "100vh")
         native.setStyleProperty("width", "auto")
+        native.setStyleProperty("--spacing", "0.0rem")
         native.setStyleProperty("display", "flex")
         native.setStyleProperty("overflow", "hidden")
         native.setStyleProperty("align-items", "center")
@@ -42,7 +44,7 @@ actual class ViewPager actual constructor(context: RContext) :
                     justify-content: center;
                 }
             </style>
-            <div class="swiper-wrapper" style="display:flex; width: auto; height:100%; >
+            <div class="swiper-wrapper" style="display:flex; width: 100%; height:100%;" >
             </div>
             <div class="swiper-pagination"></div>
             <div class="swiper-scrollbar"></div>
@@ -151,7 +153,7 @@ actual class ViewPager actual constructor(context: RContext) :
 
 
         new.asDynamic().__ROCK__PROP=prop
-        val wrapper = document.createElement("div")
+        val wrapper = document.createElement("div") as HTMLElement
         wrapper.classList.add("swiper-slide")
         val htmlViewElement = new?.native?.create() as HTMLElement
         wrapper.appendChild(htmlViewElement)
