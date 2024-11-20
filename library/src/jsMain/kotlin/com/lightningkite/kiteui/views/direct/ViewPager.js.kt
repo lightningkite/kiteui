@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.swiper.Swiper
 import kotlinx.browser.document
+import kotlinx.coroutines.launch
 import org.w3c.dom.*
 import kotlin.js.json
 
@@ -14,7 +15,8 @@ import kotlin.js.json
 actual class ViewPager actual constructor(context: RContext) :
     RView(context) {
     private val buttons = ArrayList<RView>()
-    private val slides: MutableList<Pair<RView,Any>> = mutableListOf()
+    private val slides: MutableList<Any> = mutableListOf()
+    private lateinit var childrenRender: ( ViewWriter.(value: Readable<Any>) -> Unit)
     private val newView = NewViewWriter(this, context)
     private val transitionDuration:Int = 300 //in ms
     private var swiper: Swiper? = null
@@ -57,8 +59,9 @@ actual class ViewPager actual constructor(context: RContext) :
                         "keyboardControl" to true,
                         "virtual" to json (
                             "slides" to slides.map { it }.toTypedArray(),
-                            "renderSlide" to renderSlide
-
+                            "renderSlide" to renderSlide,
+                            "addSlidesAfter" to 2,
+                            "addSlidesBefore" to 2,
                         )
                     )
                     if(_index.value != 0) {
@@ -141,13 +144,16 @@ actual class ViewPager actual constructor(context: RContext) :
     }
 
     val renderSlide: (dynamic, dynamic) -> dynamic = { slide, index ->
-        val slideTyped = slide as Pair<RView, Any>
-        val view = slideTyped.first
-        val prop = slideTyped.second
-        view.asDynamic().__ROCK__PROP=prop
+        val prop = Property(slide)
+
+        this.childrenRender?.let { it(newView, prop) }
+        val new = newView.newView
+
+
+        new.asDynamic().__ROCK__PROP=prop
         val wrapper = document.createElement("div")
         wrapper.classList.add("swiper-slide")
-        val htmlViewElement = view.native.create() as HTMLElement
+        val htmlViewElement = new?.native?.create() as HTMLElement
         wrapper.appendChild(htmlViewElement)
         wrapper
     }
@@ -176,18 +182,9 @@ actual class ViewPager actual constructor(context: RContext) :
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
-        reactiveScope {
-            val tempSlides = items().mapNotNull {
-                val prop = Property(it)
-                render(newView, prop)
-                val new = newView.newView
-                if (new == null) null
-                else
-                Pair<RView,Any>(new,prop)
-//                new.asDynamic().__ROCK__PROP = prop
-//                new!!.native.create() as HTMLElement
-            }
-            slides.addAll(tempSlides)
+        launch {
+            childrenRender = render as (ViewWriter.(value: Readable<Any>) -> Unit)
+            slides.addAll(items().map {it as Any})
         }
         slides
     }
