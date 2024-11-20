@@ -98,11 +98,11 @@ class KiteUiPlugin : Plugin<Project> {
                 val outAssets = outProject.resolve("Assets.xcassets")
                 val outNonAssets = outProject.resolve("resourcesFromCommon")
                 val outPlist = outProject.resolve("Info.plist")
-                outputs.files(outAssets)
-                outputs.files(outNonAssets)
+                outputs.dir(outAssets)
+                outputs.dir(outNonAssets)
                 outputs.file(outPlist)
                 val resourceFolder = project.file("src/commonMain/resources")
-                inputs.files(resourceFolder)
+                inputs.dir(resourceFolder)
                 doLast {
                     resourcesIos(resourceFolder, outPlist, outNonAssets, outAssets, outKt, ext)
                 }
