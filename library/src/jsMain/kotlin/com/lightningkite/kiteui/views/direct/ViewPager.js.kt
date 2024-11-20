@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.swiper.Swiper
+import kotlinx.browser.document
 import org.w3c.dom.*
 import kotlin.js.json
 
@@ -13,7 +14,7 @@ import kotlin.js.json
 actual class ViewPager actual constructor(context: RContext) :
     RView(context) {
     private val buttons = ArrayList<RView>()
-    private val slides: MutableList<HTMLElement> = mutableListOf()
+    private val slides: MutableList<Pair<RView,Any>> = mutableListOf()
     private val newView = NewViewWriter(this, context)
     private val transitionDuration:Int = 300 //in ms
     private var swiper: Swiper? = null
@@ -39,7 +40,7 @@ actual class ViewPager actual constructor(context: RContext) :
                     justify-content: center;
                 }
             </style>
-            <div class="swiper-wrapper" style="display:flex; width: 100%; height:100%; >
+            <div class="swiper-wrapper" style="display:flex; width: auto; height:100%; >
             </div>
             <div class="swiper-pagination"></div>
             <div class="swiper-scrollbar"></div>
@@ -55,7 +56,8 @@ actual class ViewPager actual constructor(context: RContext) :
                         "speed" to transitionDuration,
                         "keyboardControl" to true,
                         "virtual" to json (
-                            "slides" to slides.map { it.outerHTML }.toTypedArray()
+                            "slides" to slides.map { it }.toTypedArray(),
+                            "renderSlide" to renderSlide
 
                         )
                     )
@@ -64,6 +66,8 @@ actual class ViewPager actual constructor(context: RContext) :
                     }
                     swiper = Swiper(it as HTMLElement, json)
                     swiper?.on("slideChange", {
+                        // not sure why but if it is the first element then it needs to have justify-content center or
+                        // else it will have space on the right side but if it not then it needs to left justified or there will be space on the left side
                         _index.value =  swiper?.realIndex ?: 0
                         if(swiper?.previousIndex == 0 && swiper?.realIndex != 0){
                             native.setStyleProperty("justify-content", "center")
@@ -136,6 +140,19 @@ actual class ViewPager actual constructor(context: RContext) :
         }
     }
 
+    val renderSlide: (dynamic, dynamic) -> dynamic = { slide, index ->
+        val slideTyped = slide as Pair<RView, Any>
+        val view = slideTyped.first
+        val prop = slideTyped.second
+        view.asDynamic().__ROCK__PROP=prop
+        val wrapper = document.createElement("div")
+        wrapper.classList.add("swiper-slide")
+        val htmlViewElement = view.native.create() as HTMLElement
+        wrapper.appendChild(htmlViewElement)
+        wrapper
+    }
+
+
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
@@ -160,12 +177,15 @@ actual class ViewPager actual constructor(context: RContext) :
         render: ViewWriter.(value: Readable<T>) -> Unit
     ): Unit {
         reactiveScope {
-            val tempSlides = items().map {
+            val tempSlides = items().mapNotNull {
                 val prop = Property(it)
                 render(newView, prop)
                 val new = newView.newView
-                new.asDynamic().__ROCK__PROP = prop
-                new!!.native.create() as HTMLElement
+                if (new == null) null
+                else
+                Pair<RView,Any>(new,prop)
+//                new.asDynamic().__ROCK__PROP = prop
+//                new!!.native.create() as HTMLElement
             }
             slides.addAll(tempSlides)
         }
