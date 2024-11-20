@@ -117,6 +117,9 @@ kotlin {
             dependsOn(commonHtmlMain)
             dependencies {
                 api("org.apache.commons:commons-lang3:3.14.0")
+                api("io.ktor:ktor-client-core:$ktorVersion")
+                api("io.ktor:ktor-client-okhttp:$ktorVersion")
+                api("io.ktor:ktor-client-websockets:$ktorVersion")
             }
         }
         val jsMain by getting {
@@ -185,6 +188,9 @@ android {
             isIncludeAndroidResources = true
         }
     }
+}
+dependencies {
+    implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
 }
 
 standardPublishing {
