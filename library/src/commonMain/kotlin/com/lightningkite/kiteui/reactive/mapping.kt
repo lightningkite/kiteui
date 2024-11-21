@@ -35,22 +35,14 @@ private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (
 private open class SetLens<O, T>(source: Writable<O>, get: (O) -> T, val set: (T) -> O) :
     ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
     override suspend fun set(value: T) {
-        try {
-            source.set(set.invoke(value))
-        } catch(e: Exception) {
-            source.reportSetException(e)
-        }
+        source.set(set.invoke(value))
     }
 }
 
 private open class ModifyLens<O, T>(source: Writable<O>, get: (O) -> T, val modify: (O, T) -> O) :
     ReadableLens<Writable<O>, O, T>(source, get), Writable<T> {
     override suspend fun set(value: T) {
-        try {
-            source.set(modify(source.awaitOnce(), value))
-        } catch(e: Exception) {
-            source.reportSetException(e)
-        }
+        source.set(modify(source.awaitOnce(), value))
     }
 }
 
@@ -84,11 +76,7 @@ private open class SetImmediateLens<O, T>(source: ImmediateWritable<O>, get: (O)
     override var value: T
         get() = super.value
         set(value) {
-            try {
-                source.value = set.invoke(value)
-            } catch(e: Exception) {
-                source.reportSetExceptionImmediate(e)
-            }
+            source.value = set.invoke(value)
         }
 }
 
@@ -97,11 +85,7 @@ private open class ModifyImmediateLens<O, T>(source: ImmediateWritable<O>, get: 
     override var value: T
         get() = super.value
         set(value) {
-            try {
-                source.value = modify(source.value, value)
-            } catch(e: Exception) {
-                source.reportSetExceptionImmediate(e)
-            }
+            source.value = modify(source.value, value)
         }
 }
 

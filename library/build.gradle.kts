@@ -13,7 +13,7 @@ plugins {
     id("signing")
 }
 
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.0"
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
@@ -118,6 +118,9 @@ kotlin {
             dependsOn(commonHtmlMain)
             dependencies {
                 api("org.apache.commons:commons-lang3:3.14.0")
+                api("io.ktor:ktor-client-core:$ktorVersion")
+                api("io.ktor:ktor-client-okhttp:$ktorVersion")
+                api("io.ktor:ktor-client-websockets:$ktorVersion")
             }
         }
         val jsMain by getting {
@@ -182,13 +185,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
     }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
         }
     }
+}
+dependencies {
+    implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
 }
 
 standardPublishing {

@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.navigation.decodeFromString
 import com.lightningkite.kiteui.navigation.decodeFromStringMap
 import com.lightningkite.kiteui.navigation.encodeToString
 import com.lightningkite.kiteui.navigation.encodeToStringMap
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.nullable

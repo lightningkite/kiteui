@@ -38,6 +38,7 @@ repositories {
 }
 dependencies {
     implementation("org.apache.pdfbox:fontbox:2.0.27")
+    testImplementation("junit:junit:4.13.2")
 }
 tasks.validatePlugins {
     enableStricterValidation.set(true)

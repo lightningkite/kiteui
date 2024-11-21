@@ -104,7 +104,14 @@ suspend fun connectivityFetch(
             val r = try {
                 fetch(url = url, method = method, headers = headers(), body = body)
             } catch(e: ConnectionException) {
-                Connectivity.lastConnectivityIssueCode.value = 0
+                // Perform a single retry immediately
+                println("WARNING: Forced retry on $method $url")
+                try {
+                    fetch(url = url, method = method, headers = headers(), body = body)
+                } catch(e: ConnectionException) {
+                    Connectivity.lastConnectivityIssueCode.value = 0
+                    throw e
+                }
                 throw e
             }
             if (r.status in Connectivity.stopConnectivityCodes) {
