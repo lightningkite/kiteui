@@ -22,6 +22,5 @@ class Draft<T> private constructor(
     }
     fun cancel() { draft.reset() }
 
-    override suspend fun reportSetException(exception: Exception) { draft.reportSetException(exception) }
     override suspend fun set(value: T) { draft.setImmediate(value) }
 }

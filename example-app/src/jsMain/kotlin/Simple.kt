@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.ReactiveContext
@@ -28,7 +29,7 @@ fun main() {
         println("ON ERROR HANDLER $a $b $c $d $e")
         if (e is Exception) e.printStackTrace2()
     }
-    val context = RContext("/")
+    val context = RContext(basePath)
     root(appTheme.value) {
         beforeNextElementSetup {
             ::themeChoice { ThemeDerivation(appTheme()) }
