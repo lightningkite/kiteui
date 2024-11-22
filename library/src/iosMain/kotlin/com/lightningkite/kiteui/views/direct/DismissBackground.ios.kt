@@ -33,9 +33,8 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         onClick { dialogScreenNavigator.clear() }
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        val color = theme.background.closestColor()
-        native.backgroundColor = (if (fullyApply) color else color.withAlpha(0.5f)).toUiColor()
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        return super.applyState(theme[DismissSemantic])
     }
 }
 

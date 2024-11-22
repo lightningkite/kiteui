@@ -107,12 +107,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 color: var(--icon-color, black);
             }
 
-            .dismissBackground {
-                border-radius: 0px;
-                outline-width: 0px;
-                background-color: color-mix(in srgb, color-mix(in srgb, var(--nearest-background-color, black) 50%, black) 50%, transparent);
-            }
-
             .padded:not(.unpadded):not(.isRoot):not(.swapImage) {
                 padding: var(--spacing, 0px);
             }
@@ -293,15 +287,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 position: relative;
                 padding: 0px !important;
                 scroll-behavior: auto;
-            }
-
-            .dismissBackground + * {
-                z-index: 999;
-            }
-
-            .dismissBackground {
-                z-index: 998;
-                pointer-events: auto;
             }
 
             .notransition, .notransition * {
