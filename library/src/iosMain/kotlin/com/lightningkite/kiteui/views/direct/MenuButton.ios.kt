@@ -20,16 +20,26 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
-                        it.copy(background = Color.transparent).withBack
+                        it.copy(
+                            id = "mnubtndsm",
+                            revert = true,
+                            derivations = mapOf(
+                                DismissSemantic to {
+                                    it.copy(
+                                        background = Color.transparent,
+                                        outlineWidth = 0.dp,
+                                        cornerRadii = CornerRadii.Constant(0.dp),
+                                        revert = true,
+                                    ).withBack
+                                }
+                            )
+                        ).withBack
                     }
                     native.anchor = preferredDirection to this@MenuButton.native
                     onClick {
                         closePopovers()
                     }
-                    card - stack {
-                        themeChoice += ThemeDerivation {
-                            it.copy(elevation = 5.dp, revert = true).withBack
-                        }
+                    dialog - stack {
                         createMenu()
                     }
                 }
