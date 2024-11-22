@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.utils.commaString
+import com.lightningkite.kiteui.views.launch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.launch
 import kotlin.js.JsName
@@ -355,20 +356,57 @@ fun <T> Readable<Writable<T>>.flatten(): Writable<T> = shared { this@flatten()()
     .withWrite { this@flatten.state.onSuccess { s -> s set it } }
 
 
-interface ReadableEmitter<T> {
+interface ReadableEmitter<T>: CoroutineScope {
     fun emit(value: T)
 }
 
 fun <T> CoroutineScope.readable(emitter: suspend ReadableEmitter<T>.() -> Unit): Readable<T> {
     val prop = LateInitProperty<T>()
     launch {
-        emitter(object : ReadableEmitter<T> {
+        emitter(object : ReadableEmitter<T>, CoroutineScope by this {
             override fun emit(value: T) {
                 prop.value = value
             }
         })
     }
     return prop
+}
+
+fun <T> sharedProcess(scope: CoroutineScope = AppScope, emitter: suspend ReadableEmitter<T>.() -> Unit): Readable<T> {
+    return object: BaseReadable<T>() {
+        var job: Job? = null
+        override fun activate() {
+            job = scope.launch {
+                emitter(object : ReadableEmitter<T>, CoroutineScope by this@launch {
+                    override fun emit(value: T) {
+                        state = ReadableState(value)
+                    }
+                })
+            }
+        }
+        override fun deactivate() {
+            job?.cancel()
+            job = null
+        }
+    }
+}
+fun <T> sharedProcessRaw(scope: CoroutineScope = AppScope, emitter: suspend ReadableEmitter<ReadableState<T>>.() -> Unit): Readable<T> {
+    return object: BaseReadable<T>() {
+        var job: Job? = null
+        override fun activate() {
+            job = scope.launch {
+                emitter(object : ReadableEmitter<ReadableState<T>>, CoroutineScope by this@launch {
+                    override fun emit(value: ReadableState<T>) {
+                        state = value
+                    }
+                })
+            }
+        }
+        override fun deactivate() {
+            job?.cancel()
+            job = null
+        }
+    }
 }
 
 fun <T> CoroutineScope.asyncReadable(action: suspend () -> T): Readable<T> {
