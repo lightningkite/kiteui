@@ -114,7 +114,7 @@ data object DismissSemantic : Semantic {
     override val key: String = "dsmss"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         spacing = 0.dp,
-        cornerRadii = CornerRadii.Constant(0.dp),
+        cornerRadii = CornerRadius.Constant(0.dp),
         background = Color.black.applyAlpha(0.5f),
         revert = true,
     ).withBack
