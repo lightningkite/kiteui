@@ -74,6 +74,9 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
     actual var naturalSize: Boolean = false
 
 //    actual suspend fun setSourceAndWaitForResult(source: ImageSource) {}
+    actual var useLoadingSpinners: Boolean
+        get() = false
+        set(value) {}
 }
 
 @JsName("createObjectURLBlob")

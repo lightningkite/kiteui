@@ -114,7 +114,7 @@ data object DismissSemantic : Semantic {
     override val key: String = "dsmss"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         spacing = 0.dp,
-        cornerRadii = CornerRadii.Constant(0.dp),
+        cornerRadii = CornerRadius.Constant(0.dp),
         background = Color.black.applyAlpha(0.5f),
         revert = true,
     ).withBack
@@ -127,11 +127,11 @@ data object FieldSemantic : Semantic {
         outlineWidth = 1.px,
 //        spacing = theme.spacing / 2,
         cornerRadii = when(val base = theme.cornerRadii) {
-            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
-            is CornerRadii.ForceConstant -> base
-            is CornerRadii.RatioOfSize -> base
-            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
-            is CornerRadii.PerCorner -> base
+            is CornerRadius.Constant -> CornerRadius.ForceConstant(base.value)
+            is CornerRadius.ForceConstant -> base
+            is CornerRadius.RatioOfSize -> base
+            is CornerRadius.RatioOfSpacing -> CornerRadius.ForceConstant(theme.spacing * base.value)
+            is CornerRadii -> base
         }
     ).withBack
 }
@@ -148,7 +148,7 @@ data object HoverSemantic : Semantic {
         background = theme.background.map { it.highlight(0.2f) },
         outline = theme.background.map { it.highlight(0.2f).highlight(0.1f) },
         elevation = theme.elevation * 2f,
-    ).withBack
+    ).withoutBack
 }
 
 data object DownSemantic : Semantic {
@@ -158,7 +158,7 @@ data object DownSemantic : Semantic {
         background = theme.background.map { it.highlight(0.3f) },
         outline = theme.background.map { it.highlight(0.3f).highlight(0.1f) },
         elevation = theme.elevation / 2f,
-    ).withBack
+    ).withoutBack
 }
 
 data object FocusSemantic : Semantic {
@@ -167,7 +167,7 @@ data object FocusSemantic : Semantic {
         id = "fcs",
         outlineWidth = theme.outlineWidth + 2.dp,
         outline = theme.outline.map { it.highlight(1f) },
-    ).withBack
+    ).withoutBack
 }
 
 data object DisabledSemantic : Semantic {
@@ -175,9 +175,10 @@ data object DisabledSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "dis",
         foreground = theme.foreground.applyAlpha(alpha = 0.25f),
+        iconOverride = theme.iconOverride?.applyAlpha(alpha = 0.25f),
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
-    ).withBack
+    ).withoutBack
 }
 
 data object SelectedSemantic : Semantic {
@@ -352,7 +353,7 @@ class Theme(
     val id: String,
     val font: FontAndStyle = FontAndStyle(systemDefaultFont),
     val elevation: Dimension = 1.px,
-    val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
+    val cornerRadii: CornerRadiusOptions = CornerRadius.RatioOfSpacing(1f),
     val spacing: Dimension = 1.rem,
     val navSpacing: Dimension = 0.rem,
     val foreground: Paint = Color.black,
@@ -391,7 +392,7 @@ class Theme(
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         title: FontAndStyle = FontAndStyle(systemDefaultFont),
         elevation: Dimension = 1.px,
-        cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
+        cornerRadii: CornerRadiusOptions = CornerRadius.RatioOfSpacing(1f),
         spacing: Dimension = 1.rem,
         navSpacing: Dimension = 0.rem,
         foreground: Paint = Color.black,
@@ -475,7 +476,7 @@ class Theme(
         id: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
+        cornerRadii: CornerRadiusOptions = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -582,7 +583,7 @@ class Theme(
         newId: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
+        cornerRadii: CornerRadiusOptions = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -634,7 +635,7 @@ class Theme(
         id: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
+        cornerRadii: CornerRadiusOptions = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -689,7 +690,7 @@ class Theme(
         title: FontAndStyle? = null,
         body: FontAndStyle? = null,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
+        cornerRadii: CornerRadiusOptions = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,

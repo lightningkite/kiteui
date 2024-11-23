@@ -30,7 +30,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
-        native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
+        native.setHintTextColor(theme.foreground.closestColor().applyAlpha(0.5f).colorInt())
         native.setTypeface(
             TypefaceCompat.create(
                 native.context,

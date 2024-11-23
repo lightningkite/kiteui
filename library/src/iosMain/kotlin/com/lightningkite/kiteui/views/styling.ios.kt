@@ -1,20 +1,14 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.toObjcId
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactiveScope
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.QuartzCore.*
 import platform.UIKit.UIColor
-import platform.UIKit.UIImageView
 import platform.UIKit.UIView
 import kotlin.math.min
-import kotlin.time.DurationUnit
-import platform.Foundation.*
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -87,7 +81,7 @@ class CAGradientLayerResizing: CAGradientLayer {
         return backgroundMask!!
     }
 
-    var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
+    var desiredCornerRadius: CornerRadiusOptions = CornerRadius.ForceConstant(0.px)
         set(value) {
             field = value
             refreshCorners()
@@ -99,13 +93,29 @@ class CAGradientLayerResizing: CAGradientLayer {
         }
 
     fun refreshCorners() {
-        val v = when(val d = desiredCornerRadius) {
-            is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
-            is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            // TODO: Implement per-corner radii on iOS
-            is CornerRadii.PerCorner -> 0.0
+        fun CornerRadius.toRawValue() = when (this) {
+            is CornerRadius.Constant -> value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            is CornerRadius.ForceConstant -> value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            is CornerRadius.RatioOfSize -> ratio * bounds.useContents { min(size.width, size.height) }
+            is CornerRadius.RatioOfSpacing -> parentSpacing.times(value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+        }
+        val desiredCornerRadius = desiredCornerRadius
+        val v: Double
+        if (desiredCornerRadius is CornerRadius) {
+            v = desiredCornerRadius.toRawValue()
+            maskedCorners = kCALayerMinXMinYCorner or kCALayerMaxXMinYCorner or kCALayerMinXMaxYCorner or kCALayerMaxXMaxYCorner
+        } else {
+            // Due to UIKit limitations, this implementation works only when we are not trying to set different corners
+            // to different non-zero radii
+            desiredCornerRadius as CornerRadii
+            val rawRadiusForEachCorner = mapOf(
+                kCALayerMinXMinYCorner to desiredCornerRadius.topStart.toRawValue(),
+                kCALayerMaxXMinYCorner to desiredCornerRadius.topEnd.toRawValue(),
+                kCALayerMinXMaxYCorner to desiredCornerRadius.bottomStart.toRawValue(),
+                kCALayerMaxXMaxYCorner to desiredCornerRadius.bottomEnd.toRawValue()
+            )
+            v = rawRadiusForEachCorner.firstNotNullOfOrNull { it.value.takeUnless { it == 0.0 } } ?: 0.0
+            maskedCorners = rawRadiusForEachCorner.filter { it.value == v }.keys.reduce { a, b -> a or b }
         }
         superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
         backgroundMask?.cornerRadius = v

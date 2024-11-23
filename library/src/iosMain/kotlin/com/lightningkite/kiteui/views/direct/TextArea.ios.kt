@@ -129,7 +129,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
     actual var enabled: Boolean
         get() = textField.editable
         set(value) {
-            textField.editable = value
+            textField.setEditable(value)
             refreshTheming()
         }
     init {

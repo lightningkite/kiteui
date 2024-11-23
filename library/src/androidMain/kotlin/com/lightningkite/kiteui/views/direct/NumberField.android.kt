@@ -90,6 +90,8 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         super.actionSet(value)
         native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
         native.setOnEditorActionListener { v, actionId, event ->
+            // Design decision: whenever an action is set on a TextField, we will release focus first
+            native.clearFocus()
             value?.startAction(this)
             value != null
         }

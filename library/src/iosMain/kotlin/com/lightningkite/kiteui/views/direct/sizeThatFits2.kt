@@ -25,38 +25,6 @@ fun UIView.sizeThatFits2(
         it.minHeight?.let { h = h.coerceAtLeast(it.value) }
         it.width?.let { w = it.value }
         it.height?.let { h = it.value }
-        CGSizeMake(w, h)
-    } ?: size
-    val measured = when (this) {
-        is LinearLayout,
-        is FrameLayout,
-        is FrameLayoutButton -> sizeThatFits(newSizeInput)
-
-        else -> {
-            // Uncomment this code if you believe some fool is using the default sizeThatFits.
-            // That default implementation just returns the current size, leading to really strange and hard to track errors.
-            // Don't leave this uncommented, though; it's slow.  Just override the view in question and fix its sizeThatFits implementation.
-//            val xExisting = bounds.useContents { origin.x }
-//            val yExisting = bounds.useContents { origin.y }
-//            val widthExisting = bounds.useContents { this.size.width }
-//            val heightExisting = bounds.useContents { this.size.height }
-//            setBounds(CGRectMake(0.0, 0.0, 0.0, 0.0))
-            val result = PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSizeInput) }
-//            setBounds(
-//                CGRectMake(
-//                xExisting,
-//                yExisting,
-//                widthExisting,
-//                heightExisting,
-//            )
-//            )
-            result
-        }
-    }
-    //val result = measured
-    val result = sizeConstraints?.let {
-        var w = measured.useContents { width }
-        var h = measured.useContents { height }
         it.aspectRatio?.let { aspectRatio ->
             if (w / h > aspectRatio) {
                 w = h * aspectRatio
@@ -65,7 +33,39 @@ fun UIView.sizeThatFits2(
             }
         }
         CGSizeMake(w, h)
-    } ?: measured
+    } ?: size
+    val measured: CValue<CGSize>
+    if (sizeConstraints?.aspectRatio != null) {
+        measured = newSizeInput
+    } else {
+        measured = when (this) {
+            is LinearLayout,
+            is FrameLayout,
+            is FrameLayoutButton -> sizeThatFits(newSizeInput)
+
+            else -> {
+                // Uncomment this code if you believe some fool is using the default sizeThatFits.
+                // That default implementation just returns the current size, leading to really strange and hard to track errors.
+                // Don't leave this uncommented, though; it's slow.  Just override the view in question and fix its sizeThatFits implementation.
+    //            val xExisting = bounds.useContents { origin.x }
+    //            val yExisting = bounds.useContents { origin.y }
+    //            val widthExisting = bounds.useContents { this.size.width }
+    //            val heightExisting = bounds.useContents { this.size.height }
+    //            setBounds(CGRectMake(0.0, 0.0, 0.0, 0.0))
+                val result = PerformanceInfo["nativeSizeThatFits"]{ sizeThatFits(newSizeInput) }
+    //            setBounds(
+    //                CGRectMake(
+    //                xExisting,
+    //                yExisting,
+    //                widthExisting,
+    //                heightExisting,
+    //            )
+    //            )
+                result
+            }
+        }
+    }
+    val result = measured
     if(this === viewDebugTarget?.native) {
         println("viewDebugTarget constraints: $sizeConstraints")
         println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")

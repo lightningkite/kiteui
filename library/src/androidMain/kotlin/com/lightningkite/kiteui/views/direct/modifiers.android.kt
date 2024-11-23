@@ -13,6 +13,7 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
+import androidx.core.view.children
 
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.ConsoleRoot
@@ -24,6 +25,7 @@ import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
 @ViewModifierDsl3
@@ -219,6 +221,8 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+
+
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
@@ -279,9 +283,12 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             max = constraints.maxHeight?.value?.toInt(),
             set = constraints.height?.value?.toInt()
         ).measureSpecPlus(-paddingTop - paddingBottom)
-//        println("$f widthMeasureSpec2: ${widthMeasureSpec2.measureSpecString} / ${heightMeasureSpec2.measureSpecString}")
+//        println("this.parent ${this.children.first()}")
+
         val xConstrained = widthMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
         val yConstrained = heightMeasureSpec2.measureSpecMode == MeasureSpec.EXACTLY
+
+
         constraints.aspectRatio?.let { aspectRatio ->
             if (xConstrained && !yConstrained) {
                 heightMeasureSpec2 = MeasureSpec.makeMeasureSpec(
@@ -294,16 +301,17 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
                     MeasureSpec.EXACTLY,
                 )
             }
+
         }
-//        println("$f widthMeasureSpec3: ${widthMeasureSpec2.measureSpecString} / ${heightMeasureSpec2.measureSpecString}")
         f.measure(
             widthMeasureSpec2,
             heightMeasureSpec2,
         )
-//        println("$f inner: ${f.measuredWidth} / ${f.measuredHeight}")
+
+
         var mWidth = (f.measuredWidth + paddingLeft + paddingRight)
         var mHeight = (f.measuredHeight + paddingTop + paddingBottom)
-//        println("$f mWidth: ${mWidth} / ${mHeight}")
+
         constraints.aspectRatio?.let { aspectRatio ->
             if (xConstrained && !yConstrained) {
                 mHeight = (mWidth / aspectRatio).toInt()
@@ -311,11 +319,11 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
                 mHeight = (mHeight * aspectRatio).toInt()
             }
         }
-//        println("$f mWidth2: ${mWidth} / ${mHeight}")
-        setMeasuredDimension(
-            mWidth,
-            mHeight,
-        )
+            setMeasuredDimension(
+                mWidth,
+                mHeight,
+            )
+
     }
 
     init {

@@ -17,5 +17,5 @@ expect class ZoomableImageView(context: RContext) : RView {
     var scaleType: ImageScaleType
     var description: String?
     var refreshOnParamChange: Boolean
-
+    var useLoadingSpinners: Boolean
 }

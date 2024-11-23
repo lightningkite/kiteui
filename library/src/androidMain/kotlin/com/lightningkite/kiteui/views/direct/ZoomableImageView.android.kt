@@ -19,10 +19,12 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.Window
 import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.annotation.Nullable
 import androidx.core.view.children
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.ImageViewTarget
@@ -39,8 +41,16 @@ import android.widget.ImageView as AImageView
 
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
     override val native = PhotoView(context.activity)
-    var placeholder = CircularProgressDrawable(context.activity)
+    var placeholder = CircularProgressDrawable(context.activity).apply {
+        strokeWidth = 5f
+        centerRadius = 30f
+        start()
+    }
+    actual var useLoadingSpinners: Boolean = true
     actual var refreshOnParamChange: Boolean = false
+
+    private fun RequestBuilder<Drawable>.placeholderIf(drawable: Drawable, predicate: Boolean) =
+        if (predicate) placeholder(drawable) else placeholder(native.drawable)
 
     actual var source: ImageSource? = null
         set(value) {
@@ -48,17 +58,42 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
-            println("Loading $value")
-            when (value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(native)
-                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(native)
-                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(native)
-                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(native)
-                is ImageVector -> native.setImageDrawable(PathDrawable(value))
-                null -> native.setImageDrawable(null)
-                else -> TODO()
-            }
+            field = value
+            reload()
         }
+
+    private fun reload() {
+        val value = source
+        fun RequestBuilder<Drawable>.load() {
+            var requestOptions = this
+            if ((!requestOptions.isTransformationSet
+                        && requestOptions.isTransformationAllowed) && native.getScaleType() != null
+            ) {
+                when (native.getScaleType()) {
+                    ImageView.ScaleType.CENTER_CROP -> requestOptions = requestOptions.clone().optionalCenterCrop()
+                    ImageView.ScaleType.CENTER_INSIDE -> requestOptions = requestOptions.clone().optionalCenterInside()
+                    ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
+                        requestOptions.clone().optionalFitCenter()
+
+                    ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
+                    ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
+                    else -> {}
+                }
+            }
+            requestOptions.into(native)
+        }
+        when (value) {
+            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholderIf(placeholder, useLoadingSpinners).load()
+            is ImageRaw -> Glide.with(native).load(value.data.data).placeholderIf(placeholder, useLoadingSpinners).load()
+            is ImageRemote -> Glide.with(native).load(value.url).placeholderIf(placeholder, useLoadingSpinners).load()
+            is ImageResource -> Glide.with(native).load(value.resource).load()
+            is ImageVector -> native.setImageDrawable(PathDrawable(value))
+            null -> native.setImageDrawable(null)
+            else -> TODO()
+        }
+    }
+
+
     actual var scaleType: ImageScaleType
         get() {
             return when (this.native.scaleType) {

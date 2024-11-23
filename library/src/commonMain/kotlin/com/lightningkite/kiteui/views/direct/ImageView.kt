@@ -26,5 +26,6 @@ expect class ImageView(context: RContext) : RView {
      * density screens.
      */
     var naturalSize: Boolean
+    var useLoadingSpinners: Boolean
 
 }

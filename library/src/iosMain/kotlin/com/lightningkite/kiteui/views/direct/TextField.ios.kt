@@ -99,6 +99,8 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         textField.delegate = value?.let {
             val d = object : NSObject(), UITextFieldDelegateProtocol {
                 override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    // Design decision: whenever an action is set on a TextField, we will release focus first
+                    textField.resignFirstResponder()
                     it.startAction(this@TextInput)
                     return true
                 }

@@ -28,6 +28,7 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         get() = native.enabled
         set(value) {
             native.enabled = value
+            refreshTheming()
         }
 
     init {
