@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.danger
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.minus
@@ -35,6 +36,8 @@ object DataScreen: DocScreen {
             text("Readable is the root of reactivity in KiteUI.  A readable is something you can read and be notified when it changes.")
             text("The simplest example of a readable is 'Property', which directly contains a value we can change.")
 
+            space()
+            h3("Property")
             code { content = """
                 val counter = Property<Int>(0)
                 val callToStopListening = counter.addListener { 
@@ -53,8 +56,9 @@ object DataScreen: DocScreen {
 
             text("The above should have printed 'Value has changed to 10' in your console.")
             text("Because we called the function returned from addListener, further changes won't print.")
-
             space()
+
+            h3("sharedProcess")
 
             text("Other kinds of readables can also contain loading and error states, which can be displayed in your UI with no modifications.")
             text("Another example is 'sharedProcess', which runs a Kotlin Coroutine that emits values.  For example, let's create a counter for seconds since opening the screen:")
@@ -81,12 +85,131 @@ object DataScreen: DocScreen {
             }
             secondsElapsed.addListener { println("secondsElapsed.state: ${secondsElapsed.state}") }
             text("This should print an increasing number every second.")
+            space()
 
+            h2("Connecting to UI")
+            space()
+            h3("Painful manual connecting to UI")
+            text("We could manually connect a view to this data like so:")
+            example("""
+                text {
+                    val endListening = secondsElapsed.addListener { 
+                        content = secondsElapsed.state.getOrNull()?.toString() ?: "Not ready"
+                    }
+                    onRemove(endListening)
+                }
+            """.trimIndent()) {
+                text {
+                    val endListening = secondsElapsed.addListener {
+                        secondsElapsed.state.handle(
+                            success = { content = it.toString() },
+                            exception = { content = "Failed: ${it.message}" },
+                            notReady = { content = "Not ready" }
+                        )
+                    }
+                    onRemove(endListening)
+                }
+            }
+            text("However, this is not only long and tedious, but error-prone.  It's easy to forget to remove a listener.  Enter reactive scopes.")
+            space()
 
+            h3("Plain Reactive Scope")
+            text("A reactive scope is a block of code that reruns whenever one of its dependencies change.  Inside a reactive scope, one may 'call' a readable by using parentheses afterwards.  An example:")
+            example("""
+                text {
+                    reactive { content = secondsElapsed().toString() }
+                }
+            """.trimIndent()) {
+                text {
+                    reactive { content = secondsElapsed().toString() }
+                }
+            }
+            text("This method has tons of advantages:")
+            text("- Listeners are automatically removed when the view is removed")
+            text("- Declaring a set of code to run from multiple listeners is easy")
+            text("- Loading states are automatically handled")
+            text("- Error states are automatically handled")
+            space()
 
+            h3("Property Reactive Scopes")
+            text("We can do better than that.  There's a syntactic shorthand for the above that enforces good practice:")
+            example("""
+                text {
+                    ::content { secondsElapsed().toString() }
+                }
+            """.trimIndent()) {
+                text {
+                    ::content { secondsElapsed().toString() }
+                }
+            }
+            text("This is generally the best way to bind data to views.")
+            space()
 
+            danger - h3("Don't create views in reactive scopes")
+            text("Unless you know what you're doing, you should NOT create views in a reactive scope.  This code:")
+            code { content = """
+                stack {
+                    reactive {
+                        if(secondsElapsed() % 2 == 0) {
+                            text("We're on an even second")
+                        } else {
+                            text("We're on an odd second")
+                        }
+                    }
+                }
+            """.trimIndent()}
+            text("would insert a new piece of text EVERY SECOND, which is most certainly not what you intend.")
+            text("You should prefer changing properties on views, and if that's not possible, you should prefer hiding or showing views when necessary.")
+            example("""
+                col {
+                    onlyWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
+                    onlyWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
+                }
+            """.trimIndent()) {
+                col {
+                    onlyWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
+                    onlyWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
+                }
+            }
+            text("This is much easier on the DOM, so you'll get better performance too.")
+            text("If for some reason you truly need to dynamically create a new, you can use a swapView.")
+            space()
 
-
+            h2("shared")
+            text("You can create a readable out of a reactive scope using 'shared', like this:")
+            val otherCounter = Property(0)
+            val combinedCounters = shared { counter() + otherCounter() }
+            code { content = """
+                val otherCounter = Property(0)
+                val combinedCounters = shared { counter() + otherCounter() }
+            """.trimIndent()}
+            text("This is particularly useful for creating a readable whose value is calculated from other readables.")
+            text("'shared' is short for 'shared calculation'.  If multiple people listen to this property, they share the calculated result.")
+            text("'shared' is also lazy - it won't begin calculating until someone is listing.  It's safe to use 'shared' at the top level for this reason!")
+            danger - text("You should not use a Property to hold a view of another Property.  Use 'shared' instead/")
+            text("Now, we can access this calculation like this:")
+            example("""
+                col {
+                    important - button {
+                        text { ::content { "Increment the other counter, which is at ${'$'}{otherCounter()}" } }
+                        onClick { otherCounter.value++ }
+                    }
+                    text {
+                        ::content { "${'$'}{counter()} + ${'$'}{otherCounter()} = ${'$'}{combinedCounters()}" }
+                    }
+                }
+                """.trimIndent()) {
+                col {
+                    important - button {
+                        text { ::content { "Increment the other counter, which is at ${otherCounter()}" } }
+                        onClick { otherCounter.value++ }
+                    }
+                    text {
+                        ::content { "${counter()} + ${otherCounter()} = ${combinedCounters()}" }
+                    }
+                }
+            }
+            text("Notice that you can increment either of the two counters now")
 //            space()
 //            h2("Starting simple with Property")
 //            text("KiteUI is roughly based on Solid.js, which uses smaller sections to contain actions that should run when dependencies change.")
