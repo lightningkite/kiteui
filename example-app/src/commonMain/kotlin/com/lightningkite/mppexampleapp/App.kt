@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.mppexampleapp.docs.DocSearchScreen
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
@@ -20,16 +21,8 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
         appName = "KiteUI Sample App"
         ::navItems {
             listOf(
-                NavLink(title = { "Home" }, icon = { Icon.home }) { { RootScreen } },
-                NavLink({ "Themes" }, { Icon.sync }) { { ThemesScreen } },
-                NavLink({ "Navigation" }, { Icon.chevronRight }) { { NavigationTestScreen } },
-                NavLink(title = { "Docs" }, icon = { Icon.list }) { { DocSearchScreen } },
-                NavGroup("Grouped Test", Icon.settings, listOf(
-                    NavLink(title = { "Home Home Home" }, icon = { Icon.home }) { { RootScreen } },
-                    NavLink({ "Themes Themes Themes" }, { Icon.sync }) { { ThemesScreen } },
-                    NavLink({ "Navigation Navigation Navigation" }, { Icon.chevronRight }) { { NavigationTestScreen } },
-                    NavLink(title = { "Docs Docs Docs" }, icon = { Icon.list }) { { DocSearchScreen } },
-                ))
+                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomeScreen() } },
+                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchScreen } },
             )
         }
 
@@ -42,7 +35,17 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
                 title = { "Search" },
                 icon = { Icon.search },
                 destination = { { DocSearchScreen } }
-            )
+            ),
+//            NavExternal(
+//                title = { "Open Source" },
+//                icon = { Icon.download },
+//                to = {
+//                    val className = mainScreenNavigator.currentScreen()!!::class.toString().removePrefix("class ")
+//                    "https://github.com/lightningkite/kiteui/main/${className}"
+//                }
+//            )
         )
     }
 }
+
+interface UseFullScreen

@@ -71,6 +71,8 @@ inline val ViewWriter.warning: ViewWrapper get() = WarningSemantic.onNext
 inline val ViewWriter.danger: ViewWrapper get() = DangerSemantic.onNext
 @ViewModifierDsl3
 inline val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNext
+@ViewModifierDsl3
+inline val ViewWriter.emphasize: ViewWrapper get() = EmphasizedSemantic.onNext
 
 @ViewModifierDsl3
 val ViewWriter.compact: ViewWrapper

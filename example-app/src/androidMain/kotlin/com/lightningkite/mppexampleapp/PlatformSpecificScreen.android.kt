@@ -1,4 +1,4 @@
-package com.lightningkite.mppexampleapp
+package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.px
