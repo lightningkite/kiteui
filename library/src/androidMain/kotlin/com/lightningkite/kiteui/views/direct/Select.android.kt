@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.ViewWriter
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RippleDrawable
 import android.view.Gravity
@@ -46,14 +47,20 @@ actual class Select actual constructor(context: RContext): RView(context) {
     }
 
     override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf(null, null))
+        val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf())
 
-        layerDrawable.setDrawable(0, getBackgroundWithRipple(theme, fullyApply, layerDrawable?.getDrawable(0) as? RippleDrawable))
-        layerDrawable.setDrawable(1, ResourcesCompat.getDrawable(native.resources, R.drawable.baseline_arrow_drop_down_24, null)?.apply {
+        fun setOrAddDrawable(index: Int, drawable: Drawable) {
+            if(index < layerDrawable.numberOfLayers) layerDrawable.setDrawable(index, drawable)
+            else layerDrawable.addLayer(drawable)
+        }
+        setOrAddDrawable(0, getBackgroundWithRipple(theme, fullyApply, layerDrawable.takeIf { it.numberOfLayers >= 1 }?.getDrawable(0) as? RippleDrawable))
+        ResourcesCompat.getDrawable(native.resources, R.drawable.baseline_arrow_drop_down_24, null)?.apply {
             colorFilter = PorterDuffColorFilter(theme.foreground.closestColor().toInt(), PorterDuff.Mode.SRC_IN)
-        })
-        layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
-        layerDrawable.setLayerInsetEnd(1, theme.spacing.value.toInt())
+        }?.let {
+            setOrAddDrawable(1, it)
+            layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
+            layerDrawable.setLayerInsetEnd(1, theme.spacing.value.toInt())
+        }
 
         background = layerDrawable
     }

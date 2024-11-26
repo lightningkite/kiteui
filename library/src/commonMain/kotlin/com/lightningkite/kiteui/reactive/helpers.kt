@@ -376,6 +376,7 @@ fun <T> sharedProcess(scope: CoroutineScope = AppScope, emitter: suspend Readabl
     return object: BaseReadable<T>() {
         var job: Job? = null
         override fun activate() {
+            state = ReadableState.notReady
             job = scope.launch {
                 emitter(object : ReadableEmitter<T>, CoroutineScope by this@launch {
                     override fun emit(value: T) {
