@@ -169,6 +169,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
             return
         }
         if (parent?.fullyStarted == false) {
+
             if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
             return
         }

@@ -138,7 +138,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
                         centered - icon(Icon.chevronLeft, "Go Back")
                         centered - text {
                             ::content {
-                                screenNavigator.stack()?.let { it.getOrNull(it.size - 2) }?.title?.let { it() } ?: ""
+                                screenNavigator.stack()?.let { it.getOrNull(it.size - 2) }?.title?.let { it().let{ if(it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
                             }
                         }
                     }

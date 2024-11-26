@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.Action
@@ -22,12 +24,12 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
         }
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        val color = theme.background.closestColor()
-        native.setBackgroundColor(color.withAlpha(0.5f).toInt())
-    }
     override fun postSetup() {
         super.postSetup()
         children.forEach { it.native.isClickable = true }
+    }
+
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        return super.applyState(theme[DismissSemantic])
     }
 }

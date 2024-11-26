@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.views.*
@@ -10,7 +12,6 @@ import kotlinx.coroutines.launch
 actual class DismissBackground actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
-        native.classes.add("dismissBackground")
         native.classes.add("kiteui-stack")
         native.replaceEventListener("click") { dialogScreenNavigator.clear() }
     }
@@ -28,10 +29,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         native.replaceEventListener("click") { launch { action() } }
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        native.classes.removeAll { it.startsWith("t-") }
-        native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
-
-        native.setStyleProperty("--parentSpacing", parentSpacing.value)
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        return super.applyState(theme[DismissSemantic])
     }
 }
