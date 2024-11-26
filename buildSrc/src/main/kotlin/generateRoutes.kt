@@ -6,9 +6,10 @@ import kotlin.math.min
 
 private fun String.indexOf(startIndex: Int, vararg chars: Char): Int {
     return chars.asSequence().map {
-        indexOf(it, startIndex).let { if(it == -1) length else it }
+        indexOf(it, startIndex).let { if (it == -1) length else it }
     }.minOrNull() ?: length
 }
+
 private val blockComment = Regex("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/")
 
 fun generateAutoroutes(sources: File, out: File) {
@@ -17,7 +18,8 @@ fun generateAutoroutes(sources: File, out: File) {
         .filter { it.extension == "kt" }
         .flatMap {
             val out = ArrayList<ScreenData>()
-            val text = it.readLines().map { it.trim() }.filter { !it.startsWith("//") }.joinToString("\n").replace(blockComment, "")
+            val text = it.readLines().map { it.trim() }.filter { !it.startsWith("//") }.joinToString("\n")
+                .replace(blockComment, "")
             val packageName = text.substringAfter("package ").substringBefore("\n").trim()
             var index = 0
             while (true) {
@@ -31,7 +33,7 @@ fun generateAutoroutes(sources: File, out: File) {
                 if (quoteEnd == -1) break
                 val url = text.substring(quoteStart + 1, quoteEnd)
                 val urlParts = url.split('/').map { it.trim() }.filter { it.isNotBlank() }.map {
-                    if(it.startsWith('{'))
+                    if (it.startsWith('{'))
                         Segment.Variable(it.trim('{', '}'))
                     else
                         Segment.Constant(it)
@@ -46,46 +48,53 @@ fun generateAutoroutes(sources: File, out: File) {
                 val name = text.substring(nameStart, text.indexOf(nameStart, ' ', '(', ':', '<')).trim().trim(':')
                 val constructorParamsStart = text.indexOf('(', classOrObjectMark)
                 val bodyStart = text.indexOf('{', classOrObjectMark)
-                val constructorParams = if(constructorParamsStart == -1 || constructorParamsStart > bodyStart) listOf() else text.splitParens(startingAt = constructorParamsStart)
+                val constructorParams =
+                    if (constructorParamsStart == -1 || constructorParamsStart > bodyStart) listOf() else text.splitParens(
+                        startingAt = constructorParamsStart
+                    )
 
                 val upperIndex = index
                 val queryParams = run {
                     val out = HashMap<String, String>()
                     var index = upperIndex
-                    while(true) {
+                    while (true) {
                         val next = text.indexOf("@QueryParameter", index)
                         if (next == -1) break
                         index = next + 1
-                        val argStart = text.indexOf('(', next).let { if(it == -1) text.length else it }
+                        val argStart = text.indexOf('(', next).let { if (it == -1) text.length else it }
                         val hasExplicitName = (next + 15..argStart).none { !text[it].isWhitespace() }
-                        if(argStart == text.length) continue
+                        if (argStart == text.length) continue
                         var annoArgs: List<String>? = null
-                        val beginLoookingForVa = if(hasExplicitName) {
+                        val beginLoookingForVa = if (hasExplicitName) {
                             annoArgs = text.splitParens(startingAt = argStart)
                             text.afterParens(startingAt = argStart)
                         } else {
                             index
                         }
                         val declstart = text.indexOf("va", beginLoookingForVa)
-                        if(declstart == -1) continue
+                        if (declstart == -1) continue
                         val nameStart = text.indexOf(' ', declstart) + 1
-                        if(nameStart == -1) continue
+                        if (nameStart == -1) continue
                         val nameEnd = text.indexOf(nameStart, ' ', ':')
-                        if(nameEnd == -1) continue
+                        if (nameEnd == -1) continue
                         val codename = text.substring(nameStart, nameEnd)
                         out[codename] = annoArgs?.getOrNull(0) ?: codename
                     }
                     out
                 }
 
-                out.add(ScreenData(
-                    packageName = packageName,
-                    name = name,
-                    params = constructorParams.map { it.substringBefore(':').removePrefix("val ").removePrefix("var ").trim() },
-                    url = urlParts,
-                    isObject = text[classOrObjectMark] == 'o',
-                    queryParams = queryParams
-                ))
+                out.add(
+                    ScreenData(
+                        packageName = packageName,
+                        name = name,
+                        params = constructorParams.map {
+                            it.substringBefore(':').removePrefix("val ").removePrefix("var ").trim()
+                        },
+                        url = urlParts,
+                        isObject = text[classOrObjectMark] == 'o',
+                        queryParams = queryParams
+                    )
+                )
             }
             out
         }
@@ -103,12 +112,13 @@ fun generateAutoroutes(sources: File, out: File) {
             appendLine("package $topPackage")
             appendLine("")
             appendLine("import com.lightningkite.kiteui.navigation.*")
-            allRoutables.forEach {
-                appendLine("import ${it.packageName}.${it.name}")
-            }
+            allRoutables
+                .map { "import ${it.packageName}.${it.name}" }
+                .toSet()
+                .forEach { appendLine(it) }
             appendLine("")
             appendLine("")
-                        appendLine("val AutoRoutes = Routes(")
+            appendLine("val AutoRoutes = Routes(")
             tab {
                 appendLine("parsers = listOf(")
                 tab {
@@ -209,6 +219,7 @@ data class ScreenData(
     val isObject: Boolean,
     val queryParams: Map<String, String>,
 )
+
 sealed class Segment {
     data class Constant(val value: String) : Segment()
     data class Variable(val name: String) : Segment()

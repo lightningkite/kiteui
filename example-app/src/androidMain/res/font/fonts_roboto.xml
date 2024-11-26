@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<font-family xmlns:android="http://schemas.android.com/apk/res/android">
-<font
+    <font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
     android:fontStyle="normal"
     android:fontWeight="300"
     android:font="@font/fonts_roboto_300_normal" />
@@ -24,4 +24,4 @@
     android:fontStyle="italic"
     android:fontWeight="700"
     android:font="@font/fonts_roboto_700_italic" />
-</font-family>
+    </font-family>

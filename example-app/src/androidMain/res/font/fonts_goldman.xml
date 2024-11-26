@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<font-family xmlns:android="http://schemas.android.com/apk/res/android">
-<font
+    <font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
     android:fontStyle="normal"
     android:fontWeight="400"
     android:font="@font/fonts_goldman_400_normal" />
@@ -8,4 +8,4 @@
     android:fontStyle="normal"
     android:fontWeight="700"
     android:font="@font/fonts_goldman_700_normal" />
-</font-family>
+    </font-family>

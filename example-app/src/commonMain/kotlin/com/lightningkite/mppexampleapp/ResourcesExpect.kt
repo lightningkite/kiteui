@@ -4,12 +4,12 @@ import com.lightningkite.kiteui.models.*
 
 expect object Resources {
     val audioTaunt: AudioResource
-    val fontsGoldman: Font
-    val fontsMontserrat: Font
-    val fontsOpensans: Font
-    val fontsRoboto: Font
-    val imagesGraph126: ImageResource
-    val imagesMammoth: ImageResource
-    val imagesSolera: ImageResource
-    val videoBack: VideoResource
+val fontsGoldman: Font
+val fontsMontserrat: Font
+val fontsOpensans: Font
+val fontsRoboto: Font
+val imagesGraph126: ImageResource
+val imagesMammoth: ImageResource
+val imagesSolera: ImageResource
+val videoBack: VideoResource
 }

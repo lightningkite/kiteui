@@ -31,7 +31,10 @@ class KiteUiPlugin : Plugin<Project> {
             val resourceFolder = project.file("src/commonMain/resources")
             inputs.files(resourceFolder)
             afterEvaluate {
-//                tasks.findByName("compileCommonMainKotlinMetadata")?.dependsOn(task)
+                afterEvaluate {
+                    tasks.findByName("compileCommonMainKotlinMetadata")?.also { println("compileCommonMainKotlinMetadata found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspCommonMainKotlinMetadata")?.also { println("kspCommonMainKotlinMetadata found, depending on resources") }?.dependsOn(task)
+                }
 
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
@@ -49,7 +52,11 @@ class KiteUiPlugin : Plugin<Project> {
             into("src/jsMain/resources/common")
             into("src/jsMain/resources/public/common")
             afterEvaluate {
-//                tasks.findByName("compileKotlinJs")?.dependsOn(task)
+                afterEvaluate {
+                    tasks.findByName("compileKotlinJs")?.also { println("compileKotlinJs found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspKotlinJs")?.also { println("kspKotlinJs found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("jsProcessResources")?.also { println("jsProcessResources found, depending on resources") }?.dependsOn(task)
+                }
                 val out = project.file("src/jsMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")
                 val publicGitIgnore = project.file("src/jsMain/resources/public/common/.gitignore")
@@ -69,7 +76,10 @@ class KiteUiPlugin : Plugin<Project> {
             dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             afterEvaluate {
-//                tasks.findByName("compileKotlinJvm")?.dependsOn(task)
+                afterEvaluate {
+                    tasks.findByName("compileKotlinJvm")?.also { println("compileKotlinJvm found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspKotlinJvm")?.also { println("kspKotlinJvm found, depending on resources") }?.dependsOn(task)
+                }
                 val out = project.file("src/jvmMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 val gitIgnore = project.file("src/jvmMain/resources/common/.gitignore")
                 outputs.file(out)
@@ -88,9 +98,14 @@ class KiteUiPlugin : Plugin<Project> {
             group = "kiteui"
 
             afterEvaluate {
-//                tasks.findByName("compileKotlinIosSimulatorArm64")?.dependsOn(task)
-//                tasks.findByName("compileKotlinIosArm64")?.dependsOn(task)
-//                tasks.findByName("compileKotlinIosX64")?.dependsOn(task)
+                afterEvaluate {
+                    tasks.findByName("compileKotlinIosSimulatorArm64")?.also { println("compileKotlinIosSimulatorArm64 found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspKotlinIosSimulatorArm64")?.also { println("kspKotlinIosSimulatorArm64 found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("compileKotlinIosArm64")?.also { println("compileKotlinIosArm64 found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspKotlinIosArm64")?.also { println("kspKotlinIosArm64 found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("compileKotlinIosX64")?.also { println("compileKotlinIosX64 found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspKotlinIosX64")?.also { println("kspKotlinIosX64 found, depending on resources") }?.dependsOn(task)
+                }
                 val outKt = project.file("src/iosMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
 
@@ -118,8 +133,12 @@ class KiteUiPlugin : Plugin<Project> {
             val androidResFolder = project.file("src/androidMain/res")
 
             afterEvaluate {
-//                tasks.findByName("compileReleaseKotlinAndroid")?.dependsOn(task)
-//                tasks.findByName("compileDebugKotlinAndroid")?.dependsOn(task)
+                afterEvaluate {
+                    tasks.findByName("compileReleaseKotlinAndroid")?.also { println("compileReleaseKotlinAndroid found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspReleaseKotlinAndroid")?.also { println("kspReleaseKotlinAndroid found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("compileDebugKotlinAndroid")?.also { println("compileDebugKotlinAndroid found, depending on resources") }?.dependsOn(task)
+                    tasks.findByName("kspDebugKotlinAndroid")?.also { println("kspDebugKotlinAndroid found, depending on resources") }?.dependsOn(task)
+                }
                 val outKt =
                     project.file("src/androidMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesActual.kt")
                 outputs.file(outKt)
@@ -174,6 +193,8 @@ class KiteUiPlugin : Plugin<Project> {
             }
             afterEvaluate {
                 afterEvaluate {
+                    tasks.filter { it.name.contains("ksp") }.forEach { it.dependsOn(task) }
+                    tasks.filter { it.name.contains("kiteuiResources") }.forEach { it.dependsOn(task) }
                     tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
                     tasks.filter {
                         it.name.contains("kspKotlin")
