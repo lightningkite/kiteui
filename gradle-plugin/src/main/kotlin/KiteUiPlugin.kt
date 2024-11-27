@@ -124,8 +124,7 @@ expect object Resources {
                                 it.add("import com.lightningkite.kiteui.Blob")
                                 it.add("import com.lightningkite.kiteui.fetch")
                             }
-                        }
-                        .joinToString("\n")
+                        }.joinToString("\n")
 
                     out.writeText(
                         """

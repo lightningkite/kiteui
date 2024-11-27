@@ -30,21 +30,23 @@ val pathLetters = charArrayOf(
 )
 val spaceOrComma = Regex("[ ,]+")
 
-fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Float, parentWidth: Float, parentOffsetY: Float, parentHeight: Float) {
+fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, translateX: Float, translateY: Float, scaleX: Float, scaleY: Float, left: Int, top: Int, right: Int, bottom: Int,) {
+    fun Float.posX() = ((this + translateX) * scaleX)
+    fun Float.posY() = ((this + translateY) * scaleY)
     when (val it = kiteui) {
         is Color -> this.color = it.colorInt()
-        is FadingColor -> match(it.base, parentOffsetX, parentWidth, parentOffsetY, parentHeight)
+        is FadingColor -> match(it.base, translateX, translateY, scaleX, scaleY, left, top, right, bottom)
         is LinearGradient -> {
-            val smallest = min(parentWidth, parentHeight) / 2
-            val x0 = parentOffsetX + parentWidth / 2 - it.angle.cos() * smallest
-            val x1 = parentOffsetX + parentWidth / 2 + it.angle.cos() * smallest
-            val y0 = parentOffsetY + parentWidth / 2 - it.angle.sin() * smallest
-            val y1 = parentOffsetY + parentWidth / 2 + it.angle.sin() * smallest
+            val smallest = min(bottom - top, right - left) / 2
+            val x0 = (left + right) / 2 - it.angle.cos() * smallest
+            val x1 = (left + right) / 2 + it.angle.cos() * smallest
+            val y0 = (top + bottom) / 2 - it.angle.sin() * smallest
+            val y1 = (top + bottom) / 2 + it.angle.sin() * smallest
             this.shader = android.graphics.LinearGradient(
-                x0,
-                y0,
-                x1,
-                y1,
+                x0.posX(),
+                y0.posY(),
+                x1.posX(),
+                y1.posY(),
                 it.stops.map { it.color.colorInt() }.toIntArray(),
                 it.stops.map { it.ratio }.toFloatArray(),
                 Shader.TileMode.CLAMP
@@ -52,10 +54,10 @@ fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Fl
         }
 
         is RadialGradient -> {
-            val smallest = min(parentWidth, parentHeight) / 2
+            val smallest = min(bottom - top, right - left) / 2f
             this.shader = android.graphics.RadialGradient(
-                parentOffsetX + parentWidth / 2,
-                parentOffsetY + parentHeight / 2,
+                ((left + right) / 2f).posX(),
+                ((top + bottom) / 2f).posY(),
                 smallest,
                 it.stops.map { it.color.colorInt() }.toIntArray(),
                 it.stops.map { it.ratio }.toFloatArray(),
@@ -87,10 +89,7 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                     Paint().apply {
                         match(
                             color,
-                            translateX,
-                            vector.width.value,
-                            translateY,
-                            vector.height.value,
+                            translateX, translateY, scaleX, scaleY, vector.viewBoxMinX, vector.viewBoxMinY, vector.viewBoxMinX + vector.viewBoxWidth, vector.viewBoxMinY + vector.viewBoxHeight
                         )
                         style = Paint.Style.STROKE
                         strokeWidth = it.strokeWidth?.times(scaleX)?.div(AndroidAppContext.density)?.toFloat() ?: 0f
@@ -107,10 +106,7 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                     Paint().apply {
                         match(
                             color,
-                            translateX,
-                            vector.width.value,
-                            translateY,
-                            vector.height.value,
+                            translateX, translateY, scaleX, scaleY, vector.viewBoxMinX, vector.viewBoxMinY, vector.viewBoxMinX + vector.viewBoxWidth, vector.viewBoxMinY + vector.viewBoxHeight
                         )
                         style = Paint.Style.FILL
                     }
