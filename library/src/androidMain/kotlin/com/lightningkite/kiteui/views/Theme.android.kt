@@ -58,7 +58,7 @@ private class MyGradientDrawable(): GradientDrawable() {
                 if(setInstance > myInstance) return@addUpdateListener
                 val f = it.animatedFraction
                 colors = IntArray(animationStartColors.size) { index ->
-                    Color.hsvInterpolate(
+                    Color.interpolate(
                         Color.fromInt(animationStartColors[index]),
                         Color.fromInt(animationGoalColors[index]),
                         f

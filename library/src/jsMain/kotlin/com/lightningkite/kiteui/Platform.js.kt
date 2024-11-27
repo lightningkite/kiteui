@@ -11,5 +11,5 @@ actual val Platform.Companion.usesTouchscreen: Boolean
     get() = window.matchMedia("(pointer: coarse)").matches
 
 actual fun setStatusBarColor(color: Color) {
-    println("Not supported on this platform")
+//    println("Not supported on this platform")
 }

@@ -110,6 +110,16 @@ data object CardSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }
 
+data object DismissSemantic : Semantic {
+    override val key: String = "dsmss"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        spacing = 0.dp,
+        cornerRadii = CornerRadius.Constant(0.dp),
+        background = Color.black.applyAlpha(0.5f),
+        revert = true,
+    ).withBack
+}
+
 data object FieldSemantic : Semantic {
     override val key: String = "fld"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(

@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.onRemove
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 
@@ -21,16 +20,26 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
-                        it.copy(background = Color.white.applyAlpha(0.0f)).withBack
+                        it.copy(
+                            id = "mnubtndsm",
+                            revert = true,
+                            derivations = mapOf(
+                                DismissSemantic to {
+                                    it.copy(
+                                        background = Color.white.applyAlpha(0.0f),
+                                        outlineWidth = 0.dp,
+                                        cornerRadii = CornerRadius.Constant(0.dp),
+                                        revert = true,
+                                    ).withBack
+                                }
+                            )
+                        ).withBack
                     }
                     native.anchor = preferredDirection to this@MenuButton.native
                     onClick {
                         closePopovers()
                     }
-                    card - stack {
-                        themeChoice += ThemeDerivation {
-                            it.copy(elevation = 5.dp, revert = true).withBack
-                        }
+                    dialog - stack {
                         createMenu()
                     }
                 }

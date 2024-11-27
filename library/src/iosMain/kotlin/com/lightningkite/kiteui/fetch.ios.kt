@@ -94,14 +94,14 @@ actual suspend fun fetch(
                     onUploadProgress?.let {
                         onUpload { a, b ->
                             run {
-                                it(a.toInt(), b.toInt())
+                                it(a.toInt(), b?.toInt() ?: -1)
                             }
                         }
                     }
                     onDownloadProgress?.let {
                         onDownload { a, b ->
                             run {
-                                it(a.toInt(), b.toInt())
+                                it(a.toInt(), b?.toInt() ?: -1)
                             }
                         }
                     }

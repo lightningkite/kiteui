@@ -188,7 +188,7 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         set(value) {
             field = value
             if (value) {
-                val s = allSubviews.last().let { it.startPosition + it.size + spacingRaw }
+                val s = allSubviews.lastOrNull { it.visible }?.let { it.startPosition + it.size + spacingRaw } ?: return
                 setContentSize(if(vertical) CGSizeMake(0.0, s) else CGSizeMake(s,  0.0))
             } else {
                 val s = reservedScrollingSpace
@@ -230,6 +230,7 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                             if (allSubviews.any { it.needsLayout }) {
                                 relayout()
                             }
+                            capViewAtBottom = allSubviews.last().index >= dataDirect.max
                         }
                     } finally {
                         animationsEnabled = before

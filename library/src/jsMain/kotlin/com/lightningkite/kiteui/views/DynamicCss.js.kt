@@ -38,12 +38,6 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         }
     }
 
-    constructor() : this(
-        (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
-            JSON.parse<BaseUrlScript>(it).baseUrl
-        } ?: "/"
-    )
-
     private val fontHandled = HashSet<String>()
     actual fun font(font: Font): String {
         if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName

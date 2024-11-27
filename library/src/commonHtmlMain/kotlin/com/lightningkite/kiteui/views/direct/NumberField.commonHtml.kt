@@ -1,10 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
@@ -95,6 +94,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     actual var align: Align = Align.Start
         set(value) {
+            field = value
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
                 Align.Center -> "center"
