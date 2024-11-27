@@ -650,6 +650,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .kiteui-space {
                 display: inline-block;
+                min-height: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
                 min-width: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
             }
 
