@@ -36,8 +36,8 @@ fun ViewWriter.example(
 fun ViewWriter.article(
     setup: ContainingView.()->Unit
 ) {
-    stack {
-        gravity(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - scrolls - col {
+    scrolls - stack {
+        gravity(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col {
             setup()
         }
     }

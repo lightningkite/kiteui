@@ -221,10 +221,12 @@ infix fun <T> Writable<Set<T>>.contains(value: T): Writable<Boolean> = shared { 
     else this@contains.set(this@contains.await() - value)
 }
 
-fun <T : Any> Writable<T>.nullable(): Writable<T?> = lens(
-    get = { it },
-    modify = { o, it -> it ?: o }
-)
+fun <T : Any> Writable<T>.nullable(): Writable<T?> =
+    object : Writable<T?>, Readable<T?> by this {
+        override suspend fun set(value: T?) {
+            if (value != null) this@nullable.set(value)
+        }
+    }
 
 fun <T : Any> Writable<T?>.notNull(default: T): Writable<T> = lens(
     get = { it ?: default },
@@ -286,6 +288,13 @@ fun Writable<String>.asULongHex(): Writable<ULong?> = lens(get = { it.toULongOrN
 
 @JvmName("writableIntAsDoubleNullable")
 fun Writable<Int?>.asDouble(): Writable<Double?> = lens(get = { it?.toDouble() }, set = { it?.toInt() })
+
+fun Writable<Double>.nullToZero(): Writable<Double?> =
+    object : Writable<Double?>, Readable<Double?> by this {
+        override suspend fun set(value: Double?) {
+            this@nullToZero.set(value ?: 0.0)
+        }
+    }
 
 @JvmName("writableStringAsDouble")
 fun ImmediateWritable<String>.asDouble(): ImmediateWritable<Double?> = lens(get = { it.filter { it.isDigit() || it == '-' || it == '.'}.toDoubleOrNull() }, set = { it?.commaString() ?: "" })

@@ -21,6 +21,7 @@ object DocSearchScreen : Screen {
         // TODO: Platform-specific views
         // TODO: Custom widgets
         { DataScreen },
+        { ReactiveToolsScreen },
         { ThemingScreen },
         { TextElementScreen },
         { NavigationScreen },

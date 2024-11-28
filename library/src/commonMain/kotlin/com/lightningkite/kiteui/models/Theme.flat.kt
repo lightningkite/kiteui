@@ -112,6 +112,7 @@ fun Theme.Companion.flat(
                 id = "fld",
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
+                revert = true,
 //                spacing = it.spacing / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
                     is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
