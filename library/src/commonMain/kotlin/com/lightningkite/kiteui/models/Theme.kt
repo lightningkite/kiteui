@@ -128,6 +128,7 @@ data object FieldSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "fld",
         outlineWidth = 1.px,
+        revert = true,
 //        spacing = theme.spacing / 2,
         cornerRadii = when (val base = theme.cornerRadii) {
             is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
