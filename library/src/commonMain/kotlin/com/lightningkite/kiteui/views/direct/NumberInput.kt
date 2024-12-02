@@ -19,5 +19,4 @@ expect class NumberInput(context: RContext) : RViewWithAction {
     var hint: String
     var range: ClosedRange<Double>?
     var align: Align
-    var textSize: Dimension
 }

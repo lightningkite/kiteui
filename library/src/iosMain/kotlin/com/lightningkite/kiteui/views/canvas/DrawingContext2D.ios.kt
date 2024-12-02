@@ -204,7 +204,7 @@ actual fun DrawingContext2D.appendArc(
         radius,
         startAngle.radians.toDouble(),
         endAngle.radians.toDouble(),
-        if (anticlockwise) 0 else 1
+        if (anticlockwise) 1 else 0
     )
 }
 
@@ -300,7 +300,7 @@ actual fun DrawingContext2D.fill(): Unit = CGContextFillPath((this as DrawingCon
 actual fun DrawingContext2D.fillEvenOdd(): Unit = CGContextEOFillPath((this as DrawingContext2DImpl).wraps)
 
 actual var DrawingContext2D.strokePaint: Paint
-    get() = TODO()
+    get() = (this as DrawingContext2DImpl).stroke
     set(value) {
         (this as DrawingContext2DImpl).stroke = value
         val c = value.closestColor()
@@ -314,7 +314,7 @@ actual var DrawingContext2D.strokePaint: Paint
     }
 
 actual var DrawingContext2D.fillPaint: Paint
-    get() = TODO()
+    get() = (this as DrawingContext2DImpl).fill
     set(value) {
         (this as DrawingContext2DImpl).fill = value
         val c = value.closestColor()

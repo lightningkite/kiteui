@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -9,9 +10,13 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.core.content.getSystemService
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*

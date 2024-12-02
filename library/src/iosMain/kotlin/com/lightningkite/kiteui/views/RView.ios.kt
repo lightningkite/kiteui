@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
@@ -122,7 +123,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun requestFocus() {
         afterTimeout(16) {
-            native.becomeFirstResponder()
+            val n = native
+            if (n is WrapperView) {
+                (n.subviews.firstOrNull() as? UIView)?.becomeFirstResponder()
+            } else {
+                n.becomeFirstResponder()
+            }
         }
     }
 

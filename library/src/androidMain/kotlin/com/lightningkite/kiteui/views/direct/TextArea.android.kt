@@ -22,7 +22,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class TextArea actual constructor(context: RContext) : RView(context) {
-    override val native = EditText(context.activity).apply {
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE
     }

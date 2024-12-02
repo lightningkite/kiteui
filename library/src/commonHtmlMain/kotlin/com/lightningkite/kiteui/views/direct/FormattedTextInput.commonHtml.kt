@@ -119,11 +119,6 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
                 Align.Stretch -> "justify"
             }
         }
-    actual var textSize: Dimension = 1.rem
-        set(value) {
-            field = value
-            native.style.fontSize = value.value
-        }
 
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)

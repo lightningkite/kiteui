@@ -21,7 +21,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).apply {
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
@@ -163,11 +163,4 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         keyboardHints = KeyboardHints(KeyboardCase.Sentences)
     }
 
-    actual var textSize: Dimension
-        get() {
-            return Dimension(native.textSize)
-        }
-        set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
-        }
 }

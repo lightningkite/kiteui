@@ -12,7 +12,6 @@ expect class FormattedTextInput(context: RContext) : RViewWithAction {
     val content: ImmediateWritable<String>
     var hint: String
     var align: Align
-    var textSize: Dimension
     var keyboardHints: KeyboardHints
 
     fun format(

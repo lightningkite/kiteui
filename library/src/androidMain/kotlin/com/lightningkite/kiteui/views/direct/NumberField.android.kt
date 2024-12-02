@@ -22,7 +22,7 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).apply {
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
@@ -151,13 +151,6 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     }
                 }
             }
-        }
-    actual var textSize: Dimension
-        get() {
-            return Dimension(native.textSize)
-        }
-        set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
         }
 
     init {

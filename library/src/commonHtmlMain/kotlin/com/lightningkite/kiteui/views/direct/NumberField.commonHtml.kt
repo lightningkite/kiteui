@@ -102,11 +102,6 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 Align.Stretch -> "justify"
             }
         }
-    actual var textSize: Dimension = 1.rem
-        set(value) {
-            field = value
-            native.style.fontSize = value.value
-        }
 
     actual var range: ClosedRange<Double>? = null
         set(value) {

@@ -19,7 +19,7 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity)
+    override val native = EditText(context.activity).focusIsKeyboard()
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
