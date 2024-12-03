@@ -9,9 +9,7 @@ import kotlinx.dom.addClass
 import kotlinx.dom.createElement
 import kotlinx.dom.hasClass
 import kotlinx.dom.removeClass
-import org.w3c.dom.Element
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.get
+import org.w3c.dom.*
 import org.w3c.dom.svg.SVGElement
 import kotlin.js.Json
 import kotlin.js.json
@@ -264,11 +262,26 @@ actual class FutureElement actual constructor() {
 actual class FutureElementStyle(var native: dynamic)
 actual class FutureElementAttributes(var native: dynamic)
 
+fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
+    Align.Start -> ScrollLogicalPosition.START
+    Align.Center -> ScrollLogicalPosition.CENTER
+    Align.End -> ScrollLogicalPosition.END
+
+    Align.Stretch -> ScrollLogicalPosition.START
+    null -> ScrollLogicalPosition.START
+}
 actual fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
 ) {
+    native.element?.scrollIntoView(
+        ScrollIntoViewOptions(
+            block = vertical.logicalPosition(),
+            inline = horizontal.logicalPosition(),
+            behavior = if (animate) ScrollBehavior.SMOOTH else ScrollBehavior.INSTANT
+        )
+    )
 }
 
 @Suppress("NOTHING_TO_INLINE")
