@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
@@ -18,6 +19,7 @@ fun <T> shared(coroutineContext: CoroutineContext = Dispatchers.Unconfined, useL
 
 class SharedReadable<T>(
     coroutineContext: CoroutineContext = Dispatchers.Unconfined,
+    val log: Console? = null,
     useLastWhileLoading: Boolean = false,
     private val action: ReactiveContext.() -> T
 ) : Readable<T>, CalculationContext {
@@ -29,11 +31,13 @@ class SharedReadable<T>(
                     throwable.report("SharedReadable")
                 }
             }
-    override val coroutineContext = job + restOfContext
+//    override val coroutineContext = job + restOfContext
+    override val coroutineContext get() = job + restOfContext
 
     private fun cancel() {
         job.cancel()
         job = Job()
+        scope.cancel()
     }
 
     private val scope = TypedReactiveContext(this, action = action)
@@ -45,16 +49,21 @@ class SharedReadable<T>(
         }
     private var lcount = 0
     override fun addListener(listener: () -> Unit): () -> Unit {
+        log?.log("addListener $lcount $listener")
         if (lcount++ == 0) {
+            log?.log("startCalculation")
             scope.startCalculation()
         }
         val r = scope.addListener(listener)
         var removed = false
         return label@{
+            log?.log("remover called ($removed) for $listener")
             if(removed) return@label
             removed = true
+            log?.log("remover activated ($removed, $lcount) for $listener")
             r()
             if (--lcount == 0) {
+                log?.log("cancelling")
                 cancel()
             }
         }

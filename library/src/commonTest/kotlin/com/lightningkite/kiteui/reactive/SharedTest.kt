@@ -58,6 +58,43 @@ class SharedTest {
         assertEquals(1, onRemoveCalled)
     }
 
+    @Test fun sharedTerminatesWhenNoOneIsListeningCancelDeps() {
+        var onRemoveCalled = 0
+        var scopeCalled = 0
+        var dependencyListeners = 0
+        val listener = object: Listenable {
+            override fun addListener(listener: () -> Unit): () -> Unit {
+                dependencyListeners++
+                return { dependencyListeners-- }
+            }
+        }
+        val shared = shared {
+            rerunOn(listener)
+            scopeCalled++
+            onRemove { onRemoveCalled++ }
+            42
+        }
+        assertEquals(0, scopeCalled)
+        assertEquals(0, onRemoveCalled)
+        assertEquals(0, dependencyListeners)
+        var removeListener = shared.addListener {  }
+        assertEquals(1, dependencyListeners)
+        assertEquals(1, scopeCalled)
+        assertEquals(0, onRemoveCalled)
+        removeListener()
+        assertEquals(0, dependencyListeners)
+        assertEquals(1, scopeCalled)
+        assertEquals(1, onRemoveCalled)
+        removeListener = shared.addListener {  }
+        assertEquals(1, dependencyListeners)
+        assertEquals(2, scopeCalled)
+        assertEquals(1, onRemoveCalled)
+        removeListener()
+        assertEquals(0, dependencyListeners)
+        assertEquals(2, scopeCalled)
+        assertEquals(2, onRemoveCalled)
+    }
+
     @Test fun sharedSharesCalculations() {
         var hits = 0
         val property = Property(1)
