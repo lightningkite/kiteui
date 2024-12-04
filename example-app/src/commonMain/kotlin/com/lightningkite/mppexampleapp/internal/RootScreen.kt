@@ -54,6 +54,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen { ScrollIntoViewTest }
                 linkScreen { FormattedInputTests() }
                 linkScreen { TestingGroundScreen }
                 linkScreen { ListEditScreen }
