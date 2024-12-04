@@ -639,19 +639,20 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     }
 
     fun updateVisibleIndexes() {
+        val visibleView = allSubviews.filter { it.visible }
         firstVisible.let {
-            val v = allSubviews.firstOrNull()?.index?.times(columns) ?: -1
+            val v = visibleView.firstOrNull()?.index?.times(columns) ?: -1
             if (v != it.value) it.value = v
         }
         centerVisible.let {
             val center = viewportOffset + viewportSize / 2
-            allSubviews.find { center in it.startPosition..it.startPosition.plus(it.size) }?.index?.times(columns)
+            visibleView.find { center in it.startPosition..it.startPosition.plus(it.size) }?.index?.times(columns)
                 ?.plus(columns / 2)?.let { v ->
                     if (v != it.value) it.value = v
                 }
         }
         lastVisible.let {
-            val v = allSubviews.lastOrNull()?.index?.times(columns)?.plus(columns - 1) ?: -1
+            val v = visibleView.lastOrNull()?.index?.times(columns)?.plus(columns - 1) ?: -1
             if (v != it.value) it.value = v
         }
     }
