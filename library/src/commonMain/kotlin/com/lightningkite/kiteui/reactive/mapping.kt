@@ -124,7 +124,7 @@ fun <O, T> ImmediateWritable<O>.lens(
 ): ImmediateWritable<T> = ModifyImmediateLens(this, get, modify)
 
 @Deprecated("Be specific about what kind you need.")
-fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
+fun <E, ID, W> Writable<List<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W) =
     WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
 
 @Deprecated("Be specific about what kind you need.")
@@ -133,7 +133,7 @@ fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) =
 
 @Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
-fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(Writable<E>) -> W) =
+fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
 @Deprecated("Be specific about what kind you need.")
@@ -143,7 +143,7 @@ fun <E, ID> Writable<Set<E>>.lensByElement(identity: (E) -> ID) =
 
 fun <E, ID, W> Writable<List<E>>.lensByElementWithIdentity(
     identity: (E) -> ID,
-    map: CalculationContext.(Writable<E>) -> W
+    map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W
 ) =
     WritableList<E, ID, W>(this, identity = identity, elementLens = { it.map(it) })
 
@@ -153,7 +153,7 @@ fun <E, ID> Writable<List<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
 @JvmName("setLensByElementWithIdentity")
 fun <E, ID, W> Writable<Set<E>>.lensByElementWithIdentity(
     identity: (E) -> ID,
-    map: CalculationContext.(Writable<E>) -> W
+    map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W
 ) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
@@ -240,7 +240,7 @@ class WritableList<E, ID, T>(
     val identity: (E) -> ID,
     val elementLens: (WritableList<E, ID, T>.ElementWritable) -> T
 ) : Readable<List<T>> {
-    inner class ElementWritable internal constructor(valueInit: E) : Writable<E>, ImmediateReadable<E>,
+    inner class ElementWritable internal constructor(valueInit: E) : ImmediateReadableWithWrite<E>,
         CalculationContext {
         private var job = Job()
         private val restOfContext = Dispatchers.Default + CoroutineExceptionHandler { coroutineContext, throwable ->
