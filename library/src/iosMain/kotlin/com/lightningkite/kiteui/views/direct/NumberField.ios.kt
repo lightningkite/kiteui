@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.ReadableState
@@ -14,17 +15,29 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
-
+import platform.objc.sel_registerName
+import com.lightningkite.kiteui.WeakReference
+import kotlinx.cinterop.ObjCAction
 
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
+    val toolbar = UIToolbar().apply {
+        barStyle = UIBarStyleDefault
+        setTranslucent(true)
+        sizeToFit()
+        setItems(listOf(
+            UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+            UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = this@NumberInput, action =sel_registerName("done")),
+        ), animated = false)
+    }
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
-        keyboardType = UIKeyboardTypeNumberPad
+        keyboardType = UIKeyboardTypeDecimalPad
         delegate = NextFocusDelegateShared
+        inputAccessoryView = toolbar
     }
 
     init {
@@ -56,6 +69,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
         }
     }
+
     override fun applyForeground(theme: Theme) {
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
@@ -117,6 +131,12 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
+
+    @ObjCAction
+    fun done() {
+        action?.startAction(this@NumberInput)
+    }
+
     override fun actionSet(value: Action?) {
         super.actionSet(value)
             textField.delegate = value?.let {
