@@ -23,6 +23,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
+        keyboardType = UIKeyboardTypeNumberPad
         delegate = NextFocusDelegateShared
     }
 
