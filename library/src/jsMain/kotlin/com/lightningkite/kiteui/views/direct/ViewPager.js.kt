@@ -25,26 +25,26 @@ actual class ViewPager actual constructor(context: RContext) :
     init {
         native.tag = "div"
         native.classes.add("viewPager")
-        native.setStyleProperty("height", "100vh")
-        native.setStyleProperty("width", "auto")
-        native.setStyleProperty("--spacing", "0.0rem")
-        native.setStyleProperty("display", "flex")
-        native.setStyleProperty("overflow", "hidden")
-        native.setStyleProperty("align-items", "center")
+        native.setStyleProperty("height", "100vh !important")
+        native.setStyleProperty("width", "auto !important")
+        native.setStyleProperty("--spacing", "0.0rem !important")
+        native.setStyleProperty("display", "flex !important")
+        native.setStyleProperty("overflow", "hidden !important")
+        native.setStyleProperty("align-items", "center !important")
         SwiperCSS
         native.innerHtmlUnsafe = """
             <style>
              .swiper-slide {
-                    flex-shrink: 0;
-                    width: 100%;
-                    height: 100%;
-                    position: relative;
-                    transition-property: transform;
-                    display: flex;
-                    justify-content: center;
+                    flex-shrink: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    position: relative !important;
+                    transition-property: transform !important;
+                    display: flex !important;
+                    justify-content: center !important;
                 }
             </style>
-            <div class="swiper-wrapper" style="display:flex; width: 100%; height:100%;" >
+            <div class="swiper-wrapper" style="display:flex !important; width: 100% !important; height:100% !important;" >
             </div>
             <div class="swiper-pagination"></div>
             <div class="swiper-scrollbar"></div>
