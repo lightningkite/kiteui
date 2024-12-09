@@ -18,6 +18,9 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 import com.lightningkite.kiteui.WeakReference
 import kotlinx.cinterop.ObjCAction
+import kotlinx.coroutines.*
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
@@ -135,6 +138,20 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     @ObjCAction
     fun done() {
         action?.startAction(this@NumberInput)
+        CoroutineScope(Dispatchers.Main.immediate).launch {
+            delay(16)
+            val fistResponderChild = this@NumberInput.textField.window?.findFirstResponderChild()
+            if(fistResponderChild == this@NumberInput.textField){
+                this@NumberInput.textField.resignFirstResponder()
+                return@launch
+            }
+            if (fistResponderChild is UITextField) {
+                val keyboardType = fistResponderChild.keyboardType
+                if (keyboardType != UIKeyboardTypeDecimalPad) {
+                    this@NumberInput.textField.resignFirstResponder()
+                }
+            }
+        }
     }
 
     override fun actionSet(value: Action?) {
