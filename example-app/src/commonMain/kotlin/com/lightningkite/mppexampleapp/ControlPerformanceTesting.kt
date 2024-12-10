@@ -482,10 +482,10 @@ object ControlPerformanceTesting : Screen {
                 val text = Property("text")
                 h2 { content = "Text Fields" }
                 text { (::content)("Set without bind") { "Text: ${text()}" } }
-                textField { content bind text }
-                textField { content bind text } in card
-                textField { content bind text } in important
-                textField { content bind text } in critical
+                textInput { content bind text }
+                textInput { content bind text } in card
+                textInput { content bind text } in important
+                textInput { content bind text } in critical
             } in card
 
             col {

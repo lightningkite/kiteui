@@ -186,8 +186,19 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
 
     var capViewAtBottom: Boolean = false
         set(value) {
-            field = value
-            if (value) {
+            val height = frame.useContents { this.size.height }
+            val lastSubViewBottom = if (allSubviews.isNotEmpty()) {
+                allSubviews.last().startPosition
+                + allSubviews.last().element.frame.useContents { this.size.height }
+            } else {
+                0.0
+            }
+            field = if (lastSubViewBottom > height) {
+                value
+            } else {
+                false
+            }
+            if (field) {
                 val s = allSubviews.lastOrNull { it.visible }?.let { it.startPosition + it.size + spacingRaw } ?: return
                 setContentSize(if(vertical) CGSizeMake(0.0, s) else CGSizeMake(s,  0.0))
             } else {
@@ -621,6 +632,7 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         viewportOffset = reservedScrollingSpace / 2
         val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
+        log.log("View port offset $viewportOffset, SPACING ${spacing.value}")
         element.startPosition = when(startCreatingViewsAt.second) {
             Align.Start -> viewportOffset + spacing.value
             Align.End -> viewportOffset + viewportSize - spacing.value - element.size
