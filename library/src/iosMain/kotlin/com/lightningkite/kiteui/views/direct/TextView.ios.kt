@@ -31,11 +31,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         label.numberOfLines = 0
     }
 
-    actual var content: String
-        get() = label.text ?: ""
+    actual var content: String = ""
         set(value) {
-            originalHtml = null
-            label.text = value
+            field = value
+            updateFont()
             native.informParentOfSizeChange()
         }
     actual inline var align: Align
@@ -86,6 +85,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
             } ?: UIFont.systemFontOfSize(12.0)
             label.textAlignment = alignment
+            label.attributedText = NSAttributedString.create(content, mapOf(
+                NSStrikethroughStyleAttributeName to if(theme.font.strikethrough) NSUnderlineStyleSingle else NSUnderlineStyleNone,
+                NSUnderlineStyleAttributeName to if(theme.font.underline) NSUnderlineStyleSingle else NSUnderlineStyleNone,
+            ))
         } else {
             val src = NSMutableAttributedString.create(originalHtml!!)
             src.enumerateAttribute(

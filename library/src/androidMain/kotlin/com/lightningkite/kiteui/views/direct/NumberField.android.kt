@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.graphics.Paint
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -75,6 +76,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 theme.font.italic
             )
         )
+        native.paintFlags = native.paintFlags and (Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
+                (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
     }
     actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()

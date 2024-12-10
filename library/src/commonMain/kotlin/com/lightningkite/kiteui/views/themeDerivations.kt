@@ -118,6 +118,24 @@ val ViewWriter.allCaps: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
+val ViewWriter.strikethrough: ViewWrapper
+    get() = ThemeDerivation {
+        it.copy(
+            id = "strikethrough",
+            font = it.font.copy(strikethrough = true)
+        ).withoutBack
+    }.onNext
+
+@ViewModifierDsl3
+val ViewWriter.underline: ViewWrapper
+    get() = ThemeDerivation {
+        it.copy(
+            id = "underline",
+            font = it.font.copy(underline = true)
+        ).withoutBack
+    }.onNext
+
+@ViewModifierDsl3
 fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(spacing = it.spacing * multiplier).withoutBack }.onNext
 
 @ViewModifierDsl3

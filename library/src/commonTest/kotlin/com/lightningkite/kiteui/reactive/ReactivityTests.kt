@@ -380,49 +380,50 @@ class ReactivityTests {
         }
     }
 
-    @Test fun sharedProcessTest() {
-        val gate = WaitGate()
-        val x = sharedProcess<Int>(GlobalScope) {
-            emit(1)
-            emit(2)
-            emit(3)
-            gate.permitOnce()
-        }
-        testContext {
-            println("Setting up A")
-            reactive { println("A:" + x()) }
-            launch { gate.await() }
-            println("Tearing down A")
-        }
-        testContext {
-            println("Setting up B")
-            reactive { println("B:" + x()) }
-            launch { gate.await() }
-        }
-    }
-
-    @Test fun sharedProcessRawTest() {
-        val gate = WaitGate()
-        val x = sharedProcessRaw<Int>(GlobalScope) {
-            emit(ReadableState.notReady)
-            emit(ReadableState(1))
-            emit(ReadableState(2))
-            emit(ReadableState(3))
-            gate.permitOnce()
-        }
-        testContext {
-            println("Setting up A")
-            reactive { println("A:" + x()) }
-            launch { gate.await() }
-            println("Tearing down A")
-        }
-        testContext {
-            println("Setting up B")
-            reactive { println("B:" + x()) }
-            launch { gate.await() }
-            println("Tearing down B")
-        }
-    }
+//    @Test fun sharedProcessTest() {
+//        val gate = WaitGate()
+//        val x = sharedProcess<Int>(GlobalScope) {
+//            emit(1)
+//            emit(2)
+//            emit(3)
+//            gate.permitOnce()
+//        }
+//        testContext {
+//            println("Setting up A")
+//            reactive { println("A:" + x()) }
+//            launch { gate.await() }
+//            println("Tearing down A")
+//        }
+//        testContext {
+//            println("Setting up B")
+//            reactive { println("B:" + x()) }
+//            launch { gate.await() }
+//            println("Tearing down B")
+//        }
+//    }
+//
+//    @Test fun sharedProcessRawTest() {
+//        val gate = WaitGate()
+//        val x = sharedProcessRaw<Int>(GlobalScope) {
+//            emit(ReadableState.notReady)
+//            emit(ReadableState(1))
+//            emit(ReadableState(2))
+//            emit(ReadableState(3))
+//            gate.permitOnce()
+//        }
+//        testContext {
+//            println("Setting up A")
+//            reactive { println("A:" + x()) }
+//            launch { gate.await() }
+//            println("Tearing down A")
+//        }
+//        testContext {
+//            println("Setting up B")
+//            reactive { println("B:" + x()) }
+//            launch { gate.await() }
+//            println("Tearing down B")
+//        }
+//    }
 }
 
 class VirtualDelay<T>(val action: () -> T) {

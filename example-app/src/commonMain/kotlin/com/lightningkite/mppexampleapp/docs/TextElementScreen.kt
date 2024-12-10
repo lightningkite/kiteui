@@ -66,6 +66,8 @@ object TextElementScreen : DocScreen {
                     bold - text("Bold Text")
                     italic - text("Italic Text")
                     allCaps - text("All Caps Text")
+                    strikethrough - text("Strikethrough Text")
+                    underline - text("Underline Text")
                 }
                 """.trimIndent()
             ) {
@@ -73,6 +75,8 @@ object TextElementScreen : DocScreen {
                     bold - text("Bold Text")
                     italic - text("Italic Text")
                     allCaps - text("All Caps Text")
+                    strikethrough - text("Strikethrough Text")
+                    underline - text("Underline Text")
                 }
             }
             text("Custom weights are available too.")

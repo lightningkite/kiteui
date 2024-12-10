@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.bind
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.mppexampleapp.Resources
 
 actual fun ViewWriter.platformSpecific() {
     col {

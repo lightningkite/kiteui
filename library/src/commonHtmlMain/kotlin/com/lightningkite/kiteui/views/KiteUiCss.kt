@@ -971,6 +971,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ?.let { addToCss(directSel, "font-style", it.let { if (it) "italic" else "normal" }) }
         theme.diff(diff) { font.allCaps }
             ?.let { addToCss(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
+        theme.diff(diff) {
+            when {
+                font.strikethrough && font.underline -> "underline line-through"
+                font.strikethrough -> "line-through"
+                font.underline -> "underline"
+                else -> "none"
+            }
+        }
+            ?.let { addToCss(directSel, "text-decoration-line", it) }
         theme.diff(diff) { font.lineSpacingMultiplier }?.let { addToCss(directSel, "line-height", it.toString()) }
         theme.diff(diff) { font.additionalLetterSpacing }
             ?.let { addToCss(directSel, "letter-spacing", it.toString()) }
