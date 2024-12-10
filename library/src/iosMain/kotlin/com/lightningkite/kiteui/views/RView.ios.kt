@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
+import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
@@ -15,6 +16,7 @@ import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIColor
+import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
@@ -222,7 +224,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 parentSpacing = this@RView.parentSpacing.value
                 desiredCornerRadius = theme.cornerRadii
 
-                matchParentSize("insert")
+                val bounds = this@RView.native.layerSize()
+
+                frame = bounds
+                refreshCorners()
             }
         }
     }

@@ -23,8 +23,8 @@ fun UIView.sizeThatFits2(
         it.maxHeight?.let { h = h.coerceAtMost(it.value) }
         it.minWidth?.let { w = w.coerceAtLeast(it.value) }
         it.minHeight?.let { h = h.coerceAtLeast(it.value) }
-        it.width?.let { w = it.value }
-        it.height?.let { h = it.value }
+        it.width?.let { w = it.value.coerceAtMost(w) }
+        it.height?.let { h = it.value.coerceAtMost(h) }
         CGSizeMake(w, h)
     } ?: size
     val measured = when (this) {

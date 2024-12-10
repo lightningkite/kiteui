@@ -124,8 +124,8 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         }
 
     override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.font
         native.foreground = theme.foreground
+        fontAndStyle = theme.font
 
         //
 //        sizeConstraints = SizeConstraints(
@@ -164,13 +164,4 @@ fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0
-}
-
-fun UILabel.updateFont() {
-    val textSize = extensionTextSize ?: return
-    val alignment = textAlignment
-    font = extensionFontAndStyle?.let {
-        it.font.get(textSize * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-    } ?: UIFont.systemFontOfSize(textSize)
-    textAlignment = alignment
 }

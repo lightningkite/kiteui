@@ -112,8 +112,8 @@ actual class Code actual constructor(context: RContext) : RView(context) {
     }
 
     override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.font
         actualNative.foreground = theme.foreground
+        fontAndStyle = theme.font
 
         //
 //        sizeConstraints = SizeConstraints(

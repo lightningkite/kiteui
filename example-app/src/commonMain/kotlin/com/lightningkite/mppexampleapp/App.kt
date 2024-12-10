@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.internal.RootScreen
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
 
@@ -22,6 +23,7 @@ fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {
         ::navItems {
             listOf(
                 NavLink(title = { "Home" }, icon = { Icon.home }) { { HomeScreen() } },
+                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootScreen } },
                 NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchScreen } },
             )
         }

@@ -87,6 +87,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        if(subviews.any { it == viewDebugTarget?.native }) {
+            println("parent sizeThatFits: ${size.useContents { "$width x $height" }}")
+        }
         val sizeLocal = size.local
         val measuredSize = Size()
 
@@ -212,6 +215,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
     var lastLaidOutSize: Size? = null
     override fun layoutSubviews() {
+        if(subviews.any { it == viewDebugTarget?.native }) {
+            println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
+        }
         val mySize = bounds.useContents { size.local }
         if (lastLaidOutSize == mySize) return
         var t = PerformanceInfo.trace("layoutLinear")

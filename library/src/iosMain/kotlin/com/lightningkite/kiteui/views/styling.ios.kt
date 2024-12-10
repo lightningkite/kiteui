@@ -4,7 +4,9 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.views.RView
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
@@ -12,6 +14,7 @@ import platform.QuartzCore.*
 import platform.UIKit.UIColor
 import platform.UIKit.UIImageView
 import platform.UIKit.UIView
+import platform.UIKit.UIScrollView
 import kotlin.math.min
 import kotlin.time.DurationUnit
 import platform.Foundation.*
@@ -24,14 +27,6 @@ fun Color.toUiColor(): UIColor = UIColor(
 )
 
 
-
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun CALayer.matchParentSize(context: String) {
-    superlayer?.bounds?.let {
-        frame = it
-    }
-}
-
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun UIView.layoutSubviewsAndLayers() {
     // Fixes a really cursed crash where "this" is null due to GC interactions
@@ -42,32 +37,50 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
     }
 }
 
+internal fun UIView.layerSize(): CValue<CGRect> {
+    val n = this
+    val bounds = if(n is UIScrollView) n.contentSize.useContents {
+        val cs = this
+        n.bounds.useContents {
+            val b = this
+            CGRectMake(0.0, 0.0, cs.width + b.size.width, cs.height + b.size.height)
+        }
+    } else n.bounds
+    return bounds
+}
+
 internal fun UIView.layoutLayers() {
+    val bounds = layerSize()
     layer?.sublayers?.forEach {
         it as CALayer
-        if(it is CAGradientLayerResizing) {
-            it.matchParentSize("layoutSubviewsAndLayers")
+        if (it is CAGradientLayerResizing) {
+            it.frame = bounds
             it.refreshCorners()
         }
     }
 }
+
 internal fun UIView.layoutLayers(parentSpacing: Double) {
+    val bounds = layerSize()
     layer?.sublayers?.forEach {
         it as CALayer
-        if(it is CAGradientLayerResizing) {
+        if (it is CAGradientLayerResizing) {
             it.parentSpacing = parentSpacing
-            it.matchParentSize("layoutSubviewsAndLayers")
+            it.frame = bounds
             it.refreshCorners()
         }
     }
 }
 
 
-class CAGradientLayerResizing: CAGradientLayer {
+class CAGradientLayerResizing : CAGradientLayer {
 
-    @OverrideInit constructor():super()
-    @OverrideInit constructor(coder: platform.Foundation.NSCoder):super(coder)
-    @OverrideInit constructor(layer: kotlin.Any):super(layer)
+    @OverrideInit
+    constructor() : super()
+    @OverrideInit
+    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    @OverrideInit
+    constructor(layer: kotlin.Any) : super(layer)
 
     private var backgroundMask: CALayer? = null
 
@@ -99,7 +112,7 @@ class CAGradientLayerResizing: CAGradientLayer {
         }
 
     fun refreshCorners() {
-        val v = when(val d = desiredCornerRadius) {
+        val v = when (val d = desiredCornerRadius) {
             is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }

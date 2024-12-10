@@ -15,6 +15,8 @@ import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
+import platform.QuartzCore.CALayer
+import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
