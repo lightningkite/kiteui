@@ -1,10 +1,10 @@
-package com.lightningkite.mppexampleapp
+    package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.models.*
+    import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-actual object Resources {
-    actual val audioTaunt: AudioResource = AudioResource(R.raw.audio_taunt)
+    actual object Resources {
+        actual val audioTaunt: AudioResource = AudioResource(R.raw.audio_taunt)
     actual val fontsGoldman: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_goldman)
     actual val fontsMontserrat: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_montserrat)
     actual val fontsOpensans: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.fonts_opensans)

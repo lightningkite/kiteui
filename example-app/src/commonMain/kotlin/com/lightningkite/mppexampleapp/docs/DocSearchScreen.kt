@@ -16,9 +16,14 @@ object DocSearchScreen : Screen {
     val query = Property<String>("")
 
     val docsPages = Property(listOf(
-        { ThemeScreen },
-        { TextElementScreen },
+        // TODO: Gradle tasks
+        // TODO: Resources
+        // TODO: Platform-specific views
+        // TODO: Custom widgets
         { DataScreen },
+        { ReactiveToolsScreen },
+        { ThemingScreen },
+        { TextElementScreen },
         { NavigationScreen },
         { VideoElementScreen },
         { ViewPagerElementScreen },

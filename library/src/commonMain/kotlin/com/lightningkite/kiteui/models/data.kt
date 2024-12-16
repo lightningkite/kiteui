@@ -23,6 +23,8 @@ data class FontAndStyle(
     val lineSpacingMultiplier: Double = 1.4,
     val additionalLetterSpacing: Dimension = 0.px,
     val size: Dimension = 1.rem,
+    val strikethrough: Boolean = false,
+    val underline: Boolean = false,
 ) {
     constructor(
         font: Font = systemDefaultFont,

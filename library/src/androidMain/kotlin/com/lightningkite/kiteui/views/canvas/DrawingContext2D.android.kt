@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.FontAndStyle
+import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.Path.DrawingResources
 import com.lightningkite.kiteui.views.direct.colorInt
 
@@ -234,14 +235,52 @@ actual fun DrawingContext2D.appendArc(
     endAngle: Angle,
     anticlockwise: Boolean
 ) {
-    currentPath.addArc(
-        (x - radius).toFloat(),
-        (y - radius).toFloat(),
-        (x + radius).toFloat(),
-        (y + radius).toFloat(),
-        startAngle.degrees,
-        (endAngle - startAngle).degrees
-    )
+    val rel = startAngle angleTo endAngle
+    if (anticlockwise) {
+        if (rel.degrees > 0) {
+            currentPath.arcTo(
+                (x - radius).toFloat(),
+                (y - radius).toFloat(),
+                (x + radius).toFloat(),
+                (y + radius).toFloat(),
+                startAngle.degrees,
+                (rel - 1.turns).degrees,
+                false
+            )
+        } else {
+            currentPath.arcTo(
+                (x - radius).toFloat(),
+                (y - radius).toFloat(),
+                (x + radius).toFloat(),
+                (y + radius).toFloat(),
+                startAngle.degrees,
+                rel.degrees,
+                false
+            )
+        }
+    } else {
+        if (rel.degrees > 0) {
+            currentPath.arcTo(
+                (x - radius).toFloat(),
+                (y - radius).toFloat(),
+                (x + radius).toFloat(),
+                (y + radius).toFloat(),
+                startAngle.degrees,
+                rel.degrees,
+                false
+            )
+        } else {
+            currentPath.arcTo(
+                (x - radius).toFloat(),
+                (y - radius).toFloat(),
+                (x + radius).toFloat(),
+                (y + radius).toFloat(),
+                startAngle.degrees,
+                (rel + 1.turns).degrees,
+                false
+            )
+        }
+    }
 }
 
 actual fun DrawingContext2D.drawText(

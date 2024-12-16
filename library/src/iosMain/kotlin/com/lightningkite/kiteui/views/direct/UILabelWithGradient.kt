@@ -83,6 +83,8 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             )
         }
         return label.sizeThatFits(smallerSize).useContents {
+            if(com.lightningkite.kiteui.viewDebugTarget?.native == this@UILabelWithGradient)
+                println("Size that fits on text: $width, $height")
             CGSizeMake(
                 width = width + padding * 2,
                 height = height.coerceAtLeast(label.font.lineHeight) + padding * 2,

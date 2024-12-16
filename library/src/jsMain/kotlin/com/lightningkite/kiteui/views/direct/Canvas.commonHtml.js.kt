@@ -2,7 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.ResizeObserver
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
+import kotlinx.browser.window
 import org.w3c.dom.*
+import kotlin.math.roundToInt
 
 actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     delegate?.let { value ->
@@ -26,11 +28,13 @@ actual fun Canvas.setupResizeListener() {
         htmlNative as HTMLCanvasElement
         ResizeObserver { _, _ ->
             htmlNative.apply {
-                if (width != scrollWidth || height != scrollHeight) {
-                    width = scrollWidth
-                    height = scrollHeight
+                val sw = (scrollWidth * window.devicePixelRatio).roundToInt()
+                val sh = (scrollHeight * window.devicePixelRatio).roundToInt()
+                if (width != sw || height != sh) {
+                    width = sw
+                    height = sh
                 }
-                delegate?.onResize(scrollWidth.toDouble(), scrollHeight.toDouble())
+                delegate?.onResize(sw.toDouble(), sh.toDouble())
                 delegate?.invalidate?.invoke()
             }
 

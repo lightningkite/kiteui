@@ -31,11 +31,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         label.numberOfLines = 0
     }
 
-    actual var content: String
-        get() = label.text ?: ""
+    actual var content: String = ""
         set(value) {
-            originalHtml = null
-            label.text = value
+            field = value
+            updateFont()
             native.informParentOfSizeChange()
         }
     actual inline var align: Align
@@ -86,6 +85,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 it.font.get(it.size.value, it.weight.toUIFontWeight(), it.italic)
             } ?: UIFont.systemFontOfSize(12.0)
             label.textAlignment = alignment
+            label.attributedText = NSAttributedString.create(content, mapOf(
+                NSStrikethroughStyleAttributeName to if(theme.font.strikethrough) NSUnderlineStyleSingle else NSUnderlineStyleNone,
+                NSUnderlineStyleAttributeName to if(theme.font.underline) NSUnderlineStyleSingle else NSUnderlineStyleNone,
+            ))
         } else {
             val src = NSMutableAttributedString.create(originalHtml!!)
             src.enumerateAttribute(
@@ -121,8 +124,8 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         }
 
     override fun applyForeground(theme: Theme) {
-        fontAndStyle = theme.font
         native.foreground = theme.foreground
+        fontAndStyle = theme.font
 
         //
 //        sizeConstraints = SizeConstraints(
@@ -161,13 +164,4 @@ fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0
-}
-
-fun UILabel.updateFont() {
-    val textSize = extensionTextSize ?: return
-    val alignment = textAlignment
-    font = extensionFontAndStyle?.let {
-        it.font.get(textSize * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-    } ?: UIFont.systemFontOfSize(textSize)
-    textAlignment = alignment
 }

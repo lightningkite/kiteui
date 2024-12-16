@@ -28,7 +28,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                                     it.copy(
                                         background = Color.white.applyAlpha(0.0f),
                                         outlineWidth = 0.dp,
-                                        cornerRadii = CornerRadius.Constant(0.dp),
+                                        cornerRadii = CornerRadii.Constant(0.dp),
                                         revert = true,
                                     ).withBack
                                 }

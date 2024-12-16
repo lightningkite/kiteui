@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -9,9 +10,13 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.core.content.getSystemService
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -142,11 +147,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
     protected fun updateCorners() {
-        fun CornerRadius.toRawValue() = when (this) {
-            is CornerRadius.ForceConstant -> value.value
-            is CornerRadius.RatioOfSize -> if(ratio >= 0.5f) 9999f else ratio * min(native.width, native.height)
-            is CornerRadius.Constant -> min(parentSpacing.value, value.value)
-            is CornerRadius.RatioOfSpacing -> value * parentSpacing.value
+        fun CornerRadii.toRawValue() = when (this) {
+            is CornerRadii.ForceConstant -> value.value
+            is CornerRadii.RatioOfSize -> if(ratio >= 0.5f) 9999f else ratio * min(native.width, native.height)
+            is CornerRadii.Constant -> min(parentSpacing.value, value.value)
+            is CornerRadii.RatioOfSpacing -> value * parentSpacing.value
+            // TODO: Implement per-corner radii on Android
+            is CornerRadii.PerCorner -> 0f
         }
         // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
         // size on Android
@@ -156,15 +163,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.removeOnLayoutChangeListener(layoutChangeListener)
         }*/
         val cr = theme.cornerRadii
-        backgroundBlock?.cornerRadii = if (cr is CornerRadii) {
+        backgroundBlock?.cornerRadii = if (cr is CornerRadii.PerCorner) {
             listOf(
-                cr.topStart.toRawValue(),
-                cr.topEnd.toRawValue(),
-                cr.bottomEnd.toRawValue(),
-                cr.bottomStart.toRawValue()
+                cr.topLeft.toRawValue(),
+                cr.topRight.toRawValue(),
+                cr.bottomRight.toRawValue(),
+                cr.bottomLeft.toRawValue()
             ).flatMap { listOf(it, it) }.toFloatArray()
         } else {
-            cr as CornerRadius
             val rawValue = cr.toRawValue()
             (1..8).map { rawValue }.toFloatArray()
         }

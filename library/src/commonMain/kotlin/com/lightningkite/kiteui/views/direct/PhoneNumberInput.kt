@@ -66,7 +66,6 @@ class PhoneNumberInput(container: ViewWriter) {
     val content: ImmediateWritable<String> by input::content
     var hint: String by input::hint
     var align: Align by input::align
-    var textSize: Dimension by input::textSize
 }
 
 operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }

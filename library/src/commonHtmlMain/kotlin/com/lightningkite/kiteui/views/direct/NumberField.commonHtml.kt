@@ -30,7 +30,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
 
         override var value: Double?
-            get() = native.attributes.valueString?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()
+            get() = native.attributes.valueString?.filter { it.isDigit() || it in setOf('-', '.') }?.toDoubleOrNull()
             set(value) {
                 if(native.attributes.valueString != value?.commaString())
                     native.attributes.valueString = value?.commaString()
@@ -101,11 +101,6 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 Align.End -> "end"
                 Align.Stretch -> "justify"
             }
-        }
-    actual var textSize: Dimension = 1.rem
-        set(value) {
-            field = value
-            native.style.fontSize = value.value
         }
 
     actual var range: ClosedRange<Double>? = null

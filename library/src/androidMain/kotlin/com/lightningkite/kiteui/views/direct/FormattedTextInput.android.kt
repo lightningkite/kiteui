@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.graphics.Paint
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
 import android.view.Gravity
@@ -21,7 +22,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).apply {
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
             if(block) return@doAfterTextChanged
@@ -61,6 +62,9 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
                 theme.font.italic
             )
         )
+        native.paintFlags = native.paintFlags and (Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
+                (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
@@ -163,11 +167,4 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         keyboardHints = KeyboardHints(KeyboardCase.Sentences)
     }
 
-    actual var textSize: Dimension
-        get() {
-            return Dimension(native.textSize)
-        }
-        set(value) {
-            native.setTextSize(TypedValue.COMPLEX_UNIT_PX, value.value.toFloat())
-        }
 }

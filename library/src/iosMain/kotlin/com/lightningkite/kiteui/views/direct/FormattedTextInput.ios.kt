@@ -59,11 +59,10 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
     }
 
     fun updateFont() {
-        val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
-            it.font.get(textSize.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
-        } ?: UIFont.systemFontOfSize(textSize.value)
+            it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
+        } ?: UIFont.systemFontOfSize(16.0)
         textField.textAlignment = alignment
     }
 
@@ -72,13 +71,6 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
-
-    actual var textSize: Dimension = 1.rem
-        set(value) {
-            field = value
-            updateFont()
-            native.informParentOfSizeChange()
-        }
 
     var fontAndStyle: FontAndStyle? = null
         set(value) {

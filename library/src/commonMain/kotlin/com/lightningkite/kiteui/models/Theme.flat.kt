@@ -16,7 +16,7 @@ fun Theme.Companion.flat(
     id = id,
     font = body,
     elevation = 0.dp,
-    cornerRadii = CornerRadius.RatioOfSpacing(0.8f),
+    cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
     spacing = 0.75.rem,
     navSpacing = 1.rem,
     outlineWidth = 0.px,
@@ -112,12 +112,13 @@ fun Theme.Companion.flat(
                 id = "fld",
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
+                revert = true,
 //                spacing = it.spacing / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
-                    is CornerRadius.Constant -> CornerRadius.ForceConstant(base.value)
-                    is CornerRadius.ForceConstant -> base
-                    is CornerRadius.RatioOfSize -> base
-                    is CornerRadius.RatioOfSpacing -> CornerRadius.ForceConstant(it.spacing * base.value)
+                    is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
+                    is CornerRadii.ForceConstant -> base
+                    is CornerRadii.RatioOfSize -> base
+                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.spacing * base.value)
                     is CornerRadii -> base
                 }
             ).withBack

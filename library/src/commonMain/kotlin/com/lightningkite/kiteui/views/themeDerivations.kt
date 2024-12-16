@@ -71,6 +71,8 @@ inline val ViewWriter.warning: ViewWrapper get() = WarningSemantic.onNext
 inline val ViewWriter.danger: ViewWrapper get() = DangerSemantic.onNext
 @ViewModifierDsl3
 inline val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNext
+@ViewModifierDsl3
+inline val ViewWriter.emphasize: ViewWrapper get() = EmphasizedSemantic.onNext
 
 @ViewModifierDsl3
 val ViewWriter.compact: ViewWrapper
@@ -112,6 +114,24 @@ val ViewWriter.allCaps: ViewWrapper
         it.copy(
             id = "allCaps",
             font = it.font.copy(allCaps = true)
+        ).withoutBack
+    }.onNext
+
+@ViewModifierDsl3
+val ViewWriter.strikethrough: ViewWrapper
+    get() = ThemeDerivation {
+        it.copy(
+            id = "strikethrough",
+            font = it.font.copy(strikethrough = true)
+        ).withoutBack
+    }.onNext
+
+@ViewModifierDsl3
+val ViewWriter.underline: ViewWrapper
+    get() = ThemeDerivation {
+        it.copy(
+            id = "underline",
+            font = it.font.copy(underline = true)
         ).withoutBack
     }.onNext
 

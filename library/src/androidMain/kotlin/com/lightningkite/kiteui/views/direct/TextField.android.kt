@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.graphics.Paint
 import android.text.InputType
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
@@ -19,7 +20,7 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity)
+    override val native = EditText(context.activity).focusIsKeyboard()
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
@@ -32,6 +33,9 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
                 theme.font.italic
             )
         )
+        native.paintFlags = native.paintFlags and (android.graphics.Paint.UNDERLINE_TEXT_FLAG or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
+                (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }

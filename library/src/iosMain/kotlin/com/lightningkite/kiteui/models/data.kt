@@ -15,7 +15,7 @@ actual typealias DimensionRaw = Double
 @Suppress("NOTHING_TO_INLINE") actual inline val Int.px: Dimension
     get() = Dimension(this.toDouble() / UIScreen.mainScreen.scale)
 
-var remMultiplier: Double = 0.75
+var remMultiplier: Double = 1.0
 
 @Suppress("NOTHING_TO_INLINE") actual inline val Int.rem: Dimension
     get() = Dimension(this.toDouble() * UIFont.systemFontSize * remMultiplier)

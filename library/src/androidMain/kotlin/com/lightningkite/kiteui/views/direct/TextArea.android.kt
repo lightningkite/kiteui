@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.graphics.Paint
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -22,7 +23,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class TextArea actual constructor(context: RContext) : RView(context) {
-    override val native = EditText(context.activity).apply {
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE
     }
@@ -39,6 +40,9 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
                 theme.font.italic
             )
         )
+        native.paintFlags = native.paintFlags and (android.graphics.Paint.UNDERLINE_TEXT_FLAG or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
+                (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }

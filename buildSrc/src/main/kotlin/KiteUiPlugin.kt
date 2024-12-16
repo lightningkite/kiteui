@@ -36,7 +36,9 @@ class KiteUiPlugin : Plugin<Project> {
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
                 doLast {
-                    resourcesCommon(resourceFolder, out, ext)
+                    if(resourceFolder.listFiles()?.isNotEmpty() == true) {
+                        resourcesCommon(resourceFolder, out, ext)
+                    }
                 }
             }
         }
@@ -173,7 +175,14 @@ class KiteUiPlugin : Plugin<Project> {
                 generateAutoroutes(sources, out)
             }
             afterEvaluate {
-                tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
+                afterEvaluate {
+                    tasks.filter { it.name.contains("compileKotlin") }.forEach { it.dependsOn(task) }
+                    tasks.filter {
+                        it.name.contains("kspKotlin")
+                    }.forEach {
+                        it.dependsOn(task)
+                    }
+                }
             }
         }
 

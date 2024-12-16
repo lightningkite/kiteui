@@ -25,6 +25,7 @@ abstract class DependencyTracker{
     open fun cancel() {
         dependencies.forEach { it.second() }
         dependencies.clear()
+        log?.log("Cleared dependencies")
     }
 
     protected fun dependencyBlockStart() {

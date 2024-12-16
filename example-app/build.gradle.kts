@@ -82,15 +82,16 @@ kotlin {
                 srcDir(file("build/generated/kiteui"))
             }
         }
-//        val commonJvmMain by creating {
-//            dependsOn(commonMain)
-//        }
-//        val androidMain by getting {
-//            dependsOn(commonJvmMain)
-//        }
-//        val jvmMain by getting {
-//            dependsOn(commonJvmMain)
-//        }
+
+        val commonHtmlMain by creating {
+            dependsOn(commonMain)
+        }
+        val jvmMain by getting {
+            dependsOn(commonHtmlMain)
+        }
+        val jsMain by getting {
+            dependsOn(commonHtmlMain)
+        }
     }
 
     cocoapods {

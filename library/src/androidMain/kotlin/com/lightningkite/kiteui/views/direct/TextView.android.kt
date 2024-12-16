@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.text.LineBreakConfig
 import android.os.Build.VERSION
@@ -82,6 +83,9 @@ actual class TextView actual constructor(context: RContext) :
         native.setTextColor(theme.foreground.colorInt())
         native.setTypeface(theme.font.typeface(context.activity))
         native.isAllCaps = theme.font.allCaps
+        native.paintFlags = native.paintFlags and (android.graphics.Paint.UNDERLINE_TEXT_FLAG or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
+                (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
     }
     actual fun setBasicHtmlContent(html: String) {

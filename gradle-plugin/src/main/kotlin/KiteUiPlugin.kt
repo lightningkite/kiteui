@@ -36,7 +36,9 @@ class KiteUiPlugin : Plugin<Project> {
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
                 doLast {
-                    resourcesCommon(resourceFolder, out, ext)
+                    if(resourceFolder.listFiles()?.isNotEmpty() == true) {
+                        resourcesCommon(resourceFolder, out, ext)
+                    }
                 }
             }
         }

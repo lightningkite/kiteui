@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.shared
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.*
@@ -97,7 +98,7 @@ suspend fun connectivityFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: suspend () -> HttpHeaders = { httpHeaders() },
-    body: RequestBody,
+    body: RequestBody?,
 ): RequestResponse {
     return if(coroutineContext[ConnectivityIssueSuppress.Key] == null) {
         Connectivity.fetchGate.run("$method $url") {
@@ -130,8 +131,5 @@ class ConnectivityIssueSuppress(): CoroutineContext.Element {
     object Key: CoroutineContext.Key<ConnectivityIssueSuppress>
 }
 suspend fun <T> suppressConnectivityIssues(action: suspend () -> T): T {
-    val child = coroutineContext + ConnectivityIssueSuppress()
-    return suspendCoroutine<T> {
-        action.startCoroutine(it)
-    }
+    return withContext(ConnectivityIssueSuppress()) { action() }
 }

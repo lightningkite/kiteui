@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.models.M3Theme
+import com.lightningkite.kiteui.models.MaterialLikeTheme
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.probablyAppleUser
+import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -13,9 +17,9 @@ data class ThemeAndBack(val theme: Theme, val useBackground: UseBackground) {
     operator fun get(semantic: Semantic): ThemeAndBack = this + semantic
     operator fun plus(other: ThemeDerivation): ThemeAndBack {
         val b = other(theme)
-        return when(useBackground) {
+        return when (useBackground) {
             UseBackground.No -> b
-            UseBackground.WithoutPadding -> if(b.useBackground == UseBackground.No) b.theme.withBackNoPadding else b
+            UseBackground.WithoutPadding -> if (b.useBackground == UseBackground.No) b.theme.withBackNoPadding else b
             UseBackground.Yes -> b.theme.withBack
         }
     }
@@ -66,17 +70,16 @@ interface Semantic : ThemeDerivation {
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
 }
 
-data object InteractiveSemantic: Semantic {
+data object InteractiveSemantic : Semantic {
     override val key: String = "int"
     override fun default(theme: Theme): ThemeAndBack {
         // iOS switch?
-        if(Platform.probablyAppleUser) {
+        if (Platform.probablyAppleUser) {
             return theme.copy(
-                foreground = if(theme.background.closestColor().perceivedBrightness in 0.1f..0.9f)
+                foreground = if (theme.background.closestColor().perceivedBrightness in 0.1f..0.9f)
                     theme.foreground
                 else
-                    Color(1f, 0f, 122f/255f, 255f)
-                ,
+                    Color(1f, 0f, 122f / 255f, 255f),
                 iconOverride = null,
             ).withoutBack
         } else {
@@ -114,7 +117,7 @@ data object DismissSemantic : Semantic {
     override val key: String = "dsmss"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         spacing = 0.dp,
-        cornerRadii = CornerRadius.Constant(0.dp),
+        cornerRadii = CornerRadii.Constant(0.dp),
         background = Color.black.applyAlpha(0.5f),
         revert = true,
     ).withBack
@@ -125,13 +128,14 @@ data object FieldSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = "fld",
         outlineWidth = 1.px,
+        revert = true,
 //        spacing = theme.spacing / 2,
-        cornerRadii = when(val base = theme.cornerRadii) {
-            is CornerRadius.Constant -> CornerRadius.ForceConstant(base.value)
-            is CornerRadius.ForceConstant -> base
-            is CornerRadius.RatioOfSize -> base
-            is CornerRadius.RatioOfSpacing -> CornerRadius.ForceConstant(theme.spacing * base.value)
-            is CornerRadii -> base
+        cornerRadii = when (val base = theme.cornerRadii) {
+            is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
+            is CornerRadii.ForceConstant -> base
+            is CornerRadii.RatioOfSize -> base
+            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+            is CornerRadii.PerCorner -> base
         }
     ).withBack
 }
@@ -353,7 +357,7 @@ class Theme(
     val id: String,
     val font: FontAndStyle = FontAndStyle(systemDefaultFont),
     val elevation: Dimension = 1.px,
-    val cornerRadii: CornerRadiusOptions = CornerRadius.RatioOfSpacing(1f),
+    val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     val spacing: Dimension = 1.rem,
     val navSpacing: Dimension = 0.rem,
     val foreground: Paint = Color.black,
@@ -392,7 +396,7 @@ class Theme(
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         title: FontAndStyle = FontAndStyle(systemDefaultFont),
         elevation: Dimension = 1.px,
-        cornerRadii: CornerRadiusOptions = CornerRadius.RatioOfSpacing(1f),
+        cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
         spacing: Dimension = 1.rem,
         navSpacing: Dimension = 0.rem,
         foreground: Paint = Color.black,
@@ -476,7 +480,7 @@ class Theme(
         id: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadiusOptions = this.cornerRadii,
+        cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -583,7 +587,7 @@ class Theme(
         newId: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadiusOptions = this.cornerRadii,
+        cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -595,7 +599,7 @@ class Theme(
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
         revert: Boolean = false,
-        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf()
+        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf(),
     ): Theme = Theme(
         id = newId,
         font = font,
@@ -635,7 +639,7 @@ class Theme(
         id: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadiusOptions = this.cornerRadii,
+        cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -647,7 +651,7 @@ class Theme(
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
         revert: Boolean = false,
-        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf()
+        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf(),
     ): Theme = Theme(
         id = "${this.id}-$id",
         derivedFrom = this,
@@ -690,7 +694,7 @@ class Theme(
         title: FontAndStyle? = null,
         body: FontAndStyle? = null,
         elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadiusOptions = this.cornerRadii,
+        cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
         navSpacing: Dimension = this.navSpacing,
         foreground: Paint = this.foreground,
@@ -772,6 +776,21 @@ class Theme(
     companion object {
         val placeholder = Theme("placeholder")
         val shortCodeChars = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm-_"
+        private var randomGenId: Int = 0
+        fun random(random: Random = Random): Theme {
+            val id = "rand${randomGenId++}"
+            val hue = random.nextFloat().turns
+            val saturation = random.nextFloat() * 0.5f + 0.25f
+            val value = random.nextFloat() * 0.5f + 0.25f
+            return listOf(
+                Theme.material(id = id, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material(id = id, foreground = Color.white, background = Color.gray(0.2f), primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material3(id = id, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(), backgroundAdjust = Random.nextFloat() * 0.15f,).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material3(id = id, foreground = Color.white, backgroundAdjust = Random.nextFloat() * 0.5f, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                Theme.flat(id = id, hue = hue, saturation = 0.5f).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+            ).random(random)
+        }
     }
 
     override fun toString(): String = id
