@@ -58,7 +58,18 @@ fun UIView.sizeThatFits2(
             }
         }
     }
-    val result = measured
+    val result = sizeConstraints?.let {
+        var w = measured.useContents { width }
+        var h = measured.useContents { height }
+        it.aspectRatio?.let { aspectRatio ->
+            if (w / h > aspectRatio) {
+                w = h * aspectRatio
+            } else {
+                h = w / aspectRatio
+            }
+        }
+        CGSizeMake(w, h)
+    } ?: measured
     if(this === viewDebugTarget?.native) {
         println("viewDebugTarget constraints: $sizeConstraints")
         println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
