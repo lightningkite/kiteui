@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import kotlinx.coroutines.CancellationException
 
 
 class ExceptionHandlers {
@@ -54,6 +55,17 @@ class ExceptionHandlers {
         }
     }
     private val handlers: ArrayList<ExceptionHandler> = arrayListOf()
+    init {
+        this += object: ExceptionHandler {
+            override val priority: Float
+                get() = 1f
+
+            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
+                if(exception is CancellationException) return {}
+                return null
+            }
+        }
+    }
     fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
     operator fun plusAssign(other: ExceptionHandler) {
         handlers.add(other)
