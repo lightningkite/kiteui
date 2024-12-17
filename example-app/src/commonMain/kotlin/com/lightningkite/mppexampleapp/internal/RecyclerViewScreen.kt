@@ -86,6 +86,12 @@ object RecyclerViewScreen : Screen {
                     }
                 }
             }
+            button {
+                text { content = "Reset Items" }
+                onClick {
+                    items.set((0..1).toList())
+                }
+            }
         }
     }
 }
