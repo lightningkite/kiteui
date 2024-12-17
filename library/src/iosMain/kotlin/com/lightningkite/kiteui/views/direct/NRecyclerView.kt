@@ -621,7 +621,16 @@ actual class NRecyclerView(): UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         viewportOffset = reservedScrollingSpace / 2
         val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
         element.measure()
-        element.startPosition = when(startCreatingViewsAt.second) {
+        log.log("View port offset $viewportOffset, SPACING ${spacing.value}")
+        val contentGreaterThanContainer = allSubviews
+            .filter { it.visible }
+            .sumOf { it.element.frame.useContents { this.size.height } } <= viewportSize
+
+        if (contentGreaterThanContainer) {
+            viewportOffset = 0.0
+        }
+
+        element.startPosition = when (startCreatingViewsAt.second) {
             Align.Start -> viewportOffset + spacing.value
             Align.End -> viewportOffset + viewportSize - spacing.value - element.size
             else -> viewportOffset + viewportSize / 2 - element.size / 2
