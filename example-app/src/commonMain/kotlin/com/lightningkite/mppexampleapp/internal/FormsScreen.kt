@@ -24,7 +24,7 @@ object FormsScreen : Screen {
             editor = {
                 label {
                     content = propName
-                    textField { content bind prop }
+                    textInput { content bind prop }
                 }
             },
             viewer = {
