@@ -227,8 +227,89 @@ object VectorsTestScreen : Screen {
                 }
             }
             row {
+                image {
+                    source = ImageVector(
+                        4.rem,
+                        4.rem,
+                        viewBoxMinX = 100,
+                        viewBoxMinY = 100,
+                        viewBoxWidth = 100,
+                        viewBoxHeight = 100,
+                        paths = listOf(
+                            ImageVector.Path(
+                                fillColor = LinearGradient(
+                                    listOf(
+                                        GradientStop(0f, Color.blue),
+                                        GradientStop(1f, Color.red),
+                                    ), Angle.zero, false
+                                ),
+                                path = "M 100,100 L 100,200 L 200,200 L 200,100 Z"
+                            ),
+                            ImageVector.Path(
+                                strokeColor = Color.black,
+                                strokeWidth = 5.0,
+                                path = "M0,0L100,100"
+                            ),
+                        )
+                    )
+                }
+                image {
+                    source = ImageVector(
+                        4.rem,
+                        4.rem,
+                        viewBoxMinX = 100,
+                        viewBoxMinY = 100,
+                        viewBoxWidth = 100,
+                        viewBoxHeight = 100,
+                        paths = listOf(
+                            ImageVector.Path(
+                                fillColor = LinearGradient(
+                                    listOf(
+                                        GradientStop(0f, Color.blue),
+                                        GradientStop(1f, Color.red),
+                                    ), Angle.eighthTurn, false
+                                ),
+                                path = "M 100,100 L 100,200 L 200,200 L 200,100 Z"
+                            ),
+                            ImageVector.Path(
+                                strokeColor = Color.black,
+                                strokeWidth = 5.0,
+                                path = "M0,0L100,100"
+                            ),
+                        )
+                    )
+                }
+                image {
+                    source = ImageVector(
+                        4.rem,
+                        4.rem,
+                        viewBoxMinX = 100,
+                        viewBoxMinY = 100,
+                        viewBoxWidth = 100,
+                        viewBoxHeight = 100,
+                        paths = listOf(
+                            ImageVector.Path(
+                                fillColor = LinearGradient(
+                                    listOf(
+                                        GradientStop(0f, Color.blue),
+                                        GradientStop(1f, Color.red),
+                                    ), Angle.eighthTurn + Angle.halfTurn, false
+                                ),
+                                path = "M 100,100 L 100,200 L 200,200 L 200,100 Z"
+                            ),
+                            ImageVector.Path(
+                                strokeColor = Color.black,
+                                strokeWidth = 5.0,
+                                path = "M0,0L100,100"
+                            ),
+                        )
+                    )
+                }
+            }
+            row {
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "1",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),
@@ -239,6 +320,7 @@ object VectorsTestScreen : Screen {
                 } - stack { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "2",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),
@@ -249,6 +331,7 @@ object VectorsTestScreen : Screen {
                 } - stack { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "3",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),

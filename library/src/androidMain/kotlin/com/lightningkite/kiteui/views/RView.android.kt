@@ -147,11 +147,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
     protected fun updateCorners() {
-        val cr = when (val it = theme.cornerRadii) {
-            is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> if(it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
-            is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
-            is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+        fun CornerRadii.toRawValue() = when (this) {
+            is CornerRadii.ForceConstant -> value.value
+            is CornerRadii.RatioOfSize -> if(ratio >= 0.5f) 9999f else ratio * min(native.width, native.height)
+            is CornerRadii.Constant -> min(parentSpacing.value, value.value)
+            is CornerRadii.RatioOfSpacing -> value * parentSpacing.value
             // TODO: Implement per-corner radii on Android
             is CornerRadii.PerCorner -> 0f
         }
@@ -162,7 +162,18 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         } else {
             native.removeOnLayoutChangeListener(layoutChangeListener)
         }*/
-        backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
+        val cr = theme.cornerRadii
+        backgroundBlock?.cornerRadii = if (cr is CornerRadii.PerCorner) {
+            listOf(
+                cr.topLeft.toRawValue(),
+                cr.topRight.toRawValue(),
+                cr.bottomRight.toRawValue(),
+                cr.bottomLeft.toRawValue()
+            ).flatMap { listOf(it, it) }.toFloatArray()
+        } else {
+            val rawValue = cr.toRawValue()
+            (1..8).map { rawValue }.toFloatArray()
+        }
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }
 

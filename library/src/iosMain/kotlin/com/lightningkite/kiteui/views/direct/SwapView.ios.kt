@@ -1,23 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
-
-import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.*
-import platform.UIKit.UIEvent
-import platform.UIKit.UISwitch
-import platform.UIKit.UIView
-
-
 
 actual class SwapView actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout()
@@ -36,7 +25,8 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
                 println("to ${oldView.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${oldView.native.alpha}")
             }
         }
-        afterTimeout((0.5).times(1000).toLong()) {
+        launch(Dispatchers.Main) {
+            delay(500)
             oldView?.let { removeChild(it) }
             native.hidden = native.subviews.isEmpty()
             native.informParentOfSizeChange()

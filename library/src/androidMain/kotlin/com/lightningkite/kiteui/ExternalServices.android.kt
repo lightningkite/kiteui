@@ -42,9 +42,13 @@ actual object ExternalServices {
     ): List<FileReference> = suspendCoroutineCancellable {
 
         val type = mimeTypes.joinToString(",")
-
         val getIntent = Intent(Intent.ACTION_GET_CONTENT)
-        getIntent.type = type
+        if (mimeTypes.size > 1) {
+            getIntent.type = "*/*"
+        } else {
+            getIntent.type = mimeTypes.first()
+            getIntent.putExtra(Intent.EXTRA_MIME_TYPES, type)
+        }
         getIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
 
         val chooserIntent = Intent.createChooser(getIntent, "Select items")
@@ -84,15 +88,16 @@ actual object ExternalServices {
     actual suspend fun requestCaptureEnvironment(
         mimeTypes: List<String>
     ): FileReference? {
-        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
-            false,
-            MediaStore.ACTION_IMAGE_CAPTURE
-        )
-        else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
-            false,
-            MediaStore.ACTION_VIDEO_CAPTURE
-        )
-        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
+        return requestImageCamera(false, MediaStore.ACTION_IMAGE_CAPTURE)
+//        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
+//            false,
+//            MediaStore.ACTION_IMAGE_CAPTURE
+//        )
+//        else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
+//            false,
+//            MediaStore.ACTION_VIDEO_CAPTURE
+//        )
+//        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
     }
 
     private suspend fun requestImageCamera(
@@ -105,7 +110,8 @@ actual object ExternalServices {
             .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, fileProviderAuthority, it) }
 
         AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
-            if (!it.accepted) return@requestPermissions cont.resume(null)
+
+//            if (!it.accepted) return@requestPermissions cont.resume(null)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
             if (front) {
@@ -192,8 +198,37 @@ actual object ExternalServices {
     }
 
     actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
-        // Sharing actual files will likely require configuration of a FileProvider
-        TODO()
+        // Group items by MIME type
+        val itemsGroupedByMimeType = namesToBlobs.groupBy { it.second.mimeType() }
+
+        itemsGroupedByMimeType.map { mimeTypeGroup ->
+            val uris = mimeTypeGroup.value.map {
+                val tempFile = File(AndroidAppContext.applicationCtx.cacheDir, it.first)
+                tempFile.writeBytes(it.second.data)
+                println("test sharing")
+                println("${AndroidAppContext.applicationCtx.packageName}.fileprovider")
+                // Use FileProvider to get a content URI
+                FileProvider.getUriForFile(
+                    AndroidAppContext.applicationCtx,
+                    "${AndroidAppContext.applicationCtx.packageName}.fileprovider",
+                    tempFile
+                )
+            }
+
+            // Convert the uris list to an ArrayList to match the required type
+            val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = mimeTypeGroup.key
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // Grant permission to read URIs
+            }
+
+            // Start the share intent
+            AndroidAppContext.applicationCtx.startActivity(
+                Intent.createChooser(intent, "Share Files")
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+
     }
 
     actual fun share(title: String, message: String?, url: String?) {

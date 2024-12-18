@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import kotlinx.coroutines.CancellationException
 
 
 class ExceptionHandlers {
@@ -16,44 +17,58 @@ class ExceptionHandlers {
             override val priority: Float get() = 0f
             var open = false
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
-                if(open) {
-                    println("Blocked $exception; already open")
-                    return {}
-                }
-                open = true
-                view.closePopovers()
-                val message = view.exceptionToMessage(exception)!!
-                view.dialog {
-                    onRemove {
-                        println("Closing")
-                        open = false
-                    }
-                    col {
-                        h2(message.title)
-                        text(message.body)
-                        if(debugMode) {
-                            subtext(exception.stackTraceToString())
-                        }
-                        row {
-                            expanding - space()
-                            for(action in message.actions) {
-                                button {
-                                    text(action.title)
-                                    onClick { closePopovers(); action.startAction(view) }
-                                }
-                            }
-                            buttonTheme - button {
-                                text("OK")
-                                onClick { closePopovers() }
-                            }
-                        }
-                    }
-                }
-                return { }
+                return {}
+//                println("Should we block ROOT $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
+//                if(open || (exception.cause != null && exception.cause is kotlin.coroutines.cancellation.CancellationException)) {
+//                    println("Blocked ${exception.message}; already open")
+//                    return {}
+//                }
+//                open = true
+//                view.closePopovers()
+//                val message = view.exceptionToMessage(exception)!!
+//                view.dialog {
+//                    onRemove {
+//                        println("Closing")
+//                        open = false
+//                    }
+//                    col {
+//                        h2(message.title)
+//                        text(message.body)
+//                        if(debugMode) {
+//                            subtext(exception.stackTraceToString())
+//                        }
+//                        row {
+//                            expanding - space()
+//                            for(action in message.actions) {
+//                                button {
+//                                    text(action.title)
+//                                    onClick { closePopovers(); action.startAction(view) }
+//                                }
+//                            }
+//                            buttonTheme - button {
+//                                text("OK")
+//                                onClick { closePopovers() }
+//                            }
+//                        }
+//                    }
+//                }
+//                return { }
             }
         }
     }
     private val handlers: ArrayList<ExceptionHandler> = arrayListOf()
+    init {
+        this += object: ExceptionHandler {
+            override val priority: Float
+                get() = 1f
+
+            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
+                println("Should we block $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
+                if(exception.cause != null && exception.cause is CancellationException) return {}
+                return null
+            }
+        }
+    }
     fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
     operator fun plusAssign(other: ExceptionHandler) {
         handlers.add(other)

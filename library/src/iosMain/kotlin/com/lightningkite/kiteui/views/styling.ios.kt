@@ -12,12 +12,9 @@ import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.QuartzCore.*
 import platform.UIKit.UIColor
-import platform.UIKit.UIImageView
 import platform.UIKit.UIView
 import platform.UIKit.UIScrollView
 import kotlin.math.min
-import kotlin.time.DurationUnit
-import platform.Foundation.*
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),

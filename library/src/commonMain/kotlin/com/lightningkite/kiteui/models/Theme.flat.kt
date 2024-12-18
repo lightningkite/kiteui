@@ -119,7 +119,7 @@ fun Theme.Companion.flat(
                     is CornerRadii.ForceConstant -> base
                     is CornerRadii.RatioOfSize -> base
                     is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.spacing * base.value)
-                    is CornerRadii.PerCorner -> base
+                    is CornerRadii -> base
                 }
             ).withBack
         },

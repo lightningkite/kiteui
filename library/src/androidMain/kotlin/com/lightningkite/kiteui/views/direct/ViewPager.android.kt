@@ -44,6 +44,7 @@ actual class ViewPager actual constructor(context: RContext): RView(context) {
             layoutManager = null,
             placeholderCount = 5,
             determineType = { 0 },
+            columns = 1,
             makeView = { _, obs -> render(obs) }) {
             init {
                 reactiveScope(onLoad = {

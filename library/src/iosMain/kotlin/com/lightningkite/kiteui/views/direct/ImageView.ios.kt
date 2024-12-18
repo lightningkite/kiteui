@@ -165,6 +165,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
      * density screens.
      */
     actual var naturalSize: Boolean by native::naturalSize
+    actual var useLoadingSpinners: Boolean by native::loadingSpinnerEnabled
 }
 
 
@@ -244,6 +245,11 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     }
 
     val loadingIndicator = UIActivityIndicatorView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+    var loadingSpinnerEnabled = true
+        set(value) {
+            field = value
+            if (!loadingSpinnerEnabled) endLoad()
+        }
 
     init {
         loadingIndicator.hidden = true
@@ -251,6 +257,7 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     }
 
     fun startLoad() {
+        if (!loadingSpinnerEnabled) return
         loadingIndicator.startAnimating()
         loadingIndicator.hidden = false
     }
@@ -479,4 +486,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         set(value) {
             native.accessibilityLabel = value
         }
+    actual var useLoadingSpinners: Boolean
+        get() = TODO("Not yet implemented")
+        set(value) {}
 }
