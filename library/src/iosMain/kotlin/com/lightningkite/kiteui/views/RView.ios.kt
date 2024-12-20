@@ -276,8 +276,9 @@ var animationsEnabled: Boolean = true
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
-
 inline fun UIView.withoutAnimation(action: () -> Unit) {
+    assertMainThread()
+    val before = animationsEnabled
     try {
         animationsEnabled = false
         CATransaction.begin()
@@ -288,7 +289,7 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
             CATransaction.commit()
         }
     } finally {
-        animationsEnabled = true
+        animationsEnabled = before
     }
 }
 

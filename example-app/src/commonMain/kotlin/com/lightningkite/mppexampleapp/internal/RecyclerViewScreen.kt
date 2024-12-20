@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Routable("recycler-view")
 object RecyclerViewScreen : Screen {
@@ -49,7 +51,16 @@ object RecyclerViewScreen : Screen {
 //                columns = 2
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
-                    col {
+                    col child@{
+                        reactive {
+                            val index = it()
+                            if(expanded() == index){
+                                launch {
+                                    delay(250)
+                                    this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
+                                }
+                            }
+                        }
                         dynamicTheme {
                             if (it() == 50) ImportantSemantic
                             else if (it() % 7 == 0) HoverSemantic
