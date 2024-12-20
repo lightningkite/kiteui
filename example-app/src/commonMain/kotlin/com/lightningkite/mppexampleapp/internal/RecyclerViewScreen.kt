@@ -78,8 +78,8 @@ object RecyclerViewScreen : Screen {
                                 }
                             }
                         }
-                        /*onlyWhen { expanded() == it() } - */col {
-                            ::exists { expanded() == it() }
+                        onlyWhen { expanded() == it() } - col {
+//                            ::exists { expanded() == it() }
                             text { ::content { "Content for ${it()} == ${expanded()}" } }
                             text("More Content")
                             text("More Content")

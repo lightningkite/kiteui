@@ -239,13 +239,11 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         allSubviews.find { it.element === view }?.let {
             it.needsLayout = true
             val useAnim = isInAnimationBlock
-            println("subviewDidChangeSizing, useAnim: $useAnim")
             if (existingAfterTimeout == null)
                 existingAfterTimeout = afterTimeout(16) {
                     existingAfterTimeout?.invoke()
                     existingAfterTimeout = null
                     if(useAnim) {
-                        println("animation starting")
                         animateIfAllowed {
                             if (allSubviews.any { it.needsLayout }) {
                                 relayout()
@@ -253,7 +251,6 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                             capViewAtBottom = allSubviews.last().index >= dataDirect.max
                         }
                     } else {
-                        println("not animating")
                         if (allSubviews.any { it.needsLayout }) {
                             relayout()
                         }
