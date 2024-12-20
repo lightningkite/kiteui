@@ -1,8 +1,7 @@
 package com.lightningkite.kiteui.exceptions
 
-import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 
@@ -14,6 +13,7 @@ class ExceptionHandlers {
             override val priority: Float get() = 0f
             var open = false
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
+                exception.printStackTrace2()
                 return {}
 //                println("Should we block ROOT $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
 //                if(open || (exception.cause != null && exception.cause is kotlin.coroutines.cancellation.CancellationException)) {
@@ -60,6 +60,7 @@ class ExceptionHandlers {
                 get() = 1f
 
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
+                exception.printStackTrace2()
 //                println("Should we block $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
 //                if(exception.cause != null && exception.cause is CancellationException) return {}
                 return {}
