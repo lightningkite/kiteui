@@ -5,9 +5,6 @@ import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.dialog
-import kotlinx.coroutines.CancellationException
 
 
 class ExceptionHandlers {
@@ -63,9 +60,9 @@ class ExceptionHandlers {
                 get() = 1f
 
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
-                println("Should we block $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
-                if(exception.cause != null && exception.cause is CancellationException) return {}
-                return null
+//                println("Should we block $exception as a cancellation? ${exception::class} cause is ${exception.cause?.let { it::class }}")
+//                if(exception.cause != null && exception.cause is CancellationException) return {}
+                return {}
             }
         }
     }

@@ -4,6 +4,7 @@ Pods
 .kotlin
 build
 *.xcworkspace
+/xcuserdata
 *.hprof
 local.properties
 .DS_Store
