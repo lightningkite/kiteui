@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.identityHashCode
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
@@ -16,7 +17,9 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIScrollView
 import platform.UIKit.UIScrollViewDelegateProtocol
 import platform.UIKit.UIView
+import kotlin.math.abs
 import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 
 interface Indexed<out T> {
@@ -55,19 +58,6 @@ fun <T> List<T>.asIndexed(): Indexed<T> = object : Indexed<T> {
     override fun copy(): Indexed<T> = this@asIndexed.toList().asIndexed()
 }
 
-class ItemRenderer<T>(
-    val create: (NRecyclerView, T) -> UIView,
-    val update: (NRecyclerView, UIView, T) -> Unit,
-    val shutdown: (NRecyclerView, UIView) -> Unit
-) {
-    @Suppress("UNCHECKED_CAST")
-    fun createAny(r: NRecyclerView, t: Any?) = create(r, t as T)
-
-    @Suppress("UNCHECKED_CAST")
-    fun updateAny(r: NRecyclerView, element: UIView, t: Any?) = update(r, element, t as T)
-}
-
-
 fun <T> Indexed<T>.columned(count: Int): Indexed<Indexed<T>> = object : Indexed<Indexed<T>> {
     val original = this@columned
     override val min: Int
@@ -89,6 +79,18 @@ fun <T> Indexed<T>.columned(count: Int): Indexed<Indexed<T>> = object : Indexed<
     }
 
     override fun copy(): Indexed<Indexed<T>> = original.copy().columned(count)
+}
+
+class ItemRenderer<T>(
+    val create: (NRecyclerView, T) -> UIView,
+    val update: (NRecyclerView, UIView, T) -> Unit,
+    val shutdown: (NRecyclerView, UIView) -> Unit,
+) {
+    @Suppress("UNCHECKED_CAST")
+    fun createAny(r: NRecyclerView, t: Any?) = create(r, t as T)
+
+    @Suppress("UNCHECKED_CAST")
+    fun updateAny(r: NRecyclerView, element: UIView, t: Any?) = update(r, element, t as T)
 }
 
 
@@ -140,11 +142,21 @@ private val reservedScrollingSpace: CGFloat = 50000.0
 actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     UIScrollViewDelegateProtocol,
     UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+
+    val log = ConsoleRoot.tag("NRecyclerView")
+    var elementsMatchSize: Boolean = false
+        set(value) {
+            field = value
+            if (field != value) {
+                allSubviews.forEach { it.layout() }
+                relayout()
+                populate()
+            }
+        }
+
     val firstVisible = Property(0)
     val centerVisible = Property(0)
     val lastVisible = Property(0)
-
-    val log = ConsoleRoot.tag("NRecyclerView")
 
     var vertical: Boolean = true
         set(value) {
@@ -155,37 +167,31 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             }
         }
 
+    val beyondEdgeRendering = 10.0
     val allSubviews: ArrayList<Subview> = ArrayList()
-
     var viewportSize: CGFloat = 0.0
         set(value) {
-            field = value
-            relayout()
+            if (field != value) {
+                field = value
+                relayout()
+                populate()
+            }
         }
     private var _viewportOffsetField: CGFloat = 0.0
     var viewportOffset: CGFloat
         get() = _viewportOffsetField
         set(value) {
+            println("viewportOffset set to $value")
             _viewportOffsetField = value
             suppressTrueScroll = true
             setContentOffset(CGPointMake(if (vertical) 0.0 else value, if (vertical) value else 0.0))
         }
-    var suppressTrueScroll = true
-    var suppressFakeScroll = true
-    val beyondEdgeRendering = 10.0
-
-    private var lastForceCenteringDismiss: Int = -1
 
     var forceCentering = false
-    var elementsMatchSize: Boolean = false
-        set(value) {
-            field = value
-            allSubviews.forEach { it.measure() }
-            relayout()
-        }
+    var suppressTrueScroll = true
+    var suppressFakeScroll = true
     var suppressFakeScrollEnd = false
     var suppressTrueScrollEnd = false
-    var printing = false
 
     var capViewAtBottom: Boolean = false
         set(value) {
@@ -231,131 +237,76 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             if (value != field) {
                 field = value
                 relayout()
+                populate()
             }
         }
     val spacingRaw: CGFloat get() = spacing.value
 
     var existingAfterTimeout: (() -> Unit)? = null
+    var suppressDidChangeSizing = false
+    inline fun suppressDidChangeSizing(action: () -> Unit) {
+        try {
+            suppressDidChangeSizing = true
+            action()
+        } finally {
+            suppressDidChangeSizing = false
+        }
+    }
+
     override fun subviewDidChangeSizing(view: UIView?) {
+
         allSubviews.find { it.element === view }?.let {
-            it.needsLayout = true
-            val useAnim = animationsEnabled
+            if (suppressDidChangeSizing) {
+                it.needsMeasure = true
+                it.needsLayout = true
+                return
+            }
+            val oldSize = it.size
+
+
+            val useAnim = true//isInAnimationBlock
             if (existingAfterTimeout == null)
                 existingAfterTimeout = afterTimeout(16) {
                     existingAfterTimeout?.invoke()
                     existingAfterTimeout = null
-                    val before = animationsEnabled
-                    try {
-                        animationsEnabled = useAnim
+                    println("subviewDidChangeSizing requiring relayout ACTIVATED: ${view?.identityHashCode()}")
+                    it.needsMeasure = true
+                    it.measure()
+                    if (it.size == oldSize) return@afterTimeout
+                    val newSize = it.size
+                    it.needsLayout = false
+                    it.needsMeasure = false
+                    it.size = oldSize
+                    val diff = newSize - oldSize
+                    println("Size went from $oldSize to $newSize")
+                    // suppress this from resizing early
+                    populate(
+                        behind = when (anchorPosition) {
+                            Align.Start -> 0.0
+                            Align.End -> diff
+                            else -> diff / 2
+                        },
+                        ahead = when (anchorPosition) {
+                            Align.Start -> diff
+                            Align.End -> 0.0
+                            else -> diff / 2
+                        },
+                    )
+                    println("Post populate size is ${it.size}, should be ${oldSize}")
+                    it.size = newSize
+                    it.needsLayout = true
+
+                    println("Size update applied, now calling layout")
+                    if (useAnim) {
                         animateIfAllowed {
-                            if (allSubviews.any { it.needsLayout }) {
-                                relayout()
-                            }
+                            relayout()
                             capViewAtBottom = allSubviews.last().index >= dataDirect.max
                         }
-                    } finally {
-                        animationsEnabled = before
+                    } else {
+                        relayout()
+                        capViewAtBottom = allSubviews.last().index >= dataDirect.max
                     }
                 }
-        }
-    }
-
-    inner class Subview(
-        val element: UIView,
-        var index: Int,
-    ) {
-
-        var needsLayout: Boolean = true
-        var startPosition: CGFloat = 0.0
-            set(value) {
-                field = value
-                element.setFrame(element.frame.withStart(value))
-            }
-        var size: CGFloat = -1.0
-            get() {
-                return if (forceCentering) viewportSize
-                else {
-                    if (needsLayout) measure()
-                    field
-                }
-            }
-
-        fun measure() {
-            if (!needsLayout) return
-            needsLayout = false
-            val p = extensionPadding ?: 0.0
-            if (elementsMatchSize) {
-                if (vertical) {
-                    size = if (forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.height }
-                    element.setFrame(
-                        CGRectMake(
-                            p,
-                            startPosition,
-                            this@NRecyclerView.bounds.useContents { size.width - p * 2 },
-                            size
-                        )
-                    )
-                    element.layoutSubviewsAndLayers()
-                } else {
-                    size = if (forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.width }
-                    element.setFrame(
-                        CGRectMake(
-                            startPosition,
-                            p,
-                            size,
-                            this@NRecyclerView.bounds.useContents { size.height - p * 2 })
-                    )
-                    element.layoutSubviewsAndLayers()
-                }
-            } else {
-                if (vertical) {
-                    size = if (forceCentering) viewportSize else element.sizeThatFits(
-                        CGSizeMake(
-                            this@NRecyclerView.bounds.useContents { size.width },
-                            10000.0
-                        )
-                    ).useContents { height }
-                    element.setFrame(
-                        CGRectMake(
-                            p,
-                            startPosition,
-                            this@NRecyclerView.bounds.useContents { size.width - p * 2 },
-                            size
-                        )
-                    )
-                    element.layoutSubviewsAndLayers()
-                } else {
-                    size = if (forceCentering) viewportSize else element.sizeThatFits(
-                        CGSizeMake(
-                            10000.0,
-                            this@NRecyclerView.bounds.useContents { size.height })
-                    ).useContents { width }
-                    element.setFrame(
-                        CGRectMake(
-                            startPosition,
-                            p,
-                            size,
-                            this@NRecyclerView.bounds.useContents { size.height - p * 2 })
-                    )
-                    element.layoutSubviewsAndLayers()
-                }
-            }
-        }
-
-        var visible: Boolean
-            get() = !element.hidden
-            set(value) {
-                element.hidden = !value
-            }
-
-        fun placeBefore(top: CGFloat): CGFloat {
-            startPosition = top - size - spacingRaw
-            return top - size - spacingRaw
-        }
-
-        fun placeAfter(bottom: CGFloat): CGFloat {
-            startPosition = bottom + spacingRaw
-            return bottom + size + spacingRaw
         }
     }
 
@@ -448,9 +399,11 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                                 .sumOf { it.element.frame.useContents { this.size.height } } <= viewportSize
                         ) {
                             // Force to top
+                            println("Force to top")
                             viewportOffset = allSubviews.first().startPosition
                         } else if (shift < 0) {
                             // Force to bottom
+                            println("Force to bottom")
                             viewportOffset = allSubviews.last().let { it.startPosition + it.size } - viewportSize
                         }
                         populate()
@@ -541,19 +494,31 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
 
     var startCreatingViewsAt: Pair<Int, Align> = 0 to Align.Start
     fun jump(index: Int, align: Align, animate: Boolean) {
+        println("jump $index $align $animate")
         if (allSubviews.isEmpty() || viewportSize < 1) {
             startCreatingViewsAt = index to align
             return
         }
         if (index !in dataDirect.min..dataDirect.max) return
         lock("jump $index $align") {
+            // There is a bug with this column implementation. With more than 1 column jump only works to a certain index.
+            // with 2 columns that index is half of the max. With 3 columns it stops at a third the max.
             val rowIndex = index / columns
             if (animate) {
                 allSubviews.find { it.index == rowIndex }?.let {
                     when (align) {
-                        Align.Start -> scrollTo(it.startPosition.toDouble(), animate)
-                        Align.End -> scrollTo((it.startPosition + it.size - viewportSize).toDouble(), animate)
-                        else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), animate)
+                        Align.Start -> scrollTo(
+                            it.startPosition
+                                .coerceAtMost(contentSize().useContents { height } - viewportSize),
+                            animate
+                        )
+
+                        Align.End -> scrollTo((it.startPosition + it.size - viewportSize), animate)
+                        else -> scrollTo(
+                            (it.startPosition + it.size / 2 - viewportSize / 2)
+                                .coerceAtMost(contentSize().useContents { height } - viewportSize),
+                            animate
+                        )
                     }
                     return
                 }
@@ -585,9 +550,9 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                 move()
                 allSubviews.find { it.index == rowIndex }?.let {
                     when (align) {
-                        Align.Start -> scrollTo(it.startPosition.toDouble(), true)
-                        Align.End -> scrollTo((it.startPosition + it.size - viewportSize).toDouble(), true)
-                        else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2).toDouble(), true)
+                        Align.Start -> scrollTo(it.startPosition, true)
+                        Align.End -> scrollTo((it.startPosition + it.size - viewportSize), true)
+                        else -> scrollTo((it.startPosition + it.size / 2 - viewportSize / 2), true)
                     }
                 } ?: log.log("Wha?!")
             } else {
@@ -667,7 +632,106 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
 
     var ready = false
 
+
+    inner class Subview(
+        val element: UIView,
+        var index: Int,
+    ) {
+
+        var needsMeasure: Boolean = true
+        var needsLayout: Boolean = true
+        var startPosition: CGFloat = 0.0
+            set(value) {
+                field = value
+                element.setFrame(element.frame.withStart(value))
+            }
+        var size: CGFloat = -1.0
+            get() {
+                return if (forceCentering) viewportSize
+                else {
+                    if (needsMeasure || needsLayout) layout()
+                    field
+                }
+            }
+
+        fun measure() {
+            if (!needsMeasure) return
+            needsMeasure = false
+            println("${element?.identityHashCode()} needsMeasure")
+            val p = extensionPadding ?: 0.0
+            if (elementsMatchSize) {
+                if (vertical) {
+                    size = if (forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.height }
+                } else {
+                    size = if (forceCentering) viewportSize else this@NRecyclerView.bounds.useContents { size.width }
+                }
+            } else {
+                if (vertical) {
+                    size = if (forceCentering) viewportSize else element.sizeThatFits(
+                        CGSizeMake(
+                            this@NRecyclerView.bounds.useContents { size.width },
+                            10000.0
+                        )
+                    ).useContents { height }
+                } else {
+                    size = if (forceCentering) viewportSize else element.sizeThatFits(
+                        CGSizeMake(
+                            10000.0,
+                            this@NRecyclerView.bounds.useContents { size.height })
+                    ).useContents { width }
+                }
+            }
+        }
+
+        fun layout() {
+            if(needsMeasure) measure()
+            if (!needsLayout) return
+            needsLayout = false
+            println("${element?.identityHashCode()} needsLayout")
+            val p = extensionPadding ?: 0.0
+            if (vertical) {
+
+                element.setFrame(
+                    CGRectMake(
+                        p,
+                        startPosition,
+                        this@NRecyclerView.bounds.useContents { size.width - p * 2 },
+                        size
+                    )
+                )
+                element.layoutSubviewsAndLayers()
+            } else {
+
+                element.setFrame(
+                    CGRectMake(
+                        startPosition,
+                        p,
+                        size,
+                        this@NRecyclerView.bounds.useContents { size.height - p * 2 })
+                )
+                element.layoutSubviewsAndLayers()
+            }
+        }
+
+        var visible: Boolean
+            get() = !element.hidden
+            set(value) {
+                element.hidden = !value
+            }
+
+        fun placeBefore(top: CGFloat): CGFloat {
+            startPosition = top - size - spacingRaw
+            return top - size - spacingRaw
+        }
+
+        fun placeAfter(bottom: CGFloat): CGFloat {
+            startPosition = bottom + spacingRaw
+            return bottom + size + spacingRaw
+        }
+    }
+
     fun offsetWholeSystem(by: CGFloat) {
+        println("offsetWholeSystem: $by")
         for (view in allSubviews) {
             view.startPosition += by
         }
@@ -685,14 +749,9 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     fun makeFirst(): Subview? {
         if (dataDirect.max < dataDirect.min) return null
         viewportOffset = reservedScrollingSpace / 2
-        val index = startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max)
-        val element = makeSubview(index, false)
-        element.measure()
-
-        if (index == dataDirect.min) {
-            viewportOffset = 0.0
-        }
-
+        val element = makeSubview(startCreatingViewsAt.first.coerceIn(dataDirect.min, dataDirect.max), false)
+        element.layout()
+        log.log("View port offset $viewportOffset, SPACING ${spacing.value}")
         element.startPosition = when (startCreatingViewsAt.second) {
             Align.Start -> viewportOffset + spacing.value
             Align.End -> viewportOffset + viewportSize - spacing.value - element.size
@@ -702,11 +761,17 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         return element
     }
 
-    fun populate() {
+    private var movementSumForDebugging: CGFloat = 0.0
+    fun populate(behind: CGFloat = 0.0, ahead: CGFloat = 0.0) {
         withoutAnimation {
-            populateDown()
-            populateUp()
+            println("populate behind $behind, ahead $ahead")
+            movementSumForDebugging = 0.0
+            populateDown(ahead)
+            populateUp(behind)
             updateFakeScroll()
+            if (movementSumForDebugging > 0.1) {
+                println("populate behind $behind, ahead $ahead, jitter $movementSumForDebugging")
+            }
         }
     }
 
@@ -729,10 +794,10 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         }
     }
 
-    fun populateDown() {
+    fun populateDown(ahead: CGFloat) {
         var anchor = allSubviews.lastOrNull() ?: makeFirst() ?: return
         var bottom = anchor.startPosition + anchor.size
-        while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering)) {
+        while ((bottom < viewportSize + viewportOffset + beyondEdgeRendering + ahead)) {
             val nextIndex = anchor.index + 1
             if (nextIndex > dataDirect.max) break
             // Get the element to place
@@ -741,22 +806,31 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             }?.also {
                 log.log("populateDown $nextIndex")
                 it.index = nextIndex
-                it.element.withoutAnimation {
-                    rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])
+                suppressDidChangeSizing {
+                    it.element.withoutAnimation {
+                        rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])
+                    }
                 }
                 allSubviews.removeFirst()
                 allSubviews.add(it)
             } ?: makeSubview(nextIndex, false)
-            element.measure()
+            element.layout()
+            val oldPos = element.startPosition
             bottom = element.placeAfter(bottom)
+            movementSumForDebugging += abs(element.startPosition - oldPos).let {
+                if (it > 300.0) {
+                    println("Index $nextIndex major move $it from ${oldPos} to ${element.startPosition}")
+                    0.0
+                } else it
+            }
             anchor = element
         }
     }
 
-    fun populateUp() {
+    fun populateUp(behind: CGFloat) {
         var anchor = allSubviews.firstOrNull() ?: makeFirst() ?: return
         var top = anchor.startPosition
-        while ((top > viewportOffset - beyondEdgeRendering)) {
+        while ((top > viewportOffset - beyondEdgeRendering - behind)) {
             val nextIndex = anchor.index - 1
             if (nextIndex < dataDirect.min) break
             // Get the element to place
@@ -765,14 +839,23 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
             }?.also {
                 log.log("populateUp $nextIndex")
                 it.index = nextIndex
-                it.element.withoutAnimation {
-                    rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])
+                suppressDidChangeSizing {
+                    it.element.withoutAnimation {
+                        rendererDirect.updateAny(this, it.element, dataDirect[nextIndex])
+                    }
                 }
                 allSubviews.removeLast()
                 allSubviews.add(0, it)
             } ?: makeSubview(nextIndex, true)
-            element.measure()
+            val oldPos = element.startPosition
+            element.layout()
             top = element.placeBefore(top)
+            movementSumForDebugging += abs(element.startPosition - oldPos).let {
+                if (it > 300.0) {
+                    println("Index $nextIndex major move $it from ${oldPos} to ${element.startPosition}")
+                    0.0
+                } else it
+            }
             anchor = element
         }
     }
@@ -780,6 +863,7 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     val anchorPosition: Align = Align.Start
     fun relayout() {
         if (allSubviews.isEmpty()) return
+        println("RELAYOUT PERFORMING")
         when (anchorPosition) {
             Align.Start -> relayoutDown(0)
             Align.End -> relayoutUp(allSubviews.lastIndex)
@@ -789,7 +873,6 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
                 relayoutDown(centeredIndex)
             }
         }
-        populate()
     }
 
     fun relayoutDown(startingIndex: Int) {
@@ -816,7 +899,9 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         }
         suppressTrueScrollEnd = false
         lock("onscroll") {
+            val old = _viewportOffsetField
             _viewportOffsetField = contentOffset.useContents { if (vertical) y else x }
+            println("_viewportOffsetField: ${old.roundToInt()} -> ${_viewportOffsetField.roundToInt()} (${(_viewportOffsetField - old).roundToInt()})")
             populate()
             emergencyEdges()
             updateVisibleIndexes()
@@ -837,7 +922,7 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
     override fun scrollViewWillEndDragging(
         scrollView: UIScrollView,
         withVelocity: CValue<CGPoint>,
-        targetContentOffset: CPointer<CGPoint>?
+        targetContentOffset: CPointer<CGPoint>?,
     ) {
         if (targetContentOffset != null) {
             if (forceCentering) {
@@ -869,7 +954,10 @@ actual class NRecyclerView() : UIScrollView(CGRectMake(0.0, 0.0, 0.0, 0.0)),
         super.layoutSubviews()
         val orthoSize = bounds.useContents { if (vertical) size.width else size.height }
         allSubviews.forEach {
-            if (lastOrthoSize != orthoSize) it.needsLayout = true
+            if (lastOrthoSize != orthoSize) {
+                it.needsMeasure = true
+                it.needsLayout = true
+            }
             it.measure()
         }
         viewportSize = bounds.useContents { if (vertical) size.height else size.width }

@@ -273,11 +273,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 }
 
 var animationsEnabled: Boolean = true
+var isInAnimationBlock: Boolean = false
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
-
 inline fun UIView.withoutAnimation(action: () -> Unit) {
+    assertMainThread()
+    val before = animationsEnabled
     try {
         animationsEnabled = false
         CATransaction.begin()
@@ -288,13 +290,19 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
             CATransaction.commit()
         }
     } finally {
-        animationsEnabled = true
+        animationsEnabled = before
     }
 }
 
 inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
-        action()
+        val before = isInAnimationBlock
+        isInAnimationBlock = true
+        try {
+            action()
+        } finally {
+            isInAnimationBlock = before
+        }
     } else {
         action()
     }
@@ -304,7 +312,15 @@ inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, cross
     if (animationsEnabled) UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { onComplete() },
-        animations = { action() }
+        animations = {
+            val before = isInAnimationBlock
+            isInAnimationBlock = true
+            try {
+                action()
+            } finally {
+                isInAnimationBlock = before
+            }
+        }
     ) else {
         action()
         onComplete()
