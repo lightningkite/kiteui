@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.graphics.Paint
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.text.InputType
 import android.text.method.PasswordTransformationMethod
 import android.util.TypedValue
@@ -176,12 +178,14 @@ var EditText.keyboardHints: KeyboardHints
             InputType.TYPE_CLASS_DATETIME -> KeyboardHints(KeyboardCase.None, KeyboardType.Text)
             else -> KeyboardHints(KeyboardCase.None, KeyboardType.Text)
         }.let {
-            autofillHints?.let { hints ->
-                return if (hints.contains(View.AUTOFILL_HINT_EMAIL_ADDRESS)) it.copy(autocomplete = AutoComplete.Email)
-                else if (hints.contains(View.AUTOFILL_HINT_PASSWORD)) it.copy(autocomplete = AutoComplete.Password)
-                else if (hints.contains(View.AUTOFILL_HINT_PHONE)) it.copy(autocomplete = AutoComplete.Phone)
-                else it
-            } ?: it
+            if(VERSION.SDK_INT >= VERSION_CODES.O) {
+                autofillHints?.let { hints ->
+                    return if (hints.contains(View.AUTOFILL_HINT_EMAIL_ADDRESS)) it.copy(autocomplete = AutoComplete.Email)
+                    else if (hints.contains(View.AUTOFILL_HINT_PASSWORD)) it.copy(autocomplete = AutoComplete.Password)
+                    else if (hints.contains(View.AUTOFILL_HINT_PHONE)) it.copy(autocomplete = AutoComplete.Phone)
+                    else it
+                } ?: it
+            } else it
         }
     }
     set(value) {
@@ -204,10 +208,12 @@ var EditText.keyboardHints: KeyboardHints
             it or (this.inputType and (InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))
         }
         n.inputType = inputType
-        when (value.autocomplete) {
-            AutoComplete.Email -> View.AUTOFILL_HINT_EMAIL_ADDRESS
-            AutoComplete.Password, AutoComplete.NewPassword -> View.AUTOFILL_HINT_PASSWORD
-            AutoComplete.Phone -> View.AUTOFILL_HINT_PHONE
-            null -> null
-        }?.let { n.setAutofillHints(it) }
+        if(VERSION.SDK_INT >= VERSION_CODES.O) {
+            when (value.autocomplete) {
+                AutoComplete.Email -> View.AUTOFILL_HINT_EMAIL_ADDRESS
+                AutoComplete.Password, AutoComplete.NewPassword -> View.AUTOFILL_HINT_PASSWORD
+                AutoComplete.Phone -> View.AUTOFILL_HINT_PHONE
+                null -> null
+            }?.let { n.setAutofillHints(it) }
+        }
     }

@@ -39,7 +39,7 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
 
 internal fun UIView.layerSize(): CValue<CGRect> {
     val n = this
-    val bounds = if(n is UIScrollView) n.contentSize.useContents {
+    val bounds = if (n is UIScrollView) n.contentSize.useContents {
         val cs = this
         n.bounds.useContents {
             val b = this
@@ -77,8 +77,10 @@ class CAGradientLayerResizing : CAGradientLayer {
 
     @OverrideInit
     constructor() : super()
+
     @OverrideInit
     constructor(coder: platform.Foundation.NSCoder) : super(coder)
+
     @OverrideInit
     constructor(layer: kotlin.Any) : super(layer)
 
@@ -102,16 +104,19 @@ class CAGradientLayerResizing : CAGradientLayer {
 
     var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
         set(value) {
+            if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
     var parentSpacing: CGFloat = 0.0
         set(value) {
+            if (this == null) return //stupid iOS issue prevention
             field = value
             refreshCorners()
         }
 
     fun refreshCorners() {
+        if (this == null) return //stupid iOS issue prevention
         val v = when (val d = desiredCornerRadius) {
             is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
             is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
@@ -126,6 +131,7 @@ class CAGradientLayerResizing : CAGradientLayer {
     }
 
     override fun layoutSublayers() {
+        if (this == null) return //stupid iOS issue prevention
         super.layoutSublayers()
         backgroundMask?.frame = frame
         refreshCorners()

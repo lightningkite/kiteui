@@ -49,18 +49,17 @@ object RecyclerViewScreen : Screen {
                 recyclerView = this
                 spacing = 0.5.rem
 //                columns = 2
+                reactive {
+                    val index = expanded()
+                    if(index == -1) return@reactive
+                    launch {
+                        delay(250)
+//                        this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
+                    }
+                }
                 this.scrollToIndex(10, Align.Start)
                 children(items) {
                     col child@{
-                        reactive {
-                            val index = it()
-                            if(expanded() == index){
-                                launch {
-                                    delay(250)
-                                    this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
-                                }
-                            }
-                        }
                         dynamicTheme {
                             if (it() == 50) ImportantSemantic
                             else if (it() % 7 == 0) HoverSemantic
