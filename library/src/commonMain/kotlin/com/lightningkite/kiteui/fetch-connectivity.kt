@@ -68,6 +68,7 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
                 nextRetry = baseRetry
                 return r
             } catch (e: ConnectionException) {
+                e.printStackTrace2()
                 if (retryAt.value == null) {
                     launchGlobal {
                         val d = nextRetry

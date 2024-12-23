@@ -17,7 +17,7 @@ object RecyclerViewScreen : Screen {
 
     override fun ViewWriter.render() {
         var expanded = Property(-1)
-        val items = Property((1..101).toList())
+        val items = Property((1..4).toList())
         var recyclerView: RecyclerView? = null
         col {
             row {
@@ -57,7 +57,7 @@ object RecyclerViewScreen : Screen {
 //                        this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
                     }
                 }
-                this.scrollToIndex(10, Align.Start)
+//                this.scrollToIndex(10, Align.Start)
                 children(items) {
                     col child@{
                         dynamicTheme {
