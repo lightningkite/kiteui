@@ -5,16 +5,11 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.Interpolator
-import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import com.lightningkite.kiteui.afterTimeout
-import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.colorInt
-import kotlin.math.PI
 import kotlin.math.roundToInt
-import kotlin.math.sin
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -32,15 +27,20 @@ private class MyGradientDrawable(): GradientDrawable() {
     var colorsOverTime: Array<Pair<IntArray, FloatArray>>? = null
     private var animator: ValueAnimator? = null
     private var setInstance = 0
+    private var lastSetColors: IntArray? = null
+    fun set(goal: IntArray, ratios: FloatArray) {
+        if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
+            setColors(goal, ratios)
+        } else {
+            colors = goal
+        }
+        lastSetColors = goal
+    }
     fun animateColorsTo(goal: IntArray, ratios: FloatArray, duration: Duration) {
         val myInstance = ++setInstance
         animator?.cancel()
-        if(!animationsEnabled || colors?.size != goal.size) {
-            if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
-                setColors(goal, ratios)
-            } else {
-                colors = goal
-            }
+        if(!animationsEnabled || lastSetColors?.size != goal.size) {
+            set(goal, ratios)
             afterTimeout(100) {
                 if(setInstance > myInstance) return@afterTimeout
                 colorsOverTime?.let {
@@ -49,7 +49,7 @@ private class MyGradientDrawable(): GradientDrawable() {
             }
             return
         }
-        val animationStartColors = colors ?: intArrayOf(0, 0)
+        val animationStartColors = lastSetColors ?: intArrayOf(0, 0)
         val animationGoalColors = goal
         animator = ValueAnimator.ofFloat(0f, 1f).also {
             it.duration = duration.inWholeMilliseconds
@@ -57,21 +57,17 @@ private class MyGradientDrawable(): GradientDrawable() {
             it.addUpdateListener { it ->
                 if(setInstance > myInstance) return@addUpdateListener
                 val f = it.animatedFraction
-                colors = IntArray(animationStartColors.size) { index ->
+                set(IntArray(animationStartColors.size) { index ->
                     Color.interpolate(
                         Color.fromInt(animationStartColors[index]),
                         Color.fromInt(animationGoalColors[index]),
                         f
                     ).toInt()
-                }
+                }, ratios)
             }
             it.doOnEnd {
                 if(setInstance > myInstance) return@doOnEnd
-                if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
-                    setColors(goal, ratios)
-                } else {
-                    colors = goal
-                }
+                set(goal, ratios)
                 colorsOverTime?.let {
                     val diffToFirst = Color.fromInt(goal[0]).channelDifferenceSum(Color.fromInt(it[0].first[0]))
                     val diffToSecond = Color.fromInt(goal[0]).channelDifferenceSum(Color.fromInt(it[1].first[0]))
