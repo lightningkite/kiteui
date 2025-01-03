@@ -9,7 +9,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton(this)
+    override val native: FrameLayoutButton = FrameLayoutButton()
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
@@ -42,9 +42,9 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
         _checked.addListener { refreshTheming() }
-        native.onClick = {
+        onRemove(native.setOnClick {
             _checked.value = true
-        }
+        })
     }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {

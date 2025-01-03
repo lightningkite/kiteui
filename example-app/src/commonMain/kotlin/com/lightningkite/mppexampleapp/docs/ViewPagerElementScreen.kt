@@ -50,6 +50,9 @@ object ViewPagerElementScreen: DocScreen {
             example(
                 """
                 col {
+                    text {
+                        ::content { "Current index; ${'$'}{currentPage()}" }
+                    }
                     important - button {
                         text("Scroll to zero (the first one)")
                         onClick {
@@ -66,6 +69,9 @@ object ViewPagerElementScreen: DocScreen {
                 """.trimIndent()
             ) {
                 col {
+                    text {
+                        ::content { "Current index; ${currentPage()}" }
+                    }
                     important - button {
                         text("Scroll to index zero (the first one)")
                         onClick {

@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton(this)
+    override val native: FrameLayoutButton = FrameLayoutButton()
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
@@ -19,9 +19,9 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
         _checked.addListener { refreshTheming() }
-        native.onClick = {
+        onRemove(native.setOnClick {
             _checked.value = true
-        }
+        })
     }
 
     override fun hasAlternateBackedStates(): Boolean = true

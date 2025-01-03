@@ -9,16 +9,16 @@ import kotlinx.coroutines.*
 import kotlin.random.Random
 
 abstract class RViewWithAction(context: RContext) : RView(context) {
-    private var actionStatusRemove: (() -> Unit)? = null
+//    private var actionStatusRemove: (() -> Unit)? = null
     var action: Action? = null
         set(value) {
-            field = value
+//            field = value
             actionSet(value)
         }
 
     open fun actionSet(value: Action?) {
-        actionStatusRemove?.invoke()
-        actionStatusRemove = value?.let { listenForWorking(it) }
+//        actionStatusRemove?.invoke()
+//        actionStatusRemove = value?.let { listenForWorking(it) }
     }
 }
 
@@ -117,7 +117,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     companion object {
         var leakDetection: Boolean = false
         var removeBeforeShutdown: Boolean = false
-        val leakLog = ConsoleRoot.tag("RViewLeaks")
     }
 
 

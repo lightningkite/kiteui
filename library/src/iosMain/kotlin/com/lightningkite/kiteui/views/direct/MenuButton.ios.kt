@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton(this)
+    override val native = FrameLayoutButton()
 
     actual fun opensMenu(createMenu: Stack.() -> Unit) {
-        native.onClick = {
+        onRemove(native.setOnClick {
             var willRemove: RView? = null
             this.overlayStack!!.popoverWriter {
                 willRemove?.let { it.parent!!.removeChild(it) }
@@ -44,7 +44,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     }
                 }
             }
-        }
+        })
     }
     actual var enabled: Boolean
         get() = native.enabled

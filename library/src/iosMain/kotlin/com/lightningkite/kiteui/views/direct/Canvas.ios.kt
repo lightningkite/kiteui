@@ -1,10 +1,9 @@
-
-
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
@@ -17,7 +16,7 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
 
-actual class Canvas actual constructor(context: RContext): RView(context) {
+actual class Canvas actual constructor(context: RContext) : RView(context) {
     override val native = CanvasView()
 
     actual var delegate: CanvasDelegate?
@@ -25,6 +24,10 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
         set(value) {
             native.delegate = value
         }
+
+    init {
+        onRemove { native.terminate() }
+    }
 }
 
 actual typealias KeyCode = String
@@ -65,48 +68,45 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         setMultipleTouchEnabled(true)
     }
 
-    @ObjCAction fun gestureSink() {
+    @ObjCAction
+    fun gestureSink() {
     }
 
-    init {
-        clipsToBounds = true
-
-        addGestureRecognizer(object: UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
-            override fun touchesBegan(began: Any?, withEvent: Any?) {
-                val touches = began as Set<UITouch>
-                withEvent as UIEvent
-                if(handle(touches)) {
-                    setState(UIGestureRecognizerStateBegan)
-                }
+    private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
+        override fun touchesBegan(began: Any?, withEvent: Any?) {
+            val touches = began as Set<UITouch>
+            withEvent as UIEvent
+            if (handle(touches)) {
+                setState(UIGestureRecognizerStateBegan)
             }
+        }
 
-            override fun touchesMoved(moved: Any?, withEvent: Any?) {
-                val touches = moved as Set<UITouch>
-                withEvent as UIEvent
-                if(handle(touches)) {
-                    setState(UIGestureRecognizerStateChanged)
-                }
+        override fun touchesMoved(moved: Any?, withEvent: Any?) {
+            val touches = moved as Set<UITouch>
+            withEvent as UIEvent
+            if (handle(touches)) {
+                setState(UIGestureRecognizerStateChanged)
             }
+        }
 
-            override fun touchesEnded(ended: Any?, withEvent: Any?) {
-                val touches = ended as Set<UITouch>
-                withEvent as UIEvent
-                if(handle(touches)) {
-                    setState(UIGestureRecognizerStateEnded)
-                }
+        override fun touchesEnded(ended: Any?, withEvent: Any?) {
+            val touches = ended as Set<UITouch>
+            withEvent as UIEvent
+            if (handle(touches)) {
+                setState(UIGestureRecognizerStateEnded)
             }
+        }
 
-            override fun touchesCancelled(cancelled: Any?, withEvent: Any?) {
-                val touches = cancelled as Set<UITouch>
-                withEvent as UIEvent
-                if(handle(touches)) {
-                    setState(UIGestureRecognizerStateCancelled)
-                }
+        override fun touchesCancelled(cancelled: Any?, withEvent: Any?) {
+            val touches = cancelled as Set<UITouch>
+            withEvent as UIEvent
+            if (handle(touches)) {
+                setState(UIGestureRecognizerStateCancelled)
             }
+        }
 
-            override fun reset() {
-            }
-        })
+        override fun reset() {
+        }
     }
 
     var delegate: CanvasDelegate? = null
@@ -118,6 +118,18 @@ class CanvasView : UIView(CGRectZero.readValue()) {
                 setNeedsDisplay()
             }
         }
+
+    init {
+        clipsToBounds = true
+        addGestureRecognizer(gestureRecognizer!!)
+    }
+
+    fun terminate() {
+        if(gestureRecognizer == null) return
+        removeGestureRecognizer(gestureRecognizer!!)
+        delegate = null
+        gestureRecognizer = null
+    }
 
     // todo mouse wheel
 
@@ -279,12 +291,11 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 //        startRefresh()
 //    }
 
-    private var x = 0.0
     override fun drawRect(rect: CValue<CGRect>) {
         with(DrawingContext2DImpl(UIGraphicsGetCurrentContext()!!, rect.useContents { this.size.width }, rect.useContents { this.size.height })) {
             try {
                 delegate?.draw(this)
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace2()
             }
         }

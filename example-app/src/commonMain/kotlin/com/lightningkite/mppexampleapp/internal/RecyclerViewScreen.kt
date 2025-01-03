@@ -17,7 +17,7 @@ object RecyclerViewScreen : Screen {
 
     override fun ViewWriter.render() {
         var expanded = Property(-1)
-        val items = Property((1..4).toList())
+        val items = Property((1..200).toList())
         var recyclerView: RecyclerView? = null
         col {
             row {
@@ -87,7 +87,15 @@ object RecyclerViewScreen : Screen {
                             text("More Content")
                         }
 
+                        onRemove {
+                            println("Removal for cell")
+                            leakDetect()
+                        }
                     }
+                }
+                onRemove {
+                    println("Removal for list")
+                    leakDetect()
                 }
             } in weight(1f)
             row {

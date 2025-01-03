@@ -12,11 +12,22 @@ expect class WeakReference<T: Any>(referred: T) {
     fun get(): T?
 }
 val leaks = ArrayList<WeakReference<*>>()
-var lastGc = clockMillis()
+private var lastGc = clockMillis()
+private var lastGcReport = clockMillis()
+private val leakLog = ConsoleRoot.tag("RViewLeaks")
 private fun gcIfNotVeryRecent() {
     if(clockMillis() - lastGc > 100.0) {
         gc()
         lastGc = clockMillis()
+    }
+    if(clockMillis() - lastGcReport > 1000.0) {
+        lastGcReport = clockMillis()
+        if(leaks.isNotEmpty()) {
+            leakLog.log("WARNING: ${leaks.size} leaks...")
+            leaks.groupingBy { it.get()?.let { it::class } }.eachCount().forEach {
+                leakLog.log("  Leaked ${it.value} of ${it.key}")
+            }
+        }
     }
 }
 fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {

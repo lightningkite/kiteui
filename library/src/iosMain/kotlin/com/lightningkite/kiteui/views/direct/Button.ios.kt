@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = FrameLayoutButton(this)
+    override val native = FrameLayoutButton()
 
     init {
         activityIndicator {
@@ -19,9 +19,9 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
 
     override fun actionSet(value: Action?) {
         super.actionSet(value)
-        native.onClick = {
+        onRemove(native.setOnClick {
             value?.startAction(this)
-        }
+        })
     }
 
     actual var enabled: Boolean

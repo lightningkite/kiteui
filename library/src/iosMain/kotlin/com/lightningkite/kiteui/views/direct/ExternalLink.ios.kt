@@ -15,12 +15,12 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
 actual class ExternalLink actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton(this)
+    override val native = FrameLayoutButton()
     init {
-        native.onClick = {
+        onRemove(native.setOnClick {
             to.let { UIApplication.sharedApplication.openURL(NSURL(string = it), mapOf<Any?, Any?>()) {} }
             launch { onNavigate() }
-        }
+        })
     }
 
 

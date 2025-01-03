@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.launch
@@ -18,10 +19,11 @@ import platform.darwin.sel_registerName
 
 
 actual class DismissBackground actual constructor(context: RContext) : RView(context) {
-    override val native = NDismissBackground(this)
-
+    override val native = NDismissBackground()
     actual fun onClick(action: suspend () -> Unit): Unit {
-        native.onClick = action
+        native.onClick = {
+            launch { action() }
+        }
     }
 
     override fun postSetup() {
@@ -31,6 +33,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
 
     init {
         onClick { dialogScreenNavigator.clear() }
+        onRemove { native.onClick = {} }
     }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
@@ -41,7 +44,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 
-actual class NDismissBackground(val calculationContext: CalculationContext) : UIButton(CGRectZero.readValue()),
+actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
     var padding: Double
@@ -50,7 +53,7 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
             extensionPadding = value
         }
 
-    var onClick: suspend () -> Unit = {}
+    var onClick: () -> Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     var anchor: Pair<PopoverPreferredDirection, UIView>? = null
     override fun getSpacingOverrideProperty() = spacingOverride
@@ -122,6 +125,6 @@ actual class NDismissBackground(val calculationContext: CalculationContext) : UI
 
     @ObjCAction
     fun onclick() {
-        this.calculationContext.launch { onClick() }
+        onClick()
     }
 }

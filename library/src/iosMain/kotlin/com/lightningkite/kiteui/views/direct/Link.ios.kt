@@ -11,9 +11,9 @@ import kotlinx.coroutines.launch
 
 
 actual class Link actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton(this)
+    override val native = FrameLayoutButton()
     init {
-        native.onClick = {
+        onRemove(native.setOnClick {
             to?.invoke()?.let {
                 if(resetsStack) {
                     onNavigator.reset(it)
@@ -22,7 +22,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
                 }
                 launch { onNavigate() }
             }
-        }
+        })
     }
 
     actual var to: (() -> Screen)? = null

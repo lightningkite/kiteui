@@ -20,14 +20,14 @@ import platform.darwin.sel_registerName
 //class LayoutParams()
 
 
-class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0
         set(value) { extensionPadding = value }
 
-    var onClick: ()->Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
+
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
     override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
@@ -46,14 +46,19 @@ class FrameLayoutButton(val calculationContext: CalculationContext): UIButton(CG
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
     }
+
     init {
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
-
+    fun setOnClick(action: ()->Unit): ()->Unit {
+        onClick = action
+        return { onClick = null }
+    }
+    private var onClick: (()->Unit)? = null
     @ObjCAction
     fun onclick() {
         if (enabled) {
-            onClick()
+            onClick?.invoke()
         }
     }
 }

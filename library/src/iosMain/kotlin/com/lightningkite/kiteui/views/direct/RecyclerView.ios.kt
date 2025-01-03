@@ -4,6 +4,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.LateInitProperty
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UICollectionViewFlowLayout3Protocol
@@ -11,6 +13,7 @@ import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.kiteui.reactive.ReactiveLoading
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.reactive.reactiveScope
@@ -18,6 +21,8 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIfAllowed
+import com.lightningkite.kiteui.views.direct.RecyclerView
+import com.lightningkite.kiteui.views.direct.RecyclerView.ChildType
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.withoutAnimation
 import kotlinx.cinterop.BetaInteropApi
@@ -46,66 +51,91 @@ import kotlin.native.ref.WeakReference
 
 actual class RecyclerView actual constructor(context: RContext) : RView(context) {
 
+    private var delegate: UICollectionViewDelegateProtocol? = object: NSObject(), UICollectionViewDelegateProtocol {
+        @OptIn(ExperimentalForeignApi::class)
+        override fun scrollViewDidScroll(scrollView: UIScrollView) {
+            val native = scrollView as UICollectionView
+            native.bounds.useContents {
+                val outerBounds = this
+                (native.indexPathsForVisibleItems as List<NSIndexPath>).filter {
+                    native.cellForItemAtIndexPath(it)?.frame?.useContents {
+                        this.origin.x >= outerBounds.origin.x &&
+                                this.origin.y >= outerBounds.origin.y &&
+                                this.origin.x + this.size.width <= outerBounds.origin.x + outerBounds.size.width &&
+                                this.origin.y + this.size.height <= outerBounds.origin.y + outerBounds.size.height
+                    } == true
+                }.rangeOfOrNull { it.row.toInt() }?.let {
+                    it.start.let { if (_firstVisibleIndex.value != it) _firstVisibleIndex.value = it }
+                    it.endInclusive.let { if (_lastVisibleIndex.value != it) _lastVisibleIndex.value = it }
+                }
+            }
+            native.indexPathForItemAtPoint(native.frame.useContents { CGPointMake(size.width / 2, size.height / 2) })?.row?.toInt()?.let {
+                if (_centerIndex.value != it) _centerIndex.value = it
+            }
+        }
+    }
+
     companion object {
-        fun makeLayout(vertical: Boolean, columns: Int): UICollectionViewFlowLayout {
-            val layout = UICollectionViewFlowLayout()
-            layout.setEstimatedItemSize(
-                CGSizeMake(
-                    UICollectionViewFlowLayoutAutomaticSize.width,
-                    UICollectionViewFlowLayoutAutomaticSize.height
-                )
-            )
-            layout.scrollDirection = if (vertical) UICollectionViewScrollDirection.UICollectionViewScrollDirectionVertical
-            else UICollectionViewScrollDirection.UICollectionViewScrollDirectionHorizontal
+        fun makeLayout(vertical: Boolean, columns: Int, padding: Dimension? = null, spacing: Dimension): UICollectionViewCompositionalLayout {
+            println("makeLayout vertical: $vertical, columns: $columns, padding: $padding, spacing: $spacing")
+//            NSCollectionLayoutSection.sectionWithListConfiguration()
+            val layout = if(vertical) UICollectionViewCompositionalLayout(NSCollectionLayoutSection.sectionWithGroup(NSCollectionLayoutGroup.horizontalGroupWithLayoutSize(
+                layoutSize = NSCollectionLayoutSize.sizeWithWidthDimension(
+                    width = NSCollectionLayoutDimension.fractionalWidthDimension(1.0),
+                    heightDimension = NSCollectionLayoutDimension.uniformAcrossSiblingsWithEstimate(100.0),
+                ),
+                subitem = NSCollectionLayoutItem.itemWithLayoutSize(
+                    layoutSize = NSCollectionLayoutSize.sizeWithWidthDimension(
+                        width = NSCollectionLayoutDimension.fractionalWidthDimension(1.0 / columns),
+                        heightDimension = NSCollectionLayoutDimension.uniformAcrossSiblingsWithEstimate(100.0),
+                    ),
+                ),
+                count = columns.toLong()
+            )).apply {
+                contentInsets = NSDirectionalEdgeInsetsMake(top = 0.0, leading = 0.0, bottom = spacing.value, trailing = 0.0)
+            }) else UICollectionViewCompositionalLayout(NSCollectionLayoutSection.sectionWithGroup(NSCollectionLayoutGroup.verticalGroupWithLayoutSize(
+                layoutSize = NSCollectionLayoutSize.sizeWithWidthDimension(
+                    width = NSCollectionLayoutDimension.uniformAcrossSiblingsWithEstimate(100.0),
+                    heightDimension = NSCollectionLayoutDimension.fractionalHeightDimension(1.0),
+                ),
+                subitem = NSCollectionLayoutItem.itemWithLayoutSize(
+                    layoutSize = NSCollectionLayoutSize.sizeWithWidthDimension(
+                        width = NSCollectionLayoutDimension.uniformAcrossSiblingsWithEstimate(100.0),
+                        heightDimension = NSCollectionLayoutDimension.fractionalHeightDimension(1.0 / columns),
+                    ),
+                ),
+                count = columns.toLong()
+            )).apply {
+                contentInsets = NSDirectionalEdgeInsetsMake(top = 0.0, leading = 0.0, bottom = 0.0, trailing = spacing.value)
+            }).apply {
+                configuration = configuration.apply {
+                    scrollDirection =
+                        UICollectionViewScrollDirection.UICollectionViewScrollDirectionHorizontal
+                }
+            }
             return layout
         }
     }
 
-    override val native = UICollectionView2(
+    override val native = UICollectionView(
         CGRectMake(
             0.0,
             0.0,
             0.0,
             0.0
         ),
-        makeLayout(true, 1)
+        makeLayout(true, 1, null, 0.px)
     ).apply {
         backgroundColor = UIColor.clearColor
-        var lastWidth = -1.0
-        var lastHeight = -1.0
-        onRelayout = WeakReference(label@{
-            if (bounds.useContents { size.width != lastWidth || size.height != lastHeight }) {
-                refreshEstimatedItemSize()
-                bounds.useContents { lastWidth = size.width; lastHeight = size.height }
-            }
-        })
+        delegate = this@RecyclerView.delegate
     }
-
-    private fun refreshEstimatedItemSize() {
-//        val rv = this
-//        val rvn = native
-//        val rvl = native.collectionViewLayout as? UICollectionViewFlowLayout ?: return
-//        val size = native.bounds.useContents { CGSizeMake(size.width, size.height) }
-//        rvl.setEstimatedItemSize(
-//            CGSizeMake(
-//                if (rv.vertical) {
-//                    val s = size.useContents { width } -
-//                            rvn.safeAreaInsets.useContents { left + right } -
-//                            rvl.sectionInset.useContents { left + right } -
-//                            (rv.columns - 1) * rvl.minimumInteritemSpacing
-//                    s / rv.columns
-//                } else 100.0,
-//                if (!rv.vertical) {
-//                    val s = size.useContents { height } -
-//                            rvn.safeAreaInsets.useContents { top + bottom } -
-//                            rvl.sectionInset.useContents { top + bottom } -
-//                            (rv.columns - 1) * rvl.minimumInteritemSpacing
-//                    s / rv.columns
-//                } else 100.0,
-//            ).also {
-//                println("Estimated item size: ${it.useContents { "$width x $height" }}")
-//            }
-//        )
+    init {
+        onRemove {
+            native.delegate = null
+            native.dataSource = null
+            delegate = null
+            dataSource = null
+        }
     }
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -120,40 +150,71 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
         // Do nothing.  All children are virtual and managed by the native recycler view.
     }
 
-    private var lastSource: GeneralCollectionDelegate<*>? = null
     actual fun <T> children(
         items: Readable<List<T>>,
         render: ViewWriter.(value: Readable<T>) -> Unit,
-    ): Unit {
-        val placeholders = 5
-        val source = GeneralCollectionDelegate(this, render, placeholders)
-        native.setDataSource(source)
-        native.setDelegate(source)
-        reactiveScope(onLoad = {
-            source.loading = true
-            native.reloadData()
-        }) {
-            source.list = items()
-            source.loading = false
-            native.reloadData()
-        }
-        lastSource = source
+    ): Unit = children(items, { it }, listOf(object : ChildType<T> {
+        override fun matches(value: T): Boolean = true
+        override fun render(viewWriter: ViewWriter, value: Readable<T>) = render(viewWriter, value)
+    }))
+
+    private var dataSource: UICollectionViewDiffableDataSource? = null
+
+    interface ChildType<T> {
+        fun matches(value: T): Boolean
+        fun render(viewWriter: ViewWriter, value: Readable<T>)
+    }
+
+    fun <T, ID> children(items: Readable<List<T>>, identity: (T) -> ID, types: List<ChildType<T>>): Unit {
+        dataSource = native.configure(this, items, identity, types)
     }
 
     actual var vertical: Boolean = true
         set(value) {
             field = value
-            native.collectionViewLayout = makeLayout(vertical, columns)
-            refreshEstimatedItemSize()
+            refreshLayout()
         }
-
 
     actual var columns: Int = 1
         set(value) {
             field = value
-            native.collectionViewLayout = makeLayout(vertical, columns)
-            refreshEstimatedItemSize()
+            refreshLayout()
         }
+
+    private var paddingAmount: Dimension? = null
+    private var defaultSpacing: Dimension = 0.rem
+    override fun applyPadding(dimension: Dimension?) {
+        super.applyPadding(dimension)
+        paddingAmount = dimension
+        val v = dimension?.value ?: 0.0
+        native.contentInset = UIEdgeInsetsMake(v, v, v, v)
+        defaultSpacing = theme.spacing
+        refreshLayout()
+    }
+
+    override fun spacingSet(value: Dimension?) {
+        super.spacingSet(value)
+        refreshLayout()
+    }
+
+    private var last_vertical = vertical
+    private var last_columns = columns
+    private var last_paddingAmount = paddingAmount
+    private var last_defaultSpacing = defaultSpacing
+    fun refreshLayout() {
+        if (
+            last_vertical != vertical ||
+            last_columns != columns ||
+            last_paddingAmount != paddingAmount ||
+            last_defaultSpacing != defaultSpacing
+        ) {
+            native.collectionViewLayout = makeLayout(vertical, columns, paddingAmount, defaultSpacing)
+            last_vertical = vertical
+            last_columns = columns
+            last_paddingAmount = paddingAmount
+            last_defaultSpacing = defaultSpacing
+        }
+    }
 
     actual fun scrollToIndex(
         index: Int,
@@ -173,16 +234,15 @@ actual class RecyclerView actual constructor(context: RContext) : RView(context)
             )
         }
     }
-
-    actual val firstVisibleIndex: Readable<Int>
-        get() = (native.delegate as? GeneralCollectionDelegate<*>)?.firstVisibleIndex ?: Constant(0)
-
-    actual val lastVisibleIndex: Readable<Int>
-        get() = (native.delegate as? GeneralCollectionDelegate<*>)?.lastVisibleIndex ?: Constant(0)
-
-    val centerIndex: Readable<Int>
-        get() = (native.delegate as? GeneralCollectionDelegate<*>)?.centerIndex ?: Constant(0)
+    private val _firstVisibleIndex = Property<Int>(0)
+    actual val firstVisibleIndex: Readable<Int> get() = _firstVisibleIndex
+    private val _lastVisibleIndex = Property<Int>(0)
+    actual val lastVisibleIndex: Readable<Int> get() = _lastVisibleIndex
+    private val _centerIndex = Property<Int>(0)
+    val centerIndex: Readable<Int> get() = _centerIndex
 }
+
+internal val ObsUICollectionViewCell_classRef = object_getClass(ObsUICollectionViewCell<Int>())!!
 
 private var nextId: Int = 1
 
@@ -197,35 +257,18 @@ class ObsUICollectionViewCell<T> : UICollectionViewCell, UIViewWithSizeOverrides
     @OverrideInit
     constructor(coder: NSCoder) : super(coder = coder)
 
-    @OptIn(ExperimentalNativeApi::class)
-    var recyclerView: WeakReference<RecyclerView>? = null
-
-    var debugDescriptionInfo: String = ""
-    var debugDescriptionInfo2: String = ""
-    override fun debugDescription(): String? = "${super.debugDescription()} $debugDescriptionInfo $debugDescriptionInfo2"
-
 //    var lockWidth = false
 //    var lockHeight = false
 
     val id = nextId++
     val data = LateInitProperty<T>()
     var ready = false
+
     var myNeedsMeasure = true
     var lock = false
 
     override fun subviewDidChangeSizing(view: UIView?) {
-        val it = view ?: return
-        val index = subviews.indexOf(view)
-        if (index != -1) childSizeCache[index].clear()
-        setNeedsLayout()
-        if(lock) return
-        println("Cell $id: Unlocked subviewDidChangeSizing")
-        // This is occurring because the style changes, which does invalidate the size at the moment.
-        myNeedsMeasure = true
-        // This is already scheduled; no need to schedule it under the hood.
-        recyclerView?.get()?.native?.collectionViewLayout?.invalidateLayout()
-
-//        frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+        frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     }
 
     var padding: Double
@@ -235,54 +278,6 @@ class ObsUICollectionViewCell<T> : UICollectionViewCell, UIViewWithSizeOverrides
         }
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
-
-    private var lastSize: CGFloat = 0.0
-    override fun preferredLayoutAttributesFittingAttributes(layoutAttributes: UICollectionViewLayoutAttributes): UICollectionViewLayoutAttributes {
-        val rv = recyclerView?.get() ?: run {
-            println("val rv = recyclerView?.get() is null")
-            return layoutAttributes
-        }
-        val rvn = rv.native as UICollectionView
-        val rvl = rvn.collectionViewLayout as? UICollectionViewFlowLayout ?: run {
-            println("val rvl = rvn.collectionViewLayout as? UICollectionViewFlowLayout is null")
-            return layoutAttributes
-        }
-        val modifiedSize = CGSizeMake(
-            if (rv.vertical) {
-                val s = rvn.bounds.useContents { size.width } -
-                        rvn.safeAreaInsets.useContents { left + right } -
-                        rvl.sectionInset.useContents { left + right } -
-                        (rv.columns - 1) * rvl.minimumInteritemSpacing
-                floor(s / rv.columns)
-            } else 10000.0,
-            if (!rv.vertical) {
-                val s = rvn.bounds.useContents { size.height } -
-                        rvn.safeAreaInsets.useContents { top + bottom } -
-                        rvl.sectionInset.useContents { top + bottom } -
-                        (rv.columns - 1) * rvl.minimumInteritemSpacing
-                floor(s / rv.columns)
-            } else 10000.0,
-        )
-        println("Cell $id: preferredLayoutAttributesFittingAttributes ${modifiedSize.useContents { "$width x $height" }}")
-        if (myNeedsMeasure) {
-            myNeedsMeasure = false
-            frameLayoutSizeThatFits(modifiedSize, childSizeCache).useContents {
-                println("Cell $id: Measured ${modifiedSize.useContents { "$width x $height" }} -> ${"$width x $height"}")
-                val measured = this
-                lastSize = if(rv.vertical) measured.height else measured.width
-            }
-        }
-        println("Cell $id: preferredLayoutAttributesFittingAttributes reporting $lastSize")
-        layoutAttributes.setBounds(CGRectMake(
-            0.0,
-            0.0,
-            if(rv.vertical) modifiedSize.useContents { width }
-            else lastSize,
-            if(rv.vertical) lastSize
-            else modifiedSize.useContents { width },
-        ))
-        return layoutAttributes
-    }
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
@@ -303,90 +298,11 @@ class ObsUICollectionViewCell<T> : UICollectionViewCell, UIViewWithSizeOverrides
         return frameLayoutHitTest(point, withEvent).takeUnless { it == this }
     }
 
-    init {
-        addSubview(UILabel(CGRectMake(0.0, 0.0, 100.0, 50.0)).apply {
-            text = "Cell $id"
-        })
-    }
-}
-
-@Suppress("DIFFERENT_NAMES_FOR_THE_SAME_PARAMETER_IN_SUPERTYPES", "RETURN_TYPE_MISMATCH_ON_INHERITANCE", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED")
-class GeneralCollectionDelegate<T>(
-    private val parentView: RView,
-    private val render: ViewWriter.(value: Readable<T>) -> Unit,
-    private val placeholders: Int,
-) : NSObject(), UICollectionViewDelegateProtocol, UICollectionViewDataSourceProtocol {
-    var list: List<T> = listOf()
-    var loading: Boolean = false
-    val registered = HashSet<String>()
-
-    @OptIn(BetaInteropApi::class)
-    @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-    override fun collectionView(collectionView: UICollectionView, cellForItemAtIndexPath: NSIndexPath): UICollectionViewCell {
-        if (registered.add("main")) {
-            collectionView.registerClass(object_getClass(ObsUICollectionViewCell<T>())!!, "main")
-        }
-        @Suppress("UNCHECKED_CAST")
-        val cell = collectionView.dequeueReusableCellWithReuseIdentifier("main", cellForItemAtIndexPath) as ObsUICollectionViewCell<T>
-        cell.lock = true
-        collectionView.withoutAnimation {
-            if (loading) {
-                cell.data.unset()
-                cell.myNeedsMeasure = true
-            } else {
-                list.getOrNull(cellForItemAtIndexPath.row.toInt())?.let {
-                    cell.data.value = it
-                    cell.myNeedsMeasure = true
-                }
-            }
-            if (!cell.ready) {
-                cell.recyclerView = (parentView as? RecyclerView)?.let(::WeakReference)
-                object : ViewWriter() {
-                    override val coroutineContext: CoroutineContext get() = parentView.coroutineContext
-                    override val context: RContext get() = parentView.context
-                    override fun willAddChild(view: RView) {
-                        parentView.willAddChild(view)
-                    }
-
-                    override fun addChild(view: RView) {
-                        parentView.addChild(view)
-                        cell.addSubview(view.native)
-                    }
-                }.render(cell.data)
-                cell.ready = true
-            }
-        }
-        cell.lock = false
-        return cell
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    override fun scrollViewDidScroll(scrollView: UIScrollView) {
-        val native = scrollView as UICollectionView
-        native.bounds.useContents {
-            val outerBounds = this
-            (native.indexPathsForVisibleItems as List<NSIndexPath>).filter {
-                native.cellForItemAtIndexPath(it)?.frame?.useContents {
-                    this.origin.x >= outerBounds.origin.x &&
-                            this.origin.y >= outerBounds.origin.y &&
-                            this.origin.x + this.size.width <= outerBounds.origin.x + outerBounds.size.width &&
-                            this.origin.y + this.size.height <= outerBounds.origin.y + outerBounds.size.height
-                } == true
-            }.rangeOfOrNull { it.row.toInt() }?.let {
-                it.start.let { if (firstVisibleIndex.value != it) firstVisibleIndex.value = it }
-                it.endInclusive.let { if (lastVisibleIndex.value != it) lastVisibleIndex.value = it }
-            }
-        }
-        native.indexPathForItemAtPoint(native.frame.useContents { CGPointMake(size.width / 2, size.height / 2) })?.row?.toInt()?.let {
-            if (centerIndex.value != it) centerIndex.value = it
-        }
-    }
-
-    override fun collectionView(collectionView: UICollectionView, numberOfItemsInSection: NSInteger): NSInteger = if (loading) placeholders.toLong() else list.size.toLong()
-
-    val firstVisibleIndex = Property(0)
-    val centerIndex = Property(0)
-    val lastVisibleIndex = Property(0)
+//    init {
+//        addSubview(UILabel(CGRectMake(0.0, 0.0, 100.0, 50.0)).apply {
+//            text = "Cell $id"
+//        })
+//    }
 }
 
 inline fun <S, T : Comparable<T>> Iterable<S>.rangeOfOrNull(calculate: (S) -> T): ClosedRange<T>? {
@@ -401,10 +317,71 @@ inline fun <S, T : Comparable<T>> Iterable<S>.rangeOfOrNull(calculate: (S) -> T)
     else return min..max
 }
 
-class UICollectionView2(frame: CValue<CGRect>, collectionViewLayout: UICollectionViewLayout) : UICollectionView(frame, collectionViewLayout) {
-    var onRelayout: WeakReference<() -> Unit>? = null
-    override fun layoutSubviews() {
-        onRelayout?.get()?.invoke()
-        super.layoutSubviews()
+fun <T, ID> UICollectionView.configure(base: RView, items: Readable<List<T>>, identity: (T) -> ID, types: List<ChildType<T>>): UICollectionViewDiffableDataSource {
+    val registrations = types.map {
+        UICollectionViewCellRegistration.registrationWithCellClass(ObsUICollectionViewCell_classRef) { cell, path, value ->
+            cell as ObsUICollectionViewCell<T>
+            cell.withoutAnimation {
+                if (value == ReactiveLoading)
+                    cell.data.unset()
+                else
+                    cell.data.value = value as T
+
+                if (!cell.ready) {
+                    cell.ready = true
+                    it.render(object : ViewWriter() {
+                        override val context: RContext get() = base.context
+                        override fun willAddChild(view: RView) = base.willAddChild(view)
+                        override val coroutineContext: CoroutineContext get() = base.coroutineContext
+                        override fun addChild(view: RView) {
+                            base.addChild(view)
+                            cell.addSubview(view.native)
+                        }
+                    }, cell.data)
+                }
+            }
+        }
     }
+    var data: List<T>? = null
+    val new = UICollectionViewDiffableDataSource(base.native as UICollectionView) { collectionView, indexPath, identifier ->
+        val v = data?.get(indexPath!!.item.toInt())
+        val ri = if (v == null) 0 else types.indexOfFirst { it.matches(v) }.coerceAtLeast(0)
+        val r = registrations[ri]
+        collectionView!!.dequeueConfiguredReusableCellWithRegistration(r, indexPath!!, v ?: ReactiveLoading)
+    }
+    dataSource = new
+    var first = false
+    items.state.onSuccess { it ->
+        data = it
+        val s = NSDiffableDataSourceSnapshot().apply {
+            appendSectionsWithIdentifiers(listOf(0))
+            appendItemsWithIdentifiers(data.map(identity), intoSectionWithIdentifier = 0)
+        }
+        if (first) {
+            new.applySnapshotUsingReloadData(s)
+            first = false
+        } else {
+            new.applySnapshot(s, animatingDifferences = true)
+        }
+    }
+//    base.reactiveScope(onLoad =  {
+////            data = null
+////            if(first) new.applySnapshotUsingReloadData(NSDiffableDataSourceSnapshot().apply {
+////                appendSectionsWithIdentifiers()
+////                appendItemsWithIdentifiers()
+////            })
+//    }) {
+//        data = items()
+//        val s = NSDiffableDataSourceSnapshot().apply {
+//            appendSectionsWithIdentifiers(listOf(0))
+//            appendItemsWithIdentifiers(data.map(identity), intoSectionWithIdentifier = 0)
+//        }
+//        if(first) {
+//            new.applySnapshotUsingReloadData(s)
+//            first = false
+//        } else {
+//            new.applySnapshot(s, animatingDifferences = true)
+//        }
+//    }
+    return new
 }

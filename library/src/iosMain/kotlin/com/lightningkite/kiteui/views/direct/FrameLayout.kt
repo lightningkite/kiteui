@@ -25,9 +25,8 @@ import kotlin.math.max
 class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var padding: Double
         get() = extensionPadding ?: 0.0
-        set(value) {
-            extensionPadding = value
-        }
+        set(value) { extensionPadding = value }
+
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
 
@@ -39,7 +38,6 @@ class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProto
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
-
     override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null due to GC interactions
         @Suppress("SENSELESS_COMPARISON")

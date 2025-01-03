@@ -9,7 +9,7 @@ import platform.UIKit.UIView
 
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton(this)
+    override val native: FrameLayoutButton = FrameLayoutButton()
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
@@ -23,9 +23,9 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
         _checked.addListener { refreshTheming() }
-        native.onClick = {
+        onRemove(native.setOnClick {
             _checked.value = !_checked.value
-        }
+        })
     }
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {

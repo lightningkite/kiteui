@@ -12,13 +12,9 @@ import platform.UIKit.UIView
 
 
 actual class CircularProgress actual constructor(context: RContext) : RView(context) {
-    override val native = TODO("Not implemented yet")
+    override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
-
-
     }
-    actual var ratio: Float
-        get() =TODO("Not implemented yet")
-        set(value) { TODO("Not implemented yet") }
+    actual var ratio: Float = 0f
 }
