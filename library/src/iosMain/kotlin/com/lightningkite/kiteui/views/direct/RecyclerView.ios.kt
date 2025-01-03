@@ -261,14 +261,29 @@ class ObsUICollectionViewCell<T> : UICollectionViewCell, UIViewWithSizeOverrides
 //    var lockHeight = false
 
     val id = nextId++
+    var indexPath: NSIndexPath? = null
     val data = LateInitProperty<T>()
     var ready = false
 
     var myNeedsMeasure = true
     var lock = false
+    var uiCollectionView: WeakReference<UICollectionView>? = null
 
     override fun subviewDidChangeSizing(view: UIView?) {
-        frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+        val it = view ?: return
+        val index = subviews.indexOf(view)
+        if (index != -1) childSizeCache[index].clear()
+        if (!lock) {
+            uiCollectionView?.get()?.let {
+//                indexPath?.let { path ->
+//                    println("Invalidate item at path ${path.section} / ${path.item}")
+//                    it.collectionViewLayout.invalidateLayoutWithContext(UICollectionViewLayoutInvalidationContext().apply {
+//                        invalidateItemsAtIndexPaths(listOf(path))
+//                    })
+//                }
+                it.collectionViewLayout.invalidateLayout()
+            }
+        }
     }
 
     var padding: Double
@@ -298,6 +313,22 @@ class ObsUICollectionViewCell<T> : UICollectionViewCell, UIViewWithSizeOverrides
         return frameLayoutHitTest(point, withEvent).takeUnless { it == this }
     }
 
+    private var lastSize: CGFloat = 0.0
+    override fun preferredLayoutAttributesFittingAttributes(layoutAttributes: UICollectionViewLayoutAttributes): UICollectionViewLayoutAttributes {
+        println("Cell $id: preferredLayoutAttributesFittingAttributes ${layoutAttributes.size.useContents { "$width x $height" }}")
+        val measured = frameLayoutSizeThatFits(layoutAttributes.size, childSizeCache)
+        measured.useContents {
+            println("Cell $id: Measured ${layoutAttributes.size.useContents { "$width x $height" }} -> ${"$width x $height"}")
+        }
+        layoutAttributes.setBounds(CGRectMake(
+            0.0,
+            0.0,
+            measured.useContents { width },
+            measured.useContents { height },
+        ))
+        return layoutAttributes
+    }
+
 //    init {
 //        addSubview(UILabel(CGRectMake(0.0, 0.0, 100.0, 50.0)).apply {
 //            text = "Cell $id"
@@ -321,7 +352,10 @@ fun <T, ID> UICollectionView.configure(base: RView, items: Readable<List<T>>, id
     val registrations = types.map {
         UICollectionViewCellRegistration.registrationWithCellClass(ObsUICollectionViewCell_classRef) { cell, path, value ->
             cell as ObsUICollectionViewCell<T>
+            cell.uiCollectionView = WeakReference(this)
+            cell.lock = true
             cell.withoutAnimation {
+                cell.indexPath = path
                 if (value == ReactiveLoading)
                     cell.data.unset()
                 else
@@ -340,6 +374,7 @@ fun <T, ID> UICollectionView.configure(base: RView, items: Readable<List<T>>, id
                     }, cell.data)
                 }
             }
+            cell.lock = false
         }
     }
     var data: List<T>? = null
