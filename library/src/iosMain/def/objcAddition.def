@@ -5,6 +5,7 @@ package = com.lightningkite.kiteui.objc
 #import <UIKit/UIImage.h>
 #import <UIKit/UIView.h>
 #import <UIKit/UIColor.h>
+#import <UIKit/UICollectionViewLayout.h>
 #import <CoreGraphics/CGColor.h>
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAGradientLayer.h>
@@ -58,6 +59,10 @@ id cgColorRefasIdType(CGColorRef color) {
 - (void)prepareLayout;
 - (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset
                                  withScrollingVelocity:(CGPoint)velocity;
+@end
+@protocol UICollectionViewFlowLayout3
+- (UICollectionViewLayoutAttributes *) layoutAttributesForItemAtIndexPath:(NSIndexPath *) indexPath;
+- (NSArray<__kindof UICollectionViewLayoutAttributes *> *) layoutAttributesForElementsInRect:(CGRect) rect;
 @end
 
 @protocol UIGestureRecognizerCustomP
