@@ -1707,3 +1707,9 @@ actual inline var FutureElementAttributes.writingMode: String?
 actual inline var FutureElementAttributes.zIndex: String?
     get() = native.zIndex as? String
     set(value) { native.zIndex = value }
+actual inline fun FutureElementStyle.set(key: String, value: String) {
+    native.setProperty(key, value)
+}
+actual inline fun FutureElementStyle.unset(key: String) {
+    native.removeProperty(key)
+}

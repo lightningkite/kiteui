@@ -9,16 +9,17 @@ import kotlinx.coroutines.*
 import kotlin.random.Random
 
 abstract class RViewWithAction(context: RContext) : RView(context) {
-//    private var actionStatusRemove: (() -> Unit)? = null
+    private var actionStatusRemove: (() -> Unit)? = null
+    init { onRemove { actionStatusRemove?.invoke(); actionStatusRemove = null } }
     var action: Action? = null
         set(value) {
-//            field = value
+            field = value
             actionSet(value)
         }
 
     open fun actionSet(value: Action?) {
-//        actionStatusRemove?.invoke()
-//        actionStatusRemove = value?.let { listenForWorking(it) }
+        actionStatusRemove?.invoke()
+        actionStatusRemove = value?.let { listenForWorking(it) }
     }
 }
 

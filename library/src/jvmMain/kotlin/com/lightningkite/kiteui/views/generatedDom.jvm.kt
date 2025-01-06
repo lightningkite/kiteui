@@ -678,6 +678,12 @@ actual inline var FutureElementStyle.writingMode: String?
 actual inline var FutureElementStyle.zIndex: String?
     get() = this["z-index"]
     set(value) { this["z-index"] = value }
+actual inline fun FutureElementStyle.set(key: String, value: String) {
+    this[key] = value
+}
+actual inline fun FutureElementStyle.unset(key: String) {
+    this[key] = null
+}
 actual inline var FutureElementAttributes.accept: String?
     get() = this["accept"]?.toString()
     set(value) { this["accept"] = value?.toString() }

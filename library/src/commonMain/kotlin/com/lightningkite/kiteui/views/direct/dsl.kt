@@ -320,3 +320,27 @@ inline fun ViewWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) , { vertical = true; setup() })
 }
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {}): ProgrammaticLayout {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ProgrammaticLayout(context), setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.verticalScroll(setup: ScrollView.() -> Unit = {}): ScrollView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ScrollView(context, horizontal = false, vertical = true), setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.horizontalScroll(setup: ScrollView.() -> Unit = {}): ScrollView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ScrollView(context, horizontal = true, vertical = false), setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.doubleScroll(setup: ScrollView.() -> Unit = {}): ScrollView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ScrollView(context, horizontal = true, vertical = true), setup)
+}

@@ -274,6 +274,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 display: none;
             }
 
+            .hideScrollbar {
+                scrollbar-width: none;
+            }
+            .hideScrollbar::-webkit-scrollbar {
+                display: none;
+            }
+
             .recyclerView > * > * {
                 overflow-anchor: none;
             }

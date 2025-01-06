@@ -54,6 +54,8 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen { ProgrammaticLayoutTestScreen }
+                linkScreen { SpecialScrollTest }
                 linkScreen { ScrollIntoViewTest }
                 linkScreen { FormattedInputTests() }
                 linkScreen { TestingGroundScreen }

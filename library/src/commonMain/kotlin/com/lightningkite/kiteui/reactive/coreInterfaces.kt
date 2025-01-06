@@ -15,6 +15,10 @@ interface Listenable : ResourceUse {
      */
     fun addListener(listener: () -> Unit): () -> Unit
     override fun beginUse(): () -> Unit = addListener { }
+
+    object Never: Listenable {
+        override fun addListener(listener: () -> Unit): () -> Unit = {}
+    }
 }
 fun Listenable.addAndRunListener(listener: () -> Unit): () -> Unit {
     val remover = addListener(listener)
@@ -24,6 +28,10 @@ fun Listenable.addAndRunListener(listener: () -> Unit): () -> Unit {
 
 interface Readable<out T> : Listenable {
     val state: ReadableState<T>
+    object Never: Readable<Nothing> {
+        override val state: ReadableState<Nothing> get() = ReadableState.notReady
+        override fun addListener(listener: () -> Unit): () -> Unit = {}
+    }
 }
 
 interface WriteOnly<T> {

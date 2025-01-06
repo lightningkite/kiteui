@@ -7,6 +7,17 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmName
 
+operator fun Listenable.plus(other: Listenable): Listenable = object: Listenable {
+    override fun addListener(listener: () -> Unit): () -> Unit {
+        val a = this@plus.addListener(listener)
+        val b = other.addListener(listener)
+        return {
+            a()
+            b()
+        }
+    }
+}
+
 private open class ReadableLens<S : Readable<O>, O, T>(val source: S, val get: (O) -> T) : BaseReadable<T>() {
     override var state: ReadableState<T>
         get() {
@@ -88,6 +99,12 @@ private open class ModifyImmediateLens<O, T>(source: ImmediateWritable<O>, get: 
             source.value = modify(source.value, value)
         }
 }
+
+fun <T> Listenable.lens(
+    get: () -> T
+): Readable<T> = ImmediateReadableLens(object: ImmediateReadable<Unit>, Listenable by this{
+    override val value: Unit get() = Unit
+}, { get() })
 
 fun <O, T> Readable<O>.lens(
     get: (O) -> T

@@ -28,3 +28,30 @@ fun <V> HtmlElementLike.vprop(
         }
     }
 }
+fun <V> HtmlElementLike.vread(
+    eventName: String,
+    get: HtmlElementLike.() -> V
+): Readable<V> {
+    return object : ImmediateReadable<V>, BaseListenable() {
+        init {
+            addEventListener(eventName) {
+                invokeAllListeners()
+            }
+        }
+
+        override val value: V
+            get() = get(this@vread)
+    }
+}
+
+fun HtmlElementLike.vevent(eventName: String): Listenable {
+    return object: BaseListenable() {
+        init {
+            addEventListener(eventName) {
+                invokeAllListeners()
+            }
+        }
+    }
+}
+
+expect fun HtmlElementLike.resizeObserver(): Listenable

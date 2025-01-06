@@ -35,6 +35,8 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
         informParentOfSizeChangeDueToChild()
     }
 
+    var onSizeChange: ()->Unit = {}
+
     data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
 
@@ -100,6 +102,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
         } ?: sizeWithoutPadding
     }
 
+    private var lastReportedSize: Size? = null
     override fun layoutSubviews() {
         val mySizeWithoutPadding = bounds.useContents { size.local }
         mySizeWithoutPadding.primary -= padding * 2
@@ -145,5 +148,9 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
                 if (!horizontal) primary else 0.0,
             )
         )
+        if(lastReportedSize != mySizeWithoutPadding) {
+            onSizeChange()
+            lastReportedSize = mySizeWithoutPadding
+        }
     }
 }
