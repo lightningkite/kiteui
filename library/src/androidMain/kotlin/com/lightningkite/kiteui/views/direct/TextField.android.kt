@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
@@ -22,7 +23,9 @@ import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).focusIsKeyboard()
+    override val native = EditText(context.activity).focusIsKeyboard().apply {
+        inputType = EditorInfo.TYPE_CLASS_TEXT
+    }
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)
         native.setTextColor(theme.foreground.colorInt())
