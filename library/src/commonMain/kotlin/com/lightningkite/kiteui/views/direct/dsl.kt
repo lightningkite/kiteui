@@ -344,3 +344,9 @@ inline fun ViewWriter.doubleScroll(setup: ScrollView.() -> Unit = {}): ScrollVie
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ScrollView(context, horizontal = true, vertical = true), setup)
 }
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.scroll(vertical: Boolean, horizontal: Boolean, setup: ScrollView.() -> Unit = {}): ScrollView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ScrollView(context, horizontal, vertical), setup)
+}
