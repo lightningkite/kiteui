@@ -29,7 +29,6 @@ import platform.posix.int64_t
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlin.js.JsName
 
 actual object ExternalServices {
     actual fun openTab(url: String) {

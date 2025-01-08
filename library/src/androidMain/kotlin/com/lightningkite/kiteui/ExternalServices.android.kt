@@ -88,16 +88,15 @@ actual object ExternalServices {
     actual suspend fun requestCaptureEnvironment(
         mimeTypes: List<String>
     ): FileReference? {
-        return requestImageCamera(false, MediaStore.ACTION_IMAGE_CAPTURE)
-//        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
-//            false,
-//            MediaStore.ACTION_IMAGE_CAPTURE
-//        )
-//        else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
-//            false,
-//            MediaStore.ACTION_VIDEO_CAPTURE
-//        )
-//        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
+        return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
+            false,
+            MediaStore.ACTION_IMAGE_CAPTURE
+        )
+        else if (mimeTypes.all { it.startsWith("video/") }) requestImageCamera(
+            false,
+            MediaStore.ACTION_VIDEO_CAPTURE
+        )
+        else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
     }
 
     private suspend fun requestImageCamera(
@@ -110,9 +109,8 @@ actual object ExternalServices {
             .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, fileProviderAuthority, it) }
 
         AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
-
-//            if (!it.accepted) return@requestPermissions cont.resume(null)
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            if (!it.accepted) return@requestPermissions cont.resume(null)
+            val intent = Intent(capture)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
             if (front) {
                 intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
