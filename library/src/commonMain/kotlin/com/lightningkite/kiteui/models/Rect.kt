@@ -3,7 +3,11 @@ package com.lightningkite.kiteui.models
 data class Size(
     val width: Double,
     val height: Double
-)
+) {
+    companion object {
+        val Zero = Size(0.0, 0.0)
+    }
+}
 
 data class Rect(
     val left: Double,

@@ -11,5 +11,11 @@ internal actual fun ScrollView.nativeScrollTo(
     // no-op: we're on the server side
     // perhaps add js to scroll on boot?
 }
+internal actual fun ScrollView.nativeScrollOffset(
+    x: Double, y: Double
+) {
+    // no-op: we're on the server side
+    // perhaps add js to scroll on boot?
+}
 internal actual fun ScrollView.nativeViewport(): Rect = Rect.Zero
 internal actual fun ScrollView.nativeContent(): Rect =  Rect.Zero

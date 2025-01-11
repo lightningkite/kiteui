@@ -356,12 +356,20 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 max-width: unset;
             }
 
+            .scroll-horizontal.independent > * {
+                min-width: 100%;
+            }
+
             .scroll-vertical {
                 overflow: hidden auto;
             }
 
             .scroll-vertical > * {
                 max-height: unset;
+            }
+
+            .scroll-vertical.independent > * {
+                min-height: 100%;
             }
 
             iframe#webpack-dev-server-client-overlay {

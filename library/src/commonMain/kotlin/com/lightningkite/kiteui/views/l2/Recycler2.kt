@@ -1,14 +1,17 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.reactive.LateInitProperty
+import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.atBottom
-import com.lightningkite.kiteui.views.atEnd
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 interface RecyclerViewPlaceable {
@@ -27,11 +30,39 @@ interface RecyclerViewPlaceable {
     val type: RecyclerViewRenderer<*>
 }
 
-interface RecyclerViewRenderer<T> {
+interface RecyclerViewData<T, ID> {
+    val range: IntRange
+    operator fun get(index: Int): T
+
+    object Empty : RecyclerViewData<Unit, Unit> {
+        override val range: IntRange get() = IntRange.EMPTY
+        override fun get(index: Int): Unit = Unit
+    }
+}
+
+interface RecyclerViewRendererSet<in T, out ID> {
+    fun id(item: T): ID
+    fun renderer(item: T): RecyclerViewRenderer<T>
+
+    object Empty : RecyclerViewRendererSet<Any?, Unit> {
+        override fun id(item: Any?): Unit = Unit
+        override fun renderer(item: Any?): RecyclerViewRenderer<Any?> = RecyclerViewRenderer.Blank
+    }
+}
+
+interface RecyclerViewRenderer<in T> {
     fun render(viewWriter: ViewWriter, data: Readable<T>, index: Readable<Int>)
+
+    object Blank : RecyclerViewRenderer<Any?> {
+        override fun render(viewWriter: ViewWriter, data: Readable<Any?>, index: Readable<Int>) {
+            with(viewWriter) { space() }
+        }
+    }
 }
 
 interface RecyclerViewPlacer {
+    val scrollBeyond: Double
+
     fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
@@ -46,6 +77,8 @@ interface RecyclerViewPlacer {
         writer: ViewWriter,
         render: ViewWriter.(Int) -> Unit
     )
+
+    fun inBounds(left: Double, top: Double, right: Double, bottom: Double, viewport: Rect): Boolean
 }
 
 data class RecyclerViewAnchor(
@@ -55,6 +88,22 @@ data class RecyclerViewAnchor(
 
 class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val spacing: Double, val overdraw: Double) :
     RecyclerViewPlacer {
+    override val scrollBeyond: Double
+        get() = padding
+
+    override fun inBounds(left: Double, top: Double, right: Double, bottom: Double, viewport: Rect): Boolean {
+        return rectOverlaps(
+            left,
+            top,
+            right,
+            bottom,
+            viewport.left - overdraw,
+            viewport.top - overdraw,
+            viewport.right + overdraw,
+            viewport.bottom + overdraw
+        )
+    }
+
     override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
@@ -62,13 +111,13 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         getCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect,
     ) {
-        val cellSize = (viewport.right - viewport.top) / columns - (columns - 1) * spacing + padding * 2
+        val cellSize = (viewport.right - viewport.left - padding * 2 - (columns - 1) * spacing) / columns
         val constrain = Size(
             width = cellSize,
             height = 10000.0
         )
         val cellOffsets = (0..<columns).map {
-            padding + (it - 1) * spacing + it * cellSize
+            padding + it * spacing + it * cellSize
         }
 
         val (anchorRowY, anchorRowIndex) = anchor?.let {
@@ -76,8 +125,8 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
             val cells = (0..<columns).map { getCell(index + it, constrain) }
             val max = cells.maxOf { it.size.height }
             when (it.align) {
-                Align.Start -> viewport.top
-                Align.End -> viewport.bottom - max
+                Align.Start -> viewport.top + padding
+                Align.End -> viewport.bottom - max - padding
                 else -> viewport.centerY - max / 2
             } to index
         } ?: existingCells.minByOrNull {
@@ -90,11 +139,16 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         // Place downwards, one row at a time
         var currentY = anchorRowY
         var currentIndex = anchorRowIndex
-        while (currentY < viewport.bottom + overdraw && currentIndex + columns <= dataRange.last) {
-            val cells = (0..<columns).map { getCell(currentIndex + it, constrain) }
-            val max = cells.maxOf { it.size.height }
+        while (currentY < viewport.bottom + overdraw && currentIndex <= dataRange.last) {
+            val cells = (0..<columns).map {
+                if (currentIndex + it in dataRange) getCell(
+                    currentIndex + it,
+                    constrain
+                ) else null
+            }
+            val max = cells.maxOf { it?.size?.height ?: 0.0 }
             for (i in 0..<columns) {
-                cells[i].place(cellOffsets[i], currentY, cellOffsets[i] + cellSize, currentY + max)
+                cells[i]?.place(cellOffsets[i], currentY, cellOffsets[i] + cellSize, currentY + max)
             }
             currentY += max + spacing
             currentIndex += columns
@@ -102,11 +156,16 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         // Place upwards, one row at a time
         currentY = anchorRowY - spacing
         currentIndex = anchorRowIndex - columns
-        while (currentY > viewport.top - overdraw) {
-            val cells = (0..<columns).map { getCell(currentIndex + it, constrain) }
-            val max = cells.maxOf { it.size.height }
+        while (currentY > viewport.top - overdraw && currentIndex + columns - 1 >= dataRange.first) {
+            val cells = (0..<columns).map {
+                if (currentIndex + it in dataRange) getCell(
+                    currentIndex + it,
+                    constrain
+                ) else null
+            }
+            val max = cells.maxOf { it?.size?.height ?: 0.0 }
             for (i in 0..<columns) {
-                cells[i].place(cellOffsets[i], currentY - max, cellOffsets[i] + cellSize, currentY)
+                cells[i]?.place(cellOffsets[i], currentY - max, cellOffsets[i] + cellSize, currentY)
             }
             currentY -= max + spacing
             currentIndex -= columns
@@ -133,15 +192,16 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
 
 class Recycler2(
     viewWriter: ViewWriter,
-    vertical: Boolean = true
+    vertical: Boolean = true,
+    val log: ConsoleRoot? = null
 ) {
     private val outerStack: Stack
     private val scroll: ScrollView
     private val cells: ProgrammaticLayout
-    private val sentinel: Stack
     private val fakeScroll: ScrollView
     private val fakeScrollContent: ProgrammaticLayout
     private val fakeScrollSentinel: Stack
+
     init {
         with(viewWriter) {
             stack {
@@ -151,9 +211,6 @@ class Recycler2(
                     showScrollBars = false
                     programmatic {
                         cells = this
-                        stack {
-                            sentinel = this
-                        }
                     }
                 }
                 if (vertical) atEnd - sizeConstraints(width = 0.5.rem)
@@ -169,6 +226,301 @@ class Recycler2(
                 }
             }
         }
+    }
+
+    private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor(0, Align.Start)
+
+    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1, 8.0, 8.0, 8.0)
+        set(value) {
+            field = value; cells.invalidateLayout()
+        }
+    var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
+        set(value) {
+            field = value
+            cells.invalidateLayout()
+        }
+    var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
+        set(value) {
+            field = value
+            cells.clearChildren()
+            activeCells = ArrayList()
+            reuseableCells = ArrayList()
+            cells.invalidateLayout()
+        }
+
+    private var activeCells = ArrayList<MyCell<*>>()
+    private var reuseableCells = ArrayList<MyCell<*>>()
+
+    private inner class MyCell<T> : RecyclerViewPlaceable {
+        val indexProp = Property(-1)
+        val data = LateInitProperty<T>()
+        override lateinit var type: RecyclerViewRenderer<*>
+        lateinit var view: RView
+        fun setup(
+            type: RecyclerViewRenderer<T>,
+            constrain: Size,
+            data: T?,
+            index: Int,
+            inProgress: ProgrammingLayoutInProgress
+        ) {
+            cells.beforeNextElementSetup { view = this }
+            data?.let { this.data.value = it } ?: this.data.unset()
+            this.indexProp.value = index
+            type.render(cells, this.data, indexProp)
+            size = inProgress.measure(view, constrain)
+        }
+
+        fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
+            view.withoutAnimation {
+                view.exists = true
+                view.opacity = 1.0
+            }
+            if(data != this.data.value) println("WARN: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
+            data?.let { this.data.value = it } ?: this.data.unset()
+            this.indexProp.value = index
+            size = inProgress.measure(view, constrain)
+        }
+
+        fun animatedDismiss() {
+            view.opacity = 0.0
+            val reuse = reuseableCells
+            activeCells.remove(this)
+            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
+                view.exists = false
+                reuse.add(this@MyCell)
+            }
+        }
+
+        fun instantDismiss() {
+            view.exists = false
+            activeCells.remove(this)
+            reuseableCells.add(this@MyCell)
+        }
+
+        override val index: Int get() = indexProp.value
+        override val item: Any? get() = data.state.getOrNull()
+        override var size: Size = Size(0.0, 0.0)
+        override var left: Double = 0.0
+        override var top: Double = 0.0
+        override var right: Double = 0.0
+        override var bottom: Double = 0.0
+
+        var leftNew: Double = 0.0
+        var topNew: Double = 0.0
+        var rightNew: Double = 0.0
+        var bottomNew: Double = 0.0
+
+        var leftOld: Double = 0.0
+        var topOld: Double = 0.0
+        var rightOld: Double = 0.0
+        var bottomOld: Double = 0.0
+
+        override fun place(left: Double, top: Double, right: Double, bottom: Double) {
+            leftNew = left
+            topNew = top
+            rightNew = right
+            bottomNew = bottom
+        }
+
+        fun offset(x: Double, y: Double) {
+            left += x
+            top += y
+            right += x
+            bottom += y
+            leftNew += x
+            topNew += y
+            rightNew += x
+            bottomNew += y
+        }
+    }
+
+    val reallyBig = 50_000.0
+    var inLayout: Boolean = false
+
+    init {
+        scroll.viewport.addListener {
+            if (!inLayout) cells.invalidateLayout()
+        }
+    }
+
+    val programmaticLayoutDelegate = object : ProgrammaticLayoutDelegate {
+        override fun measure(
+            layout: ProgrammaticLayout,
+            inProgress: ProgrammingLayoutInProgress,
+            within: Size
+        ): Size {
+            val default = within
+            if(within == Size.Zero) return default
+            val viewport = scroll.viewport.state.getOrNull() ?: return default
+            if (viewport.width == 0.0 || viewport.height == 0.0) return default
+            log?.log("LAYOUT STARTING with size $within")
+
+            @Suppress("UNCHECKED_CAST")
+            val data = data as? RecyclerViewData<Any, Any> ?: return default
+
+            @Suppress("UNCHECKED_CAST")
+            val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: return default
+
+            @Suppress("UNCHECKED_CAST")
+            val activeCells = activeCells as? MutableList<MyCell<Any>> ?: return default
+
+            @Suppress("UNCHECKED_CAST")
+            val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: return default
+            log?.log("LAYOUT STARTED IN VIEWPORT $viewport")
+
+            // Just nuke the offscreen cells immediately.
+            val instantDismissCount = activeCells.toList().count {
+                if(!placer.inBounds(it.left, it.top, it.right, it.bottom, viewport)){
+                    it.instantDismiss()
+                    true
+                } else false
+            }
+            log?.log("OFFSCREEN CELLS DISMISSED: ${instantDismissCount}")
+
+            // Time to run the placer.
+            //  Track the used cells so that we can handle them properly later
+            val usedCells = HashSet<MyCell<*>>()
+
+            activeCells.toSet().intersect(reuseableCells.toSet()).forEach {
+                log?.log("WARNING!!! Active and reusable cell $it")
+            }
+
+            placer.place(
+                dataRange = data.range,
+                anchor = anchor,
+                existingCells = activeCells,
+                getNewCell = { index, size ->
+                    val item = data[index]
+                    val id = rendererSet.id(item)
+                    //Pulling a cell should prefer (in order) same item ID, off-screen, create new
+                    (activeCells.find { it.item?.let(rendererSet::id) == id }?.also {
+                        // Same item ID: Data change should be animated here
+                        it.onPullForPlacing(size, item, index, inProgress)
+                    } ?: reuseableCells.popOrNull()?.also {
+                        // If placing just offscreen, place without animation.
+                        it.view.withoutAnimation { it.onPullForPlacing(size, item, index, inProgress) }
+                        activeCells += it
+                    } ?: MyCell<Any>().also {
+                        // If creating a new cell, make sure we don't animate.
+                        cells.withoutAnimation {
+                            it.setup(rendererSet.renderer(item), size, item, index, inProgress)
+                        }
+                        activeCells += it
+                    }).also { usedCells += it }
+                },
+                viewport = scroll.viewport.state.getOrNull() ?: return within
+            )
+            log?.log("INITIAL PLACEMENT EXECUTED")
+
+            // Check for attachment to top/bottom
+            var firstCell: MyCell<*>? = null
+            var lastCell: MyCell<*>? = null
+            usedCells.forEach {
+                if (it.index == data.range.first) firstCell = it
+                if (it.index == data.range.last) lastCell = it
+            }
+
+            log?.log("ATTACHMENT: $firstCell / $lastCell")
+            // Move the sentinel to create a good end for scrolling
+            val sentinelSize = if (lastCell != null) {
+                if (vertical)
+                    lastCell!!.bottomNew + placer.scrollBeyond
+                else
+                    lastCell!!.rightNew + placer.scrollBeyond
+
+            } else reallyBig
+            log?.log("SENTINEL SIZE: $sentinelSize")
+
+            // Pull everything in a direction seamlessly, without interrupting animations.
+            fun offset(x: Double, y: Double) {
+                log?.log("OFFSET: $x / $y")
+                activeCells.forEach {
+                    it.offset(x, y)
+                }
+                scroll.offset(x, y)
+            }
+
+            if (firstCell != null) {
+                // Shift everyone to attach to the top, preventing scrolling away past there
+                if(abs(placer.scrollBeyond - firstCell!!.topNew) > 1.0) {
+                    log?.log("SHIFTING CELLS TO ATTACH TO TOP")
+                    if (vertical) offset(0.0, -firstCell!!.topNew + placer.scrollBeyond)
+                    else offset(-firstCell!!.leftNew + placer.scrollBeyond, 0.0)
+                }
+
+                // Obnoxiously, we need to layout *again* to ensure we've filled out the entire space in this scenario.
+                // TODO
+            } else if (usedCells.isNotEmpty()) {
+                val sampleCell = usedCells.first()
+                // Ensure there is enough space to scroll upwards
+                val needsRecentering = if (vertical) sampleCell.topNew !in (reallyBig * 1 / 4)..(reallyBig * 3 / 4)
+                else sampleCell.topNew !in (reallyBig * 1 / 4)..(reallyBig * 3 / 4)
+                if (needsRecentering) {
+                    if (vertical) offset(0.0, reallyBig * 0.5 - sampleCell.topNew)
+                    else offset(reallyBig * 0.5 - sampleCell.leftNew, 0.0)
+                }
+            }
+
+            // Dismiss the cells we don't need anymore
+            val unusedCells = activeCells - usedCells
+            unusedCells.forEach {
+                if (rectOverlaps(
+                        it.leftNew,
+                        it.topNew,
+                        it.rightNew,
+                        it.bottomNew,
+                        viewport.left,
+                        viewport.top,
+                        viewport.right,
+                        viewport.bottom,
+                    )
+                ) {
+                    it.animatedDismiss()
+                } else {
+                    it.instantDismiss()
+                }
+            }
+            anchor = null
+
+            return if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
+        }
+
+        override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
+            if(within == Size.Zero) return
+            val viewport = scroll.viewport.state.getOrNull() ?: return
+            if (viewport.width == 0.0 || viewport.height == 0.0) return
+            try {
+                inLayout = true
+
+                fun commitPosition(it: MyCell<*>) {
+                    if (it.leftNew != it.leftOld ||
+                        it.topNew != it.topOld ||
+                        it.rightNew != it.rightOld ||
+                        it.bottomNew != it.bottomOld
+                    ) {
+                        log?.log("COMMITTING POSITION FOR ${it.index} from (${it.leftOld}, ${it.topOld}) to (${it.leftNew}, ${it.topNew})")
+                        inProgress.place(it.view, it.leftNew, it.topNew, it.rightNew, it.bottomNew)
+                        it.left = it.leftNew
+                        it.top = it.topNew
+                        it.right = it.rightNew
+                        it.bottom = it.bottomNew
+                        it.leftOld = it.leftNew
+                        it.topOld = it.topNew
+                        it.rightOld = it.rightNew
+                        it.bottomOld = it.bottomNew
+                    }
+                }
+
+                activeCells.forEach { commitPosition(it) }
+            } finally {
+                inLayout = false
+            }
+        }
+
+    }
+
+    init {
+        cells.delegate = programmaticLayoutDelegate
     }
 
     // STARTUP PROCEDURE
@@ -202,3 +554,15 @@ class Recycler2(
     // Scroll to the newly-created target cell using a simple scrollTo.
 
 }
+
+private fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null
+private fun rectOverlaps(
+    l1: Double,
+    t1: Double,
+    r1: Double,
+    b1: Double,
+    l2: Double,
+    t2: Double,
+    r2: Double,
+    b2: Double,
+): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2

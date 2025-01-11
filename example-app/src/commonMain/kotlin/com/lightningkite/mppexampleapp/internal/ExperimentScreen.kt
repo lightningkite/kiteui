@@ -3,15 +3,13 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.PlainTextException
-import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.kiteui.views.l2.*
+import kotlin.random.Random
 
 @Routable("experiment")
 object ExperimentScreen : Screen {
@@ -20,36 +18,41 @@ object ExperimentScreen : Screen {
 
     override fun ViewWriter.render() {
         stack {
-            centered - sizeConstraints(width = 40.rem) - col {
-                numberInput {
-                    content bind Property(5.0)
+            val expanded = Property(-1)
+            Recycler2(this).apply {
+                val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
+                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
+                        with(viewWriter) {
+                            ThemeDerivation {
+                                it.copy(background = HSVColor(hue = Angle(Random.nextFloat()), saturation = 1f, value = 0.5f).toRGB()).withBack
+                            }.onNext - button {
+                                sizeConstraints(minHeight = 10.rem) - col {
+                                    text { ::content { data().toString() } }
+                                    onlyWhen { expanded() == data() } - col {
+                                        text { content = "Expanded Content"  }
+                                        text { content = "Expanded Content"  }
+                                        text { content = "Expanded Content"  }
+                                        text { content = "Expanded Content"  }
+                                        text { content = "Expanded Content"  }
+                                        text { content = "Expanded Content"  }
+                                    }
+                                }
+                                onClick {
+                                    expanded.value = data()
+                                }
+                            }
+                        }
+                    }
                 }
-//                val value = Property(false)
-//                card - toggleButton {
-//                    checked bind value
-//                    text("Show")
-//                }
-//                onlyWhen { value() } - text("hidden item")
-//                text("Lower item")
-//
-//                field("Email") {
-//                    row {
-//                        val text = Property("").also { it.addListener { println("text: ${it.value}") } }.lens(
-//                            get = { it },
-//                            set = {
-//                                if(it.isBlank()) throw PlainTextException("Cannot be blank")
-//                                it
-//                            }
-//                        )
-//                        expanding
-//                        val tf = textInput { content bind text }
-//                        button {
-//                            spacing = 0.px
-//                            icon(Icon.close.copy(1.5.rem, 1.5.rem), "Clear")
-//                            onClick { tf.content.value = "" }
-//                        }
-//                    }
-//                }
+                placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0, 100.0)
+                rendererSet = object: RecyclerViewRendererSet<Int, Int> {
+                    override fun id(item: Int): Int = item
+                    override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
+                }
+                data = object: RecyclerViewData<Int, Int> {
+                    override val range: IntRange = 0..100
+                    override fun get(index: Int): Int = index
+                }
             }
         }
     }

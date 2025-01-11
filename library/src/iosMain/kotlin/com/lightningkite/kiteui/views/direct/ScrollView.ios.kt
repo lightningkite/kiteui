@@ -79,13 +79,22 @@ actual class ScrollView actual constructor(
         }
     }
 
-    actual fun scrollTo(top: Double, left: Double, animated: Boolean) {
+    actual fun scrollTo(left: Double, top: Double, animated: Boolean) {
         native.setContentOffset(
             CGPointMake(
                 x = if (horizontal) left else 0.0,
                 y = if (vertical) top else 0.0,
             ),
             animated = animated
+        )
+    }
+
+    actual fun offset(x: Double, y: Double) {
+        native.setContentOffset(
+            CGPointMake(
+                x = if (horizontal) native.contentOffset.useContents { x } + x else native.contentOffset.useContents { x },
+                y = if (vertical) native.contentOffset.useContents { y } + y else native.contentOffset.useContents { y },
+            )
         )
     }
 }

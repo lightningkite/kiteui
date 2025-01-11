@@ -2,13 +2,33 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
 
 expect class ProgrammaticLayout(context: RContext): RView {
-    fun measureChild(child: RView, sizeConstraint: Size): Size
-    fun setChildBounds(child: RView, rect: Rect)
-    val externalSizeLimit: Readable<Size>
+    var delegate: ProgrammaticLayoutDelegate
+    fun invalidateLayout()
+}
+
+interface ProgrammaticLayoutDelegate {
+    fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size
+    fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size)
+    object AllFull: ProgrammaticLayoutDelegate {
+        override fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size {
+            return within
+        }
+        override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
+            layout.children.forEach { inProgress.place(it, 0.0, 0.0, within.width, within.height) }
+        }
+    }
+}
+
+interface ProgrammingLayoutInProgress {
+    fun measure(child: RView, sizeConstraint: Size): Size
+    fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
+    fun existingPosition(child: RView): Rect
 }

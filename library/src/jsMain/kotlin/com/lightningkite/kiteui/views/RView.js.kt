@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.views.direct.suppressMutationObserverForClass
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
@@ -14,7 +15,9 @@ inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
         if(animate) {
             animationsEnabled = false
             clientWidth
-            classList.add("notransition")
+            suppressMutationObserverForClass {
+                classList.add("notransition")
+            }
             clientWidth
         }
         action()
@@ -22,7 +25,9 @@ inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
         if(animate) {
             offsetHeight  // force layout calculation
             kotlinx.browser.window.setTimeout({
-                classList.remove("notransition")
+                suppressMutationObserverForClass {
+                    classList.remove("notransition")
+                }
             }, 100)
             animationsEnabled = true
         }

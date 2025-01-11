@@ -30,3 +30,12 @@ internal actual fun ScrollView.nativeContent(): Rect =  Rect.fromSize(
     width = native.element?.scrollWidth?.toDouble() ?: 0.0,
     height = native.element?.scrollHeight?.toDouble() ?: 0.0,
 )
+internal actual fun ScrollView.nativeScrollOffset(
+    x: Double, y: Double
+) {
+    native.onElement {
+        (it as HTMLElement)
+        if(x != 0.0) it.scrollLeft += x
+        if(y != 0.0) it.scrollTop += y
+    }
+}

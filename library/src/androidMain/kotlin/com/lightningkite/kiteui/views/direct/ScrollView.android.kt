@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import kotlin.math.roundToInt
 
 actual class ScrollView actual constructor(
     context: RContext,
@@ -112,13 +113,18 @@ actual class ScrollView actual constructor(
         }
     }
 
-    actual fun scrollTo(top: Double, left: Double, animated: Boolean) {
+    actual fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {
-            horizontalScrollView?.smoothScrollTo(left.toInt(), 0)
-            verticalScrollView?.smoothScrollTo(0, top.toInt())
+            horizontalScrollView?.smoothScrollTo(left.roundToInt(), 0)
+            verticalScrollView?.smoothScrollTo(0, top.roundToInt())
         } else {
-            horizontalScrollView?.scrollTo(left.toInt(), 0)
-            verticalScrollView?.scrollTo(0, top.toInt())
+            horizontalScrollView?.scrollTo(left.roundToInt(), 0)
+            verticalScrollView?.scrollTo(0, top.roundToInt())
         }
+    }
+
+    actual fun offset(x: Double, y: Double) {
+        horizontalScrollView?.scrollBy(x.roundToInt(), 0)
+        verticalScrollView?.scrollBy(0, y.roundToInt())
     }
 }

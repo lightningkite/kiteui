@@ -55,3 +55,4 @@ fun HtmlElementLike.vevent(eventName: String): Listenable {
 }
 
 expect fun HtmlElementLike.resizeObserver(): Listenable
+expect fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable

@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.HtmlElementLike
 import org.w3c.dom.DOMRectReadOnly
 import org.w3c.dom.Element
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.MutationObserver
 
 external class ResizeObserver(callback: (Array<ResizeObserverEntry>, observer: ResizeObserver) -> Unit) {
     fun disconnect()
