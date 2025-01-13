@@ -121,7 +121,7 @@ actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
                 suppressedStyleChanges.clear()
                 suppressedClassChanges.clear()
                 if(anyNotSuppressed) {
-                    println("Mutation detected on ${this@mutationObserver}")
+                    println("Mutation detected on ${e}")
                     invokeAllListeners()
                 }
             }).apply {

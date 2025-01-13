@@ -258,9 +258,11 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                     heightSize,
                 )
             }
-//                if (oldSize.first != widthSize || oldSize.second != heightSize) {
-            view.layoutSubviewsAndLayers()
-//                }
+//            val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+//            if (oldSize.first != widthSize || oldSize.second != heightSize || view.explicitlyNeedsLayout != false) {
+                view.explicitlyNeedsLayout = false
+                view.layoutSubviewsAndLayers()
+//            }
             t.resume()
             primary += size.primary
         }

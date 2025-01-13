@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
@@ -9,6 +10,8 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.LateInitProperty
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.launch
@@ -193,7 +196,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
 class Recycler2(
     viewWriter: ViewWriter,
     vertical: Boolean = true,
-    val log: ConsoleRoot? = null
+    val log: Console? = null//ConsoleRoot.tag("Recycler2")
 ) {
     private val outerStack: Stack
     private val scroll: ScrollView
@@ -275,7 +278,7 @@ class Recycler2(
                 view.exists = true
                 view.opacity = 1.0
             }
-            if(data != this.data.value) println("WARN: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
+            if(data != this.data.value) log?.log("CELL RECYCLED: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
             data?.let { this.data.value = it } ?: this.data.unset()
             this.indexProp.value = index
             size = inProgress.measure(view, constrain)
@@ -334,25 +337,34 @@ class Recycler2(
         }
     }
 
-    val reallyBig = 50_000.0
+    val reallyBig = 10_000.0
     var inLayout: Boolean = false
 
     init {
-        scroll.viewport.addListener {
+        scroll.onRemove(scroll.viewport.addListener {
             if (!inLayout) cells.invalidateLayout()
-        }
+        })
     }
 
     val programmaticLayoutDelegate = object : ProgrammaticLayoutDelegate {
+        var queuedScrollOffset: Pair<Double, Double>? = null
+        var viewport: Rect = Rect.Zero
+        var lastMeasure: Size? = null
+        var stahp = false
         override fun measure(
             layout: ProgrammaticLayout,
             inProgress: ProgrammingLayoutInProgress,
             within: Size
         ): Size {
+            if(stahp) return lastMeasure!!
             val default = within
             if(within == Size.Zero) return default
-            val viewport = scroll.viewport.state.getOrNull() ?: return default
+            viewport = scroll.viewport.state.getOrNull() ?: return default
             if (viewport.width == 0.0 || viewport.height == 0.0) return default
+            if(queuedScrollOffset != null) {
+                IllegalStateException("measure while queuedScrollOffset != null").printStackTrace()
+                return lastMeasure!!
+            }
             log?.log("LAYOUT STARTING with size $within")
 
             @Suppress("UNCHECKED_CAST")
@@ -385,31 +397,34 @@ class Recycler2(
                 log?.log("WARNING!!! Active and reusable cell $it")
             }
 
-            placer.place(
-                dataRange = data.range,
-                anchor = anchor,
-                existingCells = activeCells,
-                getNewCell = { index, size ->
-                    val item = data[index]
-                    val id = rendererSet.id(item)
-                    //Pulling a cell should prefer (in order) same item ID, off-screen, create new
-                    (activeCells.find { it.item?.let(rendererSet::id) == id }?.also {
-                        // Same item ID: Data change should be animated here
-                        it.onPullForPlacing(size, item, index, inProgress)
-                    } ?: reuseableCells.popOrNull()?.also {
-                        // If placing just offscreen, place without animation.
-                        it.view.withoutAnimation { it.onPullForPlacing(size, item, index, inProgress) }
-                        activeCells += it
-                    } ?: MyCell<Any>().also {
-                        // If creating a new cell, make sure we don't animate.
-                        cells.withoutAnimation {
-                            it.setup(rendererSet.renderer(item), size, item, index, inProgress)
-                        }
-                        activeCells += it
-                    }).also { usedCells += it }
-                },
-                viewport = scroll.viewport.state.getOrNull() ?: return within
-            )
+            fun runPlacer() {
+                placer.place(
+                    dataRange = data.range,
+                    anchor = anchor,
+                    existingCells = activeCells,
+                    getNewCell = { index, size ->
+                        val item = data[index]
+                        val id = rendererSet.id(item)
+                        //Pulling a cell should prefer (in order) same item ID, off-screen, create new
+                        (activeCells.find { it.item?.let(rendererSet::id) == id }?.also {
+                            // Same item ID: Data change should be animated here
+                            it.onPullForPlacing(size, item, index, inProgress)
+                        } ?: reuseableCells.popOrNull()?.also {
+                            // If placing just offscreen, place without animation.
+                            it.view.withoutAnimation { it.onPullForPlacing(size, item, index, inProgress) }
+                            activeCells += it
+                        } ?: MyCell<Any>().also {
+                            // If creating a new cell, make sure we don't animate.
+                            cells.withoutAnimation {
+                                it.setup(rendererSet.renderer(item), size, item, index, inProgress)
+                            }
+                            activeCells += it
+                        }).also { usedCells += it }
+                    },
+                    viewport = viewport
+                )
+            }
+            runPlacer()
             log?.log("INITIAL PLACEMENT EXECUTED")
 
             // Check for attachment to top/bottom
@@ -437,7 +452,12 @@ class Recycler2(
                 activeCells.forEach {
                     it.offset(x, y)
                 }
-                scroll.offset(x, y)
+                viewport = viewport.copy(left = viewport.left + x, top = viewport.top + y, right = viewport.right + x, bottom = viewport.bottom + y)
+                queuedScrollOffset = x to y
+
+                //dang it, we have to rerun the layout to ensure every space is properly populated.
+                runPlacer()
+                log?.log("OFFSET FOLLOW-UP PLACEMENT EXECUTED")
             }
 
             if (firstCell != null) {
@@ -449,7 +469,7 @@ class Recycler2(
                 }
 
                 // Obnoxiously, we need to layout *again* to ensure we've filled out the entire space in this scenario.
-                // TODO
+
             } else if (usedCells.isNotEmpty()) {
                 val sampleCell = usedCells.first()
                 // Ensure there is enough space to scroll upwards
@@ -482,10 +502,19 @@ class Recycler2(
             }
             anchor = null
 
-            return if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
+            val v = if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
+            lastMeasure = v
+            return v
         }
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
+            if(stahp) return
+            val didJump = queuedScrollOffset != null
+            queuedScrollOffset?.let {
+                log?.log("EXECUTING SCROLL JUMP ${scroll.viewport.state.getOrNull()} += ${it}")
+                scroll.offset(it.first, it.second)
+                queuedScrollOffset = null
+            }
             if(within == Size.Zero) return
             val viewport = scroll.viewport.state.getOrNull() ?: return
             if (viewport.width == 0.0 || viewport.height == 0.0) return
@@ -515,6 +544,7 @@ class Recycler2(
             } finally {
                 inLayout = false
             }
+//            if(didJump) stahp = true
         }
 
     }

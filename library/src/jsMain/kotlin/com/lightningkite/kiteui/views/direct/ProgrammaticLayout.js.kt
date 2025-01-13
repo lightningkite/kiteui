@@ -30,9 +30,8 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         view.native.onElement { it.asDynamic().__existingMeasure = null }
         view.native.style.position = "absolute"
         view.onRemove(view.native.mutationObserver(true).addListener {
-            if(timeoutSet) return@addListener
             view.native.onElement { it.asDynamic().__existingMeasure = null }
-            println("Child content in ${view.native} has been changed...")
+            if(timeoutSet) return@addListener
             invalidateLayout()
         })
         invalidateLayout()
@@ -51,10 +50,10 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private val inProgress = object: ProgrammingLayoutInProgress {
         override fun measure(child: RView, sizeConstraint: Size): Size {
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
-//            val existing = e.asDynamic().__existingMeasure as? Size
-//            val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
-//            if(existing != null && existingConstraint == sizeConstraint) return existing
-//            println("Measuring ${child.native.element!!.innerHTML}")
+            val existing = e.asDynamic().__existingMeasure as? Size
+            val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
+            if(existing != null && existingConstraint == sizeConstraint) return existing
+            println("Measuring element...")
             val m = e.measure(sizeConstraint)
             e.asDynamic().__existingMeasure = m
             e.asDynamic().__existingMeasureConstraint = sizeConstraint

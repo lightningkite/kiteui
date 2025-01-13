@@ -26,6 +26,7 @@ actual class ScrollView actual constructor(
     private val scroll = BasicListenable()
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {
+//            println("scrollViewDidScroll: ${native.contentOffset.useContents { "$x, $y" }}")
             if (scrollCalcOngoing) return
             scrollCalcOngoing = true
             scroll.invokeAll()
@@ -80,6 +81,8 @@ actual class ScrollView actual constructor(
     }
 
     actual fun scrollTo(left: Double, top: Double, animated: Boolean) {
+        val (existingX, existingY) = native.contentOffset.useContents { x to y }
+//        println("ScrollView.scrollTo: ${existingX.toInt()}, ${existingY.toInt()} += ${left.toInt()}, ${top.toInt()}")
         native.setContentOffset(
             CGPointMake(
                 x = if (horizontal) left else 0.0,
@@ -90,11 +93,11 @@ actual class ScrollView actual constructor(
     }
 
     actual fun offset(x: Double, y: Double) {
-        native.setContentOffset(
-            CGPointMake(
-                x = if (horizontal) native.contentOffset.useContents { x } + x else native.contentOffset.useContents { x },
-                y = if (vertical) native.contentOffset.useContents { y } + y else native.contentOffset.useContents { y },
-            )
+        val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
+//        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
+        native.contentOffset = CGPointMake(
+            x = if (horizontal) existingX + x else existingX,
+            y = if (vertical) existingY + y else existingY,
         )
     }
 }

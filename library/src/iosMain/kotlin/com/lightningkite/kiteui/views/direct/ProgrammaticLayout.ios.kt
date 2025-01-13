@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.reactive.LateInitProperty
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
@@ -43,10 +44,15 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
     var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }
+            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
+                if(child == viewDebugTarget)
+                    println("Child ${child} measured within $sizeConstraint to be $it")
+            }
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
+            if(child == viewDebugTarget)
+                println("Child ${child} placed at $left, $top, $right, $bottom")
             child.native.setPsuedoframe(left, top, right - left, bottom - top)
             child.native.layoutSubviewsAndLayers()
         }
@@ -64,12 +70,14 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
 
     override fun subviewDidChangeSizing(view: UIView?) {
         if(inLayout) return
-        else superview?.informParentOfSizeChangeDueToChild()
+        else {
+            myInvalidated = true
+            superview?.informParentOfSizeChangeDueToChild()
+        }
     }
 
     var myInvalidated = false
     fun invalidateLayout() {
-//        Exception("Invalidating layout").printStackTrace()
         if(inLayout) return
         myInvalidated = true
         setNeedsLayout()
@@ -83,7 +91,10 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             myInvalidated = false
 //            Exception("layoutSubviews").printStackTrace()
             inLayout = true
-            delegate.layout(rview?.get() ?: return, inProgress, bounds.useContents { Size(size.width, size.height) })
+            delegate.layout(rview?.get() ?: run {
+                println("WARNING: ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+                return
+            }, inProgress, bounds.useContents { Size(size.width, size.height) })
             inLayout = false
         }
     }

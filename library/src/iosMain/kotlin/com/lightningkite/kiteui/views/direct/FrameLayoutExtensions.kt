@@ -73,7 +73,6 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
             view.bounds.local,
             frameLayout.bounds.local
         )
-        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 
         run {
             view.setPsuedoframe(
@@ -82,9 +81,11 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
                 size.width,
                 size.height,
             )
-            if (oldSize.first != size.width || oldSize.second != size.height) {
+//            val oldSize = view.bounds.useContents { this.size.width to this.size.height }
+//            if (oldSize.first != size.width || oldSize.second != size.height || view.explicitlyNeedsLayout != false) {
+                view.explicitlyNeedsLayout = false
                 view.layoutSubviewsAndLayers()
-            }
+//            }
         }
         Unit
     }
