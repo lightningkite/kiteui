@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.reactive.BasicListenable
@@ -56,6 +57,11 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
             child.native.right.toDouble(),
             child.native.bottom.toDouble()
         )
+    }
+
+    override fun requestLayout() {
+        ConsoleRoot.tag("ProgrammaticLayout.android").log("Layout requested")
+        super.requestLayout()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

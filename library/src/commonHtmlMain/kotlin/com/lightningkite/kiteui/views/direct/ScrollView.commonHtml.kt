@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -50,9 +51,11 @@ actual class ScrollView actual constructor(
     actual val viewport: Readable<Rect> = (native.vevent("scroll") + rs).lens { nativeViewport() }
     actual val content: Readable<Rect> = rs.lens { nativeContent() }
     actual fun scrollTo(left: Double, top: Double, animated: Boolean) = nativeScrollTo(top, left, animated)
+    actual fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) = nativeScrollToElement(element, horizontal, vertical, animated)
     actual fun offset(x: Double, y: Double) = nativeScrollOffset(x, y)
 }
 internal expect fun ScrollView.nativeScrollTo(top: Double, left: Double, animated: Boolean)
+internal expect fun ScrollView.nativeScrollToElement(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
 internal expect fun ScrollView.nativeScrollOffset(x: Double, y: Double)
 internal expect fun ScrollView.nativeViewport(): Rect
 internal expect fun ScrollView.nativeContent(): Rect

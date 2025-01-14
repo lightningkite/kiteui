@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.views.RContext
@@ -20,6 +21,7 @@ expect class ScrollView(context: RContext, horizontal: Boolean, vertical: Boolea
     val viewport: Readable<Rect>
     val content: Readable<Rect>
     fun scrollTo(left: Double, top: Double, animated: Boolean)
+    fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
 
     /**
      * Should not interrupt animations.

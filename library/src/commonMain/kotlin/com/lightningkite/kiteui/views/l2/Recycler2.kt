@@ -136,7 +136,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
             it.centerX +
                     abs(viewport.centerY - it.centerY)
         }?.let {
-            it.top to it.index
+            it.top to it.index.div(columns).times(columns)
         } ?: (viewport.top + spacing to dataRange.first.div(columns).times(columns))
 
         // Place downwards, one row at a time
@@ -196,7 +196,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
 class Recycler2(
     viewWriter: ViewWriter,
     vertical: Boolean = true,
-    val log: Console? = null//ConsoleRoot.tag("Recycler2")
+    val log: Console? = ConsoleRoot.tag("Recycler2")
 ) {
     private val outerStack: Stack
     private val scroll: ScrollView
@@ -253,6 +253,11 @@ class Recycler2(
 
     private var activeCells = ArrayList<MyCell<*>>()
     private var reuseableCells = ArrayList<MyCell<*>>()
+
+    fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
+        anchor = RecyclerViewAnchor(toIndex, align)
+        cells.invalidateLayout()
+    }
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
         val indexProp = Property(-1)
@@ -358,9 +363,18 @@ class Recycler2(
         ): Size {
             if(stahp) return lastMeasure!!
             val default = within
-            if(within == Size.Zero) return default
-            viewport = scroll.viewport.state.getOrNull() ?: return default
-            if (viewport.width == 0.0 || viewport.height == 0.0) return default
+            if(within == Size.Zero) {
+                println("Cannot measure yet: within == Size.Zero")
+                return default
+            }
+            viewport = scroll.viewport.state.getOrNull() ?: run {
+                println("Cannot measure yet:  scroll.viewport.state.getOrNull()  == null")
+                return default
+            }
+            if (viewport.width == 0.0 || viewport.height == 0.0) {
+                println("Cannot measure yet: viewport.width == 0.0 || viewport.height == 0.0 ($viewport)")
+                return default
+            }
             if(queuedScrollOffset != null) {
                 IllegalStateException("measure while queuedScrollOffset != null").printStackTrace()
                 return lastMeasure!!
@@ -398,6 +412,7 @@ class Recycler2(
             }
 
             fun runPlacer() {
+                log?.log("RUN PLACER IN $viewport")
                 placer.place(
                     dataRange = data.range,
                     anchor = anchor,
@@ -425,7 +440,6 @@ class Recycler2(
                 )
             }
             runPlacer()
-            log?.log("INITIAL PLACEMENT EXECUTED")
 
             // Check for attachment to top/bottom
             var firstCell: MyCell<*>? = null
@@ -509,6 +523,7 @@ class Recycler2(
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
             if(stahp) return
+            if(anchor != null) measure(layout, inProgress, within)
             val didJump = queuedScrollOffset != null
             queuedScrollOffset?.let {
                 log?.log("EXECUTING SCROLL JUMP ${scroll.viewport.state.getOrNull()} += ${it}")
@@ -527,17 +542,17 @@ class Recycler2(
                         it.rightNew != it.rightOld ||
                         it.bottomNew != it.bottomOld
                     ) {
-                        log?.log("COMMITTING POSITION FOR ${it.index} from (${it.leftOld}, ${it.topOld}) to (${it.leftNew}, ${it.topNew})")
-                        inProgress.place(it.view, it.leftNew, it.topNew, it.rightNew, it.bottomNew)
-                        it.left = it.leftNew
-                        it.top = it.topNew
-                        it.right = it.rightNew
-                        it.bottom = it.bottomNew
-                        it.leftOld = it.leftNew
-                        it.topOld = it.topNew
-                        it.rightOld = it.rightNew
-                        it.bottomOld = it.bottomNew
+                        log?.log("CHANGING POSITION FOR ${it.index} from (${it.leftOld}, ${it.topOld}) to (${it.leftNew}, ${it.topNew})")
                     }
+                    inProgress.place(it.view, it.leftNew, it.topNew, it.rightNew, it.bottomNew)
+                    it.left = it.leftNew
+                    it.top = it.topNew
+                    it.right = it.rightNew
+                    it.bottom = it.bottomNew
+                    it.leftOld = it.leftNew
+                    it.topOld = it.topNew
+                    it.rightOld = it.rightNew
+                    it.bottomOld = it.bottomNew
                 }
 
                 activeCells.forEach { commitPosition(it) }

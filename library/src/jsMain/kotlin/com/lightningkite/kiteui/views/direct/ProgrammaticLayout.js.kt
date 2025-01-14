@@ -61,6 +61,14 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
+            if(
+                child.asDynamic().__last_left == left &&
+                child.asDynamic().__last_top == top &&
+                child.asDynamic().__last_right == right &&
+                child.asDynamic().__last_bottom == bottom) {
+                // avoid adjusting style because it's expensive
+                return
+            }
             child.native.suppressMutationObserverForStyle {
                 child.native.style.position = "absolute"
                 child.native.style.left = left.toString() + "px"
@@ -68,6 +76,10 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
                 child.native.style.width = (right - left).toString() + "px"
                 child.native.style.height = (bottom - top).toString() + "px"
             }
+            child.asDynamic().__last_left = left
+            child.asDynamic().__last_top = top
+            child.asDynamic().__last_right = right
+            child.asDynamic().__last_bottom = bottom
         }
 
         override fun existingPosition(child: RView): Rect = Rect.fromSize(

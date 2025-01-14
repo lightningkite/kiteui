@@ -17,9 +17,38 @@ object ExperimentScreen : Screen {
         get() = super.title
 
     override fun ViewWriter.render() {
-        stack {
+        col {
             val expanded = Property(-1)
-            Recycler2(this).apply {
+            var recyclerView: Recycler2? = null
+            row {
+                for (align in Align.values()) {
+                    expanding - button {
+                        subtext("Jump ${align.name}")
+                        onClick { recyclerView?.scrollToIndex(75, align, false) }
+                    }
+                }
+            }
+            row {
+                for (align in Align.values()) {
+                    expanding - button {
+                        subtext("Scroll ${align.name}")
+                        onClick { recyclerView?.scrollToIndex(75, align, true) }
+                    }
+                }
+            }
+            row {
+                repeat(4) {
+                    val cols = it + 1
+                    expanding - button {
+                        subtext("${cols} columns")
+                        onClick {
+                            recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 0.0, 8.0, 100.0)
+                        }
+                    }
+                }
+            }
+            expanding
+            recyclerView = Recycler2(this).apply {
                 val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
                         with(viewWriter) {
@@ -44,6 +73,7 @@ object ExperimentScreen : Screen {
                         }
                     }
                 }
+//                scrollToIndex(50, Align.Center)
                 placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0, 100.0)
                 rendererSet = object: RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item

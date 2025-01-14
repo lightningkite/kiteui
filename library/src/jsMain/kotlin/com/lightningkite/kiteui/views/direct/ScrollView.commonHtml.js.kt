@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.views.RView
 import org.w3c.dom.*
 
 internal actual fun ScrollView.nativeScrollTo(
@@ -17,6 +19,11 @@ internal actual fun ScrollView.nativeScrollTo(
             behavior = if(animated) ScrollBehavior.SMOOTH else ScrollBehavior.INSTANT
         ))
     }
+}
+internal actual fun ScrollView.nativeScrollToElement(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    element.native.element?.scrollIntoView(ScrollToOptions(
+        behavior = if(animated) ScrollBehavior.SMOOTH else ScrollBehavior.INSTANT
+    ))
 }
 internal actual fun ScrollView.nativeViewport(): Rect = Rect.fromSize(
     left = native.element?.scrollLeft ?: 0.0,

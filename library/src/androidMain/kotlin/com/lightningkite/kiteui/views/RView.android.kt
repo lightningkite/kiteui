@@ -40,9 +40,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     actual override fun opacitySet(value: Double) {
-        println("opacitySet: $value $animationsEnabled")
         if (animationsEnabled) {
-            println("Animating ${native.alpha}, ${value.toFloat()}")
             ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
                 duration = theme.transitionDuration.inWholeMilliseconds
                 addUpdateListener {

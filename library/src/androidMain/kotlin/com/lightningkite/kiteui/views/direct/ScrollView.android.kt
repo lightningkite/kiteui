@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
@@ -83,7 +84,7 @@ actual class ScrollView actual constructor(
     actual val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
         override val state: ReadableState<Rect>
             get() = ReadableState(
-                Rect(
+                Rect.fromSize(
                     (horizontalScrollView?.scrollX ?: 0).toDouble(),
                     (verticalScrollView?.scrollY ?: 0).toDouble(),
                     native.width.toDouble(),
@@ -94,7 +95,7 @@ actual class ScrollView actual constructor(
     actual val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
         override val state: ReadableState<Rect>
             get() = ReadableState(
-                Rect(
+                Rect.fromSize(
                     0.0,
                     0.0,
                     innermostView.children.firstOrNull()?.width?.toDouble() ?: 0.0,
@@ -121,6 +122,24 @@ actual class ScrollView actual constructor(
             horizontalScrollView?.scrollTo(left.roundToInt(), 0)
             verticalScrollView?.scrollTo(0, top.roundToInt())
         }
+    }
+
+    actual fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+        scrollTo(
+            left = when(horizontal) {
+                Align.Start -> element.native.left
+                Align.Center -> (element.native.right + element.native.left) / 2 - native.width / 2
+                Align.End -> element.native.right - native.width
+                Align.Stretch -> (element.native.right + element.native.left) / 2 - native.width / 2
+            }.toDouble(),
+            top = when(vertical) {
+                Align.Start -> element.native.top
+                Align.Center -> (element.native.bottom + element.native.top) / 2 - native.height / 2
+                Align.End -> element.native.bottom - native.width
+                Align.Stretch -> (element.native.bottom + element.native.top) / 2 - native.height / 2
+            }.toDouble(),
+            animated = animated
+        )
     }
 
     actual fun offset(x: Double, y: Double) {
