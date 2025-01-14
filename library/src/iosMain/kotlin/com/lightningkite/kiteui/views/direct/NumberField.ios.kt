@@ -57,6 +57,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     dirty = textField.text ?: "",
                     selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
                     selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
+                    allowDecimal = keyboardHints != KeyboardHints.integer,
                     setResult = {
                         textField.text = it
                     },

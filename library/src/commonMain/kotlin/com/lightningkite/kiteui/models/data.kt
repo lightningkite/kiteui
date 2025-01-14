@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.space
 import kotlin.jvm.JvmInline
 
 class AnimationId
@@ -624,6 +625,7 @@ sealed interface NavElement {
     val icon: ReactiveContext.() -> Icon
     val count: (ReactiveContext.() -> Int?)?
     val hidden: (ReactiveContext.() -> Boolean)?
+    val weight: Float?
 }
 
 data class NavGroup(
@@ -631,6 +633,7 @@ data class NavGroup(
     override val icon: ReactiveContext.() -> Icon,
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    override val weight: Float? = null,
     val children: ReactiveContext.() -> List<NavElement>,
 ) : NavElement {
     constructor(title: String, icon: Icon, children: List<NavElement> = listOf()) : this(
@@ -638,7 +641,9 @@ data class NavGroup(
         { icon },
         null,
         { false },
-        { children })
+        null,
+        { children }
+    )
 }
 
 @Deprecated("Use NavLink", ReplaceWith("NavLink"))
@@ -649,6 +654,7 @@ data class NavLink(
     override val icon: ReactiveContext.() -> Icon,
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    override val weight: Float? = null,
     val destination: ReactiveContext.() -> () -> Screen,
 ) : NavElement {
     constructor(title: String, icon: Icon, destination: () -> Screen) : this(
@@ -656,6 +662,7 @@ data class NavLink(
         { icon },
         null,
         { false },
+        null,
         { destination })
 }
 @Deprecated("Use NavExternal", ReplaceWith("NavExternal"))
@@ -666,6 +673,7 @@ data class NavExternal(
     override val icon: ReactiveContext.() -> Icon,
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    override val weight: Float?,
     val to: ReactiveContext.() -> String,
 ) : NavElement
 
@@ -674,18 +682,34 @@ data class NavAction(
     override val icon: ReactiveContext.() -> Icon,
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    override val weight: Float? = null,
     val onSelect: suspend () -> Unit,
-) : NavElement
+) : NavElement {
+    constructor(title: String, icon: Icon, onSelect: suspend () -> Unit) : this(
+        { title },
+        { icon },
+        null,
+        { false },
+        null,
+        onSelect
+    )
+}
 
 data class NavCustom(
     override val title: ReactiveContext.() -> String = { "" },
     override val icon: ReactiveContext.() -> Icon = { Icon.moreHoriz },
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
+    override val weight: Float? = null,
     val square: ViewWriter.() -> Unit,
     val long: ViewWriter.() -> Unit = square,
     val tall: ViewWriter.() -> Unit = square,
 ) : NavElement
+
+fun ExpandingNavSpace() = NavCustom(
+    weight = 1f,
+    square = { space() }
+)
 
 typealias Action = Action
 
