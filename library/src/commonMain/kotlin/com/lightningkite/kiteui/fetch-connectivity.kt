@@ -103,24 +103,23 @@ suspend fun connectivityFetch(
 ): RequestResponse {
     return if(coroutineContext[ConnectivityIssueSuppress.Key] == null) {
         Connectivity.fetchGate.run("$method $url") {
-            val r = try {
+            try {
                 fetch(url = url, method = method, headers = headers(), body = body)
             } catch(e: ConnectionException) {
                 // Perform a single retry immediately
                 println("WARNING: Forced retry on $method $url")
-                try {
+                val r = try {
                     fetch(url = url, method = method, headers = headers(), body = body)
                 } catch(e: ConnectionException) {
                     Connectivity.lastConnectivityIssueCode.value = 0
                     throw e
                 }
-                throw e
+                if (r.status in Connectivity.stopConnectivityCodes) {
+                    Connectivity.lastConnectivityIssueCode.value = r.status
+                    throw ConnectionException("Status code ${r.status}")
+                }
+                r
             }
-            if (r.status in Connectivity.stopConnectivityCodes) {
-                Connectivity.lastConnectivityIssueCode.value = r.status
-                throw ConnectionException("Status code ${r.status}")
-            }
-            r
         }
     } else {
         fetch(url = url, method = method, headers = headers(), body = body)

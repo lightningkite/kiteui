@@ -37,6 +37,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                 space(1.0)
             }
         }
+        it.weight?.let { w -> weight(w) }
         when (it) {
             is NavAction -> button {
                 exists = false
@@ -80,7 +81,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                 stack {
                     exists = false
                     ::exists { it.hidden?.invoke() != true }
-                    it.long(this@forEach)
+                    it.long(this@stack)
                 }
             }
 

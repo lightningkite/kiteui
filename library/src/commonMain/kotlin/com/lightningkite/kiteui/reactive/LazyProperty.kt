@@ -76,7 +76,7 @@ class LazyProperty<T>(
         if (sharedRemover == null) return
         log?.log("LazyProperty shutting down shared behavior")
         stopListeningToShared()
-        if (!useLastWhileLoading) state = ReadableState.notReady
+        if (!overridden && !useLastWhileLoading) state = ReadableState.notReady
     }
 
     var value: T

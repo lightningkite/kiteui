@@ -53,7 +53,8 @@ inline fun numberAutocommaRepair(
     selectionStart: Int? = null,
     selectionEnd: Int? = selectionStart,
     setResult: (String) -> Unit,
-    setSelectionRange: (Int, Int) -> Unit
+    setSelectionRange: (Int, Int) -> Unit,
+    allowDecimal: Boolean = true
 ) = repairFormatAndPosition(
     dirty = dirty,
     selectionStart = selectionStart,
@@ -63,8 +64,11 @@ inline fun numberAutocommaRepair(
     isRawData = { it.isDigit() || it in setOf('.', '-') },
     formatter = { clean: String ->
         val negative = clean.firstOrNull()?.equals('-') ?: false
-        val decimal = clean.contains('.')
-        val value = clean.filterNot { it == '-' }
+        val decimal = allowDecimal and clean.contains('.')
+        val value = clean.filterNot {
+            if (allowDecimal) it == '-'
+            else it == '-' || it == '.'
+        }
         val preDecimal = value.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
         val postDecimal = value.substringAfter('.', "").filterNot { it == '.' }
         when {
@@ -146,7 +150,7 @@ fun Long.commaString(): String {
 }
 
 
-inline fun StringBuilder.keyValue(key: String, value: Any?) = appendLine("$key: $value")
+private inline fun StringBuilder.keyValue(key: String, value: Any?) = appendLine("$key: $value")
 
 inline fun repairFormatAndPosition(
     dirty: String,

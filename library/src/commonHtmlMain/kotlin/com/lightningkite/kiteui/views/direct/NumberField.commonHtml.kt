@@ -20,6 +20,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
                     selectionEnd = selectionEnd,
+                    allowDecimal = keyboardHints != KeyboardHints.integer,
                     setResult = {
                         native.attributes.valueString = it
                     },

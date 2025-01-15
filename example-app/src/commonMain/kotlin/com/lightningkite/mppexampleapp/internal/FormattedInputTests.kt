@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Property
@@ -52,9 +53,16 @@ class FormattedInputTests : Screen {
 
             space()
 
-            field("Number Comparison") {
+            field("Number Field") {
                 numberInput {
                     content bind Property<Double?>(null)
+                }
+            }
+
+            field("Integer Field") {
+                numberInput {
+                    keyboardHints = KeyboardHints.integer
+                    content bind Property(null)
                 }
             }
         }
