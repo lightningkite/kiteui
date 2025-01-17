@@ -121,14 +121,14 @@ fun ViewWriter.confirmDanger(
                     h2(title)
                     text(body)
                     row {
-                        button {
-                            h6("Cancel")
+                       expanding - button {
+                            centered - h6("Cancel")
                             onClick {
                                 screenNavigator.dismiss()
                             }
                         }
-                        button {
-                            h6(actionName)
+                        expanding - button {
+                            centered - h6(actionName)
                             onClick {
                                 action()
                                 screenNavigator.dismiss()
@@ -154,8 +154,8 @@ fun ViewWriter.alert(
                     h2(title)
                     text(body)
                     row {
-                        button {
-                            h6("OK")
+                       expanding - button {
+                            centered - h6("OK")
                             onClick {
                                 screenNavigator.dismiss()
                             }
