@@ -20,10 +20,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 
 val client: HttpClient
@@ -41,54 +44,67 @@ actual suspend fun fetch(
     onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
-    try {
-        fetchLog.log("-> $method $url")
-        val response = client.request(url) {
-            this.method = when (method) {
-                HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
-            }
-            headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
-            when (body) {
-                is RequestBodyBlob -> {
-                    contentType(ContentType.parse(body.content.type))
-                    setBody(body.content.data)
-                }
+    /**
+     * There is currently a bug in android fetch where after a sleep or lock state it will
+     * throw a UnknownHostException caused by a android.system.GaiException. To handle this
+     * added attempt and delay to wait for android fetch system to be ready
+     * https://github.com/square/okhttp/issues/8200
+     * https://cs.android.com/android/_/android/platform/frameworks/base/+/0fa9120b8f72916951b2d070afd6c3dfd3c13f77
+     **/
 
-                is RequestBodyFile -> {
-                    contentType(ContentType.parse(body.content.mimeType()))
-                    with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
-                        this?.readBytes()?.let { setBody(it) }
+    // https://github.com/square/okhttp/issues/8200
+    val maxRetries = 5
+    var attempt = 0
+    while (true) {
+        try {
+            attempt++
+            val response = client.request(url) {
+                this.method = when (method) {
+                    HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                    HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                    HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                    HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                    HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                    HttpMethod.HEAD -> io.ktor.http.HttpMethod.Head
+                }
+                headers { headers.map.forEach { it.value.forEach { v -> append(it.key, v) } } }
+                when (body) {
+                    is RequestBodyBlob -> {
+                        contentType(ContentType.parse(body.content.type))
+                        setBody(body.content.data)
+                    }
+                    is RequestBodyFile -> {
+                        contentType(ContentType.parse(body.content.mimeType()))
+                        with(AndroidAppContext.applicationCtx.contentResolver.openInputStream(body.content.uri)) {
+                            this?.readBytes()?.let { setBody(it) }
+                        }
+                    }
+                    is RequestBodyText -> {
+                        contentType(ContentType.parse(body.type))
+                        setBody(body.content)
+                    }
+                    null -> {}
+                }
+                onUploadProgress?.let {
+                    onUpload { a, b ->
+                        it(a.toInt(), b?.toInt() ?: -1)
                     }
                 }
-
-                is RequestBodyText -> {
-                    contentType(ContentType.parse(body.type))
-                    setBody(body.content)
-                }
-
-                null -> {}
-            }
-            onUploadProgress?.let {
-                onUpload { a, b ->
-                    it(a.toInt(), b?.toInt() ?: -1)
+                onDownloadProgress?.let {
+                    onDownload { a, b ->
+                        it(a.toInt(), b?.toInt() ?: -1)
+                    }
                 }
             }
-            onDownloadProgress?.let {
-                onDownload { a, b ->
-                    it(a.toInt(), b?.toInt() ?: -1)
-                }
+            return RequestResponse(response)
+        } catch (e: Exception) {
+            fetchLog.log("Attempt $attempt: <X $method $url ${e::class} ${e.message}")
+            if (attempt >= maxRetries || e !is UnknownHostException) {
+                throw ConnectionException("Network request failed", e)
             }
+            fetchLog.log("Retrying after 2 s...")
+            delay(2.seconds)
         }
-        fetchLog.log("<- $method $url ${response.status}")
-        return RequestResponse(response)
-    } catch (e: Exception) {
-        fetchLog.log("<X $method $url ${e::class} ${e.message}")
-        throw ConnectionException("Network request failed", e)
     }
 }
 
