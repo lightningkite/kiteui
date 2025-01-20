@@ -486,6 +486,9 @@ actual inline var FutureElementStyle.outlineStyle: String?
 actual inline var FutureElementStyle.outlineWidth: String?
     get() = this["outline-width"]
     set(value) { this["outline-width"] = value }
+actual inline var FutureElementStyle.overflowAnchor: String?
+    get() = this["overflow-anchor"]
+    set(value) { this["overflow-anchor"] = value }
 actual inline var FutureElementStyle.overflowWrap: String?
     get() = this["overflow-wrap"]
     set(value) { this["overflow-wrap"] = value }
@@ -678,12 +681,6 @@ actual inline var FutureElementStyle.writingMode: String?
 actual inline var FutureElementStyle.zIndex: String?
     get() = this["z-index"]
     set(value) { this["z-index"] = value }
-actual inline fun FutureElementStyle.set(key: String, value: String) {
-    this[key] = value
-}
-actual inline fun FutureElementStyle.unset(key: String) {
-    this[key] = null
-}
 actual inline var FutureElementAttributes.accept: String?
     get() = this["accept"]?.toString()
     set(value) { this["accept"] = value?.toString() }

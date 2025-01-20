@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.reactive.Constant
@@ -9,18 +11,23 @@ import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
+import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"
     }
+
     actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
-        set(value) { field = value; invalidateLayout() }
+        set(value) {
+            field = value; invalidateLayout()
+        }
+    var log: Console? = ConsoleRoot.tag("ProgrammaticLayout")
 
     init {
         onRemove(native.resizeObserver().addListener {
-            println("Resize observer hit!")
+            log?.log("resizeObserver calls invalidateLayout()")
             invalidateLayout()
         })
     }
@@ -31,29 +38,32 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         view.native.style.position = "absolute"
         view.onRemove(view.native.mutationObserver(true).addListener {
             view.native.onElement { it.asDynamic().__existingMeasure = null }
-            if(timeoutSet) return@addListener
+            if (timeoutSet) return@addListener
+            log?.log("child mutation calls invalidateLayout()")
             invalidateLayout()
         })
+        log?.log("child insert calls invalidateLayout()")
         invalidateLayout()
     }
 
     override fun internalRemoveChild(index: Int) {
         super.internalRemoveChild(index)
+        log?.log("child remove calls invalidateLayout()")
         invalidateLayout()
     }
 
     override fun internalClearChildren() {
         super.internalClearChildren()
+        log?.log("children clear calls invalidateLayout()")
         invalidateLayout()
     }
 
-    private val inProgress = object: ProgrammingLayoutInProgress {
+    private val inProgress = object : ProgrammingLayoutInProgress {
         override fun measure(child: RView, sizeConstraint: Size): Size {
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
-            if(existing != null && existingConstraint == sizeConstraint) return existing
-            println("Measuring element...")
+            if (existing != null && existingConstraint == sizeConstraint) return existing
             val m = e.measure(sizeConstraint)
             e.asDynamic().__existingMeasure = m
             e.asDynamic().__existingMeasureConstraint = sizeConstraint
@@ -61,11 +71,12 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
-            if(
+            if (
                 child.asDynamic().__last_left == left &&
                 child.asDynamic().__last_top == top &&
                 child.asDynamic().__last_right == right &&
-                child.asDynamic().__last_bottom == bottom) {
+                child.asDynamic().__last_bottom == bottom
+            ) {
                 // avoid adjusting style because it's expensive
                 return
             }
@@ -83,24 +94,97 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         }
 
         override fun existingPosition(child: RView): Rect = Rect.fromSize(
-            left = child.native.element?.scrollLeft ?: child.native.style.left?.removeSuffix("px")?.toDoubleOrNull() ?: 0.0,
-            top = child.native.element?.scrollTop ?: child.native.style.top?.removeSuffix("px")?.toDoubleOrNull() ?: 0.0,
-            width = child.native.element?.scrollWidth?.toDouble() ?: child.native.style.width?.removeSuffix("px")?.toDoubleOrNull() ?: 0.0,
-            height = child.native.element?.scrollHeight?.toDouble() ?: child.native.style.height?.removeSuffix("px")?.toDoubleOrNull() ?: 0.0,
+            left = child.native.element?.scrollLeft ?: child.native.style.left?.removeSuffix("px")?.toDoubleOrNull()
+            ?: 0.0,
+            top = child.native.element?.scrollTop ?: child.native.style.top?.removeSuffix("px")?.toDoubleOrNull()
+            ?: 0.0,
+            width = child.native.element?.scrollWidth?.toDouble() ?: child.native.style.width?.removeSuffix("px")
+                ?.toDoubleOrNull() ?: 0.0,
+            height = child.native.element?.scrollHeight?.toDouble() ?: child.native.style.height?.removeSuffix("px")
+                ?.toDoubleOrNull() ?: 0.0,
         )
     }
 
+    private var definedFlexGrow: String? = null
+    private var definedWidth: String? = null
+    private var definedHeight: String? = null
+    private var enforcedWidth: String? = null
+    private var enforcedHeight: String? = null
+    private var lastConstraintParentWidth: Int = 0
+    private var lastConstraintParentHeight: Int = 0
+    private var lastConstraintSize: Size = Size.Zero
+    private var lastFillWidth: Boolean = true
+    private var lastFillHeight: Boolean = true
     private var timeoutSet = false
     actual fun invalidateLayout() {
-        if(timeoutSet) return
+        log?.log("invalidateLayout()")
+        if (timeoutSet) return
         window.setTimeout({
-            // TODO: this really isn't the perfect way to get constraints and might cause wrapping size problems
-            val parentSize = native?.element?.let { Size(it.clientWidth.toDouble(), it.clientHeight.toDouble()) }
-                ?: return@setTimeout
-            val m = delegate.measure(this, inProgress, parentSize)
-            native.style.width = "${m.width}px"
-            native.style.height = "${m.height}px"
-            delegate.layout(this, inProgress, m)
+            log?.log("invalidateLayout timeout")
+            val element = native.element as? HTMLElement ?: return@setTimeout
+            val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
+
+            if (parentElement.clientWidth != lastConstraintParentWidth || parentElement.clientHeight != lastConstraintParentHeight) {
+                log?.log("Remeasuring the parent element constraint")
+                lastConstraintParentWidth = parentElement.clientWidth
+                lastConstraintParentHeight = parentElement.clientHeight
+
+                // Get current constraint style
+                definedFlexGrow = native.style.flexGrow?.takeUnless { it.isBlank() }
+                definedWidth = native.style.width?.takeUnless { it == enforcedWidth || it.isBlank() }
+                definedHeight = native.style.height?.takeUnless { it == enforcedHeight || it.isBlank() }
+                val parentIsFlex = parentElement?.style?.display?.contains("flex") == true
+                val parentIsVertical = parentElement?.style?.flexDirection?.contains("col") == true
+                val elementHasGrow = element.style.flexGrow.isNotBlank()
+                val elementIsStretch = element.style.alignSelf == "stretch" || element.style.alignSelf.isBlank()
+                lastFillWidth =
+                    (parentIsFlex && (parentIsVertical && elementHasGrow) || (!parentIsVertical && elementIsStretch)) || definedWidth?.contains(
+                        "100%"
+                    ) == true
+                lastFillHeight =
+                    (parentIsFlex && (!parentIsVertical && elementHasGrow) || (parentIsVertical && elementIsStretch)) || definedHeight?.contains(
+                        "100%"
+                    ) == true
+
+                // Remove width/height constraints if we've enforced them, Maximize the size
+                if (native.style.width == enforcedWidth) {
+                    if (parentIsFlex && !parentIsVertical) {
+                        native.style.flexGrow = "999"
+                        native.style.width = "unset"
+                    } else native.style.width = "100%"
+                }
+                if (native.style.height == enforcedHeight) {
+                    if (parentIsFlex && parentIsVertical) {
+                        native.style.flexGrow = "999"
+                        native.style.height = "unset"
+                    } else native.style.height = "100%"
+                }
+
+                // get clientWidth and clientHeight
+                lastConstraintSize = Size(element.clientWidth.toDouble(), element.clientHeight.toDouble())
+
+                // Revert our edits
+                native.style.width = definedWidth ?: "unset"
+                native.style.height = definedHeight ?: "unset"
+                native.style.flexGrow = definedFlexGrow ?: "unset"
+            }
+
+            // run measure
+            val natSize = delegate.measure(this, inProgress, lastConstraintSize)
+
+            // set width and height to result IF layout rules say minimum, revert otherwise to continue taking space
+            if (!lastFillWidth) {
+                enforcedWidth = natSize.width.roundToInt().toString() + "px"
+                element.style.width = enforcedWidth!!
+            }
+            if (!lastFillHeight) {
+                enforcedHeight = natSize.height.roundToInt().toString() + "px"
+                element.style.height = enforcedHeight!!
+            }
+
+            // run layout
+            delegate.layout(this, inProgress, Size(element.clientWidth.toDouble(), element.clientHeight.toDouble()))
+
             window.setTimeout({
                 timeoutSet = false
             }, 1)

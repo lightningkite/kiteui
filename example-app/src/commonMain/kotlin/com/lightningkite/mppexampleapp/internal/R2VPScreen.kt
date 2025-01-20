@@ -11,8 +11,8 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 import kotlin.random.Random
 
-@Routable("experiment")
-object ExperimentScreen : Screen {
+@Routable("r2vp")
+object R2VPScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
@@ -36,61 +36,9 @@ object ExperimentScreen : Screen {
                     }
                 }
             }
-            row {
-                repeat(4) {
-                    val cols = it + 1
-                    expanding - button {
-                        subtext("${cols} columns")
-                        onClick {
-                            recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 0.0, 8.0, 100.0)
-                        }
-                    }
-                }
-            }
-//            expanding
-//            recyclerView = Recycler2(this, vertical = false).apply {
-////                this.snapToElements = Align.Center to Align.Center
-//                val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
-//                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
-//                        with(viewWriter) {
-//                            ThemeDerivation {
-//                                it.copy(background = HSVColor(hue = Angle(Random.nextFloat()), saturation = 1f, value = 0.5f).toRGB()).withBack
-//                            }.onNext - button {
-//                                sizeConstraints(minHeight = 10.rem) - col {
-//                                    text { ::content { data().toString() } }
-//                                    onlyWhen { expanded() == data() } - col {
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                    }
-//                                }
-//                                onClick {
-//                                    expanded.value = data()
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-////                scrollToIndex(50, Align.Center)
-//                placer = RecyclerViewPagingPlacer()
-//                rendererSet = object: RecyclerViewRendererSet<Int, Int> {
-//                    override fun id(item: Int): Int = item
-//                    override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
-//                }
-//                data = object: RecyclerViewData<Int, Int> {
-//                    override val range: IntRange = 0..100
-//                    override fun get(index: Int): Int {
-//                        if(index !in range) throw IllegalStateException("Index out of range")
-//                        return index
-//                    }
-//                }
-//            }
             expanding
-            recyclerView = Recycler2(this).apply {
-//                this.snapToElements = null to Align.Start
+            recyclerView = Recycler2(this, vertical = false).apply {
+                this.snapToElements = Align.Center
                 val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
                         with(viewWriter) {
@@ -116,7 +64,7 @@ object ExperimentScreen : Screen {
                     }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0, 100.0)
+                placer = RecyclerViewPagingPlacer()
                 rendererSet = object: RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main

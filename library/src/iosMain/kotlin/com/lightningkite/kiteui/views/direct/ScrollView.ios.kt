@@ -2,24 +2,21 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.reactive.BasicListenable
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.onRemove
-import com.lightningkite.kiteui.reactive.lens
-import com.lightningkite.kiteui.reactive.plus
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWrapper
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.UIScrollView
 import platform.UIKit.UIScrollViewDelegateProtocol
 import platform.darwin.NSObject
 
-actual class ScrollView actual constructor(
+class ScrollView(
     context: RContext,
-    actual val horizontal: Boolean,
-    actual val vertical: Boolean
-) : RView(context) {
+    override val horizontal: Boolean,
+    override val vertical: Boolean
+) : RViewWrapper(context), ScrollingBehaviors {
     override val native = ScrollLayout()
 
     private var scrollCalcOngoing = false
@@ -32,6 +29,16 @@ actual class ScrollView actual constructor(
             scrollCalcOngoing = true
             scroll.invokeAll()
             scrollCalcOngoing = false
+        }
+
+        override fun scrollViewWillBeginDragging(scrollView: UIScrollView) {
+            super.scrollViewWillBeginDragging(scrollView)
+            _directlyInteractingWithScroller.value = true
+        }
+
+        override fun scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate: Boolean) {
+            super.scrollViewDidEndDragging(scrollView, willDecelerate)
+            _directlyInteractingWithScroller.value = false
         }
     }
 
@@ -50,15 +57,13 @@ actual class ScrollView actual constructor(
         }
     }
 
-    actual var showScrollBars: Boolean = true
+    override var showScrollBars: Boolean = true
         set(value) {
             field = value
             native.showsHorizontalScrollIndicator = value
             native.showsVerticalScrollIndicator = value
         }
-    actual val scrollReason: Readable<ScrollReason>
-        get() = TODO("Not yet implemented")
-    actual val viewport: Readable<Rect> = (sizeChange + scroll).lens {
+    override val viewport: Readable<Rect> = (sizeChange + scroll).lens {
         val (ox, oy) = native.contentOffset.useContents { x to y }
         val (vw, vh) = native.bounds.useContents { size.width to size.height }
         native.bounds.useContents {
@@ -70,7 +75,7 @@ actual class ScrollView actual constructor(
             )
         }
     }
-    actual val content: Readable<Rect> = (sizeChange).lens {
+    override val content: Readable<Rect> = (sizeChange).lens {
         val (sw, sh) = native.contentSize.useContents { width to height }
         val (vw, vh) = native.bounds.useContents { size.width to size.height }
         native.bounds.useContents {
@@ -80,8 +85,13 @@ actual class ScrollView actual constructor(
             )
         }
     }
+    private val _directlyInteractingWithScroller = Property(false)
+    override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
-    actual fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    override var snapToElements: Pair<Align?, Align?> = null to null
+    override var scrollSnapStop: Boolean = false
+
+    override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         val (existingX, existingY) = native.contentOffset.useContents { x to y }
 //        println("ScrollView.scrollTo: ${existingX.toInt()}, ${existingY.toInt()} += ${left.toInt()}, ${top.toInt()}")
         native.setContentOffset(
@@ -92,7 +102,7 @@ actual class ScrollView actual constructor(
             animated = animated
         )
     }
-    actual fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
         scrollTo(
             left = when(horizontal) {
                 Align.Start -> element.native.bounds.useContents { origin.x }
@@ -110,7 +120,7 @@ actual class ScrollView actual constructor(
         )
     }
 
-    actual fun offset(x: Double, y: Double) {
+    override fun offset(x: Double, y: Double) {
         val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
 //        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
         native.contentOffset = CGPointMake(

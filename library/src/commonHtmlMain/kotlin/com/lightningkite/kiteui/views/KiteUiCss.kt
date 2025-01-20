@@ -356,20 +356,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 max-width: unset;
             }
 
-            .scroll-horizontal.independent > * {
-                min-width: 100%;
-            }
-
             .scroll-vertical {
                 overflow: hidden auto;
             }
 
             .scroll-vertical > * {
                 max-height: unset;
-            }
-
-            .scroll-vertical.independent > * {
-                min-height: 100%;
             }
 
             iframe#webpack-dev-server-client-overlay {
@@ -696,6 +688,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
         """.trimIndent()
         )
+        for(h in Align.entries + listOf(null))
+            for(v in Align.entries + listOf(null))
+                dynamicCss.rule("""
+                    .snapTo-$h-$v > * {
+                        scroll-snap-align: ${listOfNotNull(h, v).joinToString(" "){ it.name.lowercase() }}
+                    }
+                """.trimIndent())
         try {
             dynamicCss.rule(
                 """progress::-webkit-progress-value {

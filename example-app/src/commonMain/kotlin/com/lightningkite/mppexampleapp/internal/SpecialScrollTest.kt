@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
@@ -16,13 +17,13 @@ object SpecialScrollTest : Screen {
     override fun ViewWriter.render() {
         col {
             h1 { content = "Scroll Layout Test" }
-            val verticalScrollElement: ScrollView
-            expanding - verticalScroll {
+            lateinit var verticalScrollElement: ScrollingBehaviors
+            expanding - scrolls {
+                snapToElements = null to Align.Start
                 verticalScrollElement = this
-                col {
-                    repeat(10) {
-                        card - text("Hello World")
-                    }
+            } - col {
+                repeat(10) {
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World")
                 }
             }
             sizeConstraints(height = 3.rem) - row {
@@ -30,7 +31,9 @@ object SpecialScrollTest : Screen {
                     text("Scroll to End PLZ")
                     action = Action("Scroll to End", Icon.done) {
                         verticalScrollElement.scrollTo(
-                            left = verticalScrollElement.content().also { println("Content: $it") }.right - verticalScrollElement.viewport().also { println("Viewport: $it") }.width,
+                            left = verticalScrollElement.content()
+                                .also { println("Content: $it") }.right - verticalScrollElement.viewport()
+                                .also { println("Viewport: $it") }.width,
                             top = verticalScrollElement.content().bottom - verticalScrollElement.viewport().height,
                             animated = true
                         )
@@ -42,13 +45,13 @@ object SpecialScrollTest : Screen {
                     }
                 }
             }
-            val horizontalScrollElement: ScrollView
-            expanding - horizontalScroll {
+            lateinit var horizontalScrollElement: ScrollingBehaviors
+            expanding - scrollsHorizontally {
+                snapToElements = Align.Start to null
                 horizontalScrollElement = this
-                row {
-                    repeat(10) {
-                        card - text("Hello World")
-                    }
+            } - row {
+                repeat(10) {
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World")
                 }
             }
             sizeConstraints(height = 3.rem) - row {
@@ -56,7 +59,9 @@ object SpecialScrollTest : Screen {
                     text("Scroll to End PLZ")
                     action = Action("Scroll to End", Icon.done) {
                         horizontalScrollElement.scrollTo(
-                            left = horizontalScrollElement.content().also { println("Content: $it") }.right - horizontalScrollElement.viewport().also { println("Viewport: $it") }.width,
+                            left = horizontalScrollElement.content()
+                                .also { println("Content: $it") }.right - horizontalScrollElement.viewport()
+                                .also { println("Viewport: $it") }.width,
                             top = horizontalScrollElement.content().bottom - horizontalScrollElement.viewport().height,
                             animated = true
                         )
@@ -64,7 +69,8 @@ object SpecialScrollTest : Screen {
                 }
                 expanding - text {
                     ::content {
-                        horizontalScrollElement.content().toString() + "\n" + horizontalScrollElement.viewport().toString()
+                        horizontalScrollElement.content().toString() + "\n" + horizontalScrollElement.viewport()
+                            .toString()
                     }
                 }
             }

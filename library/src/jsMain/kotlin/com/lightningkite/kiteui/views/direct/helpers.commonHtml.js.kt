@@ -107,21 +107,12 @@ actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
                             it.attributeName!!
                         )
                         if((it.oldValue ?: "") == (newValue ?: "")) continue
-                        ConsoleRoot.tag(it.attributeName ?: "???").log(
-                            it.oldValue + "  ->  " + (it.target as? HTMLElement)?.getAttributeNS(
-                                it.attributeNamespace,
-                                it.attributeName!!
-                            )
-                        )
-                    } else {
-                        ConsoleRoot.tag(it.type).log(it)
                     }
                     anyNotSuppressed = true
                 }
                 suppressedStyleChanges.clear()
                 suppressedClassChanges.clear()
                 if(anyNotSuppressed) {
-                    println("Mutation detected on ${e}")
                     invokeAllListeners()
                 }
             }).apply {

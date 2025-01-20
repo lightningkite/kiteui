@@ -118,22 +118,12 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual val ViewWriter.scrolls: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            native.classes.add("scroll-vertical")
-        }
-        return ViewWrapper
+actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+    beforeNextElementSetup {
+        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
-
-@ViewModifierDsl3
-actual val ViewWriter.scrollsHorizontally: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            native.classes.add("scroll-horizontal")
-        }
-        return ViewWrapper
-    }
+    return ViewWrapper
+}
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {

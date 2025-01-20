@@ -190,6 +190,7 @@ var EditText.keyboardHints: KeyboardHints
                 } ?: it
             } else it
         }
+        // TODO: autocorrect
     }
     set(value) {
         val n = this
@@ -209,6 +210,8 @@ var EditText.keyboardHints: KeyboardHints
             KeyboardType.Email -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         }.let {
             it or (this.inputType and (InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE))
+        }.let {
+            it or (this.inputType)
         }
         n.inputType = inputType
         if(VERSION.SDK_INT >= VERSION_CODES.O) {

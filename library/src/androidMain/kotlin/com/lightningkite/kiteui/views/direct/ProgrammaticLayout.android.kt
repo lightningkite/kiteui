@@ -80,6 +80,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if(r - l == 0 || b - t == 0) return
         delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
     }
 }

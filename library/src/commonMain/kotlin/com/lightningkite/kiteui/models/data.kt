@@ -601,12 +601,13 @@ data class PopoverPreferredDirection(
 data class KeyboardHints(
     val case: KeyboardCase = KeyboardCase.None,
     val type: KeyboardType = KeyboardType.Text,
-    val autocomplete: AutoComplete? = null
+    val autocomplete: AutoComplete? = null,
+    val autocorrect: Boolean = true,
 ) {
     companion object {
         val paragraph = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
         val title = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
-        val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text)
+        val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
         val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
         val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
         val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)

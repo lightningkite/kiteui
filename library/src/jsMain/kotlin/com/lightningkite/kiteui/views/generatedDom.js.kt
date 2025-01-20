@@ -486,8 +486,11 @@ actual inline var FutureElementStyle.outlineStyle: String?
 actual inline var FutureElementStyle.outlineWidth: String?
     get() = native.outlineWidth as? String 
     set(value) { native.outlineWidth = value }
+actual inline var FutureElementStyle.overflowAnchor: String?
+    get() = native.overflowAnchor as? String
+    set(value) { native.overflowAnchor = value }
 actual inline var FutureElementStyle.overflowWrap: String?
-    get() = native.overflowWrap as? String 
+    get() = native.overflowWrap as? String
     set(value) { native.overflowWrap = value }
 actual inline var FutureElementStyle.overflowX: String?
     get() = native.overflowX as? String 
@@ -1707,9 +1710,3 @@ actual inline var FutureElementAttributes.writingMode: String?
 actual inline var FutureElementAttributes.zIndex: String?
     get() = native.zIndex as? String
     set(value) { native.zIndex = value }
-actual inline fun FutureElementStyle.set(key: String, value: String) {
-    native.setProperty(key, value)
-}
-actual inline fun FutureElementStyle.unset(key: String) {
-    native.removeProperty(key)
-}

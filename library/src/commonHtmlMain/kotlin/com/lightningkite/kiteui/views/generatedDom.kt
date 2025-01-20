@@ -163,6 +163,7 @@ expect /*inline*/ var FutureElementStyle.outlineColor: String?
 expect /*inline*/ var FutureElementStyle.outlineOffset: String?
 expect /*inline*/ var FutureElementStyle.outlineStyle: String?
 expect /*inline*/ var FutureElementStyle.outlineWidth: String?
+expect /*inline*/ var FutureElementStyle.overflowAnchor: String?
 expect /*inline*/ var FutureElementStyle.overflowWrap: String?
 expect /*inline*/ var FutureElementStyle.overflowX: String?
 expect /*inline*/ var FutureElementStyle.overflowY: String?
@@ -227,8 +228,6 @@ expect /*inline*/ var FutureElementStyle.wordSpacing: String?
 expect /*inline*/ var FutureElementStyle.wordWrap: String?
 expect /*inline*/ var FutureElementStyle.writingMode: String?
 expect /*inline*/ var FutureElementStyle.zIndex: String?
-expect /*inline*/ fun FutureElementStyle.set(key: String, value: String)
-expect /*inline*/ fun FutureElementStyle.unset(key: String)
 expect /*inline*/ var FutureElementAttributes.accept: String?
 expect /*inline*/ var FutureElementAttributes.acceptCharset: String?
 expect /*inline*/ var FutureElementAttributes.accessKey: String?

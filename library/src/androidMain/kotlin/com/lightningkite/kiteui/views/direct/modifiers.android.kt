@@ -116,44 +116,10 @@ actual fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual val ViewWriter.scrolls: ViewWrapper
-    get() {
-        wrapNextIn(object : RViewWrapper(context) {
-            override val native: View = NestedScrollView(context.activity).apply {
-                isFillViewport = true
-            }
-
-            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-
-//            override fun applyForeground(theme: Theme) { /*Do nothing*/
-//            }
-//
-//            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
-//            }
-        })
-        return ViewWrapper
-    }
-
-@ViewModifierDsl3
-actual val ViewWriter.scrollsHorizontally: ViewWrapper
-    get() {
-        wrapNextIn(object : RViewWrapper(context) {
-            override val native: View = HorizontalScrollView(context.activity).apply {
-                isFillViewport = true
-            }
-
-            override fun defaultLayoutParams(): ViewGroup.LayoutParams =
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
-//            override fun applyForeground(theme: Theme) { /*Do nothing*/
-//            }
-//
-//            override fun applyBackground(theme: Theme, fullyApply: Boolean) { /*Do nothing*/
-//            }
-        })
-        return ViewWrapper
-    }
+actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+    wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
+    return ViewWrapper
+}
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
