@@ -49,14 +49,14 @@ internal actual fun ScrollingBehaviorImpl.nativeScrollOffset(
         trySet = {
             it.scrollLeft = expectedLeft
             it.scrollTop = expectedTop
-            window.setTimeout({
-                if (it.sdn() == sdn) {
-                    if (it.scrollTop != expectedTop || it.scrollLeft != expectedLeft) {
-                        println("Safari, why? ${it.scrollTop} != ${expectedTop} || ${it.scrollLeft} != ${expectedLeft}")
-                        trySet()
-                    }
-                }
-            })
+//            window.setTimeout({
+//                if (it.sdn() == sdn) {
+//                    if (it.scrollTop != expectedTop || it.scrollLeft != expectedLeft) {
+//                        println("Safari, why? ${it.scrollTop} != ${expectedTop} || ${it.scrollLeft} != ${expectedLeft}")
+//                        trySet()
+//                    }
+//                }
+//            })
         }
         trySet()
     }

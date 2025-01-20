@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.reactive.BaseListenable
 import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.views.*
+import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
@@ -54,13 +55,13 @@ inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit) {
     e.add(this.getAttribute("class") ?: "")
 }
 
-fun HTMLElement.measure(max: Size): Size {
+fun HTMLElement.measureByTempEdit(max: Size): Size {
     val tempchildwidth = this.style.width
     val tempchildheight = this.style.height
     val tempchildmaxWidth = this.style.maxWidth
     val tempchildmaxHeight = this.style.maxHeight
     suppressMutationObserverForStyle {
-        this.style.position = "fixed"
+//        this.style.position = "fixed"
         this.style.width = "unset"
         this.style.height = "unset"
         this.style.maxWidth = "${max.width}px"
@@ -68,12 +69,28 @@ fun HTMLElement.measure(max: Size): Size {
     }
     val out = Size(this.scrollWidth.toDouble() + 1.0, this.scrollHeight.toDouble() + 1.0)
     suppressMutationObserverForStyle {
-        this.style.position = "absolute"
+//        this.style.position = "absolute"
         this.style.width = tempchildwidth
         this.style.height = tempchildheight
         this.style.maxWidth = tempchildmaxWidth
         this.style.maxHeight = tempchildmaxHeight
     }
+    return out
+}
+
+fun HTMLElement.measureByDuplicate(max: Size): Size {
+    // This is nasty, but this is the only cross-browser safe way to do this.
+    // We clone the view and check its size.
+    val clone = this.cloneNode(true) as HTMLElement
+    clone.style.visibility = "hidden"
+    clone.style.width = "unset"
+    clone.style.height = "unset"
+    clone.style.maxWidth = "${max.width}px"
+    clone.style.maxHeight = "${max.height}px"
+    clone.style.position = "fixed"
+    document.body!!.appendChild(clone)
+    val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
+    document.body!!.removeChild(clone)
     return out
 }
 
@@ -83,6 +100,9 @@ actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
         override fun activate() {
             observer = MutationObserver({ rec, _->
                 val e = this@mutationObserver.element ?: return@MutationObserver
+//                rec.forEach {
+//                    ConsoleRoot.log(it.target, " updated ", it.type, it.attributeName)
+//                }
                 val suppressedStyleChanges = e.asDynamic().__suppressMutationObserverStyle as? ArrayList<String> ?: ArrayList()
                 val suppressedClassChanges = e.asDynamic().__suppressMutationObserverClass as? ArrayList<String> ?: ArrayList()
                 val s = (e.getAttribute("style") ?: "")

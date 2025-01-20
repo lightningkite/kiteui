@@ -65,6 +65,7 @@ interface RecyclerViewPlacer {
     fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
+        previousViewport: Rect,
         existingCells: List<RecyclerViewPlaceable>,
         getNewCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect,
@@ -76,17 +77,6 @@ interface RecyclerViewPlacer {
         writer: ViewWriter,
         render: ViewWriter.(Int) -> Unit
     )
-
-    fun inBounds(left: Double, top: Double, right: Double, bottom: Double, viewport: Rect): Boolean =  rectOverlaps(
-        left,
-        top,
-        right,
-        bottom,
-        viewport.left - scrollBeyond,
-        viewport.top - scrollBeyond,
-        viewport.right + scrollBeyond,
-        viewport.bottom + scrollBeyond
-    )
 }
 
 data class RecyclerViewAnchor(
@@ -94,24 +84,13 @@ data class RecyclerViewAnchor(
     val align: Align
 )
 
-class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
+class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
     override val scrollBeyond: Double get() = 0.0
-    val overdraw = 10.0
-    override fun inBounds(left: Double, top: Double, right: Double, bottom: Double, viewport: Rect): Boolean {
-        return rectOverlaps(
-            left,
-            top,
-            right,
-            bottom,
-            viewport.left - overdraw,
-            viewport.top - overdraw,
-            viewport.right + overdraw,
-            viewport.bottom + overdraw
-        )
-    }
+
     override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
+        previousViewport: Rect,
         existingCells: List<RecyclerViewPlaceable>,
         getNewCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect
@@ -119,15 +98,23 @@ class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
         val (anchorXStart, anchorIndex) = anchor?.let {
             viewport.left to it.index
         } ?: existingCells.minByOrNull {
-            abs(viewport.left - it.left)
+//            abs(viewport.left - it.left)
+            abs((it.right + it.left) / 2 - previousViewport.centerX)
         }?.let {
-            it.left to it.index
-        } ?: (viewport.left to dataRange.first)
-        println("Anchoring at ${anchorXStart - viewport.left}, $anchorIndex")
+//            println("Cell ${it.index} at ${it.left}..${it.right} in ${previousViewport.left}..${previousViewport.right} -> ${viewport.left}..${viewport.right}")
+            if (previousViewport.width != viewport.width)
+                (viewport.centerX + ((it.right + it.left) / 2 - previousViewport.centerX) - viewport.width / 2) to it.index
+            else
+                it.left to it.index
+        } ?: run {
+//            println("No existing cells")
+            viewport.left to dataRange.first
+        }
+//        println("Anchoring at ${anchorXStart - viewport.left}, $anchorIndex  ($anchor)")
 
         // Place anchor cell
         val size = Size(viewport.width, viewport.height)
-        if(anchorIndex in dataRange) {
+        if (anchorIndex in dataRange) {
             getNewCell(anchorIndex, size).place(
                 anchorXStart,
                 viewport.top,
@@ -135,7 +122,7 @@ class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
                 viewport.bottom
             )
         }
-        if(anchorIndex + 1 in dataRange) {
+        if (anchorIndex + 1 in dataRange) {
             getNewCell(anchorIndex + 1, size).place(
                 anchorXStart + size.width,
                 viewport.top,
@@ -143,7 +130,7 @@ class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
                 viewport.bottom
             )
         }
-        if(anchorIndex - 1 in dataRange) {
+        if (anchorIndex - 1 in dataRange) {
             getNewCell(anchorIndex - 1, size).place(
                 anchorXStart - size.width,
                 viewport.top,
@@ -152,6 +139,7 @@ class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
             )
         }
     }
+
     override fun prebake(
         prebakeRange: IntRange,
         dataRange: IntRange,
@@ -162,30 +150,18 @@ class RecyclerViewPagingPlacer(): RecyclerViewPlacer {
     }
 }
 
-class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val spacing: Double, val overdraw: Double) :
+class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val spacing: Double) :
     RecyclerViewPlacer {
     override val scrollBeyond: Double
         get() = padding
 
-    override fun inBounds(left: Double, top: Double, right: Double, bottom: Double, viewport: Rect): Boolean {
-        return rectOverlaps(
-            left,
-            top,
-            right,
-            bottom,
-            viewport.left - overdraw,
-            viewport.top - overdraw,
-            viewport.right + overdraw,
-            viewport.bottom + overdraw
-        )
-    }
-
     override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
+        previousViewport: Rect,
         existingCells: List<RecyclerViewPlaceable>,
-        getCell: (Int, Size) -> RecyclerViewPlaceable,
-        viewport: Rect,
+        getNewCell: (Int, Size) -> RecyclerViewPlaceable,
+        viewport: Rect
     ) {
         val cellSize = (viewport.right - viewport.left - padding * 2 - (columns - 1) * spacing) / columns
         val constrain = Size(
@@ -199,7 +175,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         val (anchorRowY, anchorRowIndex) = anchor?.let {
             val currentIndex = it.index.div(columns).times(columns)
             val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getCell(
+                if (currentIndex + it in dataRange) getNewCell(
                     currentIndex + it,
                     constrain
                 ) else null
@@ -221,9 +197,9 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         // Place downwards, one row at a time
         var currentY = anchorRowY
         var currentIndex = anchorRowIndex
-        while (currentY < viewport.bottom + overdraw && currentIndex <= dataRange.last) {
+        while (currentY < viewport.bottom /*+ overdraw*/ && currentIndex <= dataRange.last) {
             val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getCell(
+                if (currentIndex + it in dataRange) getNewCell(
                     currentIndex + it,
                     constrain
                 ) else null
@@ -238,9 +214,9 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
         // Place upwards, one row at a time
         currentY = anchorRowY - spacing
         currentIndex = anchorRowIndex - columns
-        while (currentY > viewport.top - overdraw && currentIndex + columns - 1 >= dataRange.first) {
+        while (currentY > viewport.top /*- overdraw*/ && currentIndex + columns - 1 >= dataRange.first) {
             val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getCell(
+                if (currentIndex + it in dataRange) getNewCell(
                     currentIndex + it,
                     constrain
                 ) else null
@@ -275,7 +251,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    val log: Console? = ConsoleRoot.tag("Recycler2")
+    val log: Console? = null,//ConsoleRoot.tag("Recycler2")
 ) {
     val outerStack: Stack
     lateinit var scroll: ScrollingBehaviors
@@ -287,7 +263,23 @@ class Recycler2(
     val fakeScrollContent: ProgrammaticLayout
     val fakeScrollIndicator: Stack
 
+    private var snapSuppress = false
+    private var snapSuppressInt = 0
+    private fun snapSuppressForFrame() {
+        val i = ++snapSuppressInt
+        snapSuppress = true
+        scroll.snapToElements = null to null
+        afterTimeout(33) {
+            if (snapSuppressInt == i) snapSuppress = false
+            scroll.snapToElements = if (vertical) null to snapToElements else snapToElements to null
+        }
+    }
+
     var snapToElements: Align? = null
+        set(value) {
+            field = value
+            if (!snapSuppress) scroll.snapToElements = if (vertical) null to value else value to null
+        }
 
     init {
         with(viewWriter) {
@@ -302,8 +294,8 @@ class Recycler2(
                         scrollSentinel = this
                     }
                 }
-                if (vertical) atEnd - sizeConstraints(width = 1.rem)
-                else atBottom - sizeConstraints(height = 1.rem)
+                if (vertical) atEnd - sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+                else atBottom - sizeConstraints(height = 1.rem, maxHeight = 1.rem)
                 scrolls(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                 } - programmatic {
@@ -321,9 +313,11 @@ class Recycler2(
         }
     }
 
+    private val overdraw = 0.0
+
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor(0, Align.Start)
 
-    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1, 8.0, 8.0, 8.0)
+    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1, 8.0, 8.0)
         set(value) {
             field = value
             log?.log("placer set calls invalidateLayout()")
@@ -350,6 +344,7 @@ class Recycler2(
 
     fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
         anchor = RecyclerViewAnchor(toIndex, align)
+        log?.log("anchor = ${anchor}")
         log?.log("scrollToIndex calls invalidateLayout()")
         cells.invalidateLayout()
     }
@@ -442,67 +437,6 @@ class Recycler2(
     var inLayout: Boolean = false
 
     init {
-        val size = scroll.viewport.lens { it -> if(vertical) it.height.roundToInt() else it.width.roundToInt() }
-        cells.reactive {
-            if(size() == 0) return@reactive
-            if(!scroll.directlyInteractingWithScroller()) {
-                val viewport = scroll.viewport.state.getOrNull() ?: return@reactive
-                // snap time!
-                snapToElements?.let {
-                    if(vertical) {
-                        val adjustment = when (it) {
-                            Align.Start -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs(it.top - viewport.top)
-                                } ?: return@let
-                                closestElement.top - viewport.top
-                            }
-
-                            Align.End -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs(it.bottom - viewport.bottom)
-                                } ?: return@let
-                                closestElement.bottom - viewport.bottom
-                            }
-
-                            else -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs((it.top + it.bottom) / 2 - viewport.centerY)
-                                } ?: return@let
-                                (closestElement.top + closestElement.bottom) / 2 - viewport.centerY
-                            }
-                        }
-                        if(abs(adjustment) > 2)
-                            scroll.scrollTo(viewport.left, viewport.top + adjustment, animated = true)
-                    } else {
-                        val adjustment = when (it) {
-                            Align.Start -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs(it.left - viewport.left)
-                                } ?: return@let
-                                closestElement.left - viewport.left
-                            }
-
-                            Align.End -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs(it.right - viewport.right)
-                                } ?: return@let
-                                closestElement.right - viewport.right
-                            }
-
-                            else -> {
-                                val closestElement = activeCells.minByOrNull {
-                                    abs((it.left + it.right) / 2 - viewport.centerX)
-                                } ?: return@let
-                                (closestElement.left + closestElement.right) / 2 - viewport.centerX
-                            }
-                        }
-                        if(abs(adjustment) > 2)
-                            scroll.scrollTo(viewport.left + adjustment, viewport.top + adjustment, animated = true)
-                    }
-                }
-            }
-        }
     }
 
     private var hideIndicatorJob: Job? = null
@@ -582,7 +516,6 @@ class Recycler2(
                         bottom = center + size,
                     )
                 } else {
-                    println("fakeScrollIndicatorEnd $fakeScrollIndicatorEnd, fakeScrollIndicatorStart: $fakeScrollIndicatorStart, within: $within")
                     val size = ((fakeScrollIndicatorEnd - fakeScrollIndicatorStart) * within.width)
                         .coerceAtLeast(within.height * 2)
                         .div(2)
@@ -603,8 +536,13 @@ class Recycler2(
     init {
         fakeScrollContent.delegate = fakeScrollLayoutDelegate
         if (Platform.current == Platform.Web) {
+            var lastSize: Size = Size.Zero
             cells.reactive {
                 val fsv = fakeScroll.viewport()
+                if(lastSize != fsv.size) {
+                    lastSize = fsv.size
+                    return@reactive
+                }
                 if (suppressFakeScrollEvent) {
                     suppressFakeScrollEvent = false
                     return@reactive
@@ -612,13 +550,14 @@ class Recycler2(
                 val data = data ?: return@reactive
                 if (data.range.last - data.range.first <= 0) return@reactive
                 if (fakeScrollSize == 0.0) return@reactive
-                if(vertical) {
+                if (vertical) {
                     val topRatio = fsv.top / fakeScrollSize
                     val bottomRatio = fsv.bottom / fakeScrollSize
                     val centerRatio = (topRatio + bottomRatio) / 2
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
                     val controlIndex = controlRatio * (data.range.last - data.range.first)
                     anchor = RecyclerViewAnchor(controlIndex.roundToInt(), Align.Center)
+                    this@Recycler2.log?.log("anchor = ${anchor} (web fake scroll)")
                 } else {
                     val topRatio = fsv.left / fakeScrollSize
                     val bottomRatio = fsv.right / fakeScrollSize
@@ -626,6 +565,7 @@ class Recycler2(
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
                     val controlIndex = controlRatio * (data.range.last - data.range.first)
                     anchor = RecyclerViewAnchor(controlIndex.roundToInt(), Align.Center)
+                    this@Recycler2.log?.log("anchor = ${anchor} (web fake scroll)")
                 }
                 fakeScrollInControl = true
                 log?.log("fakeScroll.viewport calls invalidateLayout()")
@@ -652,6 +592,7 @@ class Recycler2(
         })
     }
 
+    var previousViewport: Rect = Rect.Zero
     private val programmaticLayoutDelegate = object : ProgrammaticLayoutDelegate {
         var queuedScrollOffset: Pair<Double, Double>? = null
         var viewport: Rect = Rect.Zero
@@ -704,15 +645,6 @@ class Recycler2(
             fun runPlacer() {
                 usedCells.clear()
 
-                // Just nuke the offscreen cells immediately.
-                val instantDismissCount = activeCells.toList().count {
-                    if (!placer.inBounds(it.leftNew, it.topNew, it.rightNew, it.bottomNew, viewport)) {
-                        log?.log("OFFSCREEN CELL DISMISSED: ${it.index}")
-                        it.instantDismiss()
-                        true
-                    } else false
-                }
-
                 log?.log("RUN PLACER IN $viewport, anchor is $anchor")
                 placer.place(
                     dataRange = data.range,
@@ -738,8 +670,10 @@ class Recycler2(
                             activeCells += it
                         }).also { usedCells += it }
                     },
+                    previousViewport = previousViewport,
                     viewport = viewport
                 )
+                previousViewport = viewport
                 anchor = null
             }
             runPlacer()
@@ -779,6 +713,12 @@ class Recycler2(
                 activeCells.forEach {
                     it.offset(x, y)
                 }
+                previousViewport = previousViewport.copy(
+                    left = viewport.left + vx,
+                    top = viewport.top + vy,
+                    right = viewport.right + vx,
+                    bottom = viewport.bottom + vy
+                )
                 viewport = viewport.copy(
                     left = viewport.left + vx,
                     top = viewport.top + vy,
@@ -790,7 +730,7 @@ class Recycler2(
 
             if (firstCell != null) {
                 // Shift everyone to attach to the top, preventing scrolling away past there
-                if(vertical) {
+                if (vertical) {
                     if (abs(placer.scrollBeyond - firstCell!!.topNew) > 1.0) {
                         log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.topNew} -> ${placer.scrollBeyond}")
                         offset(0.0, -firstCell!!.topNew + placer.scrollBeyond)
@@ -799,6 +739,7 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.top < 0.1) {
                             anchor = RecyclerViewAnchor(data.range.first, Align.Start)
+                            log?.log("anchor = ${anchor} (Offset follow up)")
                         }
                         runPlacer()
                     }
@@ -811,6 +752,7 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.left < 0.1) {
                             anchor = RecyclerViewAnchor(data.range.first, Align.Start)
+                            log?.log("anchor = ${anchor} (Offset follow up)")
                         }
                         runPlacer()
                     }
@@ -890,12 +832,33 @@ class Recycler2(
             }
 
             // We need to update the fake scroller
-            println("Update fake scroller: $data, $fakeScrollInControl")
             data?.let { data ->
                 if (fakeScrollInControl) return@let
-                val min = activeCells.filter { placer.inBounds(it.left, it.top, it.right, it.bottom, viewport) }
+                val min = activeCells.filter {
+                    rectOverlaps(
+                        it.left,
+                        it.top,
+                        it.right,
+                        it.bottom,
+                        viewport.left - overdraw,
+                        viewport.top - overdraw,
+                        viewport.right + overdraw,
+                        viewport.bottom + overdraw
+                    )
+                }
                     .minByOrNull { it.index } ?: return@let
-                val max = activeCells.filter { placer.inBounds(it.left, it.top, it.right, it.bottom, viewport) }
+                val max = activeCells.filter {
+                    rectOverlaps(
+                        it.left,
+                        it.top,
+                        it.right,
+                        it.bottom,
+                        viewport.left - overdraw,
+                        viewport.top - overdraw,
+                        viewport.right + overdraw,
+                        viewport.bottom + overdraw
+                    )
+                }
                     .maxByOrNull { it.index } ?: return@let
                 val coords = if (vertical) listOf(min.top, min.bottom, max.top, max.bottom) else listOf(
                     min.left,
@@ -904,19 +867,13 @@ class Recycler2(
                     max.right
                 )
                 val pxTaken = coords.max() - coords.min()
-                if(pxTaken == 0.0) throw IllegalStateException()
+                if (pxTaken == 0.0) throw IllegalStateException()
                 val estimatedElementPx = pxTaken / (max.index - min.index + 1)
                 val estimatedTotalPx = estimatedElementPx * (data.range.last - data.range.first + 1)
 
                 val viewportTopTotalEstimatePx = (estimatedElementPx * min.index) - (min.top - viewport.top)
                 val viewportBottomTotalEstimatePx =
                     (estimatedElementPx * (max.index + 1)) - (max.bottom - viewport.bottom)
-
-                println("pxTaken: $pxTaken")
-                println("estimatedElementPx: $estimatedElementPx")
-                println("estimatedTotalPx: $estimatedTotalPx")
-                println("viewportTopTotalEstimatePx: $viewportTopTotalEstimatePx")
-                println("viewportBottomTotalEstimatePx: $viewportBottomTotalEstimatePx")
 
                 setFakeScrollByRatio(
                     viewportTopTotalEstimatePx / estimatedTotalPx,
@@ -926,6 +883,7 @@ class Recycler2(
             queuedScrollOffset?.let {
                 log?.log("EXECUTING SCROLL JUMP ${scroll.viewport.state.getOrNull()} += ${it}")
                 suppressScrollEvent = true
+                snapSuppressForFrame()
                 scroll.offset(it.first, it.second)
                 queuedScrollOffset = null
 //                stahp = true

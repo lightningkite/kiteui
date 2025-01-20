@@ -23,7 +23,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         set(value) {
             field = value; invalidateLayout()
         }
-    var log: Console? = ConsoleRoot.tag("ProgrammaticLayout")
+    var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     init {
         onRemove(native.resizeObserver().addListener {
@@ -64,7 +64,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
             if (existing != null && existingConstraint == sizeConstraint) return existing
-            val m = e.measure(sizeConstraint)
+            val m = e.measureByDuplicate(sizeConstraint)
             e.asDynamic().__existingMeasure = m
             e.asDynamic().__existingMeasureConstraint = sizeConstraint
             return m

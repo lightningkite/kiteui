@@ -691,7 +691,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         for(h in Align.entries + listOf(null))
             for(v in Align.entries + listOf(null))
                 dynamicCss.rule("""
-                    .snapTo-$h-$v > * {
+                    .snapTo-$h-$v > :not(:first-child) {
                         scroll-snap-align: ${listOfNotNull(h, v).joinToString(" "){ it.name.lowercase() }}
                     }
                 """.trimIndent())

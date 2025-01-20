@@ -20,6 +20,8 @@ data class Rect(
         fun fromSize(size: Size, x: Double = 0.0, y: Double = 0.0) = Rect(x, y, x + size.width, y + size.height)
         fun fromSize(left: Double = 0.0, top: Double = 0.0, width: Double, height: Double) = Rect(left, top, left + width, top + height)
     }
+
+    val size: Size get() = Size(width, height)
     val centerX: Double get() = (left + right) / 2
     val centerY: Double get() = (top + bottom) / 2
     val width: Double get() = right - left

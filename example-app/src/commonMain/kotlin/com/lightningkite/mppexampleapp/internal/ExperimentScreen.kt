@@ -42,7 +42,7 @@ object ExperimentScreen : Screen {
                     expanding - button {
                         subtext("${cols} columns")
                         onClick {
-                            recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 0.0, 8.0, 100.0)
+                            recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 0.0, 8.0)
                         }
                     }
                 }
@@ -116,7 +116,7 @@ object ExperimentScreen : Screen {
                     }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0, 100.0)
+                placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0)
                 rendererSet = object: RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
