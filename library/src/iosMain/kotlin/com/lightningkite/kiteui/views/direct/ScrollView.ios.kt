@@ -6,11 +6,14 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
-import kotlinx.cinterop.useContents
+import kotlinx.cinterop.*
+import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.UIScrollView
 import platform.UIKit.UIScrollViewDelegateProtocol
+import platform.UIKit.UIView
 import platform.darwin.NSObject
+import kotlin.math.abs
 
 class ScrollView(
     context: RContext,
@@ -32,13 +35,93 @@ class ScrollView(
         }
 
         override fun scrollViewWillBeginDragging(scrollView: UIScrollView) {
-            super.scrollViewWillBeginDragging(scrollView)
             _directlyInteractingWithScroller.value = true
         }
 
         override fun scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate: Boolean) {
-            super.scrollViewDidEndDragging(scrollView, willDecelerate)
+        }
+
+        override fun scrollViewWillEndDragging(
+            scrollView: UIScrollView,
+            withVelocity: CValue<CGPoint>,
+            targetContentOffset: CPointer<CGPoint>?
+        ) {
+            targetContentOffset ?: return
             _directlyInteractingWithScroller.value = false
+
+            // snap!
+            val candidates = native.subviews.asSequence().flatMap {
+                (it as UIView).subviews.asSequence() as Sequence<UIView>
+            }
+            if(candidates.none()) return
+
+            fun UIView.x() = when(snapToElements.first) {
+                Align.Start -> center.useContents { x } - bounds.useContents { size.width } / 2
+                Align.End -> center.useContents { x } + bounds.useContents { size.width } / 2
+                else -> center.useContents { x }
+            }
+            fun UIView.y() = when(snapToElements.second) {
+                Align.Start -> center.useContents { y } - bounds.useContents { size.height } / 2
+                Align.End -> center.useContents { y } + bounds.useContents { size.height } / 2
+                else -> center.useContents { y }
+            }
+            val viewportXSize = scrollView.bounds.useContents { size.width }
+            val viewportYSize = scrollView.bounds.useContents { size.height }
+            val currentX = when(snapToElements.first) {
+                Align.Start -> scrollView.contentOffset.useContents { x }
+                Align.End -> scrollView.contentOffset.useContents { x } + viewportXSize
+                else -> scrollView.contentOffset.useContents { x } + viewportXSize / 2
+            }
+            val currentY = when(snapToElements.second) {
+                Align.Start -> scrollView.contentOffset.useContents { y }
+                Align.End -> scrollView.contentOffset.useContents { y } + viewportYSize
+                else -> scrollView.contentOffset.useContents { y } + viewportYSize / 2
+            }
+            val focusX = when(snapToElements.first) {
+                Align.Start -> targetContentOffset.pointed.x
+                Align.End -> targetContentOffset.pointed.x + viewportXSize
+                else -> targetContentOffset.pointed.x + viewportXSize / 2
+            }
+            val focusY = when(snapToElements.second) {
+                Align.Start -> targetContentOffset.pointed.y
+                Align.End -> targetContentOffset.pointed.y + viewportYSize
+                else -> targetContentOffset.pointed.y + viewportYSize / 2
+            }
+            println("currentX: $currentX")
+            println("currentY: $currentY")
+            println("focusX: $focusX")
+            println("focusY: $focusY")
+
+
+            val (candidatesX, candidatesY) = if(scrollSnapStop) {
+                sequenceOf(
+                    candidates.filter { it.x() < currentX }.maxByOrNull { it.x() } ?: candidates.minBy { it.x() },
+                    candidates.filter { it.x() > currentX }.minByOrNull { it.x() } ?: candidates.maxBy { it.x() },
+                ) to sequenceOf(
+                    candidates.filter { it.y() < currentY }.maxByOrNull { it.y() } ?: candidates.minBy { it.y() },
+                    candidates.filter { it.y() > currentY }.minByOrNull { it.y() } ?: candidates.maxBy { it.y() },
+                )
+            } else candidates to candidates
+
+            val x = candidatesX.minBy { abs(it.x() - focusX) }
+            val y = candidatesY.minBy { abs(it.y() - focusY) }
+
+            snapToElements.first?.let {
+                when(it) {
+                    Align.Start -> targetContentOffset.pointed.x = x.x()
+                    Align.End -> targetContentOffset.pointed.x = x.x() - viewportXSize
+                    Align.Center,
+                    Align.Stretch -> targetContentOffset.pointed.x = x.x() - viewportXSize / 2
+                }
+            }
+            snapToElements.second?.let {
+                when(it) {
+                    Align.Start -> targetContentOffset.pointed.y = y.y()
+                    Align.End -> targetContentOffset.pointed.y = y.y() - viewportYSize
+                    Align.Center,
+                    Align.Stretch -> targetContentOffset.pointed.y = y.y() - viewportYSize / 2
+                }
+            }
         }
     }
 

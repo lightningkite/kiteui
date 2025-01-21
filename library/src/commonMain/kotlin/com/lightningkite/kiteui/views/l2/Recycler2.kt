@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -251,8 +252,10 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val 
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    val log: Console? = null,//ConsoleRoot.tag("Recycler2")
-) {
+    val log: Console? = ConsoleRoot.tag("Recycler2")
+): ViewModifiable {
+    override val coroutineContext: CoroutineContext
+        get() = outerStack.coroutineContext
     val outerStack: Stack
     lateinit var scroll: ScrollingBehaviors
         private set
@@ -272,6 +275,7 @@ class Recycler2(
         afterTimeout(33) {
             if (snapSuppressInt == i) snapSuppress = false
             scroll.snapToElements = if (vertical) null to snapToElements else snapToElements to null
+            scroll.scrollSnapStop = scrollSnapStop
         }
     }
 
@@ -279,6 +283,11 @@ class Recycler2(
         set(value) {
             field = value
             if (!snapSuppress) scroll.snapToElements = if (vertical) null to value else value to null
+        }
+    var scrollSnapStop: Boolean = false
+        set(value) {
+            field = value
+            if (!snapSuppress) scroll.scrollSnapStop = value
         }
 
     init {
@@ -490,13 +499,23 @@ class Recycler2(
             if (Platform.current == Platform.Web) {
                 suppressFakeScrollEvent = true
                 val s = min(within.width, within.height)
-                inProgress.place(
-                    fakeScrollIndicator,
-                    left = -s * 10,
-                    top = -s * 10,
-                    right = -s * 10,
-                    bottom = -s * 10,
-                )
+                if (vertical) {
+                    inProgress.place(
+                        fakeScrollIndicator,
+                        left = -s * 10,
+                        top = fakeScrollSize - 1,
+                        right = -s * 10,
+                        bottom = fakeScrollSize,
+                    )
+                } else {
+                    inProgress.place(
+                        fakeScrollIndicator,
+                        left = fakeScrollSize - 1,
+                        top = -s * 10,
+                        right = fakeScrollSize,
+                        bottom = -s * 10,
+                    )
+                }
                 fakeScroll.scrollTo(
                     if (vertical) 0.0 else fakeScrollOffset,
                     if (vertical) fakeScrollOffset else 0.0,
@@ -539,7 +558,7 @@ class Recycler2(
             var lastSize: Size = Size.Zero
             cells.reactive {
                 val fsv = fakeScroll.viewport()
-                if(lastSize != fsv.size) {
+                if (lastSize != fsv.size) {
                     lastSize = fsv.size
                     return@reactive
                 }
@@ -574,10 +593,14 @@ class Recycler2(
         }
         var timeoutRemover = {}
         cells.onRemove(scroll.viewport.addListener {
+
             isMoving.value = true
+            println("isMoving.value = true")
             timeoutRemover()
             timeoutRemover = afterTimeout(100) {
+
                 isMoving.value = false
+                println("isMoving.value = false")
                 cells.invalidateLayout()
             }
             if (suppressScrollEvent) {
@@ -632,7 +655,7 @@ class Recycler2(
 
             @Suppress("UNCHECKED_CAST")
             val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: return default
-            log?.log("LAYOUT STARTED IN VIEWPORT $viewport")
+            log?.log("LAYOUT STARTED IN VIEWPORT $viewport, isMoving: ${isMoving.value}")
 
             // Time to run the placer.
             //  Track the used cells so that we can handle them properly later

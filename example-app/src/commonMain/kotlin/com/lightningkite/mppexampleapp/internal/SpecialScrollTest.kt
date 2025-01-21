@@ -19,14 +19,13 @@ object SpecialScrollTest : Screen {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors
             expanding - scrolls {
-                snapToElements = null to Align.Start
                 verticalScrollElement = this
             } - col {
                 repeat(10) {
-                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World")
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World: $it")
                 }
             }
-            sizeConstraints(height = 3.rem) - row {
+            sizeConstraints(height = 7.rem) - row {
                 button {
                     text("Scroll to End PLZ")
                     action = Action("Scroll to End", Icon.done) {
@@ -44,17 +43,18 @@ object SpecialScrollTest : Screen {
                         verticalScrollElement.content().toString() + "\n" + verticalScrollElement.viewport().toString()
                     }
                 }
+                checkbox { verticalScrollElement::snapToElements { if(checked()) null to Align.Start else null to null } }
+                checkbox { verticalScrollElement::scrollSnapStop { checked() } }
             }
             lateinit var horizontalScrollElement: ScrollingBehaviors
             expanding - scrollsHorizontally {
-                snapToElements = Align.Start to null
                 horizontalScrollElement = this
             } - row {
                 repeat(10) {
-                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World")
+                    sizeConstraints(minWidth = 8.rem, minHeight = 8.rem) - card - text("Hello World: $it")
                 }
             }
-            sizeConstraints(height = 3.rem) - row {
+            sizeConstraints(height = 7.rem) - row {
                 button {
                     text("Scroll to End PLZ")
                     action = Action("Scroll to End", Icon.done) {
@@ -73,6 +73,8 @@ object SpecialScrollTest : Screen {
                             .toString()
                     }
                 }
+                checkbox { horizontalScrollElement::snapToElements { if(checked()) Align.Start to null else null to null } }
+                checkbox { horizontalScrollElement::scrollSnapStop { checked() } }
             }
         }
     }

@@ -39,6 +39,7 @@ object R2VPScreen : Screen {
             expanding
             recyclerView = Recycler2(this, vertical = false).apply {
                 this.snapToElements = Align.Center
+                this.scrollSnapStop = true
                 val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
                         with(viewWriter) {

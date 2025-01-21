@@ -23,6 +23,8 @@ abstract class RViewWithAction(context: RContext) : RView(context) {
     }
 }
 
+interface ViewModifiable: CoroutineScope
+
 expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun opacitySet(value: Double)
@@ -55,7 +57,7 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 }
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
-abstract class RViewHelper(override val context: RContext) : ViewWriter() {
+abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     var additionalTestingData: Any? = null
 
     abstract var showOnPrint: Boolean

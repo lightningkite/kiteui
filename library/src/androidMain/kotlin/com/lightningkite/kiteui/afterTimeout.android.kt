@@ -9,6 +9,7 @@ private val handler = Handler(Looper.getMainLooper())
 
 internal fun globalPost(action: ()->Unit) = handler.post(action)
 actual fun afterTimeout(milliseconds: Long, action: () -> Unit): () -> Unit {
-    handler.postDelayed(action, milliseconds)
-    return { handler.removeCallbacks(action) }
+    val runnable = Runnable(action)
+    handler.postDelayed(runnable, milliseconds)
+    return { handler.removeCallbacks(runnable) }
 }

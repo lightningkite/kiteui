@@ -13,7 +13,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter: CoroutineScope {
+abstract class ViewWriter: ViewModifiable {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
@@ -122,22 +122,22 @@ abstract class ViewWriter: CoroutineScope {
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewModifiable): ViewWrapper { return ViewWrapper }
 
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWriter): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewModifiable): ViewWrapper { return ViewWrapper }
 
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
     @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWriter): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewModifiable): Boolean { return true }
 
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
     @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWriter): Boolean { return true }
+    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewModifiable): Boolean { return true }
 }
 
 class NewViewWriter(val calculationContext: CoroutineScope, override val context: RContext) : ViewWriter(), CoroutineScope by calculationContext {

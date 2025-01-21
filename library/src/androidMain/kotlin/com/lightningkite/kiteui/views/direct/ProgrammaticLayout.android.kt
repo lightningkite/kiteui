@@ -59,11 +59,6 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         )
     }
 
-    override fun requestLayout() {
-        ConsoleRoot.tag("ProgrammaticLayout.android").log("Layout requested")
-        super.requestLayout()
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
             View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
