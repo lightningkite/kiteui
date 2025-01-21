@@ -268,7 +268,7 @@ fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.End -> ScrollLogicalPosition.END
 
     Align.Stretch -> ScrollLogicalPosition.START
-    null -> ScrollLogicalPosition.START
+    null -> ScrollLogicalPosition.NEAREST
 }
 actual fun RView.nativeScrollIntoView(
     horizontal: Align?,
