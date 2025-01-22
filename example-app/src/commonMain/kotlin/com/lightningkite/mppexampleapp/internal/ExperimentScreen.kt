@@ -16,6 +16,9 @@ object ExperimentScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
+    @QueryParameter
+    val elementCount = Property(10000)
+
     override fun ViewWriter.render() {
         col {
             val expanded = Property(-1)
@@ -38,94 +41,53 @@ object ExperimentScreen : Screen {
             }
             row {
                 repeat(4) {
-                    val cols = it + 1
+                    val cols = (it + 1) * 4
                     expanding - button {
                         subtext("${cols} columns")
                         onClick {
-                            recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 0.0, 8.0)
+                            recyclerView?.placer = RecyclerViewPlacerVerticalTrueGrid(cols)
                         }
                     }
                 }
+                sizeConstraints(width = 10.rem) - field("Element Count") {
+                    numberInput { content bind elementCount.nullable().asDouble() }
+                }
             }
-//            expanding
-//            recyclerView = Recycler2(this, vertical = false).apply {
-////                this.snapToElements = Align.Center to Align.Center
-//                val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
-//                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
-//                        with(viewWriter) {
-//                            ThemeDerivation {
-//                                it.copy(background = HSVColor(hue = Angle(Random.nextFloat()), saturation = 1f, value = 0.5f).toRGB()).withBack
-//                            }.onNext - button {
-//                                sizeConstraints(minHeight = 10.rem) - col {
-//                                    text { ::content { data().toString() } }
-//                                    onlyWhen { expanded() == data() } - col {
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                        text { content = "Expanded Content"  }
-//                                    }
-//                                }
-//                                onClick {
-//                                    expanded.value = data()
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-////                scrollToIndex(50, Align.Center)
-//                placer = RecyclerViewPagingPlacer()
-//                rendererSet = object: RecyclerViewRendererSet<Int, Int> {
-//                    override fun id(item: Int): Int = item
-//                    override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
-//                }
-//                data = object: RecyclerViewData<Int, Int> {
-//                    override val range: IntRange = 0..100
-//                    override fun get(index: Int): Int {
-//                        if(index !in range) throw IllegalStateException("Index out of range")
-//                        return index
-//                    }
-//                }
-//            }
-            expanding
-            recyclerView = Recycler2(this).apply {
+            recyclerView = expanding - Recycler2(this).apply {
 //                this.snapToElements = null to Align.Start
-                val main: RecyclerViewRenderer<Int> = object: RecyclerViewRenderer<Int> {
-                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) {
-                        with(viewWriter) {
-                            ThemeDerivation {
-                                it.copy(background = HSVColor(hue = Angle(Random.nextFloat()), saturation = 1f, value = 0.5f).toRGB()).withBack
-                            }.onNext - button {
-                                sizeConstraints(minHeight = 10.rem) - col {
-                                    text { ::content { data().toString() } }
-                                    onlyWhen { expanded() == data() } - col {
-                                        text { content = "Expanded Content"  }
-                                        text { content = "Expanded Content"  }
-                                        text { content = "Expanded Content"  }
-                                        text { content = "Expanded Content"  }
-                                        text { content = "Expanded Content"  }
-                                        text { content = "Expanded Content"  }
-                                    }
-                                }
+                val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
+                    override fun render(
+                        viewWriter: ViewWriter,
+                        data: Readable<Int>,
+                        index: Readable<Int>
+                    ): ViewModifiable {
+                        return with(viewWriter) {
+                            card - button {
+                                centered - text { ::content { data().toString() } }
                                 onClick {
-                                    expanded.value = data()
+                                    if (data() == expanded.value)
+                                        expanded.value = -1
+                                    else
+                                        expanded.value = data()
                                 }
                             }
                         }
                     }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPlacerVerticalGrid(2, 0.0, 8.0)
-                rendererSet = object: RecyclerViewRendererSet<Int, Int> {
+                placer = RecyclerViewPlacerVerticalTrueGrid(4)
+                rendererSet = object : RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
                 }
-                data = object: RecyclerViewData<Int, Int> {
-                    override val range: IntRange = 0..100
-                    override fun get(index: Int): Int {
-                        if(index !in range) throw IllegalStateException("Index out of range")
-                        return index
+                reactive {
+                    val c = elementCount()
+                    data = object : RecyclerViewData<Int, Int> {
+                        override val range: IntRange = 0..<c
+                        override fun get(index: Int): Int {
+                            if (index !in range) throw IllegalStateException("Index out of range")
+                            return index
+                        }
                     }
                 }
             }

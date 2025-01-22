@@ -12,23 +12,23 @@ typealias ScreenStack = ScreenNavigator
 class ScreenNavigator(private val routesGetter: ()->Routes) {
     val routes: Routes by lazy { routesGetter() }
     
-    val stack: Property<List<Screen>> = Property(listOf())
-    fun wrap(screen: Screen): Screen = screen
+    val stack: Property<List<Page>> = Property(listOf())
+    fun wrap(screen: Page): Page = screen
     
-    val currentScreen: Readable<Screen?> = shared { stack().lastOrNull() }
+    val currentScreen: Readable<Page?> = shared { stack().lastOrNull() }
     val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
     
-    fun navigate(screen: Screen) = navigateRaw(wrap(screen))
-    fun replace(screen: Screen) = replaceRaw(wrap(screen))
-    fun reset(screen: Screen) = resetRaw(wrap(screen))
+    fun navigate(screen: Page) = navigateRaw(wrap(screen))
+    fun replace(screen: Page) = replaceRaw(wrap(screen))
+    fun reset(screen: Page) = resetRaw(wrap(screen))
 
-    fun navigateRaw(screen: Screen) {
+    fun navigateRaw(screen: Page) {
         stack.value += screen
     }
-    fun replaceRaw(screen: Screen) {
+    fun replaceRaw(screen: Page) {
         stack.value = stack.value.dropLast(1) + screen
     }
-    fun resetRaw(screen: Screen) {
+    fun resetRaw(screen: Page) {
         stack.value = listOf(screen)
     }
 

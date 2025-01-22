@@ -10,250 +10,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
-interface RecyclerViewPlaceable {
-    val index: Int
-    val item: Any?
-    val size: Size
-
-    val left: Double
-    val top: Double
-    val right: Double
-    val bottom: Double
-    val centerX: Double get() = (left + right) / 2
-    val centerY: Double get() = (top + bottom) / 2
-    fun place(left: Double, top: Double, right: Double, bottom: Double)
-
-    val type: RecyclerViewRenderer<*>
-}
-
-interface RecyclerViewData<T, ID> {
-    val range: IntRange
-    operator fun get(index: Int): T
-
-    object Empty : RecyclerViewData<Unit, Unit> {
-        override val range: IntRange get() = IntRange.EMPTY
-        override fun get(index: Int): Unit = Unit
-    }
-}
-
-interface RecyclerViewRendererSet<in T, out ID> {
-    fun id(item: T): ID
-    fun renderer(item: T): RecyclerViewRenderer<T>
-
-    object Empty : RecyclerViewRendererSet<Any?, Unit> {
-        override fun id(item: Any?): Unit = Unit
-        override fun renderer(item: Any?): RecyclerViewRenderer<Any?> = RecyclerViewRenderer.Blank
-    }
-}
-
-interface RecyclerViewRenderer<in T> {
-    fun render(viewWriter: ViewWriter, data: Readable<T>, index: Readable<Int>)
-
-    object Blank : RecyclerViewRenderer<Any?> {
-        override fun render(viewWriter: ViewWriter, data: Readable<Any?>, index: Readable<Int>) {
-            with(viewWriter) { space() }
-        }
-    }
-}
-
-interface RecyclerViewPlacer {
-    val scrollBeyond: Double
-
-    fun place(
-        dataRange: IntRange,
-        anchor: RecyclerViewAnchor?,
-        previousViewport: Rect,
-        existingCells: List<RecyclerViewPlaceable>,
-        getNewCell: (Int, Size) -> RecyclerViewPlaceable,
-        viewport: Rect,
-    )
-
-    fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    )
-}
-
-data class RecyclerViewAnchor(
-    val index: Int,
-    val align: Align
-)
-
-class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
-    override val scrollBeyond: Double get() = 0.0
-
-    override fun place(
-        dataRange: IntRange,
-        anchor: RecyclerViewAnchor?,
-        previousViewport: Rect,
-        existingCells: List<RecyclerViewPlaceable>,
-        getNewCell: (Int, Size) -> RecyclerViewPlaceable,
-        viewport: Rect
-    ) {
-        val (anchorXStart, anchorIndex) = anchor?.let {
-            viewport.left to it.index
-        } ?: existingCells.minByOrNull {
-//            abs(viewport.left - it.left)
-            abs((it.right + it.left) / 2 - previousViewport.centerX)
-        }?.let {
-//            println("Cell ${it.index} at ${it.left}..${it.right} in ${previousViewport.left}..${previousViewport.right} -> ${viewport.left}..${viewport.right}")
-            if (previousViewport.width != viewport.width)
-                (viewport.centerX + ((it.right + it.left) / 2 - previousViewport.centerX) - viewport.width / 2) to it.index
-            else
-                it.left to it.index
-        } ?: run {
-//            println("No existing cells")
-            viewport.left to dataRange.first
-        }
-//        println("Anchoring at ${anchorXStart - viewport.left}, $anchorIndex  ($anchor)")
-
-        // Place anchor cell
-        val size = Size(viewport.width, viewport.height)
-        if (anchorIndex in dataRange) {
-            getNewCell(anchorIndex, size).place(
-                anchorXStart,
-                viewport.top,
-                anchorXStart + viewport.width,
-                viewport.bottom
-            )
-        }
-        if (anchorIndex + 1 in dataRange) {
-            getNewCell(anchorIndex + 1, size).place(
-                anchorXStart + size.width,
-                viewport.top,
-                anchorXStart + size.width * 2,
-                viewport.bottom
-            )
-        }
-        if (anchorIndex - 1 in dataRange) {
-            getNewCell(anchorIndex - 1, size).place(
-                anchorXStart - size.width,
-                viewport.top,
-                anchorXStart,
-                viewport.bottom
-            )
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
-}
-
-class RecyclerViewPlacerVerticalGrid(val columns: Int, val padding: Double, val spacing: Double) :
-    RecyclerViewPlacer {
-    override val scrollBeyond: Double
-        get() = padding
-
-    override fun place(
-        dataRange: IntRange,
-        anchor: RecyclerViewAnchor?,
-        previousViewport: Rect,
-        existingCells: List<RecyclerViewPlaceable>,
-        getNewCell: (Int, Size) -> RecyclerViewPlaceable,
-        viewport: Rect
-    ) {
-        val cellSize = (viewport.right - viewport.left - padding * 2 - (columns - 1) * spacing) / columns
-        val constrain = Size(
-            width = cellSize,
-            height = 10000.0
-        )
-        val cellOffsets = (0..<columns).map {
-            padding + it * spacing + it * cellSize
-        }
-
-        val (anchorRowY, anchorRowIndex) = anchor?.let {
-            val currentIndex = it.index.div(columns).times(columns)
-            val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getNewCell(
-                    currentIndex + it,
-                    constrain
-                ) else null
-            }
-            val max = cells.maxOf { it?.size?.height ?: 0.0 }
-            when (it.align) {
-                Align.Start -> viewport.top + padding
-                Align.End -> viewport.bottom - max - padding
-                else -> viewport.centerY - max / 2
-            } to currentIndex
-        } ?: existingCells.minByOrNull {
-            it.centerX +
-                    abs(viewport.centerY - it.centerY)
-        }?.let {
-//            println("Using existing cells for anchor: ${it.top} to ${it.index.div(columns).times(columns)}")
-            it.top to it.index.div(columns).times(columns)
-        } ?: (viewport.top + spacing to dataRange.first.div(columns).times(columns))
-
-        // Place downwards, one row at a time
-        var currentY = anchorRowY
-        var currentIndex = anchorRowIndex
-        while (currentY < viewport.bottom /*+ overdraw*/ && currentIndex <= dataRange.last) {
-            val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getNewCell(
-                    currentIndex + it,
-                    constrain
-                ) else null
-            }
-            val max = cells.maxOf { it?.size?.height ?: 0.0 }
-            for (i in 0..<columns) {
-                cells[i]?.place(cellOffsets[i], currentY, cellOffsets[i] + cellSize, currentY + max)
-            }
-            currentY += max + spacing
-            currentIndex += columns
-        }
-        // Place upwards, one row at a time
-        currentY = anchorRowY - spacing
-        currentIndex = anchorRowIndex - columns
-        while (currentY > viewport.top /*- overdraw*/ && currentIndex + columns - 1 >= dataRange.first) {
-            val cells = (0..<columns).map {
-                if (currentIndex + it in dataRange) getNewCell(
-                    currentIndex + it,
-                    constrain
-                ) else null
-            }
-            val max = cells.maxOf { it?.size?.height ?: 0.0 }
-            for (i in 0..<columns) {
-                cells[i]?.place(cellOffsets[i], currentY - max, cellOffsets[i] + cellSize, currentY)
-            }
-            currentY -= max + spacing
-            currentIndex -= columns
-        }
-    }
-
-    override fun prebake(
-        prebakeRange: IntRange,
-        dataRange: IntRange,
-        writer: ViewWriter,
-        render: ViewWriter.(Int) -> Unit
-    ): Unit = with(writer) {
-        if (columns == 1) {
-            col {
-                prebakeRange.forEach {
-                    render(it)
-                }
-            }
-        } else {
-            TODO()
-        }
-    }
-}
-
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    val log: Console? = ConsoleRoot.tag("Recycler2")
-): ViewModifiable {
+    var log: Console? = ConsoleRoot.tag("R2")//null,
+) : ViewModifiable {
     override val coroutineContext: CoroutineContext
         get() = outerStack.coroutineContext
     val outerStack: Stack
@@ -266,28 +32,28 @@ class Recycler2(
     val fakeScrollContent: ProgrammaticLayout
     val fakeScrollIndicator: Stack
 
-    private var snapSuppress = false
-    private var snapSuppressInt = 0
-    private fun snapSuppressForFrame() {
-        val i = ++snapSuppressInt
-        snapSuppress = true
-        scroll.snapToElements = null to null
-        afterTimeout(33) {
-            if (snapSuppressInt == i) snapSuppress = false
-            scroll.snapToElements = if (vertical) null to snapToElements else snapToElements to null
-            scroll.scrollSnapStop = scrollSnapStop
-        }
+    private val _centerIndex = Property(0)
+    private val _displayedRangeFirst = Property(0)
+    val firstIndex: Readable<Int> = _displayedRangeFirst.withWrite {
+        scrollToIndex(it, Align.Start)
+    }
+    private val _displayedRangeLast = Property(0)
+    val lastIndex: Readable<Int> = _displayedRangeLast.withWrite {
+        scrollToIndex(it, Align.End)
+    }
+    val centerIndex: Writable<Int> = _centerIndex.withWrite {
+        scrollToIndex(it, Align.Center)
     }
 
     var snapToElements: Align? = null
         set(value) {
             field = value
-            if (!snapSuppress) scroll.snapToElements = if (vertical) null to value else value to null
+            scroll.snapToElements = if (vertical) null to value else value to null
         }
     var scrollSnapStop: Boolean = false
         set(value) {
             field = value
-            if (!snapSuppress) scroll.scrollSnapStop = value
+            scroll.scrollSnapStop = value
         }
 
     init {
@@ -298,6 +64,7 @@ class Recycler2(
                     scroll = this
                     showScrollBars = false
                 } - programmatic {
+//                    viewDebugTarget = this
                     cells = this
                     stack {
                         scrollSentinel = this
@@ -322,11 +89,11 @@ class Recycler2(
         }
     }
 
-    private val overdraw = 0.0
+    var overdraw = 20.0
 
-    private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor(0, Align.Start)
+    private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
-    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1, 8.0, 8.0)
+    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
         set(value) {
             field = value
             log?.log("placer set calls invalidateLayout()")
@@ -352,10 +119,56 @@ class Recycler2(
     private var reuseableCells = ArrayList<MyCell<*>>()
 
     fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
-        anchor = RecyclerViewAnchor(toIndex, align)
-        log?.log("anchor = ${anchor}")
-        log?.log("scrollToIndex calls invalidateLayout()")
-        cells.invalidateLayout()
+        activeCells.find { it.index == toIndex }?.let {
+            // Nice!  Just scroll away!
+            scroll.scrollTo(
+                left = if (vertical) 0.0 else when (align) {
+                    Align.Start -> it.left - lastRecordedPadding
+                    Align.End -> it.right - previousViewport.width
+                    else -> it.centerX - previousViewport.width / 2
+                },
+                top = if (!vertical) 0.0 else when (align) {
+                    Align.Start -> it.top - lastRecordedPadding
+                    Align.End -> it.bottom - previousViewport.height
+                    else -> it.centerY - previousViewport.height / 2
+                },
+                animated = animate
+            )
+        } ?: run {
+            if (animate && activeCells.isNotEmpty()) {
+                val destinationAhead = toIndex > activeCells.maxOf { it.index }
+                if (destinationAhead) {
+                    anchor = RecyclerViewAnchor.SpecificElement(toIndex, Align.End)
+                } else {
+                    anchor = RecyclerViewAnchor.SpecificElement(toIndex, Align.Start)
+                }
+                cells.invalidateLayout()
+                afterTimeout(16) {
+                    activeCells.find { it.index == toIndex }?.let {
+                        // Nice!  Just scroll away!
+                        scroll.scrollTo(
+                            left = if (vertical) 0.0 else when (align) {
+                                Align.Start -> it.left - lastRecordedPadding
+                                Align.End -> it.right - previousViewport.width
+                                else -> it.centerX - previousViewport.width / 2
+                            },
+                            top = if (!vertical) 0.0 else when (align) {
+                                Align.Start -> it.top - lastRecordedPadding
+                                Align.End -> it.bottom - previousViewport.height
+                                else -> it.centerY - previousViewport.height / 2
+                            },
+                            animated = animate
+                        )
+                    } ?: run {
+                        anchor = RecyclerViewAnchor.SpecificElement(toIndex, align)
+                        cells.invalidateLayout()
+                    }
+                }
+            } else {
+                anchor = RecyclerViewAnchor.SpecificElement(toIndex, align)
+                cells.invalidateLayout()
+            }
+        }
     }
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
@@ -363,6 +176,9 @@ class Recycler2(
         val data = LateInitProperty<T>()
         override lateinit var type: RecyclerViewRenderer<*>
         lateinit var view: RView
+        private var constraint: Size = Size.Zero
+        private var inProgress: ProgrammingLayoutInProgress? = null
+        private var _size: Size? = null
         fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
@@ -375,18 +191,22 @@ class Recycler2(
             this.indexProp.value = index
             log?.log("CELL CREATED: from $data at $index")
             type.render(cells, this.data, indexProp)
-            size = inProgress.measure(view, constrain)
+            constraint = constrain
+            _size = null
+            this.inProgress = inProgress
         }
 
         fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
-            view.withoutAnimation {
-                view.exists = true
-                view.opacity = 1.0
-            }
-            if (data != this.data.value) log?.log("CELL RECYCLED: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
+//            view.withoutAnimation {
+            view.exists = true
+            view.opacity = 1.0
+//            }
+//            if (data != this.data.value) log?.log("CELL RECYCLED: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
             data?.let { this.data.value = it } ?: this.data.unset()
             this.indexProp.value = index
-            size = inProgress.measure(view, constrain)
+            constraint = constrain
+            _size = null
+            this.inProgress = inProgress
         }
 
         fun animatedDismiss() {
@@ -407,7 +227,16 @@ class Recycler2(
 
         override val index: Int get() = indexProp.value
         override val item: Any? get() = data.state.getOrNull()
-        override var size: Size = Size(0.0, 0.0)
+        override val size: Size
+            get() {
+                return _size ?: run {
+                    statsMeasures++
+                    val n = inProgress!!.measure(view, constraint)
+                    println("Measured ${item} to be $n")
+                    _size = n
+                    n
+                }
+            }
         override var left: Double = 0.0
         override var top: Double = 0.0
         override var right: Double = 0.0
@@ -448,9 +277,16 @@ class Recycler2(
     init {
     }
 
+    // statistics
+    private var statsLayouts: Int = 0
+    private var statsMeasures: Int = 0
+    private var statsCellMoves: Int = 0
+    private val statsCellCount: Int get() = cells.children.size
+
     private var hideIndicatorJob: Job? = null
     private var indicatorShown: Boolean = false
     private fun setFakeScrollByRatio(start: Double, end: Double) {
+        log?.log("setFakeScrollByRatio $start - $end")
         if (Platform.current == Platform.Web) {
             val vp = fakeScroll.viewport.state.getOrNull() ?: return
             val vps = if (vertical) vp.height else vp.width
@@ -488,6 +324,7 @@ class Recycler2(
     private var suppressFakeScrollEvent: Boolean = false
     private var fakeScrollSize: Double = 0.0
     private var fakeScrollOffset: Double = 0.0
+    private var lastRecordedPadding: Double = 0.0
 
     private val fakeScrollLayoutDelegate = object : ProgrammaticLayoutDelegate {
         override fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size {
@@ -575,7 +412,10 @@ class Recycler2(
                     val centerRatio = (topRatio + bottomRatio) / 2
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
                     val controlIndex = controlRatio * (data.range.last - data.range.first)
-                    anchor = RecyclerViewAnchor(controlIndex.roundToInt(), Align.Center)
+                    if (snapToElements == null)
+                        anchor = RecyclerViewAnchor.FuzzyIndex(controlIndex, centerRatio)
+                    else
+                        anchor = RecyclerViewAnchor.SpecificElement(controlIndex.roundToInt(), snapToElements!!)
                     this@Recycler2.log?.log("anchor = ${anchor} (web fake scroll)")
                 } else {
                     val topRatio = fsv.left / fakeScrollSize
@@ -583,10 +423,14 @@ class Recycler2(
                     val centerRatio = (topRatio + bottomRatio) / 2
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
                     val controlIndex = controlRatio * (data.range.last - data.range.first)
-                    anchor = RecyclerViewAnchor(controlIndex.roundToInt(), Align.Center)
+                    if (snapToElements == null)
+                        anchor = RecyclerViewAnchor.FuzzyIndex(controlIndex, centerRatio)
+                    else
+                        anchor = RecyclerViewAnchor.SpecificElement(controlIndex.roundToInt(), snapToElements!!)
                     this@Recycler2.log?.log("anchor = ${anchor} (web fake scroll)")
                 }
                 fakeScrollInControl = true
+                log?.log("fakeScrollInControl = true")
                 log?.log("fakeScroll.viewport calls invalidateLayout()")
                 cells.invalidateLayout()
             }
@@ -595,18 +439,17 @@ class Recycler2(
         cells.onRemove(scroll.viewport.addListener {
 
             isMoving.value = true
-            println("isMoving.value = true")
             timeoutRemover()
             timeoutRemover = afterTimeout(100) {
 
                 isMoving.value = false
-                println("isMoving.value = false")
                 cells.invalidateLayout()
             }
             if (suppressScrollEvent) {
                 suppressScrollEvent = false
             } else {
                 fakeScrollInControl = false
+                log?.log("fakeScrollInControl = false")
             }
             if (!inLayout) {
                 log?.log("scroll.viewport calls invalidateLayout()")
@@ -617,44 +460,62 @@ class Recycler2(
 
     var previousViewport: Rect = Rect.Zero
     private val programmaticLayoutDelegate = object : ProgrammaticLayoutDelegate {
-        var queuedScrollOffset: Pair<Double, Double>? = null
+        var queuedScrollJump: Pair<Double, Double>? = null
         var viewport: Rect = Rect.Zero
         var lastMeasure: Size? = null
         var sentinelSize: Double = reallyBig
         var stahp = false
+        var needToLayoutFirst = false
         override fun measure(
             layout: ProgrammaticLayout,
             inProgress: ProgrammingLayoutInProgress,
             within: Size
         ): Size {
+            lastRecordedPadding = inProgress.padding
             if (stahp) return lastMeasure!!
             val default = within
             if (within == Size.Zero) {
+                println("measure stop: if (within == Size.Zero) {")
                 return default
             }
             viewport = scroll.viewport.state.getOrNull() ?: run {
+                println("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
                 return default
             }
+            log?.log("measure: Loaded viewport, found ${viewport}")
             if (viewport.width == 0.0 || viewport.height == 0.0) {
+                println("measure stop: if (viewport.width == 0.0 || viewport.height == 0.0) {")
                 return default
             }
-            if (queuedScrollOffset != null) {
-                IllegalStateException("measure while queuedScrollOffset != null").printStackTrace()
+            if (needToLayoutFirst) {
+                println("measure stop: if (needToLayoutFirst) {")
                 return lastMeasure!!
             }
             log?.log("LAYOUT STARTING with size $within")
 
             @Suppress("UNCHECKED_CAST")
-            val data = data as? RecyclerViewData<Any, Any> ?: return default
+            val data = data as? RecyclerViewData<Any, Any> ?: run {
+                println("measure stop: val data = data as? RecyclerViewData<Any, Any> ?: run {")
+                 return default
+            }
 
             @Suppress("UNCHECKED_CAST")
-            val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: return default
+            val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {
+                println("measure stop: val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {")
+                 return default
+            }
 
             @Suppress("UNCHECKED_CAST")
-            val activeCells = activeCells as? MutableList<MyCell<Any>> ?: return default
+            val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {
+                println("measure stop: val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {")
+                 return default
+            }
 
             @Suppress("UNCHECKED_CAST")
-            val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: return default
+            val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {
+                println("measure stop: val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {")
+                 return default
+            }
             log?.log("LAYOUT STARTED IN VIEWPORT $viewport, isMoving: ${isMoving.value}")
 
             // Time to run the placer.
@@ -666,13 +527,42 @@ class Recycler2(
             }
 
             fun runPlacer() {
+                statsLayouts++
                 usedCells.clear()
+
+                val overdraw = viewport.copy(
+                    left = viewport.left - overdraw,
+                    top = viewport.top - overdraw,
+                    right = viewport.right + overdraw,
+                    bottom = viewport.bottom + overdraw,
+                )
+//                // Just nuke the offscreen cells immediately.
+                val previousCells = activeCells.toList()
+                val instantDismissCount = activeCells.toList().count {
+                    if (!rectOverlaps(
+                            it.leftNew,
+                            it.topNew,
+                            it.rightNew,
+                            it.bottomNew,
+                            overdraw.left,
+                            overdraw.top,
+                            overdraw.right,
+                            overdraw.bottom,
+                        )
+                    ) {
+                        it.view.exists = false
+                        activeCells.remove(it)
+                        reuseableCells.add(it)
+                        true
+                    } else false
+                }
+                log?.log("OFFSCREEN CELLS DISMISSED: ${instantDismissCount}")
 
                 log?.log("RUN PLACER IN $viewport, anchor is $anchor")
                 placer.place(
                     dataRange = data.range,
                     anchor = anchor,
-                    existingCells = activeCells,
+                    existingCells = previousCells,
                     getNewCell = { index, size ->
                         if (index !in data.range) throw IllegalStateException("You can't pull a cell not in data range.")
                         val item = data[index]
@@ -694,7 +584,10 @@ class Recycler2(
                         }).also { usedCells += it }
                     },
                     previousViewport = previousViewport,
-                    viewport = viewport
+                    viewport = viewport,
+                    overdraw = overdraw,
+                    padding = inProgress.padding,
+                    spacing = inProgress.spacing,
                 )
                 previousViewport = viewport
                 anchor = null
@@ -714,9 +607,9 @@ class Recycler2(
             sentinelSize = if (lastCell != null) {
                 (
                         if (vertical)
-                            lastCell!!.bottomNew + placer.scrollBeyond
+                            lastCell!!.bottomNew + inProgress.padding
                         else
-                            lastCell!!.rightNew + placer.scrollBeyond
+                            lastCell!!.rightNew + inProgress.padding
                         )
                     .also {
                         if (viewport.bottom > it) {
@@ -748,44 +641,52 @@ class Recycler2(
                     right = viewport.right + vx,
                     bottom = viewport.bottom + vy
                 )
-                queuedScrollOffset = vx to vy
+                queuedScrollJump = viewport.left to viewport.top
+                sentinelSize = (sentinelSize + if (vertical) vy else vx).coerceAtMost(reallyBig)
             }
 
+            val atScrollEdge = (if (vertical) viewport.top else viewport.left) < 1 ||
+                    (if (vertical) viewport.bottom else viewport.right) > reallyBig - 1
             if (firstCell != null) {
                 // Shift everyone to attach to the top, preventing scrolling away past there
                 if (vertical) {
-                    if (abs(placer.scrollBeyond - firstCell!!.topNew) > 1.0) {
-                        log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.topNew} -> ${placer.scrollBeyond}")
-                        offset(0.0, -firstCell!!.topNew + placer.scrollBeyond)
-
-                        //dang it, we have to rerun the layout to ensure every space is properly populated.
+                    if (abs(inProgress.padding - firstCell!!.topNew) > 1.0) {
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
-                        if (viewport.top < 0.1) {
-                            anchor = RecyclerViewAnchor(data.range.first, Align.Start)
+                        if (viewport.top > firstCell!!.top - inProgress.padding + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell!!.top} - ${inProgress.padding}")
+                            offset(0.0, -firstCell!!.top + inProgress.padding)
+                            anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
+                            //dang it, we have to rerun the layout to ensure every space is properly populated.
+                            runPlacer()
+                        } else {
+                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.topNew} -> ${inProgress.padding}")
+                            offset(0.0, -firstCell!!.topNew + inProgress.padding)
                         }
-                        runPlacer()
                     }
                 } else {
-                    if (abs(placer.scrollBeyond - firstCell!!.leftNew) > 1.0) {
-                        log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.leftNew} -> ${placer.scrollBeyond}")
-                        offset(-firstCell!!.leftNew + placer.scrollBeyond, 0.0)
-
-                        //dang it, we have to rerun the layout to ensure every space is properly populated.
+                    if (abs(inProgress.padding - firstCell!!.leftNew) > 1.0) {
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
-                        if (viewport.left < 0.1) {
-                            anchor = RecyclerViewAnchor(data.range.first, Align.Start)
+                        if (viewport.left > firstCell!!.left - inProgress.padding + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell!!.left} - ${inProgress.padding}")
+                            offset(-firstCell!!.left + inProgress.padding, 0.0)
+                            anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
+                            //dang it, we have to rerun the layout to ensure every space is properly populated.
+                            runPlacer()
+                        } else {
+                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.leftNew} -> ${inProgress.padding}")
+                            offset(-firstCell!!.leftNew + inProgress.padding, 0.0)
                         }
-                        runPlacer()
                     }
                 }
-
-            } else if (usedCells.isNotEmpty() && !isMoving.value) {
+            } else if (usedCells.isNotEmpty() && (!isMoving.value || atScrollEdge)) {
                 val sampleCell = usedCells.first()
                 // Ensure there is enough space to scroll upwards
                 val needsRecentering = if (vertical) sampleCell.topNew !in (reallyBig * 1 / 4)..(reallyBig * 3 / 4)
                 else sampleCell.leftNew !in (reallyBig * 1 / 4)..(reallyBig * 3 / 4)
+                log?.log("${sampleCell.leftNew} (at index ${sampleCell.index}) !in (${reallyBig * 1 / 4})..(${reallyBig * 3 / 4})")
+                log?.log("needsRecentering: $needsRecentering, atFalseEdge: $atScrollEdge, isMoving: ${isMoving.value}")
                 if (needsRecentering) {
                     if (vertical) offset(0.0, reallyBig * 0.5 - sampleCell.topNew)
                     else offset(reallyBig * 0.5 - sampleCell.leftNew, 0.0)
@@ -795,6 +696,7 @@ class Recycler2(
             // Dismiss the cells we don't need anymore
             val unusedCells = activeCells - usedCells
             unusedCells.forEach {
+                log?.log("Dismissing cell at ${it.index}")
                 if (rectOverlaps(
                         it.leftNew,
                         it.topNew,
@@ -814,12 +716,15 @@ class Recycler2(
 
             val v = if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
             lastMeasure = v
+            log?.log("Measure complete, result: $v")
+            needToLayoutFirst = true
             return v
         }
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
+            this@Recycler2.log?.log("LAYOUT PROPER STARTED: $within")
             if (stahp) return
-            if (anchor != null) measure(layout, inProgress, within)
+            if (!needToLayoutFirst) measure(layout, inProgress, within)
             if (vertical)
                 inProgress.place(scrollSentinel, 0.0, sentinelSize, within.width, sentinelSize + 1)
             else
@@ -831,22 +736,23 @@ class Recycler2(
                 inLayout = true
 
                 fun commitPosition(it: MyCell<*>) {
-                    if (it.leftNew != it.leftOld ||
-                        it.topNew != it.topOld ||
-                        it.rightNew != it.rightOld ||
-                        it.bottomNew != it.bottomOld
+                    if (it.leftNew.roundToInt() != it.leftOld.roundToInt() ||
+                        it.topNew.roundToInt() != it.topOld.roundToInt() ||
+                        it.rightNew.roundToInt() != it.rightOld.roundToInt() ||
+                        it.bottomNew.roundToInt() != it.bottomOld.roundToInt()
                     ) {
                         log?.log("CHANGING POSITION FOR ${it.index} from (${it.leftOld}, ${it.topOld}) to (${it.leftNew}, ${it.topNew})")
+                        statsCellMoves++
+                        inProgress.place(it.view, it.leftNew, it.topNew, it.rightNew, it.bottomNew)
+                        it.left = it.leftNew
+                        it.top = it.topNew
+                        it.right = it.rightNew
+                        it.bottom = it.bottomNew
+                        it.leftOld = it.leftNew
+                        it.topOld = it.topNew
+                        it.rightOld = it.rightNew
+                        it.bottomOld = it.bottomNew
                     }
-                    inProgress.place(it.view, it.leftNew, it.topNew, it.rightNew, it.bottomNew)
-                    it.left = it.leftNew
-                    it.top = it.topNew
-                    it.right = it.rightNew
-                    it.bottom = it.bottomNew
-                    it.leftOld = it.leftNew
-                    it.topOld = it.topNew
-                    it.rightOld = it.rightNew
-                    it.bottomOld = it.bottomNew
                 }
 
                 activeCells.forEach { commitPosition(it) }
@@ -857,61 +763,55 @@ class Recycler2(
             // We need to update the fake scroller
             data?.let { data ->
                 if (fakeScrollInControl) return@let
-                val min = activeCells.filter {
-                    rectOverlaps(
-                        it.left,
-                        it.top,
-                        it.right,
-                        it.bottom,
-                        viewport.left - overdraw,
-                        viewport.top - overdraw,
-                        viewport.right + overdraw,
-                        viewport.bottom + overdraw
-                    )
-                }
-                    .minByOrNull { it.index } ?: return@let
-                val max = activeCells.filter {
-                    rectOverlaps(
-                        it.left,
-                        it.top,
-                        it.right,
-                        it.bottom,
-                        viewport.left - overdraw,
-                        viewport.top - overdraw,
-                        viewport.right + overdraw,
-                        viewport.bottom + overdraw
-                    )
-                }
-                    .maxByOrNull { it.index } ?: return@let
-                val coords = if (vertical) listOf(min.top, min.bottom, max.top, max.bottom) else listOf(
-                    min.left,
-                    min.right,
-                    max.left,
-                    max.right
-                )
-                val pxTaken = coords.max() - coords.min()
-                if (pxTaken == 0.0) throw IllegalStateException()
-                val estimatedElementPx = pxTaken / (max.index - min.index + 1)
-                val estimatedTotalPx = estimatedElementPx * (data.range.last - data.range.first + 1)
+                if (activeCells.isEmpty()) return@let
 
-                val viewportTopTotalEstimatePx = (estimatedElementPx * min.index) - (min.top - viewport.top)
-                val viewportBottomTotalEstimatePx =
-                    (estimatedElementPx * (max.index + 1)) - (max.bottom - viewport.bottom)
+                fun MyCell<*>.visibleRatio(): Double {
+                    // Return the ratio of area inside the viewport.
+                    val h = (min(right, viewport.right) - max(left, viewport.left)) / (right - left)
+                    val v = (min(bottom, viewport.bottom) - max(top, viewport.top)) / (bottom - top)
+                    return (h * v).coerceAtLeast(0.0)
+                }
+
+                val totalWeight = activeCells.sumOf { it.visibleRatio() }
+                if (totalWeight == 0.0) return@let
+                val averageIndex = activeCells.sumOf { it.visibleRatio() * it.index } / totalWeight
+                val averagePosition =
+                    if (vertical) activeCells.sumOf { it.visibleRatio() * (it.top + it.bottom) / 2 } / totalWeight
+                    else activeCells.sumOf { it.visibleRatio() * (it.left + it.right) / 2 }
+                val estimatedElementPx = (if (vertical) viewport.height else viewport.width) / totalWeight
+                val totalElements = (data.range.last - data.range.first + 1)
+                val estimatedTotalPx = estimatedElementPx * totalElements
+
+                log?.log("totalWeight: $totalWeight")
+                log?.log("averageIndex: $averageIndex")
+                log?.log("averagePosition: $averagePosition")
+                log?.log("estimatedElementPx: $estimatedElementPx")
+                log?.log("totalElements: $totalElements")
+                log?.log("estimatedTotalPx: $estimatedTotalPx")
 
                 setFakeScrollByRatio(
-                    viewportTopTotalEstimatePx / estimatedTotalPx,
-                    viewportBottomTotalEstimatePx / estimatedTotalPx
+                    (averageIndex - totalWeight / 2) / totalElements,
+                    (averageIndex + totalWeight / 2) / totalElements,
                 )
             }
-            queuedScrollOffset?.let {
-                log?.log("EXECUTING SCROLL JUMP ${scroll.viewport.state.getOrNull()} += ${it}")
+            queuedScrollJump?.let {
+                log?.log("EXECUTING SCROLL JUMP ${scroll.viewport.state.getOrNull()} = ${it}")
                 suppressScrollEvent = true
-                snapSuppressForFrame()
-                scroll.offset(it.first, it.second)
-                queuedScrollOffset = null
+                scroll.scrollToKeepAnimations(it.first, it.second)
+                queuedScrollJump = null
 //                stahp = true
             }
+            _displayedRangeFirst.value = (activeCells.minOfOrNull { it.index } ?: 0)
+            _displayedRangeLast.value = (activeCells.maxOfOrNull { it.index } ?: 0)
+            _centerIndex.value = activeCells.minByOrNull {
+                val dx = it.centerX - viewport.centerX
+                val dy = it.centerY - viewport.centerY
+                dx * dx + dy * dy
+            }?.index ?: 0
+            needToLayoutFirst = false
+            log?.log("LAYOUT COMPLETE")
 //            if(didJump) stahp = true
+            log?.info("statsLayouts: $statsLayouts, statsMeasures: $statsMeasures, statsCellMoves: $statsCellMoves, statsCellCount: $statsCellCount")
         }
 
     }
@@ -963,3 +863,26 @@ private fun rectOverlaps(
     r2: Double,
     b2: Double,
 ): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2
+
+fun estimateJumpAnchor(
+    activeCells: List<RecyclerViewPlaceable>,
+    vertical: Boolean,
+    viewport: Rect
+): RecyclerViewAnchor.FuzzyIndex? {
+    if (activeCells.isEmpty()) return null
+    val totalWeight = activeCells.size
+    val averageIndex = activeCells.sumOf { it.index } / totalWeight
+    val averagePosition =
+        if (vertical) activeCells.sumOf { (it.top + it.bottom) / 2 } / totalWeight
+        else activeCells.sumOf { (it.left + it.right) / 2 }
+    val min = activeCells.minOf { if (vertical) it.top else it.left }
+    val max = activeCells.maxOf { if (vertical) it.bottom else it.right }
+    val estimatedElementPx = (max - min) / totalWeight
+    println("estimateJumpAnchor: estimatedElementPx is $estimatedElementPx due to ($max - $min) / $totalWeight")
+    val diff = (if (vertical) viewport.centerY else viewport.centerX) - averagePosition
+    println("estimateJumpAnchor: diff px $diff results in ${diff / estimatedElementPx} index")
+    return RecyclerViewAnchor.FuzzyIndex(
+        index = averageIndex + diff / estimatedElementPx,
+        ratioOfFocus = 0.5
+    )
+}

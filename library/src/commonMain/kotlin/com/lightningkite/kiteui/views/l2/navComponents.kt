@@ -11,8 +11,8 @@ fun ViewWriter.navGroupColumn(
     elements: Readable<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
-) {
-    col {
+): ViewModifiable {
+    return col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
@@ -99,8 +99,8 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}) {
-    row {
+fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+    return row {
         navGroupActionsInner(elements)
         setup()
     }
@@ -164,8 +164,8 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}) {
-    row {
+fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+    return row {
         navGroupTopInner(readable)
         setup()
     }
@@ -218,8 +218,8 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
-    stack {
+fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
+    return stack {
         icon {
             ::source { navElement.icon() }
             ::description { navElement.title() }
@@ -237,8 +237,8 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
     }
 }
 
-fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement) {
-    row {
+fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
+    return row {
         centered - icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
             ::description { navElement.title() }
@@ -256,8 +256,8 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement) {
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit) {
-    navSpacing - nav - unpadded - row {
+fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
+    return navSpacing - nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
             compact - col {
@@ -294,7 +294,8 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                 is NavCustom -> {
                     exists = false
                     ::exists { it.hidden?.invoke() != true }
-                    expanding - it.tall(this)
+                    expanding
+                    it.tall(this)
                 }
 
                 is NavLink -> {

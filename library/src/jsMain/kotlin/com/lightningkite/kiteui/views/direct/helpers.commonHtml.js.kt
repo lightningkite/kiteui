@@ -79,6 +79,7 @@ fun HTMLElement.measureByTempEdit(max: Size): Size {
 }
 
 fun HTMLElement.measureByDuplicate(max: Size): Size {
+    println("Measuring by duplicate...")
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement

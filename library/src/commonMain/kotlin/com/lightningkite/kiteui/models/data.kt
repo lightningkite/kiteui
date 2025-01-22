@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
@@ -656,9 +656,9 @@ data class NavLink(
     override val count: (ReactiveContext.() -> Int?)? = null,
     override val hidden: (ReactiveContext.() -> Boolean)? = { false },
     override val weight: Float? = null,
-    val destination: ReactiveContext.() -> () -> Screen,
+    val destination: ReactiveContext.() -> () -> Page,
 ) : NavElement {
-    constructor(title: String, icon: Icon, destination: () -> Screen) : this(
+    constructor(title: String, icon: Icon, destination: () -> Page) : this(
         { title },
         { icon },
         null,

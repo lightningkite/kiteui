@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.Writable

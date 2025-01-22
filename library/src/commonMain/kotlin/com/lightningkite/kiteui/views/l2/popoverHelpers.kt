@@ -14,7 +14,7 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->Unit) {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->ViewModifiable) {
     overlayStack?.run {
         withoutAnimation {
 

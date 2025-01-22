@@ -37,7 +37,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
     override fun hasAlternateBackedStates(): Boolean = true
 
     actual var onNavigator: ScreenNavigator = (this as RView).screenNavigator
-    actual var to: (() -> Screen)? = null
+    actual var to: (() -> Page)? = null
         set(value) {
             field = value
             value?.invoke()?.let {

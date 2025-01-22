@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import android.os.Bundle
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Routes
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.reactive.ReactiveContext
@@ -20,7 +20,7 @@ class LayoutTest {
             val testId = 517238
         }
 
-        override val mainNavigator: ScreenNavigator = ScreenNavigator { Routes(listOf(), mapOf(), Screen.Empty) }
+        override val mainNavigator: ScreenNavigator = ScreenNavigator { Routes(listOf(), mapOf(), Page.Empty) }
 
         val s = LayoutsTestScreen()
 

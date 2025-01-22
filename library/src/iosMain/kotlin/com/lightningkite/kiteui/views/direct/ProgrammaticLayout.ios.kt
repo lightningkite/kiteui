@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.reactive.LateInitProperty
@@ -32,10 +32,23 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     actual fun invalidateLayout() {
         native.invalidateLayout()
     }
+    override fun applyPadding(dimension: Dimension?) {
+        super.applyPadding(dimension)
+        native.padding = dimension?.value ?: 0.0
+    }
+
+    override fun applyForeground(theme: Theme) {
+        native.spacing = spacing?.value ?: theme.spacing.value
+    }
+    override fun spacingSet(value: Dimension?) {
+        native.spacing = spacing?.value ?: theme.spacing.value
+    }
 }
 
 @OptIn(ExperimentalNativeApi::class)
 class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSizeOverridesProtocol {
+    var spacing: Double = 0.0
+    var padding: Double = 0.0
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
@@ -43,6 +56,8 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         }
     var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
+        override val spacing: Double get() = this@NProgrammaticLayout.spacing
+        override val padding: Double get() = this@NProgrammaticLayout.padding
         override fun measure(child: RView, sizeConstraint: Size): Size {
             return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
                 if(child == viewDebugTarget)

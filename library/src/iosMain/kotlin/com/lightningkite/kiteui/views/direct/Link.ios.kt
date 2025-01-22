@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.reactive.Action
@@ -25,7 +25,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
         })
     }
 
-    actual var to: (() -> Screen)? = null
+    actual var to: (() -> Page)? = null
     actual var onNavigator: ScreenNavigator = mainScreenNavigator
     actual var newTab: Boolean = false
     actual var resetsStack: Boolean = false

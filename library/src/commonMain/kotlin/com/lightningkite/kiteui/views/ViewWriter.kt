@@ -17,6 +17,7 @@ abstract class ViewWriter: ViewModifiable {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
+    var lastWrittenView: RView? = null
 
     fun split(): ViewWriter = object : ViewWriter(), CoroutineScope by this {
         override val context: RContext = this@ViewWriter.context.split()
@@ -55,6 +56,7 @@ abstract class ViewWriter: ViewModifiable {
     fun <T : RView> writePost(p: ViewWriter, view: T) {
         view.postSetup()
         p.addChild(view)
+        lastWrittenView = view
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -120,24 +122,24 @@ abstract class ViewWriter: ViewModifiable {
     // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
     // contains / minus
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewModifiable): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun <T: ViewModifiable> ViewWrapper.minus(view: T): T = view
 
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewModifiable): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean): ViewWrapper { return ViewWrapper }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewModifiable): ViewWrapper { return ViewWrapper }
 
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewModifiable): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewWrapper): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewModifiable): Boolean { return true }
 
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
-    @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewModifiable): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewWrapper): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean { return true }
+    @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewModifiable): Boolean { return true }
 }
 
 class NewViewWriter(val calculationContext: CoroutineScope, override val context: RContext) : ViewWriter(), CoroutineScope by calculationContext {

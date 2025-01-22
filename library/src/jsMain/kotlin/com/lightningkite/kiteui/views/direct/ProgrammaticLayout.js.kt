@@ -2,8 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.lens
@@ -25,9 +24,11 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         }
     var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
-    init {
-        onRemove(native.resizeObserver().addListener {
+    override fun postSetup() {
+        super.postSetup()
+        onRemove(parent!!.native.resizeObserver().addListener {
             log?.log("resizeObserver calls invalidateLayout()")
+            remeasureConstrainedSize()
             invalidateLayout()
         })
     }
@@ -52,14 +53,31 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         invalidateLayout()
     }
 
+
+    override fun applyPadding(dimension: Dimension?) {
+        super.applyPadding(dimension)
+        paddingPx = dimension?.px ?: 0.0
+    }
+    override fun applyForeground(theme: Theme) {
+        spacingPx = spacing?.px ?: theme.spacing.px
+    }
+    override fun spacingSet(value: Dimension?) {
+        spacingPx = spacing?.px ?: theme.spacing.px
+    }
+
     override fun internalClearChildren() {
         super.internalClearChildren()
         log?.log("children clear calls invalidateLayout()")
         invalidateLayout()
     }
+    private var spacingPx: Double = 0.0
+    private var paddingPx: Double = 0.0
 
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val spacing: Double get() = spacingPx
+        override val padding: Double get() = paddingPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
+            println("Measuring child...")
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
@@ -105,6 +123,53 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         )
     }
 
+    private fun remeasureConstrainedSize() {
+        val element = native.element as? HTMLElement ?: return
+        val parentElement = element.parentElement as? HTMLElement ?: return
+        log?.log("Remeasuring the parent element constraint")
+        lastConstraintParentWidth = parentElement.clientWidth
+        lastConstraintParentHeight = parentElement.clientHeight
+
+        // Get current constraint style
+        definedFlexGrow = native.style.flexGrow?.takeUnless { it.isBlank() }
+        definedWidth = native.style.width?.takeUnless { it == enforcedWidth || it.isBlank() }
+        definedHeight = native.style.height?.takeUnless { it == enforcedHeight || it.isBlank() }
+        val parentIsFlex = parentElement?.style?.display?.contains("flex") == true
+        val parentIsVertical = parentElement?.style?.flexDirection?.contains("col") == true
+        val elementHasGrow = element.style.flexGrow.isNotBlank()
+        val elementIsStretch = element.style.alignSelf == "stretch" || element.style.alignSelf.isBlank()
+        lastFillWidth =
+            (parentIsFlex && (parentIsVertical && elementHasGrow) || (!parentIsVertical && elementIsStretch)) || definedWidth?.contains(
+                "100%"
+            ) == true
+        lastFillHeight =
+            (parentIsFlex && (!parentIsVertical && elementHasGrow) || (parentIsVertical && elementIsStretch)) || definedHeight?.contains(
+                "100%"
+            ) == true
+
+        // Remove width/height constraints if we've enforced them, Maximize the size
+        if (native.style.width == enforcedWidth) {
+            if (parentIsFlex && !parentIsVertical) {
+                native.style.flexGrow = "999"
+                native.style.width = "unset"
+            } else native.style.width = "100%"
+        }
+        if (native.style.height == enforcedHeight) {
+            if (parentIsFlex && parentIsVertical) {
+                native.style.flexGrow = "999"
+                native.style.height = "unset"
+            } else native.style.height = "100%"
+        }
+
+        // get clientWidth and clientHeight
+        lastConstraintSize = Size(element.clientWidth.toDouble(), element.clientHeight.toDouble())
+
+        // Revert our edits
+        native.style.width = definedWidth ?: "unset"
+        native.style.height = definedHeight ?: "unset"
+        native.style.flexGrow = definedFlexGrow ?: "unset"
+    }
+
     private var definedFlexGrow: String? = null
     private var definedWidth: String? = null
     private var definedHeight: String? = null
@@ -113,6 +178,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var lastConstraintParentWidth: Int = 0
     private var lastConstraintParentHeight: Int = 0
     private var lastConstraintSize: Size = Size.Zero
+    private var renderSize: Size = Size.Zero
     private var lastFillWidth: Boolean = true
     private var lastFillHeight: Boolean = true
     private var timeoutSet = false
@@ -123,51 +189,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             log?.log("invalidateLayout timeout")
             val element = native.element as? HTMLElement ?: return@setTimeout
             val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
-
-            if (parentElement.clientWidth != lastConstraintParentWidth || parentElement.clientHeight != lastConstraintParentHeight) {
-                log?.log("Remeasuring the parent element constraint")
-                lastConstraintParentWidth = parentElement.clientWidth
-                lastConstraintParentHeight = parentElement.clientHeight
-
-                // Get current constraint style
-                definedFlexGrow = native.style.flexGrow?.takeUnless { it.isBlank() }
-                definedWidth = native.style.width?.takeUnless { it == enforcedWidth || it.isBlank() }
-                definedHeight = native.style.height?.takeUnless { it == enforcedHeight || it.isBlank() }
-                val parentIsFlex = parentElement?.style?.display?.contains("flex") == true
-                val parentIsVertical = parentElement?.style?.flexDirection?.contains("col") == true
-                val elementHasGrow = element.style.flexGrow.isNotBlank()
-                val elementIsStretch = element.style.alignSelf == "stretch" || element.style.alignSelf.isBlank()
-                lastFillWidth =
-                    (parentIsFlex && (parentIsVertical && elementHasGrow) || (!parentIsVertical && elementIsStretch)) || definedWidth?.contains(
-                        "100%"
-                    ) == true
-                lastFillHeight =
-                    (parentIsFlex && (!parentIsVertical && elementHasGrow) || (parentIsVertical && elementIsStretch)) || definedHeight?.contains(
-                        "100%"
-                    ) == true
-
-                // Remove width/height constraints if we've enforced them, Maximize the size
-                if (native.style.width == enforcedWidth) {
-                    if (parentIsFlex && !parentIsVertical) {
-                        native.style.flexGrow = "999"
-                        native.style.width = "unset"
-                    } else native.style.width = "100%"
-                }
-                if (native.style.height == enforcedHeight) {
-                    if (parentIsFlex && parentIsVertical) {
-                        native.style.flexGrow = "999"
-                        native.style.height = "unset"
-                    } else native.style.height = "100%"
-                }
-
-                // get clientWidth and clientHeight
-                lastConstraintSize = Size(element.clientWidth.toDouble(), element.clientHeight.toDouble())
-
-                // Revert our edits
-                native.style.width = definedWidth ?: "unset"
-                native.style.height = definedHeight ?: "unset"
-                native.style.flexGrow = definedFlexGrow ?: "unset"
-            }
 
             // run measure
             val natSize = delegate.measure(this, inProgress, lastConstraintSize)
@@ -183,7 +204,10 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             }
 
             // run layout
-            delegate.layout(this, inProgress, Size(element.clientWidth.toDouble(), element.clientHeight.toDouble()))
+            delegate.layout(this, inProgress, Size(
+                width = if(lastFillWidth) lastConstraintSize.width else natSize.width,
+                height = if(lastFillHeight) lastConstraintSize.height else natSize.height
+            ))
 
             window.setTimeout({
                 timeoutSet = false

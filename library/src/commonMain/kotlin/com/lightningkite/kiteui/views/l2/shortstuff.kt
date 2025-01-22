@@ -10,8 +10,8 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
-fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}) {
-    icon {
+fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
+    return icon {
         source = icon
         this.description = description
         setup(this)
@@ -45,9 +45,9 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun RView.errorText() {
+fun RView.errorText(): ViewModifiable {
     val errors = Property<Set<Exception>>(setOf())
-    onlyWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
+    return onlyWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
         this@errorText += object: ExceptionHandler {
             override val priority: Float
                 get() = 1f
@@ -69,9 +69,9 @@ fun RView.errorText() {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit) {
+inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    col {
+    return col {
         spacing = 0.px
         subtext(label)
         fieldTheme - content()

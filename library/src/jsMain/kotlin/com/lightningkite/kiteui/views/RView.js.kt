@@ -14,16 +14,13 @@ inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
     try {
         if(animate) {
             animationsEnabled = false
-            clientWidth
             suppressMutationObserverForClass {
                 classList.add("notransition")
             }
-            clientWidth
         }
         action()
     } finally {
         if(animate) {
-            offsetHeight  // force layout calculation
             kotlinx.browser.window.setTimeout({
                 suppressMutationObserverForClass {
                     classList.remove("notransition")

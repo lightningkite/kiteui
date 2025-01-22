@@ -95,6 +95,8 @@ class HomeScreen: Screen {
                     }
                 }
             }
+            h1("Getting Started")
+            text("TODO")
             // TODO: Getting Started
         }
     }

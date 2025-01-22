@@ -27,7 +27,7 @@ interface Action: Readable<Boolean> {
 //data class LinkAction(
 //    override val name: String,
 //    override val icon: Icon,
-//    val to: (() -> Screen)? = null,
+//    val to: (() -> Page)? = null,
 //    val newTab: Boolean = false,
 //    val resetsStack: Boolean = false,
 //): Action by (Action("Link", Icon.externalLink) {

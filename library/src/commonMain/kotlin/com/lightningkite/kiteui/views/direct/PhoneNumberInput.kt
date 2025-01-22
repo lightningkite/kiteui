@@ -6,7 +6,9 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
+import kotlin.coroutines.CoroutineContext
 
 inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
     if (startIndex !in indices) return null
@@ -52,7 +54,9 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(container: ViewWriter) {
+class PhoneNumberInput(container: ViewWriter): ViewModifiable {
+    override val coroutineContext: CoroutineContext
+        get() = input.coroutineContext
     private val input = container.formattedTextInput {
         keyboardHints = KeyboardHints.phone
         format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)

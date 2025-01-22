@@ -1,14 +1,14 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.shared
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.*
 import kotlin.test.assertEquals
 
-class LayoutsTestScreen : Screen {
+class LayoutsTestScreen : Page {
     val checks = ArrayList<() -> Unit>()
     override fun ViewWriter.render() {
         fun RView.parentRectangle() = parent?.let { rectangleRelativeTo(it) }

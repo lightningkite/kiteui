@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.reactive.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -26,22 +27,33 @@ object SpecialScrollTest : Screen {
                 }
             }
             sizeConstraints(height = 7.rem) - row {
-                button {
-                    text("Scroll to End PLZ")
-                    action = Action("Scroll to End", Icon.done) {
-                        verticalScrollElement.scrollTo(
-                            left = verticalScrollElement.content()
-                                .also { println("Content: $it") }.right - verticalScrollElement.viewport()
-                                .also { println("Viewport: $it") }.width,
-                            top = verticalScrollElement.content().bottom - verticalScrollElement.viewport().height,
-                            animated = true
-                        )
+                col {
+                    button {
+                        text("Scroll to End Smooth")
+                        action = Action("Scroll to End", Icon.done) {
+                            verticalScrollElement.scrollTo(
+                                left = verticalScrollElement.content()
+                                    .also { println("Content: $it") }.right - verticalScrollElement.viewport()
+                                    .also { println("Viewport: $it") }.width,
+                                top = verticalScrollElement.content().bottom - verticalScrollElement.viewport().height,
+                                animated = true
+                            )
+                        }
+                    }
+                    button {
+                        text("Offset 100")
+                        action = Action("Offset 100", Icon.done) {
+                            verticalScrollElement.scrollToKeepAnimations(0.0, 100.0)
+                        }
                     }
                 }
                 expanding - text {
                     ::content {
                         verticalScrollElement.content().toString() + "\n" + verticalScrollElement.viewport().toString()
                     }
+                }
+                reactive {
+                    println("viewport: ${verticalScrollElement.viewport()}")
                 }
                 checkbox { verticalScrollElement::snapToElements { if(checked()) null to Align.Start else null to null } }
                 checkbox { verticalScrollElement::scrollSnapStop { checked() } }

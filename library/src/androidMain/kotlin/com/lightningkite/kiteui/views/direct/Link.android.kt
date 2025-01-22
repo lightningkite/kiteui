@@ -4,7 +4,7 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.ScreenNavigator
 import com.lightningkite.kiteui.navigation.mainScreenNavigator
 import com.lightningkite.kiteui.views.*
@@ -16,7 +16,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
         isClickable = true
     }
 
-    actual var to: (() -> Screen)? = null
+    actual var to: (() -> Page)? = null
         set(value) {
             field = value
             native.setOnClickListener { view ->

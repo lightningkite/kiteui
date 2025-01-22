@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
 import kotlinx.coroutines.delay
 
 @Routable("recycler-view-infinite-images")
@@ -49,7 +50,8 @@ object InfiniteImagesScreen : Screen {
 
     override fun ViewWriter.render() {
         recyclerView {
-            columns = 4
+
+            new.placer = RecyclerViewPlacerVerticalTrueGrid(4)
             children(Constant(ReturnIndexList)) {
                 unpadded - button {
                     ::transitionId { it().toString() }

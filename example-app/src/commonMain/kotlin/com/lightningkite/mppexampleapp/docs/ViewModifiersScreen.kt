@@ -49,36 +49,36 @@ object ViewModifiersScreen : DocScreen {
             text("Using the gravity modifier, you can align items within a column.")
             example(
                 """
-               stack {
+               sizeConstraints(minHeight = 200.px) - stack {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
                             text { content = "$\h $\v" } in gravity(h, v)
                         }
                     }
-                } in sizedBox(SizeConstraints(minHeight = 200.px))
+                }
             """.trimIndent()
             ) {
-                stack {
+                sizeConstraints(minHeight = 200.px) - stack {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
                             text { content = "$h $v" } in gravity(h, v)
                         }
                     }
-                } in sizedBox(SizeConstraints(minHeight = 200.px))
+                }
             }
             text("There's also a shortcut available for simply centering an item.")
             example(
                 """
-                stack {
+                sizeConstraints(minHeight = 100.px) - stack {
                     centered - text("Centered")
-                } in sizedBox(SizeConstraints(minHeight = 100.px))
+                }
             """.trimIndent()
             ) {
-                stack {
+                sizeConstraints(minHeight = 100.px) - stack {
                     centered - text("Centered")
-                } in sizedBox(SizeConstraints(minHeight = 100.px))
+                }
             }
             h2("Weight")
             text("Weight is used to set the size of a view in a row or column.  It is used to set the relative size of the view compared to other views in the row or column.")
@@ -102,18 +102,18 @@ object ViewModifiersScreen : DocScreen {
             h3("Elements with Weight in a Column")
             example(
                 """
-          col {
+          sizeConstraints(minHeight = 200.px) - col {
                 text { content = "Card 1" } in card in weight(0.5f)
                text { content = "Card 2" } in card in weight(5f)
                text { content = "Card 3" } in card in weight(2f)
-           } in sizedBox(SizeConstraints(minHeight = 200.px))
+           }
             """.trimIndent()
             ) {
-                col {
+                sizeConstraints(minHeight = 200.px) - col {
                     text { content = "Card 1" } in card in weight(0.5f)
                     text { content = "Card 2" } in card in weight(5f)
                     text { content = "Card 3" } in card in weight(2f)
-                } in sizedBox(SizeConstraints(minHeight = 200.px))
+                }
             }
 
             h2("Text Popover")
@@ -123,7 +123,7 @@ object ViewModifiersScreen : DocScreen {
              text("Text Popover") in textPopover("This is a popover")
             """.trimIndent()
             ) {
-                text("Text Popover") in textPopover("This is a popover")
+                textPopover("This is a popover") - text("Text Popover")
             }
 
             h2("Has Popover")
@@ -145,9 +145,7 @@ object ViewModifiersScreen : DocScreen {
             }
             """.trimIndent()
             ) {
-                button {
-                    text("Has Popover")
-                } in hasPopover {
+                hasPopover {
                     col {
                         button {
                             text("Popover")
@@ -156,22 +154,24 @@ object ViewModifiersScreen : DocScreen {
                             text("Second Popover button")
                         } in card
                     } in card
+                } - button {
+                    text("Has Popover")
                 }
             }
             h2("Scrolls")
             text("The scrolls modifier is used to add a scroll bar to a view.")
             example(
                 """
-                col {
+                sizeConstraints(maxHeight = 100.px) - scrolls - col {
                     text("Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                             "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +
                             "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla " +
                             "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." +
                             "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut ")
-                } in sizedBox(SizeConstraints(maxHeight = 100.px)) in scrolls
+                }
             """.trimIndent()
             ) {
-                col {
+                sizeConstraints(maxHeight = 100.px) - scrolls - col {
                     text(
                         "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +
@@ -179,27 +179,27 @@ object ViewModifiersScreen : DocScreen {
                                 "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." +
                                 "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut "
                     )
-                } in sizedBox(SizeConstraints(maxHeight = 100.px)) in scrolls
+                }
             }
 
             h2("Scrolls Horizontally")
             text("The scrollsHorizontally modifier is used to add a horizontal scroll bar to a view.")
             example(
                 """
-                row {
+                sizeConstraints(minHeight = 10.px) - scrollsHorizontally - row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
                     )
-                } in sizedBox(SizeConstraints(minHeight = 10.px)) in scrollsHorizontally
+                }
               """.trimIndent()
             ) {
-                row {
+                sizeConstraints(minHeight = 10.px) - scrollsHorizontally - row {
                     text(
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut) in scrollsHorizontally"
                     )
-                } in sizedBox(SizeConstraints(minHeight = 10.px)) in scrollsHorizontally
+                }
             }
 
             h2("Size Box")
@@ -207,37 +207,37 @@ object ViewModifiersScreen : DocScreen {
             example(
                 """
                 col {
-                    text(
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px) - card - text(
                         "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
-                    ) in sizedBox(SizeConstraints(maxWidth = 200.px, maxHeight = 200.px)) in card
+                    )
                 }
                 col {
-                    text(
+                    sizeConstraints(width = 100.px, height = 100.px) - card - text(
                         "Size Constraints with width and height"
-                    ) in sizedBox(SizeConstraints(width = 100.px, height = 100.px)) in card
+                    )
                 }
                 col {
-                    text(
+                    sizeConstraints(minWidth = 200.px, minHeight = 200.px) - card - text(
                         "Size Constraints with min width and minHeight"
-                    ) in sizedBox(SizeConstraints(minWidth = 200.px, minHeight = 200.px)) in card
+                    )
                 }
             }
             """.trimIndent()
             ) {
                 col {
-                    text(
+                    sizeConstraints(maxWidth = 200.px, maxHeight = 200.px) - card - text(
                         "Size Constraints with maxWidth, and maxHeight  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut \" +\n"
-                    ) in sizedBox(SizeConstraints(maxWidth = 200.px, maxHeight = 200.px)) in card
+                    )
                 }
                 col {
-                    text(
+                    sizeConstraints(width = 100.px, height = 100.px) - card - text(
                         "Size Constraints with width and height"
-                    ) in sizedBox(SizeConstraints(width = 100.px, height = 100.px)) in card
+                    )
                 }
                 col {
-                    text(
+                    sizeConstraints(minWidth = 200.px, minHeight = 200.px) - card - text(
                         "Size Constraints with min width and minHeight"
-                    ) in sizedBox(SizeConstraints(minWidth = 200.px, minHeight = 200.px)) in card
+                    )
                 }
             }
 
@@ -247,22 +247,22 @@ object ViewModifiersScreen : DocScreen {
             example(
                 """
                 col {
-                    row {
-                        text("Padded") in padded
-                    } in card
-                    row {
+                    card - row {
+                        padded - text("Padded")
+                    }
+                    card - row {
                         text("Not Padded")
-                    } in card
+                    }
                 }
             """.trimIndent()
             ) {
                 col {
-                    row {
-                        text("Padded") in padded
-                    } in card
-                    row {
+                    card - row {
+                        padded - text("Padded")
+                    }
+                    card - row {
                         text("Not Padded")
-                    } in card
+                    }
                 }
 
             }
@@ -278,7 +278,7 @@ object ViewModifiersScreen : DocScreen {
                         text { reactiveScope { content = if(condition.await()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    text("Show Text Only When Toggled") in onlyWhen(condition = { condition.await() })
+                    onlyWhen(condition = { condition.await() }) - text("Show Text Only When Toggled")
                 }
             """.trimIndent()
             ) {
@@ -287,7 +287,7 @@ object ViewModifiersScreen : DocScreen {
                         text { reactiveScope { content = if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    text("Show Text Only When Toggled") in onlyWhen(condition = { condition() })
+                    onlyWhen(condition = { condition() }) - text("Show Text Only When Toggled")
                 }
             }
         }

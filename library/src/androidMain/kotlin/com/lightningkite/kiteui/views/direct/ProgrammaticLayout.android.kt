@@ -5,12 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.BasicListenable
 import com.lightningkite.kiteui.reactive.LateInitProperty
 import com.lightningkite.kiteui.reactive.Listenable
 import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import java.util.WeakHashMap
@@ -23,18 +23,36 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     }
     actual var delegate: ProgrammaticLayoutDelegate by native::delegate
     actual fun invalidateLayout() {
-        native.requestLayout()
+        native.silentRequestLayout()
+    }
+
+    override fun applyPadding(dimension: Dimension?) {
+        super.applyPadding(dimension)
+        native.padding = dimension?.value?.toDouble() ?: 0.0
+    }
+
+    override fun applyForeground(theme: Theme) {
+        native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
+    }
+    override fun spacingSet(value: Dimension?) {
+        native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
     }
 }
 
 class NProgrammaticLayout(context: Context) : ViewGroup(context) {
+    var spacing: Double = 0.0
+    var padding: Double = 0.0
+
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
-            requestLayout()
+            silentRequestLayout()
         }
     lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val spacing: Double get() = this@NProgrammaticLayout.spacing
+        override val padding: Double get() = this@NProgrammaticLayout.padding
+
         override fun measure(child: RView, sizeConstraint: Size): Size {
             child.native.measure(
                 MeasureSpec.makeMeasureSpec(sizeConstraint.width.roundToInt(), MeasureSpec.AT_MOST),
@@ -60,6 +78,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if(viewDebugTarget?.native == this) println("onMeasure on ProgrammaticLayout")
         val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
             View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
             View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
@@ -76,6 +95,22 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
+        if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
         delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
+    }
+
+    fun silentRequestLayout() {
+        if(isInLayout) return
+        super.requestLayout()
+    }
+
+    override fun requestLayout() {
+        println("yea yeah, pass it up")
+        if(viewDebugTarget?.native == this) println("requestLayout on ProgrammaticLayout")
+        if(isInLayout) {
+            println("We're already in a layout.  shut up.")
+            return
+        }
+        super.requestLayout()
     }
 }

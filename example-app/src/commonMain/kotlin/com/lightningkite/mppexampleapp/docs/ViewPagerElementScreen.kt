@@ -1,7 +1,9 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -22,7 +24,7 @@ object ViewPagerElementScreen: DocScreen {
                 val currentPage = Property(9)
                 val items = Constant((1..30).toList())
                 
-                card - viewPager {
+                sizeConstraints(height = 10.rem) - card - viewPager {
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
                     
@@ -34,7 +36,8 @@ object ViewPagerElementScreen: DocScreen {
                     }
                 }
                 """.trimIndent()) {
-                card - viewPager {
+                sizeConstraints(height = 10.rem) - card - viewPager {
+                    new.log = ConsoleRoot.tag("Viewpager")
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
 

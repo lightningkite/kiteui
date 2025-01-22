@@ -2,24 +2,41 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.Constant
 import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 
 @Deprecated("Use Screen directly instead", ReplaceWith("Screen", "com.lightningkite.kiteui.navigation.Screen"))
 typealias KiteUiScreen = Screen
-interface Screen {
+interface Page {
     val title: Readable<String>
         get() = Constant(
-            this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen")
+            this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen").removeSuffix(" Page")
         )
-    fun ViewWriter.render(): Any?
-    object Empty: Screen {
-        override fun ViewWriter.render() {
-            space { }
-        }
+    fun ViewWriter.render2(): ViewModifiable
+    object Empty: Page {
+        override fun ViewWriter.render2(): ViewModifiable = space {}
     }
-    open class Direct(title: String = "", val render: ViewWriter.()->Unit): Screen {
-        override fun ViewWriter.render(): Unit = this@Direct.render(this)
+    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Page {
+        override fun ViewWriter.render2(): ViewModifiable = this@Direct.render(this)
+        override val title: Readable<String> = Constant(title)
+    }
+}
+@Deprecated("Move to using 'Page'", ReplaceWith("Page", "com.lightningkite.kiteui.navigation.Page"))
+interface Screen: Page {
+    override fun ViewWriter.render2(): ViewModifiable {
+        @Suppress("DEPRECATION")
+        render()
+        return this.lastWrittenView ?: throw IllegalStateException("Screens must create a single view, but you have not created one.")
+    }
+    @Deprecated("Use render2", ReplaceWith("render2()"))
+    fun ViewWriter.render(): Any?
+
+    object Empty: Screen {
+        override fun ViewWriter.render(): ViewModifiable = space {}
+    }
+    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Screen {
+        override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
         override val title: Readable<String> = Constant(title)
     }
 }

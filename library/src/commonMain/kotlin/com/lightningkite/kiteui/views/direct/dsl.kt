@@ -171,12 +171,6 @@ inline fun ViewWriter.radioToggleButton(setup: RadioToggleButton.() -> Unit = {}
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.recyclerView(setup: RecyclerView.() -> Unit = {}): RecyclerView {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RecyclerView(context) , setup)
-}
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ViewWriter.rowCollapsingToColumn(breakpoint: Dimension, setup: RowCollapsingToColumn.() -> Unit = {}): RowCollapsingToColumn {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowCollapsingToColumn(context, listOf(breakpoint)), setup)
@@ -281,27 +275,12 @@ inline fun ViewWriter.video(setup: Video.() -> Unit = {}): Video {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.viewPager(setup: ViewPager.() -> Unit = {}): ViewPager {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(ViewPager(context) , setup)
-}
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(WebView(context) , setup)
 }
 
 
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
-inline fun ViewWriter.horizontalRecyclerView(setup: RecyclerView.() -> Unit = {}): RecyclerView {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RecyclerView(context) ) {
-        vertical = false
-        setup()
-    }
-}
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {

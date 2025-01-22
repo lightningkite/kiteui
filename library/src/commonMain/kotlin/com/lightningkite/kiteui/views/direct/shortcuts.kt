@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
@@ -113,10 +113,10 @@ fun ViewWriter.confirmDanger(
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    dialogScreenNavigator.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Page {
         override val title: Readable<String> = Constant(title)
-        override fun ViewWriter.render() {
-            dismissBackground {
+        override fun ViewWriter.render2(): ViewModifiable {
+            return dismissBackground {
                 centered - card - col {
                     h2(title)
                     text(body)
@@ -145,10 +145,10 @@ fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    dialogScreenNavigator.navigate(object : Screen {
+    dialogScreenNavigator.navigate(object : Page {
         override val title: Readable<String> = Constant(title)
-        override fun ViewWriter.render() {
-            dismissBackground {
+        override fun ViewWriter.render2(): ViewModifiable {
+            return dismissBackground {
                 centered - card - col {
 //                    ignoreInteraction = false
                     h2(title)

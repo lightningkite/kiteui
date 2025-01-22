@@ -19,7 +19,6 @@ import com.lightningkite.kiteui.reactive.Property
 import com.lightningkite.kiteui.reactive.invokeAllSafe
 import com.lightningkite.kiteui.suspendCoroutineCancellable
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
-import com.lightningkite.kiteui.views.direct.ViewPager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.*
 import io.ktor.client.engine.okhttp.*

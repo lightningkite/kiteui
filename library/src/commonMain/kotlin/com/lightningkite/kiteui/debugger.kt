@@ -66,6 +66,13 @@ interface Console {
     fun info(vararg entries: Any?)
     fun warn(vararg entries: Any?)
 }
+fun Console.infoOrAbove(): Console = object : Console by this {
+    override fun log(vararg entries: Any?) {}
+}
+fun Console.warnOrAbove(): Console = object : Console by this {
+    override fun log(vararg entries: Any?) {}
+    override fun info(vararg entries: Any?) {}
+}
 expect object ConsoleRoot: Console {
     override fun tag(tag: String): Console
     override fun log(vararg entries: Any?)

@@ -18,7 +18,7 @@ import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
@@ -312,9 +312,9 @@ actual fun ViewWriter.hasPopover(
 ): ViewWrapper {
     beforeNextElementSetup {
         native.setOnClickListener {
-            dialogScreenNavigator.navigate(object : Screen {
-                override fun ViewWriter.render() {
-                    dismissBackground {
+            dialogScreenNavigator.navigate(object : Page {
+                override fun ViewWriter.render2(): ViewModifiable {
+                    return dismissBackground {
                         centered - stack {
                             setup(object : PopoverContext {
                                 override val calculationContext: CalculationContext
@@ -420,6 +420,7 @@ internal val animatingSize = HashSet<View>()
  * Creates an animator that will animate from the current height to a new height.
  */
 private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
+    println("heightAnimator created going to $toHeight")
     val currentHeight = layoutParams.height.let {
         when (it) {
             WRAP_CONTENT, MATCH_PARENT -> height
@@ -441,8 +442,14 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
         else -> toHeight
     }
     return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
+        println("heightAnimator update $it")
         layoutParams.height = it
-        if (!this@heightAnimator.isInLayout) requestLayout()
+        if (!this@heightAnimator.isInLayout) {
+            println("Requesting a layout")
+            requestLayout()
+        } else {
+            println("Size animator blocked because we're in layout.")
+        }
     }.apply {
         animatingSize.add(this@heightAnimator)
         addListener(object : Animator.AnimatorListener {
@@ -485,7 +492,11 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
     }
     return TypedValueAnimator.IntAnimator(currentWidth, fixedToWidth).onUpdate {
         layoutParams.width = it
-        if (!this@widthAnimator.isInLayout) requestLayout()
+        if (!this@widthAnimator.isInLayout) {
+            requestLayout()
+        } else {
+            println("Size animator blocked because we're in layout.")
+        }
         animatingSize.add(this@widthAnimator)
     }.apply {
         addListener(object : Animator.AnimatorListener {

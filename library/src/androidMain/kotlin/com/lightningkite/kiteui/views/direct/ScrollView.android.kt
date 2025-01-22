@@ -4,18 +4,21 @@ import android.annotation.SuppressLint
 import android.hardware.SensorManager
 import android.os.Build
 import android.view.*
+import android.view.ViewTreeObserver.OnPreDrawListener
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
-import androidx.core.view.ViewConfigurationCompat.getScaledMaximumFlingVelocity
+import android.widget.OverScroller
 import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
+import java.lang.reflect.Modifier
 import kotlin.math.*
 
 class ScrollView constructor(
@@ -24,48 +27,11 @@ class ScrollView constructor(
     override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
     private val scrollChanged = BasicListenable()
-    private val vx = VelocityTracker.obtain()
-    private val vy = VelocityTracker.obtain()
-    private val horizontalScrollView: HorizontalScrollView? =
-        if (horizontal) HorizontalScrollView(context.activity).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                setOnScrollChangeListener { _, _, _, _, _ ->
-                    scrollChanged.invokeAll()
-                }
-            } else {
-                val l: ViewTreeObserver.OnScrollChangedListener = ViewTreeObserver.OnScrollChangedListener {
-                    scrollChanged.invokeAll()
-                }
-                viewTreeObserver.addOnScrollChangedListener(l)
-                onRemove { viewTreeObserver.removeOnScrollChangedListener(l) }
-            }
-            val touches = HashSet<Int>()
-            setOnTouchListener { v, event ->
-                vx.addMovement(event)
-                when (event.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        touches.add(event.actionIndex)
-                        _directlyInteractingWithScroller.value = true
-                    }
-
-                    MotionEvent.ACTION_MOVE -> {
-                        touches.add(event.actionIndex)
-                        _directlyInteractingWithScroller.value = true
-                    }
-
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        touches.remove(event.actionIndex)
-                        _directlyInteractingWithScroller.value = touches.size != 0
-                        if (touches.size == 0) afterTimeout(16) { snaps() }
-                    }
-                }
-                println("TOUCH IS WORKING horizontalScrollView ${touches} (action = ${event.actionMasked})")
-                false
-            }
-        } else null
-
-    @SuppressLint("ClickableViewAccessibility")
-    private val verticalScrollView: NestedScrollView? = if (vertical) NestedScrollView(context.activity).apply {
+    private var vx = VelocityTracker.obtain()
+    private var vy = VelocityTracker.obtain()
+    override val native = TwoWayNestedScrollView(context.activity).apply {
+        lockX = !horizontal
+        lockY = !vertical
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setOnScrollChangeListener { _, _, _, _, _ ->
                 scrollChanged.invokeAll()
@@ -79,11 +45,15 @@ class ScrollView constructor(
         }
         val touches = HashSet<Int>()
         setOnTouchListener { v, event ->
-            vy.addMovement(event)
+            vx.addMovement(event)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     touches.add(event.actionIndex)
                     _directlyInteractingWithScroller.value = true
+                    vx.recycle()
+                    vx = VelocityTracker.obtain()
+                    vy.recycle()
+                    vy = VelocityTracker.obtain()
                 }
 
                 MotionEvent.ACTION_MOVE -> {
@@ -97,37 +67,9 @@ class ScrollView constructor(
                     if (touches.size == 0) afterTimeout(16) { snaps() }
                 }
             }
-            println("TOUCH IS WORKING verticalScrollView ${touches} (action = ${event.actionMasked})")
             false
         }
-        isFillViewport = true
-    } else null
-
-//    private var dx = IntArray(4)
-//    private var dy = IntArray(4)
-//    private var dt = LongArray(4)
-//    init {
-//        var lastX = 0
-//        var lastY = 0
-//        var i = 0
-//        scrollChanged.addListener {
-//            val newX = horizontalScrollView?.scrollX ?: 0
-//            val newY = verticalScrollView?.scrollY ?: 0
-//            dt[i % dt.size] = System.currentTimeMillis()
-//            dx[i % dt.size] += newX - lastX
-//            dy[i % dt.size] += newY - lastY
-//            i++
-//            lastX = horizontalScrollView?.scrollX ?: 0
-//            lastY = verticalScrollView?.scrollY ?: 0
-//        }
-//    }
-//    private val vx get() =
-
-    private val innermostView: ViewGroup =
-        horizontalScrollView ?: verticalScrollView ?: error("ScrollView requires at least one axis.")
-    private val outermostView: ViewGroup =
-        verticalScrollView ?: horizontalScrollView ?: error("ScrollView requires at least one axis.")
-    override val native: View = outermostView
+    }
 
     /**
      * Copied from OverScroller, this returns the distance that a fling with the given velocity
@@ -155,6 +97,7 @@ class ScrollView constructor(
     }
 
     private data class SnapCandidate(val view: View, val fx: Int, val fy: Int, val cx: Int, val cy: Int)
+
     private fun snaps() {
         println("snaps - $snapToElements")
         val configuration = ViewConfiguration.get(native.context)
@@ -163,27 +106,27 @@ class ScrollView constructor(
         val mMaximumVelocity = configuration.scaledMaximumFlingVelocity
         vx.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
         vy.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
-        val cx = horizontalScrollView?.scrollX ?: 0
-        val fx = horizontalScrollView?.let {
+        val cx = native.scrollX ?: 0
+        val fx = native.let {
             val vel = vx.xVelocity.roundToInt()
             it.scrollX + getSplineFlingDistance(vel).roundToInt() * -vel.sign
         } ?: 0
-        val fw = horizontalScrollView?.width ?: 0
-        val cy = verticalScrollView?.scrollY ?: 0
-        val fy = verticalScrollView?.let {
+        val fw = native.width ?: 0
+        val cy = native.scrollY ?: 0
+        val fy = native.let {
             val vel = vy.yVelocity.roundToInt()
             it.scrollY + getSplineFlingDistance(vel).roundToInt() * -vel.sign
         } ?: 0
-        val fh = verticalScrollView?.height ?: 0
+        val fh = native.height ?: 0
         val r = android.graphics.Rect(0, 0, 0, 0)
         var hOffset = Int.MAX_VALUE
         var vOffset = Int.MAX_VALUE
         println("Determining snap...")
-        if(scrollSnapStop) {
-            val candidates = innermostView.children.flatMap { (it as? ViewGroup)?.children ?: sequenceOf() }
+        if (scrollSnapStop) {
+            val candidates = native.children.flatMap { (it as? ViewGroup)?.children ?: sequenceOf() }
                 .map {
                     r.set(0, 0, it.width, it.height)
-                    outermostView.offsetDescendantRectToMyCoords(it, r)
+                    native.offsetDescendantRectToMyCoords(it, r)
                     val offFX = when (snapToElements.first) {
                         Align.Start -> r.left - fx
                         Align.End -> r.right - (fx + fw)
@@ -211,22 +154,26 @@ class ScrollView constructor(
                     SnapCandidate(it, offFX, offFY, offCX, offCY)
                 }
                 .toList()
-                .also { if(it.isEmpty()) return }
+                .also { if (it.isEmpty()) return }
                 .asSequence()
-            val lowerXCandidate = candidates.filter { it.cx < 0 }.minByOrNull { abs(it.cx) } ?: candidates.minBy { it.cx }
-            val upperXCandidate = candidates.filter { it.cx > 0 }.minByOrNull { abs(it.cx) } ?: candidates.maxBy { it.cx }
-            val lowerYCandidate = candidates.filter { it.cy < 0 }.minByOrNull { abs(it.cy) } ?: candidates.minBy { it.cy }
-            val upperYCandidate = candidates.filter { it.cy > 0 }.minByOrNull { abs(it.cy) } ?: candidates.maxBy { it.cy }
+            val lowerXCandidate =
+                candidates.filter { it.cx < 0 }.minByOrNull { abs(it.cx) } ?: candidates.minBy { it.cx }
+            val upperXCandidate =
+                candidates.filter { it.cx > 0 }.minByOrNull { abs(it.cx) } ?: candidates.maxBy { it.cx }
+            val lowerYCandidate =
+                candidates.filter { it.cy < 0 }.minByOrNull { abs(it.cy) } ?: candidates.minBy { it.cy }
+            val upperYCandidate =
+                candidates.filter { it.cy > 0 }.minByOrNull { abs(it.cy) } ?: candidates.maxBy { it.cy }
             hOffset = sequenceOf(lowerXCandidate, upperXCandidate).minBy { abs(it.fx) }.cx
             vOffset = sequenceOf(lowerYCandidate, upperYCandidate).minBy { abs(it.fy) }.cy
             println("Snaps!  $cx $cy ->| $fx $fy, $hOffset $vOffset")
         } else {
             var hFOffset = Int.MAX_VALUE
             var vFOffset = Int.MAX_VALUE
-            innermostView.children.flatMap { (it as? ViewGroup)?.children ?: sequenceOf() }
+            native.children.flatMap { (it as? ViewGroup)?.children ?: sequenceOf() }
                 .forEach {
                     r.set(0, 0, it.width, it.height)
-                    outermostView.offsetDescendantRectToMyCoords(it, r)
+                    native.offsetDescendantRectToMyCoords(it, r)
                     val offX = when (snapToElements.first) {
                         Align.Start -> r.left - fx
                         Align.End -> r.right - (fx + fw)
@@ -261,24 +208,9 @@ class ScrollView constructor(
             println("Snaps!  $cx $cy -> $fx $fy, $hOffset $vOffset")
         }
         if (hOffset != Int.MAX_VALUE && abs(hOffset) > 1)
-            horizontalScrollView?.smoothScrollBy(hOffset, 0)
+            native.smoothScrollBy(hOffset, 0)
         if (vOffset != Int.MAX_VALUE && abs(vOffset) > 1)
-            verticalScrollView?.smoothScrollBy(0, vOffset)
-    }
-
-    override fun internalAddChild(index: Int, view: RView) {
-        (innermostView as ViewGroup).addView(view.native, index)
-        if ((innermostView as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(innermostView as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
-    }
-
-    override fun internalRemoveChild(index: Int) {
-        if ((innermostView as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(innermostView as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
-        (innermostView as ViewGroup).removeViewAt(index)
-    }
-
-    override fun internalClearChildren() {
-        if ((innermostView as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(innermostView as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
-        (innermostView as ViewGroup).removeAllViews()
+            native.smoothScrollBy(0, vOffset)
     }
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
@@ -287,19 +219,23 @@ class ScrollView constructor(
     override var showScrollBars: Boolean = true
         set(value) {
             field = value
-            horizontalScrollView?.isHorizontalScrollBarEnabled = value
-            verticalScrollView?.isVerticalScrollBarEnabled = value
+            native.isHorizontalScrollBarEnabled = value
+            native.isVerticalScrollBarEnabled = value
         }
     override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
         override val state: ReadableState<Rect>
-            get() = ReadableState(
-                Rect.fromSize(
-                    (horizontalScrollView?.scrollX ?: 0).toDouble(),
-                    (verticalScrollView?.scrollY ?: 0).toDouble(),
-                    native.width.toDouble(),
-                    native.height.toDouble(),
+            get() {
+                if (viewDebugTarget == children.firstOrNull())
+                    println("Reading actual viewport, got ${native.scrollX}, ${native.scrollY}")
+                return ReadableState(
+                    Rect.fromSize(
+                        (native.scrollX ?: 0).toDouble(),
+                        (native.scrollY ?: 0).toDouble(),
+                        native.width.toDouble(),
+                        native.height.toDouble(),
+                    )
                 )
-            )
+            }
     }
     override val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
         override val state: ReadableState<Rect>
@@ -307,19 +243,19 @@ class ScrollView constructor(
                 Rect.fromSize(
                     0.0,
                     0.0,
-                    innermostView.children.firstOrNull()?.width?.toDouble() ?: 0.0,
-                    innermostView.children.firstOrNull()?.height?.toDouble() ?: 0.0,
+                    native.children.firstOrNull()?.width?.toDouble() ?: 0.0,
+                    native.children.firstOrNull()?.height?.toDouble() ?: 0.0,
                 )
             )
 
         var l: ViewTreeObserver.OnGlobalLayoutListener? = null
         override fun activate() {
             l = ViewTreeObserver.OnGlobalLayoutListener { invokeAllListeners() }
-            innermostView.viewTreeObserver.addOnGlobalLayoutListener(l)
+            native.viewTreeObserver.addOnGlobalLayoutListener(l)
         }
 
         override fun deactivate() {
-            innermostView.viewTreeObserver.removeOnGlobalLayoutListener(l)
+            native.viewTreeObserver.removeOnGlobalLayoutListener(l)
         }
     }
 
@@ -330,11 +266,9 @@ class ScrollView constructor(
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {
-            horizontalScrollView?.smoothScrollTo(left.roundToInt(), 0)
-            verticalScrollView?.smoothScrollTo(0, top.roundToInt())
+            native.smoothScrollTo(left.roundToInt(), top.roundToInt())
         } else {
-            horizontalScrollView?.scrollTo(left.roundToInt(), 0)
-            verticalScrollView?.scrollTo(0, top.roundToInt())
+            native.scrollTo(left.roundToInt(), top.roundToInt())
         }
     }
 
@@ -356,10 +290,45 @@ class ScrollView constructor(
         )
     }
 
-    override fun offset(x: Double, y: Double) {
-        println("$horizontalScrollView?.scrollBy($x.roundToInt(), 0)")
-        println("$verticalScrollView?.scrollBy(0, $y.roundToInt())")
-        horizontalScrollView?.scrollBy(x.roundToInt(), 0)
-        verticalScrollView?.scrollBy(0, y.roundToInt())
+    //    override fun scrollToKeepAnimations(x: Double, y: Double) {
+////        native.mScroller?.abortAnimation()
+//        println("Scroll before: ${native.scrollX}, ${native.scrollY}")
+//        native.scrollToIgnoringClamp(x.roundToInt(), y.roundToInt())
+//        println("Scroll after: ${native.scrollX}, ${native.scrollY}")
+//    }
+    init {
+        val l = OnPreDrawListener {
+            var x = queuedJumpX
+            var y = queuedJumpY
+            if (queuedJumpX == -1.0 && queuedJumpY == -1.0) return@OnPreDrawListener true
+            if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling execution $queuedJumpX $queuedJumpY")
+            if (viewDebugTarget?.native == native.children.firstOrNull()) {
+                val child: View = native.getChildAt(0)
+                println("Clamping ${native?.let { it.scrollX + x.roundToInt() }} between ${native.getWidth()} - ${native.paddingRight} - ${native.paddingLeft}, ${child.width})")
+                println("Clamping ${native?.let { it.scrollY + y.roundToInt() }} between ${native.getHeight()} - ${native.paddingBottom} - ${native.paddingTop}, ${child.height})")
+            }
+            queuedJumpX = -1.0
+            queuedJumpY = -1.0
+            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo($x.roundToInt(), 0)")
+            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo(0, $y.roundToInt())")
+            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset before: ${native.scrollX}, ${native.scrollY}")
+            native.scrollTo(x.roundToInt(), y.roundToInt())
+            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset after: ${native.scrollX}, ${native.scrollY}")
+            if (viewDebugTarget?.native == native.children.firstOrNull()) viewport.state.getOrNull()
+            true
+        }
+        native.viewTreeObserver.addOnPreDrawListener(l)
+        onRemove {
+            native.viewTreeObserver.removeOnPreDrawListener(l)
+        }
+    }
+
+    var queuedJumpX = -1.0
+    var queuedJumpY = -1.0
+    override fun scrollToKeepAnimations(x: Double, y: Double) {
+//        native.mScroller?.abortAnimation()
+        queuedJumpX = x
+        queuedJumpY = y
+        if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling queued $queuedJumpX $queuedJumpY")
     }
 }

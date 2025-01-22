@@ -28,6 +28,8 @@ interface ProgrammaticLayoutDelegate {
 }
 
 interface ProgrammingLayoutInProgress {
+    val spacing: Double
+    val padding: Double
     fun measure(child: RView, sizeConstraint: Size): Size
     fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
     fun existingPosition(child: RView): Rect

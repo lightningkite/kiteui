@@ -21,5 +21,5 @@ interface ScrollingBehaviors {
     /**
      * Should not interrupt animations.
      */
-    fun offset(x: Double, y: Double)
+    fun scrollToKeepAnimations(x: Double, y: Double)
 }

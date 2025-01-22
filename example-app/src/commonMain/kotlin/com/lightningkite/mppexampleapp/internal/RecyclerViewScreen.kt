@@ -57,7 +57,7 @@ object RecyclerViewScreen : Screen {
 //                        this@recyclerView.scrollToIndex(index - 1, Align.Start, true)
                     }
                 }
-//                this.scrollToIndex(10, Align.Start)
+                this.scrollToIndex(10, Align.Start)
                 children(items) {
                     col child@{
                         dynamicTheme {
@@ -86,16 +86,7 @@ object RecyclerViewScreen : Screen {
                             text("More Content")
                             text("More Content")
                         }
-
-                        onRemove {
-                            println("Removal for cell")
-                            leakDetect()
-                        }
                     }
-                }
-                onRemove {
-                    println("Removal for list")
-                    leakDetect()
                 }
             } in weight(1f)
             row {

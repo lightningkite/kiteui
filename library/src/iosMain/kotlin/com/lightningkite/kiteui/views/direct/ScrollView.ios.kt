@@ -122,6 +122,7 @@ class ScrollView(
                     Align.Stretch -> targetContentOffset.pointed.y = y.y() - viewportYSize / 2
                 }
             }
+            println("targetContentOffset: ${targetContentOffset.pointed.run { "$x, $y" }}")
         }
     }
 
@@ -172,6 +173,11 @@ class ScrollView(
     override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
     override var snapToElements: Pair<Align?, Align?> = null to null
+        set(value) {
+            field = value
+            // scroll to nearest?
+//            native.content
+        }
     override var scrollSnapStop: Boolean = false
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
@@ -203,12 +209,12 @@ class ScrollView(
         )
     }
 
-    override fun offset(x: Double, y: Double) {
+    override fun scrollToKeepAnimations(x: Double, y: Double) {
         val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
 //        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
         native.contentOffset = CGPointMake(
-            x = if (horizontal) existingX + x else existingX,
-            y = if (vertical) existingY + y else existingY,
+            x = if (horizontal) x else existingX,
+            y = if (vertical) y else existingY,
         )
     }
 }

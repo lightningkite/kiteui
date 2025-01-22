@@ -6,7 +6,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.CalculationContext
@@ -55,9 +55,9 @@ actual fun ViewWriter.hasPopover(
     beforeNextElementSetup {
         val originalNavigator = screenNavigator
         fun openDialog() {
-            dialogScreenNavigator.navigate(object : Screen {
-                override fun ViewWriter.render() {
-                    dismissBackground {
+            dialogScreenNavigator.navigate(object : Page {
+                override fun ViewWriter.render2(): ViewModifiable {
+                    return dismissBackground {
                         centered - stack {
                             with(split()) {
                                 screenNavigator = originalNavigator

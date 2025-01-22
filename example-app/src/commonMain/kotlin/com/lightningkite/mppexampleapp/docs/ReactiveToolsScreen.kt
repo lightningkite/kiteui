@@ -22,8 +22,8 @@ object ReactiveToolsScreen : Screen, DocScreen {
         "LazyProperty"
     )
 
-    fun ViewWriter.bufferedNumberInput(sets: Writable<in Double>) {
-        fieldTheme - row {
+    fun ViewWriter.bufferedNumberInput(sets: Writable<in Double>): ViewModifiable {
+        return fieldTheme - row {
             spacing = 0.5.rem
             val buffer = Property<Double?>(null)
             space(0.5)

@@ -24,7 +24,7 @@ interface DocScreen: Screen {
 
 fun ViewWriter.example(
     codeText: String,
-    action: ViewWriter.()->Unit
+    action: ViewWriter.()->ViewModifiable
 ) {
     card - row {
         expanding - scrollsHorizontally - code { content = codeText }

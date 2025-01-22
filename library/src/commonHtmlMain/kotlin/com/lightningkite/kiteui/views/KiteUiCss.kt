@@ -281,6 +281,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 display: none;
             }
 
+            .suppress-overflow-anchors > * {
+                overflow-anchor: none;
+            }
+
             .recyclerView > * > * {
                 overflow-anchor: none;
             }
