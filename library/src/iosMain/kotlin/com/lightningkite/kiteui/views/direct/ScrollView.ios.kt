@@ -147,7 +147,7 @@ class ScrollView(
             native.showsHorizontalScrollIndicator = value
             native.showsVerticalScrollIndicator = value
         }
-    override val viewport: Readable<Rect> = (sizeChange + scroll).lens {
+    override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = native.contentOffset.useContents { x to y }
         val (vw, vh) = native.bounds.useContents { size.width to size.height }
         native.bounds.useContents {
@@ -159,7 +159,7 @@ class ScrollView(
             )
         }
     }
-    override val content: Readable<Rect> = (sizeChange).lens {
+    override val content: Readable<Rect> = (sizeChange).lensListenable {
         val (sw, sh) = native.contentSize.useContents { width to height }
         val (vw, vh) = native.bounds.useContents { size.width to size.height }
         native.bounds.useContents {

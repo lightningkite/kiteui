@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.report
 import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
@@ -100,7 +99,7 @@ private open class ModifyImmediateLens<O, T>(source: ImmediateWritable<O>, get: 
         }
 }
 
-fun <T> Listenable.lens(
+fun <T> Listenable.lensListenable(
     get: () -> T
 ): Readable<T> = ImmediateReadableLens(object: ImmediateReadable<Unit>, Listenable by this{
     override val value: Unit get() = Unit

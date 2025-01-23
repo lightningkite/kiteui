@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
@@ -12,7 +13,7 @@ import kotlin.math.abs
 fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
 class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null) :
     RecyclerViewPlacerGrid {
-    var log: Console? = null
+    var log: Console? = ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     override fun place(
@@ -35,7 +36,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             padding + it * spacing + it * cellSize
         }
 
-        val (anchorRowY, anchorRowIndex) = anchor?.let {
+        val (anchorRowY, anchorRowIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     val averageRowHeight = ratio?.let { cellSize * it } ?: existingCells.sumOf { it.bottom - it.top } / existingCells.size
@@ -78,6 +79,15 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
         } ?: run {
             log?.log("estimateJumpAnchor was dumped; no existin cells?")
             (viewport.top + padding to dataRange.first.div(columns).times(columns))
+        }).let {
+            // anchor correction for out of bounds
+            if(it.second > dataRange.last + columns) {
+                log?.log("Anchor ignored due to out-of-range")
+                (viewport.bottom - padding to dataRange.last.div(columns).times(columns))
+            } else if(it.second < dataRange.first - columns) {
+                log?.log("Anchor ignored due to out-of-range")
+                (viewport.top + padding to dataRange.first.div(columns).times(columns))
+            } else it
         }
         log?.log("ANCHOR $anchorRowY gets index ${anchorRowIndex}")
 

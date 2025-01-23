@@ -10,9 +10,9 @@ import kotlin.test.assertEquals
 
 class LayoutsTestScreen : Page {
     val checks = ArrayList<() -> Unit>()
-    override fun ViewWriter.render() {
+    override fun ViewWriter.render2(): ViewModifiable {
         fun RView.parentRectangle() = parent?.let { rectangleRelativeTo(it) }
-        card - col {
+        return card - col {
             checks += { println(parentRectangle()) }
             lateinit var above: RView
             card - stack {

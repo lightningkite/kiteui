@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.load
 import kotlin.test.Test
 import kotlin.test.assertEquals

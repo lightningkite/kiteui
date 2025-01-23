@@ -1,11 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.lens
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
