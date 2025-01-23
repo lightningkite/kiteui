@@ -83,7 +83,15 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             // anchor correction for out of bounds
             if(it.second > dataRange.last + columns) {
                 log?.log("Anchor ignored due to out-of-range")
-                (viewport.bottom - padding to dataRange.last.div(columns).times(columns))
+                val currentIndex = dataRange.last.div(columns).times(columns)
+                val cells = (0..<columns).map {
+                    if (currentIndex + it in dataRange) getNewCell(
+                        currentIndex + it,
+                        constrain
+                    ) else null
+                }
+                val max = ratio?.let { cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
+                (viewport.bottom - max - padding to currentIndex)
             } else if(it.second < dataRange.first - columns) {
                 log?.log("Anchor ignored due to out-of-range")
                 (viewport.top + padding to dataRange.first.div(columns).times(columns))
