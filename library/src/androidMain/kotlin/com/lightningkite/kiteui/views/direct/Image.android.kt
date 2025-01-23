@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -73,12 +75,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    //    var placeholder = ColorDrawable(0xFFFF0000.toInt())
-    var placeholder = CircularProgressDrawable(context.activity).apply {
-        strokeWidth = 5f
-        centerRadius = 30f
-        start()
-    }
+    private var placeholder = ColorDrawable(Color.WHITE)
 
     actual var source: ImageSource? = null
         set(value) {
