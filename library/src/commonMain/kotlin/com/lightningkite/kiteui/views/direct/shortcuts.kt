@@ -127,13 +127,13 @@ fun ViewWriter.confirmDanger(
                                 screenNavigator.dismiss()
                             }
                         }
-                        expanding - button {
+                        expanding - danger - button {
                             centered - h6(actionName)
                             onClick {
                                 action()
                                 screenNavigator.dismiss()
                             }
-                        } in danger
+                        }
                     }
                 }
             }
@@ -154,12 +154,12 @@ fun ViewWriter.alert(
                     h2(title)
                     text(body)
                     row {
-                       expanding - button {
+                       expanding - danger - button {
                             centered - h6("OK")
                             onClick {
                                 screenNavigator.dismiss()
                             }
-                        } in danger
+                        }
                     }
                 }
             }

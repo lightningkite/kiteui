@@ -209,7 +209,7 @@ private fun Path.render(
             arguments.add(currentNumber.toString().toFloat())
         }
 
-        var instruction = rawInstruction.toLowerCase()
+        var instruction = rawInstruction.lowercaseChar()
         val isAbsolute: Boolean = rawInstruction.isUpperCase()
         fun offsetX(): Float = if (isAbsolute) 0.0f else referenceX
         fun offsetY(): Float = if (isAbsolute) 0.0f else referenceY

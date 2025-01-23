@@ -7,7 +7,9 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 
 @Deprecated("Use Screen directly instead", ReplaceWith("Screen", "com.lightningkite.kiteui.navigation.Screen"))
+@Suppress("Deprecation")
 typealias KiteUiScreen = Screen
+
 interface Page {
     val title: Readable<String>
         get() = Constant(
@@ -32,10 +34,17 @@ interface Screen: Page {
     @Deprecated("Use render2", ReplaceWith("render2()"))
     fun ViewWriter.render(): Any?
 
+    @Suppress("Deprecation")
     object Empty: Screen {
+
+        @Deprecated("Use render2", ReplaceWith("render2()"))
         override fun ViewWriter.render(): ViewModifiable = space {}
     }
+
+    @Suppress("Deprecation")
     open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Screen {
+
+        @Deprecated("Use render2", ReplaceWith("render2()"))
         override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
         override val title: Readable<String> = Constant(title)
     }

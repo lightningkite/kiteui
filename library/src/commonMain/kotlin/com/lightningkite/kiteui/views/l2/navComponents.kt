@@ -33,7 +33,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
         fun ViewWriter.display(navElement: NavElement) {
             row {
                 centered - navElementIconAndCountHorizontal(navElement)
-                text { ::content { navElement.title(this) } } in gravity(Align.Center, Align.Center)
+                centered - text { ::content { navElement.title(this) } }
                 space(1.0)
             }
         }
@@ -109,10 +109,10 @@ fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: Cont
 private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
         padded - stack {
-            icon {
+            centered - icon {
                 ::source { navElement.icon() }
                 ::description { navElement.title() }
-            } in gravity(Align.Center, Align.Center)
+            }
         }
         navElement.count?.let { count ->
             atTopEnd - compact - critical - stack {
@@ -220,10 +220,10 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
 
 fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
     return stack {
-        icon {
+        centered - icon {
             ::source { navElement.icon() }
             ::description { navElement.title() }
-        } in gravity(Align.Center, Align.Center)
+        }
         navElement.count?.let { count ->
             gravity(Align.End, Align.Start) - compact - critical - stack {
                 exists = false
@@ -262,7 +262,7 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
         fun ViewWriter.display(navElement: NavElement) {
             compact - col {
                 centered - navElementIconAndCount(navElement)
-                subtext { ::content { navElement.title() } } in gravity(Align.Center, Align.Center)
+                centered - subtext { ::content { navElement.title() } }
             }
         }
         forEach(readable) {

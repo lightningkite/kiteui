@@ -149,11 +149,13 @@ fun <E, ID> Writable<List<E>>.lensByElement(identity: (E) -> ID) =
 
 @Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
+@Suppress("Deprecation")
 fun <E, ID, W> Writable<Set<E>>.lensByElement(identity: (E) -> ID, map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
 @Deprecated("Be specific about what kind you need.")
 @JvmName("setLensByElement")
+@Suppress("Deprecation")
 fun <E, ID> Writable<Set<E>>.lensByElement(identity: (E) -> ID) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
 
@@ -167,6 +169,7 @@ fun <E, ID> Writable<List<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
     WritableListWithoutMap<E, ID>(this, identity = identity, elementLens = { it })
 
 @JvmName("setLensByElementWithIdentity")
+@Suppress("Deprecation")
 fun <E, ID, W> Writable<Set<E>>.lensByElementWithIdentity(
     identity: (E) -> ID,
     map: CalculationContext.(ImmediateReadableWithWrite<E>) -> W
@@ -174,6 +177,7 @@ fun <E, ID, W> Writable<Set<E>>.lensByElementWithIdentity(
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity, map)
 
 @JvmName("setLensByElementWithIdentity")
+@Suppress("Deprecation")
 fun <E, ID> Writable<Set<E>>.lensByElementWithIdentity(identity: (E) -> ID) =
     lens(get = { it.toList() }, set = { it.toSet() }).lensByElement(identity)
 

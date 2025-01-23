@@ -73,14 +73,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            HeaderSemantic.onNext - text {
+            HeaderSemantic.onNext - centered - expanding - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
-            } in gravity(
-                Align.Center,
-                Align.Center
-            ) in weight(1f)
+            }
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty() }
         }
@@ -106,14 +103,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            HeaderSemantic.onNext - text {
+            HeaderSemantic.onNext - centered - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
-            } in gravity(
-                Align.Center,
-                Align.Center
-            )
+            }
             space()
             expanding - centered - navGroupTop(appNav.navItemsProperty)
             space()
@@ -138,21 +132,18 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
                         centered - icon(Icon.chevronLeft, "Go Back")
                         centered - text {
                             ::content {
-                                screenNavigator.stack()?.let { it.getOrNull(it.size - 2) }?.title?.let { it().let{ if(it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
+                                screenNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let{ if(it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
                             }
                         }
                     }
                     ::visible { screenNavigator.canGoBack() }
                     onClick { screenNavigator.goBack() }
                 }
-                centered - HeaderSemantic.onNext - text {
+                centered - HeaderSemantic.onNext - centered - expanding - text {
                     ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
-                } in gravity(
-                    Align.Center,
-                    Align.Center
-                ) in weight(1f)
+                }
                 atEnd - navGroupActions(appNav.actionsProperty)
                 ::exists { appNav.existsProperty() }
             }
@@ -165,14 +156,11 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
                     ::visible { screenNavigator.canGoBack() }
                     onClick { screenNavigator.goBack() }
                 }
-                HeaderSemantic.onNext - text {
+                HeaderSemantic.onNext - centered - expanding - text {
                     ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
-                } in gravity(
-                    Align.Center,
-                    Align.Center
-                ) in weight(1f)
+                }
                 navGroupActions(appNav.actionsProperty)
                 ::exists { appNav.existsProperty() }
             }
@@ -198,25 +186,22 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
                 ::visible { screenNavigator.canGoBack() }
                 onClick { screenNavigator.goBack() }
             }
-            HeaderSemantic.onNext - text {
+            HeaderSemantic.onNext - centered - text {
                 ::content.invoke { screenNavigator.currentScreen()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
-            } in gravity(
-                Align.Center,
-                Align.Center
-            )
-            space {} in weight(1f)
+            }
+            expanding - space {}
             navGroupActions(appNav.actionsProperty)
 
             ::exists { appNav.existsProperty() }
         }
-        navSpacing  - row {
+        navSpacing - expanding - row {
             navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
             expanding - navigatorView(screenNavigator)
-        } in weight(1f)
+        }
     }
 }

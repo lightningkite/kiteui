@@ -1,38 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.app.Activity
-import android.graphics.drawable.BitmapDrawable
-import android.os.Handler
-import android.os.Looper
-import androidx.core.content.ContextCompat
-import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
-import timber.log.Timber
-import android.content.Context
-import android.graphics.*
-import android.graphics.drawable.Drawable
-import android.util.AttributeSet
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
-import android.view.View
-import android.view.Window
-import android.widget.FrameLayout
-import androidx.annotation.Nullable
-import androidx.core.view.children
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.Request
-import com.bumptech.glide.request.target.CustomViewTarget
-import com.bumptech.glide.request.target.ImageViewTarget
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.target.SizeReadyCallback
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.views.*
 import android.widget.ImageView as AImageView
 

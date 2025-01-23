@@ -79,8 +79,10 @@ class RouterGeneration(
                         .forEach {
                             appendLine("import $it")
                         }
+                    appendLine("import kotlinx.serialization.ExperimentalSerializationApi")
                     appendLine("")
                     appendLine("")
+                    appendLine("@OptIn(ExperimentalSerializationApi::class)")
                     appendLine("val AutoRoutes = Routes(")
                     tab {
                         appendLine("parsers = listOf(")

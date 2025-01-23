@@ -18,14 +18,14 @@ fun generateLocalizations(toRead: List<File>, outKt: File, ext: KiteUiPluginExte
         }
     localizations.groupBy { it.name }
         .filter { it.value.size > 1 }
-        .forEach { t, u ->
+        .forEach { (_, u) ->
             localizations.removeAll(u)
             localizations.addAll(u.mapIndexed { index, it ->
                 it.copy(name = it.name + (index + 1))
             })
         }
-    val wordRegex = Regex("[A-Z][a-z]")
-    val commaWithoutSpace = Regex(",[^ ]")
+//    val wordRegex = Regex("[A-Z][a-z]")
+//    val commaWithoutSpace = Regex(",[^ ]")
     outKt.writeText(
         """
     package ${ext.packageName}

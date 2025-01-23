@@ -70,9 +70,9 @@ actual fun ViewWriter.hasPopover(
 
 @ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
-    text {
+    card - text {
         content = message
-    } in card
+    }
 }
 
 @ViewModifierDsl3
