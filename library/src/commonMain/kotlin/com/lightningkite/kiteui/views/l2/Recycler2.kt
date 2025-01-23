@@ -558,6 +558,8 @@ class Recycler2(
                 }
                 log?.log("OFFSCREEN CELLS DISMISSED: ${instantDismissCount}")
 
+                if(data.range.isEmpty()) return
+
                 log?.log("RUN PLACER IN $viewport, anchor is $anchor")
                 placer.place(
                     dataRange = data.range,
