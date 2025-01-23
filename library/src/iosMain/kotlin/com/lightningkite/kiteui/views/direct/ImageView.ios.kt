@@ -243,38 +243,9 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
         onImageChange?.invoke(image)
     }
 
-    val loadingIndicator = UIActivityIndicatorView(CGRectMake(0.0, 0.0, 0.0, 0.0))
-
-    init {
-        loadingIndicator.hidden = true
-        addSubview(loadingIndicator)
-    }
-
-    fun startLoad() {
-        loadingIndicator.startAnimating()
-        loadingIndicator.hidden = false
-    }
-
-    fun endLoad() {
-        loadingIndicator.stopAnimating()
-        loadingIndicator.hidden = true
-    }
-
-    override fun layoutSubviews() {
-        super.layoutSubviews()
-        bounds.useContents {
-            val outerSize = this.size
-            loadingIndicator.bounds.useContents {
-                val mySize = this.size
-                loadingIndicator.setPsuedoframe(
-                    outerSize.width / 2 - mySize.width / 2,
-                    outerSize.height / 2 - mySize.height / 2,
-                    mySize.width,
-                    mySize.height
-                )
-            }
-        }
-    }
+    // Loading indicators have been removed. These stubs have been left for potential loading support in the future
+    fun startLoad() { }
+    fun endLoad() { }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return this.image?.size?.useContents {
