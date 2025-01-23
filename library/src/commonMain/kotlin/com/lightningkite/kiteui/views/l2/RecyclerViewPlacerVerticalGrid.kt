@@ -13,7 +13,7 @@ import kotlin.math.abs
 fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
 class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null) :
     RecyclerViewPlacerGrid {
-    var log: Console? = ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
+    var log: Console? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     override fun place(

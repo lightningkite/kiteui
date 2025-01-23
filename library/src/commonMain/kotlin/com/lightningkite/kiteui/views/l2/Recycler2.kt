@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    var log: Console? = ConsoleRoot.tag("R2")//null,
+    var log: Console? = null,
 ) : ViewModifiable {
     override val coroutineContext: CoroutineContext
         get() = outerStack.coroutineContext
