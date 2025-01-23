@@ -62,6 +62,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
+            placed += child.native
             child.native.measure(
                 MeasureSpec.makeMeasureSpec((right - left).roundToInt(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((bottom - top).roundToInt(), MeasureSpec.EXACTLY),
@@ -92,11 +93,22 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         val r = delegate.measure(rview, inProgress, Size(newWidth, newHeight))
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
+    val placed = HashSet<View>()
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
         if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
+        placed.clear()
         delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
+        (children - placed).forEach {
+            // Force layout missed cells to satisfy Android
+            // If you don't do this, requestLayout won't work.
+            it.measure(
+                MeasureSpec.makeMeasureSpec((it.right - it.left), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((it.bottom - it.top), MeasureSpec.EXACTLY),
+            )
+            it.layout(it.left, it.top, it.right, it.bottom)
+        }
     }
 
     fun silentRequestLayout() {
@@ -105,10 +117,8 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun requestLayout() {
-        println("yea yeah, pass it up")
         if(viewDebugTarget?.native == this) println("requestLayout on ProgrammaticLayout")
         if(isInLayout) {
-            println("We're already in a layout.  shut up.")
             return
         }
         super.requestLayout()

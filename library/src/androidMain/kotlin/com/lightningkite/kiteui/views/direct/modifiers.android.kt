@@ -420,7 +420,6 @@ internal val animatingSize = HashSet<View>()
  * Creates an animator that will animate from the current height to a new height.
  */
 private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
-    println("heightAnimator created going to $toHeight")
     val currentHeight = layoutParams.height.let {
         when (it) {
             WRAP_CONTENT, MATCH_PARENT -> height
@@ -442,10 +441,8 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
         else -> toHeight
     }
     return TypedValueAnimator.IntAnimator(currentHeight, fixedToHeight).onUpdate {
-        println("heightAnimator update $it")
         layoutParams.height = it
         if (!this@heightAnimator.isInLayout) {
-            println("Requesting a layout")
             requestLayout()
         } else {
             println("Size animator blocked because we're in layout.")
