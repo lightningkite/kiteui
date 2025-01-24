@@ -2092,7 +2092,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      */
     override fun onRequestFocusInDescendants(
         direction: Int,
-        previouslyFocusedRect: Rect
+        previouslyFocusedRect: Rect?
     ): Boolean {
         // convert from forward / backward notation to up / down / left / right
         // (ugh).
