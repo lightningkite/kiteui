@@ -35,14 +35,17 @@ class Recycler2(
     private val _centerIndex = Property(0)
     private val _displayedRangeFirst = Property(0)
     val firstIndex: Readable<Int> = _displayedRangeFirst.withWrite {
-        scrollToIndex(it, Align.Start)
+        if(it != _displayedRangeFirst.value)
+            scrollToIndex(it, Align.Start)
     }
     private val _displayedRangeLast = Property(0)
     val lastIndex: Readable<Int> = _displayedRangeLast.withWrite {
-        scrollToIndex(it, Align.End)
+        if(it != _displayedRangeLast.value)
+            scrollToIndex(it, Align.End)
     }
     val centerIndex: Writable<Int> = _centerIndex.withWrite {
-        scrollToIndex(it, Align.Center)
+        if(it != _centerIndex.value)
+            scrollToIndex(it, Align.Center)
     }
 
     var snapToElements: Align? = null
