@@ -656,14 +656,14 @@ class Recycler2(
                 if (vertical) {
                     if (abs(inProgress.padding - firstCell!!.topNew) > 1.0) {
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
-                        if (viewport.top > firstCell!!.top - inProgress.padding + 0.1) {
-                            log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell!!.top} - ${inProgress.padding}")
+                        if (viewport.top < firstCell!!.topNew - inProgress.padding + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell!!.topNew} - ${inProgress.padding}")
                             offset(0.0, -firstCell!!.top + inProgress.padding)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
-                        } else {
+                        } else if(!isMoving.value) {
                             log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.topNew} -> ${inProgress.padding}")
                             offset(0.0, -firstCell!!.topNew + inProgress.padding)
                         }
@@ -671,14 +671,14 @@ class Recycler2(
                 } else {
                     if (abs(inProgress.padding - firstCell!!.leftNew) > 1.0) {
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
-                        if (viewport.left > firstCell!!.left - inProgress.padding + 0.1) {
-                            log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell!!.left} - ${inProgress.padding}")
+                        if (viewport.left < firstCell!!.leftNew - inProgress.padding + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell!!.leftNew} - ${inProgress.padding}")
                             offset(-firstCell!!.left + inProgress.padding, 0.0)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
-                        } else {
+                        } else if(!isMoving.value) {
                             log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.leftNew} -> ${inProgress.padding}")
                             offset(-firstCell!!.leftNew + inProgress.padding, 0.0)
                         }

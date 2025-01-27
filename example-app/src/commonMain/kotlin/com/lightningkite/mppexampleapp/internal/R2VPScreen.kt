@@ -38,6 +38,8 @@ object R2VPScreen : Screen {
             }
             expanding
             recyclerView = Recycler2(this, vertical = false).apply {
+                log = ConsoleRoot.tag("R2")
+                scrollToIndex(2, Align.Center, animate = false)
                 this.snapToElements = Align.Center
                 this.scrollSnapStop = true
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
