@@ -361,13 +361,13 @@ object ControlsScreen : Screen {
             col {
                 h2 { content = "Drop Downs" }
                 val options = shared { listOf("Apple", "Banana", "Crepe") }
-                val value = Property("Apple")
-                fieldTheme - select { bind(value, data = options, render = { it }) } in padded
-                fieldTheme - select { bind(value, data = options, render = { it }) } in card
-                fieldTheme - select { bind(value, data = options, render = { it }) } in important
-                fieldTheme - select { bind(value, data = options, render = { it }) } in critical
-                fieldTheme - select { bind(value, data = options, render = { it }) } in warning
-                fieldTheme - select { bind(value, data = options, render = { it }) } in danger
+                val value = Property("Banana")
+                padded - fieldTheme - select { bind(value, data = options, render = { it }) }
+                card - fieldTheme - select { bind(value, data = options, render = { it }) }
+                important - fieldTheme - select { bind(value, data = options, render = { it }) }
+                critical - fieldTheme - select { bind(value, data = options, render = { it }) }
+                warning - fieldTheme - select { bind(value, data = options, render = { it }) }
+                danger - fieldTheme - select { bind(value, data = options, render = { it }) }
             } in card
 
             col {

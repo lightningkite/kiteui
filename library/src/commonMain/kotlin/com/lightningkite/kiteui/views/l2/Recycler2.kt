@@ -235,7 +235,6 @@ class Recycler2(
                 return _size ?: run {
                     statsMeasures++
                     val n = inProgress!!.measure(view, constraint)
-                    println("Measured ${item} to be $n")
                     _size = n
                     n
                 }

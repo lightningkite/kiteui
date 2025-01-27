@@ -20,7 +20,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         var list: List<T> = listOf()
         reactiveScope {
             list = data()
-            val v = edits()
+            val v = edits.state.getOrNull()
             native.clearChildren()
             list.mapIndexed { index, it ->
                 native.appendChild(FutureElement().apply {
@@ -34,11 +34,11 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         var alreadyHandled = false
         reactiveScope {
             val newValue = edits()
-            val list = data()
+            val list = data.state.getOrNull() ?: listOf()
             if (alreadyHandled) return@reactiveScope
             alreadyHandled = true
             val index = list.indexOf(newValue).toString()
-            native.children.find { it.attributes.valueString == index }
+            native.children.find { it.attributes.valueString == index }?.attributes?.selected = true
             alreadyHandled = false
         }
         val setAction = Action("Set Value", Icon.send, frequencyCap = 0.milliseconds, ignoreRetryWhileRunning = true) {

@@ -7,6 +7,8 @@ import com.lightningkite.kiteui.navigation.dialogScreenNavigator
 import com.lightningkite.kiteui.navigation.screenNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -113,58 +115,48 @@ fun ViewWriter.confirmDanger(
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    dialogScreenNavigator.navigate(object : Page {
-        override val title: Readable<String> = Constant(title)
-        override fun ViewWriter.render2(): ViewModifiable {
-            return dismissBackground {
-                centered - card - col {
-                    h2(title)
-                    text(body)
-                    row {
-                       expanding - button {
-                            centered - h6("Cancel")
-                            onClick {
-                                screenNavigator.dismiss()
-                            }
-                        }
-                        expanding - danger - button {
-                            centered - h6(actionName)
-                            onClick {
-                                action()
-                                screenNavigator.dismiss()
-                            }
-                        }
+    dialog {
+        col {
+            h2(title)
+            text(body)
+            row {
+                expanding - buttonTheme - button {
+                    centered - text("Cancel")
+                    onClick {
+                        closePopovers()
+                    }
+                }
+                expanding - danger - buttonTheme - button {
+                    centered - text(actionName)
+                    onClick {
+                        action()
+                        closePopovers()
                     }
                 }
             }
         }
-    })
+    }
 }
 
 fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    dialogScreenNavigator.navigate(object : Page {
-        override val title: Readable<String> = Constant(title)
-        override fun ViewWriter.render2(): ViewModifiable {
-            return dismissBackground {
-                centered - card - col {
+    dialog {
+        col {
 //                    ignoreInteraction = false
-                    h2(title)
-                    text(body)
-                    row {
-                       expanding - danger - button {
-                            centered - h6("OK")
-                            onClick {
-                                screenNavigator.dismiss()
-                            }
-                        }
+            h2(title)
+            text(body)
+            row {
+                expanding - danger - button {
+                    centered - h6("OK")
+                    onClick {
+                        screenNavigator.dismiss()
                     }
                 }
             }
         }
-    })
+    }
 }
 
 

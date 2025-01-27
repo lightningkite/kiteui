@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.field
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -15,9 +16,12 @@ object RecyclerViewScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
+    @QueryParameter
+    val elementCount = Property(10000)
+
     override fun ViewWriter.render() {
         var expanded = Property(-1)
-        val items = Property((1..200).toList())
+        val items = shared { (1..elementCount()).toList() }
         var recyclerView: RecyclerView? = null
         col {
             row {
@@ -43,6 +47,9 @@ object RecyclerViewScreen : Screen {
                         subtext("${cols} columns")
                         onClick { recyclerView?.columns = cols }
                     }
+                }
+                sizeConstraints(width = 10.rem) - field("Element Count") {
+                    numberInput { content bind elementCount.nullable().asDouble() }
                 }
             }
             recyclerView {
