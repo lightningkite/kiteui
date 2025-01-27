@@ -4,11 +4,13 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.Resources
 import kotlin.random.Random
 
 @Routable("experiment")
@@ -16,77 +18,93 @@ object ExperimentScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
-    @QueryParameter
-    val elementCount = Property(10000)
-
-    override fun ViewWriter.render() {
-        col {
-            val expanded = Property(-1)
-            var recyclerView: Recycler2? = null
-            row {
-                for (align in Align.values()) {
-                    expanding - button {
-                        subtext("Jump ${align.name}")
-                        onClick { recyclerView?.scrollToIndex(75, align, false) }
-                    }
-                }
-            }
-            row {
-                for (align in Align.values()) {
-                    expanding - button {
-                        subtext("Scroll ${align.name}")
-                        onClick { recyclerView?.scrollToIndex(75, align, true) }
-                    }
-                }
-            }
-            row {
-                repeat(4) {
-                    val cols = (it + 1) * 4
-                    expanding - button {
-                        subtext("${cols} columns")
-                        onClick {
-                            recyclerView?.placer = RecyclerViewPlacerVerticalTrueGrid(cols)
+    override fun ViewWriter.render(){
+        scrolls - col {
+            gravity(Align.Center, Align.Stretch) - sizeConstraints(width = 80.rem) - card - col {
+                rowCollapsingToColumn(35.rem) {
+                    col {
+                        gravity(Align.Center, Align.Start) - sizeConstraints(width = 9.rem, height = 9.rem) - image {
+                            scaleType = ImageScaleType.Fit
+                            ::source { Resources.imagesSolera }
                         }
                     }
-                }
-                sizeConstraints(width = 10.rem) - field("Element Count") {
-                    numberInput { content bind elementCount.nullable().asDouble() }
-                }
-            }
-            recyclerView = expanding - Recycler2(this).apply {
-//                this.snapToElements = null to Align.Start
-                val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
-                    override fun render(
-                        viewWriter: ViewWriter,
-                        data: Readable<Int>,
-                        index: Readable<Int>
-                    ): ViewModifiable {
-                        return with(viewWriter) {
-                            card - button {
-                                centered - text { ::content { data().toString() } }
-                                onClick {
-                                    if (data() == expanded.value)
-                                        expanded.value = -1
-                                    else
-                                        expanded.value = data()
+                    row {
+                        col {
+                            spacing = 0.1.rem
+                            h4 { ::content { "product().title" } }
+                            subtext { ::content { "product().erpId" } }
+                            subtext { ::content { "product().manufacturer" } }
+                            atStart - SubtextSemantic.onNext - row {
+                                ::exists { true }
+                                spacing = 0.5.rem
+                                centered - text {
+                                    ::content {
+                                        "In stock at"
+                                    }
+                                }
+                                sizeConstraints(width = 10.rem) - fieldTheme - select {
+                                    spacing = 0.2.rem
+                                    bind(
+                                        edits = Property(""),
+                                        data = Constant(listOf("A", "B", "C")),
+                                        render = { it }
+                                    )
                                 }
                             }
+
+                        }
+                        atTop - toggleButton {
+                            ::exists { true }
+                            ::enabled { true }
+                            icon {
+                                ::source { Icon.copy }
+                            }
+                            checked bind Property(false)
                         }
                     }
                 }
-//                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPlacerVerticalTrueGrid(4)
-                rendererSet = object : RecyclerViewRendererSet<Int, Int> {
-                    override fun id(item: Int): Int = item
-                    override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
+                text {
+                    content = """Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."""
                 }
-                reactive {
-                    val c = elementCount()
-                    data = object : RecyclerViewData<Int, Int> {
-                        override val range: IntRange = 0..<c
-                        override fun get(index: Int): Int {
-                            if (index !in range) throw IllegalStateException("Index out of range")
-                            return index
+
+                warning - col {
+                    exists = false
+
+                    bold - rowCollapsingToColumn(60.rem) {
+                        text("Upcoming Price Increase")
+                        text { ::content { "NOW" } }
+                    }
+
+                    text { ::content { "Message" } }
+                }
+
+                rowCollapsingToColumn(60.rem) {
+                    gravity(Align.Start, Align.Center) - onlyWhen { true } - row {
+                        text("List Price")
+                        text("\$XXX")
+//                        detail("List Price") {
+//                            pricing()()?.previousListPrice?.takeUnless { it == 0.cents }?.toString() ?: "-"
+//                        }
+                        separator()
+                        text("Your Price")
+                        text("\$XXX")
+//                        detail("Your Price") {
+//                            pricing()()?.previousPrice?.takeUnless { it == 0.cents }?.toString() ?: "-"
+//                        }
+                    }
+                    gravity(Align.Start, Align.Center) - onlyWhen {
+                        false
+                    } - text("Pricing established after ordering")
+
+                    expanding - space()
+
+                    col {
+                        reactiveScope {
+                            clearChildren()
+//                            expanding
+                            field("Sample") {
+                                numberInput()
+                            }
                         }
                     }
                 }

@@ -63,6 +63,7 @@ object RootScreen : Screen {
                 linkScreen { ListEditScreen }
                 linkScreen { LeakCheckerScreen }
                 linkScreen { ExperimentScreen }
+                linkScreen { Recycler2TestScreen }
                 linkScreen { AudioScreen }
                 linkScreen { HorizontalRecyclerViewScreen }
                 linkScreen { InfiniteImagesScreen }
