@@ -611,9 +611,9 @@ data class KeyboardHints(
         val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
         val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
         val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
-        val email = KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email)
-        val password = KeyboardHints(autocomplete = AutoComplete.Password)
-        val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword)
+        val email = KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
+        val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
+        val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
     }
 }
 
