@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    var log: Console? = null,
+    var log: Console? = ConsoleRoot.tag("Recycler2"),
 ) : ViewModifiable {
     override val coroutineContext: CoroutineContext
         get() = outerStack.coroutineContext
@@ -664,7 +664,7 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.top < firstCell!!.topNew - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell!!.topNew} - ${inProgress.padding}")
-                            offset(0.0, -firstCell!!.top + inProgress.padding)
+                            offset(0.0, -firstCell!!.topNew + inProgress.padding)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
@@ -679,7 +679,7 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.left < firstCell!!.leftNew - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell!!.leftNew} - ${inProgress.padding}")
-                            offset(-firstCell!!.left + inProgress.padding, 0.0)
+                            offset(-firstCell!!.leftNew + inProgress.padding, 0.0)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
