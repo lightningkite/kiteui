@@ -151,7 +151,7 @@ fun ViewWriter.alert(
                 expanding - danger - button {
                     centered - h6("OK")
                     onClick {
-                        screenNavigator.dismiss()
+                        closePopovers()
                     }
                 }
             }

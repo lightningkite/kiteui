@@ -69,7 +69,7 @@ class Recycler2(
                 } - programmatic {
 //                    viewDebugTarget = this
                     cells = this
-                    stack {
+                    unpadded - stack {
                         scrollSentinel = this
                     }
                 }
@@ -84,7 +84,7 @@ class Recycler2(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
-                    }.onNext - stack {
+                    }.onNext - unpadded - stack {
                         fakeScrollIndicator = this
                     }
                 }
@@ -294,6 +294,11 @@ class Recycler2(
             val vps = if (vertical) vp.height else vp.width
             fakeScrollSize = vps / (end - start)
             fakeScrollOffset = start * (fakeScrollSize)
+            log?.log("fakeScrollSize: $fakeScrollSize")
+            log?.log("vps: $vps")
+            log?.log("end: $end")
+            log?.log("start: $start")
+            log?.log("fakeScrollOffset: $fakeScrollOffset")
             log?.log("setFakeScrollByRatio calls invalidateLayout() on fake")
             fakeScrollContent.invalidateLayout()
         } else {
@@ -336,12 +341,13 @@ class Recycler2(
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
             // nothing to do.
             if (Platform.current == Platform.Web) {
+                log?.log("")
                 suppressFakeScrollEvent = true
                 val s = min(within.width, within.height)
                 if (vertical) {
                     inProgress.place(
                         fakeScrollIndicator,
-                        left = -s * 10,
+                        left = -s * 10 - 1,
                         top = fakeScrollSize - 1,
                         right = -s * 10,
                         bottom = fakeScrollSize,
@@ -350,7 +356,7 @@ class Recycler2(
                     inProgress.place(
                         fakeScrollIndicator,
                         left = fakeScrollSize - 1,
-                        top = -s * 10,
+                        top = -s * 10 - 1,
                         right = fakeScrollSize,
                         bottom = -s * 10,
                     )
@@ -413,7 +419,7 @@ class Recycler2(
                     val bottomRatio = fsv.bottom / fakeScrollSize
                     val centerRatio = (topRatio + bottomRatio) / 2
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
-                    val controlIndex = controlRatio * (data.range.last - data.range.first)
+                    val controlIndex = controlRatio * (data.range.last - data.range.first + 1)
                     if (snapToElements == null)
                         anchor = RecyclerViewAnchor.FuzzyIndex(controlIndex, centerRatio)
                     else
@@ -424,7 +430,7 @@ class Recycler2(
                     val bottomRatio = fsv.right / fakeScrollSize
                     val centerRatio = (topRatio + bottomRatio) / 2
                     val controlRatio = (topRatio + (bottomRatio - topRatio) * centerRatio)
-                    val controlIndex = controlRatio * (data.range.last - data.range.first)
+                    val controlIndex = controlRatio * (data.range.last - data.range.first + 1)
                     if (snapToElements == null)
                         anchor = RecyclerViewAnchor.FuzzyIndex(controlIndex, centerRatio)
                     else
@@ -477,45 +483,45 @@ class Recycler2(
             if (stahp) return lastMeasure!!
             val default = within
             if (within == Size.Zero) {
-                println("measure stop: if (within == Size.Zero) {")
+                log?.log("measure stop: if (within == Size.Zero) {")
                 return default
             }
             viewport = scroll.viewport.state.getOrNull() ?: run {
-                println("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
+                log?.log("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
                 return default
             }
             log?.log("measure: Loaded viewport, found ${viewport}")
             if (viewport.width == 0.0 || viewport.height == 0.0) {
-                println("measure stop: if (viewport.width == 0.0 || viewport.height == 0.0) {")
+                log?.log("measure stop: if (viewport.width == 0.0 || viewport.height == 0.0) {")
                 return default
             }
             if (needToLayoutFirst) {
-                println("measure stop: if (needToLayoutFirst) {")
+                log?.log("measure stop: if (needToLayoutFirst) {")
                 return lastMeasure!!
             }
             log?.log("LAYOUT STARTING with size $within")
 
             @Suppress("UNCHECKED_CAST")
             val data = data as? RecyclerViewData<Any, Any> ?: run {
-                println("measure stop: val data = data as? RecyclerViewData<Any, Any> ?: run {")
+                log?.log("measure stop: val data = data as? RecyclerViewData<Any, Any> ?: run {")
                  return default
             }
 
             @Suppress("UNCHECKED_CAST")
             val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {
-                println("measure stop: val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {")
+                log?.log("measure stop: val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {")
                  return default
             }
 
             @Suppress("UNCHECKED_CAST")
             val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {
-                println("measure stop: val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {")
+                log?.log("measure stop: val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {")
                  return default
             }
 
             @Suppress("UNCHECKED_CAST")
             val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {
-                println("measure stop: val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {")
+                log?.log("measure stop: val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {")
                  return default
             }
             log?.log("LAYOUT STARTED IN VIEWPORT $viewport, isMoving: ${isMoving.value}")
@@ -778,7 +784,7 @@ class Recycler2(
 
                 val totalWeight = activeCells.sumOf { it.visibleRatio() }
                 if (totalWeight == 0.0) return@let
-                val averageIndex = activeCells.sumOf { it.visibleRatio() * it.index } / totalWeight
+                val averageIndex = activeCells.sumOf { it.visibleRatio() * (it.index + 0.5) } / totalWeight
                 val averagePosition =
                     if (vertical) activeCells.sumOf { it.visibleRatio() * (it.top + it.bottom) / 2 } / totalWeight
                     else activeCells.sumOf { it.visibleRatio() * (it.left + it.right) / 2 }
@@ -792,6 +798,8 @@ class Recycler2(
                 log?.log("estimatedElementPx: $estimatedElementPx")
                 log?.log("totalElements: $totalElements")
                 log?.log("estimatedTotalPx: $estimatedTotalPx")
+                log?.log("min: ${(averageIndex - totalWeight / 2) / totalElements}")
+                log?.log("max: ${(averageIndex + totalWeight / 2) / totalElements}")
 
                 setFakeScrollByRatio(
                     (averageIndex - totalWeight / 2) / totalElements,
@@ -882,9 +890,7 @@ fun estimateJumpAnchor(
     val min = activeCells.minOf { if (vertical) it.top else it.left }
     val max = activeCells.maxOf { if (vertical) it.bottom else it.right }
     val estimatedElementPx = (max - min) / totalWeight
-    println("estimateJumpAnchor: estimatedElementPx is $estimatedElementPx due to ($max - $min) / $totalWeight")
     val diff = (if (vertical) viewport.centerY else viewport.centerX) - averagePosition
-    println("estimateJumpAnchor: diff px $diff results in ${diff / estimatedElementPx} index")
     return RecyclerViewAnchor.FuzzyIndex(
         index = averageIndex + diff / estimatedElementPx,
         ratioOfFocus = 0.5
