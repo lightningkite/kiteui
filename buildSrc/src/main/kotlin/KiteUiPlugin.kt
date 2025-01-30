@@ -165,6 +165,12 @@ class KiteUiPlugin : Plugin<Project> {
         }
 
         tasks.create("generateAutoRoutes") {
+            dependsOn("kspDebugKotlinAndroid")
+            dependsOn("kspReleaseKotlinAndroid")
+            dependsOn("compileCommonMainKotlinMetadata")
+            dependsOn("compileNativeMainKotlinMetadata")
+            dependsOn("compileIosMainKotlinMetadata")
+
             val task = this
             group = "kiteui"
             val sources = project.file("src/commonMain/kotlin")
