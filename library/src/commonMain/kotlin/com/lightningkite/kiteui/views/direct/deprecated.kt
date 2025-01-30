@@ -2,11 +2,15 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.kiteui.reactive.invoke
 import com.lightningkite.kiteui.reactive.reactive
+import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -86,6 +90,19 @@ class ViewPagerUpgradeMidway(viewWriter: ViewWriter): ViewModifiable {
         new.placer = RecyclerViewPagingPlacer()
         new.snapToElements = Align.Center
         new.scrollSnapStop = true
+
+        with(new.outerStack) {
+            if(!Platform.usesTouchscreen) {
+                gravity(Align.Start, Align.Center) - button {
+                    icon(Icon.chevronLeft, "Previous")
+                    onClick { new.centerIndex set new.centerIndex() - 1 }
+                }
+                gravity(Align.End, Align.Center) - button {
+                    icon(Icon.chevronRight, "Next")
+                    onClick { new.centerIndex set new.centerIndex() + 1 }
+                }
+            }
+        }
     }
 
     fun <T> children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> Unit): Unit {

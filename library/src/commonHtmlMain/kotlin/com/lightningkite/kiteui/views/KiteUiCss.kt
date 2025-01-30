@@ -1008,6 +1008,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
         theme.diff(diff) { cornerRadii }?.let { addToCss(directSel, "border-radius", it.toRawCornerRadius()) }
         theme.diff(diff) { foreground }?.let {
+            addToCss(directSel, "color-scheme", if(it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
             when (it) {
                 is Color -> addToCss(directSel, "color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "color", it.base.toWeb())

@@ -138,7 +138,7 @@ fun Theme.Companion.flat(
             ).withBack
         },
         DialogSemantic to {
-            it.copy(outlineWidth = 1.dp, spacing = 2.rem, revert = true).withBack
+            it.copy(id="dlg", outlineWidth = 1.dp, spacing = 2.rem, revert = true).withBack
         },
     ),
 )

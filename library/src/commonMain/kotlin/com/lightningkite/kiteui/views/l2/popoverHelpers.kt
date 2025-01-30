@@ -55,7 +55,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit)
                 beforeNextElementSetup {
                     opacity = 0.0
                     launch {
-                        delay(1)
+                        delay(110)
                         opacity = 1.0
                     }
                 }

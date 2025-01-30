@@ -73,7 +73,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         override val spacing: Double get() = spacingPx
         override val padding: Double get() = paddingPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            println("Measuring child...")
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size

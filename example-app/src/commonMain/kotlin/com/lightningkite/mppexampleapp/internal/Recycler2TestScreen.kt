@@ -11,10 +11,13 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 import kotlin.random.Random
 
-@Routable("r2vp")
-object R2VPScreen : Screen {
+@Routable("recycler2-test")
+object Recycler2TestScreen : Screen {
     override val title: Readable<String>
         get() = super.title
+
+    @QueryParameter
+    val elementCount = Property(10000)
 
     override fun ViewWriter.render() {
         col {
@@ -36,45 +39,55 @@ object R2VPScreen : Screen {
                     }
                 }
             }
-            expanding
-            recyclerView = Recycler2(this, vertical = false).apply {
-                log = ConsoleRoot.tag("R2")
-                scrollToIndex(2, Align.Center, animate = false)
-                this.snapToElements = Align.Center
-                this.scrollSnapStop = true
+            row {
+                repeat(4) {
+                    val cols = (it + 1) * 4
+                    expanding - button {
+                        subtext("${cols} columns")
+                        onClick {
+                            recyclerView?.placer = RecyclerViewPlacerVerticalTrueGrid(cols)
+                        }
+                    }
+                }
+                sizeConstraints(width = 10.rem) - field("Element Count") {
+                    numberInput { content bind elementCount.nullable().asDouble() }
+                }
+            }
+            recyclerView = expanding - Recycler2(this).apply {
+//                this.snapToElements = null to Align.Start
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
-                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) =
-                        with(viewWriter) {
+                    override fun render(
+                        viewWriter: ViewWriter,
+                        data: Readable<Int>,
+                        index: Readable<Int>
+                    ): ViewModifiable {
+                        return with(viewWriter) {
                             card - button {
-                                sizeConstraints(minHeight = 10.rem) - col {
-                                    text { ::content { data().toString() } }
-                                    onlyWhen { expanded() == data() } - col {
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                    }
-                                }
+                                centered - text { ::content { data().toString() } }
                                 onClick {
-                                    expanded.value = data()
+                                    if (data() == expanded.value)
+                                        expanded.value = -1
+                                    else
+                                        expanded.value = data()
                                 }
                             }
-
                         }
+                    }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPagingPlacer()
+                placer = RecyclerViewPlacerVerticalTrueGrid(4)
                 rendererSet = object : RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
                 }
-                data = object : RecyclerViewData<Int, Int> {
-                    override val range: IntRange = 0..100
-                    override fun get(index: Int): Int {
-                        if (index !in range) throw IllegalStateException("Index out of range")
-                        return index
+                reactive {
+                    val c = elementCount()
+                    data = object : RecyclerViewData<Int, Int> {
+                        override val range: IntRange = 0..<c
+                        override fun get(index: Int): Int {
+                            if (index !in range) throw IllegalStateException("Index out of range")
+                            return index
+                        }
                     }
                 }
             }

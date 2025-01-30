@@ -43,9 +43,16 @@ class KiteUiPlugin : Plugin<Project> {
             }
         }
 
-        tasks.create("kiteuiResourcesJs", Copy::class.java).apply {
+        tasks.create("kiteuiResourcesJsNonVitePart", Copy::class.java).apply {
             val task = this
             dependsOn("kiteuiResourcesCommon")
+            group = "kiteui"
+            from("src/commonMain/resources")
+            into("src/jsMain/resources/common")
+        }
+        tasks.create("kiteuiResourcesJs", Copy::class.java).apply {
+            val task = this
+            dependsOn("kiteuiResourcesJsNonVitePart")
             group = "kiteui"
             from("src/commonMain/resources")
             into("src/jsMain/resources/common")
