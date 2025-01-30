@@ -106,6 +106,11 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             myInvalidated = false
 //            Exception("layoutSubviews").printStackTrace()
             inLayout = true
+            // TODO: is this weird that the result is dropped?
+            delegate.measure(rview?.get() ?: run {
+                println("WARNING: ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+                return
+            }, inProgress, bounds.useContents { Size(size.width, size.height) })
             delegate.layout(rview?.get() ?: run {
                 println("WARNING: ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
                 return

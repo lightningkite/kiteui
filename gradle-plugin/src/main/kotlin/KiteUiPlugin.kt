@@ -183,14 +183,17 @@ class KiteUiPlugin : Plugin<Project> {
             }
             afterEvaluate {
                 afterEvaluate {
-                    tasks.filter {
-                        it.name.contains("compile") &&
-                                it.name.contains("Kotlin")
-                    }.forEach { it.dependsOn(task) }
-                    tasks.filter {
-                        it.name.contains("kspKotlin")
-                    }.forEach {
-                        it.dependsOn(task)
+                    afterEvaluate {
+                        tasks.filter {
+                            it.name.contains("compile") &&
+                                    it.name.contains("Kotlin")
+                        }.forEach { it.dependsOn(task) }
+                        tasks.filter {
+                            it.name.contains("ksp") &&
+                                    it.name.contains("Kotlin")
+                        }.forEach {
+                            it.dependsOn(task)
+                        }
                     }
                 }
             }

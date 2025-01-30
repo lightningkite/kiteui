@@ -86,6 +86,7 @@ class Recycler2(
                         ).withBack
                     }.onNext - unpadded - stack {
                         fakeScrollIndicator = this
+                        opacity = 0.0
                     }
                 }
             }
@@ -308,15 +309,19 @@ class Recycler2(
             fakeScrollIndicatorStart = start
             fakeScrollIndicatorEnd = end
 
-            if (!indicatorShown) {
-                fakeScrollIndicator.opacity = 1.0
-                indicatorShown = true
-            }
-            hideIndicatorJob?.cancel()
-            hideIndicatorJob = fakeScrollIndicator.launch {
-                delay(1.seconds)
+            if(end - start < 0.99) {
+                if (!indicatorShown) {
+                    fakeScrollIndicator.opacity = 1.0
+                    indicatorShown = true
+                }
+                hideIndicatorJob?.cancel()
+                hideIndicatorJob = fakeScrollIndicator.launch {
+                    delay(1.seconds)
+                    fakeScrollIndicator.opacity = 0.0
+                    indicatorShown = false
+                }
+            } else if(indicatorShown) {
                 fakeScrollIndicator.opacity = 0.0
-                indicatorShown = false
             }
 
             log?.log("setFakeScrollByRatio calls invalidateLayout() on fake")
@@ -632,6 +637,7 @@ class Recycler2(
 
             // Pull everything in a direction seamlessly, without interrupting animations.
             fun offset(x: Double, y: Double) {
+                needToLayoutFirst = true
                 log?.log("OFFSET: $x / $y")
                 val vx = x.coerceAtLeast(-viewport.left)
                 val vy = y.coerceAtLeast(-viewport.top)
@@ -727,7 +733,6 @@ class Recycler2(
             val v = if (vertical) within.copy(height = sentinelSize) else within.copy(width = sentinelSize)
             lastMeasure = v
             log?.log("Measure complete, result: $v")
-            needToLayoutFirst = true
             return v
         }
 
