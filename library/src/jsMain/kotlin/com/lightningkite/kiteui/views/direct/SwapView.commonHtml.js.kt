@@ -4,6 +4,8 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLElement
 import kotlin.time.Duration
 
@@ -16,7 +18,8 @@ actual fun SwapView.nativeSwap(
     val transitionTime = theme.transitionDuration
     previousLast?.let { view ->
         view.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime forwards" }
-        afterTimeout(transitionTime.inWholeMilliseconds) {
+        launch {
+            delay(theme.transitionDuration)
             removeChild(view)
         }
     }
