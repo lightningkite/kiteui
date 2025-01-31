@@ -172,12 +172,6 @@ class KiteUiPlugin : Plugin<Project> {
         }
 
         tasks.create("generateAutoRoutes") {
-            dependsOn("kspDebugKotlinAndroid")
-            dependsOn("kspReleaseKotlinAndroid")
-            dependsOn("compileCommonMainKotlinMetadata")
-            dependsOn("compileNativeMainKotlinMetadata")
-            dependsOn("compileIosMainKotlinMetadata")
-
             val task = this
             group = "kiteui"
             val sources = project.file("src/commonMain/kotlin")
@@ -189,14 +183,17 @@ class KiteUiPlugin : Plugin<Project> {
             }
             afterEvaluate {
                 afterEvaluate {
-                    tasks.filter {
-                        it.name.contains("compile") &&
-                        it.name.contains("Kotlin")
-                    }.forEach { it.dependsOn(task) }
-                    tasks.filter {
-                        it.name.contains("kspKotlin")
-                    }.forEach {
-                        it.dependsOn(task)
+                    afterEvaluate {
+                        tasks.filter {
+                            it.name.contains("compile") &&
+                                    it.name.contains("Kotlin")
+                        }.forEach { it.dependsOn(task) }
+                        tasks.filter {
+                            it.name.contains("ksp") &&
+                                    it.name.contains("Kotlin")
+                        }.forEach {
+                            it.dependsOn(task)
+                        }
                     }
                 }
             }
