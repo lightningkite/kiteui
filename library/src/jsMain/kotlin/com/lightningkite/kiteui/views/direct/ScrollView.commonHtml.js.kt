@@ -153,15 +153,19 @@ actual class ScrollingBehaviorImpl actual constructor(
             (it as HTMLElement)
             it.addClass("suppress-overflow-anchors")
             it.scrollTo(ScrollToOptions(x, y, ScrollBehavior.INSTANT))
-//            var count = 0
-//            var printer = {}
-//            printer = label@{
-//                val c = count++
-//                println("expectedLeft $c: $x, actually ${it.scrollLeft}")
-//                println("expectedTop $c: $y, actually ${it.scrollTop}")
-//                if(count < 20) window.setTimeout(printer, 1)
-//            }
-//            printer()
+
+            if(snapToElements.first != null || snapToElements.second != null) {
+                // ugly dirty painful safari fix
+                var count = 0
+                var printer = {}
+                printer = label@{
+                    val c = count++
+                    // fuck you, set the position
+                    it.scrollTo(ScrollToOptions(x, y, ScrollBehavior.INSTANT))
+                    if(count < 15) window.setTimeout(printer, 1)
+                }
+                printer()
+            }
         }
     }
 }
