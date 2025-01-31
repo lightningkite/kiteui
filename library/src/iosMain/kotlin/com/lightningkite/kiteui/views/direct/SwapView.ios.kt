@@ -11,6 +11,8 @@ import com.lightningkite.kiteui.views.animateIfAllowed
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.withoutAnimation
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGAffineTransformMake
 
 
@@ -25,11 +27,10 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         native.hidden = false
         currentView?.let { oldView ->
             animateIfAllowed {
-                println("Animating old view from ${oldView.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${oldView.native.alpha}")
                 transition.exit(oldView.native)
-                println("to ${oldView.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${oldView.native.alpha}")
             }
-            afterTimeout(theme.transitionDuration.inWholeMilliseconds) {
+            launch {
+                delay(theme.transitionDuration)
                 removeChild(oldView)
                 native.hidden = native.subviews.isEmpty()
                 native.informParentOfSizeChange()
@@ -44,8 +45,6 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
             newViewWriter.createNewView()
             newViewWriter.newView?.let {
                 transition.enter(it.native)
-                println("Animating new view from ${it.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${it.native.alpha}")
-
                 addChild(it)
                 currentView = it
             }

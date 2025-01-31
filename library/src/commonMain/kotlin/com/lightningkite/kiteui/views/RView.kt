@@ -61,6 +61,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     var additionalTestingData: Any? = null
 
     abstract var showOnPrint: Boolean
+    private var isShutdown = false
 
     var opacity: Double = 1.0
         set(value) {
@@ -197,16 +198,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     private val internalChildren = ArrayList<RView>()
     val children: List<RView> get() = internalChildren
     override fun willAddChild(view: RView) {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call willAddChild was made")
         view.parent = this as RView
     }
 
     fun addChild(index: Int, view: RView) {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call addChild was made")
         if (view.parent !== this) view.parent = this as RView
         internalChildren.add(index, view)
         internalAddChild(index, view)
     }
 
     override fun addChild(view: RView) {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call addChild was made")
         if (view.parent !== this) view.parent = this as RView
         val index = children.size
         internalChildren.add(index, view)
@@ -214,12 +218,14 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
 
     fun removeChild(index: Int) {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
         internalChildren.removeAt(index).also { it.shutdown() }.parent = null
     }
 
     fun removeChild(view: RView) {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         view.shutdown()
         val i = children.indexOf(view)
         if (i != -1) removeChild(i)
@@ -229,6 +235,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
 
     fun clearChildren() {
+        if(isShutdown) println("WARNING!! $this is shut down, but attempt call to was made ")
         internalClearChildren()
         internalChildren.removeAll {
             it.parent = null
@@ -375,6 +382,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             internalChildren.clear()
         }
         if (leakDetection) leakDetect()
+        isShutdown = true
     }
 
     open fun leakDetect() {
