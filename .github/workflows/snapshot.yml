@@ -49,8 +49,8 @@ jobs:
 
       - name: Build
         env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_lightningKiteMavenAwsAccessKey: AKIARR4DEGXXROVKYNNP
+          ORG_GRADLE_PROJECT_lightningKiteMavenAwsSecretAccessKey: ${{ secrets.MAVENS3SECRETKEY }}
         run: ./gradlew publishAllPublicationsToSonatypeRepository
