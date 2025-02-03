@@ -1,14 +1,11 @@
-import com.lightningkite.deployhelpers.developer
-import com.lightningkite.deployhelpers.github
-import com.lightningkite.deployhelpers.mit
-import com.lightningkite.deployhelpers.standardPublishing
-import java.util.Properties
+import com.lightningkite.deployhelpers.*
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
-    id("signing")
-    `maven-publish`
+    signing
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 val kotlinVersion:String by project
@@ -20,26 +17,26 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 }
 
-standardPublishing {
-    name.set("KiteUI-Processor")
-    description.set("Automatically create your routers")
-    github("lightningkite", "kiteui")
-
-    licenses {
-        mit()
-    }
-
-    developers {
-        developer(
-            id = "LightningKiteJoseph",
-            name = "Joseph Ivie",
-            email = "joseph@lightningkite.com",
-        )
-        developer(
-            id = "bjsvedin",
-            name = "Brady Svedin",
-            email = "brady@lightningkite.com",
-        )
-    }
+val lk = project.lk {
+    version = gitBasedVersion().also { println("Determined version to be $it") }
 }
+mavenPublishing {
+    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(group.toString(), name, version.toString())
+    pom {
+        name.set("KiteUI-Processor")
+        description.set("Automatically create your routers")
+        github("lightningkite", "kiteui")
 
+        licenses {
+            mit()
+        }
+
+        developers {
+            joseph()
+            brady()
+        }
+    }
+
+}

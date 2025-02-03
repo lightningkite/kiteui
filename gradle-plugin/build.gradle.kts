@@ -1,27 +1,12 @@
-import com.lightningkite.deployhelpers.developer
-import com.lightningkite.deployhelpers.github
-import com.lightningkite.deployhelpers.mit
-import com.lightningkite.deployhelpers.standardPublishing
+import com.lightningkite.deployhelpers.*
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     signing
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.30.0"
     id("org.jetbrains.dokka")
-}
-
-buildscript {
-    repositories {
-        mavenLocal()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases/")
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.lightningkite:deploy-helpers:master-SNAPSHOT")
-    }
 }
 
 gradlePlugin {
@@ -44,26 +29,26 @@ tasks.validatePlugins {
     enableStricterValidation.set(true)
 }
 
-standardPublishing {
-    name.set("KiteUI-Gradle-Plugin")
-    description.set("Automatically create your routers")
-    github("lightningkite", "kiteui")
+val lk = project.lk {
+    version = gitBasedVersion().also { println("Determined version to be $it") }
+}
+mavenPublishing {
+    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(group.toString(), name, version.toString())
+    pom {
+        name.set("KiteUI-Gradle-Plugin")
+        description.set("Automatically create your routers")
+        github("lightningkite", "kiteui")
 
-    licenses {
-        mit()
-    }
+        licenses {
+            mit()
+        }
 
-    developers {
-        developer(
-            id = "LightningKiteJoseph",
-            name = "Joseph Ivie",
-            email = "joseph@lightningkite.com",
-        )
-        developer(
-            id = "bjsvedin",
-            name = "Brady Svedin",
-            email = "brady@lightningkite.com",
-        )
+        developers {
+            joseph()
+            brady()
+        }
     }
 }
 

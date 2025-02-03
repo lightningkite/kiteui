@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -8,14 +9,13 @@ plugins {
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
     id("com.android.library")
-    id("org.jetbrains.dokka")
-    id("maven-publish")
-    id("signing")
+//    id("org.jetbrains.dokka")
+    signing
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 val ktorVersion = "3.0.0"
 
-@OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
     androidTarget {
         publishLibraryVariants("release", "debug")
@@ -193,30 +193,31 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
 }
 
-standardPublishing {
-    name.set("KiteUI")
-    description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
-    github("lightningkite", "kiteui")
+val lk = project.lk {
+    version = gitBasedVersion().also { println("Determined version to be $it") }
+}
+mavenPublishing {
+    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(group.toString(), name, version.toString())
+    pom {
+        name.set("KiteUI")
+        description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
+        github("lightningkite", "kiteui")
 
-    licenses {
-        mit()
+        licenses {
+            mit()
+        }
+
+        developers {
+            joseph()
+            brady()
+            developer{
+                id.set("shanelk")
+                name.set("Shane Thompson")
+                email.set("shane@lightningkite.com")
+            }
+        }
     }
 
-    developers {
-        developer(
-            id = "LightningKiteJoseph",
-            name = "Joseph Ivie",
-            email = "joseph@lightningkite.com",
-        )
-        developer(
-            id = "bjsvedin",
-            name = "Brady Svedin",
-            email = "brady@lightningkite.com",
-        )
-        developer(
-            id = "shanelk",
-            name = "Shane Thompson",
-            email = "shane@lightningkite.com",
-        )
-    }
 }
