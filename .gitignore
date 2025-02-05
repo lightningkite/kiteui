@@ -12,3 +12,5 @@ local.properties
 /gradle-plugin/gradle/wrapper/gradle-wrapper.jar
 /gradle-plugin/gradle/wrapper/gradle-wrapper.properties
 .kotlin
+
+local.version.txt
