@@ -25,13 +25,19 @@ import platform.darwin.dispatch_get_main_queue
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
+    val trigger = object: NSObject() {
+        @ObjCAction
+        fun done() {
+            this@NumberInput.done()
+        }
+    }
     val toolbar = UIToolbar().apply {
         barStyle = UIBarStyleDefault
         setTranslucent(true)
         sizeToFit()
         setItems(listOf(
             UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
-            UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = this@NumberInput, action =sel_registerName("done")),
+            UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action =sel_registerName("done")),
         ), animated = false)
     }
     val textField = UITextField().apply {
@@ -136,8 +142,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
+
+
     @ObjCAction
     fun done() {
+        println("Debug done is null: ${action == null}")
         action?.startAction(this@NumberInput)
         CoroutineScope(Dispatchers.Main.immediate).launch {
             delay(16)
