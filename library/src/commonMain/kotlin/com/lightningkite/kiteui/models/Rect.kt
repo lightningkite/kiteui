@@ -33,4 +33,6 @@ data class Rect(
         right = right + dx,
         bottom = bottom + dy
     )
+
+    fun offset(x: Double, y: Double) = copy(left + x)
 }

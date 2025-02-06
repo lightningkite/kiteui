@@ -59,9 +59,13 @@ actual class ScrollingBehaviorImpl actual constructor(
         )
     }
     private val scrollEvent = native.vevent("scroll")
+    private val lockScrollEnd = BasicListenable()
+    private var lockScrollReportAt: Rect? = null
     actual override val viewport: Readable<Rect> = on.reactive {
         rerunOn(scrollEvent)
-        Rect.fromSize(
+        println("scrollEvent")
+        rerunOn(lockScrollEnd)
+        lockScrollReportAt ?: Rect.fromSize(
             left = native.element?.scrollLeft ?: 0.0,
             top = native.element?.scrollTop ?: 0.0,
             width = clientSize().width,
@@ -69,7 +73,6 @@ actual class ScrollingBehaviorImpl actual constructor(
         )
     }
     actual override val content: Readable<Rect> = on.reactive {
-        rerunOn(scrollEvent)
         Rect.fromSize(
             left = 0.0,
             top = 0.0,
@@ -137,34 +140,54 @@ actual class ScrollingBehaviorImpl actual constructor(
     actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
-        nativeScrollToKeepAnimations(x, y)
-        afterTimeout(16) {
-            snapToElements = snapToElements  // reset css
-            native.element?.let {
-                it.scrollTo(ScrollToOptions(it.scrollLeft, it.scrollTop, ScrollBehavior.INSTANT))
-            }
-        }
-    }
-
-    private fun nativeScrollToKeepAnimations(
-        x: Double, y: Double
-    ) {
         native.onElement {
             (it as HTMLElement)
             it.addClass("suppress-overflow-anchors")
-            it.scrollTo(ScrollToOptions(x, y, ScrollBehavior.INSTANT))
+            lockScrollReportAt = Rect.fromSize(
+                left = x,
+                top = y,
+                width = native.element?.clientWidth?.toDouble() ?: 0.0,
+                height = native.element?.clientHeight?.toDouble() ?: 0.0,
+            )
+            it.scrollLeft = x
+            it.scrollTop = y
+//                it.scrollTo(ScrollToOptions(it.scrollLeft, it.scrollTop, ScrollBehavior.INSTANT))
 
-            if(snapToElements.first != null || snapToElements.second != null) {
+            run {
                 // ugly dirty painful safari fix
                 var count = 0
                 var printer = {}
                 printer = label@{
                     val c = count++
                     // fuck you, set the position
-                    it.scrollTo(ScrollToOptions(x, y, ScrollBehavior.INSTANT))
+                    it.scrollLeft = x
+                    it.scrollTop = y
+//                it.scrollTo(ScrollToOptions(it.scrollLeft, it.scrollTop, ScrollBehavior.INSTANT))
+                    if (count < 15) window.setTimeout(printer, 1)
+                }
+                printer()
+            }
+            window.requestAnimationFrame {
+                println("Animation frame occurred")
+            }
+            run {
+                var count = 0
+                var printer = {}
+                printer = label@{
+                    val c = count++
+                    println("offset count $count: ${it.scrollLeft}, ${it.scrollTop}")
                     if(count < 15) window.setTimeout(printer, 1)
                 }
                 printer()
+            }
+            afterTimeout(16) {
+                lockScrollReportAt = null
+                if(snapToElements.first != null || snapToElements.second != null) {
+                    snapToElements = snapToElements  // reset css
+                    it.scrollLeft = x
+                    it.scrollTop = y
+                }
+                lockScrollEnd.invokeAll()
             }
         }
     }

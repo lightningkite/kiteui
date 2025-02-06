@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
-    var log: Console? = ConsoleRoot.tag("Recycler2"),
+    var log: Console? = null//ConsoleRoot.tag("Recycler2"),
 ) : ViewModifiable {
     override val coroutineContext: CoroutineContext
         get() = outerStack.coroutineContext
@@ -471,6 +471,8 @@ class Recycler2(
         })
     }
 
+    var requestedOffsetX = 0.0
+    var requestedOffsetY = 0.0
     var previousViewport: Rect = Rect.Zero
     private val programmaticLayoutDelegate = object : ProgrammaticLayoutDelegate {
         var queuedScrollJump: Pair<Double, Double>? = null
@@ -636,7 +638,7 @@ class Recycler2(
             log?.log("SENTINEL SIZE: $sentinelSize")
 
             // Pull everything in a direction seamlessly, without interrupting animations.
-            fun offset(x: Double, y: Double) {
+            fun requestOffset(x: Double, y: Double) {
                 needToLayoutFirst = true
                 log?.log("OFFSET: $x / $y")
                 val vx = x.coerceAtLeast(-viewport.left)
@@ -670,14 +672,14 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.top < firstCell!!.topNew - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell!!.topNew} - ${inProgress.padding}")
-                            offset(0.0, -firstCell!!.topNew + inProgress.padding)
+                            requestOffset(0.0, -firstCell!!.topNew + inProgress.padding)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
                         } else if(!isMoving.value) {
                             log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.topNew} -> ${inProgress.padding}")
-                            offset(0.0, -firstCell!!.topNew + inProgress.padding)
+                            requestOffset(0.0, -firstCell!!.topNew + inProgress.padding)
                         }
                     }
                 } else {
@@ -685,14 +687,14 @@ class Recycler2(
                         log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
                         if (viewport.left < firstCell!!.leftNew - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell!!.leftNew} - ${inProgress.padding}")
-                            offset(-firstCell!!.leftNew + inProgress.padding, 0.0)
+                            requestOffset(-firstCell!!.leftNew + inProgress.padding, 0.0)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
                         } else if(!isMoving.value) {
                             log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell!!.leftNew} -> ${inProgress.padding}")
-                            offset(-firstCell!!.leftNew + inProgress.padding, 0.0)
+                            requestOffset(-firstCell!!.leftNew + inProgress.padding, 0.0)
                         }
                     }
                 }
@@ -704,8 +706,8 @@ class Recycler2(
                 log?.log("${sampleCell.leftNew} (at index ${sampleCell.index}) !in (${reallyBig * 1 / 4})..(${reallyBig * 3 / 4})")
                 log?.log("needsRecentering: $needsRecentering, atFalseEdge: $atScrollEdge, isMoving: ${isMoving.value}")
                 if (needsRecentering) {
-                    if (vertical) offset(0.0, reallyBig * 0.5 - sampleCell.topNew)
-                    else offset(reallyBig * 0.5 - sampleCell.leftNew, 0.0)
+                    if (vertical) requestOffset(0.0, reallyBig * 0.5 - sampleCell.topNew)
+                    else requestOffset(reallyBig * 0.5 - sampleCell.leftNew, 0.0)
                 }
             }
 
@@ -737,6 +739,7 @@ class Recycler2(
         }
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
+            println("layout proper")
             this@Recycler2.log?.log("LAYOUT PROPER STARTED: $within")
             if (stahp) return
             if (!needToLayoutFirst) measure(layout, inProgress, within)
