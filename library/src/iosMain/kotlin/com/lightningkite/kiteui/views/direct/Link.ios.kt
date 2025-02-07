@@ -35,7 +35,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
         onNavigate = action
     }
 
-    var enabled: Boolean
+    actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

@@ -13,18 +13,20 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 import java.util.*
 
-actual class ExternalLink actual constructor(context: RContext): RView(context) {
+actual class ExternalLink actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual var to: String = ""
+    actual var to: String? = null
         set(value) {
             field = value
             native.setOnClickListener { view ->
                 launch {
                     onNavigate.invoke()
-                    ExternalServices.openTab(value)
+                    value?.let {
+                        ExternalServices.openTab(it)
+                    }
                 }
             }
         }
@@ -34,7 +36,7 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
         onNavigate = action
     }
 
-    var enabled: Boolean
+    actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -44,7 +46,7 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme
-        if(!enabled) t = t[DisabledSemantic]
+        if (!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }
 

@@ -69,7 +69,12 @@ data class Icon(
     val strokePathDatas: List<StrokePathData> = listOf(),
 ) {
     enum class StrokeLineCap { Butt, Round, Square }
-    data class StrokePathData(val strokeWidth: Dimension, val path: String, val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt, val fill: Paint? = null)
+    data class StrokePathData(
+        val strokeWidth: Dimension,
+        val path: String,
+        val strokeLineCap: StrokeLineCap = StrokeLineCap.Butt,
+        val fill: Paint? = null
+    )
 
     fun toImageSource(color: Paint) = ImageVector(
         width,
@@ -84,6 +89,24 @@ data class Icon(
     )
 
     companion object {
+        val help = Icon(
+            1.5.rem,
+            1.5.rem,
+            0,
+            -960,
+            960,
+            960,
+            listOf("M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z")
+        )
+        val upload = Icon(
+            1.5.rem,
+            1.5.rem,
+            0,
+            -960,
+            960,
+            960,
+            listOf("M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z")
+        )
         val search = Icon(
             1.5.rem,
             1.5.rem,
@@ -132,7 +155,15 @@ data class Icon(
         val done =
             Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"))
         val add =
-            Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"))
+            Icon(
+                1.5.rem,
+                1.5.rem,
+                0,
+                -960,
+                960,
+                960,
+                listOf("M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z")
+            )
         val delete = Icon(
             1.5.rem,
             1.5.rem,
@@ -151,8 +182,10 @@ data class Icon(
             960,
             listOf("m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z")
         )
-        val chevronRight = Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
-        val chevronLeft = Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
+        val chevronRight =
+            Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"))
+        val chevronLeft =
+            Icon(1.5.rem, 1.5.rem, 0, -960, 960, 960, listOf("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"))
         val logout = Icon(
             1.5.rem,
             1.5.rem,
@@ -233,7 +266,7 @@ data class Icon(
             -960,
             960,
             960,
-            listOf("M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z")
+            listOf("M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z")
         )
         val filterList = Icon(
             1.5.rem,
@@ -503,10 +536,11 @@ data class PopoverPreferredDirection(
         val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
     }
-    fun forceLeft(): PopoverPreferredDirection = if(horizontal) copy(after = false) else copy(align = Align.Start)
-    fun forceRight(): PopoverPreferredDirection = if(horizontal) copy(after = true) else copy(align = Align.End)
-    fun forceTop(): PopoverPreferredDirection = if(!horizontal) copy(after = false) else copy(align = Align.Start)
-    fun forceBottom(): PopoverPreferredDirection = if(!horizontal) copy(after = true) else copy(align = Align.End)
+
+    fun forceLeft(): PopoverPreferredDirection = if (horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceRight(): PopoverPreferredDirection = if (horizontal) copy(after = true) else copy(align = Align.End)
+    fun forceTop(): PopoverPreferredDirection = if (!horizontal) copy(after = false) else copy(align = Align.Start)
+    fun forceBottom(): PopoverPreferredDirection = if (!horizontal) copy(after = true) else copy(align = Align.End)
     fun calculatePopoverPosition(anchor: Rect, self: Rect): Rect {
         val tx: Double
         val ty: Double
@@ -586,10 +620,10 @@ data class PopoverPreferredDirection(
 
             // If the popover is still outside the safe area, shift it so that it is inside the safe area
             forcedPopoverDirection?.calculatePopoverPosition(anchor, self)?.let { forcedPopoverPosition ->
-                val horizontalShift = (safeArea.right - forcedPopoverPosition.right).takeIf { it < 0 } ?:
-                    (safeArea.left - forcedPopoverPosition.left).takeIf { it > 0 } ?: 0.0
-                val verticalShift = (safeArea.bottom - forcedPopoverPosition.bottom).takeIf { it < 0 } ?:
-                    (safeArea.top - forcedPopoverPosition.top).takeIf { it > 0 } ?: 0.0
+                val horizontalShift = (safeArea.right - forcedPopoverPosition.right).takeIf { it < 0 }
+                    ?: (safeArea.left - forcedPopoverPosition.left).takeIf { it > 0 } ?: 0.0
+                val verticalShift = (safeArea.bottom - forcedPopoverPosition.bottom).takeIf { it < 0 }
+                    ?: (safeArea.top - forcedPopoverPosition.top).takeIf { it > 0 } ?: 0.0
                 forcedPopoverPosition.shift(horizontalShift, verticalShift)
             } ?: preferredPopoverPosition
         }.apply {
@@ -611,7 +645,8 @@ data class KeyboardHints(
         val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
         val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
         val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
-        val email = KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
+        val email =
+            KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
         val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
         val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
     }

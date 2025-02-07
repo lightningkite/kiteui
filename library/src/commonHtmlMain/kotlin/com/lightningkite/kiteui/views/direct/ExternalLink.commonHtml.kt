@@ -15,10 +15,15 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         Stack.internalAddChildStack(this, index, view)
     }
 
-    actual inline var to: String
-        get() = native.attributes.href ?: ""
+    actual inline var to: String?
+        get() = native.attributes.href
         set(value) {
             native.attributes.href = value
+        }
+    actual inline var enabled: Boolean
+        get() = native.attributes.disabled != true
+        set(value) {
+            native.attributes.disabled = !value
         }
     actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"

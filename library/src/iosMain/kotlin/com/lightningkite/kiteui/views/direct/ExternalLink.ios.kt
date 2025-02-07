@@ -18,20 +18,20 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     override val native = FrameLayoutButton()
     init {
         onRemove(native.setOnClick {
-            to.let { UIApplication.sharedApplication.openURL(NSURL(string = it), mapOf<Any?, Any?>()) {} }
+            to?.let { UIApplication.sharedApplication.openURL(NSURL(string = it), mapOf<Any?, Any?>()) {} }
             launch { onNavigate() }
         })
     }
 
 
-    actual var to: String = ""
+    actual var to: String? = null
     actual var newTab: Boolean = false
     private var onNavigate: suspend () -> Unit = {}
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
-    var enabled: Boolean
+    actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

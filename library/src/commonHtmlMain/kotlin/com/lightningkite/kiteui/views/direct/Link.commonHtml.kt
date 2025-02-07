@@ -57,4 +57,10 @@ actual class Link actual constructor(context: RContext) : RView(context) {
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
+
+    actual inline var enabled: Boolean
+        get() = native.attributes.disabled != true
+        set(value) {
+            native.attributes.disabled = !value
+        }
 }

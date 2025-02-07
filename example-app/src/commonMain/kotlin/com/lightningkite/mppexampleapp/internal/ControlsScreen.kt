@@ -102,10 +102,10 @@ object ControlsScreen : Screen {
                     card - button {
                         var error = false
                         onClick {
-                            throw PlainTextException("We broke!")
-//                            error = !error
-//                            if(error) throw PlainTextException("We broke!")
-//                            else delay(100)
+                            delay(100)
+                            error = !error
+                            if(error) throw PlainTextException("We broke!")
+                            else delay(100)
                         }; text {
                         content = "Card"
                     }; ::enabled { booleanContent() }
