@@ -787,7 +787,7 @@ class Recycler2(
                     // Return the ratio of area inside the viewport.
                     val h = (min(right, viewport.right) - max(left, viewport.left)) / (right - left)
                     val v = (min(bottom, viewport.bottom) - max(top, viewport.top)) / (bottom - top)
-                    return (h * v).coerceAtLeast(0.0)
+                    return (h * v).takeIf { !it.isNaN() && it >= 0.0 } ?: 0.0
                 }
 
                 val totalWeight = activeCells.sumOf { it.visibleRatio() }
