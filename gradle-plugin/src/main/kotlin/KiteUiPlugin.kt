@@ -35,7 +35,7 @@ class KiteUiPlugin : Plugin<Project> {
                 val out = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}/ResourcesExpect.kt")
                 outputs.file(out)
                 doLast {
-                    if(resourceFolder.listFiles()?.isNotEmpty() == true) {
+                    if (resourceFolder.listFiles()?.isNotEmpty() == true) {
                         resourcesCommon(resourceFolder, out, ext)
                     }
                 }
@@ -144,31 +144,8 @@ class KiteUiPlugin : Plugin<Project> {
             dependsOn("kiteuiResourcesJvm")
         }
 
-        tasks.create("kiteuiLocalize").apply {
-            val task = this
-            group = "kiteui"
-            afterEvaluate {
-                val commonMain = project.file("src/commonMain/kotlin/${ext.packageName.replace(".", "/")}")
-                if (!commonMain.exists()) {
-                    println("File $commonMain does not exist.  No localization possible.")
-                    return@afterEvaluate
-                }
-                val toRead = commonMain.listFiles().filter { it.name != "Strings.kt" }
-                toRead.forEach {
-                    if (it.isDirectory) inputs.dir(it)
-                    else inputs.file(it)
-                }
-                val outKt = commonMain.resolve("Strings.kt")
-                outputs.file(outKt)
-                doLast {
-                    generateLocalizations(toRead, outKt, ext)
-                }
-            }
-        }
-
         tasks.create("generateAutoRoutes") {
             val task = this
-            dependsOn("kiteuiResourcesAll")
             group = "kiteui"
             val sources = project.file("src/commonMain/kotlin")
             inputs.dir(sources)
@@ -180,8 +157,8 @@ class KiteUiPlugin : Plugin<Project> {
             tasks.matching {
                 (it.name.contains("compile") &&
                         it.name.contains("Kotlin")) ||
-                (it.name.contains("ksp") &&
-                        it.name.contains("Kotlin"))
+                        (it.name.contains("ksp") &&
+                                it.name.contains("Kotlin"))
             }.configureEach { dependsOn(task) }
         }
 
