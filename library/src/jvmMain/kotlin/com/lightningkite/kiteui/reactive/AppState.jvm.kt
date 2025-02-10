@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WindowStatistics
+import kotlinx.coroutines.CoroutineScope
 
 actual object AppState {
     internal val _animationFrame = BasicListenable()
@@ -17,4 +18,7 @@ actual object AppState {
     actual val softInputOpen: ImmediateReadable<Boolean>
         get() = _softInputOpen
 
+    actual fun keepScreenOn(scope: CoroutineScope) {
+        // Nothing to do; we're server-side
+    }
 }

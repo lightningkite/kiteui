@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.models.WindowStatistics
+import kotlinx.coroutines.CoroutineScope
 
 @Deprecated("Use AppState instead", ReplaceWith("AppState.animationFrame", "com.lightningkite.kiteui.reactive.AppState")) val AnimationFrame: Listenable get() = AppState.animationFrame
 @Deprecated("Use AppState instead", ReplaceWith("AppState.windowInfo", "com.lightningkite.kiteui.reactive.AppState")) val WindowInfo: ImmediateReadable<WindowStatistics> get() = AppState.windowInfo
@@ -12,4 +13,5 @@ expect object AppState {
     val windowInfo: ImmediateReadable<WindowStatistics>
     val inForeground: ImmediateReadable<Boolean>
     val softInputOpen: ImmediateReadable<Boolean>
+    fun keepScreenOn(scope: CoroutineScope)
 }

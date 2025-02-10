@@ -1,10 +1,15 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WindowStatistics
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.await
 import org.w3c.dom.events.Event
+import kotlin.js.Promise
 
 actual object AppState {
     actual val animationFrame: Listenable
@@ -35,6 +40,32 @@ actual object AppState {
     internal val _softInputOpen = Property(false)
     actual val softInputOpen: ImmediateReadable<Boolean>
         get() = _softInputOpen
+
+    private var currentLock: WakeLockSentinel? = null
+    private var currentLockCount = 0
+    actual fun keepScreenOn(scope: CoroutineScope) {
+        if(currentLockCount++ == 0) {
+            launchGlobal {
+                try {
+                    currentLock =
+                        (window.navigator.asDynamic().wakeLock.request("screen") as Promise<WakeLockSentinel>).await()
+                } catch(e: Exception) {
+                    ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
+                }
+            }
+        }
+        scope.onRemove {
+            if(--currentLockCount == 0) {
+                currentLock?.release()
+                currentLock = null
+            }
+        }
+    }
+}
+
+external interface WakeLockSentinel {
+    val released: Boolean
+    fun release(): Promise<Unit>
 }
 
 private object _AnimationFrame: Listenable {

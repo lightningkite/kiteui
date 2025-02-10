@@ -1,12 +1,15 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WindowStatistics
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.CoroutineScope
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSRunLoopCommonModes
@@ -14,6 +17,7 @@ import platform.QuartzCore.CADisplayLink
 import platform.UIKit.UIKeyboardWillHideNotification
 import platform.UIKit.UIKeyboardWillShowNotification
 import platform.UIKit.UIScreen
+import platform.UIKit.UIApplication
 import platform.darwin.NSObject
 import platform.darwin.sel_registerName
 
@@ -43,6 +47,18 @@ actual object AppState {
     actual val inForeground: ImmediateReadable<Boolean>
         get() = _inForeground
     actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
+
+    private var currentLockCount = 0
+    actual fun keepScreenOn(scope: CoroutineScope) {
+        if(currentLockCount++ == 0) {
+            UIApplication.sharedApplication.idleTimerDisabled = true
+        }
+        scope.onRemove {
+            if(--currentLockCount == 0) {
+                UIApplication.sharedApplication.idleTimerDisabled = false
+            }
+        }
+    }
 }
 
 
