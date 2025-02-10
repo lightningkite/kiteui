@@ -164,7 +164,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
+        AppState._inForeground.value = true
         animator = ValueAnimator().apply {
             setIntValues(0, 100)
             duration = 10000L
@@ -204,6 +204,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         animator?.pause()
         animator = null
         super.onPause()
+        AppState._inForeground.value = false
     }
 
     override fun onBackPressed() {
