@@ -8,6 +8,8 @@ actual val Platform.Companion.probablyAppleUser: Boolean
     get() = false
 actual val Platform.Companion.usesTouchscreen: Boolean
     get() = false
+actual val Platform.Companion.userAgent: String
+    get() = "JVM ${Runtime.version()} ${System.getProperty("os.name") ?: "Unknown"}"
 
 actual fun setStatusBarColor(color: Color) {
 }

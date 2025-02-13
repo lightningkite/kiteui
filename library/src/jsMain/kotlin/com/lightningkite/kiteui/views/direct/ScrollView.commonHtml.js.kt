@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
 import kotlinx.dom.addClass
@@ -44,7 +45,6 @@ actual class ScrollingBehaviorImpl actual constructor(
     private val ro = native.resizeObserver()
     private val clientSize = on.reactive {
         rerunOn(ro)
-        println("Reading clientWidth: ${native.element?.clientWidth} / clientHeight: ${native.element?.clientHeight}")
         Size(
             native.element?.clientWidth?.toDouble() ?: throw ReactiveLoading,
             native.element?.clientHeight?.toDouble() ?: throw ReactiveLoading,
@@ -52,7 +52,6 @@ actual class ScrollingBehaviorImpl actual constructor(
     }
     private val scrollSize = on.reactive {
         rerunOn(ro)
-        println("Reading scrollWidth: ${native.element?.scrollWidth} / scrollHeight: ${native.element?.scrollHeight}")
         Size(
             native.element?.scrollWidth?.toDouble() ?: throw ReactiveLoading,
             native.element?.scrollHeight?.toDouble() ?: throw ReactiveLoading,
@@ -63,7 +62,6 @@ actual class ScrollingBehaviorImpl actual constructor(
     private var lockScrollReportAt: Rect? = null
     actual override val viewport: Readable<Rect> = on.reactive {
         rerunOn(scrollEvent)
-        println("scrollEvent")
         rerunOn(lockScrollEnd)
         lockScrollReportAt ?: Rect.fromSize(
             left = native.element?.scrollLeft ?: 0.0,
@@ -88,6 +86,8 @@ actual class ScrollingBehaviorImpl actual constructor(
             _directlyInteractingWithScroller.value = true
             lastTimeout.invoke()
             lastTimeout = afterTimeout(100) {
+                // can restore snap
+                snapToElements = snapToElements
                 _directlyInteractingWithScroller.value = false
             }
         }
@@ -107,6 +107,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     }
     actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
+            if(viewDebugTarget == on) println("ScrollView.snapToElements set")
             field = value
             native.classes.removeAll { it.startsWith("snapTo-") }
             native.classes.add("snapTo-${value.first}-${value.second}")
@@ -119,10 +120,13 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     actual override var scrollSnapStop: Boolean = false
         set(value) {
+            if(viewDebugTarget == on) println("ScrollView.scrollSnapStop set")
             field = value
             native.setStyleProperty("scroll-snap-stop", if(value) "always" else "normal")
         }
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+        if(viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
+        disableSnapTemporarily()
         native.onElement {
             (it as HTMLElement).scrollTo(ScrollToOptions(
                 left = left,
@@ -132,14 +136,20 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     }
     actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+        if(viewDebugTarget == on) println("ScrollView.scrollTo($element, $horizontal, $vertical, $animated)")
+        disableSnapTemporarily()
         element.native.element?.scrollIntoView(ScrollToOptions(
             behavior = if(animated) ScrollBehavior.SMOOTH else ScrollBehavior.INSTANT
         ))
     }
     var sdn = 0
-    actual override fun scrollToKeepAnimations(x: Double, y: Double) {
+    fun disableSnapTemporarily() {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
+    }
+    actual override fun scrollToKeepAnimations(x: Double, y: Double) {
+        if(viewDebugTarget == on) println("ScrollView.scrollToKeepAnimations($x, $y)")
+        disableSnapTemporarily()
         native.onElement {
             (it as HTMLElement)
             it.addClass("suppress-overflow-anchors")

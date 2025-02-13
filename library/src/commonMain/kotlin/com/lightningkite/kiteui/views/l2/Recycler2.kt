@@ -67,7 +67,7 @@ class Recycler2(
                     scroll = this
                     showScrollBars = false
                 } - programmatic {
-//                    viewDebugTarget = this
+                    viewDebugTarget = this
                     cells = this
                     unpadded - stack {
                         scrollSentinel = this
@@ -123,6 +123,7 @@ class Recycler2(
     private var reuseableCells = ArrayList<MyCell<*>>()
 
     fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
+        println("ScrollView scrollToIndex $toIndex")
         activeCells.find { it.index == toIndex }?.let {
             // Nice!  Just scroll away!
             scroll.scrollTo(

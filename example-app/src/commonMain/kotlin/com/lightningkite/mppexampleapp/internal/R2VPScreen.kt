@@ -38,7 +38,7 @@ object R2VPScreen : Screen {
             }
             expanding
             recyclerView = Recycler2(this, vertical = false).apply {
-                log = ConsoleRoot.tag("R2")
+//                log = ConsoleRoot.tag("R2")
                 scrollToIndex(2, Align.Center, animate = false)
                 this.snapToElements = Align.Center
                 this.scrollSnapStop = true
@@ -65,7 +65,7 @@ object R2VPScreen : Screen {
                         }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPagingPlacer()
+                placer = RecyclerViewPagingPlacer().apply { log = ConsoleRoot.tag("RVP2") }
                 rendererSet = object : RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
@@ -75,6 +75,20 @@ object R2VPScreen : Screen {
                     override fun get(index: Int): Int {
                         if (index !in range) throw IllegalStateException("Index out of range")
                         return index
+                    }
+                }
+            }
+            row {
+                button {
+                    text("left")
+                    onClick {
+                        recyclerView.centerIndex set recyclerView.centerIndex() - 1
+                    }
+                }
+                button {
+                    text("right")
+                    onClick {
+                        recyclerView.centerIndex set recyclerView.centerIndex() + 1
                     }
                 }
             }
