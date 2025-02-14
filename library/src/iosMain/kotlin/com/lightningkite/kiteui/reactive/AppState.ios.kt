@@ -43,7 +43,7 @@ actual object AppState {
     ))
     actual val windowInfo: ImmediateReadable<WindowStatistics>
         get() = _windowInfo
-    internal val _inForeground = Property(true)
+    val _inForeground = Property(true)
     actual val inForeground: ImmediateReadable<Boolean>
         get() = _inForeground
     actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen

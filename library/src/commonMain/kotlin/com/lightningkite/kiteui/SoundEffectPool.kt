@@ -26,6 +26,7 @@ expect suspend fun AudioSource.load(): PlayableAudio
 
 interface PlayableAudio {
     var volume: Float
+    var loop: Boolean
     var isPlaying: Boolean
     fun onComplete(action: ()->Unit)
     fun stop()
@@ -38,7 +39,7 @@ fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: F
     val backgroundAudioShared = CoroutineScope(coroutineContext).async {
         audio.load().apply {
             volume = backgroundVolume
-            onComplete { play() }
+            loop = true
         }
     }
     reactiveSuspending {

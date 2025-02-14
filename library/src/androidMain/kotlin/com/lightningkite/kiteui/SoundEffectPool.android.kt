@@ -96,9 +96,12 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     val audio = object: PlayableAudio {
         override var volume: Float = 1f
             set(value) { field = value; player.setVolume(value, value) }
+        override var loop: Boolean = false
+            set(value) { player.isLooping = value }
         override var isPlaying: Boolean
             get() = player.isPlaying
             set(value) {
+                if (value == player.isPlaying) return
                 if(value) {
                     player.start()
                     runningMediaPlayers.add(player)
@@ -113,9 +116,10 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
 
         override fun stop() {
-            player.pause()
-            player.reset()
-            runningMediaPlayers.remove(player)
+            if (player.isPlaying) {
+                player.pause()
+                runningMediaPlayers.remove(player)
+            }
         }
 
     }
