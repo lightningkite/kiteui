@@ -1,3 +1,4 @@
+import com.lightningkite.deployhelpers.lk
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -11,7 +12,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
-    id("com.android.library")
+    id("com.android.application")
     id("dev.opensavvy.vite.kotlin") version "0.4.0"
 }
 apply<KiteUiPlugin>()
@@ -21,6 +22,10 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+val lk = lk {
+    version = gitBasedVersion()
 }
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -133,10 +138,16 @@ configure<KiteUiPluginExtension> {
 android {
     namespace = "$group.mppexampleapp"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 31
+    compileSdk = 34
 
     defaultConfig {
+        applicationId = "com.lightningkite.kiteuiexample"
         minSdk = 21
+        targetSdk = 34
+        versionCode = 1
+        versionName = project.version.toString()
+
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         // Flag to enable support for the new language APIs

@@ -66,7 +66,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             it.centerX +
                     abs(viewport.top - it.top)
         }?.let {
-            log?.log("Using existing cells for anchor: ${it.top} to ${it.index.div(columns).times(columns)}")
+            log?.log("Using existing cells for anchor: ${it.top} to ${it.index} => ${it.index.div(columns).times(columns)}")
             it.top to it.index.div(columns).times(columns)
         } ?: run {
             // approximate anchor

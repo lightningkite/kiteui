@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
@@ -8,6 +9,7 @@ import com.lightningkite.kiteui.navigation.Screen
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 
 @Routable("docs")
 object DocSearchScreen : Screen {
@@ -52,6 +54,8 @@ object DocSearchScreen : Screen {
                     }
                 }
                 expanding - recyclerView {
+                    new.log = ConsoleRoot.tag("r2")
+                    new.placer = RecyclerViewPlacerVerticalGrid(1).apply { log = ConsoleRoot.tag("placer") }
                     children(shared {
                         docsPages().mapNotNull {
                             val q = query()

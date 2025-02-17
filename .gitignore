@@ -14,3 +14,4 @@ local.properties
 .kotlin
 
 local.version.txt
+version.js

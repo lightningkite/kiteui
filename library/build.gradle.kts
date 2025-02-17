@@ -9,12 +9,17 @@ plugins {
     kotlin("plugin.serialization")
     kotlin("native.cocoapods")
     id("com.android.library")
+    alias(libs.plugins.comLightningkiteTestingManual)
 //    id("org.jetbrains.dokka")
     signing
     id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 val ktorVersion = "3.0.0"
+
+val lk = project.lk {
+    kotlinTestManualPlugin()
+}
 
 kotlin {
     androidTarget {
@@ -89,6 +94,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
+                implementation(lk.kotlinTestManualRuntime())
             }
         }
         val androidMain by getting {
@@ -193,9 +199,6 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
 }
 
-val lk = project.lk {
-    version = gitBasedVersion().also { println("Determined version to be $it") }
-}
 mavenPublishing {
     // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()

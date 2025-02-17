@@ -19,7 +19,7 @@ object ListEditScreen : Screen {
         row {
 
             expanding - recyclerView {
-                children(data.lensByElementAssumingSetNeverManipulates()) { itemObs ->
+                children(this@ListEditScreen.data.lensByElementAssumingSetNeverManipulates()) { itemObs ->
                     row {
                         var old: Int? = null
                         reactive {

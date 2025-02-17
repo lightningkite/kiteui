@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp
 
+import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
@@ -97,6 +98,8 @@ class HomeScreen: Screen {
             }
             h1("Getting Started")
             text("TODO")
+            space()
+            text("Version: ${Build.version}")
             // TODO: Getting Started
         }
     }

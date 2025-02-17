@@ -21,19 +21,88 @@ object ExperimentScreen : Screen {
     override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(){
-        recyclerView {
-            children(Constant((0..100).toList())) {
-                card - button {
-                    text {
-                        content = "Loading..."
-                        reactiveSuspending {
-                            delay(100.milliseconds)
-                            content = it().toString()
-                        }
-                    }
+    override fun ViewWriter.render() {
+        col {
+            expanding - recyclerView {
+                log = ConsoleRoot.tag("X")
+//                children(Constant((1..20).toList()), id = { it }) {
+//                    text { ::content { it().toString() } }
+//                }
+                childrenMultipleTypes(Constant((1..200).toList()), id = { it }) {
+                    println("Building...")
+                    elementsMatching { it % 2 == 0 } renderedAs { text { ::content { it().toString() } } }
+                    elementsMatching { it % 2 == 1 } renderedAs { card - text { ::content { it().toString() } } }
                 }
+                println("OK")
             }
         }
+//        col {
+//            val expanded = Property(-1)
+//            val data = Property((1..10).toList())
+//            var recyclerView: Recycler2? = null
+//            expanding
+//            recyclerView = Recycler2(this, vertical = false).apply {
+////                log = ConsoleRoot.tag("R2")
+//                scrollToIndex(2, Align.Center, animate = false)
+//                this.snapToElements = Align.Center
+//                this.scrollSnapStop = true
+//                val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
+//                    override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) =
+//                        with(viewWriter) {
+//                            card - button {
+//                                sizeConstraints(minHeight = 10.rem) - col {
+//                                    text { ::content { data().toString() } }
+//                                    onlyWhen { expanded() == data() } - col {
+//                                        text { content = "Expanded Content" }
+//                                        text { content = "Expanded Content" }
+//                                        text { content = "Expanded Content" }
+//                                        text { content = "Expanded Content" }
+//                                        text { content = "Expanded Content" }
+//                                        text { content = "Expanded Content" }
+//                                    }
+//                                }
+//                                onClick {
+//                                    expanded.value = data()
+//                                }
+//                            }
+//
+//                        }
+//                }
+////                scrollToIndex(50, Align.Center)
+//                placer = RecyclerViewPagingPlacer().apply { log = ConsoleRoot.tag("RVP2") }
+//                rendererSet = object : RecyclerViewRendererSet<Int, Int> {
+//                    override fun id(item: Int): Int = item
+//                    override fun renderer(item: Int): RecyclerViewRenderer<Int> = main
+//                }
+//                reactive {
+//                    val d = data()
+//                    this@apply.data = object : RecyclerViewData<Int, Int> {
+//                        override val range: IntRange = d.indices
+//                        override fun get(index: Int): Int = d[index]
+//                    }
+//                }
+//            }
+//            row {
+//                button {
+//                    text("left")
+//                    onClick {
+//                        recyclerView.centerIndex set recyclerView.centerIndex() - 1
+//                    }
+//                }
+//                button {
+//                    text("delete")
+//                    onClick {
+//                        val toRemove = data().get(recyclerView.centerIndex())
+//                        data.value = data.value.filter { it != toRemove }
+//                    }
+//                }
+//                button {
+//                    text("right")
+//                    onClick {
+//                        recyclerView.centerIndex set recyclerView.centerIndex() + 1
+//                    }
+//                }
+//            }
+//        }
     }
 }

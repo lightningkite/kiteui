@@ -14,11 +14,11 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.properties.Properties
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+
+@Serializable
+data class SampleComplexType(val a: Int, val y: String? = null)
 
 class UrlEncodingTest {
-    @Serializable
-    data class Sample(val a: Int, val y: String? = null)
 
     data class TestCase<T>(val name: String, val serializer: KSerializer<T>, val sample: T)
     val testCases = listOf(
@@ -28,7 +28,7 @@ class UrlEncodingTest {
         TestCase("string_n_test", String.serializer().nullable, "test"),
         TestCase("string_n_null", String.serializer().nullable, null),
         TestCase("string_n_blank", String.serializer().nullable, ""),
-        TestCase("sample", Sample.serializer(), Sample(42, "The Answer")),
+        TestCase("sample", SampleComplexType.serializer(), SampleComplexType(42, "The Answer")),
     )
 
     @Test
@@ -44,20 +44,20 @@ class UrlEncodingTest {
         }
     }
 
-    inline fun <reified T> stringSubtest(item: T) {
+    fun <T> stringSubtest(serializer: KSerializer<T>, item: T) {
         println("Testing '$item' (${item?.let { it::class }})")
         assertEquals(
             item,
-            Properties.decodeFromString(Properties.encodeToString(item).also(::println))
+            Properties.decodeFromString(serializer, Properties.encodeToString(serializer, item).also(::println))
         )
     }
     @Test fun testString() {
-        stringSubtest(42)
-        stringSubtest("String")
-        stringSubtest("")
-        stringSubtest<String?>(null)
-        stringSubtest<String?>("")
-        stringSubtest<String?>("null")
-        stringSubtest(Sample(42, "The Answer"))
+        stringSubtest(Int.serializer(), 42)
+        stringSubtest(String.serializer(), "String")
+        stringSubtest(String.serializer(), "")
+        stringSubtest(String.serializer().nullable, null)
+        stringSubtest(String.serializer().nullable, "")
+        stringSubtest(String.serializer().nullable, "null")
+        stringSubtest(SampleComplexType.serializer(), SampleComplexType(42, "The Answer"))
     }
 }
