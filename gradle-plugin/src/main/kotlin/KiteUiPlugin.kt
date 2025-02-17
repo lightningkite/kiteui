@@ -83,6 +83,7 @@ class KiteUiPlugin : Plugin<Project> {
                 resourcesJs(listOf(gitIgnore, publicGitIgnore), resourceFolder, out, ext)
             }
             tasks.matching { it.name == "compileKotlinJs" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name == "kspKotlinJs" }.configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(task) }
             tasks.matching { it.name == "jsProcessResources" }.configureEach { dependsOn(task) }
         }
 
@@ -99,7 +100,8 @@ class KiteUiPlugin : Plugin<Project> {
             doLast {
                 resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
             }
-            tasks.matching { it.name == "compileKotlinJs" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name == "compileKotlinJvm" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name == "kspKotlinJvm" }.configureEach { dependsOn(task) }
             tasks.matching { it.name == "jvmProcessResources" }.configureEach { dependsOn(task) }
         }
 
@@ -129,6 +131,8 @@ class KiteUiPlugin : Plugin<Project> {
                 }
             }
             tasks.matching { it.name.startsWith("compileKotlin") && it.name.contains("ios", true) }
+                .configureEach { dependsOn(task) }
+            tasks.matching { it.name.startsWith("kspKotlin") && it.name.contains("ios", true) }
                 .configureEach { dependsOn(task) }
             tasks.matching { it.name.contains("ios", true) && it.name.endsWith("ProcessResources") }
                 .configureEach { dependsOn(task) }
