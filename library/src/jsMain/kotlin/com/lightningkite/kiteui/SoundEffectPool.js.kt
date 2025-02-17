@@ -124,6 +124,9 @@ actual suspend fun AudioSource.load(): PlayableAudio {
                 set(value) {
                     native.volume = value.toDouble()
                 }
+            override var loop: Boolean
+                get() = native.loop
+                set(value) { native.loop = value }
             override var isPlaying: Boolean
                 get() = !native.paused
                 set(value) {
