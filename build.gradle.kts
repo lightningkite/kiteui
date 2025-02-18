@@ -29,10 +29,3 @@ allprojects {
         mavenCentral()
     }
 }
-repositories {
-    mavenLocal()
-    maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
-    maven("https://jitpack.io")
-    google()
-    mavenCentral()
-}
