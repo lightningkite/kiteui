@@ -11,6 +11,7 @@ import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.Path.DrawingResources
 import com.lightningkite.kiteui.views.direct.colorInt
+import kotlin.math.*
 
 
 abstract class DrawingView : View {
@@ -233,10 +234,20 @@ actual fun DrawingContext2D.appendArc(
     radius: Double,
     startAngle: Angle,
     endAngle: Angle,
-    anticlockwise: Boolean
+    anticlockwise: Boolean,
 ) {
     val rel = startAngle angleTo endAngle
-    if (anticlockwise) {
+    if (abs(endAngle.turns - startAngle.turns) >= 1) {
+        currentPath.arcTo(
+            (x - radius).toFloat(),
+            (y - radius).toFloat(),
+            (x + radius).toFloat(),
+            (y + radius).toFloat(),
+            startAngle.degrees,
+            if (anticlockwise) (-360f).nextUp() else 360f.nextDown(),
+            false
+        )
+    } else if (anticlockwise) {
         if (rel.degrees > 0) {
             currentPath.arcTo(
                 (x - radius).toFloat(),
