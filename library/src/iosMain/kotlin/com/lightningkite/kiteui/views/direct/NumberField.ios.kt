@@ -17,6 +17,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 import com.lightningkite.kiteui.WeakReference
+import com.lightningkite.kiteui.views.direct.TextInput
 import kotlinx.cinterop.ObjCAction
 import kotlinx.coroutines.*
 import platform.darwin.dispatch_async
@@ -25,20 +26,14 @@ import platform.darwin.dispatch_get_main_queue
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
-    val trigger = object: NSObject() {
+    val trigger: NSObject = object: NSObject() {
         @ObjCAction
         fun done() {
-            this@NumberInput.done()
+            action?.let {
+                textField.resignFirstResponder()
+                it.startAction(this@NumberInput)
+            } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
-    }
-    val toolbar = UIToolbar().apply {
-        barStyle = UIBarStyleDefault
-        setTranslucent(true)
-        sizeToFit()
-        setItems(listOf(
-            UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
-            UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action =sel_registerName("done")),
-        ), animated = false)
     }
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -46,7 +41,15 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         backgroundColor = UIColor.clearColor
         keyboardType = UIKeyboardTypeDecimalPad
         delegate = NextFocusDelegateShared
-        inputAccessoryView = toolbar
+        inputAccessoryView = UIToolbar().apply {
+            barStyle = UIBarStyleDefault
+            setTranslucent(true)
+            sizeToFit()
+            setItems(listOf(
+                UIBarButtonItem(barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace, target = null, action = null),
+                UIBarButtonItem(title = "Done", style = UIBarButtonItemStyle.UIBarButtonItemStylePlain, target = trigger, action =sel_registerName("done")),
+            ), animated = false)
+        }
     }
 
     init {
@@ -141,28 +144,6 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-
-
-
-    @ObjCAction
-    fun done() {
-        println("Debug done is null: ${action == null}")
-        action?.startAction(this@NumberInput)
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-            delay(16)
-            val fistResponderChild = this@NumberInput.textField.window?.findFirstResponderChild()
-            if(fistResponderChild == this@NumberInput.textField){
-                this@NumberInput.textField.resignFirstResponder()
-                return@launch
-            }
-            if (fistResponderChild is UITextField) {
-                val keyboardType = fistResponderChild.keyboardType
-                if (keyboardType != UIKeyboardTypeDecimalPad) {
-                    this@NumberInput.textField.resignFirstResponder()
-                }
-            }
-        }
-    }
 
     override fun actionSet(value: Action?) {
         super.actionSet(value)

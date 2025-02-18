@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
+import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
@@ -39,7 +40,15 @@ class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ProgressCALayer : CALayer() {
+class ProgressCALayer : CALayer {
+    @OverrideInit
+    constructor() : super()
+
+    @OverrideInit
+    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+
+    @OverrideInit
+    constructor(layer: kotlin.Any) : super(layer)
 
     var tintColor: UIColor = UIColor.whiteColor
     var progress: Float = 0f

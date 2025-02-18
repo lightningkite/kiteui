@@ -206,7 +206,8 @@ class KiteUiPlugin : Plugin<Project> {
                     .resolve("project.pbxproj")
                     .also {
                         if (!it.exists()) {
-                            throw IllegalStateException("Could not find projectFile at ${it}")
+                            println("No xcodeproj found in ${ext.iosProjectRoot}")
+                            return@doLast
                         }
                     }
                 projectFile.readText()
@@ -214,9 +215,12 @@ class KiteUiPlugin : Plugin<Project> {
                     .replace(Regex("MARKETING_VERSION = [0-9.]+;"), "MARKETING_VERSION = $versionName;")
                     .let { projectFile.writeText(it) }
             }
-            tasks.matching {
-                it.name == "syncFramework"
-            }.configureEach { dependsOn(task) }
+            // NOTE: WE DON'T DO THIS ON PURPOSE
+            // Problem is that if the project file changes that the build is cancelled.
+            // TODO: this is dumb, how do we make this work?
+//            tasks.matching {
+//                it.name == "syncFramework"
+//            }.configureEach { dependsOn(task) }
 
         }
         tasks.create("syncVersionsJs") {

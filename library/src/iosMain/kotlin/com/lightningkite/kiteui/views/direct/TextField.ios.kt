@@ -9,18 +9,55 @@ import com.lightningkite.kiteui.reactive.Writable
 import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCAction
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
+import platform.objc.sel_registerName
 
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+    companion object {
+        var alwaysToolbar = false
+    }
+
+    val trigger: NSObject = object : NSObject() {
+        @ObjCAction
+        fun done() {
+            action?.let {
+                textField.resignFirstResponder()
+                it.startAction(this@TextInput)
+            } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
+        }
+    }
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
         delegate = NextFocusDelegateShared
+        if (alwaysToolbar) {
+            inputAccessoryView = UIToolbar().apply {
+                barStyle = UIBarStyleDefault
+                setTranslucent(true)
+                sizeToFit()
+                setItems(
+                    listOf(
+                        UIBarButtonItem(
+                            barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace,
+                            target = null,
+                            action = null
+                        ),
+                        UIBarButtonItem(
+                            title = "Done",
+                            style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
+                            target = trigger,
+                            action = sel_registerName("done")
+                        ),
+                    ), animated = false
+                )
+            }
+        }
     }
 
     init {
@@ -42,7 +79,10 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
     }
 
     fun updateHint() {
-        textField.attributedPlaceholder = NSAttributedString.create(hint, mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor()))
+        textField.attributedPlaceholder = NSAttributedString.create(
+            hint,
+            mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
+        )
     }
 
     var fontAndStyle: FontAndStyle? = null
@@ -61,7 +101,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         override var value: String
             get() = textField.text ?: ""
             set(value) {
-                if(textField.text == value) return
+                if (textField.text == value) return
                 textField.text = value
             }
     }
@@ -99,6 +139,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         textField.delegate = value?.let {
             val d = object : NSObject(), UITextFieldDelegateProtocol {
                 override fun textFieldShouldReturn(textField: UITextField): Boolean {
+                    textField.resignFirstResponder()
                     it.startAction(this@TextInput)
                     return true
                 }
