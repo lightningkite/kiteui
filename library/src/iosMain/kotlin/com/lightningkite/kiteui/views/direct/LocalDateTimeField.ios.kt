@@ -44,7 +44,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
@@ -111,7 +111,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
@@ -178,7 +178,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
             updateFont()
             native.informParentOfSizeChange()
         }
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }

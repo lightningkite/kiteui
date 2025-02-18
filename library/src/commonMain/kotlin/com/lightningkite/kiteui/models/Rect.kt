@@ -36,3 +36,17 @@ data class Rect(
 
     fun offset(x: Double, y: Double) = copy(left + x)
 }
+
+data class Edges(
+    val left: Dimension,
+    val top: Dimension,
+    val right: Dimension,
+    val bottom: Dimension
+) {
+    companion object {
+        val ZERO = Edges(0.px)
+    }
+    val horizontalSum get() = left + right
+    val verticalSum get() = top + bottom
+    constructor(dimension: Dimension): this(dimension, dimension, dimension, dimension)
+}

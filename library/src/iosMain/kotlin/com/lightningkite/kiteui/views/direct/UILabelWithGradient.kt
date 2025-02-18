@@ -75,33 +75,33 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val padding = extensionPadding ?: 0.0
+        val padding = extensionPadding ?: Edges.ZERO
         val smallerSize = size.useContents {
             CGSizeMake(
-                width = width - padding * 2,
-                height = height - padding * 2
+                width = width - padding.horizontalSum.value,
+                height = height - padding.verticalSum.value
             )
         }
         return label.sizeThatFits(smallerSize).useContents {
             if(com.lightningkite.kiteui.viewDebugTarget?.native == this@UILabelWithGradient)
                 println("Size that fits on text: $width, $height")
             CGSizeMake(
-                width = width + padding * 2,
-                height = height.coerceAtLeast(label.font.lineHeight) + padding * 2,
+                width = width + padding.horizontalSum.value,
+                height = height.coerceAtLeast(label.font.lineHeight) + padding.verticalSum.value,
             )
         }
     }
 
     override fun layoutSubviews() {
         super.layoutSubviews()
-        val padding = extensionPadding ?: 0.0
+        val padding = extensionPadding ?: Edges.ZERO
         gradientLayer?.frame = bounds
         bounds.useContents {
-            val insetWidth = this@useContents.size.width - 2 * padding
-            val insetHeight = this@useContents.size.height - 2 * padding
+            val insetWidth = this@useContents.size.width - 2 * padding.horizontalSum.value
+            val insetHeight = this@useContents.size.height - 2 * padding.verticalSum.value
             uiViewWithLabelMask.setFrame(CGRectMake(
-                padding,
-                padding,
+                padding.left.value,
+                padding.top.value,
                 insetWidth,
                 insetHeight
             ))

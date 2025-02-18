@@ -101,14 +101,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 
             .useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing {
                 --spacing: var(--navSpacing, 0px);
+                --padding: var(--navPadding, 0px);
             }
 
             .icon {
                 color: var(--icon-color, black);
             }
 
-            .padded:not(.unpadded):not(.isRoot):not(.swapImage) {
-                padding: var(--spacing, 0px);
+            .padded:not(.isRoot):not(.swapImage) {
+                padding: var(--padding, 0px);
             }
 
             input[type="number"] {
@@ -805,7 +806,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                         subtheme.theme,
                         diff = theme,
                         asSelectors = asSelectors.flatMap { listOf("$it $cs", "$it$cs") },
-                        includeMaybeTransition = subtheme.useBackground == UseBackground.Yes
+                        includeMaybeTransition = subtheme.drawBackground
                     )
                 }
                 val hov = subtheme[HoverSemantic]
@@ -818,7 +819,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:hover$it$cs",
                         )
                     },
-                    includeMaybeTransition = hov.useBackground == UseBackground.Yes,
+                    includeMaybeTransition = hov.drawBackground,
                     mediaQuery = "(hover : hover)"
                 )
                 val foc = subtheme[FocusSemantic]
@@ -835,7 +836,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".hasNoBackField:focus-within$it$cs",
                         )
                     },
-                    includeMaybeTransition = foc.useBackground == UseBackground.Yes
+                    includeMaybeTransition = foc.drawBackground
                 )
                 val dwn = subtheme[DownSemantic]
                 theme(
@@ -847,7 +848,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:active$it$cs",
                         )
                     },
-                    includeMaybeTransition = dwn.useBackground == UseBackground.Yes
+                    includeMaybeTransition = dwn.drawBackground
                 )
                 val dis = subtheme[DisabledSemantic]
                 theme(
@@ -859,14 +860,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                             ".clickable:disabled$it$cs",
                         )
                     },
-                    includeMaybeTransition = dis.useBackground == UseBackground.Yes
+                    includeMaybeTransition = dis.drawBackground,
                 )
                 val print = subtheme[PrintSemantic]
                 theme(
                     print.theme,
                     diff = theme,
                     asSelectors = asSelectors.map { "$it$cs$cs" },
-                    includeMaybeTransition = print.useBackground == UseBackground.Yes,
+                    includeMaybeTransition = print.drawBackground,
                     mediaQuery = "print"
                 )
             }
@@ -921,7 +922,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         val directSel = sel("")
 
         val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
-
 
         theme.diff(diff) { background }?.let {
             if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
@@ -981,7 +981,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
 
         theme.diff(diff) { spacing }?.let { addToCss(directSel, "--spacing", it.value) }
+        theme.diff(diff) { padding }?.let { addToCss(directSel, "--padding", it.css()) }
         theme.diff(diff) { navSpacing }?.let { addToCss(directSel, "--navSpacing", it.value) }
+        theme.diff(diff) { navPadding }?.let { addToCss(directSel, "--navPadding", it.css()) }
         theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
         theme.diff(diff) { font.font }?.let { addToCss(directSel, "font-family", it.let { dynamicCss.font(it) }) }
         theme.diff(diff) { font.weight }?.let { addToCss(directSel, "font-weight", it.toString()) }
@@ -989,6 +991,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ?.let { addToCss(directSel, "font-style", it.let { if (it) "italic" else "normal" }) }
         theme.diff(diff) { font.allCaps }
             ?.let { addToCss(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
+        theme.diff(diff) { font.lineSpacingMultiplier }
+            ?.let { addToCss(directSel, "line-height", it.toString()) }
+        theme.diff(diff) { font.additionalLetterSpacing }
+            ?.let { addToCss(directSel, "letter-spacing", it.value) }
         theme.diff(diff) {
             when {
                 font.strikethrough && font.underline -> "underline line-through"
@@ -1036,6 +1042,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         return classes
     }
+
+    fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
     val rowCollapsingToColumnHandled = HashSet<String>()
     fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {

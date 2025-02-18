@@ -63,8 +63,7 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             native.contentDescription = value
         }
 
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         (placeholder as? CircularProgressDrawable)?.let {
             it.setColorSchemeColors(
                 theme.icon.closestColor().withAlpha(0.5f).colorInt(),

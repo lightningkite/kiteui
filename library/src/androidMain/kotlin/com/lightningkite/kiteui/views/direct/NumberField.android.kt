@@ -64,8 +64,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         return super.applyState(t)
     }
 
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())

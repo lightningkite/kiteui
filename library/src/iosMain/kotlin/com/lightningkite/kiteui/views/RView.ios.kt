@@ -37,17 +37,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.extensionSizeConstraints = value
         }
 
-    protected actual override fun opacitySet(value: Double) {
-        animateIfAllowed {
-            native.alpha = value
+    override var opacity: Double
+        get() = super.opacity
+        set(value) {
+            super.opacity = value
+            animateIfAllowed {
+                native.alpha = value
+            }
         }
-    }
 
-    protected actual override fun existsSet(value: Boolean) {
-        native.hidden = !value
-        if (fullyStarted) {
-            native.informParentOfSizeChange()
-        }
+    override var exists: Boolean
+        get() = super.exists
+        set(value) {
+            super.exists = value
+            native.hidden = !value
+            if (fullyStarted) {
+                native.informParentOfSizeChange()
+            }
 //        if (animationsEnabled) {
 //            UIView.animateWithDuration(theme.transitionDuration.toDouble(DurationUnit.SECONDS)) {
 //                native.hidden = !value
@@ -62,24 +68,33 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //                native.informParentOfSizeChange()
 //            }
 //        }
-    }
-
-    protected actual override fun visibleSet(value: Boolean) {
-        animateIfAllowed {
-            native.alpha = if (value) 1.0 else 0.0
         }
-    }
+
+    override var visible: Boolean
+        get() = super.visible
+        set(value) {
+            super.visible = value
+            animateIfAllowed {
+                native.alpha = if (value) 1.0 else 0.0
+            }
+        }
 
     private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
-    protected actual override fun spacingSet(value: Dimension?) {
-        native.spacingOverride?.value = value
-        val spacing = mySpacing.value
-        for (child in children) {
-            child.native.layoutLayers(spacing)
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.spacingOverride?.value = value
+            val spacing = mySpacing.value
+            for (child in children) {
+                child.native.layoutLayers(spacing)
+            }
         }
-    }
 
-    protected actual override fun ignoreInteractionSet(value: Boolean) {
+    override var ignoreInteraction: Boolean
+        get() = super.ignoreInteraction
+        set(value) {
+            super.ignoreInteraction = value
 //        if (value) {
 //            val actionHolder = object : NSObject() {
 //                @ObjCAction
@@ -94,11 +109,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //                actionHolder.description
 //            }
 //        }
-    }
+        }
 
-    protected actual override fun forcePaddingSet(value: Boolean?) {
-        native.extensionForcePadding = value
-    }
+    override var paddingByEdge: Edges?
+        get() = super.paddingByEdge
+        set(value) {
+            super.paddingByEdge = value
+            val spacing = mySpacing.value
+            for (child in children) {
+                child.native.layoutLayers(spacing)
+            }
+        }
 
     actual override fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
@@ -134,27 +155,40 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    actual override fun applyElevation(dimension: Dimension) {
-        if (dimension.value == 0.0) native.layer.apply {
+    //    run { applyElevation(if (value.useBackground == UseBackground.Yes) value.theme.elevation else 0.px) }
+//    run {
+//        applyPadding(
+//            if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (spacing
+//                ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
+//        )
+//    }
+//    run { applyForeground(value.theme) }
+//    run { applyBackground(value.theme, value.useBackground != UseBackground.No) }
+
+    protected var previousLoadAnimationHandle: (() -> Unit)? = null
+    protected var backgroundLayer: CAGradientLayerResizing? = null
+    actual override fun applyTheme(theme: ThemeAndBack) {
+        if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
+            val v = theme.theme.elevation.value
+            shadowColor = UIColor.grayColor.CGColor
+            shadowOpacity = 1f
+            shadowOffset = CGSizeMake(0.0, v)
+            shadowRadius = v
+        }
+        else native.layer.apply {
             shadowColor = null
             shadowOpacity = 0f
             shadowOffset = CGSizeMake(0.0, 0.0)
             shadowRadius = 0.0
-        } else native.layer.apply {
-            shadowColor = UIColor.grayColor.CGColor
-            shadowOpacity = 1f
-            shadowOffset = CGSizeMake(0.0, dimension.value)
-            shadowRadius = dimension.value
         }
-    }
 
-    actual override fun applyPadding(dimension: Dimension?) {
-        native.extensionPadding = dimension?.value
-    }
+        native.extensionPadding = paddingByEdge ?: when {
+            !theme.padding -> null
+            useNavSpacing -> theme.theme.navPadding
+            else -> theme.theme.padding
+        }
 
-    var previousLoadAnimationHandle: (() -> Unit)? = null
-    var backgroundLayer: CAGradientLayerResizing? = null
-    actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+        val fullyApply = theme.drawBackground
         animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.spacing)
@@ -173,7 +207,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             previousLoadAnimationHandle = null
             with(layer) {
                 if (fullyApply) {
-                    when (val b = theme.background) {
+                    when (val b = theme.theme.background) {
                         is Color -> {
                             val c = b.toUiColor().CGColor!!
                             this.type = kCAGradientLayerAxial
@@ -191,7 +225,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             this.startPoint = CGPointMake(0.0, 0.0)
                             this.endPoint = CGPointMake(1.0, 1.0)
                             previousLoadAnimationHandle = AppState.animationFrame.addListener {
-                                val i = Color.interpolate(b.base, b.alternate, (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()).toUiColor().CGColor!!
+                                val i = Color.interpolate(
+                                    b.base,
+                                    b.alternate,
+                                    (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()
+                                ).toUiColor().CGColor!!
                                 this.colors = listOf(i, i).map { it.toObjcId() }
                             }
                         }
@@ -216,13 +254,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             this.endPoint = CGPointMake(0.0, 0.0)
                         }
                     }
-                    borderWidth = theme.outlineWidth.value
-                    borderColor = theme.outline.closestColor().toUiColor().CGColor
+                    borderWidth = theme.theme.outlineWidth.value
+                    borderColor = theme.theme.outline.closestColor().toUiColor().CGColor
                 }
 
                 zPosition = -99999.0
                 parentSpacing = this@RView.parentSpacing.value
-                desiredCornerRadius = theme.cornerRadii
+                desiredCornerRadius = theme.theme.cornerRadii
 
                 val bounds = this@RView.native.layerSize()
 
@@ -242,9 +280,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         super.postSetup()
         ObjCountTrackers.track(this)
         ObjCountTrackers.track(native)
-    }
-
-    actual override fun applyForeground(theme: Theme) {
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
@@ -277,6 +312,7 @@ var isInAnimationBlock: Boolean = false
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
+
 inline fun UIView.withoutAnimation(action: () -> Unit) {
     assertMainThread()
     val before = animationsEnabled

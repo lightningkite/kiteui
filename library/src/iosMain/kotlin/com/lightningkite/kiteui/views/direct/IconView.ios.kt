@@ -29,7 +29,7 @@ actual class IconView actual constructor(context: RContext): RView(context) {
             native.accessibilityLabel = value
         }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.iconPaint = theme.icon
     }
 }
@@ -76,8 +76,8 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
     override fun layoutSubviews() {
         super.layoutSubviews()
         val currentSize = bounds.useContents { size.width to size.height }
-        val axisTotalPadding = (extensionPadding ?: 0.0) * 2
-        val contentAreaSize = currentSize.first - axisTotalPadding to currentSize.second - axisTotalPadding
+        val axisTotalPadding = (extensionPadding ?: Edges.ZERO)
+        val contentAreaSize = currentSize.first - axisTotalPadding.horizontalSum.value to currentSize.second - axisTotalPadding.verticalSum.value
 
         val scale = min(contentAreaSize.first / iconOriginalSize.first, contentAreaSize.second / iconOriginalSize.second)
         val nw = iconOriginalSize.first * scale
@@ -91,11 +91,11 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val axisTotalPadding = (extensionPadding ?: 0.0) * 2
+        val axisTotalPadding = (extensionPadding ?: Edges.ZERO)
         val scaleFactor = preferredScaleFactor()
         return CGSizeMake(
-            icon?.width?.value?.let { it * scaleFactor + axisTotalPadding } ?: 0.0,
-            icon?.height?.value?.let { it * scaleFactor + axisTotalPadding } ?: 0.0
+            icon?.width?.value?.let { it * scaleFactor + axisTotalPadding.horizontalSum.value } ?: 0.0,
+            icon?.height?.value?.let { it * scaleFactor + axisTotalPadding.verticalSum.value } ?: 0.0
         )
     }
 

@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
@@ -24,11 +25,6 @@ import kotlin.math.max
 
 class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     var horizontal: Boolean = true
-    var padding: Double
-        get() = extensionPadding ?: 0.0
-        set(value) {
-            extensionPadding = value
-        }
     var gap: Double = 0.0
         set(value) {
             field = value
@@ -85,6 +81,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     val SizeConstraints.primary get() = if (horizontal) width else height
     val SizeConstraints.secondary get() = if (horizontal) height else width
     val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    val Edges.primarySum get() = if(horizontal) horizontalSum.value else verticalSum.value
+    val Edges.secondarySum get() = if(!horizontal) horizontalSum.value else verticalSum.value
+    val Edges.primaryStart get() = if(horizontal) left.value else top.value
+    val Edges.primaryEnd get() = if(horizontal) right.value else bottom.value
+    val Edges.secondaryStart get() = if(!horizontal) left.value else top.value
+    val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         if(subviews.any { it == viewDebugTarget?.native }) {
@@ -93,8 +95,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizeLocal = size.local
         val measuredSize = Size()
 
+        val padding = extensionPadding ?: Edges.ZERO
         val sizes = calcSizes(sizeLocal, sizeLocal.primary == ScrollLayoutMeta.unboundSize)
-        measuredSize.primary += padding
+        measuredSize.primary += padding.primaryStart
         var first = true
         subviews.zip(sizes) { view, size ->
             view as UIView
@@ -105,13 +108,13 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                 measuredSize.primary += gap
             }
             measuredSize.primary += size.primary
-            measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding * 2)
+            measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding.secondarySum)
             if (viewDebugTarget?.native == view) {
                 println("size: $size")
                 println("measuredSize: $measuredSize")
             }
         }
-        measuredSize.primary += padding
+        measuredSize.primary += padding.primaryEnd
         return measuredSize.objc
     }
 
@@ -141,8 +144,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var t = PerformanceInfo.trace("calcSizeLinear")
 //        let size = padding.shrinkSize(size)
         val remaining = size.copy()
-        remaining.primary -= padding * 2
-        remaining.secondary -= padding * 2
+        val padding = extensionPadding ?: Edges.ZERO
+        remaining.primary -= padding.primarySum
+        remaining.secondary -= padding.secondarySum
 
         var totalWeight = 0f
 
@@ -215,6 +219,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
     var lastLaidOutSize: Size? = null
     override fun layoutSubviews() {
+        val padding = extensionPadding ?: Edges.ZERO
         if(subviews.any { it == viewDebugTarget?.native }) {
             println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
         }
@@ -223,7 +228,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var t = PerformanceInfo.trace("layoutLinear")
 
         lastLaidOutSize = mySize
-        var primary = padding
+        var primary = padding.primaryStart
         t.pause()
         val sizes = calcSizes(frame.useContents { size.local }, true)
         t.resume()
@@ -241,12 +246,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             val ps = primary
             val a = view.secondaryAlign ?: Align.Stretch
             val offset = when (a) {
-                Align.Start -> padding
-                Align.Stretch -> padding
-                Align.End -> mySize.secondary - padding - size.secondary
+                Align.Start -> padding.secondaryStart
+                Align.Stretch -> padding.secondaryStart
+                Align.End -> mySize.secondary - padding.secondaryEnd - size.secondary
                 Align.Center -> (mySize.secondary - size.secondary) / 2
             }
-            val secondarySize = (if (a == Align.Stretch) mySize.secondary - padding * 2 else size.secondary.coerceAtMost(mySize.secondary - padding * 2))
+            val secondarySize = (if (a == Align.Stretch) mySize.secondary - padding.secondarySum else size.secondary.coerceAtMost(mySize.secondary - padding.secondarySum))
             val widthSize = if (horizontal) size.primary else secondarySize
             val heightSize = if (horizontal) secondarySize else size.primary
             t.pause()
@@ -266,7 +271,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             t.resume()
             primary += size.primary
         }
-        primary += padding
+        primary += padding.primaryEnd
         t.cancel()
     }
 

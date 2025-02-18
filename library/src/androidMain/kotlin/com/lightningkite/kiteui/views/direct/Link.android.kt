@@ -53,7 +53,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
         return super.applyState(t)
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
+    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }
 
 

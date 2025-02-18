@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.widget.Space
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
 import kotlin.math.min
@@ -12,13 +13,9 @@ import kotlin.math.roundToInt
 
 actual class Space actual constructor(context: RContext, val multiplier: Double): RView(context) {
     override val native = NSpace(context.activity)
-    override fun applyForeground(theme: Theme) {
-        native.mySuggestedMinimumWidth = (theme.spacing * multiplier).value.roundToInt()
-        native.mySuggestedMinimumHeight = (theme.spacing * multiplier).value.roundToInt()
-    }
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        super.applyBackground(theme, fullyApply)
+    override fun applyTheme(theme: ThemeAndBack) {
+        native.mySuggestedMinimumWidth = (theme.theme.spacing * multiplier).value.roundToInt()
+        native.mySuggestedMinimumHeight = (theme.theme.spacing * multiplier).value.roundToInt()
     }
 }
 

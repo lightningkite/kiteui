@@ -22,11 +22,6 @@ actual class Select actual constructor(context: RContext): RView(context) {
         minimumHeight = 0
     }
 
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.setPopupBackgroundDrawable(theme.backgroundDrawableWithoutCorners(null).apply { cornerRadius = 8.dp.value })
-    }
-
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -41,25 +36,24 @@ actual class Select actual constructor(context: RContext): RView(context) {
         return super.applyState(t)
     }
 
-    override fun applyPadding(dimension: Dimension?) {
-        // padding handled by inner
-        native.setPaddingAll(0)
-    }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+    override fun applyTheme(theme: ThemeAndBack) {
+        native.setPaddingAll(0)
+        native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply { cornerRadius = 8.dp.value })
+
         val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf())
 
         fun setOrAddDrawable(index: Int, drawable: Drawable) {
             if(index < layerDrawable.numberOfLayers) layerDrawable.setDrawable(index, drawable)
             else layerDrawable.addLayer(drawable)
         }
-        setOrAddDrawable(0, getBackgroundWithRipple(theme, fullyApply, layerDrawable.takeIf { it.numberOfLayers >= 1 }?.getDrawable(0) as? RippleDrawable))
+        setOrAddDrawable(0, getBackgroundWithRipple(theme.theme, theme.drawBackground, layerDrawable.takeIf { it.numberOfLayers >= 1 }?.getDrawable(0) as? RippleDrawable))
         ResourcesCompat.getDrawable(native.resources, R.drawable.baseline_arrow_drop_down_24, null)?.apply {
-            colorFilter = PorterDuffColorFilter(theme.foreground.closestColor().toInt(), PorterDuff.Mode.SRC_IN)
+            colorFilter = PorterDuffColorFilter(theme.theme.foreground.closestColor().toInt(), PorterDuff.Mode.SRC_IN)
         }?.let {
             setOrAddDrawable(1, it)
             layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
-            layerDrawable.setLayerInsetEnd(1, theme.spacing.value.toInt())
+            layerDrawable.setLayerInsetEnd(1, theme.theme.spacing.value.toInt())
         }
 
         background = layerDrawable

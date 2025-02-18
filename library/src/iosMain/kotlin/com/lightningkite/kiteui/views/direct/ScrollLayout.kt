@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.viewDebugTarget
@@ -24,11 +25,6 @@ object ScrollLayoutMeta {
 
 class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
     var horizontal: Boolean = true
-    var padding: Double
-        get() = extensionPadding ?: 0.0
-        set(value) {
-            extensionPadding = value
-        }
 
     override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
@@ -50,13 +46,20 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     val SizeConstraints.primary get() = if (horizontal) width else height
     val SizeConstraints.secondary get() = if (horizontal) height else width
     val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    val Edges.primarySum get() = if(horizontal) horizontalSum.value else verticalSum.value
+    val Edges.secondarySum get() = if(!horizontal) horizontalSum.value else verticalSum.value
+    val Edges.primaryStart get() = if(horizontal) left.value else top.value
+    val Edges.primaryEnd get() = if(horizontal) right.value else bottom.value
+    val Edges.secondaryStart get() = if(!horizontal) left.value else top.value
+    val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
 
     val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val mySizeWithoutPadding = bounds.useContents { size.local }
-        mySizeWithoutPadding.primary -= padding * 2
-        mySizeWithoutPadding.secondary -= padding * 2
+        val padding = extensionPadding ?: Edges.ZERO
+        mySizeWithoutPadding.primary -= padding.primarySum
+        mySizeWithoutPadding.secondary -= padding.secondarySum
 
         val subsize = calcSizes(mySizeWithoutPadding, true)
 
@@ -67,8 +70,8 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
         // scroll
         subsize.primary = subsize.primary.coerceAtMost(mySizeWithoutPadding.primary)
 
-        subsize.primary += padding * 2 + 0.00001
-        subsize.secondary += padding * 2 + 0.00001
+        subsize.primary += padding.primarySum + 0.00001
+        subsize.secondary += padding.secondarySum + 0.00001
 
         return subsize.objc
     }
@@ -105,11 +108,12 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     private var lastReportedSize: Size? = null
     override fun layoutSubviews() {
         val mySizeWithoutPadding = bounds.useContents { size.local }
-        mySizeWithoutPadding.primary -= padding * 2
-        mySizeWithoutPadding.secondary -= padding * 2
+        val padding = extensionPadding ?: Edges.ZERO
+        mySizeWithoutPadding.primary -= padding.primarySum
+        mySizeWithoutPadding.secondary -= padding.secondarySum
         if (viewDebugTarget?.native === subviews.firstOrNull()) println("Parent ScrollLayout Laying out within $mySizeWithoutPadding")
         if (viewDebugTarget?.native === this) println("Laying out within $mySizeWithoutPadding")
-        var primary = padding
+        var primary = padding.primaryStart
         val view = mainSubview ?: run {
             println("ScrollLayout without children???")
             return
@@ -124,16 +128,16 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
         val ps = primary
         val a = view.secondaryAlign ?: Align.Stretch
         val offset = when (a) {
-            Align.Start -> padding
-            Align.Stretch -> padding
-            Align.End -> padding + mySizeWithoutPadding.secondary - size.secondary
-            Align.Center -> padding + (mySizeWithoutPadding.secondary - size.secondary) / 2
+            Align.Start -> padding.secondaryStart
+            Align.Stretch -> padding.secondaryStart
+            Align.End -> padding.secondaryStart + mySizeWithoutPadding.secondary - size.secondary
+            Align.Center -> padding.secondaryStart + (mySizeWithoutPadding.secondary - size.secondary) / 2
         }
-        val secondarySize = (if (a == Align.Stretch) mySizeWithoutPadding.secondary else size.secondary.coerceAtMost(mySizeWithoutPadding.secondary - padding * 2))
+        val secondarySize = (if (a == Align.Stretch) mySizeWithoutPadding.secondary else size.secondary.coerceAtMost(mySizeWithoutPadding.secondary - padding.secondarySum))
         val widthSize = if (horizontal) size.primary else secondarySize
         val heightSize = if (horizontal) secondarySize else size.primary
         primary += size.primary
-        primary += padding
+        primary += padding.primaryEnd
         // Set this first so that layoutSubviews has the new content size
         setContentSize(
             CGSizeMake(

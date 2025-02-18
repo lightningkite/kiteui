@@ -47,11 +47,6 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
 actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
-    var padding: Double
-        get() = extensionPadding ?: 0.0
-        set(value) {
-            extensionPadding = value
-        }
 
     var onClick: () -> Unit = {}
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)

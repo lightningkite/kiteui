@@ -3,8 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.ForcePaddingSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.CalculationContext
 import com.lightningkite.kiteui.reactive.ReactiveContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
@@ -136,14 +138,14 @@ val ViewWriter.marginless: ViewWrapper get() = ViewWrapper
 @ViewModifierDsl3
 val ViewWriter.padded: ViewWrapper
     get() {
-        beforeNextElementSetup { forcePadding = true }
+        beforeNextElementSetup { themeChoice += ForcePaddingSemantic }
         return ViewWrapper
     }
 
 @ViewModifierDsl3
 val ViewWriter.unpadded: ViewWrapper
     get() {
-        beforeNextElementSetup { forcePadding = false }
+        beforeNextElementSetup { padding = 0.px }
         return ViewWrapper
     }
 

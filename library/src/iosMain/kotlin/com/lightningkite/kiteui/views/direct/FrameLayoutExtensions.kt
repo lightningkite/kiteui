@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.utils.*
 import com.lightningkite.kiteui.views.*
@@ -21,26 +22,26 @@ import kotlin.math.max
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
     if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
-    var padding = extensionPadding ?: 0.0
+    var padding = extensionPadding ?: Edges.ZERO
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
         val h = view.extensionHorizontalAlign ?: Align.Stretch
         val v = view.extensionVerticalAlign ?: Align.Stretch
         val offsetH = when (h) {
-            Align.Start -> padding
-            Align.Stretch -> padding
-            Align.End -> mySize.width - padding - size.width
+            Align.Start -> padding.left.value
+            Align.Stretch -> padding.left.value
+            Align.End -> mySize.width - padding.right.value - size.width
             Align.Center -> (mySize.width - size.width) / 2
         }
         val offsetV = when (v) {
-            Align.Start -> padding
-            Align.Stretch -> padding
-            Align.End -> mySize.height - padding - size.height
+            Align.Start -> padding.top.value
+            Align.Stretch -> padding.top.value
+            Align.End -> mySize.height - padding.bottom.value - size.height
             Align.Center -> (mySize.height - size.height) / 2
         }
-        val widthSize = if (h == Align.Stretch) mySize.width - padding * 2 else size.width
-        val heightSize = if (v == Align.Stretch) mySize.height - padding * 2 else size.height
+        val widthSize = if (h == Align.Stretch) mySize.width - padding.horizontalSum.value else size.width
+        val heightSize = if (v == Align.Stretch) mySize.height - padding.verticalSum.value else size.height
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 
         run {
@@ -128,10 +129,10 @@ fun UIView.frameLayoutSizeThatFits(
     val measuredSize = Size()
 
     val sizes = frameLayoutCalcSizes(inputSize, childSizeCache)
-    val padding = extensionPadding ?: 0.0
+    val padding = extensionPadding ?: Edges.ZERO
     for ((index, size) in sizes.withIndex()) {
-        measuredSize.width = max(measuredSize.width, size.width + padding * 2)
-        measuredSize.height = max(measuredSize.height, size.height + padding * 2)
+        measuredSize.width = max(measuredSize.width, size.width + padding.horizontalSum.value)
+        measuredSize.height = max(measuredSize.height, size.height + padding.verticalSum.value)
         if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}")
     }
 
@@ -142,8 +143,8 @@ fun UIView.frameLayoutSizeThatFits(
 
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
     var t = PerformanceInfo.trace("calcSizeFrame")
-    val padding = extensionPadding ?: 0.0
-    val remaining = size.copy(width = size.width - 2 * padding, height = size.height - 2 * padding)
+    val padding = extensionPadding ?: Edges.ZERO
+    val remaining = size.copy(width = size.width - 2 * padding.horizontalSum.value, height = size.height - 2 * padding.verticalSum.value)
 
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView

@@ -53,7 +53,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         }
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }

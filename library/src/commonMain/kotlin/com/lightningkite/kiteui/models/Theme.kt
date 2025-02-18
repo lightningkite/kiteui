@@ -6,18 +6,22 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-enum class UseBackground {
-    No, WithoutPadding, Yes
-}
-
-data class ThemeAndBack(val theme: Theme, val useBackground: UseBackground) {
+data class ThemeAndBack(val theme: Theme, val drawBackground: Boolean, val padding: Boolean) {
     operator fun get(semantic: Semantic): ThemeAndBack = this + semantic
     operator fun plus(other: ThemeDerivation): ThemeAndBack {
         val b = other(theme)
-        return when (useBackground) {
-            UseBackground.No -> b
-            UseBackground.WithoutPadding -> if (b.useBackground == UseBackground.No) b.theme.withBackNoPadding else b
-            UseBackground.Yes -> b.theme.withBack
+        return if(drawBackground || b.drawBackground) {
+            if(padding || b.padding) {
+                b.theme.withBack
+            } else {
+                b.theme.withBackNoPadding
+            }
+        } else {
+            if(padding || b.padding) {
+                b.theme.withoutBackButPadding
+            } else {
+                b.theme.withoutBack
+            }
         }
     }
 }
@@ -65,6 +69,11 @@ interface Semantic : ThemeDerivation {
     val key: String
     fun default(theme: Theme): ThemeAndBack
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
+}
+
+data object ForcePaddingSemantic: Semantic {
+    override val key: String = "fpad"
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }
 
 data object InteractiveSemantic : Semantic {
@@ -355,7 +364,9 @@ class Theme(
     val elevation: Dimension = 1.px,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
     val spacing: Dimension = 1.rem,
+    val padding: Edges = Edges(spacing),
     val navSpacing: Dimension = 0.rem,
+    val navPadding: Edges = Edges(navSpacing),
     val foreground: Paint = Color.black,
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
@@ -373,9 +384,10 @@ class Theme(
 ) {
     val icon: Paint get() = iconOverride ?: foreground
 
-    val withBack = ThemeAndBack(this, UseBackground.Yes)
-    val withBackNoPadding = ThemeAndBack(this, UseBackground.WithoutPadding)
-    val withoutBack = ThemeAndBack(this, UseBackground.No)
+    val withBack = ThemeAndBack(this, true, true)
+    val withBackNoPadding = ThemeAndBack(this, true, false)
+    val withoutBack = ThemeAndBack(this, false, false)
+    val withoutBackButPadding = ThemeAndBack(this, false, true)
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
     operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {

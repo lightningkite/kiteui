@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views
 
 
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.Property
@@ -60,8 +61,8 @@ var UIView.explicitlyNeedsLayout: Boolean? by UIViewExplicitlyNeedsLayout
 private val UIViewWeight = ExtensionProperty<UIView, Float>()
 var UIView.extensionWeight: Float? by UIViewWeight
 
-private val UIViewPadding = ExtensionProperty<UIView, Double>()
-var UIView.extensionPadding: Double? by UIViewPadding
+private val UIViewPadding = ExtensionProperty<UIView, Edges>()
+var UIView.extensionPadding: Edges? by UIViewPadding
 
 private val UIViewSizeRules = ExtensionProperty<UIView, SizeConstraints>()
 var UIView.extensionSizeConstraints: SizeConstraints? by UIViewSizeRules

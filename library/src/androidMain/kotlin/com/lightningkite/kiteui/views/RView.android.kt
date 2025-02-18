@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import android.animation.ValueAnimator
-import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -10,27 +9,21 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.content.getSystemService
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
-import com.lightningkite.kiteui.views.direct.setPaddingAll
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
     init {
-        if(Looper.myLooper() != Looper.getMainLooper())
+        if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
     }
 
@@ -39,57 +32,79 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
-    actual override fun opacitySet(value: Double) {
-        if (animationsEnabled) {
-            ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
-                duration = theme.transitionDuration.inWholeMilliseconds
-                addUpdateListener {
-                    native.alpha = animatedValue as Float
-                }
-            }.start()
-        } else {
-            native.alpha = value.toFloat()
+    override var opacity: Double
+        get() = super.opacity
+        set(value) {
+            super.opacity = value
+            if (animationsEnabled) {
+                ValueAnimator.ofFloat(native.alpha, value.toFloat()).apply {
+                    duration = theme.transitionDuration.inWholeMilliseconds
+                    addUpdateListener {
+                        native.alpha = animatedValue as Float
+                    }
+                }.start()
+            } else {
+                native.alpha = value.toFloat()
+            }
         }
-    }
 
-    actual override fun existsSet(value: Boolean) {
-        // Setting visibility to GONE does not work if an animation is running
-        if (!exists) {
-            native.clearAnimation()
+    override var exists: Boolean
+        get() = super.exists
+        set(value) {
+            super.exists = value
+            // Setting visibility to GONE does not work if an animation is running
+            if (!exists) {
+                native.clearAnimation()
+            }
+            native.visibility = if (value) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            (parent?.native as? DesiredSizeView)?.apply {
+                visibility = native.visibility
+            }
         }
-        native.visibility = if (value) {
-            View.VISIBLE
-        } else {
-            View.GONE
+
+    override var visible: Boolean
+        get() = super.visible
+        set(value) {
+            super.visible = value
+            native.visibility = if (value) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
         }
-        (parent?.native as? DesiredSizeView)?.apply {
-            visibility = native.visibility
+
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            for (child in children) child.updateCorners()
         }
-    }
 
-    actual override fun visibleSet(value: Boolean) {
-        native.visibility = if (value) {
-            View.VISIBLE
-        } else {
-            View.INVISIBLE
+    override var ignoreInteraction: Boolean
+        get() = super.ignoreInteraction
+        set(value) {
+            super.ignoreInteraction = value
+            native.isClickable = !value
+            native.isFocusable = !value
         }
-    }
 
-    actual override fun spacingSet(value: Dimension?) {
-        for (child in children) child.updateCorners()
-    }
+    override var paddingByEdge: Edges?
+        get() = super.paddingByEdge
+        set(value) {
+            super.paddingByEdge = value
+            for (child in children) child.updateCorners()
+        }
 
-    actual override fun ignoreInteractionSet(value: Boolean) {
-        native.isClickable = !value
-        native.isFocusable = !value
-    }
-
-    actual override fun forcePaddingSet(value: Boolean?) {
-    }
-
-    override fun transitionIdSet(value: String?) {
-        native.transitionName = value
-    }
+    override var transitionId: String?
+        get() = super.transitionId
+        set(value) {
+            super.transitionId = value
+            native.transitionName = value
+        }
 
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
         generateSequence(native) {
@@ -144,10 +159,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             updateCorners()
         }
     }
+
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
-            is CornerRadii.RatioOfSize -> if(it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
+            is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
             // TODO: Implement per-corner radii on Android
@@ -155,39 +171,41 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
         // size on Android
-/*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
-            native.addOnLayoutChangeListener(layoutChangeListener)
-        } else {
-            native.removeOnLayoutChangeListener(layoutChangeListener)
-        }*/
+        /*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
+                    native.addOnLayoutChangeListener(layoutChangeListener)
+                } else {
+                    native.removeOnLayoutChangeListener(layoutChangeListener)
+                }*/
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }
 
-    actual override fun applyElevation(dimension: Dimension) {
-        native.elevation = dimension.value
-    }
-
-    actual override fun applyPadding(dimension: Dimension?) {
-        native.setPaddingAll(dimension?.value?.roundToInt() ?: 0)
-    }
-
-    actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        val view = native
-        if (fullyApply) {
-            val backgroundDrawable = theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+    actual override fun applyTheme(theme: ThemeAndBack) {
+        val padding = paddingByEdge ?: when {
+            !theme.padding -> null
+            useNavSpacing -> theme.theme.navPadding
+            else -> theme.theme.padding
+        }
+        native.setPadding(
+            padding?.left?.value?.toInt() ?: 0,
+            padding?.top?.value?.toInt() ?: 0,
+            padding?.right?.value?.toInt() ?: 0,
+            padding?.bottom?.value?.toInt() ?: 0,
+        )
+        if (theme.drawBackground) {
+            native.elevation = theme.theme.elevation.value
+        } else {
+            native.elevation = 0f
+        }
+        if (theme.drawBackground) {
+            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable
         } else {
             backgroundBlock = null
-            view.elevation = 0f
             background = null
         }
-    }
-
-    actual override fun applyForeground(theme: Theme) {
-
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
@@ -229,19 +247,51 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         } ?: RippleDrawable(rippleColor, backgroundDrawable, null)
     }
 
-    protected fun applyBackgroundWithRipple(theme: Theme, fullyApply: Boolean) {
-        background = getBackgroundWithRipple(theme, fullyApply, background as? RippleDrawable)
+    protected fun applyThemeWithRipple(theme: ThemeAndBack) {
+        val padding = paddingByEdge ?: when {
+            !theme.padding -> null
+            useNavSpacing -> theme.theme.navPadding
+            else -> theme.theme.padding
+        }
+        native.setPadding(
+            padding?.left?.value?.toInt() ?: 0,
+            padding?.top?.value?.toInt() ?: 0,
+            padding?.right?.value?.toInt() ?: 0,
+            padding?.bottom?.value?.toInt() ?: 0,
+        )
+        if (theme.drawBackground) {
+            native.elevation = theme.theme.elevation.value
+        } else {
+            native.elevation = 0f
+        }
+        background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
         updateCorners()
     }
 
-    protected fun applyBackgroundWithClipping(theme: Theme, fullyApply: Boolean) {
-        if (fullyApply) {
-            val backgroundDrawable = theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+    protected fun applyThemeWithClipping(theme: ThemeAndBack) {
+        val padding = paddingByEdge ?: when {
+            !theme.padding -> null
+            useNavSpacing -> theme.theme.navPadding
+            else -> theme.theme.padding
+        }
+        native.setPadding(
+            padding?.left?.value?.toInt() ?: 0,
+            padding?.top?.value?.toInt() ?: 0,
+            padding?.right?.value?.toInt() ?: 0,
+            padding?.bottom?.value?.toInt() ?: 0,
+        )
+        if (theme.drawBackground) {
+            native.elevation = theme.theme.elevation.value
+        } else {
+            native.elevation = 0f
+        }
+        if (theme.drawBackground) {
+            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable
         } else {
-            val backgroundDrawable = theme.backgroundClippingDrawableWithoutCorners()
+            val backgroundDrawable = theme.theme.backgroundClippingDrawableWithoutCorners()
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable

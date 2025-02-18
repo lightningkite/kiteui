@@ -11,6 +11,7 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -37,12 +38,14 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
             native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
         }
-
-    override fun spacingSet(value: Dimension?) {
-        super.spacingSet(value)
-        native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
-    }
-    override fun applyForeground(theme: Theme) {
+    actual fun spacingOverride(amount: Dimension): Unit = TODO()
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        }
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
     }
 }
@@ -69,12 +72,14 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
             }
         }
     }
-    override fun spacingSet(value: Dimension?) {
-        super.spacingSet(value)
-        native.gap = (value ?: theme.spacing).value.roundToInt()
-    }
-    override fun applyForeground(theme: Theme) {
-        native.gap = (spacing ?: theme.spacing).value.roundToInt()
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        }
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+        native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
     }
 }
 

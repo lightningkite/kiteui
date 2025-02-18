@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
 
@@ -16,9 +17,8 @@ import platform.UIKit.UIView
 
 actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
     override val native = NSpace()
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.natSize = CGSizeMake(theme.spacing.value * multiplier, theme.spacing.value * multiplier)
+    override fun applyTheme(theme: ThemeAndBack) {
+        native.natSize = CGSizeMake(theme.theme.spacing.value * multiplier, theme.theme.spacing.value * multiplier)
     }
     init {
 //        sizeConstraints =

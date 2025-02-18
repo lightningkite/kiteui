@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
@@ -14,7 +15,7 @@ actual class ActivityIndicator actual constructor(context: RContext): RView(cont
         userInteractionEnabled = false
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.color = theme.foreground.closestColor().toUiColor()
     }
 }

@@ -57,7 +57,7 @@ actual class IconView actual constructor(context: RContext): RView(context) {
             native.contentDescription = value
         }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.iconPaint = theme.icon
     }
 }

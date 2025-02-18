@@ -25,7 +25,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
         native.addSubview(textField)
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }

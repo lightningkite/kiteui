@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.titledSection
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Routable("docs/reactive-tools")
 object ReactiveToolsScreen : Screen, DocScreen {
@@ -193,6 +194,43 @@ object ReactiveToolsScreen : Screen, DocScreen {
                                 }
                                 text {
                                     ::content { "Reusing the same calculation in another location: ${calculation() % 3}" }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                titledSection("Using Readable and Writable outside of reactive scopes") {
+                    text("Interacting with Readable and Writable outside of reactive scopes is easy - use these:")
+
+                    titledSection("Get the current value of a Readable") {
+                        text("Readables don't necessarily have a value all of the time - they might be currently loading, or perhaps have even errored out while loading or calculating.")
+                        text("As such, you must either wait for a value or be prepared for there to be no value.")
+                        titledSection("Wait for a value") {
+                            example("""
+                                text {
+                                    launch {
+                                        content = calculation().toString()
+                                    }
+                                }
+                            """.trimIndent()) {
+                                text {
+                                    launch {
+                                        content = calculation().toString()
+                                    }
+                                }
+                            }
+                        }
+                        titledSection("Get the state immediately, if possible.") {
+                            text("You can get the current state as it stands using 'state'.")
+                            text("Note that the current state may be not ready or errored out.")
+                            example("""
+                                text {
+                                    content = calculation.state.getOrNull().toString()
+                                }
+                            """.trimIndent()) {
+                                text {
+                                    content = calculation.state.getOrNull().toString()
                                 }
                             }
                         }

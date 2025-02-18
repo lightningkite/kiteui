@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.reactive.WindowInfo
 import com.lightningkite.kiteui.reactive.invoke
@@ -12,7 +13,7 @@ import platform.UIKit.UIView
 import kotlin.math.absoluteValue
 
 
-actual class RowOrCol actual constructor(context: RContext): RView(context) {
+actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override val native = LinearLayout()
 
     actual var vertical: Boolean
@@ -21,18 +22,25 @@ actual class RowOrCol actual constructor(context: RContext): RView(context) {
             native.horizontal = !value
         }
 
+    actual fun spacingOverride(amount: Dimension): Unit = TODO()
 
-    override fun spacingSet(value: Dimension?) {
-        super.spacingSet(value)
-        native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value
-    }
-    override fun applyForeground(theme: Theme) {
-        native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.gap = (value ?: if (useNavSpacing) theme.navSpacing else theme.spacing).value
+        }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme);
+        native.gap = (spacing ?: if (useNavSpacing) theme.theme.navSpacing else theme.theme.spacing).value
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>): RView(context) {
+actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) :
+    RView(context) {
     override val native = LinearLayout()
+
     init {
         reactiveScope {
             val w = AppState.windowInfo().width
@@ -47,16 +55,19 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
         }
     }
 
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.gap = (value ?: if (useNavSpacing) theme.navSpacing else theme.spacing).value
+        }
 
-    override fun spacingSet(value: Dimension?) {
-        super.spacingSet(value)
-        native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value
-    }
-    override fun applyForeground(theme: Theme) {
-        native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme);
+        native.gap = (spacing ?: if (useNavSpacing) theme.theme.navSpacing else theme.theme.spacing).value
     }
 }
 
-actual class Stack actual constructor(context: RContext): RView(context) {
+actual class Stack actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout()
 }

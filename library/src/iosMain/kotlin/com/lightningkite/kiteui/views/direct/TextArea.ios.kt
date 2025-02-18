@@ -27,7 +27,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         native.addSubview(textField)
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }

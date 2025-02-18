@@ -50,14 +50,21 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     }
 
 
-    override fun applyPadding(dimension: Dimension?) {
-        super.applyPadding(dimension)
-        paddingPx = dimension?.px ?: 0.0
-    }
-    override fun applyForeground(theme: Theme) {
-        spacingPx = spacing?.px ?: theme.spacing.px
-    }
-    override fun spacingSet(value: Dimension?) {
+    override var paddingByEdge: Edges?
+        get() = super.paddingByEdge
+        set(value) {
+            super.paddingByEdge = value
+            paddingPx = value?.left?.px ?: 0.0
+            //TODO: full edges to API
+        }
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            spacingPx = spacing?.px ?: theme.spacing.px
+        }
+
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         spacingPx = spacing?.px ?: theme.spacing.px
     }
 

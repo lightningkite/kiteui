@@ -1,14 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.content.Context
-import android.view.View
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.await
 import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
@@ -39,5 +34,5 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         return super.applyState(t)
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
+    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
 }

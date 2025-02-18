@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -11,14 +12,10 @@ import platform.UIKit.*
 
 actual class ProgressBar actual constructor(context: RContext) : RView(context) {
     override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
-        native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
-    }
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        super.applyBackground(theme, fullyApply)
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme);
         native.progressLayer.setMask(backgroundLayer?.getOrInitBackgroundMask())
+        native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
     actual var ratio by native::progress
 }

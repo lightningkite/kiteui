@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.reactive.Readable
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import kotlinx.datetime.format.Padding
 import java.util.WeakHashMap
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -26,15 +27,21 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         native.silentRequestLayout()
     }
 
-    override fun applyPadding(dimension: Dimension?) {
-        super.applyPadding(dimension)
-        native.padding = dimension?.value?.toDouble() ?: 0.0
-    }
+    override var paddingByEdge: Edges?
+        get() = super.paddingByEdge
+        set(value) {
+            super.paddingByEdge = value
+            native.padding = value?.left?.value?.toDouble() ?: 0.0
+            //TODO: full edges to API
+        }
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
+        }
 
-    override fun applyForeground(theme: Theme) {
-        native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
-    }
-    override fun spacingSet(value: Dimension?) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
     }
 }

@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
 actual class Stack actual constructor(context: RContext) : RView(context) {
@@ -147,8 +148,8 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
+    actual fun spacingOverride(amount: Dimension): Unit = TODO()
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         if (!complex) {
             val amnt = spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing
             for (child in children) {

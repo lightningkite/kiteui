@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 
@@ -17,8 +18,8 @@ actual class Separator actual constructor(context: RContext): RView(context) {
         minimumHeight = 1
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {}
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) {
+        val theme = theme.theme
         val c = native.parent as? SimplifiedLinearLayout
         val v = native
         v.setBackgroundColor(theme.foreground.closestColor().colorInt())

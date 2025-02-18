@@ -40,10 +40,4 @@ actual class AutoCompleteTextField actual constructor(context: RContext): RViewW
             native.setAdapter(KiteUiStringAdapter(native.context, AndroidAppContext.autoCompleteLayoutResource, value))
         }
 
-    override fun applyForeground(theme: Theme) {
-    }
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-
-    }
 }

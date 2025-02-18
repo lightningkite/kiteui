@@ -75,8 +75,7 @@ actual class TextView actual constructor(context: RContext) :
                 }
             }
         }
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         if (this == viewDebugTarget) {
             println("native.setTextColor: ${theme.id} ${theme.foreground}")
         }

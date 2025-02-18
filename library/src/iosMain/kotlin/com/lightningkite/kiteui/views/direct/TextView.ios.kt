@@ -123,7 +123,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.foreground = theme.foreground
         fontAndStyle = theme.font
 

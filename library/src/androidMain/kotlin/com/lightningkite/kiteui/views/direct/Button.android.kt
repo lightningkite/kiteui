@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
@@ -28,7 +27,9 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         working.addListener { progress.visibility = if(working.value) View.VISIBLE else View.GONE }
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyThemeWithRipple(theme)
+        val theme = theme.theme
         progress.indeterminateTintList = ColorStateList.valueOf(theme.foreground.colorInt())
     }
 
@@ -53,6 +54,4 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
 }

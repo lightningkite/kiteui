@@ -10,6 +10,7 @@ import android.graphics.drawable.RotateDrawable
 import android.view.View
 import androidx.annotation.FloatRange
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
@@ -20,7 +21,8 @@ actual class CircularProgress actual constructor(context: RContext) : RView(cont
 
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) {
+        val theme = theme.theme
         native.setProgressColor(theme.foreground.colorInt())
         native.setProgressBackgroundColor(theme.background.colorInt())
         native.setProgressWidth(15f)

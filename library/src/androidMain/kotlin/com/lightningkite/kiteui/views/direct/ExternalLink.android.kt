@@ -1,17 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.content.Intent
-import android.content.res.ColorStateList
-import android.net.Uri
 import android.widget.FrameLayout
-import android.widget.ProgressBar
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
-import java.util.*
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
@@ -50,5 +45,5 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         return super.applyState(t)
     }
 
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) = applyBackgroundWithRipple(theme, fullyApply)
+    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
 }

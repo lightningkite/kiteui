@@ -7,6 +7,7 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.Gravity
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
@@ -20,7 +21,9 @@ actual class ProgressBar actual constructor(context: RContext): RView(context) {
         progressDrawable = ClipDrawable(ShapeDrawable(), Gravity.START, ClipDrawable.HORIZONTAL)
         clipToOutline = true
     }
-    override fun applyForeground(theme: Theme) {
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        val theme = theme.theme
         if(VERSION.SDK_INT >= VERSION_CODES.O) {
             native.setProgressTintList(ColorStateList.valueOf(theme.foreground.colorInt()))
         }

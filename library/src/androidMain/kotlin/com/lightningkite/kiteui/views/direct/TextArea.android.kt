@@ -28,8 +28,7 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
 
-    override fun applyForeground(theme: Theme) {
-        super.applyForeground(theme)
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.setTextColor(theme.foreground.colorInt())
         native.setHintTextColor(theme.foreground.closestColor().withAlpha(0.5f).colorInt())
         native.setTypeface(

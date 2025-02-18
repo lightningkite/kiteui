@@ -80,7 +80,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }

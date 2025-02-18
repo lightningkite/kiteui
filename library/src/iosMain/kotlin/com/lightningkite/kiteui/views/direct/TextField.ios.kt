@@ -27,7 +27,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         native.addSubview(textField)
     }
 
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
         updateHint()

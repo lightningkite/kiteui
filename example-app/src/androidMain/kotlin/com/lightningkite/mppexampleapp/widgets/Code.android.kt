@@ -71,7 +71,7 @@ actual class Code actual constructor(context: RContext) :
         set(value) {
             field = value
         }
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         super.applyForeground(theme)
         if (this == viewDebugTarget) {
             println("native.setTextColor: ${theme.id} ${theme.foreground}")

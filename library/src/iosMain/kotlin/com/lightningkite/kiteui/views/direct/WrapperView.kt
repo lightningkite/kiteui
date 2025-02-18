@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.views.extensionPadding
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
@@ -16,21 +17,21 @@ class WrapperView : UIView(CGRectZero.readValue()) {
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val p = extensionPadding ?: 0.0
+        val p = extensionPadding ?: Edges.ZERO
         return ((subviews.firstOrNull() as? UIView)?.sizeThatFits(size) ?: size).useContents {
-            CGSizeMake(width + p * 2, height + p * 2)
+            CGSizeMake(width + p.horizontalSum.value * 2, height + p.verticalSum.value * 2)
         }
     }
 
     override fun layoutSubviews() {
         super.layoutSubviews()
-        val p = extensionPadding ?: 0.0
+        val p = extensionPadding ?: Edges.ZERO
         bounds.useContents {
             (subviews.firstOrNull() as? UIView)?.setPsuedoframe(
-                p,
-                p,
-                this@useContents.size.width - p * 2,
-                this@useContents.size.height - p * 2,
+                p.left.value,
+                p.top.value,
+                this@useContents.size.width - p.horizontalSum.value * 2,
+                this@useContents.size.height - p.verticalSum.value * 2,
             )
         }
     }

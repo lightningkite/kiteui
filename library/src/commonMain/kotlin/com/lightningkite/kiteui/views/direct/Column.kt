@@ -9,4 +9,5 @@ import kotlin.contracts.*
 
 expect class RowOrCol(context: RContext) : RView {
     var vertical: Boolean
+    fun spacingOverride(amount: Dimension)
 }

@@ -21,7 +21,8 @@ import com.lightningkite.kiteui.views.*
 
 actual class Checkbox actual constructor(context: RContext): RView(context) {
     override val native = AndroidCheckBox(context.activity)
-    override fun applyForeground(theme: Theme) {
+    override fun applyTheme(theme: ThemeAndBack) {
+        val theme = theme.theme
         CompoundButtonCompat.setButtonTintList(
             native, ColorStateList(
                 arrayOf<IntArray>(intArrayOf(-R.attr.state_checked), intArrayOf(R.attr.state_checked)), intArrayOf(
@@ -45,8 +46,4 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
     }
 
     actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
-
-    override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        // Never apply a background
-    }
 }

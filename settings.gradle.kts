@@ -2,7 +2,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 pluginManagement {
     repositories {
         mavenLocal()
-        maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
         google()
         gradlePluginPortal()
         mavenCentral()

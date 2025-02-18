@@ -9,43 +9,58 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override var showOnPrint: Boolean = true
         set(value) {
-            if(value)
+            if (value)
                 native.classes.remove("do-not-print")
             else
                 native.classes.add("do-not-print")
         }
 
-    protected actual override fun opacitySet(value: Double) {
-        native.style.opacity = value.toString()
-    }
-
-    protected actual override fun existsSet(value: Boolean) {
-        native.attributes.hidden = !value
-    }
-
-    protected actual override fun visibleSet(value: Boolean) {
-        native.style.visibility = if(value) "visible" else "hidden"
-    }
-
-    protected actual override fun spacingSet(value: Dimension?) {
-        native.setStyleProperty("--spacing", value?.value)
-    }
-
-    protected actual override fun ignoreInteractionSet(value: Boolean) {
-        if(value) native.classes.add("noInteraction")
-        else native.classes.remove("noInteraction")
-    }
-
-    protected actual override fun forcePaddingSet(value: Boolean?) {
-        when(value) {
-            true -> native.classes.add("padded")
-            else -> native.classes.remove("padded")
+    override var opacity: Double
+        get() = super.opacity
+        set(value) {
+            super.opacity = value
+            native.style.opacity = value.toString()
         }
-        when(value) {
-            false -> native.classes.add("unpadded")
-            else -> native.classes.remove("unpadded")
+
+    override var exists: Boolean
+        get() = super.exists
+        set(value) {
+            super.exists = value
+            native.attributes.hidden = !value
         }
-    }
+
+    override var visible: Boolean
+        get() = super.visible
+        set(value) {
+            super.visible = value
+            native.style.visibility = if (value) "visible" else "hidden"
+        }
+
+    override var spacing: Dimension?
+        get() = super.spacing
+        set(value) {
+            super.spacing = value
+            native.setStyleProperty("--spacing", value?.value)
+        }
+
+    override var paddingByEdge: Edges?
+        get() = super.paddingByEdge
+        set(value) {
+            super.paddingByEdge = value
+            native.style.paddingLeft = value?.left?.value ?: "unset"
+            native.style.paddingTop = value?.top?.value ?: "unset"
+            native.style.paddingRight = value?.right?.value ?: "unset"
+            native.style.paddingBottom = value?.bottom?.value ?: "unset"
+        }
+
+    override var ignoreInteraction: Boolean
+        get() = super.ignoreInteraction
+        set(value) {
+            super.ignoreInteraction = value
+            if (value) native.classes.add("noInteraction")
+            else native.classes.remove("noInteraction")
+        }
+
 
     actual override fun scrollIntoView(
         horizontal: Align?,
@@ -68,27 +83,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // Do nothing.  No access to manual GC exists in JS.
     }
 
-    actual override fun applyElevation(dimension: Dimension) {
-    }
-
-    actual override fun applyPadding(dimension: Dimension?) {
-        if(dimension != null) native.classes.add("padded")
-        else native.classes.remove("padded")
+    actual override fun applyTheme(theme: ThemeAndBack) {
         if (useNavSpacing) native.classes.add("useNavSpacing")
         else native.classes.remove("useNavSpacing")
-    }
-
-    actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-        if (fullyApply) native.classes.add("transition")
-        else native.classes.remove("transition")
+        if(theme.drawBackground) {
+            native.classes.add("transition")
+        } else {
+            native.classes.remove("transition")
+        }
+        if (theme.padding) {
+            native.classes.add("padded")
+        } else {
+            native.classes.remove("padded")
+        }
 
         native.classes.removeAll { it.startsWith("t-") }
-        native.classes.addAll(context.kiteUiCss.themeInteractive(theme))
+        native.classes.addAll(context.kiteUiCss.themeInteractive(theme.theme))
 
         native.setStyleProperty("--parentSpacing", parentSpacing.value)
-    }
-
-    actual override fun applyForeground(theme: Theme) {
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
@@ -105,13 +117,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     init {
         this.working.addListener {
-            if(working.value) native.classes.add("working")
+            if (working.value) native.classes.add("working")
             else native.classes.remove("working")
         }
-        if(this.hasAlternateBackedStates()) native.classes.add("mightTransition")
+        if (this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }
 
-    companion object { private var idCounter: Int = 0 }
+    companion object {
+        private var idCounter: Int = 0
+    }
+
     private val randomId = idCounter++
     fun toStringWithoutParent(): String = "${this::class.simpleName}#${randomId}"
     override fun toString(): String = "${toStringWithoutParent()}, child of ${parent?.toStringWithoutParent()}"
@@ -124,6 +139,7 @@ expect class FutureElementAttributes
 
 expect class FutureElement {
     constructor()
+
     var xmlns: String?
     var tag: String
     val attributes: FutureElementAttributes
@@ -132,8 +148,8 @@ expect class FutureElement {
     var desiredHorizontalGravity: Align?
     fun setAttribute(key: String, value: String?)
     fun setStyleProperty(key: String, value: String?)
-    inline fun addEventListener(name: String, crossinline listener: (Event)->Unit)
-    inline fun replaceEventListener(name: String, crossinline listener: (Event)->Unit)
+    inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
+    inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
     var classes: MutableSet<String>
     var id: String?
     var content: String?
