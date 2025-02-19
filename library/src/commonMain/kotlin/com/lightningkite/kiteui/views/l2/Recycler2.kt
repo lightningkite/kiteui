@@ -494,9 +494,11 @@ class Recycler2(
                 log?.log("measure stop: if (within == Size.Zero) {")
                 return default
             }
-            viewport = scroll.viewport.state.getOrNull() ?: run {
-                log?.log("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
-                return default
+            if(!needToLayoutFirst) {
+                viewport = scroll.viewport.state.getOrNull() ?: run {
+                    log?.log("measure stop: viewport = scroll.viewport.state.getOrNull() ?: run {")
+                    return default
+                }
             }
             log?.log("measure: Loaded viewport, found ${viewport}")
             if (viewport.width == 0.0 || viewport.height == 0.0) {
@@ -646,10 +648,10 @@ class Recycler2(
                     it.offset(x, y)
                 }
                 previousViewport = previousViewport.copy(
-                    left = viewport.left + vx,
-                    top = viewport.top + vy,
-                    right = viewport.right + vx,
-                    bottom = viewport.bottom + vy
+                    left = previousViewport.left + vx,
+                    top = previousViewport.top + vy,
+                    right = previousViewport.right + vx,
+                    bottom = previousViewport.bottom + vy
                 )
                 viewport = viewport.copy(
                     left = viewport.left + vx,
@@ -737,7 +739,6 @@ class Recycler2(
         }
 
         override fun layout(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size) {
-            println("layout proper")
             this@Recycler2.log?.log("LAYOUT PROPER STARTED: $within")
             if (stahp) return
             if (!needToLayoutFirst) measure(layout, inProgress, within)
