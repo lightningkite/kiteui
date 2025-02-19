@@ -40,7 +40,12 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
         beforeNextElementSetup {
-//            native.set
+            try {
+                val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
+                lp.gapBeforeOverride = amount.value.toInt()
+            } catch (ex: Throwable) {
+                RuntimeException("Weight is only available within a column or row, but the parent is a ${parent?.native?.let { it::class.simpleName }}").printStackTrace()
+            }
         }
     }
     override var spacing: Dimension?

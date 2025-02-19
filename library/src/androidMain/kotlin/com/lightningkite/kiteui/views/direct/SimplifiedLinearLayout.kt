@@ -38,7 +38,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
     override fun shouldDelayChildPressedState(): Boolean {
         return false
     }
-    
+
     var gap: Int = 0
         set(value) {
             field = value
@@ -114,7 +114,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             }
             mBaselineAlignedChildIndex = i
         }
-    
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (mOrientation == VERTICAL) {
             measureVertical(widthMeasureSpec, heightMeasureSpec)
@@ -197,7 +197,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (i > 0) mTotalLength += (gap * lp.gapRatio).toInt()
+            if (i > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.height == 0 && lp.weightUnlessIgnored > 0
@@ -549,7 +549,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 continue
             }
             val lp = child.layoutParams as LayoutParams
-            if (nonSkippedChildCount > 0) mTotalLength += (gap * lp.gapRatio).toInt()
+            if (nonSkippedChildCount > 0) mTotalLength += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
             nonSkippedChildCount++
             totalWeight += lp.weightUnlessIgnored
             val useExcessSpace = lp.width == 0 && lp.weightUnlessIgnored > 0
@@ -608,7 +608,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     val totalLength = mTotalLength
                     mTotalLength = Math.max(
                         totalLength, (totalLength + childWidth
-                                 + getNextLocationOffset(child))
+                                + getNextLocationOffset(child))
                     )
                 }
                 if (useLargestChild) {
@@ -1077,7 +1077,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     child, childLeft, childTop + getLocationOffset(child),
                     childWidth, childHeight
                 )
-                childTop += childHeight + (gap * lp.gapRatio).toInt() + getNextLocationOffset(child)
+                childTop += childHeight + ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt() + getNextLocationOffset(child)
                 i += getChildrenSkipCount(child, i)
             }
             i++
@@ -1195,7 +1195,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     child, childLeft + getLocationOffset(child), childTop,
                     childWidth, childHeight
                 )
-                childLeft += (childWidth + (gap * lp.gapRatio).toInt() +
+                childLeft += (childWidth + ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt() +
                         getNextLocationOffset(child))
                 i += getChildrenSkipCount(child, childIndex)
             }
@@ -1341,6 +1341,9 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          */
         @ViewDebug.ExportedProperty(category = "layout")
         var gapRatio = 1f
+
+        @ViewDebug.ExportedProperty(category = "layout")
+        var gapBeforeOverride: Int? = null
 
         override var maxWidth: Int = Int.MAX_VALUE / 4
         override var maxHeight: Int = Int.MAX_VALUE / 4
