@@ -22,20 +22,37 @@ object ExperimentScreen : Screen {
         get() = super.title
 
     override fun ViewWriter.render() {
-        col {
-            expanding - recyclerView {
-                log = ConsoleRoot.tag("X")
-//                children(Constant((1..20).toList()), id = { it }) {
-//                    text { ::content { it().toString() } }
-//                }
-                childrenMultipleTypes(Constant((1..200).toList()), id = { it }) {
-                    println("Building...")
-                    elementsMatching { it % 2 == 0 } renderedAs { text { ::content { it().toString() } } }
-                    elementsMatching { it % 2 == 1 } renderedAs { card - text { ::content { it().toString() } } }
-                }
-                println("OK")
+        scrolls - col {
+            spacing = 0.5.rem
+            paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
+            h1("Weird spacing time")
+            spacingOverrideBeforeNext(10.rem)
+            text("Really far down")
+            spacingOverrideBeforeNext(0.rem)
+            text("Really close")
+            spacingOverrideBeforeNext(0.rem)
+            text {
+                content = "Really close"
+                exists = false
             }
+            spacingOverrideBeforeNext(1.rem)
+            text("Really close")
         }
+//        col {
+//            expanding - recyclerView {
+//                log = ConsoleRoot.tag("X")
+////                children(Constant((1..20).toList()), id = { it }) {
+////                    text { ::content { it().toString() } }
+////                }
+//                childrenMultipleTypes(Constant((1..200).toList()), id = { it }) {
+//                    println("Building...")
+//                    elementsMatching { it % 2 == 0 } renderedAs { text { ::content { it().toString() } } }
+//                    elementsMatching { it % 2 == 1 } renderedAs { card - text { ::content { it().toString() } } }
+//                }
+//                println("OK")
+//            }
+//        }
+
 //        col {
 //            val expanded = Property(-1)
 //            val data = Property((1..10).toList())

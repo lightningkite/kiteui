@@ -38,7 +38,11 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
             native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
         }
-    actual fun spacingOverride(amount: Dimension): Unit = TODO()
+    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        beforeNextElementSetup {
+//            native.set
+        }
+    }
     override var spacing: Dimension?
         get() = super.spacing
         set(value) {

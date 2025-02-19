@@ -24,7 +24,7 @@ private fun RView.selectedIfRouteMatches(it: NavLink) {
             ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(
             it.destination.invoke(this)()
         )?.urlLikePath?.segments
-        if (matchingScreen) SelectedSemantic else null
+        if (matchingScreen) SelectedSemantic else ForcePaddingSemantic
     }
 }
 

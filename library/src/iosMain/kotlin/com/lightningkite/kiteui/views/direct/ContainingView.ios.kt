@@ -22,7 +22,11 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             native.horizontal = !value
         }
 
-    actual fun spacingOverride(amount: Dimension): Unit = TODO()
+    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        beforeNextElementSetup {
+            native.extensionSpacingBeforeOverride = amount
+        }
+    }
 
     override var spacing: Dimension?
         get() = super.spacing

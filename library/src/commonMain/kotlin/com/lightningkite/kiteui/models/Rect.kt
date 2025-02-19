@@ -43,6 +43,7 @@ data class Edges(
     val right: Dimension,
     val bottom: Dimension
 ) {
+    constructor(horizontal: Dimension, vertical: Dimension):this(left = horizontal, right = horizontal, top = vertical, bottom = vertical)
     companion object {
         val ZERO = Edges(0.px)
     }

@@ -148,7 +148,13 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    actual fun spacingOverride(amount: Dimension): Unit = TODO()
+    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        beforeNextElementSetup {
+            // TODO: Make this work when vertical or gap changes
+            if(vertical) native.style.marginTop = "calc(${amount.value} - var(--parentSpacing))"
+            else native.style.marginLeft = "calc(${amount.value} - var(--parentSpacing))"
+        }
+    }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         if (!complex) {
             val amnt = spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing

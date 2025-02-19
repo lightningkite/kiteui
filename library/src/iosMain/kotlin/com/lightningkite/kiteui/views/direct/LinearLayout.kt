@@ -105,7 +105,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             if (first) {
                 first = false
             } else {
-                measuredSize.primary += gap
+                measuredSize.primary += view.extensionSpacingBeforeOverride?.value ?: gap
             }
             measuredSize.primary += size.primary
             measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding.secondarySum)
@@ -162,7 +162,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             if (first) {
                 first = false
             } else {
-                remaining.primary -= gap
+                remaining.primary -= it.extensionSpacingBeforeOverride?.value ?: gap
             }
             it.extensionWeight?.takeUnless { ignoreWeights }?.let {
                 totalWeight += it
