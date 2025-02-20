@@ -29,7 +29,7 @@ import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
 
 //val defaultTheme = brandBasedExperimental("bsa", normalBack = Color.white)
-val defaultTheme = Theme.flat("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
+val defaultTheme = Theme.flat("default", Angle(0.55f)).customize("default2", transitionDuration = 2.5.seconds)// brandBasedExperimental("bsa", normalBack = Color.white)
 val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: ScreenNavigator, dialog: ScreenNavigator) {

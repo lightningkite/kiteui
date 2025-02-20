@@ -33,6 +33,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            native.useLoadingIndicator = value
+        }
     
     actual var source: ImageSource?
         get() = native.imageSource
@@ -243,9 +248,34 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
         onImageChange?.invoke(image)
     }
 
-    // Loading indicators have been removed. These stubs have been left for potential loading support in the future
-    fun startLoad() { }
-    fun endLoad() { }
+    val loadingIndicator = UIActivityIndicatorView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+
+    init {
+        loadingIndicator.hidden = true
+        addSubview(loadingIndicator)
+    }
+    var useLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            if (!value) {
+                loadingIndicator.stopAnimating()
+                loadingIndicator.hidden = true
+            }
+        }
+
+    fun startLoad() {
+        if(useLoadingIndicator) {
+            loadingIndicator.startAnimating()
+            loadingIndicator.hidden = false
+        }
+    }
+
+    fun endLoad() {
+        if(useLoadingIndicator) {
+            loadingIndicator.stopAnimating()
+            loadingIndicator.hidden = true
+        }
+    }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return this.image?.size?.useContents {
@@ -328,6 +358,11 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            native.imageView.useLoadingIndicator = value
+        }
     
     actual var source: ImageSource? = null
         set(value) {

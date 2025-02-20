@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.lightningkite.kiteui.models.*
@@ -21,6 +22,21 @@ import android.widget.ImageView as AImageView
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = Custom(context.activity)
+    private var placeholder: Drawable = CircularProgressDrawable(context.activity).apply {
+        strokeWidth = 5f
+        centerRadius = 30f
+        start()
+    }
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            placeholder = if(value) CircularProgressDrawable(context.activity).apply {
+                strokeWidth = 5f
+                centerRadius = 30f
+                start()
+            } else ColorDrawable(Color.TRANSPARENT)
+        }
+
     class Custom(context: Context): androidx.appcompat.widget.AppCompatImageView(context) {
         init {
             this.adjustViewBounds = true
@@ -75,7 +91,6 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    private var placeholder = ColorDrawable(Color.WHITE)
 
     actual var source: ImageSource? = null
         set(value) {
@@ -107,11 +122,16 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             }
             requestOptions.into(native.target)
         }
+        fun RequestBuilder<Drawable>.finish() {
+            if(native.drawable == null) placeholder(placeholder).load()
+            else this.transition(withCrossFade(100)).load()
+        }
+        val p = if(native.drawable == null) placeholder else null
         when (value) {
-            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).load()
-            is ImageRaw -> Glide.with(native).load(value.data.data).placeholder(placeholder).load()
-            is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).load()
-            is ImageResource -> Glide.with(native).load(value.resource).load()
+            is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
+            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+            is ImageRemote -> Glide.with(native).load(value.url).finish()
+            is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
             null -> native.setImageDrawable(null)
             else -> TODO()

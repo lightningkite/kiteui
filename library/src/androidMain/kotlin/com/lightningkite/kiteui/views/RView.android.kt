@@ -173,6 +173,14 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
+//        val nativeInteract = native.isClickable || native.isLongClickable || native.isFocusable
+//        if(!nativeInteract) {
+//            if(!ignoreInteraction && fullyApply) {
+//                native.setOnTouchListener { v, _ -> v.performClick(); true }
+//            } else {
+//                native.setOnTouchListener { _, _ -> false }
+//            }
+//        }
         val view = native
         if (fullyApply) {
             val backgroundDrawable = theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)

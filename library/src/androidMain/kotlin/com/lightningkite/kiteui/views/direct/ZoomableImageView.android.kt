@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.app.Activity
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -12,8 +15,21 @@ import android.widget.ImageView as AImageView
 
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
     override val native = PhotoView(context.activity)
-    var placeholder = CircularProgressDrawable(context.activity)
     actual var refreshOnParamChange: Boolean = false
+    private var placeholder: Drawable = CircularProgressDrawable(context.activity).apply {
+        strokeWidth = 5f
+        centerRadius = 30f
+        start()
+    }
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            placeholder = if(value) CircularProgressDrawable(context.activity).apply {
+                strokeWidth = 5f
+                centerRadius = 30f
+                start()
+            } else ColorDrawable(Color.TRANSPARENT)
+        }
 
     actual var source: ImageSource? = null
         set(value) {
