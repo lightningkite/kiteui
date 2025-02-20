@@ -187,8 +187,8 @@ class ScrollView(
 //        println("ScrollView.scrollTo: ${existingX.toInt()}, ${existingY.toInt()} += ${left.toInt()}, ${top.toInt()}")
         native.setContentOffset(
             CGPointMake(
-                x = if (horizontal) left.coerceIn(0.0, maxX - sizeX) else 0.0,
-                y = if (vertical) top.coerceIn(0.0, maxY - sizeY) else 0.0,
+                x = if (horizontal) left.coerceAtMost(maxX - sizeX).coerceAtLeast(0.0) else 0.0,
+                y = if (vertical) top.coerceAtMost(maxY - sizeY).coerceAtLeast(0.0) else 0.0,
             ),
             animated = animated
         )
@@ -217,8 +217,8 @@ class ScrollView(
         val (sizeX, sizeY) = native.bounds.useContents { size.width to size.height }
 //        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
         native.contentOffset = CGPointMake(
-            x = if (horizontal) x.coerceIn(0.0, maxX - sizeX) else existingX,
-            y = if (vertical) y.coerceIn(0.0, maxY - sizeY) else existingY,
+            x = if (horizontal) x.coerceAtMost(maxX - sizeX).coerceAtLeast(0.0) else existingX,
+            y = if (vertical) y.coerceAtMost(maxY - sizeY).coerceAtLeast(0.0) else existingY,
         )
     }
 }
