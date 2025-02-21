@@ -41,7 +41,6 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
 
         val newViewWriter = NewViewWriter(this, context)
         withoutAnimation {
-            native.swapViewKeepLast = false
             newViewWriter.createNewView()
             newViewWriter.newView?.let {
                 transition.enter(it.native)
@@ -51,11 +50,14 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         }
         val created = newViewWriter.newView
         created?.let { it ->
+            native.userInteractionEnabled = true
             animateIfAllowed {
                 it.native.transform = CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
                 it.native.alpha = 1.0
                 println("to ${it.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${it.native.alpha}")
             }
+        } ?: run {
+            native.userInteractionEnabled = false
         }
     }
 

@@ -23,19 +23,41 @@ object ExperimentScreen : Screen {
 
     override fun ViewWriter.render() {
         col {
-            expanding - recyclerView {
-                log = ConsoleRoot.tag("X")
-//                children(Constant((1..20).toList()), id = { it }) {
-//                    text { ::content { it().toString() } }
-//                }
-                childrenMultipleTypes(Constant((1..200).toList()), id = { it }) {
-                    println("Building...")
-                    elementsMatching { it % 2 == 0 } renderedAs { text { ::content { it().toString() } } }
-                    elementsMatching { it % 2 == 1 } renderedAs { card - text { ::content { it().toString() } } }
+            val clickedThrough = Property("none")
+            stack {
+                button {
+                    text("Below button")
+                    onClick { println("Clicked"); clickedThrough.value = "stack" }
                 }
-                println("OK")
+                card - stack {
+                    text("Stack On top")
+                }
             }
+            stack {
+                button {
+                    text("Below button 2")
+                    onClick { println("Clicked"); clickedThrough.value = "row" }
+                }
+                card - row {
+                    text("Row On top")
+                }
+            }
+            text { ::content { "Clicked through ${clickedThrough()}" }}
         }
+//        col {
+//            expanding - recyclerView {
+//                log = ConsoleRoot.tag("X")
+////                children(Constant((1..20).toList()), id = { it }) {
+////                    text { ::content { it().toString() } }
+////                }
+//                childrenMultipleTypes(Constant((1..200).toList()), id = { it }) {
+//                    println("Building...")
+//                    elementsMatching { it % 2 == 0 } renderedAs { text { ::content { it().toString() } } }
+//                    elementsMatching { it % 2 == 1 } renderedAs { card - text { ::content { it().toString() } } }
+//                }
+//                println("OK")
+//            }
+//        }
 //        col {
 //            val expanded = Property(-1)
 //            val data = Property((1..10).toList())

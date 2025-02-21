@@ -80,6 +80,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
+        native.extensionIgnoreInteraction = value
 //        if (value) {
 //            val actionHolder = object : NSObject() {
 //                @ObjCAction

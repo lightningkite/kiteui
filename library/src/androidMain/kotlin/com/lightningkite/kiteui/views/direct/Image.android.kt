@@ -98,6 +98,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
+            if(!animationsEnabled) native.setImageDrawable(null)
             field = value
             reload()
         }
@@ -123,10 +124,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             requestOptions.into(native.target)
         }
         fun RequestBuilder<Drawable>.finish() {
-            if(native.drawable == null) placeholder(placeholder).load()
-            else this.transition(withCrossFade(100)).load()
+            val previous = native.drawable
+            println("Loading with existing drawable ${previous}")
+            if(previous == null) placeholder(placeholder).transition(withCrossFade(100)).load()
+            else this.placeholder(previous).transition(withCrossFade(100)).load()
         }
-        val p = if(native.drawable == null) placeholder else null
         when (value) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
             is ImageRaw -> Glide.with(native).load(value.data.data).finish()

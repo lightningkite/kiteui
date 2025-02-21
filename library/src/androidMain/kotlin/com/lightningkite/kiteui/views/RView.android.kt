@@ -173,14 +173,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override fun applyBackground(theme: Theme, fullyApply: Boolean) {
-//        val nativeInteract = native.isClickable || native.isLongClickable || native.isFocusable
-//        if(!nativeInteract) {
-//            if(!ignoreInteraction && fullyApply) {
-//                native.setOnTouchListener { v, _ -> v.performClick(); true }
-//            } else {
-//                native.setOnTouchListener { _, _ -> false }
-//            }
-//        }
         val view = native
         if (fullyApply) {
             val backgroundDrawable = theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
@@ -196,6 +188,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun applyForeground(theme: Theme) {
 
+    }
+
+    override fun postSetup() {
+        super.postSetup()
+        // Block touches below
+        val hasInteractiveParent = generateSequence(this) { it.parent }.any { it.native.isClickable || it.native.isFocusable }
+        if(!hasInteractiveParent && !native.isClickable && !native.isFocusable && !ignoreInteraction) {
+            native.setOnClickListener {
+                println("$it blocked the touch, because hasInteractiveParent = $hasInteractiveParent and isClickable: ${native.isClickable} and isFocusable: ${native.isFocusable}")
+                println("Hierarchy:")
+                generateSequence(this) { it.parent }.forEach { println("  ${it} - ${it.native}") }
+            }
+        }
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {

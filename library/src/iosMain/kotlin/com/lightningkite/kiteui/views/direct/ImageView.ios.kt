@@ -24,6 +24,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlin.random.Random
+import kotlin.time.DurationUnit
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = MyImageView()
