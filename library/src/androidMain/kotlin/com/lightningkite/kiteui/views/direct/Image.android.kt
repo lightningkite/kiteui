@@ -133,7 +133,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
             is ImageRaw -> Glide.with(native).load(value.data.data).finish()
             is ImageRemote -> Glide.with(native).load(value.url).finish()
-            is ImageResource -> Glide.with(native).load(value.resource).finish()
+            is ImageResource -> Glide.with(native).load(value.resource).load()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
             null -> native.setImageDrawable(null)
             else -> TODO()

@@ -170,18 +170,18 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
             requestLayout()
         }
 
-    private var clickListenerForChild: OnClickListener? = null
-    override fun setOnClickListener(l: OnClickListener?) {
-        clickListenerForChild = l
-        getChildAt(0)?.setOnClickListener(l)
-    }
+//    private var clickListenerForChild: OnClickListener? = null
+//    override fun setOnClickListener(l: OnClickListener?) {
+//        clickListenerForChild = l
+//        getChildAt(0)?.setOnClickListener(l)
+//    }
 
     override fun onViewAdded(child: View?) {
         super.onViewAdded(child)
 
-        if (child != null && clickListenerForChild != null) {
-            child.setOnClickListener(clickListenerForChild)
-        }
+//        if (child != null && clickListenerForChild != null) {
+//            child.setOnClickListener(clickListenerForChild)
+//        }
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
