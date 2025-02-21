@@ -262,10 +262,7 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     val loadingIndicator = UIActivityIndicatorView(CGRectMake(0.0, 0.0, 20.0, 20.0))
 
     init {
-        loadingIndicator.hidden = false
-        println("Will add indicator")
         addSubview(loadingIndicator)
-        println("did add indicator: ${subviews}")
     }
 
     var useLoadingIndicator: Boolean = true

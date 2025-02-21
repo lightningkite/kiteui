@@ -54,6 +54,7 @@ object Recycler2TestScreen : Screen {
                 }
             }
             recyclerView = expanding - Recycler2(this).apply {
+                log = ConsoleRoot.tag("R2")
 //                this.snapToElements = null to Align.Start
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(

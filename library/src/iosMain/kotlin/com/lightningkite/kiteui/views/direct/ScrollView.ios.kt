@@ -213,12 +213,10 @@ class ScrollView(
 
     override fun scrollToKeepAnimations(x: Double, y: Double) {
         val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
-        val (maxX, maxY) = native.contentSize.useContents { width to height }
-        val (sizeX, sizeY) = native.bounds.useContents { size.width to size.height }
-//        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
+        // Don't apply boundary locks here - caller knows what they're doing.
         native.contentOffset = CGPointMake(
-            x = if (horizontal) x.coerceAtMost(maxX - sizeX).coerceAtLeast(0.0) else existingX,
-            y = if (vertical) y.coerceAtMost(maxY - sizeY).coerceAtLeast(0.0) else existingY,
+            x = if (horizontal) x else existingX,
+            y = if (vertical) y else existingY,
         )
     }
 }
