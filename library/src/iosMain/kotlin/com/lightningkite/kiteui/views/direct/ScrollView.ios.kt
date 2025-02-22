@@ -9,9 +9,7 @@ import com.lightningkite.kiteui.views.RViewWrapper
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
-import platform.UIKit.UIScrollView
-import platform.UIKit.UIScrollViewDelegateProtocol
-import platform.UIKit.UIView
+import platform.UIKit.*
 import platform.darwin.NSObject
 import kotlin.math.abs
 
@@ -176,6 +174,11 @@ class ScrollView(
         set(value) {
             field = value
             // scroll to nearest?
+            if(value.first == null && value.second == null) {
+                native.decelerationRate = UIScrollViewDecelerationRateNormal
+            } else {
+                native.decelerationRate = UIScrollViewDecelerationRateFast
+            }
 //            native.content
         }
     override var scrollSnapStop: Boolean = false
