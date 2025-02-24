@@ -669,7 +669,7 @@ class Recycler2(
                 // Shift everyone to attach to the top, preventing scrolling away past there
                 if (vertical) {
                     if (abs(inProgress.padding - firstCell.top) > 1.0) {
-                        log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
+                        log?.log("WILL OFFSET AT ${viewport}")
                         if (viewport.top < firstCell.top - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell.top} - ${inProgress.padding}")
                             requestOffset(0.0, -firstCell.top + inProgress.padding)
@@ -684,7 +684,7 @@ class Recycler2(
                     }
                 } else {
                     if (abs(inProgress.padding - firstCell.left) > 1.0) {
-                        log?.log("OFFSET FOLLOW-UP PLACEMENT AT ${viewport}")
+                        log?.log("WILL OFFSET AT ${viewport}")
                         if (viewport.left < firstCell.left - inProgress.padding + 0.1) {
                             log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell.left} - ${inProgress.padding}")
                             requestOffset(-firstCell.left + inProgress.padding, 0.0)
