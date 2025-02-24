@@ -8,6 +8,8 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.github.chrisbanes.photoview.PhotoView
 import com.lightningkite.kiteui.views.*
 import android.widget.ImageView as AImageView
@@ -37,12 +39,17 @@ actual class ZoomableImageView actual constructor(context: RContext): RView(cont
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
-            println("Loading $value")
+            fun RequestBuilder<Drawable>.finish() {
+                val previous = native.drawable
+                println("Loading with existing drawable ${previous}")
+                if(previous == null) placeholder(placeholder).transition(withCrossFade(100)).into(native)
+                else this.placeholder(previous).transition(withCrossFade(100)).into(native)
+            }
             when (value) {
-                is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).into(native)
-                is ImageRaw -> Glide.with(native).load(value.data).placeholder(placeholder).into(native)
-                is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).into(native)
-                is ImageResource -> Glide.with(native).load(value.resource).placeholder(placeholder).into(native)
+                is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
+                is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+                is ImageRemote -> Glide.with(native).load(value.url).finish()
+                is ImageResource -> Glide.with(native).load(value.resource).into(native)
                 is ImageVector -> native.setImageDrawable(PathDrawable(value))
                 null -> native.setImageDrawable(null)
                 else -> TODO()

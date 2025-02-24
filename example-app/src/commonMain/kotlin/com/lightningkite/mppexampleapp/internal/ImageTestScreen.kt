@@ -28,7 +28,7 @@ object ImageTestScreen : Screen {
                 text("Reload")
                 onClick { prop.value = Random.nextInt() }
             }
-            sizeConstraints(width = 10.rem, height = 10.rem) - image {
+            sizeConstraints(width = 20.rem, height = 20.rem) - zoomableImage() {
                 ::source { ImageRemote("https://picsum.photos/seed/${prop()}/300/300") }
             }
         }
