@@ -40,14 +40,12 @@ class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProto
     }
     override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null due to GC interactions
-        @Suppress("SENSELESS_COMPARISON")
+        @Suppress("SENSELESS_COMPARISON", "IfThenToSafeAccess")
         if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
-
+    init { userInteractionEnabled = false }
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
-        return frameLayoutHitTest(point, withEvent).takeUnless { it == this }
+        return frameLayoutHitTest(point, withEvent)
     }
-
-    internal var swapViewKeepLast = true
 }

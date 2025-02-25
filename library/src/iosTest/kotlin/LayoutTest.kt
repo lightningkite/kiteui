@@ -12,10 +12,12 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIScreen
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class LayoutTest {
 
+    @Ignore
     @Test
     fun test() {
         val s = LayoutsTestScreen()

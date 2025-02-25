@@ -9,9 +9,7 @@ import com.lightningkite.kiteui.views.RViewWrapper
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
-import platform.UIKit.UIScrollView
-import platform.UIKit.UIScrollViewDelegateProtocol
-import platform.UIKit.UIView
+import platform.UIKit.*
 import platform.darwin.NSObject
 import kotlin.math.abs
 
@@ -176,17 +174,24 @@ class ScrollView(
         set(value) {
             field = value
             // scroll to nearest?
+            if(value.first == null && value.second == null) {
+                native.decelerationRate = UIScrollViewDecelerationRateNormal
+            } else {
+                native.decelerationRate = UIScrollViewDecelerationRateFast
+            }
 //            native.content
         }
     override var scrollSnapStop: Boolean = false
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         val (existingX, existingY) = native.contentOffset.useContents { x to y }
+        val (maxX, maxY) = native.contentSize.useContents { width to height }
+        val (sizeX, sizeY) = native.bounds.useContents { size.width to size.height }
 //        println("ScrollView.scrollTo: ${existingX.toInt()}, ${existingY.toInt()} += ${left.toInt()}, ${top.toInt()}")
         native.setContentOffset(
             CGPointMake(
-                x = if (horizontal) left else 0.0,
-                y = if (vertical) top else 0.0,
+                x = if (horizontal) left.coerceAtMost(maxX - sizeX).coerceAtLeast(0.0) else 0.0,
+                y = if (vertical) top.coerceAtMost(maxY - sizeY).coerceAtLeast(0.0) else 0.0,
             ),
             animated = animated
         )
@@ -211,7 +216,7 @@ class ScrollView(
 
     override fun scrollToKeepAnimations(x: Double, y: Double) {
         val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
-//        println("ScrollView.offset: ${existingX.toInt()}, ${existingY.toInt()} += ${x.toInt()}, ${y.toInt()}")
+        // Don't apply boundary locks here - caller knows what they're doing.
         native.contentOffset = CGPointMake(
             x = if (horizontal) x else existingX,
             y = if (vertical) y else existingY,

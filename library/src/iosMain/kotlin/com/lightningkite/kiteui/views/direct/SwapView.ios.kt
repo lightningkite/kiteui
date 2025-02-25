@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIfAllowed
+import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.withoutAnimation
 import kotlinx.cinterop.useContents
@@ -41,7 +42,6 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
 
         val newViewWriter = NewViewWriter(this, context)
         withoutAnimation {
-            native.swapViewKeepLast = false
             newViewWriter.createNewView()
             newViewWriter.newView?.let {
                 transition.enter(it.native)
@@ -51,11 +51,14 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         }
         val created = newViewWriter.newView
         created?.let { it ->
+            native.extensionIgnoreInteraction = !true
             animateIfAllowed {
                 it.native.transform = CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
                 it.native.alpha = 1.0
                 println("to ${it.native.transform.useContents { "$a $b $c $d $tx $ty" }} / ${it.native.alpha}")
             }
+        } ?: run {
+            native.extensionIgnoreInteraction = !false
         }
     }
 

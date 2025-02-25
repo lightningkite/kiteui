@@ -38,7 +38,7 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
     }
     override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null due to GC interactions
-        @Suppress("SENSELESS_COMPARISON")
+        @Suppress("SENSELESS_COMPARISON", "IfThenToSafeAccess")
         if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
@@ -48,6 +48,7 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
     }
 
     init {
+        userInteractionEnabled = true
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
     }
     fun setOnClick(action: ()->Unit): ()->Unit {

@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
+import com.lightningkite.kiteui.views.l2.children
 import kotlinx.coroutines.delay
 
 @Routable("recycler-view-infinite-images")
@@ -56,6 +57,7 @@ object InfiniteImagesScreen : Screen {
                 unpadded - button {
                     ::transitionId { it().toString() }
                     sizeConstraints(aspectRatio = 1.0) - image {
+                        showLoadingIndicator = false
                         viewDebugTarget = this
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
@@ -77,7 +79,7 @@ class ImageViewPager(val initialIndex: Int) : Screen {
             val rv: ViewPager
             viewPager {
                 rv = this
-                children(Constant(InfiniteImagesScreen.ReturnIndexList)) { currImage ->
+                children(Constant(InfiniteImagesScreen.ReturnIndexList), id = { it }) { currImage ->
                     val renders = Property(0)
                     stack {
                         ::transitionId { currImage().toString() }
@@ -86,6 +88,7 @@ class ImageViewPager(val initialIndex: Int) : Screen {
                             reactiveScope {
                                 renders.value++
                                 val index = currImage()
+                                println("Setting $this to index $index")
                                 source = ImageRemote("https://picsum.photos/seed/${index}/100/100")
                                 async(index) { delay(1) }
                                 source = ImageRemote("https://picsum.photos/seed/${index}/1000/1000")

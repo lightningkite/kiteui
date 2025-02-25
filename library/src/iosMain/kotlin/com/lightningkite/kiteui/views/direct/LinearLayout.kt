@@ -270,7 +270,8 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         t.cancel()
     }
 
+    init { userInteractionEnabled = false }
     override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
-        return super.hitTest(point, withEvent).takeUnless { it == this }
+        return frameLayoutHitTest(point, withEvent)
     }
 }

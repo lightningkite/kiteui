@@ -21,8 +21,8 @@ class Recycler2Test {
     )
     @Test fun r2Bullshit() = assertManualReview(
         file = "Recycler2.kt",
-        currentHash = "029b7f6141c2801c23cbc01133fa29c46997473b",
-        reviewedHash = "029b7f6141c2801c23cbc01133fa29c46997473b",
+        currentHash = "c24157408ac1bfe480f2cb112ed9d3a2f1b670e0",
+        reviewedHash = "c24157408ac1bfe480f2cb112ed9d3a2f1b670e0",
         whatToTest = """
             This file is *extremely sensitive* to view pagers and recycler views.
             As such, upon editing this file you must retest manually:

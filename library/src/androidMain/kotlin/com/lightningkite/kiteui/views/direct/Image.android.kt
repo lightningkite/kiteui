@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.lightningkite.kiteui.models.*
@@ -21,6 +22,21 @@ import android.widget.ImageView as AImageView
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = Custom(context.activity)
+    private var placeholder: Drawable = CircularProgressDrawable(context.activity).apply {
+        strokeWidth = 5f
+        centerRadius = 30f
+        start()
+    }
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            placeholder = if(value) CircularProgressDrawable(context.activity).apply {
+                strokeWidth = 5f
+                centerRadius = 30f
+                start()
+            } else ColorDrawable(Color.TRANSPARENT)
+        }
+
     class Custom(context: Context): androidx.appcompat.widget.AppCompatImageView(context) {
         init {
             this.adjustViewBounds = true
@@ -75,7 +91,6 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    private var placeholder = ColorDrawable(Color.WHITE)
 
     actual var source: ImageSource? = null
         set(value) {
@@ -83,6 +98,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
+            if(!animationsEnabled) native.setImageDrawable(null)
             field = value
             reload()
         }
@@ -107,10 +123,16 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             }
             requestOptions.into(native.target)
         }
+        fun RequestBuilder<Drawable>.finish() {
+            val previous = native.drawable
+            println("Loading with existing drawable ${previous}")
+            if(previous == null) placeholder(placeholder).transition(withCrossFade(100)).load()
+            else this.placeholder(previous).transition(withCrossFade(100)).load()
+        }
         when (value) {
-            is ImageLocal -> Glide.with(native).load(value.file.uri).placeholder(placeholder).load()
-            is ImageRaw -> Glide.with(native).load(value.data.data).placeholder(placeholder).load()
-            is ImageRemote -> Glide.with(native).load(value.url).placeholder(placeholder).load()
+            is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
+            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+            is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).load()
             is ImageVector -> native.setImageDrawable(PathDrawable(value))
             null -> native.setImageDrawable(null)

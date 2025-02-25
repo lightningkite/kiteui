@@ -54,6 +54,7 @@ object RootScreen : Screen {
                     }
                 } in card
 
+                linkScreen { ImageTestScreen }
                 linkScreen { R2VPScreen }
                 linkScreen { ProgrammaticLayoutTestScreen }
                 linkScreen { SpecialScrollTest }

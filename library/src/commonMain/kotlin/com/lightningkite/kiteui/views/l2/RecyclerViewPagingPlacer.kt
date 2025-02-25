@@ -21,7 +21,7 @@ class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
         spacing: Double,
     ) {
         existingCells.forEach {
-            log?.log("    Index ${it.index} at ${it.left}")
+            log?.log("    Index ${it.index} at ${it.left} (viewport.left: ${viewport.left}, previousViewport.left: ${previousViewport.left})")
         }
         val (anchorXStart, anchorIndex) = anchor?.let {
             when(it) {
@@ -31,9 +31,11 @@ class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
                 is RecyclerViewAnchor.SpecificElement -> viewport.left to it.index
             }
         } ?: existingCells.minByOrNull {
+            log?.log("${it.index}: abs((${it.right} + ${it.left}) / 2 - ${previousViewport.centerX})")
             abs((it.right + it.left) / 2 - previousViewport.centerX)
         }?.let {
             if (previousViewport.width.roundToInt() != viewport.width.roundToInt()) {
+                log?.log("Viewport size change!")
                 (viewport.centerX + ((it.right + it.left) / 2 - previousViewport.centerX) - viewport.width / 2) to it.index
             } else
                 it.left to it.index

@@ -18,6 +18,7 @@ import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIColor
 import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
+import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.sin
@@ -80,6 +81,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected actual override fun ignoreInteractionSet(value: Boolean) {
+        native.extensionIgnoreInteraction = value
 //        if (value) {
 //            val actionHolder = object : NSObject() {
 //                @ObjCAction
@@ -321,6 +323,27 @@ inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, cross
                 isInAnimationBlock = before
             }
         }
+    ) else {
+        action()
+        onComplete()
+    }
+}
+
+inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+    if (animationsEnabled) UIView.transitionWithView(
+        view = native,
+        duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
+        completion = { onComplete() },
+        animations = {
+            val before = isInAnimationBlock
+            isInAnimationBlock = true
+            try {
+                action()
+            } finally {
+                isInAnimationBlock = before
+            }
+        },
+        options = UIViewAnimationOptionTransitionCrossDissolve
     ) else {
         action()
         onComplete()

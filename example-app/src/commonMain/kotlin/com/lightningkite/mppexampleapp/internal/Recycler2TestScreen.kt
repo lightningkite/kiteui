@@ -54,6 +54,8 @@ object Recycler2TestScreen : Screen {
                 }
             }
             recyclerView = expanding - Recycler2(this).apply {
+                log = ConsoleRoot.tag("R2")
+                placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = ConsoleRoot.tag("Placer") }
 //                this.snapToElements = null to Align.Start
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(
@@ -63,7 +65,34 @@ object Recycler2TestScreen : Screen {
                     ): ViewModifiable {
                         return with(viewWriter) {
                             card - button {
-                                centered - text { ::content { data().toString() } }
+                                col {
+                                    centered - text { ::content { data().toString() } }
+                                    text("Tall element")
+                                    text("We've got to")
+                                    text("get this to fill")
+                                    text("more than ")
+                                    text("one whole page.")
+                                    text("Tall element")
+                                    text("We've got to")
+                                    text("get this to fill")
+                                    text("more than ")
+                                    text("one whole page.")
+                                    text("Tall element")
+                                    text("We've got to")
+                                    text("get this to fill")
+                                    text("more than ")
+                                    text("one whole page.")
+                                    text("Tall element")
+                                    text("We've got to")
+                                    text("get this to fill")
+                                    text("more than ")
+                                    text("one whole page.")
+                                    text("Tall element")
+                                    text("We've got to")
+                                    text("get this to fill")
+                                    text("more than ")
+                                    text("one whole page.")
+                                }
                                 onClick {
                                     if (data() == expanded.value)
                                         expanded.value = -1

@@ -22,9 +22,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout(context.activity).apply {
-        isClickable = true
-    }
+    override val native = FrameLayout(context.activity)
 
     companion object {
         val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
