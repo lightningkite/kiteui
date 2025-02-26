@@ -1,6 +1,7 @@
 import com.lightningkite.deployhelpers.lk
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
+import opensavvy.gradle.vite.kotlin.kotlinViteExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
@@ -26,6 +27,20 @@ repositories {
 
 val lk = lk {
     version = gitBasedVersion()
+}
+
+vite {
+    plugin(
+        packageName = "vite-bundle-analyzer",
+        "analyzer",
+        "0.17.1",
+        configuration = """
+        {
+        "analyzerMode": "static"
+        }
+        """.trimIndent(),
+        isNamedExport = true
+    )
 }
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)

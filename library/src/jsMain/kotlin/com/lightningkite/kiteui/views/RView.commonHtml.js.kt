@@ -18,13 +18,16 @@ import kotlin.random.Random
 actual class FutureElement actual constructor() {
     val elementToDo = ArrayList<(Element) -> Unit>()
     var element: Element? = null
-        set(value) {
-            id = value?.id
-            content = value?.innerHTML?.takeUnless { it.isBlank() }
+        private set(value) {
             field = value
             style.native = (value as? HTMLElement)?.style ?: (value as? SVGElement)?.style
             attributes.native = value
         }
+    fun hydrate(value: Element) {
+        id = value.id
+        content = value.innerHTML.takeUnless { it.isBlank() }
+        this.element = value
+    }
 
     inline fun onElement(crossinline action: (Element) -> Unit) {
         element?.let(action) ?: elementToDo.add { action(it) }
@@ -37,13 +40,13 @@ actual class FutureElement actual constructor() {
         objectAssign(e, attributesBack)
         (e as? HTMLElement)?.style?.let {
             objectAssign(it, styleBack)
-            futureStyles.forEach { (k, v) -> it.setProperty(k, v) }
+            forEach(futureStyles) { k, v -> it.setProperty(k, v) }
         } ?: (e as? SVGElement)?.style?.let {
             objectAssign(it, styleBack)
-            futureStyles.forEach { (k, v) -> it.setProperty(k, v) }
+            forEach(futureStyles) { k, v -> it.setProperty(k, v) }
         }
-        futureAttributes.forEach {
-            e.setAttribute(it.key, it.value)
+        forEach(futureAttributes) { k, v ->
+            e.setAttribute(k, v)
         }
         content?.let { (e as? HTMLElement)?.innerText = it }
         innerHtmlUnsafe?.let { (e as? HTMLElement)?.innerHTML = it }
@@ -101,14 +104,15 @@ actual class FutureElement actual constructor() {
             eventsBack["on$name"] = { it:Event -> listener(it) }
         }
     }
-    val futureStyles = HashMap<String, String>()
+    val futureStyles = json()
     actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if(element == null) {
             if(value == null) {
-                futureStyles.remove(key)
+                remove(futureStyles, key)
+//                futureStyles.set(key, null)
             } else {
-                futureStyles.put(key, value)
+                futureStyles.set(key, value)
             }
         } else {
             val style = (element as? HTMLElement)?.style ?: (element as? SVGElement)?.style ?: return
@@ -119,26 +123,28 @@ actual class FutureElement actual constructor() {
             }
         }
     }
-    val futureAttributes = HashMap<String, String>()
+    val futureAttributes = json()
     actual fun setAttribute(key: String, value: String?) {
         val element = element
         if(element == null) {
             if(value == null) {
-                futureAttributes.remove(key)
+                remove(futureAttributes, key)
+//                futureAttributes.set(key, null)
             } else {
-                futureAttributes.put(key, value)
+                futureAttributes.set(key, value)
             }
         } else {
             if(value == null) {
-                element?.removeAttribute(key)
+                element.removeAttribute(key)
             } else {
-                element?.setAttribute(key, value)
+                element.setAttribute(key, value)
             }
         }
     }
 
 
     actual var classes: MutableSet<String> = ClassSet()
+    actual inline fun flushClasses() {}
     actual var id: String? = null
         set(value) {
             field = value
@@ -257,6 +263,15 @@ actual class FutureElement actual constructor() {
         override fun removeAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.removeClass(*elements.toTypedArray()) ?: map.removeAll(elements)
     }
+}
+
+private fun forEach(receiver: Json, action: (key: String, value: dynamic) -> Unit) {
+    for (key in js("Object.keys(receiver)")) {
+        action(key, receiver[key])
+    }
+}
+private fun remove(receiver: Json, key: String) {
+    js("delete receiver[key]")
 }
 
 actual class FutureElementStyle(var native: dynamic)

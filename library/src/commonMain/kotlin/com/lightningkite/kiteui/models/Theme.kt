@@ -153,7 +153,7 @@ data object ButtonSemantic : Semantic {
 
 data object ClickableSemantic : Semantic {
     override val key: String = "clk"
-    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
 data object HoverSemantic : Semantic {

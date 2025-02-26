@@ -42,41 +42,49 @@ actual class ScrollingBehaviorImpl actual constructor(
             else native.classes += "hideScrollbar"
         }
 
-    private val ro = native.resizeObserver()
-    private val clientSize = on.reactive {
-        rerunOn(ro)
-        Size(
-            native.element?.clientWidth?.toDouble() ?: throw ReactiveLoading,
-            native.element?.clientHeight?.toDouble() ?: throw ReactiveLoading,
-        )
+    private val ro by lazy { native.resizeObserver() }
+    private val clientSize by lazy {
+        on.reactive {
+            rerunOn(ro)
+            Size(
+                native.element?.clientWidth?.toDouble() ?: throw ReactiveLoading,
+                native.element?.clientHeight?.toDouble() ?: throw ReactiveLoading,
+            )
+        }
     }
-    private val scrollSize = on.reactive {
-        rerunOn(ro)
-        Size(
-            native.element?.scrollWidth?.toDouble() ?: throw ReactiveLoading,
-            native.element?.scrollHeight?.toDouble() ?: throw ReactiveLoading,
-        )
+    private val scrollSize by lazy {
+        on.reactive {
+            rerunOn(ro)
+            Size(
+                native.element?.scrollWidth?.toDouble() ?: throw ReactiveLoading,
+                native.element?.scrollHeight?.toDouble() ?: throw ReactiveLoading,
+            )
+        }
     }
     private val scrollEvent = native.vevent("scroll")
     private val lockScrollEnd = BasicListenable()
     private var lockScrollReportAt: Rect? = null
-    actual override val viewport: Readable<Rect> = on.reactive {
-        rerunOn(scrollEvent)
-        rerunOn(lockScrollEnd)
-        lockScrollReportAt ?: Rect.fromSize(
-            left = native.element?.scrollLeft ?: 0.0,
-            top = native.element?.scrollTop ?: 0.0,
-            width = clientSize().width,
-            height = clientSize().height,
-        )
+    actual override val viewport: Readable<Rect> by lazy {
+        on.reactive {
+            rerunOn(scrollEvent)
+            rerunOn(lockScrollEnd)
+            lockScrollReportAt ?: Rect.fromSize(
+                left = native.element?.scrollLeft ?: 0.0,
+                top = native.element?.scrollTop ?: 0.0,
+                width = clientSize().width,
+                height = clientSize().height,
+            )
+        }
     }
-    actual override val content: Readable<Rect> = on.reactive {
-        Rect.fromSize(
-            left = 0.0,
-            top = 0.0,
-            width = scrollSize().width,
-            height = scrollSize().height,
-        )
+    actual override val content: Readable<Rect> by lazy {
+        on.reactive {
+            Rect.fromSize(
+                left = 0.0,
+                top = 0.0,
+                width = scrollSize().width,
+                height = scrollSize().height,
+            )
+        }
     }
     val _directlyInteractingWithScroller = Property(false)
     actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller

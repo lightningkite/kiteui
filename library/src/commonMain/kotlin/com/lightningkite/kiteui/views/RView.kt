@@ -6,6 +6,9 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.reactive.Action
 import kotlinx.coroutines.*
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.js.JsName
 import kotlin.random.Random
 
 abstract class RViewWithAction(context: RContext) : RView(context) {
@@ -233,19 +236,26 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
 
     private val job = SupervisorJob()
-    override val coroutineContext = Dispatchers.Main.immediate + job + CoroutineExceptionHandler { coroutineContext, throwable ->
-        if (throwable !is CancellationException) {
-            throwable.report(this.toString())
-        }
-    } + object : StatusListener {
-        override fun working(readable: Readable<*>) {
-            listenForWorking(readable)
-        }
+    @JsName("contextSetup")
+    private fun contextSetup() = MutableCoroutineContext().apply {
+        add(Dispatchers.Main.immediate)
+        add(this@RViewHelper.job)
+        add(CoroutineExceptionHandler { coroutineContext, throwable ->
+            if (throwable !is CancellationException) {
+                throwable.report(this.toString())
+            }
+        })
+        add(object : StatusListener {
+            override fun working(readable: Readable<*>) {
+                listenForWorking(readable)
+            }
 
-        override fun loading(readable: Readable<*>) {
-            listenForStatus(readable)
-        }
+            override fun loading(readable: Readable<*>) {
+                listenForStatus(readable)
+            }
+        })
     }
+    override val coroutineContext: CoroutineContext = contextSetup()
 
     internal fun listenForWorking(readable: Readable<*>): () -> Unit {
         var loading = false
@@ -355,3 +365,36 @@ abstract class RViewWrapper(context: RContext) : RView(context) {
         get() = field ?: parent?.spacing
 }
 
+class MutableCoroutineContext: CoroutineContext {
+    val list = ArrayList<CoroutineContext.Element>()
+    var interceptor: CoroutineContext.Element? = null
+    fun add(context: CoroutineContext) {
+        context.fold(Unit) { _, element -> add(element) }
+    }
+    fun add(element: CoroutineContext.Element) {
+        if(element.key == ContinuationInterceptor.Key) interceptor = element
+        else list.add(element)
+    }
+    override fun <R> fold(initial: R, operation: (R, CoroutineContext.Element) -> R): R {
+        var out: R = interceptor?.let { operation(initial, it) } ?: initial
+        out = list.fold(out, operation)
+        return out
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E? {
+        if(key == ContinuationInterceptor.Key) return interceptor as E?
+        return list.lastOrNull { it.key == key } as E?
+    }
+
+    override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext {
+        return MutableCoroutineContext().apply {
+            if(key != ContinuationInterceptor.Key) {
+                this@MutableCoroutineContext.interceptor?.let { this@apply.interceptor = it }
+                this@MutableCoroutineContext.list.forEach { if(it.key != key) this@apply.add(it) }
+            } else {
+                this@apply.list.addAll(this@MutableCoroutineContext.list)
+            }
+        }
+    }
+}

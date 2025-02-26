@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.readable.CoroutineScopeStack
 import com.lightningkite.readable.CoroutineScopeStack.end
 import com.lightningkite.readable.CoroutineScopeStack.start
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,9 @@ abstract class ViewWriter: ViewModifiable {
         p.addChild(view)
     }
 
-    fun <T : RView> writePre(p: ViewWriter, view: T) {
+    fun <T : RView> end(view: T) = CoroutineScopeStack.end(view)
+    fun <T : RView> writePre(view: T) {
+        val p = _wrapElement ?: this
         p.willAddChild(view)
         start(view)
         _wrapElement = null
@@ -53,27 +56,32 @@ abstract class ViewWriter: ViewModifiable {
         beforeNextElementSetup = null
     }
 
-    fun <T : RView> writePost(p: ViewWriter, view: T) {
+    fun <T : RView> writePost(view: T) {
+        val p = _wrapElement ?: this
         view.postSetup()
         p.addChild(view)
         lastWrittenView = view
     }
 
+    fun endFail(view: RView, e: Exception) {
+        ConsoleRoot.warn("Failed to setup $view: $e")
+        e.printStackTrace2()
+        throw e
+    }
+
     @OptIn(ExperimentalContracts::class)
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
         contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-        val p = _wrapElement ?: this
-        writePre(p, view)
-        try {
+        writePre(view)
+        // TODO: This try/catch significantly increases binary size...
+//        try {
             setup(view)
-            writePost(p, view)
-        } catch(e: Exception) {
-            ConsoleRoot.warn("Failed to setup $view: $e")
-            e.printStackTrace2()
-            throw e
-        } finally {
-            end(view)
-        }
+            writePost(view)
+//        } catch(e: Exception) {
+//            endFail(view, e)
+//        } finally {
+//            end(view)
+//        }
         return view
     }
 

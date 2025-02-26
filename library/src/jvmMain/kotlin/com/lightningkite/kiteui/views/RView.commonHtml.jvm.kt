@@ -50,6 +50,8 @@ actual class FutureElement actual constructor() {
     actual fun blur() {}
     actual fun screenRectangle(): Rect? = null
 
+    actual inline fun flushClasses() {}
+
     actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
     actual val style: FutureElementStyle = FutureElementStyle(HashMap())
     actual var desiredVerticalGravity: Align? = null

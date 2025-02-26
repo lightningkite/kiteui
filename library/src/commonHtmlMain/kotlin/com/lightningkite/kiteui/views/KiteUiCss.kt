@@ -793,7 +793,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     private var cssGenTotal: Duration = 0.seconds
     private val themeInteractiveHandled = HashSet<String>()
-    fun themeInteractive(theme: Theme): List<String> {
+    fun themeInteractive(theme: Theme): String {
         if (!themeInteractiveHandled.add(theme.id)) return theme.classes
         measureTime {
             theme.derivedFrom?.let { themeInteractive(it) }
@@ -887,18 +887,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return theme.classes
     }
 
-    private val Theme.classes: List<String>
-        get() = buildList<String> {
-            add("t-${id}")
-//            generateSequence(this@classes) { it.derivedFrom }
-//                .toList()
-//                .reversed()
-//                .map { t -> (t.derivationId ?: t.id) }
-//                .forEachIndexed { index, t ->
-//                    add("t-$index$t")
-//                }
-        }
-    private val Theme.classSelector get() = classes.joinToString("") { ".$it" }
+    private val Theme.classes: String
+        get() = "t-${id}"
+    private val Theme.classSelector get() = ".$classes"
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
@@ -908,7 +899,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         asSelectors: List<String> = listOf(theme.classSelector),
         includeMaybeTransition: Boolean = false,
         mediaQuery: String = "",
-    ): List<String> {
+    ): String {
         val classes = theme.classes
 
         fun sel(vararg plus: String): String {

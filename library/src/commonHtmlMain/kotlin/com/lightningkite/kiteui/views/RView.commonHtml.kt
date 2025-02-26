@@ -83,6 +83,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // Do nothing.  No access to manual GC exists in JS.
     }
 
+    private var prevThemeClass: String? = null
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (useNavSpacing) native.classes.add("useNavSpacing")
         else native.classes.remove("useNavSpacing")
@@ -97,10 +98,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.classes.remove("padded")
         }
 
-        native.classes.removeAll { it.startsWith("t-") }
-        native.classes.addAll(context.kiteUiCss.themeInteractive(theme.theme))
+        prevThemeClass?.let { native.classes.remove(it) }
+        val newClass = context.kiteUiCss.themeInteractive(theme.theme)
+        prevThemeClass = newClass
+        native.classes.add(newClass)
 
         native.setStyleProperty("--parentSpacing", parentSpacing.value)
+        native.flushClasses()
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
@@ -150,6 +154,7 @@ expect class FutureElement {
     inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
     inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
     var classes: MutableSet<String>
+    inline fun flushClasses()
     var id: String?
     var content: String?
     var innerHtmlUnsafe: String?
