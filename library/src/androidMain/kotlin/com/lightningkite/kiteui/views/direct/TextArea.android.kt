@@ -1,24 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.graphics.Paint
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.KeyEvent
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
 
@@ -27,6 +20,22 @@ actual class TextArea actual constructor(context: RContext) : RView(context) {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
+
+    actual var onDone: (() -> Unit)? = null
+        set(value) {
+            field = value
+            if (field != null) {
+                native.imeOptions = EditorInfo.IME_ACTION_DONE
+                native.setOnEditorActionListener { v, actionId, event ->
+                    if(actionId == EditorInfo.IME_ACTION_DONE) {
+                        onDone?.invoke()
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+        }
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)

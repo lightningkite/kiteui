@@ -20,11 +20,13 @@ import platform.objc.sel_registerName
 actual class TextArea actual constructor(context: RContext) : RView(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
+    actual var onDone: (() -> Unit)? = null
     val trigger: NSObject = object: NSObject() {
         @ObjCAction
         fun done() {
             CoroutineScope(Dispatchers.Main.immediate).launch {
                 delay(16)
+                onDone?.invoke()
                 textField.endEditing(true)
             }
         }
