@@ -4,6 +4,7 @@ import android.graphics.Paint
 import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -11,31 +12,28 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.ImmediateWritable
+import com.lightningkite.kiteui.reactive.onRemove
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
-actual class TextArea actual constructor(context: RContext) : RView(context) {
+actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
 
-    actual var onDone: (() -> Unit)? = null
-        set(value) {
-            field = value
-            if (field != null) {
-                native.imeOptions = EditorInfo.IME_ACTION_DONE
-                native.setOnEditorActionListener { v, actionId, event ->
-                    if(actionId == EditorInfo.IME_ACTION_DONE) {
-                        onDone?.invoke()
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
+    //TODO Need to change this to something that can make sense for android it doesn't seem to be doing what is intended.
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+        native.setOnEditorActionListener { v, actionId, event ->
+            value?.startAction(this)
+            value != null
         }
+    }
 
     override fun applyForeground(theme: Theme) {
         super.applyForeground(theme)

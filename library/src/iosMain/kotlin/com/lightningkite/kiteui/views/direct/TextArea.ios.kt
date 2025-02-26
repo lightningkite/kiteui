@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.NumberInput
+import com.lightningkite.kiteui.views.direct.TextInput
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.coroutines.CoroutineScope
@@ -17,17 +18,16 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-actual class TextArea actual constructor(context: RContext) : RView(context) {
+actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
-    actual var onDone: (() -> Unit)? = null
+
     val trigger: NSObject = object: NSObject() {
         @ObjCAction
         fun done() {
-            CoroutineScope(Dispatchers.Main.immediate).launch {
-                delay(16)
-                onDone?.invoke()
-                textField.endEditing(true)
+            action?.let {
+                textField.resignFirstResponder()
+                it.startAction(this@TextArea)
             }
         }
     }
