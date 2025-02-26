@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.mppexampleapp.widgets.code
 
 interface DocPage: Page {
@@ -25,7 +26,7 @@ fun ViewWriter.example(
     action: ViewWriter.()->ViewModifiable
 ): ViewModifiable {
     return card - row {
-        expanding - scrollsHorizontally - code { content = codeText }
+        expanding - scrollingHorizontally - code { content = codeText }
         separator()
         expanding - action()
     }

@@ -7,6 +7,6 @@ actual fun FutureElement.runHighlighter() {
     onElement { element ->
         window.setTimeout({
             js("hljs.highlightAll()")
-        }, 10)
+        }, 100)
     }
 }

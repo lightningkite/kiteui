@@ -921,7 +921,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         val directSel = sel("")
 
-        val backSel = (if (includeMaybeTransition) sel(".mightTransition") else sel(".transition"))
+        val backSel = (if (includeMaybeTransition) sel(".clickable") else sel(".transition"))
 
         theme.diff(diff) { background }?.let {
             if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")

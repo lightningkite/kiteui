@@ -52,7 +52,7 @@ expect fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper
 val ViewWriter.scrolls: ViewWrapper get() = __scrollsUncontracted(true, false)
 
 @ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
+@Deprecated("use scrollsHorizontally instead", ReplaceWith("scrollsHorizontally"))
 val ViewWriter.scrollsHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
 
 @ViewModifierDsl3
@@ -62,13 +62,13 @@ inline fun ViewWriter.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit):
 }
 
 @ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrollingHorizontally"))
+@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
 inline fun ViewWriter.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
-@Deprecated("use scrolling instead", ReplaceWith("scrollingBoth"))
+@Deprecated("use scrollingBoth instead", ReplaceWith("scrollingBoth"))
 inline fun ViewWriter.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }

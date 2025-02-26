@@ -201,7 +201,7 @@ data object CompactSemantic : Semantic {
         id = key,
         spacing = theme.spacing / 2,
         navSpacing = theme.navSpacing / 2,
-    ).withBack
+    ).withoutBack
 }
 
 data object SelectedSemantic : Semantic {
