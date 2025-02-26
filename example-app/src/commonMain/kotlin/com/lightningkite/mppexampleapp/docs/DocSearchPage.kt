@@ -36,7 +36,7 @@ object DocSearchPage : Page {
     ))
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        stack {
+        frame {
             gravity(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col  {
                 h1("Documentation")
                 text("Here you can find many helpful pages for understanding KiteUI and its tools.")

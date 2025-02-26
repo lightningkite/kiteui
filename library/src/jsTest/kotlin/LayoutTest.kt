@@ -12,7 +12,7 @@ class LayoutTest {
         val s = LayoutsTestPage()
         lateinit var root: RView
         root(Theme(id = "unitTest")) {
-            root = stack {
+            root = frame {
                 s.render(this)
             }
         }

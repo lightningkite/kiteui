@@ -17,6 +17,8 @@ import kotlin.math.min
 @ViewModifierDsl3 val ViewWriter.atBottomCenter get() = gravity(Align.Center, Align.End)
 @ViewModifierDsl3 val ViewWriter.atTopEnd get() = gravity(Align.End, Align.Start)
 @ViewModifierDsl3 val ViewWriter.atBottomEnd get() = gravity(Align.End, Align.End)
+@ViewModifierDsl3 val ViewWriter.centeredHorizontally get() = gravity(Align.Center, Align.Stretch)
+@ViewModifierDsl3 val ViewWriter.centeredVertically get() = gravity(Align.Stretch, Align.Center)
 
 @ViewModifierDsl3 val ViewWriter.expanding get() = weight(1f)
 

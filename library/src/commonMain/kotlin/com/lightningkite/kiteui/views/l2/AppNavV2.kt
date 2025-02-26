@@ -30,10 +30,10 @@ fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 }
 
-var ViewWriter.overlayStack by rContextAddon<Stack?>(null)
+var ViewWriter.overlayFrame by rContextAddon<Frame?>(null)
 
 fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit) {
-    stack {
+    frame {
         spacing = 0.px
         mainPageNavigator = main
         dialog?.let {
@@ -41,7 +41,7 @@ fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainL
         }
         main.bindToPlatform(context)
         pageNavigator = main
-        overlayStack = this
+        overlayFrame = this
         mainLayout()
         dialog?.let {
             navigatorViewDialog()

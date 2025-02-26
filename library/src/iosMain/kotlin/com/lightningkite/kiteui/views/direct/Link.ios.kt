@@ -46,9 +46,8 @@ actual class Link actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("enabled", { refreshTheming() }))
     }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]

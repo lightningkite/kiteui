@@ -1,18 +1,20 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
 actual class ExternalLink actual constructor(context: RContext) : RView(context) {
     init {
+        themeChoice += ClickableSemantic
         native.tag = "a"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        Stack.internalAddChildStack(this, index, view)
+        Frame.internalAddChildStack(this, index, view)
     }
 
     actual inline var to: String?
@@ -35,6 +37,4 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
             launch { action() }
         }
     }
-
-    override fun hasAlternateBackedStates(): Boolean = true
 }

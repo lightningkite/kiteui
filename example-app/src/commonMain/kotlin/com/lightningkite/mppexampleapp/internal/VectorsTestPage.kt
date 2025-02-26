@@ -236,7 +236,7 @@ object VectorsTestPage : Page {
                             ), Angle.zero, false
                         )
                     )
-                } - stack { space() }
+                } - frame { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
                         background = LinearGradient(
@@ -246,7 +246,7 @@ object VectorsTestPage : Page {
                             ), Angle.eighthTurn, false
                         )
                     )
-                } - stack { space() }
+                } - frame { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
                         background = LinearGradient(
@@ -256,7 +256,7 @@ object VectorsTestPage : Page {
                             ), Angle.eighthTurn + Angle.halfTurn, false
                         )
                     )
-                } - stack { space() }
+                } - frame { space() }
             }
         }
     }

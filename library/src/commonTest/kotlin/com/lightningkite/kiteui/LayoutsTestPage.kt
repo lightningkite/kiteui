@@ -15,7 +15,7 @@ class LayoutsTestPage : Page {
         return card - col {
             checks += { println(parentRectangle()) }
             lateinit var above: RView
-            card - stack {
+            card - frame {
                 above = this
                 checks += {
                     assertEquals(theme.spacing.px, parentRectangle()?.top ?: 0.0, 1.0)

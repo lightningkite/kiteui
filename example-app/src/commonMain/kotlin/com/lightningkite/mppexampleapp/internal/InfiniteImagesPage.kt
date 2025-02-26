@@ -73,13 +73,13 @@ class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Property(initialIndex)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        themeFromLast { it.copy(background = Color.black, foreground = Color.white) } - stack {
+        themeFromLast { it.copy(background = Color.black, foreground = Color.white) } - frame {
             val rv: ViewPager
             viewPager {
                 rv = this
                 children(Constant(InfiniteImagesPage.ReturnIndexList)) { currImage ->
                     val renders = Property(0)
-                    stack {
+                    frame {
                         ::transitionId { currImage().toString() }
                         spacing = 0.25.rem
                         zoomableImage {

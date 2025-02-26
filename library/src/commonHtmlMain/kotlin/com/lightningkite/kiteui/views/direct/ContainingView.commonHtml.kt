@@ -1,13 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
-actual class Stack actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -15,7 +13,7 @@ actual class Stack actual constructor(context: RContext) : RView(context) {
 
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        Stack.internalAddChildStack(this, index, view)
+        Frame.internalAddChildStack(this, index, view)
     }
     companion object {
         fun internalAddChildStack(on: RView, index: Int, view: RView) {

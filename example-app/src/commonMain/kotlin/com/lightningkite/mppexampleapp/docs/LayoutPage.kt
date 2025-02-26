@@ -49,7 +49,7 @@ object LayoutPage: DocPage {
             text("Stack layout allows for items to be stacked on top of each other.  This is useful for creating overlays. The last item in the stack is on top. This could hide views behind other views")
             example("""
                 card - col {
-                    stack {
+                    frame {
                         text("Last Item")
                         compact - card - text("Behind ") in tweakTheme {  it.copy(foreground = Color(0.5f, 0f, 0f, 1f)) }
                         text("In front") in tweakTheme {  it.copy(foreground = Color(1f, 0f, 0.2f, 1f)) }
@@ -57,7 +57,7 @@ object LayoutPage: DocPage {
                 }
             """.trimIndent()) {
                 card - col {
-                    stack {
+                    frame {
                         text("Last Item")
                         compact - card - text("Behind ") in tweakTheme {  it.copy(foreground = Color(0.5f, 0f, 0f, 1f)) }
                         text("In front") in tweakTheme {  it.copy(foreground = Color(1f, 0f, 0.2f, 1f)) }
@@ -68,7 +68,7 @@ object LayoutPage: DocPage {
             example(
                 """
             card - col {
-                stack {
+                frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
@@ -80,7 +80,7 @@ object LayoutPage: DocPage {
                 """.trimIndent()
             ) {
                 card - col {
-                    stack {
+                    frame {
                         val aligns = listOf(Align.Start, Align.Center, Align.End)
                         for (h in aligns) {
                             for (v in aligns) {

@@ -133,7 +133,7 @@ object ReactiveToolsPage : Page, DocPage {
                         """.trimIndent()) {
                             val textInput = Property("")
                             col {
-                                expanding - scrolls - text { ::content { textInput() } }
+                                expanding - scrolling - text { ::content { textInput() } }
                                 card - button {
                                     centered - text("+\"Hello World!\"")
                                     onClick { textInput.value += "\nHello World!" }

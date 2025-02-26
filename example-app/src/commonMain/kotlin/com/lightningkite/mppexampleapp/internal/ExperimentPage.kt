@@ -21,7 +21,7 @@ object ExperimentPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             card - col {
                 spacing = 0.5.rem
                 paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)

@@ -28,7 +28,7 @@ object IconsPage: DocPage {
                          icon(Icon.search, "Search")
                          icon(Icon.menu, "Menu")
                 """.trimIndent()) {
-                centered - stack {
+                centered - frame {
                      row {
                          icon(Icon.home, "Forward")
                          icon {

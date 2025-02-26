@@ -36,7 +36,7 @@ interface Action: Readable<Boolean> {
 
 fun Action(
     title: String,
-    icon: Icon,
+    icon: Icon = Icon.send,
     clearErrorOnDependencyChange: Boolean = ExceptionHandlers.clearErrorOnDependencyChange,
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,

@@ -25,9 +25,8 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
             refreshTheming()
         }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if (checkedProp.value) t = t[SelectedSemantic]
         else t = t[UnselectedSemantic]
         if (!enabled) t = t[DisabledSemantic]

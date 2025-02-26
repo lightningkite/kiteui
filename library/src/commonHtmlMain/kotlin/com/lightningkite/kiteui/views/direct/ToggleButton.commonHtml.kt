@@ -1,14 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
     val input = FutureElement().apply {
+        themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "checkbox"
         classes.add("checkResponsive")
@@ -39,10 +39,8 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        Stack.internalAddChildStack(this, index, view)
+        Frame.internalAddChildStack(this, index, view)
     }
-
-    override fun hasAlternateBackedStates(): Boolean = true
 
     actual val checked: ImmediateWritable<Boolean> = input.vprop(
         "input",

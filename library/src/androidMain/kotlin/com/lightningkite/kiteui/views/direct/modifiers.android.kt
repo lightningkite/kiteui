@@ -310,7 +310,7 @@ actual fun ViewWriter.hasPopover(
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
-                        centered - stack {
+                        centered - frame {
                             setup(object : PopoverContext {
                                 override val calculationContext: CalculationContext
                                     get() = this@beforeNextElementSetup

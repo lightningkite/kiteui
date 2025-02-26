@@ -13,7 +13,7 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
 }
 
 fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->ViewModifiable) {
-    overlayStack?.run {
+    overlayFrame?.run {
         withoutAnimation {
 
         beforeNextElementSetup {
@@ -39,14 +39,14 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->Vie
 
 fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit) {
     var willRemove: RView? = null
-    this.overlayStack!!.run {
+    this.overlayFrame!!.run {
         withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     launch {
                         it.opacity = 0.0
                         delay(it.theme.transitionDuration)
-                        overlayStack!!.removeChild(it)
+                        overlayFrame!!.removeChild(it)
                     }
                 }
             }.run {
@@ -59,7 +59,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit)
                 }
                 willRemove = dismissBackground {
                     onClick { if (dismissable) closePopovers() }
-                    centered - dialog - stack {
+                    centered - dialog - frame {
                         content()
                     }
                 }

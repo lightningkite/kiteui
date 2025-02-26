@@ -82,9 +82,9 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty() }
         }
-        expanding - navSpacing - stack {
+        expanding - navSpacing - frame {
             navigatorView(pageNavigator)
-            atStart - navSpacing - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolls - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+            atStart - navSpacing - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 spacing = 0.px
             }
         }
@@ -124,7 +124,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     padded - navSpacing  - col {
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
-            compact - bar - stack {
+            compact - bar - frame {
                 showOnPrint = false
                 setup(appNav)
                 atStart - InteractiveSemantic.onNext - button {
@@ -198,7 +198,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
             ::exists { appNav.existsProperty() }
         }
         navSpacing - expanding - row {
-            navSpacing  - nav - scrolls - navGroupColumn(appNav.navItemsProperty) {
+            navSpacing  - nav - scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }

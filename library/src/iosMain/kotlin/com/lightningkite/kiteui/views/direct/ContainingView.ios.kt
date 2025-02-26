@@ -71,6 +71,6 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     }
 }
 
-actual class Stack actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout()
 }

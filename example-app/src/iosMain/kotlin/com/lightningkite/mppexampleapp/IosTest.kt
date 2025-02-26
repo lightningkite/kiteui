@@ -114,7 +114,7 @@
 //                currentView.clearNViews()
 //            }
 //            leakTest("Stack") {
-//                stack { element(UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))) {
+//                frame { element(UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))) {
 //                } }
 //                currentView.clearNViews()
 //            }
@@ -151,9 +151,9 @@
 //        swapView {
 //            swapping(current = { property() }) {
 //                card - col {
-//                    card - stack { text("A") }
-//                    important - stack { text("B") }
-//                    critical - stack { text("C") }
+//                    card - frame { text("A") }
+//                    important - frame { text("B") }
+//                    critical - frame { text("C") }
 //                }
 //            }
 //        }

@@ -30,7 +30,7 @@ object ReactivityPage : Page {
             async(dependency()) { delay(1000) }
             "Loaded!"
         }
-        scrolls - col {
+        scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various forms of reactivity." }
                 text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }

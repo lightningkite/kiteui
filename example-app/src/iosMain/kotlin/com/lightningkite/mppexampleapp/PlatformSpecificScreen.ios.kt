@@ -56,7 +56,7 @@ class MemoryPage: Page {
         }
 
 //        return write(MemoryView(context)) {}
-//        return stack {
+//        return frame {
 //            text("MEM VIEW ACTIVE")
 //            centered - write(MemoryView(context)) {}
 //        }

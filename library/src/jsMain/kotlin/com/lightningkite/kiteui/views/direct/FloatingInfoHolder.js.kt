@@ -6,10 +6,9 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.readable.BasicListenable
 import com.lightningkite.readable.CalculationContext
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.overlayStack
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.DOMRect
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -26,11 +25,11 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     var currentDirection: PopoverPreferredDirection = preferredDirection
-    actual var menuGenerator: Stack.() -> Unit = { space() }
+    actual var menuGenerator: Frame.() -> Unit = { space() }
 
     actual fun block() {
         if (blockView != null) return
-        val o = source.overlayStack ?: return
+        val o = source.overlayFrame ?: return
         val v = existingView ?: return
         o.addChild(
             o.children.indexOf(v),
@@ -58,7 +57,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         if (existingView != null) return
         val writer = object : ViewWriter(), CalculationContext by source {
             override val context: RContext = source.context.split()
-            override fun addChild(view: RView) = source.overlayStack!!.addChild(view)
+            override fun addChild(view: RView) = source.overlayFrame!!.addChild(view)
         }
         source.closeSiblingPopovers()
         val childCloser = BasicListenable()
@@ -68,7 +67,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
             stopListeningToCloser()
             closeCurrent()
             blockView?.let {
-                source.overlayStack!!.removeChild(it)
+                source.overlayFrame!!.removeChild(it)
             }
             blockView = null
         }
@@ -78,7 +77,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         }
         writer.popoverClosers = childCloser
         with(writer) {
-            stack {
+            frame {
                 currentDirection = preferredDirection
                 existingView = this
                 themeChoice = DialogSemantic
@@ -227,7 +226,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                             .let { Duration.parseOrNull(it) ?: 0.25.seconds }
                             .let {
                                 window.setTimeout({
-                                    source.overlayStack!!.removeChild(this)
+                                    source.overlayFrame!!.removeChild(this)
                                 }, it.inWholeMilliseconds.toInt())
                             }
                         e.style.opacity = "0"

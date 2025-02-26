@@ -15,7 +15,7 @@ object ViewPagerElementPage: DocPage {
     override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("View Pager")
-            text("You can use a view pager to create an element that scrolls horizontally displaying pages.")
+            text("You can use a view pager to create an element that scrolling horizontally displaying pages.")
             text("This is frequently used for browsing photos or advertising features.")
             text("V2")
             val currentPage = Property(9)
@@ -30,7 +30,7 @@ object ViewPagerElementPage: DocPage {
                     
                     // Define what to show here
                     children(items) {
-                        stack {
+                        frame {
                             centered - text { ::content { "Page ${'$'}{it.await()}" } }
                         }
                     }
@@ -43,7 +43,7 @@ object ViewPagerElementPage: DocPage {
 
                     // Define what to show here
                     children(items) {
-                        stack {
+                        frame {
                             centered - text { ::content { "Page ${it()}" } }
                         }
                     }

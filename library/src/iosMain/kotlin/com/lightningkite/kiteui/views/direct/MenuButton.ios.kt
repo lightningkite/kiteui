@@ -3,15 +3,15 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.overlayStack
+import com.lightningkite.kiteui.views.l2.overlayFrame
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
 
-    actual fun opensMenu(createMenu: Stack.() -> Unit) {
+    actual fun opensMenu(createMenu: Frame.() -> Unit) {
         onRemove(native.setOnClick {
             var willRemove: RView? = null
-            this.overlayStack!!.popoverWriter {
+            this.overlayFrame!!.popoverWriter {
                 willRemove?.let { it.parent!!.removeChild(it) }
                 willRemove = null
             }.run {
@@ -36,7 +36,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    dialog - stack {
+                    dialog - frame {
                         createMenu()
                     }
                 }
@@ -56,9 +56,8 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         onRemove(native.observe("selected", { refreshTheming() }))
         onRemove(native.observe("enabled", { refreshTheming() }))
     }
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(native.highlighted) t = t[DownSemantic]
         if(native.focused) t = t[FocusSemantic]

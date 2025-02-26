@@ -108,7 +108,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
         .let { if(working.value) it[WorkingSemantic] else it }
         .let { if(loading.value) it[LoadingSemantic] else it }
-    open fun hasAlternateBackedStates(): Boolean = false
     fun refreshTheming() {
         if (this == viewDebugTarget) println("refreshTheming")
         if (!fullyStarted) {

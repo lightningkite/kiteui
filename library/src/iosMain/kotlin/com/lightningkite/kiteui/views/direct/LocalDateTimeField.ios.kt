@@ -67,9 +67,8 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
@@ -134,9 +133,8 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]
@@ -201,9 +199,8 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         onRemove(textField.observe("selected", { refreshTheming() }))
         onRemove(textField.observe("enabled", { refreshTheming() }))
     }
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         if(textField.highlighted) t = t[DownSemantic]
         if(textField.focused) t = t[FocusSemantic]

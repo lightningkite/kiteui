@@ -48,7 +48,7 @@ object SampleLogInPage : KiteUiPage {
     override fun ViewContext.render() {
         val email = Property("")
         val password = Property("")
-        stack {
+        frame {
             image {
                 source = ImageRemote("https://picsum.photos/seed/login/1080/1920")
                 scaleType = ImageMode.Crop
@@ -83,7 +83,7 @@ object SampleLogInPage : KiteUiPage {
                     } in important
                 } in card in sizedBox(SizeConstraints(maxWidth = 50.rem))
                 space {} in weight(1f)
-            } in scrolls in withPadding
+            } in scrolling in withPadding
         } in bordering
     }
 }

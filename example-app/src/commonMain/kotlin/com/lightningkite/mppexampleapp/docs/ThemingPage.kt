@@ -61,16 +61,16 @@ object ThemingPage : DocPage {
             text("Exactly what a given modifier does is dependent on your theme.")
             text("You can define your own semantics, but here are some built-in ones:")
             card - col {
-                card - stack { text("card - used for creating light separations in UI groups") }
-                fieldTheme - stack { text("fieldTheme - used for indicating a field") }
-                bar - stack { text("bar - used to theme the top bar in navigation") }
-                nav - stack { text("nav - used to theme navigational widgets, such as bottom or side bars") }
-                important - stack { text("important - used to draw attention to a particular element on a page") }
-                critical - stack { text("critical - used to draw the maximal amount of attention to a particular element.  Typically, a maximum of one will be present per page.") }
-                warning - stack { text("warning - used to indicate that there is some warning you need to pay attention to") }
-                danger - stack { text("danger - used to indicate that this element is dangerous to use") }
-                affirmative - stack { text("affirmative - used to indicate success") }
-                emphasize - stack { text("emphasize - used to mildly draw attention to some text") }
+                card - frame { text("card - used for creating light separations in UI groups") }
+                fieldTheme - frame { text("fieldTheme - used for indicating a field") }
+                bar - frame { text("bar - used to theme the top bar in navigation") }
+                nav - frame { text("nav - used to theme navigational widgets, such as bottom or side bars") }
+                important - frame { text("important - used to draw attention to a particular element on a page") }
+                critical - frame { text("critical - used to draw the maximal amount of attention to a particular element.  Typically, a maximum of one will be present per page.") }
+                warning - frame { text("warning - used to indicate that there is some warning you need to pay attention to") }
+                danger - frame { text("danger - used to indicate that this element is dangerous to use") }
+                affirmative - frame { text("affirmative - used to indicate success") }
+                emphasize - frame { text("emphasize - used to mildly draw attention to some text") }
             }
             text("These modifiers carry down to their child elements.  Note that the above modifiers are correcting their child elements' text color.")
             space()

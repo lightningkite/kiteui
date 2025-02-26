@@ -1,9 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
-import kotlin.time.Duration
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
@@ -13,7 +11,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        Stack.internalAddChildStack(this, index, view)
+        Frame.internalAddChildStack(this, index, view)
     }
     var previousLast: RView? = null
     actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {

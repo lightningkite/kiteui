@@ -14,7 +14,7 @@ import kotlin.random.Random
 @Routable("themes")
 object ThemesPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             h1 { content = "Theme Control" }
             card - col {
                 h2 {
@@ -36,10 +36,10 @@ object ThemesPage : Page {
                     weight(1f) - space {}
                 } in scrollsHorizontally
             }
-            card - stack {
-                card - stack {
-                    card - stack {
-                        card - stack {
+            card - frame {
+                card - frame {
+                    card - frame {
+                        card - frame {
                             text("HI")
                         }
                     }

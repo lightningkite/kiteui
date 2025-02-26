@@ -4,18 +4,18 @@ import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.overlayStack
+import com.lightningkite.kiteui.views.l2.overlayFrame
 
 actual class MenuButton actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual fun opensMenu(createMenu: Stack.() -> Unit) {
+    actual fun opensMenu(createMenu: Frame.() -> Unit) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
-            this.overlayStack!!.popoverWriter {
-                willRemove?.let { overlayStack!!.removeChild(it) }
+            this.overlayFrame!!.popoverWriter {
+                willRemove?.let { overlayFrame!!.removeChild(it) }
             }.run {
                 willRemove = dismissBackground {
                     themeChoice += ThemeDerivation {
@@ -37,13 +37,13 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    atTopStart - dialog - stack {
+                    atTopStart - dialog - frame {
                         this@dismissBackground.native.apply {
                             clipChildren = false
                             clipToPadding = false
                         }
                         this@dismissBackground.native.addOnLayoutChangeListener{ dismissBackground, _, _, _, _, _, _, _, _ ->
-                            val overlayContainer = this@stack.native
+                            val overlayContainer = this@frame.native
                             val anchor = this@MenuButton.native
 
                             val overlayBoundsInWindow = overlayContainer.getBoundariesInWindow()
@@ -73,9 +73,8 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }

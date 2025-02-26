@@ -51,7 +51,7 @@ object ControlsPage : Page {
         val booleanContent = PerfProperty(true).also {
             it.addListener { println("booleanContent changed!") }
         }
-        return scrolls - col {
+        return scrolling - col {
 
             h1 { content = "Controls" }
 
@@ -256,25 +256,25 @@ object ControlsPage : Page {
             card - col {
                 h2 { content = "Switches" }
                 col {
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             switch { checked bind booleanContent; }
                         }
                     } in padded
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             switch { checked bind booleanContent; }
                         }
                     } in card
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             switch { checked bind booleanContent; }
                         }
                     } in important
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             switch { checked bind booleanContent; }
@@ -286,25 +286,25 @@ object ControlsPage : Page {
             col {
                 h2 { content = "Checkboxes" }
                 col {
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             checkbox { checked bind booleanContent }
                         }
                     } in padded
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             checkbox { checked bind booleanContent }
                         }
                     } in card
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             checkbox { checked bind booleanContent }
                         }
                     } in important
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             checkbox { checked bind booleanContent }
@@ -317,25 +317,25 @@ object ControlsPage : Page {
                 h2 { content = "Radio Buttons" }
                 val selected = Property(1)
                 col {
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             radioButton { checked bind selected.equalTo(1) }
                         }
                     } in padded
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             radioButton { checked bind selected.equalTo(2) }
                         }
                     } in card
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             radioButton { checked bind selected.equalTo(3) }
                         }
                     } in important
-                    stack {
+                    frame {
                         row {
                             h3 { content = "Example Setting" } in weight(1f)
                             radioButton { checked bind selected.equalTo(4) }
@@ -348,12 +348,12 @@ object ControlsPage : Page {
                 h2 { content = "Activity Indicators" }
                 row {
                     space {} in weight(1f)
-                    stack { activityIndicator { } } in padded
-                    stack { activityIndicator { } } in card
-                    stack { activityIndicator { } } in important
-                    stack { activityIndicator { } } in critical
-                    stack { activityIndicator { } } in warning
-                    stack { activityIndicator { } } in danger
+                    frame { activityIndicator { } } in padded
+                    frame { activityIndicator { } } in card
+                    frame { activityIndicator { } } in important
+                    frame { activityIndicator { } } in critical
+                    frame { activityIndicator { } } in warning
+                    frame { activityIndicator { } } in danger
                     space {} in weight(1f)
                 } in scrollsHorizontally
             } in card
@@ -450,14 +450,14 @@ object ControlsPage : Page {
                             width = 5.rem
                         )
                     )
-                    stack {
+                    frame {
                         image { source = ImageRemote("https://picsum.photos/seed/1/200/300") } in sizedBox(
                             SizeConstraints(
                                 width = 5.rem
                             )
                         )
                     }
-                    padded - stack {
+                    padded - frame {
                         spacing = 0.px
                         image { source = ImageRemote("https://picsum.photos/seed/2/200/300") } in sizedBox(
                             SizeConstraints(

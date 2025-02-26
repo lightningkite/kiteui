@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Page
@@ -45,9 +46,8 @@ actual class Link actual constructor(context: RContext): RView(context) {
     actual var onNavigator: PageNavigator = mainPageNavigator
     actual var resetsStack: Boolean = false
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }

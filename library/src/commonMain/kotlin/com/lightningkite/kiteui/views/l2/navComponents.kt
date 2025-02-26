@@ -78,10 +78,10 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
             }
 
             is NavCustom -> {
-                stack {
+                frame {
                     exists = false
                     ::exists { it.hidden?.invoke() != true }
-                    it.long(this@stack)
+                    it.long(this@frame)
                 }
             }
 
@@ -108,14 +108,14 @@ fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: Cont
 
 private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
-        padded - stack {
+        padded - frame {
             centered - icon {
                 ::source { navElement.icon() }
                 ::description { navElement.title() }
             }
         }
         navElement.count?.let { count ->
-            atTopEnd - compact - critical - stack {
+            atTopEnd - compact - critical - frame {
                 exists = false
                 ::exists { count() != null }
                 subtext {
@@ -146,7 +146,7 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
                 navGroupActionsInner(shared { it.children() })
             }
 
-            is NavCustom -> stack {
+            is NavCustom -> frame {
                 exists = false
                 ::exists { it.hidden?.invoke() != true }
                 it.square(this@forEach)
@@ -189,7 +189,7 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
             }
 
             is NavCustom -> {
-                stack {
+                frame {
                     exists = false
                     ::exists { it.hidden?.invoke() != true }
                     it.square(this@forEach)
@@ -219,13 +219,13 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
 }
 
 fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
-    return stack {
+    return frame {
         centered - icon {
             ::source { navElement.icon() }
             ::description { navElement.title() }
         }
         navElement.count?.let { count ->
-            gravity(Align.End, Align.Start) - compact - critical - stack {
+            gravity(Align.End, Align.Start) - compact - critical - frame {
                 exists = false
                 ::exists { count() != null }
                 space(0.01)
@@ -244,7 +244,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
             ::description { navElement.title() }
         }
         navElement.count?.let { count ->
-            centered - compact - critical - stack {
+            centered - compact - critical - frame {
                 exists = false
                 ::exists { count() != null }
                 space(0.01)

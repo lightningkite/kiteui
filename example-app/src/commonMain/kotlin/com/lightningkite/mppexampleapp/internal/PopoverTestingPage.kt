@@ -14,14 +14,14 @@ import com.lightningkite.kiteui.views.direct.*
 @Routable("popover-testing")
 object PopoverTestingPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             h1 { content = "Popover Test" }
-            stack {
+            frame {
                 atStart - card - menuButton {
                     text("left")
                     preferredDirection = PopoverPreferredDirection.leftTop
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
@@ -30,7 +30,7 @@ object PopoverTestingPage : Page {
                     text("center")
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
@@ -39,18 +39,18 @@ object PopoverTestingPage : Page {
                     text("right")
                     preferredDirection = PopoverPreferredDirection.rightTop
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
                 }
             }
-            stack {
+            frame {
                 atStart - card - menuButton {
                     text("left")
                     preferredDirection = PopoverPreferredDirection.aboveLeft
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
@@ -59,7 +59,7 @@ object PopoverTestingPage : Page {
                     text("center")
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
@@ -68,20 +68,20 @@ object PopoverTestingPage : Page {
                     text("right")
                     preferredDirection = PopoverPreferredDirection.aboveRight
                     opensMenu {
-                        sizeConstraints(30.rem, 30.rem) - card - stack {
+                        sizeConstraints(30.rem, 30.rem) - card - frame {
                             text("Popover")
                         }
                     }
                 }
             }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
-            sizeConstraints(minHeight = 10.rem) - card - stack { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
+            sizeConstraints(minHeight = 10.rem) - card - frame { text("Filler content") }
         }
     }
 }

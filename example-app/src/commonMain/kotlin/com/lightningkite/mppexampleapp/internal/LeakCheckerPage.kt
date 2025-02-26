@@ -37,7 +37,7 @@ object UltraBasicPage : Page {
     }
 
     override fun ViewWriter.render(): ViewModifiable = run {
-//        stack {
+//        frame {
 //            onRemove { println("stack onRemove") }
             button {
                 onRemove { println("button onRemove") }
@@ -93,39 +93,39 @@ object LeakCheckerPage : Page {
     val stringProp = Property("X")
     val doubleProp = Property<Double?>(0.0)
     val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
-        "canvas" to { stack { canvas { delegate = DrawDelegate() } } },
-        "recyclerView" to { stack { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
-        "viewPager" to { stack { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
-        "button" to { stack { button { text("hey"); onClick { } } } },
-        "link" to { stack { link { text("hey"); onNavigate { }; to = { RootPage } } } },
-        "textField" to { stack { textField { content bind stringProp } } },
-        "numberField" to { stack { numberField { content bind doubleProp } } },
-        "textArea" to { stack { textArea { content bind stringProp } } },
-        "select" to { stack { select { bind(Property(0), Constant(listOf(1, 2, 3)), { it.toString() }) } } },
-        "space" to { stack { space() } },
-        "text" to { stack { text { ::content { "My string prop: ${stringProp()}" } } } },
-        "stack" to { stack { stack { stack { } } } },
-        "col" to { stack { col { col { } } } },
-        "separator" to { stack { col { separator() } } },
-        "sizing" to { stack { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
-        "scrolls" to { stack { scrolls - col { text("A") } } },
-        "activityIndicator" to { stack { activityIndicator {} } },
-        "checkbox" to { stack { checkbox {} } },
-        "dismissBackground" to { stack { dismissBackground {} } },
-        "icon" to { stack { icon { source = Icon.send } } },
-        "image" to { stack { image { source = Resources.imagesGraph126 } } },
-        "phoneNumberInput" to { stack { phoneNumberInput {} } },
-        "localDateField" to { stack { localDateField {} } },
-        "localDateTimeField" to { stack { localDateTimeField {} } },
-        "localTimeField" to { stack { localTimeField {} } },
-        "circularProgress" to { stack { circularProgress {} } },
-        "radioButton" to { stack { radioButton {} } },
-        "radioToggleButton" to { stack { radioToggleButton {} } },
-        "rowCollapsingToColumn" to { stack { rowCollapsingToColumn(50.rem) {} } },
-        "switch" to { stack { switch {} } },
-        "toggleButton" to { stack { toggleButton {} } },
-        "video" to { stack { video {} } },
-        "webView" to { stack { webView {} } },
+        "canvas" to { frame { canvas { delegate = DrawDelegate() } } },
+        "recyclerView" to { frame { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+        "button" to { frame { button { text("hey"); onClick { } } } },
+        "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
+        "textField" to { frame { textField { content bind stringProp } } },
+        "numberField" to { frame { numberField { content bind doubleProp } } },
+        "textArea" to { frame { textArea { content bind stringProp } } },
+        "select" to { frame { select { bind(Property(0), Constant(listOf(1, 2, 3)), { it.toString() }) } } },
+        "space" to { frame { space() } },
+        "text" to { frame { text { ::content { "My string prop: ${stringProp()}" } } } },
+        "stack" to { frame { frame { frame { } } } },
+        "col" to { frame { col { col { } } } },
+        "separator" to { frame { col { separator() } } },
+        "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
+        "scrolling" to { frame { scrolling - col { text("A") } } },
+        "activityIndicator" to { frame { activityIndicator {} } },
+        "checkbox" to { frame { checkbox {} } },
+        "dismissBackground" to { frame { dismissBackground {} } },
+        "icon" to { frame { icon { source = Icon.send } } },
+        "image" to { frame { image { source = Resources.imagesGraph126 } } },
+        "phoneNumberInput" to { frame { phoneNumberInput {} } },
+        "localDateField" to { frame { localDateField {} } },
+        "localDateTimeField" to { frame { localDateTimeField {} } },
+        "localTimeField" to { frame { localTimeField {} } },
+        "circularProgress" to { frame { circularProgress {} } },
+        "radioButton" to { frame { radioButton {} } },
+        "radioToggleButton" to { frame { radioToggleButton {} } },
+        "rowCollapsingToColumn" to { frame { rowCollapsingToColumn(50.rem) {} } },
+        "switch" to { frame { switch {} } },
+        "toggleButton" to { frame { toggleButton {} } },
+        "video" to { frame { video {} } },
+        "webView" to { frame { webView {} } },
     )
 
     override fun ViewWriter.render(): ViewModifiable = run {
@@ -152,7 +152,7 @@ object LeakCheckerPage : Page {
                     makers[it % makers.size].second(this)
                 }
             }
-//            stack {
+//            frame {
 //                reactiveScope {
 //                    if(children.size > 0) {
 //                        children[0].leakDetect()

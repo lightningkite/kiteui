@@ -33,7 +33,7 @@ fun ViewWriter.example(
 
 fun ViewWriter.article(
     setup: ContainingView.()->Unit
-): ViewModifiable = scrolls - stack {
+): ViewModifiable = scrolling - frame {
     gravity(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col {
         setup()
     }

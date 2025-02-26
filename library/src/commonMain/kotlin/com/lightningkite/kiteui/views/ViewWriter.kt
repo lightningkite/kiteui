@@ -77,30 +77,6 @@ abstract class ViewWriter: ViewModifiable {
         return view
     }
 
-    @Deprecated(
-        "Use UseBackground instead",
-        ReplaceWith("UseBackground", "com.lightningkite.kiteui.views.UseBackground")
-    )
-    object TransitionNextView {
-        @Deprecated(
-            "Use UseBackground.Yes instead",
-            ReplaceWith("UseBackground.Yes", "com.lightningkite.kiteui.views.UseBackground")
-        )
-        val Yes = Unit
-        @Deprecated(
-            "Use UseBackground.No instead",
-            ReplaceWith("UseBackground.No", "com.lightningkite.kiteui.views.UseBackground")
-        )
-        val No = Unit
-    }
-
-    @Deprecated("Use UseBackground on the element itself")
-    var transitionNextView: Unit
-        get() = Unit
-        set(value) {
-//            afterNextElementSetup { useBackground = value }
-        }
-
     @ViewModifierDsl3
     val Theme.onNext: ViewWrapper get() {
         beforeNextElementSetup {
@@ -122,9 +98,10 @@ abstract class ViewWriter: ViewModifiable {
     // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
     // contains / minus
     @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
+    @ViewModifierDsl3 inline operator fun <T: ViewModifiable> ViewWrapper.minus(view: T): T = view
+
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun <T: ViewModifiable> ViewWrapper.minus(view: T): T = view
 
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit): ViewWrapper { return ViewWrapper }
@@ -148,15 +125,3 @@ class NewViewWriter(val calculationContext: CoroutineScope, override val context
         newView = view
     }
 }
-
-//var RView.themeDeriver: ThemeDeriver?
-//    get() = (themeChoice as? ThemeChoice.Derive)?.derivation
-//    set(value) {
-//        themeChoice = value?.let { ThemeChoice.Derive(it) }
-//        useBackground = UseBackground.IfChanged
-//    }
-//var RView.themeTweak: ThemeDeriver?
-//    get() = (themeChoice as? ThemeChoice.Derive)?.derivation
-//    set(value) {
-//        themeChoice = value?.let { ThemeChoice.Derive(it) }
-//    }

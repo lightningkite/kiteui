@@ -54,7 +54,7 @@ actual fun ViewWriter.hasPopover(
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
-                        centered - stack {
+                        centered - frame {
                             with(split()) {
                                 pageNavigator = originalNavigator
                                 setup(object : PopoverContext {

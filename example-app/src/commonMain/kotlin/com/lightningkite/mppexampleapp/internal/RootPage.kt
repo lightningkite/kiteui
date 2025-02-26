@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.link
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
-import com.lightningkite.kiteui.views.direct.scrolls
+import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
@@ -26,7 +26,7 @@ import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 @Routable("/internal")
 object RootPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             col {
                 h1 { content = "Beautiful by default." }
                 separator()

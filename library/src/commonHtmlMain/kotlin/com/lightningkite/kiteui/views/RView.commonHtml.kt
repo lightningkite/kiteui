@@ -120,7 +120,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             if (working.value) native.classes.add("working")
             else native.classes.remove("working")
         }
-        if (this.hasAlternateBackedStates()) native.classes.add("mightTransition")
     }
 
     companion object {

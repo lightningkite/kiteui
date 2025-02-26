@@ -21,16 +21,16 @@ class Recycler2(
     var log: Console? = null//ConsoleRoot.tag("Recycler2"),
 ) : ViewModifiable {
     override val coroutineContext: CoroutineContext
-        get() = outerStack.coroutineContext
-    val outerStack: Stack
+        get() = outerFrame.coroutineContext
+    val outerFrame: Frame
     internal lateinit var scroll: ScrollingBehaviors
         private set
     internal val cells: ProgrammaticLayout
-    internal val scrollSentinel: Stack
+    internal val scrollSentinel: Frame
     internal lateinit var fakeScroll: ScrollingBehaviors
         private set
     internal val fakeScrollContent: ProgrammaticLayout
-    internal val fakeScrollIndicator: Stack
+    internal val fakeScrollIndicator: Frame
 
     var spacing: Dimension?
         get() = cells.spacing
@@ -38,9 +38,9 @@ class Recycler2(
             cells.spacing = value
         }
     var exists: Boolean
-        get() = outerStack.exists
+        get() = outerFrame.exists
         set(value) {
-            outerStack.exists = value
+            outerFrame.exists = value
         }
 
     private val _centerIndex = Property(0)
@@ -72,21 +72,21 @@ class Recycler2(
 
     init {
         with(viewWriter) {
-            stack {
-                outerStack = this
-                scrolls(vertical = vertical, horizontal = !vertical) {
+            frame {
+                outerFrame = this
+                scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
                 } - programmatic {
 //                    viewDebugTarget = this
                     cells = this
-                    unpadded - stack {
+                    unpadded - frame {
                         scrollSentinel = this
                     }
                 }
                 if (vertical) atEnd - sizeConstraints(width = 1.rem, maxWidth = 1.rem)
                 else atBottom - sizeConstraints(height = 1.rem, maxHeight = 1.rem)
-                scrolls(vertical = vertical, horizontal = !vertical) {
+                scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                 } - programmatic {
                     fakeScrollContent = this
@@ -95,7 +95,7 @@ class Recycler2(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
-                    }.onNext - unpadded - stack {
+                    }.onNext - unpadded - frame {
                         fakeScrollIndicator = this
                         opacity = 0.0
                     }

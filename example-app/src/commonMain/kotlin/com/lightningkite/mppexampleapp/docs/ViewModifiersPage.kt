@@ -46,7 +46,7 @@ object ViewModifiersPage : DocPage {
             text("Using the gravity modifier, you can align items within a column.")
             example(
                 """
-               sizeConstraints(minHeight = 200.px) - stack {
+               sizeConstraints(minHeight = 200.px) - frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
@@ -56,7 +56,7 @@ object ViewModifiersPage : DocPage {
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 200.px) - stack {
+                sizeConstraints(minHeight = 200.px) - frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
@@ -68,12 +68,12 @@ object ViewModifiersPage : DocPage {
             text("There's also a shortcut available for simply centering an item.")
             example(
                 """
-                sizeConstraints(minHeight = 100.px) - stack {
+                sizeConstraints(minHeight = 100.px) - frame {
                     centered - text("Centered")
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(minHeight = 100.px) - stack {
+                sizeConstraints(minHeight = 100.px) - frame {
                     centered - text("Centered")
                 }
             }
@@ -156,10 +156,10 @@ object ViewModifiersPage : DocPage {
                 }
             }
             h2("Scrolls")
-            text("The scrolls modifier is used to add a scroll bar to a view.")
+            text("The scrolling modifier is used to add a scroll bar to a view.")
             example(
                 """
-                sizeConstraints(maxHeight = 100.px) - scrolls - col {
+                sizeConstraints(maxHeight = 100.px) - scrolling - col {
                     text("Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                             "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +
                             "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla " +
@@ -168,7 +168,7 @@ object ViewModifiersPage : DocPage {
                 }
             """.trimIndent()
             ) {
-                sizeConstraints(maxHeight = 100.px) - scrolls - col {
+                sizeConstraints(maxHeight = 100.px) - scrolling - col {
                     text(
                         "Scrolls Vertically Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut " +
                                 "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip " +

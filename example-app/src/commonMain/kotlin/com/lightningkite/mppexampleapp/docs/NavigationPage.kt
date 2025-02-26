@@ -157,7 +157,7 @@ object NavigationPage: DocPage {
                     onClick {
                         navigator.dialog.navigate(object: KiteUiPage {
                             override fun ViewWriter.render(): ViewModifiable = run {
-                                stack {
+                                frame {
                                     centered - card - col {
                                         h1("Hello!")
                                         text("This is a dialog.")
@@ -180,7 +180,7 @@ object NavigationPage: DocPage {
                     onClick {
                         dialogPageNavigator.navigate(object: Page {
                             override fun ViewWriter.render(): ViewModifiable = run {
-                                stack {
+                                frame {
                                     centered - card - col {
                                         h1("Hello!")
                                         text("This is a dialog.")

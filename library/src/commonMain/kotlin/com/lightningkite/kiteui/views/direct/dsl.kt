@@ -1,12 +1,20 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Platform
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.readable.CalculationContext
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.l2.Recycler2
+import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
+import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.readable.invoke
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -213,9 +221,9 @@ inline fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): S
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.stack(setup: Stack.() -> Unit = {}): Stack {
+inline fun ViewWriter.frame(setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Stack(context) , setup)
+    return write(Frame(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -304,4 +312,41 @@ inline fun ViewWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
 inline fun ViewWriter.programmatic(setup: ProgrammaticLayout.() -> Unit = {}): ProgrammaticLayout {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ProgrammaticLayout(context), setup)
+}
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return Recycler2(this, true).apply(setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return Recycler2(this, true).apply {
+
+        placer = RecyclerViewPagingPlacer()
+        snapToElements = Align.Center
+        scrollSnapStop = true
+
+        with(outerFrame) {
+            if(!Platform.usesTouchscreen) {
+                gravity(Align.Start, Align.Center) - button {
+                    icon(Icon.chevronLeft, "Previous")
+                    onClick { centerIndex set centerIndex() - 1 }
+                }
+                gravity(Align.End, Align.Center) - button {
+                    icon(Icon.chevronRight, "Next")
+                    onClick { centerIndex set centerIndex() + 1 }
+                }
+            }
+        }
+    }.apply(setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return Recycler2(this, false).apply(setup)
 }

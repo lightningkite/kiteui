@@ -27,7 +27,7 @@ object VideoElementPage: DocPage {
                     this.playing bind playing
                 }
                 ""${'"'}.trimIndent()) {
-                stack {
+                frame {
                     centered - sizeConstraints(width = 8.rem, height = 8.rem) - video {
                         source =
                             VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")

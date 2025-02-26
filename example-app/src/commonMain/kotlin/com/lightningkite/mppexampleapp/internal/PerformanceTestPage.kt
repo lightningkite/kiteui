@@ -33,7 +33,7 @@ object PerformanceTestPage : Page {
                     property.value++
                 }
             }
-            scrolls - col  {
+            scrolling - col  {
                 forEach(items) {
                     row {
                         icon { source = Icon.add }

@@ -30,7 +30,7 @@ class LayoutTest {
             super.onCreate(savedInstanceState)
             setTheme(R.style.Theme_Mppexample)
             with(viewWriter) {
-                stack {
+                frame {
                     s.render(this)
                 }
             }

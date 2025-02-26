@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.MainContentSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -27,7 +28,7 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
                 with(split()) {
                     this.pageNavigator = n
                     if (screen != null)
-                        with(screen) { mainContent - padded - render() }
+                        with(screen) { MainContentSemantic.onNext - padded - render() }
                 }
             }
         )

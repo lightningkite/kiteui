@@ -6,9 +6,6 @@ import com.lightningkite.readable.*
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.CoroutineScope
-import kotlin.math.min
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 @ViewModifierDsl3
 actual fun ViewWriter.hintPopover(
@@ -207,7 +204,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
         }
         override fun internalAddChild(index: Int, view: RView) {
             super.internalAddChild(index, view)
-            Stack.internalAddChildStack(this, index, view)
+            Frame.internalAddChildStack(this, index, view)
         }
     })
     return ViewWrapper

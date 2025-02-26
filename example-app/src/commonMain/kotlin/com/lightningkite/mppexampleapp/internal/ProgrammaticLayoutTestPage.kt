@@ -1,21 +1,15 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.Property
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 @Routable("programmatic-layout-test")
@@ -26,11 +20,11 @@ object ProgrammaticLayoutTestPage : Page {
             val pl: ProgrammaticLayout
             expanding - programmatic {
                 pl = this
-                val child: Stack
+                val child: Frame
                 val move = Property(true)
-                card - stack { child = this; text("Left") }
-                card - stack { text("Top Right") }
-                card - stack { text("Bottom Right") }
+                card - frame { child = this; text("Left") }
+                card - frame { text("Top Right") }
+                card - frame { text("Bottom Right") }
                 important - button {
                     col {
                         text("Obnoxious Bouncing")

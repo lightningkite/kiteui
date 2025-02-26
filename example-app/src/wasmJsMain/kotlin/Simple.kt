@@ -24,7 +24,7 @@ fun main() {
 //        }
 //    }
 //    with(context) {
-//        stack {
+//        frame {
 //            rootTheme = lastTheme
 //            val navigator = PlatformNavigator
 //            PlatformNavigator.routes = AutoRoutes
@@ -48,7 +48,7 @@ fun main() {
 //                    onClick { counter.value++ }
 //                }
 //            }
-////            stack {
+////            frame {
 ////                text("D")
 ////            } in tweakTheme { it.dialog() }
 //        }

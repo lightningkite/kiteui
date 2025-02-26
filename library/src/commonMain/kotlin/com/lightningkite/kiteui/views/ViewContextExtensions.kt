@@ -1,15 +1,8 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
-import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
-import com.lightningkite.readable.reactiveScope
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlin.properties.ReadWriteProperty
-import kotlin.random.Random
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.locale.renderToString
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -53,11 +54,10 @@ actual class LocalDateField actual constructor(context: RContext) :
         }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
 }

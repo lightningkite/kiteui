@@ -8,10 +8,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.direct.col
-import com.lightningkite.kiteui.views.direct.h1
-import com.lightningkite.kiteui.views.direct.stack
-import com.lightningkite.kiteui.views.direct.text
+import com.lightningkite.kiteui.views.direct.*
 import kotlin.reflect.KClass
 
 class Routes(
@@ -20,7 +17,7 @@ class Routes(
     val fallback: Page = object: Page {
         override val title = Constant("Not Found")
         override fun ViewWriter.render(): ViewModifiable = run {
-            return stack {
+            return frame {
                 centered - col {
                     h1("Not Found")
                     text("Sorry, we couldn't find the page you're looking for.")

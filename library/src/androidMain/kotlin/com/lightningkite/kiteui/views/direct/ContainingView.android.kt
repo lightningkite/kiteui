@@ -20,7 +20,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
-actual class Stack actual constructor(context: RContext) : RView(context) {
+actual class Frame actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)

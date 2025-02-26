@@ -24,7 +24,7 @@ class LayoutTest {
             override fun viewDidLoad() {
                 super.viewDidLoad()
                 setup(Theme(id = "unitTest")) {
-                    root = stack {
+                    root = frame {
                         s.render(this)
                     }
                 }

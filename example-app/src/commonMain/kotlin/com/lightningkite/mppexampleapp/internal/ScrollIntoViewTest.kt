@@ -20,7 +20,7 @@ object ScrollIntoViewTest : Page {
     val jumpTo = Property<Location?>(null)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - stack {
+        scrolling - frame {
             sizeConstraints(height = 500.rem) - col {
                 centered - important - button {
                     reactive {

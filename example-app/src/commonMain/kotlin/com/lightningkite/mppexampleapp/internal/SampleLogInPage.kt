@@ -23,14 +23,14 @@ object SampleLogInPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         val email = Property("")
         val password = Property("")
-        stack {
+        frame {
             spacing = 0.rem
             image {
                 source = Resources.imagesSolera
                 scaleType = ImageScaleType.Crop
                 opacity = 0.5
             }
-            padded - scrolls - col {
+            padded - scrolling - col {
                 expanding - space()
                 centered - sizeConstraints(maxWidth = 50.rem) - card - col {
                     h1 { content = "My App" }

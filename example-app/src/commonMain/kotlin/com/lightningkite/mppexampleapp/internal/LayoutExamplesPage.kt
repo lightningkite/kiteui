@@ -8,18 +8,19 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("layout-examples")
 object LayoutExamplesPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             h1 { content = "Sampling" }
 
             card - col {
                 h2 { content = "Stack Layout" }
-                stack {
+                frame {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
@@ -95,7 +96,7 @@ object LayoutExamplesPage : Page {
                                 }
                             }
                         }
-                        stack {}
+                        frame {}
                     }
                 }
             }
@@ -103,14 +104,14 @@ object LayoutExamplesPage : Page {
             card - col {
                 h2("Collapsing layout")
                 rowCollapsingToColumn(80.rem) {
-                    expanding - card - stack { centered - text("A") }
-                    expanding - important - stack { centered - text("B") }
-                    expanding - critical - stack { centered - text("C") }
+                    expanding - card - frame { centered - text("A") }
+                    expanding - important - frame { centered - text("B") }
+                    expanding - critical - frame { centered - text("C") }
                 }
                 rowCollapsingToColumn(30.rem, 40.rem, 50.rem) {
-                    expanding - card - stack { centered - text("A") }
-                    expanding - important - stack { centered - text("B") }
-                    expanding - critical - stack { centered - text("C") }
+                    expanding - card - frame { centered - text("A") }
+                    expanding - important - frame { centered - text("B") }
+                    expanding - critical - frame { centered - text("C") }
                 }
             }
 
@@ -144,7 +145,7 @@ object LayoutExamplesPage : Page {
                     for (v in aligns) {
                         gravity(Align.Stretch, v) - text { content = "$v" }
                     }
-                    expanding - card - stack {
+                    expanding - card - frame {
                         centered - text { content = "Expanding" }
                     }
                     for (v in aligns) {
@@ -183,25 +184,25 @@ object LayoutExamplesPage : Page {
                 }
                 run {
                     val amount = 20
-                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
                         text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }
                 run {
                     val amount = 40
-                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
                         text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - stack {
+                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }
@@ -209,7 +210,7 @@ object LayoutExamplesPage : Page {
 
             card - col {
                 h2("Scroll text")
-                sizeConstraints(height = 10.rem) - scrolls - col {
+                sizeConstraints(height = 10.rem) - scrolling - col {
                     col {
                         sizeConstraints(height = 100.rem) - text("This item is really tall!")
                     }
@@ -240,29 +241,29 @@ object LayoutExamplesPage : Page {
                     spacing = 0.rem
                     text("0.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - stack { important - text("X") }
-                    stack { important - text("X") }
+                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    frame { important - text("X") }
                 }
                 card - row {
                     spacing = 0.5.rem
                     text("0.5")
                     important - text("X")
-                    onlyWhen { showExtra() } - stack { important - text("X") }
-                    stack { important - text("X") }
+                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    frame { important - text("X") }
                 }
                 card - row {
                     spacing = 1.rem
                     text("1.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - stack { important - text("X") }
-                    stack { important - text("X") }
+                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    frame { important - text("X") }
                 }
                 card - row {
                     spacing = 2.rem
                     text("2.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - stack { important - text("X") }
-                    stack { important - text("X") }
+                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    frame { important - text("X") }
                 }
                 card - button {
                     spacing = 0.rem

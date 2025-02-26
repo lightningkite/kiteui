@@ -12,7 +12,7 @@ import com.lightningkite.mppexampleapp.internal.CanvasSamplePage.Point
 object CanvasSamplePage : Page {
     data class Point(val x: Double, val y: Double)
 
-    override fun ViewWriter.render() = stack {
+    override fun ViewWriter.render() = frame {
         canvas {
             delegate = DrawDelegate()
         }

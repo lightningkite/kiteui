@@ -22,7 +22,7 @@ object LoadAnimationTestPage : Page {
             val loading = LateInitProperty<String>()
             val writable = Property<String>("")
             h1 { content = "Loading animation testing" }
-            expanding - scrolls - col {
+            expanding - scrolling - col {
                 row {
                     button {
                         text("Load")

@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.direct.*
 
 val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
 
-actual fun ViewWriter.platformSpecific() {
+actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //    val current = Property(0)
 //    col {
 //        val showExtra = Property(true)
@@ -65,7 +65,7 @@ actual fun ViewWriter.platformSpecific() {
 //            rv = this
 //            columns = 1
 //            children(data) { obs ->
-//                card - sizeConstraints(minWidth = 100.dp, minHeight = 100.dp) - stack {
+//                card - sizeConstraints(minWidth = 100.dp, minHeight = 100.dp) - frame {
 //                    text {
 //                        ::content { obs.await() }
 //                    }
@@ -94,7 +94,7 @@ actual fun ViewWriter.platformSpecific() {
 //        }
 //    }
 
-    col {
+    return col {
         important - compact - compact - button {
             icon { source = Icon.add }
         }

@@ -20,7 +20,7 @@ object ImageTestPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        stack {
+        frame {
             centered - sizeConstraints(width = 40.rem) - col {
                 val value = Property(false)
                 card - toggleButton {

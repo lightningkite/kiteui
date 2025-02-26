@@ -48,28 +48,64 @@ expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 expect fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 val ViewWriter.scrolls: ViewWrapper get() = __scrollsUncontracted(true, false)
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 val ViewWriter.scrollsHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 inline fun ViewWriter.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
     return __scrollsUncontracted(vertical = true, horizontal = false, setup)
 }
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrollingHorizontally"))
 inline fun ViewWriter.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrollingBoth"))
 inline fun ViewWriter.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
+@Deprecated("use scrolling instead", ReplaceWith("scrolling"))
 inline fun ViewWriter.scrolls(
+    vertical: Boolean,
+    horizontal: Boolean,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper {
+    return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
+}
+
+@ViewModifierDsl3
+val ViewWriter.scrolling: ViewWrapper get() = __scrollsUncontracted(true, false)
+
+@ViewModifierDsl3
+val ViewWriter.scrollingHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrolling(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+    return __scrollsUncontracted(vertical = true, horizontal = false, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+    return __scrollsUncontracted(vertical = false, horizontal = true, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+    return __scrollsUncontracted(vertical = true, horizontal = true, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrolling(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}

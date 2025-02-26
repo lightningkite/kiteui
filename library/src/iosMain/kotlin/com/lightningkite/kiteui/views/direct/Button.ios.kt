@@ -39,9 +39,8 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         }
     }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if (!enabled) t = t[DisabledSemantic]
         if (native.highlighted) t = t[DownSemantic]
         if (native.focused) t = t[FocusSemantic]

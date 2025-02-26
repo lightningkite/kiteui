@@ -12,7 +12,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        Stack.internalAddChildStack(this, index, view)
+        Frame.internalAddChildStack(this, index, view)
     }
 
     actual var source: ImageSource? = null

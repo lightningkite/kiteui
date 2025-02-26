@@ -19,7 +19,7 @@ import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
-import com.lightningkite.kiteui.views.direct.scrolls
+import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.kiteui.views.direct.space

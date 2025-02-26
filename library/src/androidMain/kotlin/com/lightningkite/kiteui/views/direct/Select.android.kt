@@ -30,9 +30,8 @@ actual class Select actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    override fun hasAlternateBackedStates(): Boolean = true
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
+        var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
     }

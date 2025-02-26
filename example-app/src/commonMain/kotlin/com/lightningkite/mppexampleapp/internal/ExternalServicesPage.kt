@@ -18,7 +18,7 @@ object ExternalServicesPage : Page {
         get() = super.title
     val image = Property<ImageSource?>(null)
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolls - col {
+        scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }
 //                text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }

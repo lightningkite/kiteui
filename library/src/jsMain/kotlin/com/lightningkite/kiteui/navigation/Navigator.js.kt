@@ -20,7 +20,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
         if (goToIndex == -1) {
             log?.log("Could not find, pushing")
             val newPage = (routes.parseOrFallback(urlBar) ?: routes.fallback)
-            this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newScreen
+            this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newPage
             routes.render(newPage)?.let { storedStack.value += it.urlLikePath.render() }
         } else {
             log?.log("Found, popping backwards")

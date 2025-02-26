@@ -25,7 +25,7 @@ object TestingGroundPage: Page {
 
 
 
-        scrolls - col {
+        scrolling - col {
             h1("Experiments test")
             centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
 
@@ -44,7 +44,7 @@ object TestingGroundPage: Page {
                     progressRatio.invoke()
                 }
             }
-//            stack {
+//            frame {
                 sizeConstraints(width = 6.rem, height = 6.rem) -
                         circularProgress {
                     ::ratio {

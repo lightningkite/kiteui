@@ -159,7 +159,7 @@ object DataPage : DocPage {
                         text("Unless you know what you're doing, you should NOT create views in a reactive scope.  This code:")
                         code {
                             content = """
-                                stack {
+                                frame {
                                     reactive {
                                         if(secondsElapsed() % 2 == 0) {
                                             text("We're on an even second")

@@ -151,6 +151,11 @@ data object ButtonSemantic : Semantic {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
 }
 
+data object ClickableSemantic : Semantic {
+    override val key: String = "clk"
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
+}
+
 data object HoverSemantic : Semantic {
     override val key: String = "hov"
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
@@ -187,6 +192,15 @@ data object DisabledSemantic : Semantic {
         foreground = theme.foreground.applyAlpha(alpha = 0.25f),
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
+    ).withBack
+}
+
+data object CompactSemantic : Semantic {
+    override val key: String = "cmp"
+    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+        id = key,
+        spacing = theme.spacing / 2,
+        navSpacing = theme.navSpacing / 2,
     ).withBack
 }
 

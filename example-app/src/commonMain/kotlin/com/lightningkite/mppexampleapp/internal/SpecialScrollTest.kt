@@ -20,7 +20,7 @@ object SpecialScrollTest : Page {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors
-            expanding - scrolls {
+            expanding - scrolling {
                 verticalScrollElement = this
             } - col {
                 repeat(10) {

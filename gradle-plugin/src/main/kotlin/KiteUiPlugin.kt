@@ -132,9 +132,9 @@ class KiteUiPlugin : Plugin<Project> {
                     resourcesIos(resourceFolder, outPlist, outNonAssets, outAssets, outKt, ext)
                 }
             }
-            tasks.matching { it.name.startsWith("compileKotlin") && it.name.contains("ios", true) }
+            tasks.matching { it.name.startsWith("compile") && it.name.contains("ios", true) && it.name.contains("kotlin", true) }
                 .configureEach { dependsOn(task) }
-            tasks.matching { it.name.startsWith("kspKotlin") && it.name.contains("ios", true) }
+            tasks.matching { it.name.startsWith("ksp") && it.name.contains("ios", true) && it.name.contains("kotlin", true) }
                 .configureEach { dependsOn(task) }
             tasks.matching { it.name.contains("ios", true) && it.name.endsWith("ProcessResources") }
                 .configureEach { dependsOn(task) }
