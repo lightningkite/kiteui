@@ -4,9 +4,9 @@ import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.kiteui.reactive.LateInitProperty
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.LateInitProperty
+import com.lightningkite.readable.Readable
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView

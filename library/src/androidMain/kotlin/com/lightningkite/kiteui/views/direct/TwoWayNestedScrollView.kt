@@ -1456,7 +1456,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         val maxJumpX = maxScrollAmountX
         val maxJumpY = maxScrollAmountY
 
-        if (nextFocused != null && isWithinDeltaOfScreen(nextFocused, maxJumpX, width, maxJumpY, height)) {
+        if (nextFocused != null && isWithinDeltaOfPage(nextFocused, maxJumpX, width, maxJumpY, height)) {
             nextFocused.getDrawingRect(mTempRect)
             offsetDescendantRectToMyCoords(nextFocused, mTempRect)
             val scrollDeltaX = computeScrollDeltaToGetChildRectOnScreenX(mTempRect)
@@ -1506,7 +1506,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         }
 
         if (currentFocused != null && currentFocused.isFocused
-            && isOffScreen(currentFocused)
+            && isOffPage(currentFocused)
         ) {
             // previously focused item still has focus and is off screen, give
             // it up (take it back to ourselves)
@@ -1525,15 +1525,15 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
      * @return whether the descendant of this scroll view is scrolled off
      * screen.
      */
-    private fun isOffScreen(descendant: View): Boolean {
-        return !isWithinDeltaOfScreen(descendant, 0, width, 0, height)
+    private fun isOffPage(descendant: View): Boolean {
+        return !isWithinDeltaOfPage(descendant, 0, width, 0, height)
     }
 
     /**
      * @return whether the descendant of this scroll view is within delta
      * pixels of being on the screen.
      */
-    private fun isWithinDeltaOfScreen(descendant: View, deltaX: Int, width: Int, deltaY: Int, height: Int): Boolean {
+    private fun isWithinDeltaOfPage(descendant: View, deltaX: Int, width: Int, deltaY: Int, height: Int): Boolean {
         descendant.getDrawingRect(mTempRect)
         offsetDescendantRectToMyCoords(descendant, mTempRect)
 
@@ -2115,7 +2115,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
             return false
         }
 
-        if (isOffScreen(nextFocus)) {
+        if (isOffPage(nextFocus)) {
             return false
         }
 
@@ -2200,7 +2200,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
         // If the currently-focused view was visible on the screen when the
         // screen was at the old height, then scroll the screen to make that
         // view visible with the new screen height.
-        if (isWithinDeltaOfScreen(currentFocused, 0, oldw, 0, oldh)) {
+        if (isWithinDeltaOfPage(currentFocused, 0, oldw, 0, oldh)) {
             currentFocused.getDrawingRect(mTempRect)
             offsetDescendantRectToMyCoords(currentFocused, mTempRect)
             val scrollDeltaX = computeScrollDeltaToGetChildRectOnScreenX(mTempRect)

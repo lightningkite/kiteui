@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui
 
+import com.lightningkite.readable.AppScope
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*

@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 
 

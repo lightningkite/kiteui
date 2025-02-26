@@ -14,10 +14,9 @@ import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.invokeAllSafe
-import com.lightningkite.kiteui.suspendCoroutineCancellable
+import com.lightningkite.readable.CalculationContext
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.invokeAllSafe
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.*
@@ -26,6 +25,7 @@ import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.http.*
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.RuntimeException
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
@@ -59,11 +59,11 @@ object AndroidAppContext {
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)
-    suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCoroutineCancellable { continuation ->
+    suspend fun requestPermissions(vararg permissions: String): KiteUiActivity.PermissionResult = suspendCancellableCoroutine { continuation ->
         val code = requestPermissions(*permissions) {
             continuation.resume(it)
         }
-        return@suspendCoroutineCancellable {
+        continuation.invokeOnCancellation {
             code?.let { c -> activityCtx?.cancelOnPermissions(c) }
         }
     }

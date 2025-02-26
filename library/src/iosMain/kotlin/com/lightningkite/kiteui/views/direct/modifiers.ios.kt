@@ -7,21 +7,17 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.navigation.dialogPageNavigator
+import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.readable.CalculationContext
+import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
-import platform.QuartzCore.CALayer
-import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-import kotlin.time.DurationUnit
 
 
 @ViewModifierDsl3
@@ -53,20 +49,20 @@ actual fun ViewWriter.hasPopover(
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
     beforeNextElementSetup {
-        val originalNavigator = screenNavigator
+        val originalNavigator = pageNavigator
         fun openDialog() {
-            dialogScreenNavigator.navigate(object : Page {
-                override fun ViewWriter.render2(): ViewModifiable {
+            dialogPageNavigator.navigate(object : Page {
+                override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
                         centered - stack {
                             with(split()) {
-                                screenNavigator = originalNavigator
+                                pageNavigator = originalNavigator
                                 setup(object : PopoverContext {
                                     override val calculationContext: CalculationContext
                                         get() = this@beforeNextElementSetup
 
                                     override fun close() {
-                                        dialogScreenNavigator.dismiss()
+                                        dialogPageNavigator.dismiss()
                                     }
                                 })
                             }

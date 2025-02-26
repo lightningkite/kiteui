@@ -44,7 +44,7 @@ If you want to try another theme, start [here](https://kiteui.cs.lightningkite.c
 
 ```kotlin
 @Routable("sample/login")
-object SampleLogInScreen : KiteUiScreen {
+object SampleLogInPage : KiteUiPage {
     override fun ViewContext.render() {
         val email = Property("")
         val password = Property("")
@@ -77,7 +77,7 @@ object SampleLogInScreen : KiteUiScreen {
                         onClick {
                             launch {
                                 fetch("fake-login/${email.await()}")
-                                navigator.navigate(ControlsScreen)
+                                navigator.navigate(ControlsPage)
                             }
                         }
                     } in important

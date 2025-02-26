@@ -4,14 +4,19 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.invokeAllSafe
+import com.lightningkite.readable.invokeAllSafe
 import com.lightningkite.kiteui.views.AndroidAppContext
+import com.lightningkite.readable.AppScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.Closeable
 import kotlin.coroutines.resume
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
 
-    private val loadedMap = HashMap<AudioSource, Async<Int>>()
+    private val loadedMap = HashMap<AudioSource, Deferred<Int>>()
     private val soundPool = SoundPool.Builder().apply {
         setMaxStreams(concurrency)
     }.build()
@@ -22,7 +27,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     private suspend fun preloadInternal(source: AudioSource): Int {
         return loadedMap.getOrPut(source) {
-            asyncGlobal {
+            AppScope.async {
                 when (source) {
                     is AudioRemote -> TODO()
                     is AudioRaw -> TODO()
@@ -65,7 +70,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 
     actual fun unload(sound: AudioSource) {
-        launchGlobal {
+        AppScope.launch {
             loadedMap[sound]?.await()?.let {
                 soundPool.unload(it)
             }
@@ -123,13 +128,13 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
 
     }
-    return suspendCoroutineCancellable { cont ->
+    return suspendCancellableCoroutine { cont ->
         player.setOnPreparedListener {
             toClose?.close()
             cont.resume(audio)
         }
         player.prepareAsync()
-        return@suspendCoroutineCancellable {
+        cont.invokeOnCancellation {
             player.release()
         }
     }

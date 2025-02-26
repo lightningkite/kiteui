@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.exceptions
 
 import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*

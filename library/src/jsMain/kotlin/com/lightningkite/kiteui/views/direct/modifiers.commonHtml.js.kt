@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.animationsEnabled
 import com.lightningkite.kiteui.views.hidden

@@ -1,6 +1,10 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.readable.AppScope
+import com.lightningkite.readable.Property
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -27,14 +31,13 @@ class WaitGate(permit: Boolean = false) {
     val continuations = ArrayList<Continuation<Unit>>()
     suspend fun await(): Unit {
         if (permit) return
-        else return suspendCoroutineCancellable {
+        else return suspendCancellableCoroutine {
             continuations.add(it)
-            return@suspendCoroutineCancellable {}
         }
     }
     fun abandon() {
         for (continuation in continuations) {
-            continuation.resumeWithException(CancelledException("abandoned as requested"))
+            continuation.resumeWithException(CancellationException("abandoned as requested"))
         }
         continuations.clear()
     }
@@ -68,7 +71,7 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
             } catch (e: ConnectionException) {
                 e.printStackTrace2()
                 if (retryAt.value == null) {
-                    launchGlobal {
+                    AppScope.launch {
                         val d = nextRetry
                         retryAt.value = clock.now() + d
                         nextRetry = d.times(2).coerceAtMost(maxRetry)

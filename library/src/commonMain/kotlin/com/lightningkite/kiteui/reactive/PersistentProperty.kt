@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.PlatformStorage
 import com.lightningkite.kiteui.navigation.DefaultJson
+import com.lightningkite.readable.BaseImmediateReadable
+import com.lightningkite.readable.ImmediateWritable
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer

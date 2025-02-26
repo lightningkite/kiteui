@@ -7,8 +7,8 @@ import com.lightningkite.kiteui.models.ForcePaddingSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.ReactiveContext
+import com.lightningkite.readable.CalculationContext
+import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.contracts.ExperimentalContracts

@@ -55,6 +55,8 @@ class KiteUiPlugin : Plugin<Project> {
                     resourcesCommon(resourceFolder, out, ext)
                 }
             }
+            tasks.matching { it.name == "compileCommonMainKotlinMetadata" }.configureEach { dependsOn(task) }
+            tasks.matching { it.name.startsWith("ksp") && it.name.contains("metadata") }.configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(task) }
         }
 
         tasks.create("kiteuiResourcesJsNonVitePart", Copy::class.java).apply {

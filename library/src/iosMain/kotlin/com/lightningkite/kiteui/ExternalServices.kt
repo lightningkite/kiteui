@@ -50,7 +50,7 @@ actual object ExternalServices {
     )
     var currentPresenter: (UIViewController) -> Unit = {}
     lateinit var rootView: UIView
-    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCoroutineCancellable { cont ->
+    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
         if (imagePickerCompat) {
             val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
@@ -78,7 +78,7 @@ actual object ExternalServices {
             controller.delegate = delegate
             controller.extensionStrongRef = delegate
             currentPresenter(controller)
-            return@suspendCoroutineCancellable {
+            cont.invokeOnCancellation {
                 try {
                     controller.dismissViewControllerAnimated(true, {})
                 } catch (e: Exception) { /*squish*/
@@ -136,7 +136,7 @@ actual object ExternalServices {
             controller.delegate = delegate
             controller.extensionStrongRef = delegate
             currentPresenter(controller)
-            return@suspendCoroutineCancellable {
+            cont.invokeOnCancellation {
                 try {
                     controller.dismissViewControllerAnimated(true, {})
                 } catch (e: Exception) { /*squish*/
@@ -146,7 +146,7 @@ actual object ExternalServices {
     }
 
     actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
-        suspendCoroutineCancellable { cont ->
+        suspendCancellableCoroutine { cont ->
             val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
             if (imagePickerCompat) {
                 val controller =
@@ -185,7 +185,7 @@ actual object ExternalServices {
                 controller.delegate = delegate
                 controller.extensionStrongRef = delegate
                 currentPresenter(controller)
-                return@suspendCoroutineCancellable {
+                cont.invokeOnCancellation {
                     try {
                         controller.dismissViewControllerAnimated(true, {})
                     } catch (e: Exception) { /*squish*/
@@ -243,7 +243,7 @@ actual object ExternalServices {
                 controller.delegate = delegate
                 controller.extensionStrongRef = delegate
                 currentPresenter(controller)
-                return@suspendCoroutineCancellable {
+                cont.invokeOnCancellation {
                     try {
                         controller.dismissViewControllerAnimated(true, {})
                     } catch (e: Exception) { /*squish*/
@@ -302,7 +302,7 @@ actual object ExternalServices {
     suspend fun requestCapture(
         camera: UIImagePickerControllerCameraDevice,
         mode: UIImagePickerControllerCameraCaptureMode,
-    ): FileReference? = suspendCoroutineCancellable { cont ->
+    ): FileReference? = suspendCancellableCoroutine { cont ->
         val controller = UIImagePickerController()
         controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
         controller.cameraDevice = camera
@@ -363,7 +363,7 @@ actual object ExternalServices {
         controller.delegate = delegate
         controller.extensionStrongRef = delegate
         currentPresenter(controller)
-        return@suspendCoroutineCancellable {
+        cont.invokeOnCancellation {
             try {
                 controller.dismissViewControllerAnimated(true, null)
             } catch (e: Exception) { /*squish*/

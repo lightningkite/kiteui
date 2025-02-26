@@ -8,8 +8,8 @@ import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
 actual class RadioButton actual constructor(context: RContext): RView(context) {

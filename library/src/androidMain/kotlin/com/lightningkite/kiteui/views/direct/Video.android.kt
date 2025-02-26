@@ -8,10 +8,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.AnimationFrame
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.ReadableState
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
 actual class Video actual constructor(context: RContext): RView(context) {

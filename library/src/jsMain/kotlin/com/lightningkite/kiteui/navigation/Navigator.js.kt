@@ -1,18 +1,15 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.PersistentProperty
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.RContext
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.w3c.dom.*
 import kotlin.math.min
 
-actual fun ScreenNavigator.bindToPlatform(context: RContext) {
+actual fun PageNavigator.bindToPlatform(context: RContext) {
     val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
     val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 
@@ -22,9 +19,9 @@ actual fun ScreenNavigator.bindToPlatform(context: RContext) {
         log?.log("Finding $urlBar in ${storedStack.value}, index $goToIndex")
         if (goToIndex == -1) {
             log?.log("Could not find, pushing")
-            val newScreen = (routes.parseOrFallback(urlBar) ?: routes.fallback)
+            val newPage = (routes.parseOrFallback(urlBar) ?: routes.fallback)
             this.stack.value = storedStack.value.mapNotNull { routes.parseOrFallback(UrlLikePath.fromUrlString(it)) } + newScreen
-            routes.render(newScreen)?.let { storedStack.value += it.urlLikePath.render() }
+            routes.render(newPage)?.let { storedStack.value += it.urlLikePath.render() }
         } else {
             log?.log("Found, popping backwards")
             storedStack.value = storedStack.value.subList(0, goToIndex + 1)

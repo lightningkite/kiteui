@@ -6,10 +6,10 @@ import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.Writable
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactive
+import com.lightningkite.readable.Readable
+import com.lightningkite.readable.Writable
+import com.lightningkite.readable.invoke
+import com.lightningkite.readable.reactive
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl

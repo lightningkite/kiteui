@@ -1,9 +1,9 @@
 //package com.lightningkite.kiteui.validation
 //
-//import com.lightningkite.kiteui.reactive.ReadableState
-//import com.lightningkite.kiteui.reactive.Writable
-//import com.lightningkite.kiteui.reactive.invoke
-//import com.lightningkite.kiteui.reactive.lens
+//import com.lightningkite.readable.ReadableState
+//import com.lightningkite.readable.Writable
+//import com.lightningkite.readable.invoke
+//import com.lightningkite.readable.lens
 //
 //data class Validated<T>(
 //    val value: T,

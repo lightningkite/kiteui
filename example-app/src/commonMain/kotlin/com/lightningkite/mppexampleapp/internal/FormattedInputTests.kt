@@ -3,10 +3,11 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.views.ViewModifiable
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.bind
+import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.bold
 import com.lightningkite.kiteui.views.direct.*
@@ -14,10 +15,10 @@ import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.field
 
 @Routable("test/formatted-input")
-class FormattedInputTests : Screen {
+class FormattedInputTests : Page {
     val phone = Property("")
     val general = Property("")
-    override fun ViewWriter.render() {
+    override fun ViewWriter.render(): ViewModifiable = run {
         col {
             field("General Formatted Input") {
                 formattedTextInput {

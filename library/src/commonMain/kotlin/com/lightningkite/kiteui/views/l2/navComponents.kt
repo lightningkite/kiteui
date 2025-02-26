@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.mainScreenNavigator
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -20,11 +20,11 @@ fun ViewWriter.navGroupColumn(
 
 private fun RView.selectedIfRouteMatches(it: NavLink) {
     dynamicTheme {
-        val matchingScreen = mainScreenNavigator.currentScreen()
-            ?.let { mainScreenNavigator.routes.render(it) }?.urlLikePath?.segments == mainScreenNavigator.routes.render(
+        val matchingPage = mainPageNavigator.currentPage()
+            ?.let { mainPageNavigator.routes.render(it) }?.urlLikePath?.segments == mainPageNavigator.routes.render(
             it.destination.invoke(this)()
         )?.urlLikePath?.segments
-        if (matchingScreen) SelectedSemantic else ForcePaddingSemantic
+        if (matchingPage) SelectedSemantic else ForcePaddingSemantic
     }
 }
 

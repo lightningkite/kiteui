@@ -3,7 +3,8 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
@@ -31,15 +32,15 @@ fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 var ViewWriter.overlayStack by rContextAddon<Stack?>(null)
 
-fun ViewWriter.appBase(main: ScreenNavigator, dialog: ScreenNavigator? = null, mainLayout: ContainingView.() -> Unit) {
+fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit) {
     stack {
         spacing = 0.px
-        mainScreenNavigator = main
+        mainPageNavigator = main
         dialog?.let {
-            dialogScreenNavigator = it
+            dialogPageNavigator = it
         }
         main.bindToPlatform(context)
-        screenNavigator = main
+        pageNavigator = main
         overlayStack = this
         mainLayout()
         dialog?.let {

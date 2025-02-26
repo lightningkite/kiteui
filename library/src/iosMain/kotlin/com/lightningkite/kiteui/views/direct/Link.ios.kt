@@ -2,10 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.navigation.mainScreenNavigator
-import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -26,7 +25,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
     }
 
     actual var to: (() -> Page)? = null
-    actual var onNavigator: ScreenNavigator = mainScreenNavigator
+    actual var onNavigator: PageNavigator = mainPageNavigator
     actual var newTab: Boolean = false
     actual var resetsStack: Boolean = false
 

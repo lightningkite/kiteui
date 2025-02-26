@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.CalculationContext
+import com.lightningkite.readable.CalculationContext
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView

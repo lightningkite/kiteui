@@ -8,7 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.core.content.getSystemService
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
 
 fun EditText.contentProperty(): ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable(), TextWatcher {
     override fun afterTextChanged(s: Editable?) { invokeAllListeners() }

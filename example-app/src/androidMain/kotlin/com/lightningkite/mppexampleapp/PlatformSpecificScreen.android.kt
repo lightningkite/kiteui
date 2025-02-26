@@ -3,15 +3,15 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.bind
-import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.bind
+import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 
-actual fun ViewWriter.platformSpecific() {
-    col {
+actual fun ViewWriter.platformSpecific(): ViewModifiable {
+    return col {
         text("Lookie here at this icon:")
         val visible = Property(false)
         switch { checked bind visible }

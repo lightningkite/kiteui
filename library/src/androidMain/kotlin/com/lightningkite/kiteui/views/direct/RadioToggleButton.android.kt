@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.Property
 import com.lightningkite.kiteui.views.*
 
 actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {

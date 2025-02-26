@@ -9,7 +9,7 @@ import kotlin.test.Test
 class LayoutTest {
     @Test
     fun test() {
-        val s = LayoutsTestScreen()
+        val s = LayoutsTestPage()
         lateinit var root: RView
         root(Theme(id = "unitTest")) {
             root = stack {

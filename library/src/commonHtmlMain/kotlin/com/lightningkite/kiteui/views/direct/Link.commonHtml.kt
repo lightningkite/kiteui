@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
@@ -36,7 +35,7 @@ actual class Link actual constructor(context: RContext) : RView(context) {
 
     override fun hasAlternateBackedStates(): Boolean = true
 
-    actual var onNavigator: ScreenNavigator = (this as RView).screenNavigator
+    actual var onNavigator: PageNavigator = (this as RView).pageNavigator
     actual var to: (() -> Page)? = null
         set(value) {
             field = value

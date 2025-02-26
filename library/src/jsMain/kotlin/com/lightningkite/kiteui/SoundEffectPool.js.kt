@@ -2,8 +2,13 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.basePath
+import com.lightningkite.readable.AppScope
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.w3c.dom.HTMLAudioElement
 import org.w3c.dom.url.URL
@@ -44,10 +49,10 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }
     }
 
-    private val loadedMap = HashMap<AudioSource, Async<AudioBuffer>>()
+    private val loadedMap = HashMap<AudioSource, Deferred<AudioBuffer>>()
     private suspend fun preloadInternal(sound: AudioSource): AudioBuffer {
         return loadedMap.getOrPut(sound) {
-            asyncGlobal {
+            AppScope.async {
                 when (sound) {
                     is AudioRemote -> {
                         val response = window.fetch(sound.url).await()
@@ -114,7 +119,7 @@ external class AudioBuffer {
 external class AudioDestinationNode : AudioNode
 
 actual suspend fun AudioSource.load(): PlayableAudio {
-    return suspendCoroutineCancellable { cont ->
+    return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
         native.preload = "auto"
@@ -161,7 +166,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             else -> {}
         }
         native.load()
-        return@suspendCoroutineCancellable {
+        cont.invokeOnCancellation {
             native.src = ""
         }
     }

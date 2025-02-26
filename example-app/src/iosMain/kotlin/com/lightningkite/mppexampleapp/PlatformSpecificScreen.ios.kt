@@ -2,9 +2,9 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.ObjCountTrackers
 import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.navigatorView
@@ -16,10 +16,10 @@ import platform.UIKit.UIView
 import platform.UIKit.accessibilityValue
 import platform.darwin.*
 
-val subnav = ScreenNavigator { AutoRoutes }
+val subnav = PageNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
-actual fun ViewWriter.platformSpecific() {
-    col {
+actual fun ViewWriter.platformSpecific(): ViewModifiable {
+    return col {
         repeat(10) {
             text("TEST")
             separator()
@@ -29,22 +29,22 @@ actual fun ViewWriter.platformSpecific() {
 //            text("memory view toggle")
 //            var last: MemoryView? = null
 //            onClick {
-//                if(subnav.stack.value.lastOrNull() is MemoryScreen)
-//                    subnav.reset(PlaceholderScreen())
+//                if(subnav.stack.value.lastOrNull() is MemoryPage)
+//                    subnav.reset(PlaceholderPage())
 //                else
-//                    subnav.reset(MemoryScreen())
+//                    subnav.reset(MemoryPage())
 //            }
 //        }
 //        expanding - navigatorView(subnav)
     }
 }
 
-class PlaceholderScreen: Screen {
+class PlaceholderPage: Page {
     override fun ViewWriter.render() = text("placeholder")
 }
 
-class MemoryScreen: Screen {
-    override fun ViewWriter.render(): Any? {
+class MemoryPage: Page {
+    override fun ViewWriter.render(): ViewModifiable {
 //        return write(MemoryView(context)) {}
 
         return write(WrapperView(context)) {

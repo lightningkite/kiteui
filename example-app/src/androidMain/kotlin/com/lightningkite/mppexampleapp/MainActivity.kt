@@ -7,16 +7,16 @@ import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.invoke
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.readable.await
+import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 class MainActivity : KiteUiActivity() {
-    override val mainNavigator: ScreenNavigator = ScreenNavigator { AutoRoutes }
-    val dialogNavigator: ScreenNavigator = ScreenNavigator { AutoRoutes }
+    override val mainNavigator: PageNavigator = PageNavigator { AutoRoutes }
+    val dialogNavigator: PageNavigator = PageNavigator { AutoRoutes }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         codeCacheDir.setReadOnly()

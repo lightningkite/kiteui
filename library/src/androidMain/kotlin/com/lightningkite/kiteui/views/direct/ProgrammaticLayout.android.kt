@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.BasicListenable
-import com.lightningkite.kiteui.reactive.LateInitProperty
-import com.lightningkite.kiteui.reactive.Listenable
-import com.lightningkite.kiteui.reactive.Readable
+import com.lightningkite.readable.BasicListenable
+import com.lightningkite.readable.LateInitProperty
+import com.lightningkite.readable.Listenable
+import com.lightningkite.readable.Readable
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView

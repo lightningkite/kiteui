@@ -10,20 +10,15 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
 import androidx.core.animation.doOnEnd
-import androidx.core.view.ViewCompat
 
-import androidx.core.widget.NestedScrollView
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.ReactiveContext
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.navigation.dialogPageNavigator
+import com.lightningkite.readable.CalculationContext
+import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 @ViewModifierDsl3
@@ -312,8 +307,8 @@ actual fun ViewWriter.hasPopover(
 ): ViewWrapper {
     beforeNextElementSetup {
         native.setOnClickListener {
-            dialogScreenNavigator.navigate(object : Page {
-                override fun ViewWriter.render2(): ViewModifiable {
+            dialogPageNavigator.navigate(object : Page {
+                override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
                         centered - stack {
                             setup(object : PopoverContext {
@@ -321,7 +316,7 @@ actual fun ViewWriter.hasPopover(
                                     get() = this@beforeNextElementSetup
 
                                 override fun close() {
-                                    dialogScreenNavigator.dismiss()
+                                    dialogPageNavigator.dismiss()
                                 }
                             })
                         }

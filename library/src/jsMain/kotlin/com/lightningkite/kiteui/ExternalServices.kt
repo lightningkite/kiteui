@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import org.w3c.dom.HTMLAnchorElement
@@ -27,7 +28,7 @@ actual object ExternalServices {
     }
 
     suspend fun requestFileInput(mimeTypes: List<String>, setup: HTMLInputElement.() -> Unit): List<FileReference> =
-        suspendCoroutineCancellable {
+        suspendCancellableCoroutine {
             removeFileInput()
             (document.createElement("input") as HTMLInputElement).apply {
                 type = "file"
@@ -46,7 +47,6 @@ actual object ExternalServices {
                 document.body!!.appendChild(this)
                 lastFileInput = this
             }.click()
-            return@suspendCoroutineCancellable { }
         }
 
     actual suspend fun requestFile(mimeTypes: List<String>) = requestFileInput(mimeTypes, {}).firstOrNull()

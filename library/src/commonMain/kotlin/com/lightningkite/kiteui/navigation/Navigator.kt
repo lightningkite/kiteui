@@ -1,21 +1,21 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
 
-@Deprecated("Use ScreenNavigator directly instead", ReplaceWith("ScreenNavigator", "com.lightningkite.kiteui.navigation.ScreenNavigator"))
-typealias KiteUiNavigator = ScreenNavigator
-@Deprecated("Use ScreenNavigator directly instead", ReplaceWith("ScreenNavigator", "com.lightningkite.kiteui.navigation.ScreenNavigator"))
-typealias ScreenStack = ScreenNavigator
-class ScreenNavigator(private val routesGetter: ()->Routes) {
+@Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
+typealias KiteUiNavigator = PageNavigator
+@Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
+typealias ScreenStack = PageNavigator
+class PageNavigator(private val routesGetter: ()->Routes) {
     val routes: Routes by lazy { routesGetter() }
     
     val stack: Property<List<Page>> = Property(listOf())
     fun wrap(screen: Page): Page = screen
     
-    val currentScreen: Readable<Page?> = shared { stack().lastOrNull() }
+    val currentPage: Readable<Page?> = shared { stack().lastOrNull() }
     val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
     
     fun navigate(screen: Page) = navigateRaw(wrap(screen))
@@ -51,22 +51,22 @@ class ScreenNavigator(private val routesGetter: ()->Routes) {
     fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
     companion object {
-        @Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator.routes", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator.routes", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
         val mainRoutes: Routes get() = TODO()
-        @Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
-        val main: ScreenNavigator get() = TODO()
-        @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
-        val dialog: ScreenNavigator get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
+        val main: PageNavigator get() = TODO()
+        @Deprecated("Use navigator properly", ReplaceWith("dialogPageNavigator", "com.lightningkite.kiteui.navigation.dialogPageNavigator"), level = DeprecationLevel.ERROR)
+        val dialog: PageNavigator get() = TODO()
     }
-    @Deprecated("Use navigator properly", ReplaceWith("dialogScreenNavigator", "com.lightningkite.kiteui.navigation.dialogScreenNavigator"), level = DeprecationLevel.ERROR)
-    val dialog: ScreenNavigator get() = TODO()
+    @Deprecated("Use navigator properly", ReplaceWith("dialogPageNavigator", "com.lightningkite.kiteui.navigation.dialogPageNavigator"), level = DeprecationLevel.ERROR)
+    val dialog: PageNavigator get() = TODO()
 }
 
-expect fun ScreenNavigator.bindToPlatform(context: RContext)
+expect fun PageNavigator.bindToPlatform(context: RContext)
 
-var ViewWriter.screenNavigator by rContextAddonInit<ScreenNavigator>()
-var ViewWriter.mainScreenNavigator by rContextAddonInit<ScreenNavigator>()
-var ViewWriter.dialogScreenNavigator by rContextAddonInit<ScreenNavigator>()
+var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
+var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
+var ViewWriter.dialogPageNavigator by rContextAddonInit<PageNavigator>()
 
-@Deprecated("Use navigator properly", ReplaceWith("mainScreenNavigator", "com.lightningkite.kiteui.navigation.mainScreenNavigator"), level = DeprecationLevel.ERROR)
-val PlatformNavigator: ScreenNavigator get() = TODO()
+@Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
+val PlatformNavigator: PageNavigator get() = TODO()

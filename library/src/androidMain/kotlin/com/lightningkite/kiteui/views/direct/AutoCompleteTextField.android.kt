@@ -10,9 +10,9 @@ import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
 

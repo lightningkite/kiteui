@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.HtmlElementLike
 
 fun <V> HtmlElementLike.vprop(

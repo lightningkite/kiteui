@@ -2,12 +2,11 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
+import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.reactive.CalculationContext
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.launch
@@ -32,7 +31,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
     }
 
     init {
-        onClick { dialogScreenNavigator.clear() }
+        onClick { dialogPageNavigator.clear() }
         onRemove { native.onClick = {} }
     }
 

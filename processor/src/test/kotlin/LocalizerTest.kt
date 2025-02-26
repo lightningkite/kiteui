@@ -9,10 +9,10 @@ class LocalizerTest {
         val out = HashSet<NeededStringTemplate>()
         val str = """
 @Routable("docs/video")
-object VideoElementScreen: DocScreen {
+object VideoElementPage: DocPage {
     override val covers: List<String> = listOf("video", "Video")
 
-    override fun ViewWriter.render() {
+    override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("Video")
             text("You can use the video element to render video, streamed from a remote source or locally.")

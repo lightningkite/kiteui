@@ -2,9 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Readable
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.Constant
+import com.lightningkite.readable.Readable
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {

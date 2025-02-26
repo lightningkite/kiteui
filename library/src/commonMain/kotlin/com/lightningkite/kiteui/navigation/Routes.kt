@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.kiteui.reactive.Constant
-import com.lightningkite.kiteui.reactive.Listenable
+import com.lightningkite.readable.Constant
+import com.lightningkite.readable.Listenable
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
@@ -19,7 +19,7 @@ class Routes(
     val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
     val fallback: Page = object: Page {
         override val title = Constant("Not Found")
-        override fun ViewWriter.render2(): ViewModifiable {
+        override fun ViewWriter.render(): ViewModifiable = run {
             return stack {
                 centered - col {
                     h1("Not Found")
@@ -67,5 +67,5 @@ data class UrlLikePath(
 
 }
 
-fun Page.render(writer: ViewWriter): ViewModifiable = with(writer) { render2() }
+fun Page.render(writer: ViewWriter): ViewModifiable = with(writer) { render() }
 

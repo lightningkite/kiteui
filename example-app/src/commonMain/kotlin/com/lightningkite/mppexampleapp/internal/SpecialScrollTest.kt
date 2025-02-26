@@ -4,18 +4,19 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.navigation.Screen
+import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.reactive.invoke
-import com.lightningkite.kiteui.reactive.reactive
+import com.lightningkite.kiteui.views.ViewModifiable
+import com.lightningkite.readable.invoke
+import com.lightningkite.readable.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 
 @Routable("scroll-test")
-object SpecialScrollTest : Screen {
-    override fun ViewWriter.render() {
+object SpecialScrollTest : Page {
+    override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors

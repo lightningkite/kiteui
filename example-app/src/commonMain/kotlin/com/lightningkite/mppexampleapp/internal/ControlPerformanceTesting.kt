@@ -4,8 +4,8 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Screen
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
@@ -18,7 +18,7 @@ import kotlin.time.Duration
 import kotlin.time.measureTime
 
 @Routable("control-performance-testing")
-object ControlPerformanceTesting : Screen {
+object ControlPerformanceTesting : Page {
     enum class BindMode {
         None, Instant, Launch, Reactive
     }
@@ -81,7 +81,7 @@ object ControlPerformanceTesting : Screen {
         }
     }
 
-    override fun ViewWriter.render() {
+    override fun ViewWriter.render(): ViewModifiable = run {
         val ms = BindMode.values().associateWith { Property(Duration.ZERO) to Property(0) }
         col {
             row {

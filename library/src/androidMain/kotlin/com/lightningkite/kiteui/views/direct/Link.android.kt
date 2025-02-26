@@ -2,11 +2,10 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.DisabledSemantic
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.navigation.mainScreenNavigator
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.mainPageNavigator
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
@@ -43,7 +42,7 @@ actual class Link actual constructor(context: RContext): RView(context) {
             refreshTheming()
         }
 
-    actual var onNavigator: ScreenNavigator = mainScreenNavigator
+    actual var onNavigator: PageNavigator = mainPageNavigator
     actual var resetsStack: Boolean = false
 
     override fun hasAlternateBackedStates(): Boolean = true

@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
@@ -113,7 +114,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                         value,
                         native.bounds.useContents { size.width.toInt() },
                         native.bounds.useContents { size.height.toInt() }) {
-                        suspendCoroutineCancellable { cont ->
+                        suspendCancellableCoroutine { cont ->
                             loadImageFromProvider(value.file.provider) { data, err ->
                                 if (err != null) cont.resumeWithException(Exception(err.description))
                                 else if (data is UIImage) {
@@ -126,7 +127,6 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                                     cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
                                 }
                             }
-                            return@suspendCoroutineCancellable {}
                         }
                     }
                     native.endLoad()
@@ -214,7 +214,7 @@ object ImageCache {
 }
 
 internal suspend fun <T> inBackground(action: () -> T): T {
-    return suspendCoroutineCancellable<T> { cont ->
+    return suspendCancellableCoroutine<T> { cont ->
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT.toLong(), 0UL)) {
             try {
                 val result = action()
@@ -223,7 +223,6 @@ internal suspend fun <T> inBackground(action: () -> T): T {
                 dispatch_async(dispatch_get_main_queue(), { cont.resumeWithException(e) })
             }
         }
-        return@suspendCoroutineCancellable {}
     }
 }
 
@@ -406,7 +405,7 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
                         value,
                         native.bounds.useContents { size.width.toInt() },
                         native.bounds.useContents { size.height.toInt() }) {
-                        suspendCoroutineCancellable { cont ->
+                        suspendCancellableCoroutine { cont ->
                             loadImageFromProvider(value.file.provider) { data, err ->
                                 if (err != null) cont.resumeWithException(Exception(err.description))
                                 else if (data is UIImage) {
@@ -419,7 +418,6 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
                                     cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
                                 }
                             }
-                            return@suspendCoroutineCancellable {}
                         }
                     }
                     native.imageView.endLoad()

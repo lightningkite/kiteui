@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.kiteui.reactive.BaseListenable
-import com.lightningkite.kiteui.reactive.Listenable
+import com.lightningkite.readable.BaseListenable
+import com.lightningkite.readable.Listenable
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement

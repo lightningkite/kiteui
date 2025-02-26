@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.readable.AppScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.CloseEvent
@@ -26,7 +29,7 @@ actual suspend fun fetch(
     onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
 ): RequestResponse {
-    return suspendCoroutineCancellable { cont ->
+    return suspendCancellableCoroutine { cont ->
         val request = XMLHttpRequest()
         onUploadProgress?.let { p ->
             request.upload.addEventListener("progress", { event ->
@@ -65,7 +68,7 @@ actual suspend fun fetch(
             }
             else -> throw NotImplementedError()
         }
-        return@suspendCoroutineCancellable {
+        cont.invokeOnCancellation {
             request.abort()
         }
     }
@@ -115,16 +118,16 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
         if(wraps.readyState == XMLHttpRequest.DONE)
             return ((wraps.response as Blob).asDynamic().text() as Promise<String>).await()
         else
-            return suspendCoroutineCancellable { cont ->
+            return suspendCancellableCoroutine { cont ->
                 val handler: (Event)->Unit = { ev ->
-                    launchGlobal {
+                    AppScope.launch {
                         cont.resume(
                             ((wraps.response as Blob).asDynamic().text() as Promise<String>).await()
                         )
                     }
                 }
                 wraps.addEventListener("loadend", handler)
-                return@suspendCoroutineCancellable {
+                cont.invokeOnCancellation {
                     wraps.removeEventListener("loadend", handler)
                 }
             }
@@ -133,12 +136,12 @@ actual class RequestResponse(val wraps: XMLHttpRequest) {
         if(wraps.readyState == XMLHttpRequest.DONE)
             return wraps.response as Blob
         else
-            return suspendCoroutineCancellable { cont ->
+            return suspendCancellableCoroutine { cont ->
                 val handler: (Event)->Unit = { ev ->
                     cont.resume(wraps.response as Blob)
                 }
                 wraps.addEventListener("loadend", handler)
-                return@suspendCoroutineCancellable {
+                cont.invokeOnCancellation {
                     wraps.removeEventListener("loadend", handler)
                 }
             }

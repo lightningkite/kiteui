@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
-import com.lightningkite.kiteui.reactive.await
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.readable.await
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.RView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue

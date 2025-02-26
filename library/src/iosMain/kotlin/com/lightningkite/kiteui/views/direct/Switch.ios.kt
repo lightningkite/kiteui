@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.ReadableState
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.ReadableState
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl

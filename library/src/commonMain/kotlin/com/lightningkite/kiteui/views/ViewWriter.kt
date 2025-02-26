@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.kiteui.reactive.CoroutineScopeStack.end
-import com.lightningkite.kiteui.reactive.CoroutineScopeStack.start
+import com.lightningkite.readable.CoroutineScopeStack.end
+import com.lightningkite.readable.CoroutineScopeStack.start
 import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind

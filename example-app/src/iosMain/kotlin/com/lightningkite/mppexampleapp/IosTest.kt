@@ -3,9 +3,9 @@
 //import com.lightningkite.kiteui.clockMillis
 //import com.lightningkite.kiteui.delay
 //import com.lightningkite.kiteui.gc
-//import com.lightningkite.kiteui.reactive.CalculationContextStack
-//import com.lightningkite.kiteui.reactive.Property
-//import com.lightningkite.kiteui.reactive.invoke
+//import com.lightningkite.readable.CalculationContextStack
+//import com.lightningkite.readable.Property
+//import com.lightningkite.readable.invoke
 //import ViewWriter
 //import com.lightningkite.kiteui.views.direct.*
 //import com.lightningkite.kiteui.views.*

@@ -18,7 +18,7 @@ class LayoutTest {
 
     @Test
     fun test() {
-        val s = LayoutsTestScreen()
+        val s = LayoutsTestPage()
         lateinit var root: RView
         val vc = object: UIViewController(null, null) {
             override fun viewDidLoad() {

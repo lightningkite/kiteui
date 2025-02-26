@@ -15,9 +15,9 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.Property
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 

@@ -1,7 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import kotlin.time.Duration.Companion.milliseconds
 

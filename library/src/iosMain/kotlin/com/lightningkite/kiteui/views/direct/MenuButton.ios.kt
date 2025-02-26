@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.reactive.BasicListenable
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayStack
 

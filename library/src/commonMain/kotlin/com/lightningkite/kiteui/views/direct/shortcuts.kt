@@ -2,13 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.dialog
-import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract

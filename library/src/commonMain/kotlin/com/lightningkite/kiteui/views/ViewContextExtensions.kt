@@ -2,9 +2,10 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.reactive.reactiveScope
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.readable.*
+import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.l2.overlayStack
 import kotlin.properties.ReadWriteProperty
@@ -43,10 +44,10 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
 }
 
 @Deprecated(
-    "Use 'screenNavigator' instead",
-    ReplaceWith("this.screenNavigator", "com.lightningkite.kiteui.navigator.screenNavigator")
+    "Use 'pageNavigator' instead",
+    ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator")
 )
-val ViewWriter.navigator by ViewWriter::screenNavigator
+val ViewWriter.navigator by ViewWriter::pageNavigator
 
 var ViewWriter.rootPopoverCloser by rContextAddon(BasicListenable())
 var ViewWriter.popoverClosers by rContextAddonGenerate { rootPopoverCloser }

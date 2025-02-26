@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.reactive.Property
+import com.lightningkite.readable.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*

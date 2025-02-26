@@ -16,9 +16,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +30,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
     var savedInstanceState: Bundle? = null
 
-    abstract val mainNavigator : ScreenNavigator
+    abstract val mainNavigator : PageNavigator
 
     lateinit var root: RView
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.AppScope
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
@@ -40,13 +40,12 @@ fun Action(
     clearErrorOnDependencyChange: Boolean = ExceptionHandlers.clearErrorOnDependencyChange,
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
-    log: Console? = null,
     ignoreRetryWhileRunning: Boolean = true,
     action: suspend () -> Unit
 ) = if (clearErrorOnDependencyChange) {
-    DependentAction(title, icon, log, keepRunningWhile, ignoreRetryWhileRunning, action = action)
+    DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
-    RetryableAction(title, icon, log, keepRunningWhile, ignoreRetryWhileRunning, action = action)
+    RetryableAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 }.let {
     frequencyCap?.let { f ->
         FrequencyCapAction(it, f)
@@ -66,7 +65,6 @@ class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.mil
 class RetryableAction(
     override val title: String,
     override val icon: Icon,
-    val log: Console? = null,
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
@@ -115,7 +113,6 @@ class RetryableAction(
 class DependentAction(
     override val title: String,
     override val icon: Icon,
-    override val log: Console? = null,
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
@@ -164,7 +161,6 @@ class DependentAction(
     }
 
     override fun cancel() {
-        log?.log("shutdown")
         action = {}
         super.cancel()
         lastJob?.let {

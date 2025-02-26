@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import kotlinx.browser.window
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
@@ -14,7 +15,7 @@ actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Uni
     }
 }
 
-suspend fun <T> Promise<T>.await(): T = suspendCoroutineCancellable { cont ->
+suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { cont ->
     then(
         onFulfilled = {
             cont.resume(it)
@@ -23,5 +24,4 @@ suspend fun <T> Promise<T>.await(): T = suspendCoroutineCancellable { cont ->
             cont.resumeWithException(it)
         }
     )
-    return@suspendCoroutineCancellable {}
 }

@@ -4,9 +4,9 @@ import android.os.Bundle
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.ScreenNavigator
+import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.render
-import com.lightningkite.kiteui.reactive.ReactiveContext
+import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.kiteui.views.direct.stack
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -20,9 +20,9 @@ class LayoutTest {
             val testId = 517238
         }
 
-        override val mainNavigator: ScreenNavigator = ScreenNavigator { Routes(listOf(), mapOf(), Page.Empty) }
+        override val mainNavigator: PageNavigator = PageNavigator { Routes(listOf(), mapOf(), Page.Empty) }
 
-        val s = LayoutsTestScreen()
+        val s = LayoutsTestPage()
 
         override val theme: ReactiveContext.() -> Theme = { Theme(id = "unitTest") }
 

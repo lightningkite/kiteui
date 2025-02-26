@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -39,7 +40,7 @@ actual object ExternalServices {
     suspend fun requestFiles(
         mimeTypes: List<String>,
         allowMultiple: Boolean = true
-    ): List<FileReference> = suspendCoroutineCancellable {
+    ): List<FileReference> = suspendCancellableCoroutine {
 
         val type = mimeTypes.joinToString(",")
 
@@ -64,7 +65,6 @@ actual object ExternalServices {
                 it.resume(listOf())
             }
         }
-        return@suspendCoroutineCancellable {}
     }
 
     actual suspend fun requestCaptureSelf(
@@ -98,7 +98,7 @@ actual object ExternalServices {
     private suspend fun requestImageCamera(
         front: Boolean = false,
         capture: String = MediaStore.ACTION_IMAGE_CAPTURE,
-    ): FileReference? = suspendCoroutineCancellable { cont ->
+    ): FileReference? = suspendCancellableCoroutine { cont ->
         val fileProviderAuthority = AndroidAppContext.applicationCtx.packageName + ".fileprovider"
         val file = File(AndroidAppContext.applicationCtx.cacheDir, "images").also { it.mkdirs() }
             .let { File.createTempFile("image", ".jpg", it) }
@@ -122,7 +122,6 @@ actual object ExternalServices {
                 }
             }
         }
-        return@suspendCoroutineCancellable {}
     }
 
     actual fun setClipboardText(value: String) {

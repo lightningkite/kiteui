@@ -1,13 +1,14 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.launchGlobal
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WindowStatistics
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
 import org.w3c.dom.events.Event
 import kotlin.js.Promise
 
@@ -45,7 +46,7 @@ actual object AppState {
     private var currentLockCount = 0
     actual fun keepScreenOn(scope: CoroutineScope) {
         if(currentLockCount++ == 0) {
-            launchGlobal {
+            AppScope.launch {
                 try {
                     currentLock =
                         (window.navigator.asDynamic().wakeLock.request("screen") as Promise<WakeLockSentinel>).await()

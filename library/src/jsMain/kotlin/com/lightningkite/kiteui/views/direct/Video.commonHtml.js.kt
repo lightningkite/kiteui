@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.Writable
+import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.autoplay
 import org.w3c.dom.HTMLElement

@@ -3,6 +3,7 @@
 kotlin = "2.0.20"
 
 [libraries]
+comLightningkiteReadable = { module = "com.lightningkite:readable", version = "1.0.3" }
 comLightningkiteTestingKotlinTestManualRuntime = { module = "com.lightningkite.testing:kotlin-test-manual-runtime", version = "0.0.8" }
 
 [plugins]

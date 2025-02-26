@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -72,7 +73,6 @@ actual class Code actual constructor(context: RContext) :
             field = value
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        super.applyForeground(theme)
         if (this == viewDebugTarget) {
             println("native.setTextColor: ${theme.id} ${theme.foreground}")
         }

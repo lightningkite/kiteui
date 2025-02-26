@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.onRemove
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.utils.repairFormatAndPosition

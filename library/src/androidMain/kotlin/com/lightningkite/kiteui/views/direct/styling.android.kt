@@ -16,7 +16,7 @@ import android.widget.ImageView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import java.util.*

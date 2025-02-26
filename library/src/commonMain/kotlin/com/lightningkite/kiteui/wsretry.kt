@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.readable.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -13,10 +15,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
-    suspendCoroutineCancellable<Unit> {
+    suspendCancellableCoroutine<Unit> {
         var alreadyResumed = false
         onOpen {
-            launchGlobal {
+            AppScope.launch {
                 delay(100L)
                 if(!alreadyResumed) {
                     alreadyResumed = true
@@ -30,7 +32,6 @@ suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx
                 it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
             }
         }
-        return@suspendCoroutineCancellable {}
     }
 }
 
@@ -95,7 +96,7 @@ fun retryWebsocket(
                 lastPong = lastConnect
                 connected.value = true
                 pings?.cancel()
-                pings = launchGlobal {
+                pings = AppScope.launch {
                     while (true) {
                         delay(pingTime)
                         val now = clockMillis()
@@ -151,7 +152,7 @@ fun retryWebsocket(
                                 log?.log("started A")
                             }
                         } catch (e: Exception) {
-                            if (e is CancelledException) return@launch
+                            if (e is CancellationException) return@launch
                             log?.log("start fail: $e")
                             e.printStackTrace2()
                         } finally {

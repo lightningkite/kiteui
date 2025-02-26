@@ -5,8 +5,8 @@ package com.lightningkite.kiteui.navigation
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.kiteui.reactive.ImmediateWritable
-import com.lightningkite.kiteui.reactive.ImmediateWriteOnly
+import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.readable.ImmediateWriteOnly
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

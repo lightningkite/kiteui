@@ -2,14 +2,13 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.ScreenNavigator
-import com.lightningkite.kiteui.navigation.dialogScreenNavigator
-import com.lightningkite.kiteui.navigation.screenNavigator
-import com.lightningkite.kiteui.reactive.await
+import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.dialogPageNavigator
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-fun ViewWriter.navigatorView(navigator: ScreenNavigator): SwapView {
+fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
     val n = navigator
     return this.swapView {
         var lastStack = n.stack.value
@@ -23,12 +22,12 @@ fun ViewWriter.navigatorView(navigator: ScreenNavigator): SwapView {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { n.currentScreen<Page?>() },
+            current = { n.currentPage<Page?>() },
             views = { screen ->
                 with(split()) {
-                    this.screenNavigator = n
+                    this.pageNavigator = n
                     if (screen != null)
-                        with(screen) { mainContent - padded - render2() }
+                        with(screen) { mainContent - padded - render() }
                 }
             }
         )
@@ -36,7 +35,7 @@ fun ViewWriter.navigatorView(navigator: ScreenNavigator): SwapView {
 }
 
 fun ViewWriter.navigatorViewDialog(): SwapView {
-    val n = dialogScreenNavigator
+    val n = dialogPageNavigator
     return this.swapView {
         ignoreInteraction = true
         var lastStack = n.stack.value
@@ -50,12 +49,12 @@ fun ViewWriter.navigatorViewDialog(): SwapView {
                     else -> transitionSet.neutral
                 }.also { lastStack = newStack }
             },
-            current = { n.currentScreen<Page?>() },
+            current = { n.currentPage<Page?>() },
             views = { screen ->
                 with(split()) {
-                    this.screenNavigator = n
+                    this.pageNavigator = n
                     if (screen != null)
-                        with(screen) { DialogSemantic.onNext - render2() }
+                        with(screen) { DialogSemantic.onNext - render() }
                 }
             }
         )

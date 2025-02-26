@@ -84,6 +84,7 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
+                api(lk.readable(1))
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.7.1")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")

@@ -3,7 +3,7 @@
 //import com.lightningkite.kiteui.FallbackRoute
 //import com.lightningkite.kiteui.decodeURIComponent
 //import com.lightningkite.kiteui.encodeURIComponent
-//import com.lightningkite.kiteui.reactive.*
+//import com.lightningkite.readable.*
 //import kotlinx.browser.document
 //import kotlinx.browser.window
 //import org.w3c.dom.*
@@ -68,7 +68,7 @@
 //    }
 //
 //    private val String.asSegments: List<String> get() = split('/').filter { it.isNotBlank() }
-//    private val _currentScreen = Property<KiteUiScreen>(KiteUiScreen.Empty)
+//    private val _currentPage = Property<KiteUiScreen>(KiteUiScreen.Empty)
 //    override val currentScreen: Readable<KiteUiScreen>
 //        get() = _currentScreen
 //    override val canGoBack: Readable<Boolean>
@@ -79,11 +79,11 @@
 //    override var direction: KiteUiNavigator.Direction? = null
 //        private set
 //    private fun navigate(urlLikePath: UrlLikePath, pushState: Boolean) {
-//        val kiteuiScreen = routes.parse(urlLikePath) ?: routes.fallback
+//        val kiteuiPage = routes.parse(urlLikePath) ?: routes.fallback
 //        navigate(urlLikePath, kiteuiScreen, pushState)
 //    }
 //    private fun navigate(kiteuiScreen: KiteUiScreen, pushState: Boolean) {
-//        val path = routes.render(kiteuiScreen)?.urlLikePath ?: return
+//        val path = routes.render(kiteuiPage)?.urlLikePath ?: return
 //        navigate(path, kiteuiScreen, pushState)
 //    }
 //
@@ -105,17 +105,17 @@
 //        _currentScreen.value = kiteuiScreen
 //    }
 //
-//    override fun navigateRaw(screen: KiteUiScreen) {
+//    override fun navigateRaw(screen: KiteUiPage) {
 //        direction = KiteUiNavigator.Direction.Forward
 //        navigate(screen, pushState = true)
 //    }
 //
-//    override fun replaceRaw(screen: KiteUiScreen) {
+//    override fun replaceRaw(screen: KiteUiPage) {
 //        direction = KiteUiNavigator.Direction.Neutral
 //        navigate(screen, pushState = false)
 //    }
 //
-//    override fun resetRaw(screen: KiteUiScreen) {
+//    override fun resetRaw(screen: KiteUiPage) {
 //        direction = KiteUiNavigator.Direction.Neutral
 //        navigate(screen, pushState = true)
 //        currentIndex = 0
