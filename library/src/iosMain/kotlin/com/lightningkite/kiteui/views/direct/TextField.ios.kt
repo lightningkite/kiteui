@@ -127,8 +127,8 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 AutoComplete.NewPassword -> UITextContentTypeNewPassword
                 else -> null
             }
-            textField.autocorrectionType = when (value.type) {
-                KeyboardType.Text -> UITextAutocorrectionType.UITextAutocorrectionTypeDefault
+            textField.autocorrectionType = when {
+                value.autocorrect && value.type == KeyboardType.Text -> UITextAutocorrectionType.UITextAutocorrectionTypeDefault
                 else -> UITextAutocorrectionType.UITextAutocorrectionTypeNo
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
