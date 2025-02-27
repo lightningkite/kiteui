@@ -45,9 +45,9 @@
 		18D0BEDF2C2488B100145B47 /* fontsRobotoLight-light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC22C2488B100145B47 /* fontsRobotoLight-light.ttf */; };
 		18D0BEE02C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC32C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf */; };
 		18D0BEE12C2488B100145B47 /* videoBack.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 18D0BEC42C2488B100145B47 /* videoBack.mp4 */; };
-		3A97B2A80C49FB425A721694 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */; };
-		4112B762DB48049EBF16FBDC /* Pods_KiteUI_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */; };
-		B8CA354EE429CDDE2542B4EC /* Pods_KiteUI_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */; };
+		2447518B4F6BEA4A018984A6 /* Pods_KiteUI_Example_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5793328D6C498AA35F3F77A /* Pods_KiteUI_Example_App.framework */; };
+		261A3BAB11A2A9937CB8A8FD /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000A11B9BFF698F86BC1A600 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */; };
+		FAFA7E91A86D40355E584EBD /* Pods_KiteUI_Example_AppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A9E4F8E77A925856E5F6BC3 /* Pods_KiteUI_Example_AppTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,7 +68,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		126B1CC2D6B37BD601820B66 /* Pods-KiteUI Example AppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.debug.xcconfig"; sourceTree = "<group>"; };
+		000A11B9BFF698F86BC1A600 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		07FD4A0BF5CEE0A6BAA5D5FA /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; sourceTree = "<group>"; };
 		183A2D572B33522F001011C3 /* KiteUI Example App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "KiteUI Example App-Bridging-Header.h"; sourceTree = "<group>"; };
 		183A2D582B335230001011C3 /* test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = test.m; sourceTree = "<group>"; };
 		188D8B952B2B9CB400732A2E /* KiteUI Example App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KiteUI Example App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,14 +113,13 @@
 		18D0BEC22C2488B100145B47 /* fontsRobotoLight-light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLight-light.ttf"; sourceTree = "<group>"; };
 		18D0BEC32C2488B100145B47 /* fontsRobotoLightItalic-light-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontsRobotoLightItalic-light-Italic.ttf"; sourceTree = "<group>"; };
 		18D0BEC42C2488B100145B47 /* videoBack.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = videoBack.mp4; sourceTree = "<group>"; };
-		3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7351D8F1431F47D326E21753 /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig"; sourceTree = "<group>"; };
-		85FF7FBDE86680B139E170E6 /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		B2E3C33757E53F1ED9BBD585 /* Pods-KiteUI Example AppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.release.xcconfig"; sourceTree = "<group>"; };
-		B99E476F4084FE81744DF5F2 /* Pods-KiteUI Example App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.debug.xcconfig"; sourceTree = "<group>"; };
-		D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5DC363722525FCD08430C52 /* Pods-KiteUI Example App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.release.xcconfig"; sourceTree = "<group>"; };
-		F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		260061620F0AA414D43F1223 /* Pods-KiteUI Example App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.debug.xcconfig"; sourceTree = "<group>"; };
+		280D9146A5216C68FBF42649 /* Pods-KiteUI Example AppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.debug.xcconfig"; sourceTree = "<group>"; };
+		64D926F8C86873C3E397599B /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		6A9E4F8E77A925856E5F6BC3 /* Pods_KiteUI_Example_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		826C86A24272DCEA5C1ECE1B /* Pods-KiteUI Example App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example App.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App.release.xcconfig"; sourceTree = "<group>"; };
+		ADBDA950697B0A6C7C66C7A4 /* Pods-KiteUI Example AppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KiteUI Example AppTests.release.xcconfig"; path = "Target Support Files/Pods-KiteUI Example AppTests/Pods-KiteUI Example AppTests.release.xcconfig"; sourceTree = "<group>"; };
+		F5793328D6C498AA35F3F77A /* Pods_KiteUI_Example_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KiteUI_Example_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,7 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B8CA354EE429CDDE2542B4EC /* Pods_KiteUI_Example_App.framework in Frameworks */,
+				2447518B4F6BEA4A018984A6 /* Pods_KiteUI_Example_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,7 +135,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4112B762DB48049EBF16FBDC /* Pods_KiteUI_Example_AppTests.framework in Frameworks */,
+				FAFA7E91A86D40355E584EBD /* Pods_KiteUI_Example_AppTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,7 +143,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A97B2A80C49FB425A721694 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */,
+				261A3BAB11A2A9937CB8A8FD /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,7 +158,7 @@
 				188D8BB82B2B9CB600732A2E /* KiteUI Example AppUITests */,
 				188D8B962B2B9CB400732A2E /* Products */,
 				29745E8A69D3C935444F19BF /* Pods */,
-				EE5D5A3EFFDD296A40CE1F5E /* Frameworks */,
+				C928F5BCD2A002FA9221332C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -244,22 +244,22 @@
 		29745E8A69D3C935444F19BF /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				B99E476F4084FE81744DF5F2 /* Pods-KiteUI Example App.debug.xcconfig */,
-				E5DC363722525FCD08430C52 /* Pods-KiteUI Example App.release.xcconfig */,
-				85FF7FBDE86680B139E170E6 /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */,
-				7351D8F1431F47D326E21753 /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */,
-				126B1CC2D6B37BD601820B66 /* Pods-KiteUI Example AppTests.debug.xcconfig */,
-				B2E3C33757E53F1ED9BBD585 /* Pods-KiteUI Example AppTests.release.xcconfig */,
+				260061620F0AA414D43F1223 /* Pods-KiteUI Example App.debug.xcconfig */,
+				826C86A24272DCEA5C1ECE1B /* Pods-KiteUI Example App.release.xcconfig */,
+				64D926F8C86873C3E397599B /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */,
+				07FD4A0BF5CEE0A6BAA5D5FA /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */,
+				280D9146A5216C68FBF42649 /* Pods-KiteUI Example AppTests.debug.xcconfig */,
+				ADBDA950697B0A6C7C66C7A4 /* Pods-KiteUI Example AppTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		EE5D5A3EFFDD296A40CE1F5E /* Frameworks */ = {
+		C928F5BCD2A002FA9221332C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F7F8A160C0ADF0BBA6C546BC /* Pods_KiteUI_Example_App.framework */,
-				D48FB44A3870CEBF8D3C4FB9 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */,
-				3EE251A86532855A922B0D06 /* Pods_KiteUI_Example_AppTests.framework */,
+				F5793328D6C498AA35F3F77A /* Pods_KiteUI_Example_App.framework */,
+				000A11B9BFF698F86BC1A600 /* Pods_KiteUI_Example_App_KiteUI_Example_AppUITests.framework */,
+				6A9E4F8E77A925856E5F6BC3 /* Pods_KiteUI_Example_AppTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -271,11 +271,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 188D8BBF2B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example App" */;
 			buildPhases = (
-				880491F80F90D1E7F7E153CF /* [CP] Check Pods Manifest.lock */,
+				F496E85BDFE1164B49B7F12B /* [CP] Check Pods Manifest.lock */,
 				188D8B912B2B9CB400732A2E /* Sources */,
 				188D8B922B2B9CB400732A2E /* Frameworks */,
 				188D8B932B2B9CB400732A2E /* Resources */,
-				4F9F01C6C0E6EEF25ED73333 /* [CP] Embed Pods Frameworks */,
+				FEDEB48E064B4648EF65E808 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -290,7 +290,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 188D8BC22B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppTests" */;
 			buildPhases = (
-				D73DACF72B6A1CFF8B366429 /* [CP] Check Pods Manifest.lock */,
+				9A445D90B4B77386E434B339 /* [CP] Check Pods Manifest.lock */,
 				188D8BA72B2B9CB500732A2E /* Sources */,
 				188D8BA82B2B9CB500732A2E /* Frameworks */,
 				188D8BA92B2B9CB500732A2E /* Resources */,
@@ -309,11 +309,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 188D8BC52B2B9CB600732A2E /* Build configuration list for PBXNativeTarget "KiteUI Example AppUITests" */;
 			buildPhases = (
-				1E21CC53180EE038A9E1D810 /* [CP] Check Pods Manifest.lock */,
+				A02EE55BE6F6AA0BB44890AE /* [CP] Check Pods Manifest.lock */,
 				188D8BB12B2B9CB600732A2E /* Sources */,
 				188D8BB22B2B9CB600732A2E /* Frameworks */,
 				188D8BB32B2B9CB600732A2E /* Resources */,
-				2584CC87AC67674112773B8D /* [CP] Embed Pods Frameworks */,
+				36C29B511E5867C631514BA4 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -425,7 +425,46 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1E21CC53180EE038A9E1D810 /* [CP] Check Pods Manifest.lock */ = {
+		36C29B511E5867C631514BA4 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9A445D90B4B77386E434B339 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-KiteUI Example AppTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A02EE55BE6F6AA0BB44890AE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -447,41 +486,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2584CC87AC67674112773B8D /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App-KiteUI Example AppUITests/Pods-KiteUI Example App-KiteUI Example AppUITests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4F9F01C6C0E6EEF25ED73333 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		880491F80F90D1E7F7E153CF /* [CP] Check Pods Manifest.lock */ = {
+		F496E85BDFE1164B49B7F12B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -503,26 +508,21 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D73DACF72B6A1CFF8B366429 /* [CP] Check Pods Manifest.lock */ = {
+		FEDEB48E064B4648EF65E808 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-KiteUI Example AppTests-checkManifestLockResult.txt",
+				"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KiteUI Example App/Pods-KiteUI Example App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -712,7 +712,7 @@
 		};
 		188D8BC02B2B9CB600732A2E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B99E476F4084FE81744DF5F2 /* Pods-KiteUI Example App.debug.xcconfig */;
+			baseConfigurationReference = 260061620F0AA414D43F1223 /* Pods-KiteUI Example App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -731,7 +731,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App-Old";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -744,7 +744,7 @@
 		};
 		188D8BC12B2B9CB600732A2E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E5DC363722525FCD08430C52 /* Pods-KiteUI Example App.release.xcconfig */;
+			baseConfigurationReference = 826C86A24272DCEA5C1ECE1B /* Pods-KiteUI Example App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -763,7 +763,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-App-Old";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -775,7 +775,7 @@
 		};
 		188D8BC32B2B9CB600732A2E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 126B1CC2D6B37BD601820B66 /* Pods-KiteUI Example AppTests.debug.xcconfig */;
+			baseConfigurationReference = 280D9146A5216C68FBF42649 /* Pods-KiteUI Example AppTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -784,7 +784,7 @@
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -796,7 +796,7 @@
 		};
 		188D8BC42B2B9CB600732A2E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B2E3C33757E53F1ED9BBD585 /* Pods-KiteUI Example AppTests.release.xcconfig */;
+			baseConfigurationReference = ADBDA950697B0A6C7C66C7A4 /* Pods-KiteUI Example AppTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -805,7 +805,7 @@
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -817,14 +817,14 @@
 		};
 		188D8BC62B2B9CB600732A2E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 85FF7FBDE86680B139E170E6 /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */;
+			baseConfigurationReference = 64D926F8C86873C3E397599B /* Pods-KiteUI Example App-KiteUI Example AppUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -836,14 +836,14 @@
 		};
 		188D8BC72B2B9CB600732A2E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7351D8F1431F47D326E21753 /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */;
+			baseConfigurationReference = 07FD4A0BF5CEE0A6BAA5D5FA /* Pods-KiteUI Example App-KiteUI Example AppUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = EF4N5K3F2Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = version-4-SNAPSHOT;
+				MARKETING_VERSION = "version-4-SNAPSHOT";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lightningkite.KiteUI-Example-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

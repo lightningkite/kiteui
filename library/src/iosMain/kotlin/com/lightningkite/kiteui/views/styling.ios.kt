@@ -7,17 +7,21 @@ import com.lightningkite.kiteui.reactive.reactiveScope
 import com.lightningkite.kiteui.views.RView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
 import platform.QuartzCore.*
 import platform.UIKit.UIColor
-import platform.UIKit.UIImageView
 import platform.UIKit.UIView
 import platform.UIKit.UIScrollView
 import kotlin.math.min
-import kotlin.time.DurationUnit
 import platform.Foundation.*
+import platform.UIKit.UIRectCorner
+import platform.UIKit.UIBezierPath
+import platform.UIKit.UIRectCornerAllCorners
+import platform.UIKit.UIRectCornerBottomLeft
+import platform.UIKit.UIRectCornerBottomRight
+import platform.UIKit.UIRectCornerTopLeft
+import platform.UIKit.UIRectCornerTopRight
 
 fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
@@ -35,6 +39,14 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
         layoutSubviews()
         layoutLayers()
     }
+}
+
+fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
+//    val path = UIBezierPath.bezierPathWithRoundedRect(this.bounds, byRoundingCorners = UIRectCornerTopRight, cornerRadii = CGSizeMake(radius, radius))
+
+//    this.layer.maskedCorners
+//    val mask = CAShapeLayer()
+//    layer.mask = mask
 }
 
 internal fun UIView.layerSize(): CValue<CGRect> {
@@ -115,19 +127,41 @@ class CAGradientLayerResizing : CAGradientLayer {
             refreshCorners()
         }
 
+    private fun applyPerCornerRadii(radii: CornerRadii.PerCorner, value: Double) {
+        val cornersList: MutableList<UIRectCorner> = mutableListOf()
+        if(radii.topLeft) cornersList.add(UIRectCornerTopLeft)
+        if(radii.topRight) cornersList.add(UIRectCornerTopRight)
+        if(radii.bottomLeft) cornersList.add(UIRectCornerBottomRight)
+        if(radii.bottomRight) cornersList.add(UIRectCornerBottomLeft)
+
+        val corners = cornersList.reduce { acc, current -> acc or current }
+        val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds, byRoundingCorners = corners, cornerRadii = CGSizeMake(value, value))
+        val mask = CAShapeLayer()
+        mask.path = path.CGPath
+        superlayer?.mask = mask
+    }
+
     fun refreshCorners() {
         if (this == null) return //stupid iOS issue prevention
-        val v = when (val d = desiredCornerRadius) {
-            is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
-            is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
-            // TODO: Implement per-corner radii on iOS
-            is CornerRadii.PerCorner -> 0.0
+
+        fun valueOfRadii(d: CornerRadii): Double {
+            return when (d) {
+                is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
+                is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.PerCorner -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            }
         }
-        superlayer?.let { it.modelLayer() ?: it }?.cornerRadius = v
-        backgroundMask?.cornerRadius = v
-        cornerRadius = v
+
+        val v = valueOfRadii(desiredCornerRadius)
+        if (desiredCornerRadius is CornerRadii.PerCorner) {
+           applyPerCornerRadii(desiredCornerRadius as CornerRadii.PerCorner, v)
+        } else {
+            superlayer?.modelLayer()?.cornerRadius = v
+            backgroundMask?.cornerRadius = v
+            cornerRadius = v
+        }
     }
 
     override fun layoutSublayers() {
