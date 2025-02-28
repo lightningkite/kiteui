@@ -144,7 +144,8 @@ object LeakCheckerPage : Page {
                 action = Action("next", Icon.done, frequencyCap = 50.milliseconds) { index.value++ }
             }
             expanding - swapView {
-                swapping(current = { index() }) {
+                swapping(
+                    current = { index() }) {
                     this@swapView.children.forEach {
                         println("Leak detecting on $it")
                         it.leakDetect()

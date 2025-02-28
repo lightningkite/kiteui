@@ -32,7 +32,9 @@ fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
     is CornerRadii.ForceConstant -> value.value
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
-    is CornerRadii.PerCorner -> "${topLeft.toRawCornerRadius()} ${topRight.toRawCornerRadius()} ${bottomRight.toRawCornerRadius()} ${bottomLeft.toRawCornerRadius()}"
+    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight, this.bottomLeft, this.bottomRight).joinToString(" ") {
+        if (it) "${value.value}" else "0px"
+    }
 }
 
 actual data class Font(

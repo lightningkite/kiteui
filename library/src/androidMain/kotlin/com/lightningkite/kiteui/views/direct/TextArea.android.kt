@@ -1,31 +1,41 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.graphics.Paint
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
+import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
-actual class TextArea actual constructor(context: RContext) : RView(context) {
+actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+    }
+
+    //TODO Need to change this to something that can make sense for android it doesn't seem to be doing what is intended.
+    override fun actionSet(value: Action?) {
+        super.actionSet(value)
+        native.setImeActionLabel(value?.title, KeyEvent.KEYCODE_ENTER)
+        native.setOnEditorActionListener { v, actionId, event ->
+            value?.startAction(this)
+            value != null
+        }
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme

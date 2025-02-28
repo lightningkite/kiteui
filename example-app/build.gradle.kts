@@ -99,9 +99,6 @@ kotlin {
             dependencies {
                 api(project(":library"))
             }
-            kotlin {
-                srcDir(file("build/generated/kiteui"))
-            }
         }
 
         val commonHtmlMain by creating {

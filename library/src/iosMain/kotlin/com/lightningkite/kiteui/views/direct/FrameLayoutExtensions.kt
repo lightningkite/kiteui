@@ -92,32 +92,49 @@ fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<S
     }
 }
 
-
 fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
-    if (hidden || extensionCollapsed == true) return null
-    if (bounds.useContents {
-            val rect = this
-            point.useContents {
-                val point = this
-                point.x >= rect.origin.x &&
-                        point.y >= rect.origin.y &&
-                        point.x <= rect.origin.x + rect.size.width &&
-                        point.y <= rect.origin.y + rect.size.height
-            }
-        }) {
-        subviews.asReversed().forEach {
-            it as UIView
-            if (it.hidden || it.extensionCollapsed == true) return@forEach
-            it.hitTest(
-                it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol),
-                withEvent
-            )
-                ?.let { return it }
+    if (hidden) return null
+    if (extensionCollapsed == true) return null
+    if (!pointInside(point, withEvent)) return null
+    for (it in subviews.asReversed()) {
+        it as UIView
+//        println("$this.frameLayoutHitTest -> $it")
+        if (it.hidden) {
+//            println("  it.hidden")
+            continue
         }
-        return this
-    } else {
-        return null
+        if (it.extensionCollapsed == true) {
+//            println("  it.extensionCollapsed == true")
+            continue
+        }
+        if (it.alpha < 0.001) {
+//            println("  it.alpha < 0.001")
+            continue
+        }
+        if (it.extensionIgnoreInteraction == true) {
+//            println("  it.extensionIgnoreInteraction == true")
+            continue
+        }
+        val converted = it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol)
+        if (!it.pointInside(converted, withEvent)) {
+//            println("  !it.pointInside(converted, withEvent)")
+            continue
+        }
+        // OK, the point is inside.  We're either going to grant it the touch or return nothing for the touch.
+        val hitResult = it.hitTest(
+            it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol),
+            withEvent
+        )
+//        println("  hitResult: $hitResult")
+//        println("  my userInteractionEnabled: $userInteractionEnabled")
+        return when {
+            hitResult != null -> hitResult
+            userInteractionEnabled -> this
+            else -> null
+        }
     }
+//    println("$this give up: $userInteractionEnabled")
+    return if(userInteractionEnabled) this else null
 }
 
 

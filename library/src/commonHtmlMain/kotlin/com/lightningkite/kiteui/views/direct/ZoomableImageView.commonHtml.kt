@@ -14,6 +14,10 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)
     }
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+        }
 
     actual var source: ImageSource? = null
         set(value) {

@@ -45,20 +45,22 @@ object R2VPPage : Page {
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Readable<Int>, index: Readable<Int>) =
                         with(viewWriter) {
-                            card - button {
-                                sizeConstraints(minHeight = 10.rem) - col {
-                                    text { ::content { data().toString() } }
-                                    onlyWhen { expanded() == data() } - col {
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
-                                        text { content = "Expanded Content" }
+                            padded - stack {
+                                card - button {
+                                    sizeConstraints(minHeight = 10.rem) - col {
+                                        text { ::content { data().toString() } }
+                                        onlyWhen { expanded() == data() } - col {
+                                            text { content = "Expanded Content" }
+                                            text { content = "Expanded Content" }
+                                            text { content = "Expanded Content" }
+                                            text { content = "Expanded Content" }
+                                            text { content = "Expanded Content" }
+                                            text { content = "Expanded Content" }
+                                        }
                                     }
-                                }
-                                onClick {
-                                    expanded.value = data()
+                                    onClick {
+                                        expanded.value = data()
+                                    }
                                 }
                             }
 

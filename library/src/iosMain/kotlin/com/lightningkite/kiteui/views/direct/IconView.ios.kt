@@ -38,7 +38,7 @@ actual class IconView actual constructor(context: RContext): RView(context) {
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
-        setUserInteractionEnabled(false)
+        userInteractionEnabled = false
         if (ENABLE_DYNAMIC_TYPE) {
             NSNotificationCenter.defaultCenter.addObserverForName(UIContentSizeCategoryDidChangeNotification, null, NSOperationQueue.mainQueue) {
                 informParentOfSizeChange()

@@ -12,7 +12,7 @@ import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
 
 //val defaultTheme = brandBasedExperimental("bsa", normalBack = Color.white)
-val defaultTheme = Theme.flat("default", Angle(0.55f))// brandBasedExperimental("bsa", normalBack = Color.white)
+val defaultTheme = Theme.flat("default", Angle(0.55f)).customize("default2", transitionDuration = 0.5.seconds)// brandBasedExperimental("bsa", normalBack = Color.white)
 val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {

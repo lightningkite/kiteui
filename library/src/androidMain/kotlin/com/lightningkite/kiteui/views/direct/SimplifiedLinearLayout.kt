@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup

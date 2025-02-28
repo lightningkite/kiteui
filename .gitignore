@@ -16,3 +16,5 @@ local.properties
 local.version.txt
 version.js
 LocalTest.kt
+xcuserdata
+library.podspec

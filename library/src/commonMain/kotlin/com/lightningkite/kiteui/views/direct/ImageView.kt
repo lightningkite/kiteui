@@ -18,6 +18,7 @@ expect class ImageView(context: RContext) : RView {
     var scaleType: ImageScaleType
     var description: String?
     var refreshOnParamChange: Boolean
+    var showLoadingIndicator: Boolean
 //    var cacheStrategy: UrlCacheStrategy
 
     /**

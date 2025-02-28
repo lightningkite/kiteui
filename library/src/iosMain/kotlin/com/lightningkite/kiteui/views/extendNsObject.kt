@@ -59,6 +59,9 @@ class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
 private val UIViewExplicitlyNeedsLayout = ExtensionProperty<UIView, Boolean>()
 var UIView.explicitlyNeedsLayout: Boolean? by UIViewExplicitlyNeedsLayout
 
+private val UIViewIgnoreInteraction = ExtensionProperty<UIView, Boolean>()
+var UIView.extensionIgnoreInteraction: Boolean? by UIViewIgnoreInteraction
+
 private val UIViewWeight = ExtensionProperty<UIView, Float>()
 var UIView.extensionWeight: Float? by UIViewWeight
 

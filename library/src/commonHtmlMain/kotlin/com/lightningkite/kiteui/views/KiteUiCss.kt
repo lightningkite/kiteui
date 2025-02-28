@@ -649,6 +649,30 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .swapImage > img {
                 object-fit: contain;
                 transition-duration: var(--transition-duration, 0.25s);
+              position: absolute;
+                width: 100%;
+              height: 100%;
+            }
+            .swapImage {
+              position: relative;
+            }
+
+            .swapImage.loading.useLoading::before {
+                display: block;
+                content: " ";
+                width: 32px !important;
+                height: 32px !important;
+                position: absolute;
+                left: calc(50% - 32px);
+                top: calc(50% - 32px);
+                opacity: 0.5 !important;
+                background: none !important;
+                box-shadow: none !important;
+                border-style: solid !important;
+                border-color: currentcolor currentcolor currentcolor transparent !important;
+                border-width: 5px !important;
+                border-radius: 50% !important;
+                animation: 2s linear infinite spin !important;
             }
 
             .swapImage, .icon {

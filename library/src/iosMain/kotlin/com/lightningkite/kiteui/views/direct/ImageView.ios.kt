@@ -4,9 +4,11 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
 import kotlinx.cinterop.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.CoreGraphics.CGRectMake
@@ -20,9 +22,9 @@ import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import platform.posix.QOS_CLASS_DEFAULT
-import platform.posix.QOS_CLASS_USER_INITIATED
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -34,112 +36,28 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
-    
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            native.useLoadingIndicator = value
+        }
+
     actual var source: ImageSource?
-        get() = native.imageSource
+        get() = native.targetSource
         set(value) {
             if (refreshOnParamChange && value is ImageRemote) {
-                if (value.url == (native.imageSource as? ImageRemote)?.url) return
-            } else if (value == native.imageSource) return
+                if (value.url == (native.targetSource as? ImageRemote)?.url) return
+            } else if (value == native.targetSource) return
+            native.targetSource = value
             if (native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
-                    setImageInternal(value)
+                    native.setImageInternal(this, value, native.bounds.useContents { Size(size.width, size.height) })
                 }
                 return
             }
-            setImageInternal(value)
+            native.setImageInternal(this, value, native.bounds.useContents { Size(size.width, size.height) })
         }
 
-    
-    private fun setImageInternal(value: ImageSource?) {
-        if (!com.lightningkite.kiteui.views.animationsEnabled) {
-            native.image = null
-            native.informParentOfSizeChange()
-        }
-        native.imageSource = value
-        when (value) {
-            null -> {
-                animateIfAllowed { native.image = null }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageRaw -> {
-                try {
-                    animateIfAllowed { native.image = UIImage(data = value.data.data) }
-                    native.informParentOfSizeChange()
-                } catch (_: Exception) {
-                }
-            }
-
-            is ImageRemote -> {
-                native.startLoad()
-                launch {
-                    val image = ImageCache.get(
-                        value,
-                        native.bounds.useContents { size.width.toInt() },
-                        native.bounds.useContents { size.height.toInt() }) {
-                        inBackground {
-                            UIImage(
-                                data = NSData.dataWithContentsOfURL(
-                                    NSURL.URLWithString(value.url)
-                                        ?: throw IllegalStateException("Invalid URL ${value.url}")
-                                ) ?: throw IllegalStateException("No data found at URL ${value.url}")
-                            )
-                        }
-                    }
-                    if (native.imageSource != value) return@launch
-                    native.endLoad()
-                    animateIfAllowed {
-                        native.image = image
-                    }
-                    native.informParentOfSizeChange()
-                }
-            }
-
-            is ImageResource -> {
-                animateIfAllowed { native.image = UIImage.imageNamed(value.name) }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageVector -> {
-                animateIfAllowed { native.image = ImageCache.get(value) { value.render() } }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageLocal -> {
-                native.startLoad()
-                launch {
-                    if (native.imageSource != value) return@launch
-                    val image = ImageCache.get(
-                        value,
-                        native.bounds.useContents { size.width.toInt() },
-                        native.bounds.useContents { size.height.toInt() }) {
-                        suspendCancellableCoroutine { cont ->
-                            loadImageFromProvider(value.file.provider) { data, err ->
-                                if (err != null) cont.resumeWithException(Exception(err.description))
-                                else if (data is UIImage) {
-                                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                        val image = data
-                                        if (native.imageSource != value) return@dispatch_async
-                                        cont.resume(image)
-                                    })
-                                } else {
-                                    cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                                }
-                            }
-                        }
-                    }
-                    native.endLoad()
-                    animateIfAllowed {
-                        native.image = image
-                    }
-                    native.informParentOfSizeChange()
-                }
-            }
-
-            else -> {}
-        }
-    }
 
     actual inline var scaleType: ImageScaleType
         get() = TODO()
@@ -165,8 +83,11 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
      * density screens.
      */
     actual var naturalSize: Boolean by native::naturalSize
-}
 
+    override fun applyForeground(theme: Theme) {
+        native.loadingIndicator.color = theme.foreground.closestColor().toUiColor()
+    }
+}
 
 
 object ImageCache {
@@ -234,7 +155,8 @@ internal suspend fun <T> inBackground(action: () -> T): T {
 
 class MyImageView : UIImageView(CGRectZero.readValue()) {
 
-    var imageSource: ImageSource? = null
+    var targetSource: ImageSource? = null
+    var displayedSource: ImageSource? = null
     var onImageChange: ((UIImage?) -> Unit)? = null
 
     override fun setImage(image: UIImage?) {
@@ -242,9 +164,57 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
         onImageChange?.invoke(image)
     }
 
-    // Loading indicators have been removed. These stubs have been left for potential loading support in the future
-    fun startLoad() { }
-    fun endLoad() { }
+    val loadingIndicator = UIActivityIndicatorView(CGRectMake(0.0, 0.0, 20.0, 20.0))
+
+    var useLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            updateLoadingIndicator()
+        }
+    init {
+        loadingIndicator.hidden = false
+        loadingIndicator.startAnimating()
+        addSubview(loadingIndicator)
+    }
+
+    var image2: UIImage?
+        get() = super.image
+        set(value) {
+            super.image = value
+            updateLoadingIndicator()
+        }
+
+    fun updateLoadingIndicator() {
+        if(image == null && useLoadingIndicator) {
+            loadingIndicator.startAnimating()
+            loadingIndicator.hidden = false
+        } else {
+            loadingIndicator.stopAnimating()
+            loadingIndicator.hidden = true
+        }
+    }
+
+    override fun layoutSubviews() {
+        super.layoutSubviews()
+        bounds.useContents {
+            val outerSize = this.size
+            loadingIndicator.bounds.useContents {
+                val mySize = this.size
+                loadingIndicator.setPsuedoframe(
+                    outerSize.width / 2 - mySize.width / 2,
+                    outerSize.height / 2 - mySize.height / 2,
+                    mySize.width,
+                    mySize.height
+                )
+                println("loadingIndicator.setPsuedoframe " +
+                        "${outerSize.width / 2 - mySize.width / 2}, " +
+                        "${outerSize.height / 2 - mySize.height / 2}, " +
+                        "${mySize.width}, " +
+                        "${mySize.height}, " +
+                        "")
+            }
+        }
+    }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return this.image?.size?.useContents {
@@ -264,9 +234,124 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     }
 
     var naturalSize: Boolean = false
+
+    fun setImageInternal(scope: RView, value: ImageSource?, size: Size?): Unit = with(scope) {
+        if (!animationsEnabled) {
+            image2 = null
+            informParentOfSizeChange()
+        }
+        when (value) {
+            null -> {
+                transitionIfAllowed { image2 = null }
+                informParentOfSizeChange()
+            }
+
+            is ImageRaw -> {
+                try {
+                    transitionIfAllowed { image2 = UIImage(data = value.data.data) }
+                    informParentOfSizeChange()
+                } catch (_: Exception) {
+                }
+            }
+
+            is ImageRemote -> {
+                launch {
+                    val loader = suspend {
+                        inBackground {
+                            UIImage(
+                                data = NSData.dataWithContentsOfURL(
+                                    NSURL.URLWithString(value.url)
+                                        ?: throw IllegalStateException("Invalid URL ${value.url}")
+                                ) ?: throw IllegalStateException("No data found at URL ${value.url}")
+                            )
+                        }
+                    }
+                    val image = size?.let {
+                        ImageCache.get(
+                            value,
+                            it.width.toInt(),
+                            it.height.toInt(),
+                            loader
+                        )
+                    } ?: ImageCache.get(value, load = { loader() })
+                    if (targetSource == displayedSource) {
+                        println("Cancelled ${targetSource}")
+                        return@launch
+                    }
+                    transitionIfAllowed {
+                        image2 = image
+                        displayedSource = value
+                    }
+                    informParentOfSizeChange()
+                }
+            }
+
+            is ImageResource -> {
+                transitionIfAllowed {
+                    image2 = UIImage.imageNamed(value.name)
+                        displayedSource = value
+                }
+                informParentOfSizeChange()
+            }
+
+            is ImageVector -> {
+                transitionIfAllowed {
+                    image2 = ImageCache.get(value) { value.render() }
+                        displayedSource = value
+                }
+                informParentOfSizeChange()
+            }
+
+            is ImageLocal -> {
+                launch {
+                    val loader = suspend {
+                        suspendCoroutineCancellable { cont ->
+                            loadImageFromProvider(value.file.provider) { data, err ->
+                                if (err != null) cont.resumeWithException(Exception(err.description))
+                                else if (data is UIImage) {
+                                    dispatch_async(queue = dispatch_get_main_queue(), block = {
+                                        val image = data
+                                        if (targetSource == displayedSource) return@dispatch_async
+                                        cont.resume(image)
+                                    })
+                                } else {
+                                    cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
+                                }
+                            }
+                            return@suspendCoroutineCancellable {}
+                        }
+                    }
+                    val image = size?.let {
+                        ImageCache.get(
+                            value,
+                            it.width.toInt(),
+                            it.height.toInt(),
+                            loader
+                        )
+                    } ?: ImageCache.get(value, load = { loader() })
+                    if (targetSource == displayedSource) return@launch
+                    transitionIfAllowed {
+                        image2 = image
+                        displayedSource = value
+                    }
+                    informParentOfSizeChange()
+                }
+            }
+
+            else -> {}
+        }
+    }
 }
 
+@OptIn(ExperimentalNativeApi::class)
+private fun pz(pziv: WeakReference<PanZoomImageView>): (UIImage?)->Unit {
+    return label@{
+        val v = pziv.value ?: return@label
+        v.setZoomScale(v.minimumZoomScale, false)
+    }
+}
 
+@OptIn(ExperimentalNativeApi::class)
 class PanZoomImageView : UIScrollView(CGRectZero.readValue()), UIScrollViewDelegateProtocol {
 
     val imageView = MyImageView()
@@ -275,9 +360,8 @@ class PanZoomImageView : UIScrollView(CGRectZero.readValue()), UIScrollViewDeleg
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
-        imageView.onImageChange = {
-            setZoomScale(minimumZoomScale, false)
-        }
+        val weakMe = WeakReference(this)
+        imageView.onImageChange = pz(WeakReference(this))
         addSubview(imageView)
 
         NSLayoutConstraint.activateConstraints(
@@ -327,110 +411,27 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         native.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
     }
 
-    
-    actual var source: ImageSource? = null
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            native.imageView.useLoadingIndicator = value
+        }
+
+    actual var source: ImageSource?
+        get() = native.imageView.targetSource
         set(value) {
             if (refreshOnParamChange && value is ImageRemote) {
-                if (value.url == (field as? ImageRemote)?.url) return
-            } else if (value == field) return
-            field = value
+                if (value.url == (native.imageView.targetSource as? ImageRemote)?.url) return
+            } else if (value == native.imageView.targetSource) return
+            native.imageView.targetSource = value
             if (native.bounds.useContents { size.height } == 0.0) {
                 afterTimeout(10) {
-                    setImageInternal(value)
+                    native.imageView.setImageInternal(this, value, native.bounds.useContents { Size(size.width, size.height) })
                 }
                 return
             }
-            setImageInternal(value)
+            native.imageView.setImageInternal(this, value, native.bounds.useContents { Size(size.width, size.height) })
         }
-
-    
-    private fun setImageInternal(value: ImageSource?) {
-        if (!com.lightningkite.kiteui.views.animationsEnabled) {
-            native.imageView.image = null
-            native.informParentOfSizeChange()
-        }
-        native.imageView.imageSource = value
-        when (value) {
-            null -> {
-                animateIfAllowed { native.imageView.image = null }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageRaw -> {
-                animateIfAllowed { native.imageView.image = UIImage(data = value.data.data) }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageRemote -> {
-                native.imageView.startLoad()
-                launch {
-                    val image = ImageCache.get(
-                        value,
-                        // TODO: Cyclical requirement for size!!!
-                        native.bounds.useContents { size.width.toInt() },
-                        native.bounds.useContents { size.height.toInt() }) {
-                        inBackground {
-                            UIImage(
-                                data = NSData.dataWithContentsOfURL(
-                                    NSURL.URLWithString(value.url)
-                                        ?: throw IllegalStateException("Invalid URL ${value.url}")
-                                ) ?: throw IllegalStateException("No data found at URL ${value.url}")
-                            )
-                        }
-                    }
-                    if (native.imageView.imageSource != value) return@launch
-                    native.imageView.endLoad()
-                    animateIfAllowed {
-                        native.imageView.image = image
-                    }
-                    native.informParentOfSizeChange()
-                }
-            }
-
-            is ImageResource -> {
-                animateIfAllowed { native.imageView.image = UIImage.imageNamed(value.name) }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageVector -> {
-                animateIfAllowed { native.imageView.image = ImageCache.get(value) { value.render() } }
-                native.informParentOfSizeChange()
-            }
-
-            is ImageLocal -> {
-                native.imageView.startLoad()
-                launch {
-                    if (native.imageView.imageSource != value) return@launch
-                    val image = ImageCache.get(
-                        value,
-                        native.bounds.useContents { size.width.toInt() },
-                        native.bounds.useContents { size.height.toInt() }) {
-                        suspendCancellableCoroutine { cont ->
-                            loadImageFromProvider(value.file.provider) { data, err ->
-                                if (err != null) cont.resumeWithException(Exception(err.description))
-                                else if (data is UIImage) {
-                                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                        val image = data
-                                        if (native.imageView.imageSource != value) return@dispatch_async
-                                        cont.resume(image)
-                                    })
-                                } else {
-                                    cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                                }
-                            }
-                        }
-                    }
-                    native.imageView.endLoad()
-                    animateIfAllowed {
-                        native.imageView.image = image
-                    }
-                    native.informParentOfSizeChange()
-                }
-            }
-
-            else -> {}
-        }
-    }
 
     actual inline var scaleType: ImageScaleType
         get() = TODO()
@@ -448,4 +449,8 @@ actual class ZoomableImageView actual constructor(context: RContext) : RView(con
         set(value) {
             native.accessibilityLabel = value
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        native.imageView.loadingIndicator.color = theme.theme.foreground.closestColor().toUiColor()
+    }
 }

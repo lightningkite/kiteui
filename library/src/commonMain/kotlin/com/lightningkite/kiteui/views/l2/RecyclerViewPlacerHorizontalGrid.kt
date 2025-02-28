@@ -56,9 +56,10 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
                     } to currentIndex
                 }
             }
-        } ?: existingCells.minByOrNull {
+        } ?: existingCells.asSequence().minByOrNull {
             it.centerY +
-                    abs(viewport.left - it.left)
+                    abs(viewport.left - it.left) +
+                    (if(it.left <= overdraw.left) 10000 else 0)
         }?.let {
 //            println("Using existing cells for anchor: ${it.left} to ${it.index.div(columns).times(columns)}")
             it.left to it.index.div(rows).times(rows)

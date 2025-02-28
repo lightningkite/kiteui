@@ -60,11 +60,10 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                     } to currentIndex
                 }
             }
-        } ?: existingCells.asSequence().filter {
-            it.top > overdraw.top
-        }.minByOrNull {
+        } ?: existingCells.asSequence().minByOrNull {
             it.centerX +
-                    abs(viewport.top - it.top)
+                    abs(viewport.top - it.top) +
+                    (if(it.top <= overdraw.top) 10000 else 0)
         }?.let {
             log?.log("Using existing cells for anchor: ${it.top} to ${it.index} => ${it.index.div(columns).times(columns)}")
             it.top to it.index.div(columns).times(columns)

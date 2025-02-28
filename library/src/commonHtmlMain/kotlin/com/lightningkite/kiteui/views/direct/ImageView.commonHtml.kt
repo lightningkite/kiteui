@@ -18,6 +18,12 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         Frame.internalAddChildStack(this, index, view)
     }
 
+    actual var showLoadingIndicator: Boolean = true
+        set(value) {
+            field = value
+            if(value) native.classes.add("useLoading") else native.classes.remove("useLoading")
+        }
+
     actual var source: ImageSource? = null
         set(value) {
             if(refreshOnParamChange && value is ImageRemote) {

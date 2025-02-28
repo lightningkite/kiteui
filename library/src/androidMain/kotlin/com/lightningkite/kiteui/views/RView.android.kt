@@ -208,6 +208,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
+    override fun postSetup() {
+        super.postSetup()
+        // Block touches below
+        val hasInteractiveParent = generateSequence(this) { it.parent }.any { it.native.isClickable || it.native.isFocusable }
+        if(!hasInteractiveParent && !native.isClickable && !native.isFocusable && !ignoreInteraction) {
+            native.setOnClickListener {
+                // android.widget.FrameLayout blocked the touch, because hasInteractiveParent = false and isClickable: false and isFocusable: false
+                println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and isClickable: ${native.isClickable} and isFocusable: ${native.isFocusable}")
+                println("Hierarchy:")
+                generateSequence(this) { it.parent }.forEach { println("  ${it} - ${it.native}") }
+            }
+        }
+    }
+
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
         if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")

@@ -56,7 +56,7 @@ object SampleLogInPage : Page {
                             }
                         }
                     }
-                    important - button {
+                    centered - sizeConstraints(width = 15.rem) - important - button {
                         h6 { content = "Log In" }
                         onClick {
                             delay(1000)

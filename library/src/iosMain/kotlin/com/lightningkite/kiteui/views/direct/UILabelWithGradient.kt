@@ -24,9 +24,11 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     val uiViewWithLabelMask = UIView(bounds).apply {
         backgroundColor = UIColor.grayColor
+        userInteractionEnabled = false
     }.also(::addSubview)
 
     val label = UILabel().also {
+        userInteractionEnabled = false
         uiViewWithLabelMask.addSubview(it)
         uiViewWithLabelMask.maskView = it
 //        addSubview(it)
