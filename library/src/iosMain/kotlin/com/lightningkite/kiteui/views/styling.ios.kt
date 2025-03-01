@@ -135,9 +135,12 @@ class CAGradientLayerResizing : CAGradientLayer {
         if(radii.bottomRight) cornersList.add(UIRectCornerBottomLeft)
 
         val corners = cornersList.reduce { acc, current -> acc or current }
-        val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds, byRoundingCorners = corners, cornerRadii = CGSizeMake(value, value))
+        val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds,
+            byRoundingCorners = corners,
+            cornerRadii = CGSizeMake(value, value))
         val mask = CAShapeLayer()
         mask.path = path.CGPath
+        this.mask = mask
         superlayer?.mask = mask
     }
 
@@ -159,6 +162,7 @@ class CAGradientLayerResizing : CAGradientLayer {
            applyPerCornerRadii(desiredCornerRadius as CornerRadii.PerCorner, v)
         } else {
             superlayer?.modelLayer()?.cornerRadius = v
+
             backgroundMask?.cornerRadius = v
             cornerRadius = v
         }
