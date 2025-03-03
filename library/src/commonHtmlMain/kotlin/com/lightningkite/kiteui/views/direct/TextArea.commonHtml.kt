@@ -1,15 +1,22 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
-actual class TextArea actual constructor(context: RContext) : RView(context) {
+actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "textarea"
         native.classes.add("editable")
         native.style.resize = "none"
+        native.addEventListener("keyup") { ev ->
+            ev as KeyboardEvent
+            if (ev.code == KeyCodes.enter) {
+                action?.startAction(this)
+            }
+        }
     }
     actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     actual var keyboardHints: KeyboardHints = KeyboardHints()

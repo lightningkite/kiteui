@@ -13,16 +13,16 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-actual class TextArea actual constructor(context: RContext) : RView(context) {
+actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
 
     val trigger: NSObject = object: NSObject() {
         @ObjCAction
         fun done() {
-            CoroutineScope(Dispatchers.Main.immediate).launch {
-                delay(16)
-                textField.endEditing(true)
+            action?.let {
+                textField.resignFirstResponder()
+                it.startAction(this@TextArea)
             }
         }
     }

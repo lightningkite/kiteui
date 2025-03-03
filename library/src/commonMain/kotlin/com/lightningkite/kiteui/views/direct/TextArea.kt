@@ -4,10 +4,10 @@ import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.reactive.ImmediateWritable
 import com.lightningkite.kiteui.views.RContext
 
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewWithAction
 
 
-expect class TextArea(context: RContext) : RView {
+expect class TextArea(context: RContext) : RViewWithAction {
     var enabled: Boolean
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
