@@ -22,7 +22,7 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
 
         init {
             beforeNextElementSetup {
-                themeChoice = ThemeDerivation { theme.withBack }
+                themeChoice = ThemeDerivation.SetAsBase(theme)
             }
         }
     }.also(app)

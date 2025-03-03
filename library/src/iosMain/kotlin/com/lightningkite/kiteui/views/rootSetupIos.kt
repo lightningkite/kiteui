@@ -49,7 +49,7 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
 
         init {
             beforeNextElementSetup {
-                ::themeChoice { ThemeDerivation.Set(themeCalculation()) }
+                ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
             }
         }
     }

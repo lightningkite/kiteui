@@ -21,3 +21,4 @@ inline fun ViewWriter.code(setup: Code.() -> Unit = {}): Code {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Code(context) , setup)
 }
+fun ViewWriter.code(content: String) = code { this.content = content }

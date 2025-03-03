@@ -6,10 +6,10 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.usesTouchscreen
-import com.lightningkite.readable.CalculationContext
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
@@ -79,7 +79,7 @@ inline fun ViewWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): Z
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(ZoomableImageView(context) , setup)
 }
-class Label(val label: TextView, val container: RowOrCol): ViewWriter(), CalculationContext by container {
+class Label(val label: TextView, val container: RowOrCol): ViewWriter(), ViewModifiable by container {
     override val context: RContext
         get() = container.context
     override fun addChild(view: RView) {
@@ -332,11 +332,11 @@ inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                gravity(Align.Start, Align.Center) - button {
+                align(Align.Start, Align.Center) - button {
                     icon(Icon.chevronLeft, "Previous")
                     onClick { centerIndex set centerIndex() - 1 }
                 }
-                gravity(Align.End, Align.Center) - button {
+                align(Align.End, Align.Center) - button {
                     icon(Icon.chevronRight, "Next")
                     onClick { centerIndex set centerIndex() + 1 }
                 }

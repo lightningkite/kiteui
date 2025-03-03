@@ -58,8 +58,11 @@ inline val ViewWriter.danger: ViewWrapper get() = DangerSemantic.onNext
 @ViewModifierDsl3
 inline val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.emphasize: ViewWrapper get() = EmphasizedSemantic.onNext
+inline val ViewWriter.emphasized: ViewWrapper get() = EmphasizedSemantic.onNext
 
+@ViewModifierDsl3
+@Deprecated("Renamed to 'emphasized' for consistency of adjective terms.", ReplaceWith("emphasized", "com.lightningkite.kiteui.views.emphasized"))
+inline val ViewWriter.emphasize: ViewWrapper get() = EmphasizedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DialogSemantic.onNext", "com.lightningkite.kiteui.models.DialogSemantic"))
 inline val ViewWriter.dialog: ViewWrapper get() = DialogSemantic.onNext

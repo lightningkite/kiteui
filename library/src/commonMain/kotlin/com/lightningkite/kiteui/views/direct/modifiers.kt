@@ -11,9 +11,6 @@ import com.lightningkite.readable.CalculationContext
 import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 
 @ViewModifierDsl3
@@ -45,7 +42,11 @@ expect fun ViewWriter.weight(amount: Float): ViewWrapper
 expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper
 
 @ViewModifierDsl3
-expect fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper
+expect fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper
+
+@ViewModifierDsl3
+@Deprecated("use align instead", ReplaceWith("align"))
+fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper = align(horizontal, vertical)
 
 @ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))

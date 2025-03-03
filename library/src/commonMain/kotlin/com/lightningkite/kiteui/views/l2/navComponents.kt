@@ -225,7 +225,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
             ::description { navElement.title() }
         }
         navElement.count?.let { count ->
-            gravity(Align.End, Align.Start) - compact - critical - frame {
+            align(Align.End, Align.Start) - compact - critical - frame {
                 exists = false
                 ::exists { count() != null }
                 space(0.01)

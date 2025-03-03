@@ -14,7 +14,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter: ViewModifiable {
+abstract class ViewWriter: CoroutineScope {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
@@ -89,6 +89,14 @@ abstract class ViewWriter: ViewModifiable {
     val Theme.onNext: ViewWrapper get() {
         beforeNextElementSetup {
             themeChoice = ThemeDerivation { this@onNext.withBack }
+        }
+        return ViewWrapper
+    }
+
+    @ViewModifierDsl3
+    val Theme.setAsBaseOnNext: ViewWrapper get() {
+        beforeNextElementSetup {
+            themeChoice = ThemeDerivation { this@setAsBaseOnNext.withoutBack }
         }
         return ViewWrapper
     }

@@ -61,6 +61,7 @@ class PhoneNumberInput(container: ViewWriter): ViewModifiable {
         keyboardHints = KeyboardHints.phone
         format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
     }
+    override val rView: RView get() = input
     var format: PhoneNumberFormat = PhoneNumberFormat.USA
         set(value) {
             field = value

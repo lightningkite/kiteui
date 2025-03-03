@@ -37,12 +37,6 @@ interface ThemeDerivation {
             }
         }
 
-        inline fun selfBackground(crossinline action: Theme.() -> Theme): ThemeDerivation {
-            return object : ThemeDerivation {
-                override fun invoke(theme: Theme): ThemeAndBack = action(theme).withBack
-            }
-        }
-
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(theme: Theme): ThemeDerivation = Set(theme)
         val none = ThemeDerivation.None
@@ -56,12 +50,21 @@ interface ThemeDerivation {
     data class Set(val theme: Theme) : ThemeDerivation {
         override fun invoke(theme: Theme): ThemeAndBack = this.theme.withBack
     }
+    data class SetAsBase(val theme: Theme) : ThemeDerivation {
+        override fun invoke(theme: Theme): ThemeAndBack = this.theme.withBackNoPadding
+    }
 
     open operator fun plus(other: ThemeDerivation): ThemeDerivation {
         return ThemeDerivation {
             if (other is Set) return@ThemeDerivation other.theme.withBack
             this(it) + other
         }
+    }
+}
+
+data object Unpadded: ThemeDerivation {
+    override fun invoke(theme: Theme): ThemeAndBack {
+        return theme.withBackNoPadding
     }
 }
 
@@ -73,7 +76,7 @@ interface Semantic : ThemeDerivation {
 
 data object ForcePaddingSemantic: Semantic {
     override val key: String = "fpad"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
 data object InteractiveSemantic : Semantic {

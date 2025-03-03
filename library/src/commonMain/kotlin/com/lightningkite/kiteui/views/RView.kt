@@ -26,7 +26,9 @@ abstract class RViewWithAction(context: RContext) : RView(context) {
     }
 }
 
-interface ViewModifiable: CoroutineScope
+interface ViewModifiable: CoroutineScope {
+    val rView: RView
+}
 
 expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
@@ -52,6 +54,7 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 
 expect inline fun RView.withoutAnimation(action: () -> Unit)
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
+    override val rView: RView get() = this as RView
     var additionalTestingData: Any? = null
 
     abstract var showOnPrint: Boolean

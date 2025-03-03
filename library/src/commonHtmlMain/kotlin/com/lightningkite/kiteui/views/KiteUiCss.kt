@@ -108,7 +108,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 color: var(--icon-color, black);
             }
 
-            .padded:not(.isRoot):not(.swapImage) {
+            .padded:not(.swapImage) {
                 padding: var(--padding, 0px);
             }
 
@@ -213,68 +213,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 scroll-snap-type: x mandatory;
             }
 
-            .recyclerViewGridSub > * {
-                flex: 1 1 0px;
-            }
-
-            .contentScroll-H > .recyclerViewGridSub {
-                display: flex;
-                flex-direction: column;
-                width: auto;
-            }
-
-            .contentScroll-V > .recyclerViewGridSub {
-                display: flex;
-                flex-direction: row;
-                height: auto;
-            }
-
-            .contentScroll-H > * {
-                max-width: unset;
-                position: absolute;
-                height: calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2);
-                margin-top: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
-                margin-bottom: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
-                overflow-anchor: revert;
-            }
-
-            .contentScroll-V > * {
-                position: absolute;
-                max-height: unset;
-                width: calc(100% - var(--parentSpacing, 0px) * var(--usePadding, 0) * 2);
-                margin-left: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
-                margin-right: calc(var(--parentSpacing, 0px) * var(--usePadding, 0));
-                overflow-anchor: revert;
-            }
-
-            .contentScroll-H {
-                width: 100%;
-                height: 100%;
-                position: relative;
-                overflow-x: scroll;
-                overflow-y: hidden;
-                overflow-anchor: none;
-                scrollbar-width: none;
-            }
-
-            .contentScroll-V {
-                width: 100%;
-                height: 100%;
-                position: relative;
-                overflow-y: scroll;
-                overflow-x: hidden;
-                overflow-anchor: none;
-                scrollbar-width: none;
-            }
-
-            .contentScroll-H::-webkit-scrollbar {
-                display: none;
-            }
-
-            .contentScroll-V::-webkit-scrollbar {
-                display: none;
-            }
-
             .hideScrollbar {
                 scrollbar-width: none;
             }
@@ -284,21 +222,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .suppress-overflow-anchors > * {
                 overflow-anchor: none;
-            }
-
-            .recyclerView > * > * {
-                overflow-anchor: none;
-            }
-
-            .recyclerView > * {
-                overflow-anchor: none;
-                scroll-behavior: auto !important;
-            }
-
-            .recyclerView {
-                position: relative;
-                padding: 0px !important;
-                scroll-behavior: auto;
             }
 
             .notransition, .notransition * {

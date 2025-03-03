@@ -27,6 +27,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.max
 import kotlin.math.roundToInt
+import com.lightningkite.readable.*
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
     override val native = MyImageView()
@@ -84,8 +85,9 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
      */
     actual var naturalSize: Boolean by native::naturalSize
 
-    override fun applyForeground(theme: Theme) {
-        native.loadingIndicator.color = theme.foreground.closestColor().toUiColor()
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        native.loadingIndicator.color = theme.theme.foreground.closestColor().toUiColor()
     }
 }
 
@@ -305,7 +307,7 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
             is ImageLocal -> {
                 launch {
                     val loader = suspend {
-                        suspendCoroutineCancellable { cont ->
+                        suspendCancellableCoroutine { cont ->
                             loadImageFromProvider(value.file.provider) { data, err ->
                                 if (err != null) cont.resumeWithException(Exception(err.description))
                                 else if (data is UIImage) {
@@ -318,7 +320,6 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
                                     cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
                                 }
                             }
-                            return@suspendCoroutineCancellable {}
                         }
                     }
                     val image = size?.let {

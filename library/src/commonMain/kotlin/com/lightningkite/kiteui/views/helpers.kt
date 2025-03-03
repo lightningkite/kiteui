@@ -1,28 +1,31 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.math.min
 
-@ViewModifierDsl3 val ViewWriter.centered get() = gravity(Align.Center, Align.Center)
-@ViewModifierDsl3 val ViewWriter.atStart get() = gravity(Align.Start, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.atEnd get() = gravity(Align.End, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.atTop get() = gravity(Align.Stretch, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atBottom get() = gravity(Align.Stretch, Align.End)
-@ViewModifierDsl3 val ViewWriter.atTopStart get() = gravity(Align.Start, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atBottomStart get() = gravity(Align.Start, Align.End)
-@ViewModifierDsl3 val ViewWriter.atTopCenter get() = gravity(Align.Center, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atBottomCenter get() = gravity(Align.Center, Align.End)
-@ViewModifierDsl3 val ViewWriter.atTopEnd get() = gravity(Align.End, Align.Start)
-@ViewModifierDsl3 val ViewWriter.atBottomEnd get() = gravity(Align.End, Align.End)
-@ViewModifierDsl3 val ViewWriter.centeredHorizontally get() = gravity(Align.Center, Align.Stretch)
-@ViewModifierDsl3 val ViewWriter.centeredVertically get() = gravity(Align.Stretch, Align.Center)
+@ViewModifierDsl3 val ViewWriter.atStart get() = align(Align.Start, Align.Stretch)
+@ViewModifierDsl3 val ViewWriter.atEnd get() = align(Align.End, Align.Stretch)
+@ViewModifierDsl3 val ViewWriter.atTop get() = align(Align.Stretch, Align.Start)
+@ViewModifierDsl3 val ViewWriter.atBottom get() = align(Align.Stretch, Align.End)
+@ViewModifierDsl3 val ViewWriter.centeredHorizontally get() = align(Align.Center, Align.Stretch)
+@ViewModifierDsl3 val ViewWriter.centeredVertically get() = align(Align.Stretch, Align.Center)
+
+@ViewModifierDsl3 val ViewWriter.atTopStart get() = align(Align.Start, Align.Start)
+@ViewModifierDsl3 val ViewWriter.atCenterStart get() = align(Align.Start, Align.Center)
+@ViewModifierDsl3 val ViewWriter.atBottomStart get() = align(Align.Start, Align.End)
+@ViewModifierDsl3 val ViewWriter.atTopCenter get() = align(Align.Center, Align.Start)
+@ViewModifierDsl3 val ViewWriter.centered get() = align(Align.Center, Align.Center)
+@ViewModifierDsl3 val ViewWriter.atBottomCenter get() = align(Align.Center, Align.End)
+@ViewModifierDsl3 val ViewWriter.atTopEnd get() = align(Align.End, Align.Start)
+@ViewModifierDsl3 val ViewWriter.atCenterEnd get() = align(Align.End, Align.Center)
+@ViewModifierDsl3 val ViewWriter.atBottomEnd get() = align(Align.End, Align.End)
+
 
 @ViewModifierDsl3 val ViewWriter.expanding get() = weight(1f)
 
-@ViewModifierDsl3 fun ViewWriter.maxWidthCentered(width: Dimension) = gravity(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(maxWidth = width))
+@ViewModifierDsl3 fun ViewWriter.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(maxWidth = width))
 @ViewModifierDsl3 fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl

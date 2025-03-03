@@ -19,9 +19,7 @@ actual class ScrollingBehaviorImpl actual constructor(
 ): ScrollingBehaviors {
     val native = on.native
     init {
-        native.tag = "div"
         native.style.lineHeight = "0px !important"
-        native.style.overflowAnchor = "none"
         if(horizontal) {
             native.classes += "scroll-horizontal"
             native.style.overflowX = "auto"

@@ -32,9 +32,6 @@ fun main() {
     }
     val context = RContext(basePath)
     root(appTheme.value) {
-        beforeNextElementSetup {
-            ::themeChoice { ThemeDerivation(appTheme()) }
-        }
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
     }
 

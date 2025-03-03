@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
@@ -24,7 +23,7 @@ object LayoutExamplesPage : Page {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
-                            text { content = "$h $v" } in gravity(h, v)
+                            text { content = "$h $v" } in align(h, v)
                         }
                     }
                 } in sizedBox(SizeConstraints(minHeight = 200.px))
@@ -61,7 +60,7 @@ object LayoutExamplesPage : Page {
                         }
                     }
 //                    gravity(Align.End, Align.Center) - row {
-                    gravity(Align.End, Align.Center) - row {
+                    align(Align.End, Align.Center) - row {
                         onlyWhen { showIcons() } - centered - toggleButton {
                             icon {
                                 source = Icon.starFilled
@@ -120,7 +119,7 @@ object LayoutExamplesPage : Page {
                 col {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
-                        text { content = "$h" } in gravity(h, Align.Stretch)
+                        text { content = "$h" } in align(h, Align.Stretch)
                     }
                 }
             }
@@ -130,10 +129,10 @@ object LayoutExamplesPage : Page {
                 row {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (v in aligns) {
-                        gravity(Align.Stretch, v) - text { content = "$v" }
+                        align(Align.Stretch, v) - text { content = "$v" }
                     }
                     for (v in aligns) {
-                        gravity(Align.Stretch, v) - text { content = "$v" }
+                        align(Align.Stretch, v) - text { content = "$v" }
                     }
                 } in sizedBox(SizeConstraints(minHeight = 200.px))
             }
@@ -143,13 +142,13 @@ object LayoutExamplesPage : Page {
                 row {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (v in aligns) {
-                        gravity(Align.Stretch, v) - text { content = "$v" }
+                        align(Align.Stretch, v) - text { content = "$v" }
                     }
                     expanding - card - frame {
                         centered - text { content = "Expanding" }
                     }
                     for (v in aligns) {
-                        gravity(Align.Stretch, v) - text { content = "$v" }
+                        align(Align.Stretch, v) - text { content = "$v" }
                     }
                 } in sizedBox(SizeConstraints(minHeight = 200.px))
             }
@@ -184,25 +183,25 @@ object LayoutExamplesPage : Page {
                 }
                 run {
                     val amount = 20
-                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
                         text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }
                 run {
                     val amount = 40
-                    gravity(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(maxWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "maxWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "maxWidth = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(width = amount.rem) - important - frame {
                         text { ::content { if (text()) "width = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "width = $amount.rem" }}
                     }
-                    gravity(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
+                    align(Align.Start, Align.Start) - sizeConstraints(minWidth = amount.rem) - important - frame {
                         text { ::content { if (text()) "minWidth = $amount.rem with a lot of additional content to demonstrate large sizes.  Try adjusting the screen width smaller." else "minWidth = $amount.rem" }}
                     }
                 }

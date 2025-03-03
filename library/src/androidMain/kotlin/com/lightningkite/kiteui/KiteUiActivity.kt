@@ -41,7 +41,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
         init {
             beforeNextElementSetup {
-                ::themeChoice { ThemeDerivation.Set(theme()) }
+                ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
             }
         }
     }

@@ -97,7 +97,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
                 }
                 index bind currentPage
             }
-            gravity(Align.End, Align.Start) - button {
+            align(Align.End, Align.Start) - button {
                 icon { source = Icon.close }
                 onClick {
                     pageNavigator.dismiss()

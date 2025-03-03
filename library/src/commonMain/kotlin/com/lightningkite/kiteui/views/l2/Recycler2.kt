@@ -31,6 +31,8 @@ class Recycler2(
         private set
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
+    override val rView: RView
+        get() = outerFrame
 
     var spacing: Dimension?
         get() = cells.spacing

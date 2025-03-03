@@ -60,7 +60,7 @@ object ViewModifiersPage : DocPage {
                     val aligns = listOf(Align.Start, Align.Center, Align.End)
                     for (h in aligns) {
                         for (v in aligns) {
-                            text { content = "$h $v" } in gravity(h, v)
+                            text { content = "$h $v" } in align(h, v)
                         }
                     }
                 }
