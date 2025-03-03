@@ -32,7 +32,7 @@ fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
     is CornerRadii.ForceConstant -> value.value
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
-    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight, this.bottomLeft, this.bottomRight).joinToString(" ") {
+    is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight,  this.bottomRight, this.bottomLeft).joinToString(" ") {
         if (it) "${value.value}" else "0px"
     }
 }
