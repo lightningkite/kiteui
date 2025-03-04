@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 
@@ -80,7 +82,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     override fun leakDetect() {
-        // Do nothing.  No access to manual GC exists in JS.
+        WeakReference(native).checkLeakAfterDelay(1000)
     }
 
     private var prevThemeClass: String? = null

@@ -160,11 +160,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.background = value
         }
     protected var backgroundBlock: GradientDrawable? = null
-    private val layoutChangeListener by lazy {
-        { _: View?, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-            updateCorners()
-        }
-    }
 
     protected fun updateCorners() {
         val cr = when (val it = theme.cornerRadii) {
@@ -175,15 +170,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             // TODO: Implement per-corner radii on Android
             is CornerRadii.PerCorner -> 0f
         }
-        // Disabling because this is REALLY slow; we'll need to find a more optimized way to do corner radius based on
-        // size on Android
-        /*        if (theme.cornerRadii is CornerRadii.RatioOfSize) {
-                    native.addOnLayoutChangeListener(layoutChangeListener)
-                } else {
-                    native.removeOnLayoutChangeListener(layoutChangeListener)
-                }*/
         backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
-//        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }
 
     private var edgeToEdgePadding: Edges? = null
@@ -252,6 +239,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 val shouldApplyRight = padding.right.value > 0 || shouldApply(Gravity.RIGHT)
                 val shouldApplyBottom = padding.bottom.value > 0 || shouldApply(Gravity.BOTTOM)
                 val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+                println("Checking $native for inset application of $insets")
                 if(!shouldApplyAny) return@OnApplyWindowInsetsListener insetsGetter
                 edgeToEdgePadding = Edges(
                     left = if(shouldApplyLeft) insets.left.px else 0.px,
@@ -259,6 +247,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     right = if(shouldApplyRight) insets.right.px else 0.px,
                     bottom = if(shouldApplyBottom) insets.bottom.px else 0.px,
                 )
+                println("APPLIED")
                 WindowInsetsCompat.CONSUMED
             }
             ViewCompat.setOnApplyWindowInsetsListener(native, l)

@@ -93,9 +93,7 @@ object LeakCheckerPage : Page {
     val stringProp = Property("X")
     val doubleProp = Property<Double?>(0.0)
     val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
-        "canvas" to { frame { canvas { delegate = DrawDelegate() } } },
-        "recyclerView" to { frame { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
-        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+        "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
         "textField" to { frame { textField { content bind stringProp } } },
@@ -126,6 +124,9 @@ object LeakCheckerPage : Page {
         "toggleButton" to { frame { toggleButton {} } },
         "video" to { frame { video {} } },
         "webView" to { frame { webView {} } },
+        "canvas" to { frame { canvas { delegate = DrawDelegate() } } },
+        "recyclerView" to { frame { recyclerView { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
+        "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
     override fun ViewWriter.render(): ViewModifiable = run {
@@ -143,26 +144,26 @@ object LeakCheckerPage : Page {
                 }
                 action = Action("next", Icon.done, frequencyCap = 50.milliseconds) { index.value++ }
             }
-            expanding - swapView {
-                swapping(
-                    current = { index() }) {
-                    this@swapView.children.forEach {
-                        println("Leak detecting on $it")
-                        it.leakDetect()
-                    }
-                    makers[it % makers.size].second(this)
-                }
-            }
-//            frame {
-//                reactiveScope {
-//                    if(children.size > 0) {
-//                        children[0].leakDetect()
-//                        removeChild(0)
+//            expanding - swapView {
+//                swapping(
+//                    current = { index() }) {
+//                    this@swapView.children.forEach {
+//                        println("Leak detecting on $it")
+//                        it.leakDetect()
 //                    }
-//                    val m = makers[index() % makers.size]
-//                    m.second(this@stack)
+//                    makers[it % makers.size].second(this)
 //                }
 //            }
+            frame {
+                reactiveScope {
+                    if(children.size > 0) {
+                        children[0].leakDetect()
+                        removeChild(0)
+                    }
+                    val m = makers[index() % makers.size]
+                    m.second(this@frame)
+                }
+            }
         }
     }
 }

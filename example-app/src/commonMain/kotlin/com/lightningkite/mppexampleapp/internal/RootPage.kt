@@ -9,8 +9,10 @@ import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
+import com.lightningkite.kiteui.views.direct.Frame
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.link
 import com.lightningkite.kiteui.views.direct.onClick
@@ -108,6 +110,15 @@ object RootPage : Page {
                 button {
                     text { content = "GC" }
                     onClick { gc() }
+                }
+                var retained: Any? = null
+                button {
+                    text { content = "Cause Leak" }
+                    onClick {
+                        val f = frame {}
+                        retained = f
+                        removeChild(f)
+                    }
                 }
 
                 calculationContext.onRemove {

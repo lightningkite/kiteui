@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -48,6 +50,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         AppState._windowInfo.value = WindowStatistics(
             Dimension(resources.displayMetrics.widthPixels.toFloat()),
             Dimension(resources.displayMetrics.heightPixels.toFloat()),

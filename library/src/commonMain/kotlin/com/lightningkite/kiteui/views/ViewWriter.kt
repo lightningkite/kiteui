@@ -73,15 +73,14 @@ abstract class ViewWriter: CoroutineScope {
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
         contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
         writePre(view)
-        // TODO: This try/catch significantly increases binary size...
-//        try {
+        try {
             setup(view)
             writePost(view)
-//        } catch(e: Exception) {
-//            endFail(view, e)
-//        } finally {
-//            end(view)
-//        }
+        } catch(e: Exception) {
+            endFail(view, e)
+        } finally {
+            end(view)
+        }
         return view
     }
 
