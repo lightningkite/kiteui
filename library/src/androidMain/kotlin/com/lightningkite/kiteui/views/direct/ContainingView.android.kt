@@ -53,10 +53,10 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         get() = super.spacing
         set(value) {
             super.spacing = value
-            native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+            native.gap = (value ?: theme.spacing).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.gap = (spacing ?: theme.spacing).value.roundToInt()
     }
 }
 
@@ -86,10 +86,10 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
         get() = super.spacing
         set(value) {
             super.spacing = value
-            native.gap = (value ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+            native.gap = (value ?: theme.spacing).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: if(useNavSpacing) theme.navSpacing else theme.spacing).value.roundToInt()
+        native.gap = (spacing ?: theme.spacing).value.roundToInt()
     }
 }
 

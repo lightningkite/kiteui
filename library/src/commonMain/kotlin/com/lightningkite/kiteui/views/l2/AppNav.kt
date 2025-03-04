@@ -61,7 +61,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
-    padded - navSpacing - col {
+    OuterSemantic.onNext - col {
         bar - row {
             showOnPrint = false
             setup(appNav)
@@ -82,9 +82,9 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             navGroupActions(appNav.actionsProperty)
             ::exists { appNav.existsProperty() }
         }
-        expanding - navSpacing - frame {
+        expanding - frame {
             navigatorView(pageNavigator)
-            atStart - navSpacing - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+            atStart - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 spacing = 0.px
             }
         }
@@ -95,7 +95,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    padded - navSpacing  - col {
+    OuterSemantic.onNext - col {
         bar - row {
             showOnPrint = false
             setup(appNav)
@@ -121,7 +121,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing  - col {
+    OuterSemantic.onNext - col {
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
             compact - bar - frame {
@@ -177,7 +177,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
-    padded - navSpacing  - col {
+    OuterSemantic.onNext - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
             showOnPrint = false
@@ -197,8 +197,8 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
 
             ::exists { appNav.existsProperty() }
         }
-        navSpacing - expanding - row {
-            navSpacing  - nav - scrolling - navGroupColumn(appNav.navItemsProperty) {
+        expanding - row {
+            scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::exists { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }

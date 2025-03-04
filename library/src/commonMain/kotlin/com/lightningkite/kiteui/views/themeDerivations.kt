@@ -145,15 +145,6 @@ val ViewWriter.underline: ViewWrapper
 @ViewModifierDsl3
 fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(spacing = it.spacing * multiplier).withoutBack }.onNext
 
-@ViewModifierDsl3
-val ViewWriter.navSpacing: ViewWrapper
-    get() {
-        beforeNextElementSetup {
-            useNavSpacing = true
-        }
-        return ViewWrapper
-    }
-
 
 fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {
     val existing = themeChoice

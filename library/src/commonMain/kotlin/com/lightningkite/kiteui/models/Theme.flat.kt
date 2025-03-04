@@ -18,12 +18,14 @@ fun Theme.Companion.flat(
     elevation = 0.dp,
     cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
     spacing = 0.75.rem,
-    navSpacing = 1.rem,
     outlineWidth = 0.px,
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
     derivations = mapOf(
+        HeaderSemantic to {
+            it.withoutBack(font = title)
+        },
         ImportantSemantic to {
             val existing = it.background.closestColor().toHSP()
             if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
@@ -125,6 +127,9 @@ fun Theme.Companion.flat(
         },
         BarSemantic to { it.withoutBack },
         NavSemantic to { it[CardSemantic] },
+        OuterSemantic to {
+            it.withBack
+        },
         MainContentSemantic to {
             it.copy(
                 id = "con",

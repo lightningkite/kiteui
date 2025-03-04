@@ -20,8 +20,7 @@ fun Theme.Companion.material3(
     outlineWidth: Dimension = 0.px,
 ) = Theme(
     id = id,
-    title = title,
-    body = body,
+    font = body,
     elevation = elevation,
     cornerRadii = cornerRadii,
     spacing = spacing,
@@ -29,46 +28,39 @@ fun Theme.Companion.material3(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    hover = {
-        copy(
-            id = "hov",
-            background = this.background.closestColor().highlight(0.2f),
-            outline = this.background.closestColor().highlight(0.2f).highlight(0.1f),
-            elevation = this.elevation * 2f,
-        )
-    },
-    down = {
-        copy(
-            id = "dwn",
-            background = this.background.closestColor().highlight(0.3f),
-            outline = this.background.closestColor().highlight(0.3f).highlight(0.1f),
-            elevation = this.elevation / 2f,
-        )
-    },
-    important = {
-        copy(
-            id = "imp",
-            foreground = primaryForeground,
-            background = primary,
-            outline = primary.highlight(0.1f),
-            important = {
-                copy(
-                    id = "imp2",
-                    foreground = secondaryForeground,
-                    background = secondary,
-                    outline = secondary.highlight(0.1f),
+    derivations = mapOf(
+        OuterSemantic to {
+            it.alter(
+                cascading = false,
+                spacing = 0.px,
+            ).withBackNoPadding
+        },
+        HeaderSemantic to {
+            it.withoutBack(font = title)
+        },
+        ImportantSemantic to {
+            it.withBack(
+                foreground = primaryForeground,
+                background = primary,
+                outline = primary.highlight(0.1f),
+                derivations = mapOf(ImportantSemantic to {
+                    it.withBack(
+                        foreground = secondaryForeground,
+                        background = secondary,
+                        outline = secondary.highlight(0.1f),
+                    )
+                }
                 )
-            }
-        )
-    },
-    critical = {
-        copy(
-            id = "crt",
-            foreground = secondaryForeground,
-            background = secondary,
-            outline = secondary.highlight(0.1f),
-        )
-    },
+            )
+        },
+        CriticalSemantic to {
+            it.withBack(
+                foreground = secondaryForeground,
+                background = secondary,
+                outline = secondary.highlight(0.1f),
+            )
+        },
+    ),
 )
 
 object M3Theme {

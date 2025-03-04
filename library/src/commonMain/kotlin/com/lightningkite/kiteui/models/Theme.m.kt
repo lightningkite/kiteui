@@ -2,6 +2,8 @@ package com.lightningkite.kiteui.models
 
 import kotlin.random.Random
 
+private fun <T, R> paramToReceiver(action: T.()->R): (T)->R = action
+
 fun Theme.Companion.material(
     id: String,
     foreground: Paint = Color.black,
@@ -19,8 +21,7 @@ fun Theme.Companion.material(
     outlineWidth: Dimension = 0.dp,
 ) = Theme(
     id = id,
-    title = title,
-    body = body,
+    font = body,
     elevation = elevation,
     cornerRadii = cornerRadii,
     spacing = spacing,
@@ -28,54 +29,59 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    dialog = {
-        copy(
-            id = "dlg",
-            background = this.background.closestColor().darken(0.1f),
-            outline = this.outline.closestColor().darken(0.1f),
-            elevation = this.elevation * 2f,
-        )
-    },
-    important = {
-        copy(
-            id = "imp",
-            foreground = primaryForeground,
-            background = primary,
-            outline = primary.highlight(0.1f),
-            important = {
-                copy(
-                    id = "imp2",
-                    foreground = secondaryForeground,
-                    background = secondary,
-                    outline = secondary.highlight(0.1f),
-                )
-            }
-        )
-    },
-    bar = {
-        copy(
-            id = "bar",
-            foreground = primaryForeground,
-            background = primary,
-            outline = primary.highlight(0.1f),
-            important = {
-                copy(
-                    id = "barimp",
-                    foreground = secondaryForeground,
-                    background = secondary,
-                    outline = secondary.highlight(0.1f),
-                )
-            }
-        )
-    },
-    critical = {
-        copy(
-            id = "crt",
-            foreground = secondaryForeground,
-            background = secondary,
-            outline = secondary.highlight(0.1f),
-        )
-    },
+    derivations = mapOf(
+        OuterSemantic to {
+            it.alter(
+                cascading = false,
+                spacing = 0.px,
+            ).withBackNoPadding
+        },
+        HeaderSemantic to {
+            it.withoutBack(font = title)
+        },
+        DialogSemantic to {
+            it.withBack(
+                background = it.background.closestColor().darken(0.1f),
+                outline = it.outline.closestColor().darken(0.1f),
+                elevation = it.elevation * 2f,
+            )
+        },
+        ImportantSemantic to {
+            it.withBack(
+                foreground = primaryForeground,
+                background = primary,
+                outline = primary.highlight(0.1f),
+                derivations = mapOf(ImportantSemantic to {
+                    it.withBack(
+                        foreground = secondaryForeground,
+                        background = secondary,
+                        outline = secondary.highlight(0.1f),
+                    )
+                })
+            )
+        },
+        BarSemantic to {
+            it.withBack(
+                foreground = primaryForeground,
+                background = primary,
+                outline = primary.highlight(0.1f),
+                derivations = mapOf(ImportantSemantic to {
+                    it.withBack(
+                        foreground = secondaryForeground,
+                        background = secondary,
+                        outline = secondary.highlight(0.1f),
+                    )
+                })
+            )
+        },
+        CriticalSemantic to {
+            it.withBack(
+                foreground = secondaryForeground,
+                background = secondary,
+                outline = secondary.highlight(0.1f),
+            )
+        },
+    ),
 )
 
 @Deprecated("Use Theme.material instead")
@@ -143,8 +149,9 @@ fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
     derivations = mapOf(
         HeaderSemantic to {
-            val old = this.derivations[HeaderSemantic]?.invoke(it) ?: HeaderSemantic.default(it)
+            val old = this@randomTitleFontSettings[HeaderSemantic]
             old.theme.copy(
+                id = id,
                 font = font.copy(
                     font = systemDefaultFont,
                     weight = if (Random.nextBoolean()) 700 else 500,

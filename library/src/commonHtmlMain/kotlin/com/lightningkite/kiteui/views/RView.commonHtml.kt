@@ -85,8 +85,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     private var prevThemeClass: String? = null
     actual override fun applyTheme(theme: ThemeAndBack) {
-        if (useNavSpacing) native.classes.add("useNavSpacing")
-        else native.classes.remove("useNavSpacing")
         if(theme.drawBackground) {
             native.classes.add("transition")
         } else {

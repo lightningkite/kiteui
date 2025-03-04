@@ -70,7 +70,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         set(value) { paddingByEdge = value?.let(::Edges) }
     open var paddingByEdge: Edges? = null
     open var transitionId: String? = null
-    var useNavSpacing: Boolean = false
 
     abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
     abstract fun requestFocus()
@@ -107,7 +106,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     protected val parentSpacing: Dimension
         get() = (parent?.spacing
-            ?: (if (parent?.useNavSpacing == true) parent?.themeAndBack?.theme?.navSpacing else parent?.themeAndBack?.theme?.spacing)
+            ?: (parent?.themeAndBack?.theme?.spacing)
             ?: 0.px)
     protected var fullyStarted = false
     abstract fun applyTheme(theme: ThemeAndBack)

@@ -98,11 +98,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border-collapse: collapse;
                 border-spacing: 0;
             }
-                
-            .useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing.useNavSpacing {
-                --spacing: var(--navSpacing, 0px);
-                --padding: var(--navPadding, 0px);
-            }
 
             .icon {
                 color: var(--icon-color, black);
@@ -920,8 +915,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         theme.diff(diff) { spacing }?.let { addToCss(directSel, "--spacing", it.value) }
         theme.diff(diff) { padding }?.let { addToCss(directSel, "--padding", it.css()) }
-        theme.diff(diff) { navSpacing }?.let { addToCss(directSel, "--navSpacing", it.value) }
-        theme.diff(diff) { navPadding }?.let { addToCss(directSel, "--navPadding", it.css()) }
         theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
         theme.diff(diff) { font.font }?.let { addToCss(directSel, "font-family", it.let { dynamicCss.font(it) }) }
         theme.diff(diff) { font.weight }?.let { addToCss(directSel, "font-weight", it.toString()) }

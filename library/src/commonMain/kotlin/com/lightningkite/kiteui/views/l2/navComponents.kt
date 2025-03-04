@@ -12,7 +12,7 @@ fun ViewWriter.navGroupColumn(
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
 ): ViewModifiable {
-    return col {
+    return nav - col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
@@ -257,7 +257,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
 }
 
 fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
-    return navSpacing - nav - unpadded - row {
+    return nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
             compact - col {

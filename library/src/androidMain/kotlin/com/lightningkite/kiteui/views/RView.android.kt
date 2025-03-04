@@ -183,7 +183,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     actual override fun applyTheme(theme: ThemeAndBack) {
         val padding = paddingByEdge ?: when {
             !theme.padding -> null
-            useNavSpacing -> theme.theme.navPadding
             else -> theme.theme.padding
         }
         native.setPadding(
@@ -264,7 +263,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
         val padding = paddingByEdge ?: when {
             !theme.padding -> null
-            useNavSpacing -> theme.theme.navPadding
             else -> theme.theme.padding
         }
         native.setPadding(
@@ -285,7 +283,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     protected fun applyThemeWithClipping(theme: ThemeAndBack) {
         val padding = paddingByEdge ?: when {
             !theme.padding -> null
-            useNavSpacing -> theme.theme.navPadding
             else -> theme.theme.padding
         }
         native.setPadding(

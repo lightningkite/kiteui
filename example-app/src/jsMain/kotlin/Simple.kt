@@ -31,7 +31,7 @@ fun main() {
         if (e is Exception) e.printStackTrace2()
     }
     val context = RContext(basePath)
-    root(appTheme.value) {
+    root(appTheme) {
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
     }
 

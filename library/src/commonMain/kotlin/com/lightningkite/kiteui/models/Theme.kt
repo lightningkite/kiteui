@@ -10,14 +10,14 @@ data class ThemeAndBack(val theme: Theme, val drawBackground: Boolean, val paddi
     operator fun get(semantic: Semantic): ThemeAndBack = this + semantic
     operator fun plus(other: ThemeDerivation): ThemeAndBack {
         val b = other(theme)
-        return if(drawBackground || b.drawBackground) {
-            if(padding || b.padding) {
+        return if (drawBackground || b.drawBackground) {
+            if (padding || b.padding) {
                 b.theme.withBack
             } else {
                 b.theme.withBackNoPadding
             }
         } else {
-            if(padding || b.padding) {
+            if (padding || b.padding) {
                 b.theme.withoutBackButPadding
             } else {
                 b.theme.withoutBack
@@ -39,7 +39,7 @@ interface ThemeDerivation {
 
         @Suppress("NOTHING_TO_INLINE")
         inline operator fun invoke(theme: Theme): ThemeDerivation = Set(theme)
-        val none = ThemeDerivation.None
+        val none = None
     }
 
     data object None : ThemeDerivation {
@@ -50,57 +50,159 @@ interface ThemeDerivation {
     data class Set(val theme: Theme) : ThemeDerivation {
         override fun invoke(theme: Theme): ThemeAndBack = this.theme.withBack
     }
+
     data class SetAsBase(val theme: Theme) : ThemeDerivation {
         override fun invoke(theme: Theme): ThemeAndBack = this.theme.withBackNoPadding
     }
 
-    open operator fun plus(other: ThemeDerivation): ThemeDerivation {
-        return ThemeDerivation {
-            if (other is Set) return@ThemeDerivation other.theme.withBack
-            this(it) + other
+    data class Chain(val left: ThemeDerivation, val right: ThemeDerivation) : ThemeDerivation {
+        override fun invoke(theme: Theme): ThemeAndBack {
+            return left(theme) + right
+        }
+    }
+
+    operator fun plus(other: ThemeDerivation): ThemeDerivation {
+        return when (other) {
+            is Set -> other
+            is SetAsBase -> other
+            else -> Chain(this, other)
         }
     }
 }
 
-data object Unpadded: ThemeDerivation {
-    override fun invoke(theme: Theme): ThemeAndBack {
-        return theme.withBackNoPadding
-    }
-}
+val __defaultBuilder = ThemeBuilder()
 
-interface Semantic : ThemeDerivation {
-    val key: String
-    fun default(theme: Theme): ThemeAndBack
+abstract class Semantic(val key: String) : ThemeDerivation {
+    open fun default(theme: Theme): ThemeAndBack = theme.withoutBack
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
+
+    fun Theme.withBack(
+        cascading: Boolean = true,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+    ) = copy(
+        id = key,
+        cascading = cascading,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = derivations,
+    ).withBack
+    fun Theme.withoutBack(
+        cascading: Boolean = true,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+    ) = copy(
+        id = key,
+        cascading = cascading,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = derivations,
+    ).withoutBack
+    fun Theme.alter(
+        cascading: Boolean = true,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+    ) = copy(
+        id = key,
+        cascading = cascading,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = derivations,
+    )
 }
 
-data object ForcePaddingSemantic: Semantic {
-    override val key: String = "fpad"
+data object ForcePaddingSemantic : Semantic("fpad") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
-data object InteractiveSemantic : Semantic {
-    override val key: String = "int"
+data object InteractiveSemantic : Semantic("int") {
     override fun default(theme: Theme): ThemeAndBack {
         // iOS switch?
         if (Platform.probablyAppleUser) {
-            return theme.copy(
+            return theme.withoutBack(
                 foreground = if (theme.background.closestColor().perceivedBrightness in 0.1f..0.9f)
                     theme.foreground
                 else
                     Color(1f, 0f, 122f / 255f, 255f),
                 iconOverride = null,
-            ).withoutBack
+            )
         } else {
             return theme.withoutBack
         }
     }
 }
 
-data object LoadingSemantic : Semantic {
-    override val key: String = "ld"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object LoadingSemantic : Semantic("ld") {
+    override fun default(theme: Theme): ThemeAndBack = theme.alter(
         background = FadingColor(theme.background.closestColor().highlight(0.1f), theme.background.closestColor().highlight(0.2f)),
         outline = FadingColor(theme.outline.closestColor().highlight(0.1f), theme.outline.closestColor().highlight(0.2f)),
         foreground = theme.foreground.applyAlpha(0.3f),
@@ -108,36 +210,30 @@ data object LoadingSemantic : Semantic {
     ).withBackNoPadding
 }
 
-data object WorkingSemantic : Semantic {
-    override val key: String = "wrk"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object WorkingSemantic : Semantic("wrk") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         foreground = theme.foreground.applyAlpha(0.5f),
         iconOverride = theme.iconOverride?.applyAlpha(0.5f),
-    ).withoutBack
+    )
 }
 
-data object CardSemantic : Semantic {
-    override val key: String = "crd"
+data object CardSemantic : Semantic("crd") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }
 
-data object DismissSemantic : Semantic {
-    override val key: String = "dsmss"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+data object DismissSemantic : Semantic("dsmss") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        cascading = false,
         spacing = 0.dp,
         cornerRadii = CornerRadii.Constant(0.dp),
         background = Color.black.applyAlpha(0.5f),
-        revert = true,
-    ).withBack
+    )
 }
 
-data object FieldSemantic : Semantic {
-    override val key: String = "fld"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "fld",
+data object FieldSemantic : Semantic("fld") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        cascading = false,
         outlineWidth = 1.px,
-        revert = true,
 //        spacing = theme.spacing / 2,
         cornerRadii = when (val base = theme.cornerRadii) {
             is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
@@ -146,162 +242,134 @@ data object FieldSemantic : Semantic {
             is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
             is CornerRadii.PerCorner -> base
         }
-    ).withBack
+    )
 }
 
-data object ButtonSemantic : Semantic {
-    override val key: String = "btn"
+data object ButtonSemantic : Semantic("btn") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
 }
 
-data object ClickableSemantic : Semantic {
-    override val key: String = "clk"
+data object ClickableSemantic : Semantic("clk") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
-data object HoverSemantic : Semantic {
-    override val key: String = "hov"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "hov",
+data object HoverSemantic : Semantic("hov") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.2f) },
         outline = theme.background.map { it.highlight(0.2f).highlight(0.1f) },
         elevation = theme.elevation * 2f,
-    ).withBack
+    )
 }
 
-data object DownSemantic : Semantic {
-    override val key: String = "dwn"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "dwn",
+data object DownSemantic : Semantic("dwn") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.3f) },
         outline = theme.background.map { it.highlight(0.3f).highlight(0.1f) },
         elevation = theme.elevation / 2f,
-    ).withBack
+    )
 }
 
-data object FocusSemantic : Semantic {
-    override val key: String = "fcs"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "fcs",
+data object FocusSemantic : Semantic("fcs") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         outlineWidth = theme.outlineWidth + 2.dp,
         outline = theme.outline.map { it.highlight(1f) },
-    ).withBack
+    )
 }
 
-data object DisabledSemantic : Semantic {
-    override val key: String = "dis"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "dis",
+data object DisabledSemantic : Semantic("dis") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         foreground = theme.foreground.applyAlpha(alpha = 0.25f),
         background = theme.background.applyAlpha(alpha = 0.5f),
         outline = theme.outline.applyAlpha(alpha = 0.25f),
-    ).withBack
+    )
 }
 
-data object CompactSemantic : Semantic {
-    override val key: String = "cmp"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object CompactSemantic : Semantic("cmp") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         spacing = theme.spacing / 2,
-        navSpacing = theme.navSpacing / 2,
-    ).withoutBack
+    )
 }
 
-data object SelectedSemantic : Semantic {
-    override val key: String = "sel"
+data object SelectedSemantic : Semantic("sel") {
     override fun default(theme: Theme): ThemeAndBack = theme[DownSemantic]
 }
 
-data object UnselectedSemantic : Semantic {
-    override val key: String = "uns"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "uns",
+data object UnselectedSemantic : Semantic("uns") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.applyAlpha(alpha = 0f),
         outline = theme.background,
         outlineWidth = 2.dp
-    ).withBack
+    )
 }
 
-data object MainContentSemantic : Semantic {
-    override val key: String = "cnt"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
-}
-
-data object BarSemantic : Semantic {
-    override val key: String = "bar"
-    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
-}
-
-data object SystemBarSemantic : Semantic {
-    override val key: String = "sba"
-    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
-}
-
-data object NavSemantic : Semantic {
-    override val key: String = "nav"
-    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
-}
-
-data object DialogSemantic : Semantic {
-    override val key: String = "dlg"
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack
-}
-
-data object ImportantSemantic : Semantic {
-    override val key: String = "imp"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        background = theme.foreground,
-        outline = theme.foreground,
-        foreground = theme.background,
-    ).withBack
-}
-
-data object CriticalSemantic : Semantic {
-    override val key: String = "crt"
-    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic][ImportantSemantic]
-}
-
-data object WarningSemantic : Semantic {
-    override val key: String = "wrn"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "wrn",
-        background = Color.fromHex(0xFFe36e24.toInt()),
-        outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
-        foreground = Color.white
-    ).withBack
-}
-
-data object DangerSemantic : Semantic {
-    override val key: String = "dgr"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "dgr",
-        background = Color.fromHex(0xFFB00020.toInt()),
-        outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
-        foreground = Color.white
-    ).withBack
-}
-
-data object AffirmativeSemantic : Semantic {
-    override val key: String = "afr"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = "afr",
-        background = Color.fromHex(0xFF20a020.toInt()),
-        outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
-        foreground = Color.white
-    ).withBack
-}
-
-data object HeaderSemantic : Semantic {
-    override val key: String = "hed"
+data object OuterSemantic : Semantic("outer") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
 }
 
-data class HeaderSizeSemantic(val level: Int) : Semantic {
-    override val key: String = "h$level"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object MainContentSemantic : Semantic("cnt") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object BarSemantic : Semantic("bar") {
+    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic]
+}
+
+data object SystemBarSemantic : Semantic("sba") {
+    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
+}
+
+data object NavSemantic : Semantic("nav") {
+    override fun default(theme: Theme): ThemeAndBack = theme[BarSemantic]
+}
+
+data object DialogSemantic : Semantic("dlg") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object ImportantSemantic : Semantic("imp") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = theme.foreground,
+        outline = theme.foreground,
+        foreground = theme.background,
+    )
+}
+
+data object CriticalSemantic : Semantic("crt") {
+    override fun default(theme: Theme): ThemeAndBack = theme[ImportantSemantic][ImportantSemantic]
+}
+
+data object WarningSemantic : Semantic("wrn") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = Color.fromHex(0xFFe36e24.toInt()),
+        outline = Color.fromHex(0xFFe36e24.toInt()).highlight(0.1f),
+        foreground = Color.white
+    )
+}
+
+data object DangerSemantic : Semantic("dgr") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = Color.fromHex(0xFFB00020.toInt()),
+        outline = Color.fromHex(0xFFB00020.toInt()).highlight(0.1f),
+        foreground = Color.white
+    )
+}
+
+data object AffirmativeSemantic : Semantic("afr") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        background = Color.fromHex(0xFF20a020.toInt()),
+        outline = Color.fromHex(0xFF20a020.toInt()).highlight(0.1f),
+        foreground = Color.white
+    )
+}
+
+data object HeaderSemantic : Semantic("hed") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
+}
+
+data class HeaderSizeSemantic(val level: Int) : Semantic("h$level") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         font = theme.font.copy(size = lookup[level - 1].rem),
-    ).withoutBack
+    )
 
     companion object {
         val lookup = arrayOf(
@@ -317,54 +385,43 @@ data class HeaderSizeSemantic(val level: Int) : Semantic {
     }
 }
 
-data object SubtextSemantic : Semantic {
-    override val key: String = "sub"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object SubtextSemantic : Semantic("sub") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         font = theme.font.copy(size = 0.8.rem),
         foreground = theme.foreground.applyAlpha(0.7f)
-    ).withoutBack
+    )
 }
 
-data object ErrorSemantic : Semantic {
-    override val key: String = "err"
+data object ErrorSemantic : Semantic("err") {
     override fun default(theme: Theme): ThemeAndBack = theme[DangerSemantic]
 }
 
-data object InvalidSemantic : Semantic {
-    override val key: String = "ivd"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object InvalidSemantic : Semantic("ivd") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         outlineWidth = 1.px,
         outline = Color.red
-    ).withBack
+    )
 }
 
-data object EmphasizedSemantic : Semantic {
-    override val key: String = "emf"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object EmphasizedSemantic : Semantic("emf") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         font = theme.font.copy(italic = true)
-    ).withoutBack
+    )
 }
 
-data object EmbeddedSemantic : Semantic {
-    override val key: String = "ebd"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object EmbeddedSemantic : Semantic("ebd") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.closestColor().highlight(-0.1f)
-    ).withBack
+    )
 }
 
-data object PrintSemantic : Semantic {
-    override val key: String = "print"
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
-        id = key,
+data object PrintSemantic : Semantic("print") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = Color.white,
         foreground = Color.black,
         outline = theme.background,
         outlineWidth = 2.px,
-    ).withBack
+    )
 }
 
 
@@ -375,20 +432,128 @@ val H4Semantic = HeaderSizeSemantic(4)
 val H5Semantic = HeaderSizeSemantic(5)
 val H6Semantic = HeaderSizeSemantic(6)
 
+class ThemeBuilder {
+    private var inUse = false
+    fun __reset(base: Theme, background: Boolean, padding: Boolean, id: String? = null) {
+        if (inUse) throw Exception()
+        inUse = true
+        this.base = base
+        derivationId = ""
+        this.id = id?.let { base.id + "-" + it } ?: base.id
+        font = base.font
+        elevation = base.elevation
+        cornerRadii = base.cornerRadii
+        spacing = base.spacing
+        this.padding = base.padding
+        foreground = base.foreground
+        iconOverride = base.iconOverride
+        outline = base.outline
+        outlineWidth = base.outlineWidth
+        this.background = base.background
+        bodyTransitions = base.bodyTransitions
+        dialogTransitions = base.dialogTransitions
+        transitionDuration = base.transitionDuration
+        derivedFrom = base
+        paddingOnImmediateElement = padding
+        drawBackgroundOnImmediateElement = background
+    }
+
+    var base: Theme = Theme.placeholder
+    var derivationId: String = ""
+
+    var id: String = base.id
+
+    var font: FontAndStyle = base.font
+
+    var elevation: Dimension = base.elevation
+    var cornerRadii: CornerRadii = base.cornerRadii
+
+    var spacing: Dimension = base.spacing
+    var padding: Edges = base.padding
+
+    var foreground: Paint = base.foreground
+    var iconOverride: Paint? = base.iconOverride
+    var outline: Paint = base.outline
+    var outlineWidth: Dimension = base.outlineWidth
+    var background: Paint = base.background
+
+    var bodyTransitions: ScreenTransitions = base.bodyTransitions
+    var dialogTransitions: ScreenTransitions = base.dialogTransitions
+    var transitionDuration: Duration = base.transitionDuration
+
+    var derivedFrom: Theme? = base
+    var revert: Theme? = null
+
+    private var immediateBuilder: (ThemeBuilder.() -> Unit)? = null
+    fun justThisElement(setup: ThemeBuilder.() -> Unit) {
+        val old = immediateBuilder
+        immediateBuilder = {
+            old?.invoke(this)
+            setup(this)
+        }
+    }
+
+    fun nonCascading(setup: ThemeBuilder.() -> Unit) = justThisElement(setup)
+
+    private var _derivations: MutableMap<Semantic, Semantic.(theme: Theme) -> ThemeAndBack>? = null
+    val derivations by lazy {
+        base.derivations.toMutableMap().also { _derivations = it }
+    }
+
+    var drawBackgroundOnImmediateElement: Boolean = true
+    var paddingOnImmediateElement: Boolean = true
+
+    internal fun build(): Theme {
+        inUse = false
+        val cascading = Theme(
+            id = id,
+            font = font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            spacing = spacing,
+            padding = padding,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            background = background,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            derivedFrom = derivedFrom,
+            derivationId = derivationId,
+            revert = revert,
+            derivations = _derivations ?: base.derivations,
+        )
+        return immediateBuilder?.let {
+            __reset(cascading, false, false, id = "immediate")
+            this.revert = cascading
+            build()
+        } ?: cascading
+    }
+
+    fun __buildAndSelect(): ThemeAndBack {
+        return build().with(drawBackgroundOnImmediateElement, paddingOnImmediateElement)
+    }
+}
+
 class Theme(
     val id: String,
+
     val font: FontAndStyle = FontAndStyle(systemDefaultFont),
+
     val elevation: Dimension = 1.px,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
+
     val spacing: Dimension = 1.rem,
     val padding: Edges = Edges(spacing),
-    val navSpacing: Dimension = 0.rem,
-    val navPadding: Edges = Edges(navSpacing),
+
     val foreground: Paint = Color.black,
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
     val background: Paint = Color.white,
+
     val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val transitionDuration: Duration = 0.25.seconds,
@@ -397,9 +562,17 @@ class Theme(
     val derivationId: String? = null,
     val revert: Theme? = null,
 
-    val derivations: Map<Semantic, (theme: Theme) -> ThemeAndBack> = mapOf(),
+    val derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
 ) {
     val icon: Paint get() = iconOverride ?: foreground
+
+    fun with(back: Boolean, padding: Boolean) = if (back) {
+        if (padding) withBack
+        else withBackNoPadding
+    } else {
+        if (padding) withoutBackButPadding
+        else withoutBack
+    }
 
     val withBack = ThemeAndBack(this, true, true)
     val withBackNoPadding = ThemeAndBack(this, true, false)
@@ -408,7 +581,7 @@ class Theme(
 
     private val themeCache = HashMap<Semantic, ThemeAndBack>()
     operator fun get(semantic: Semantic): ThemeAndBack = themeCache.getOrPut(semantic) {
-        derivations[semantic]?.invoke(this) ?: semantic.default(this)
+        derivations[semantic]?.invoke(semantic, this) ?: semantic.default(this)
     }
 
     override fun hashCode(): Int = id.hashCode()
@@ -416,6 +589,125 @@ class Theme(
         return other is Theme && this.id == other.id
     }
 
+    inline fun alter(crossinline alterations: ThemeBuilder.() -> Unit): ThemeAndBack {
+        __defaultBuilder.__reset(this, true, true)
+        alterations(__defaultBuilder)
+        return __defaultBuilder.__buildAndSelect()
+    }
+
+    fun customize(
+        newId: String,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
+    ): Theme = Theme(
+        id = newId,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = this.derivations + derivations
+    )
+
+    fun copy(
+        id: String,
+        cascading: Boolean = true,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
+    ): Theme = Theme(
+        id = "${this.id}-$id",
+        derivedFrom = derivedFrom,
+        derivationId = derivationId,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = this.derivations + derivations,
+        revert = if (!cascading) this else null
+    )
+
+    @Deprecated("Use the new copy with 'cascading' instead.")
+    fun copy(
+        id: String,
+        font: FontAndStyle = this.font,
+        elevation: Dimension = this.elevation,
+        cornerRadii: CornerRadii = this.cornerRadii,
+        spacing: Dimension = this.spacing,
+        padding: Edges = this.padding,
+        foreground: Paint = this.foreground,
+        iconOverride: Paint? = this.iconOverride,
+        outline: Paint = this.outline,
+        outlineWidth: Dimension = this.outlineWidth,
+        background: Paint = this.background,
+        bodyTransitions: ScreenTransitions = this.bodyTransitions,
+        dialogTransitions: ScreenTransitions = this.dialogTransitions,
+        transitionDuration: Duration = this.transitionDuration,
+        revert: Boolean,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
+    ): Theme = Theme(
+        id = "${this.id}-$id",
+        derivedFrom = derivedFrom,
+        derivationId = derivationId,
+        font = font,
+        elevation = elevation,
+        cornerRadii = cornerRadii,
+        spacing = spacing,
+        padding = padding,
+        foreground = foreground,
+        iconOverride = iconOverride,
+        outline = outline,
+        outlineWidth = outlineWidth,
+        background = background,
+        bodyTransitions = bodyTransitions,
+        dialogTransitions = dialogTransitions,
+        transitionDuration = transitionDuration,
+        derivations = this.derivations + derivations,
+        revert = if (revert) this else null
+    )
+
+
+    @Deprecated("Use new constructor")
     constructor(
         id: String,
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
@@ -423,7 +715,7 @@ class Theme(
         elevation: Dimension = 1.px,
         cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
         spacing: Dimension = 1.rem,
-        navSpacing: Dimension = 0.rem,
+        padding: Edges = Edges(spacing),
         foreground: Paint = Color.black,
         iconOverride: Paint? = null,
         outline: Paint = Color.black,
@@ -435,7 +727,6 @@ class Theme(
 
         derivedFrom: Theme? = null,
         derivationId: String? = null,
-        revert: Theme? = null,
 
         card: (Theme.() -> Theme?)? = null,
         field: (Theme.() -> Theme?)? = null,
@@ -461,7 +752,7 @@ class Theme(
         elevation = elevation,
         cornerRadii = cornerRadii,
         spacing = spacing,
-        navSpacing = navSpacing,
+        padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
         outline = outline,
@@ -472,8 +763,7 @@ class Theme(
         transitionDuration = transitionDuration,
         derivedFrom = derivedFrom,
         derivationId = derivationId,
-        revert = revert,
-        derivations = buildMap<Semantic, (Theme) -> ThemeAndBack> {
+        derivations = buildMap<Semantic, Semantic.(Theme) -> ThemeAndBack> {
             put(HeaderSemantic) {
                 it.copy(
                     id = "hed",
@@ -501,13 +791,14 @@ class Theme(
         }
     )
 
+    @Deprecated("Use new copy")
     fun copy(
         id: String,
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
-        navSpacing: Dimension = this.navSpacing,
+        padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
@@ -535,15 +826,13 @@ class Theme(
         warning: (Theme.() -> Theme?)? = null,
         danger: (Theme.() -> Theme?)? = null,
         affirmative: (Theme.() -> Theme?)? = null,
-    ): Theme = Theme(
-        id = "${this.id}-$id",
-        derivedFrom = this,
-        derivationId = id,
+    ): Theme = copy(
+        id = id,
         font = font,
         elevation = elevation,
         cornerRadii = cornerRadii,
         spacing = spacing,
-        navSpacing = navSpacing,
+        padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
         outline = outline,
@@ -552,41 +841,8 @@ class Theme(
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert?.copy(
-            id = id,
-            font = font,
-            elevation = elevation,
-            cornerRadii = cornerRadii,
-            spacing = spacing,
-            navSpacing = navSpacing,
-            foreground = foreground,
-            iconOverride = iconOverride,
-            outline = outline,
-            outlineWidth = outlineWidth,
-            background = background,
-            bodyTransitions = bodyTransitions,
-            dialogTransitions = dialogTransitions,
-            transitionDuration = transitionDuration,
-            card = card,
-            field = field,
-            button = button,
-            hover = hover,
-            focus = focus,
-            dialog = dialog,
-            down = down,
-            unselected = unselected,
-            selected = selected,
-            disabled = disabled,
-            mainContent = mainContent,
-            bar = bar,
-            nav = nav,
-            important = important,
-            critical = critical,
-            warning = warning,
-            danger = danger,
-            affirmative = affirmative,
-        ),
-        derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
+        revert = revert,
+        derivations = derivations + buildMap<Semantic, Semantic.(Theme) -> ThemeAndBack> {
             card?.let { put(CardSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             field?.let { put(FieldSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             button?.let { put(ButtonSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
@@ -608,112 +864,7 @@ class Theme(
         }
     )
 
-    fun customize(
-        newId: String,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
-        navSpacing: Dimension = this.navSpacing,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        revert: Boolean = false,
-        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf(),
-    ): Theme = Theme(
-        id = newId,
-        font = font,
-        elevation = elevation,
-        cornerRadii = cornerRadii,
-        spacing = spacing,
-        navSpacing = navSpacing,
-        foreground = foreground,
-        iconOverride = iconOverride,
-        outline = outline,
-        outlineWidth = outlineWidth,
-        background = background,
-        bodyTransitions = bodyTransitions,
-        dialogTransitions = dialogTransitions,
-        transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert?.customize(
-            newId = newId,
-            font = font,
-            elevation = elevation,
-            cornerRadii = cornerRadii,
-            spacing = spacing,
-            navSpacing = navSpacing,
-            foreground = foreground,
-            iconOverride = iconOverride,
-            outline = outline,
-            outlineWidth = outlineWidth,
-            background = background,
-            bodyTransitions = bodyTransitions,
-            dialogTransitions = dialogTransitions,
-            transitionDuration = transitionDuration,
-            derivations = derivations,
-        ),
-        derivations = this.derivations + derivations
-    )
-
-    fun copy(
-        id: String,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
-        navSpacing: Dimension = this.navSpacing,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        revert: Boolean = false,
-        derivations: Map<Semantic, (Theme) -> ThemeAndBack> = mapOf(),
-    ): Theme = Theme(
-        id = "${this.id}-$id",
-        derivedFrom = this,
-        derivationId = id,
-        font = font,
-        elevation = elevation,
-        cornerRadii = cornerRadii,
-        spacing = spacing,
-        navSpacing = navSpacing,
-        foreground = foreground,
-        iconOverride = iconOverride,
-        outline = outline,
-        outlineWidth = outlineWidth,
-        background = background,
-        bodyTransitions = bodyTransitions,
-        dialogTransitions = dialogTransitions,
-        transitionDuration = transitionDuration,
-        revert = if (revert) this else this.revert?.copy(
-            id = id,
-            font = font,
-            elevation = elevation,
-            cornerRadii = cornerRadii,
-            spacing = spacing,
-            navSpacing = navSpacing,
-            foreground = foreground,
-            iconOverride = iconOverride,
-            outline = outline,
-            outlineWidth = outlineWidth,
-            background = background,
-            bodyTransitions = bodyTransitions,
-            dialogTransitions = dialogTransitions,
-            transitionDuration = transitionDuration,
-            derivations = derivations,
-        ),
-        derivations = this.derivations + derivations,
-    )
-
+    @Deprecated("Use new copy where there is a single font and ID is provided")
     fun copy(
         font: FontAndStyle = this.font,
         title: FontAndStyle? = null,
@@ -721,7 +872,7 @@ class Theme(
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
         spacing: Dimension = this.spacing,
-        navSpacing: Dimension = this.navSpacing,
+        padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
@@ -751,15 +902,13 @@ class Theme(
                 }
             }
         }"
-        return Theme(
-            id = "${this.id}-$addedId",
-            derivedFrom = this,
-            derivationId = addedId,
-            font = body ?: font,
+        return copy(
+            id = addedId,
+            font = font,
             elevation = elevation,
             cornerRadii = cornerRadii,
             spacing = spacing,
-            navSpacing = navSpacing,
+            padding = padding,
             foreground = foreground,
             iconOverride = iconOverride,
             outline = outline,
@@ -768,24 +917,8 @@ class Theme(
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,
-            revert = if (revert) this else this.revert?.copy(
-                font = font,
-                title = title,
-                body = body,
-                elevation = elevation,
-                cornerRadii = cornerRadii,
-                spacing = spacing,
-                navSpacing = navSpacing,
-                foreground = foreground,
-                iconOverride = iconOverride,
-                outline = outline,
-                outlineWidth = outlineWidth,
-                background = background,
-                bodyTransitions = bodyTransitions,
-                dialogTransitions = dialogTransitions,
-                transitionDuration = transitionDuration,
-            ),
-            derivations = this.derivations + buildMap<Semantic, (Theme) -> ThemeAndBack> {
+            revert = revert,
+            derivations = this.derivations + buildMap<Semantic, Semantic.(Theme) -> ThemeAndBack> {
                 title?.let { title ->
                     put(HeaderSemantic) {
                         it.copy(
@@ -808,12 +941,51 @@ class Theme(
             val saturation = random.nextFloat() * 0.5f + 0.25f
             val value = random.nextFloat() * 0.5f + 0.25f
             return listOf(
-                Theme.material(id = id, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material(id = id, foreground = Color.white, background = Color.gray(0.2f), primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material3(id = id, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(), backgroundAdjust = Random.nextFloat() * 0.15f,).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.material3(id = id, foreground = Color.white, backgroundAdjust = Random.nextFloat() * 0.5f, primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(), secondary = HSVColor(hue = hue + Angle.halfTurn, saturation = 1f - saturation, value = 1f - value).toRGB(),).randomElevationAndCorners().randomTitleFontSettings(),
-                Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
-                Theme.flat(id = id, hue = hue, saturation = 0.5f).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                Theme.material(
+                    id = id,
+                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+                    secondary = HSVColor(
+                        hue = hue + Angle.halfTurn,
+                        saturation = 1f - saturation,
+                        value = 1f - value
+                    ).toRGB(),
+                ).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material(
+                    id = id,
+                    foreground = Color.white,
+                    background = Color.gray(0.2f),
+                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+                    secondary = HSVColor(
+                        hue = hue + Angle.halfTurn,
+                        saturation = 1f - saturation,
+                        value = 1f - value
+                    ).toRGB(),
+                ).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material3(
+                    id = id,
+                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+                    secondary = HSVColor(
+                        hue = hue + Angle.halfTurn,
+                        saturation = 1f - saturation,
+                        value = 1f - value
+                    ).toRGB(),
+                    backgroundAdjust = Random.nextFloat() * 0.15f,
+                ).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.material3(
+                    id = id,
+                    foreground = Color.white,
+                    backgroundAdjust = Random.nextFloat() * 0.5f,
+                    primary = HSVColor(hue = hue, saturation = saturation, value = value).toRGB(),
+                    secondary = HSVColor(
+                        hue = hue + Angle.halfTurn,
+                        saturation = 1f - saturation,
+                        value = 1f - value
+                    ).toRGB(),
+                ).randomElevationAndCorners().randomTitleFontSettings(),
+                Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f)
+                    .copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                Theme.flat(id = id, hue = hue, saturation = 0.5f)
+                    .copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
             ).random(random)
         }
     }
@@ -821,57 +993,111 @@ class Theme(
     override fun toString(): String = id
 }
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[CardSemantic].theme", "com.lightningkite.kiteui.models.CardSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[CardSemantic].theme", "com.lightningkite.kiteui.models.CardSemantic")
+)
 fun Theme.card() = this[CardSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[FieldSemantic].theme", "com.lightningkite.kiteui.models.FieldSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[FieldSemantic].theme", "com.lightningkite.kiteui.models.FieldSemantic")
+)
 fun Theme.field() = this[FieldSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[ButtonSemantic].theme", "com.lightningkite.kiteui.models.ButtonSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[ButtonSemantic].theme", "com.lightningkite.kiteui.models.ButtonSemantic")
+)
 fun Theme.button() = this[ButtonSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[HoverSemantic].theme", "com.lightningkite.kiteui.models.HoverSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[HoverSemantic].theme", "com.lightningkite.kiteui.models.HoverSemantic")
+)
 fun Theme.hover() = this[HoverSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[FocusSemantic].theme", "com.lightningkite.kiteui.models.FocusSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[FocusSemantic].theme", "com.lightningkite.kiteui.models.FocusSemantic")
+)
 fun Theme.focus() = this[FocusSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[DialogSemantic].theme", "com.lightningkite.kiteui.models.DialogSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[DialogSemantic].theme", "com.lightningkite.kiteui.models.DialogSemantic")
+)
 fun Theme.dialog() = this[DialogSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[DownSemantic].theme", "com.lightningkite.kiteui.models.DownSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[DownSemantic].theme", "com.lightningkite.kiteui.models.DownSemantic")
+)
 fun Theme.down() = this[DownSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[UnselectedSemantic].theme", "com.lightningkite.kiteui.models.UnselectedSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[UnselectedSemantic].theme", "com.lightningkite.kiteui.models.UnselectedSemantic")
+)
 fun Theme.unselected() = this[UnselectedSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[SelectedSemantic].theme", "com.lightningkite.kiteui.models.SelectedSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[SelectedSemantic].theme", "com.lightningkite.kiteui.models.SelectedSemantic")
+)
 fun Theme.selected() = this[SelectedSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[DisabledSemantic].theme", "com.lightningkite.kiteui.models.DisabledSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[DisabledSemantic].theme", "com.lightningkite.kiteui.models.DisabledSemantic")
+)
 fun Theme.disabled() = this[DisabledSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[MainContentSemantic].theme", "com.lightningkite.kiteui.models.MainContentSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[MainContentSemantic].theme", "com.lightningkite.kiteui.models.MainContentSemantic")
+)
 fun Theme.mainContent() = this[MainContentSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[BarSemantic].theme", "com.lightningkite.kiteui.models.BarSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[BarSemantic].theme", "com.lightningkite.kiteui.models.BarSemantic")
+)
 fun Theme.bar() = this[BarSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[NavSemantic].theme", "com.lightningkite.kiteui.models.NavSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[NavSemantic].theme", "com.lightningkite.kiteui.models.NavSemantic")
+)
 fun Theme.nav() = this[NavSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[ImportantSemantic].theme", "com.lightningkite.kiteui.models.ImportantSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[ImportantSemantic].theme", "com.lightningkite.kiteui.models.ImportantSemantic")
+)
 fun Theme.important() = this[ImportantSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[CriticalSemantic].theme", "com.lightningkite.kiteui.models.CriticalSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[CriticalSemantic].theme", "com.lightningkite.kiteui.models.CriticalSemantic")
+)
 fun Theme.critical() = this[CriticalSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[WarningSemantic].theme", "com.lightningkite.kiteui.models.WarningSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[WarningSemantic].theme", "com.lightningkite.kiteui.models.WarningSemantic")
+)
 fun Theme.warning() = this[WarningSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[DangerSemantic].theme", "com.lightningkite.kiteui.models.DangerSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[DangerSemantic].theme", "com.lightningkite.kiteui.models.DangerSemantic")
+)
 fun Theme.danger() = this[DangerSemantic].theme
 
-@Deprecated("Use the new theme derivation system", ReplaceWith("this[AffirmativeSemantic].theme", "com.lightningkite.kiteui.models.AffirmativeSemantic"))
+@Deprecated(
+    "Use the new theme derivation system",
+    ReplaceWith("this[AffirmativeSemantic].theme", "com.lightningkite.kiteui.models.AffirmativeSemantic")
+)
 fun Theme.affirmative() = this[AffirmativeSemantic].theme
 

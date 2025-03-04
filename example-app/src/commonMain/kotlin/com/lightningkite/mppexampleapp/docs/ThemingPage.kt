@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeBuilder
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
@@ -126,14 +127,12 @@ object ThemingPage : DocPage {
                     text("Here, we will define a semantic that will invert the color palette.")
                     example(
                         """
-                        data object InvertedSemantic: Semantic {
-                            override val key: String = "invert"
-                            override fun default(theme: Theme): ThemeAndBack = theme.copy(
-                                id = key,
-                                background = theme.background.map { it.invert() },
-                                outline = theme.outline.map { it.invert() },
-                                foreground = theme.foreground.map { it.invert() },
-                            ).withBack
+                        data object InvertedSemantic : Semantic("invert") {
+                            override fun ThemeBuilder.apply() {
+                                background = background.map { it.invert() }
+                                outline = outline.map { it.invert() }
+                                foreground = foreground.map { it.invert() }
+                            }
                         }
                         @ViewModifierDsl3
                         inline val ViewWriter.inverted: ViewWrapper get() = InvertedSemantic.onNext
@@ -169,8 +168,7 @@ object ThemingPage : DocPage {
     }
 }
 
-data object InvertedSemantic : Semantic {
-    override val key: String = "invert"
+data object InvertedSemantic : Semantic("invert") {
     override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
         background = theme.background.map { it.invert() },

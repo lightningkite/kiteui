@@ -80,7 +80,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    private val mySpacing get() = (spacing ?: if (useNavSpacing) theme.navSpacing else theme.spacing)
+    private val mySpacing get() = (spacing ?: theme.spacing)
     override var spacing: Dimension?
         get() = super.spacing
         set(value) {
@@ -186,7 +186,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
         native.extensionPadding = paddingByEdge ?: when {
             !theme.padding -> null
-            useNavSpacing -> theme.theme.navPadding
             else -> theme.theme.padding
         }
 
