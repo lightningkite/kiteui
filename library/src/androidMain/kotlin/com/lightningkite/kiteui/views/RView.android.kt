@@ -193,13 +193,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     override fun postSetup() {
         super.postSetup()
         // Block touches below
+        val wasClickable = native.isClickable
+        val wasFocusable = native.isFocusable
         val hasInteractiveParent = generateSequence(this) { it.parent }.any { it.native.isClickable || it.native.isFocusable }
-        if(!hasInteractiveParent && !native.isClickable && !native.isFocusable && !ignoreInteraction) {
+        if(!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
             native.setOnClickListener {
-                // android.widget.FrameLayout blocked the touch, because hasInteractiveParent = false and isClickable: false and isFocusable: false
-                println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and isClickable: ${native.isClickable} and isFocusable: ${native.isFocusable}")
-                println("Hierarchy:")
-                generateSequence(this) { it.parent }.forEach { println("  ${it} - ${it.native}") }
+                println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
         }
     }
