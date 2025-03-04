@@ -130,10 +130,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     companion object {
         private var idCounter: Int = 0
     }
-
-    private val randomId = idCounter++
-    fun toStringWithoutParent(): String = "${this::class.simpleName}#${randomId}"
-    override fun toString(): String = "${toStringWithoutParent()}, child of ${parent?.toStringWithoutParent()}"
 }
 
 typealias HtmlElementLike = FutureElement

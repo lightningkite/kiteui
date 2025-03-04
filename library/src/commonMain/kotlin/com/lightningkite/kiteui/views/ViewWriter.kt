@@ -46,9 +46,7 @@ abstract class ViewWriter: CoroutineScope {
         p.addChild(view)
     }
 
-    fun <T : RView> end(view: T) = CoroutineScopeStack.end(view)
-    fun <T : RView> writePre(view: T) {
-        val p = _wrapElement ?: this
+    fun <T : RView> writePre(p: ViewWriter, view: T) {
         p.willAddChild(view)
         start(view)
         _wrapElement = null
@@ -56,28 +54,24 @@ abstract class ViewWriter: CoroutineScope {
         beforeNextElementSetup = null
     }
 
-    fun <T : RView> writePost(view: T) {
-        val p = _wrapElement ?: this
+    fun <T : RView> writePost(p: ViewWriter, view: T) {
         view.postSetup()
         p.addChild(view)
         lastWrittenView = view
     }
 
-    fun endFail(view: RView, e: Exception) {
-        ConsoleRoot.warn("Failed to setup $view: $e")
-        e.printStackTrace2()
-        throw e
-    }
-
     @OptIn(ExperimentalContracts::class)
     inline fun <T : RView> write(view: T, setup: T.() -> Unit): T {
         contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-        writePre(view)
+        val p = _wrapElement ?: this
+        writePre(p, view)
         try {
             setup(view)
-            writePost(view)
+            writePost(p, view)
         } catch(e: Exception) {
-            endFail(view, e)
+            ConsoleRoot.warn("Failed to setup $view: $e")
+            e.printStackTrace2()
+            throw e
         } finally {
             end(view)
         }

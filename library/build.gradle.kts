@@ -25,22 +25,22 @@ kotlin {
     androidTarget {
         publishLibraryVariants("release", "debug")
         dependencies {
-            api("androidx.appcompat:appcompat:1.7.0")
-            api("androidx.recyclerview:recyclerview:1.3.2")
-            api("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-            api("com.google.android.material:material:1.12.0")
-            api("androidx.transition:transition:1.5.1")
-            api("androidx.cardview:cardview:1.0.0")
-            api("com.jakewharton.timber:timber:5.0.1")
-            api("com.github.bumptech.glide:glide:5.0.0-rc01")
-            api("com.github.chrisbanes:PhotoView:2.3.0")
-            api("io.ktor:ktor-client-core:$ktorVersion")
-            api("io.ktor:ktor-client-cio:$ktorVersion")
-            api("io.ktor:ktor-client-okhttp:$ktorVersion")
-            api("io.ktor:ktor-client-websockets:$ktorVersion")
-            api("androidx.media3:media3-exoplayer:1.4.1")
-            api("androidx.media3:media3-ui:1.4.1")
-            api("androidx.media3:media3-common:1.4.1")
+            api(libs.appcompat)
+            api(libs.ktx)
+            api(libs.swiperefreshlayout)
+            api(libs.material)
+            api(libs.transition)
+            api(libs.cardview)
+            api(libs.timber)
+            api(libs.glide)
+            api(libs.photoview)
+            api(libs.ktorClientCore)
+            api(libs.ktorClientCio)
+            api(libs.ktorClientOkhttp)
+            api(libs.ktorClientWebsockets)
+            api(libs.media3Exoplayer)
+            api(libs.media3Ui)
+            api(libs.media3Common)
         }
         this.compilerOptions {
             this.jvmTarget.set(JvmTarget.JVM_1_8)
@@ -85,16 +85,16 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(lk.readable(1))
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-properties:1.7.1")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                api(libs.kotlinxSerializationJson)
+                api(libs.kotlinxSerializationProperties)
+                api(libs.kotlinxDatetime)
+                api(libs.kotlinxCoroutinesCore)
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
+                implementation(libs.kotlinxCoroutinesTest)
                 implementation(lk.kotlinTestManualRuntime())
             }
         }
@@ -104,8 +104,8 @@ kotlin {
         }
         val androidUnitTest by getting {
             dependencies {
-                implementation("junit:junit:4.13.2")
-                implementation("org.robolectric:robolectric:4.13")
+                implementation(libs.junit)
+                implementation(libs.robolectric)
             }
         }
 
@@ -115,18 +115,18 @@ kotlin {
 
         val iosMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.7")
-                implementation("io.ktor:ktor-client-websockets:2.3.7")
+                implementation(libs.ktorClientDarwin)
+                implementation(libs.ktorClientWebsockets)
             }
         }
 
         val jvmMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
-                api("org.apache.commons:commons-lang3:3.14.0")
-                api("io.ktor:ktor-client-core:$ktorVersion")
-                api("io.ktor:ktor-client-okhttp:$ktorVersion")
-                api("io.ktor:ktor-client-websockets:$ktorVersion")
+                api(libs.commonsLang3)
+                api(libs.ktorClientCore)
+                api(libs.ktorClientOkhttp)
+                api(libs.ktorClientWebsockets)
             }
         }
         val jsMain by getting {
@@ -177,7 +177,7 @@ kotlin {
 
 android {
     namespace = "com.lightningkite.kiteui"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 21

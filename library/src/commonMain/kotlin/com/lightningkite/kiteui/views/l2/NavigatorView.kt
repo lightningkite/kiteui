@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.views.direct.*
 fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
     val n = navigator
     return this.swapView {
+        debugName = "navigatorView"
         var lastStack = n.stack.value
         this@swapView.swapping(
             transition = {
@@ -38,6 +39,7 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
 fun ViewWriter.navigatorViewDialog(): SwapView {
     val n = dialogPageNavigator
     return this.swapView {
+        debugName = "navigatorViewDialog"
         ignoreInteraction = true
         var lastStack = n.stack.value
         this@swapView.swapping(

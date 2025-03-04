@@ -1,10 +1,51 @@
 
 [versions]
+appcompat = "1.7.0"
+cardview = "1.0.0"
+commonsLang3 = "3.16.0"
+glide = "5.0.0-rc01"
+junit = "4.13.2"
 kotlin = "2.0.20"
+kotlinxCoroutinesCore = "1.9.0"
+kotlinxDatetime = "0.6.1"
+kotlinxSerializationJson = "1.7.3"
+ktorVersion = "3.0.0"
+material = "1.12.0"
+media3Exoplayer = "1.5.1"
+photoview = "2.3.0"
+robolectric = "4.13"
+swiperefreshlayout = "1.1.0"
+timber = "5.0.1"
+transition = "1.5.1"
 
 [libraries]
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 comLightningkiteReadable = { module = "com.lightningkite:readable", version = "1.0.3" }
 comLightningkiteTestingKotlinTestManualRuntime = { module = "com.lightningkite.testing:kotlin-test-manual-runtime", version = "0.0.8" }
+commonsLang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesCore" }
+kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinxSerializationProperties = { module = "org.jetbrains.kotlinx:kotlinx-serialization-properties", version.ref = "kotlinxSerializationJson" }
+ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorVersion" }
+ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
+ktorClientDarwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorVersion" }
+ktorClientOkhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
+ktorClientWebsockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktorVersion" }
+ktx = { module = "androidx.core:core", version = "1.16.0-alpha02" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+media3Common = { module = "androidx.media3:media3-common", version.ref = "media3Exoplayer" }
+media3Exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
+media3Ui = { module = "androidx.media3:media3-ui", version.ref = "media3Exoplayer" }
+photoview = { module = "com.github.chrisbanes:PhotoView", version.ref = "photoview" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+transition = { module = "androidx.transition:transition", version.ref = "transition" }
 
 [plugins]
 comLightningkiteTestingManual = { id = "com.lightningkite.testing.manual", version = "0.0.8" }

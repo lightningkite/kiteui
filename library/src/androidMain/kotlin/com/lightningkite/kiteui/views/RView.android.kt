@@ -174,14 +174,29 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     private var edgeToEdgePadding: Edges? = null
-        private set(value) {
-            field = value
-            applyTheme(themeAndBack)
+        set(value) {
+            if(field != value) {
+                field = value
+                updatePadding()
+                children.forEach {
+                    if(value != null) {
+                        fun walkdown(it: RView) {
+                            if(it.edgeToEdgePadding != null) {
+                                it.edgeToEdgePadding = null
+                            }
+                            it.children.forEach { walkdown(it) }
+                        }
+                        walkdown(it)
+                    }
+                    ViewCompat.requestApplyInsets(it.native)
+                }
+            }
         }
-    actual override fun applyTheme(theme: ThemeAndBack) {
+
+    protected fun updatePadding() {
         val padding = (paddingByEdge ?: when {
-            !theme.padding -> null
-            else -> theme.theme.padding
+            !themeAndBack.padding -> null
+            else -> themeAndBack.theme.padding
         })?.let {
             edgeToEdgePadding?.let { e -> it + e } ?: it
         }
@@ -191,11 +206,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             padding?.right?.value?.toInt() ?: 0,
             padding?.bottom?.value?.toInt() ?: 0,
         )
+    }
+
+    actual override fun applyTheme(theme: ThemeAndBack) {
+        ViewCompat.requestApplyInsets(native)
+//        ViewCompat.dispatchApplyWindowInsets(native, ViewCompat.computeSystemWindowInsets())
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
             native.elevation = 0f
         }
+        updatePadding()
         if (theme.drawBackground) {
             val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
             backgroundBlock = backgroundDrawable
@@ -212,42 +233,53 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         // Block touches below
         val wasClickable = native.isClickable
         val wasFocusable = native.isFocusable
-        val hasInteractiveParent = generateSequence(this) { it.parent }.any { it.native.isClickable || it.native.isFocusable }
-        if(!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
+        val hasInteractiveParent =
+            generateSequence(this) { it.parent }.any { it.native.isClickable || it.native.isFocusable }
+//        val previousTrace =
+//            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
+//                .toList()
+
+        if (!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
             native.setOnClickListener {
                 println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
         }
 
-        if(!cannotBeCovered) {
+        if (!cannotBeCovered) {
             val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
-                if(insetsGetter === WindowInsetsCompat.CONSUMED) return@OnApplyWindowInsetsListener insetsGetter
+                if (insetsGetter === WindowInsetsCompat.CONSUMED) {
+                    edgeToEdgePadding = null
+                    return@OnApplyWindowInsetsListener insetsGetter
+                }
                 val padding = paddingByEdge ?: when {
                     !themeAndBack.padding -> Edges.ZERO
                     else -> themeAndBack.theme.padding
                 }
                 val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                fun shouldApply(direction: Int) = generateSequence(this) { it.parent }
+                fun shouldApply(direction: Int, alreadyHasPadding: Boolean) = generateSequence(this) { it.parent }
                     .zipWithNext()
                     .all { (child, parent) -> parent.childTouches(child) and direction == direction }
                     .and(
+                        alreadyHasPadding ||
                         children.asSequence()
                             .any { childTouches(it) and direction == direction && it.cannotBeCovered }
                     )
-                val shouldApplyLeft = padding.left.value > 0 || shouldApply(Gravity.LEFT)
-                val shouldApplyTop = padding.top.value > 0 || shouldApply(Gravity.TOP)
-                val shouldApplyRight = padding.right.value > 0 || shouldApply(Gravity.RIGHT)
-                val shouldApplyBottom = padding.bottom.value > 0 || shouldApply(Gravity.BOTTOM)
+
+                val shouldApplyLeft = shouldApply(Gravity.LEFT, padding.left.value > 0)
+                val shouldApplyTop = shouldApply(Gravity.TOP, padding.top.value > 0)
+                val shouldApplyRight = shouldApply(Gravity.RIGHT, padding.right.value > 0)
+                val shouldApplyBottom = shouldApply(Gravity.BOTTOM, padding.bottom.value > 0)
                 val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-                println("Checking $native for inset application of $insets")
-                if(!shouldApplyAny) return@OnApplyWindowInsetsListener insetsGetter
+                if (!shouldApplyAny) {
+                    edgeToEdgePadding = null
+                    return@OnApplyWindowInsetsListener insetsGetter
+                }
                 edgeToEdgePadding = Edges(
-                    left = if(shouldApplyLeft) insets.left.px else 0.px,
-                    top = if(shouldApplyTop) insets.top.px else 0.px,
-                    right = if(shouldApplyRight) insets.right.px else 0.px,
-                    bottom = if(shouldApplyBottom) insets.bottom.px else 0.px,
+                    left = if (shouldApplyLeft) insets.left.px else 0.px,
+                    top = if (shouldApplyTop) insets.top.px else 0.px,
+                    right = if (shouldApplyRight) insets.right.px else 0.px,
+                    bottom = if (shouldApplyBottom) insets.bottom.px else 0.px,
                 )
-                println("APPLIED")
                 WindowInsetsCompat.CONSUMED
             }
             ViewCompat.setOnApplyWindowInsetsListener(native, l)
@@ -295,16 +327,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
-        val padding = paddingByEdge ?: when {
-            !theme.padding -> null
-            else -> theme.theme.padding
-        }
-        native.setPadding(
-            padding?.left?.value?.toInt() ?: 0,
-            padding?.top?.value?.toInt() ?: 0,
-            padding?.right?.value?.toInt() ?: 0,
-            padding?.bottom?.value?.toInt() ?: 0,
-        )
+        updatePadding()
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
@@ -315,16 +338,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected fun applyThemeWithClipping(theme: ThemeAndBack) {
-        val padding = paddingByEdge ?: when {
-            !theme.padding -> null
-            else -> theme.theme.padding
-        }
-        native.setPadding(
-            padding?.left?.value?.toInt() ?: 0,
-            padding?.top?.value?.toInt() ?: 0,
-            padding?.right?.value?.toInt() ?: 0,
-            padding?.bottom?.value?.toInt() ?: 0,
-        )
+        updatePadding()
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {

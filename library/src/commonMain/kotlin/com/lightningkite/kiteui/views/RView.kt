@@ -362,6 +362,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     @Deprecated("Not needed anymore", ReplaceWith("this"))
     val calculationContext: CoroutineScope get() = this
 
+    var debugName: String? = null
+    override fun toString(): String {
+        return debugName ?: (theme.id + " " + this::class.qualifiedName + "@" + this.identityHashCode().toString(16))
+    }
 }
 
 abstract class RViewWrapper(context: RContext) : RView(context) {

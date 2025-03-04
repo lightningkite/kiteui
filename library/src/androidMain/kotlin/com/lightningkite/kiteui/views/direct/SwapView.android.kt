@@ -42,6 +42,11 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
             override val context: RContext
                 get() = this@SwapView.context
 
+            override fun willAddChild(view: RView) {
+                super.willAddChild(view)
+                view.parent = this@SwapView
+            }
+
             override fun addChild(view: RView) {
                 newViewHolder = view
             }

@@ -14,6 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewGroupCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
@@ -40,6 +41,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         override fun addChild(view: RView) {
             root = view
             setContentView(view.native)
+            ViewGroupCompat.installCompatInsetsDispatch(view.native)
         }
         init {
             beforeNextElementSetup {

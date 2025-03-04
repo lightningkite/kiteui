@@ -21,10 +21,10 @@ val defaultTheme = Theme.flat("default", Angle(0.55f)).customize("default2", tra
         ).withoutBack
     }
 ))
+val altDefault = Theme.material("m")
 val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator) {
-//    rootTheme = { appTheme() }
     RViewHelper.leakDetection = true
     appBase(navigator, dialog) {
         swapView {

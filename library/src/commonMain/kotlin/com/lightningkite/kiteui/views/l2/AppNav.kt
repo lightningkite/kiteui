@@ -50,6 +50,7 @@ val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> 
 fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
     appBase(main, dialog) {
         swapView {
+            debugName = "swapView for appNavFactory"
             swapping(
                 current = { appNavFactory() },
                 views = { it(this, setup) }
@@ -62,7 +63,9 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
     OuterSemantic.onNext - col {
+        debugName = "outer nav"
         bar - row {
+            debugName = "top bar"
             showOnPrint = false
             setup(appNav)
             toggleButton {
@@ -83,6 +86,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
             ::exists { appNav.existsProperty() }
         }
         expanding - frame {
+            debugName = "menu and navigator container"
             navigatorView(pageNavigator)
             atStart - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 spacing = 0.px
@@ -122,9 +126,11 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     val appNav = AppNav.ByProperty()
     OuterSemantic.onNext - col {
+        debugName = "outer nav"
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
             compact - bar - frame {
+                debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
                 atStart - InteractiveSemantic.onNext - button {
@@ -150,6 +156,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
             }
         } else {
             bar - row {
+                debugName = "normal app bar"
                 showOnPrint = false
                 setup(appNav)
                 if (Platform.current != Platform.Web) button {
@@ -169,6 +176,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
         expanding - navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
+            debugName = "navGroupTabs"
             showOnPrint = false
             ::exists { appNav.existsProperty() && !AppState.softInputOpen() }
         }
