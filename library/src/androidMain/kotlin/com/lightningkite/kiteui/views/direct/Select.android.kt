@@ -21,6 +21,7 @@ import com.lightningkite.kiteui.views.*
 actual class Select actual constructor(context: RContext): RView(context) {
     override val native = Spinner(context.activity).apply {
         minimumHeight = 0
+        isClickable = true
     }
 
     actual var enabled: Boolean
@@ -55,6 +56,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
             layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
             layerDrawable.setLayerInsetEnd(1, theme.theme.spacing.value.toInt())
         }
+        updateCorners()
 
         background = layerDrawable
     }
@@ -80,8 +82,12 @@ actual class Select actual constructor(context: RContext): RView(context) {
                         override val context: RContext
                             get() = this@Select.context
 
-                        override fun addChild(view: RView) {
+                        override fun willAddChild(view: RView) {
+                            super.willAddChild(view)
                             view.parent = this@Select
+                        }
+
+                        override fun addChild(view: RView) {
                             newView = view
                         }
                     }

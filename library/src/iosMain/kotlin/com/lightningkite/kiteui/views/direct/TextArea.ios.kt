@@ -4,16 +4,11 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.NumberInput
-import com.lightningkite.kiteui.views.direct.TextInput
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import platform.Foundation.NSNotificationCenter
-import platform.Foundation.NSOperationQueue
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
