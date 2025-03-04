@@ -11,6 +11,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.core.animation.doOnEnd
+import androidx.core.view.children
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
@@ -180,6 +181,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if(childCount == 0) return
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(b - t - paddingTop - paddingBottom, MeasureSpec.EXACTLY)
@@ -226,6 +228,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if(childCount == 0) return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val f = getChildAt(0)
         f.minimumWidth = constraints.minWidth?.value?.toInt() ?: 0
         f.minimumHeight = constraints.minHeight?.value?.toInt() ?: 0

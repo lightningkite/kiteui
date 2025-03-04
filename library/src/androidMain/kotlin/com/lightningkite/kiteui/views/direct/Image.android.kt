@@ -21,6 +21,7 @@ import android.widget.ImageView as AImageView
 
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = Custom(context.activity)
     private var placeholder: Drawable = CircularProgressDrawable(context.activity).apply {
         strokeWidth = 5f

@@ -23,6 +23,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)

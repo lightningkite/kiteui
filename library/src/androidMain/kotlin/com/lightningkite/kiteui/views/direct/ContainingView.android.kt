@@ -7,6 +7,8 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.LinearGradient
@@ -21,18 +23,50 @@ import kotlin.math.roundToInt
 
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout(context.activity)
+    override fun childTouches(child: RView): Int {
+        val p = child.lparams as FrameLayout.LayoutParams
+        var total = 0
+        if(p.width == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.LEFT or Gravity.RIGHT
+        if(p.height == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.TOP or Gravity.BOTTOM
+        if(p.gravity and Gravity.LEFT > 0) total = total or Gravity.LEFT
+        if(p.gravity and Gravity.RIGHT > 0) total = total or Gravity.RIGHT
+        if(p.gravity and Gravity.TOP > 0) total = total or Gravity.TOP
+        if(p.gravity and Gravity.BOTTOM > 0) total = total or Gravity.BOTTOM
+        return total
+    }
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
             if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
             if (vertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT,
         )
+    override fun childTouches(child: RView): Int {
+        val p = child.lparams as SimplifiedLinearLayout.LayoutParams
+        var total = 0
+        if(vertical && p.width == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.LEFT or Gravity.RIGHT
+        if(!vertical && p.height == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.TOP or Gravity.BOTTOM
+        if(vertical && p.gravity and Gravity.LEFT > 0) total = total or Gravity.LEFT
+        if(vertical && p.gravity and Gravity.RIGHT > 0) total = total or Gravity.RIGHT
+        if(!vertical && p.gravity and Gravity.TOP > 0) total = total or Gravity.TOP
+        if(!vertical && p.gravity and Gravity.BOTTOM > 0) total = total or Gravity.BOTTOM
+        if(child == children.firstOrNull()) {
+            if(vertical) total = total or Gravity.TOP
+            else total = total or Gravity.LEFT
+        }
+        if(child == children.lastOrNull()) {
+            if(vertical) total = total or Gravity.BOTTOM
+            else total = total or Gravity.RIGHT
+        }
+        return total
+    }
     actual var vertical: Boolean
         get() = native.orientation == SimplifiedLinearLayout.VERTICAL
         set(value) {
@@ -61,9 +95,30 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    override fun childTouches(child: RView): Int {
+        val vertical = native.orientation == SimplifiedLinearLayout.VERTICAL
+        val p = child.lparams as SimplifiedLinearLayout.LayoutParams
+        var total = 0
+        if(vertical && p.width == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.LEFT or Gravity.RIGHT
+        if(!vertical && p.height == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.TOP or Gravity.BOTTOM
+        if(vertical && p.gravity and Gravity.LEFT == Gravity.LEFT) total = total or Gravity.LEFT
+        if(vertical && p.gravity and Gravity.RIGHT == Gravity.RIGHT) total = total or Gravity.RIGHT
+        if(!vertical && p.gravity and Gravity.TOP == Gravity.TOP) total = total or Gravity.TOP
+        if(!vertical && p.gravity and Gravity.BOTTOM == Gravity.BOTTOM) total = total or Gravity.BOTTOM
+        if(child == children.firstOrNull()) {
+            if(vertical) total = total or Gravity.TOP
+            else total = total or Gravity.LEFT
+        }
+        if(child == children.lastOrNull()) {
+            if(vertical) total = total or Gravity.BOTTOM
+            else total = total or Gravity.RIGHT
+        }
+        return total
+    }
 
     init {
         native.orientation = SimplifiedLinearLayout.VERTICAL

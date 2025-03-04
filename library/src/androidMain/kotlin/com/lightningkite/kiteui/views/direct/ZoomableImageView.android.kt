@@ -16,6 +16,7 @@ import android.widget.ImageView as AImageView
 
 
 actual class ZoomableImageView actual constructor(context: RContext): RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = PhotoView(context.activity)
     actual var refreshOnParamChange: Boolean = false
     private var placeholder: Drawable = CircularProgressDrawable(context.activity).apply {

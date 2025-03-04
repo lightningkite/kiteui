@@ -14,6 +14,7 @@ import kotlin.math.absoluteValue
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override val native = LinearLayout()
+    override val cannotBeCovered: Boolean get() = false
 
     actual var vertical: Boolean
         get() = native.horizontal.not()
@@ -42,6 +43,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) :
     RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = LinearLayout()
 
     init {
@@ -72,5 +74,6 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
 }
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
 }

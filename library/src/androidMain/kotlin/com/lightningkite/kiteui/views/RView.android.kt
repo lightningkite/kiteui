@@ -6,21 +6,27 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Looper
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
+import com.lightningkite.readable.onRemove
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
+    open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
 
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
@@ -180,10 +186,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //        native.elevation = native.elevation.coerceAtMost(parentSpacing)
     }
 
+    private var edgeToEdgePadding: Edges? = null
+        private set(value) {
+            field = value
+            applyTheme(themeAndBack)
+        }
     actual override fun applyTheme(theme: ThemeAndBack) {
-        val padding = paddingByEdge ?: when {
+        val padding = (paddingByEdge ?: when {
             !theme.padding -> null
             else -> theme.theme.padding
+        })?.let {
+            edgeToEdgePadding?.let { e -> it + e } ?: it
         }
         native.setPadding(
             padding?.left?.value?.toInt() ?: 0,
@@ -217,6 +230,39 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.setOnClickListener {
                 println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
+        }
+
+        if(!cannotBeCovered) {
+            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
+                if(insetsGetter === WindowInsetsCompat.CONSUMED) return@OnApplyWindowInsetsListener insetsGetter
+                val padding = paddingByEdge ?: when {
+                    !themeAndBack.padding -> Edges.ZERO
+                    else -> themeAndBack.theme.padding
+                }
+                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
+                fun shouldApply(direction: Int) = generateSequence(this) { it.parent }
+                    .zipWithNext()
+                    .all { (child, parent) -> parent.childTouches(child) and direction == direction }
+                    .and(
+                        children.asSequence()
+                            .any { childTouches(it) and direction == direction && it.cannotBeCovered }
+                    )
+                val shouldApplyLeft = padding.left.value > 0 || shouldApply(Gravity.LEFT)
+                val shouldApplyTop = padding.top.value > 0 || shouldApply(Gravity.TOP)
+                val shouldApplyRight = padding.right.value > 0 || shouldApply(Gravity.RIGHT)
+                val shouldApplyBottom = padding.bottom.value > 0 || shouldApply(Gravity.BOTTOM)
+                val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+                if(!shouldApplyAny) return@OnApplyWindowInsetsListener insetsGetter
+                edgeToEdgePadding = Edges(
+                    left = if(shouldApplyLeft) insets.left.px else 0.px,
+                    top = if(shouldApplyTop) insets.top.px else 0.px,
+                    right = if(shouldApplyRight) insets.right.px else 0.px,
+                    bottom = if(shouldApplyBottom) insets.bottom.px else 0.px,
+                )
+                WindowInsetsCompat.CONSUMED
+            }
+            ViewCompat.setOnApplyWindowInsetsListener(native, l)
+            onRemove { ViewCompat.setOnApplyWindowInsetsListener(native, null) }
         }
     }
 

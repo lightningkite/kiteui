@@ -30,6 +30,7 @@ import kotlin.math.roundToInt
 import com.lightningkite.readable.*
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = MyImageView()
 
     init {
@@ -405,6 +406,7 @@ class PanZoomImageView : UIScrollView(CGRectZero.readValue()), UIScrollViewDeleg
 
 
 actual class ZoomableImageView actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = PanZoomImageView()
 
     init {

@@ -8,6 +8,7 @@ import kotlin.js.JsName
 
 
 actual class ImageView actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.classes.add("viewDraws")

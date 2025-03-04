@@ -19,6 +19,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }

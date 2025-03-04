@@ -18,6 +18,7 @@ import platform.CoreGraphics.CGAffineTransformMake
 
 
 actual class SwapView actual constructor(context: RContext): RView(context) {
+    override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
     private var currentView: RView? = null
 

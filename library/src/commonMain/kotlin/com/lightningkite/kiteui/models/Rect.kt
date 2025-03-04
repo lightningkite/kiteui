@@ -50,4 +50,5 @@ data class Edges(
     val horizontalSum get() = left + right
     val verticalSum get() = top + bottom
     constructor(dimension: Dimension): this(dimension, dimension, dimension, dimension)
+    operator fun plus(other: Edges) = Edges(left + other.left, top + other.top, right + other.right, bottom + other.bottom)
 }

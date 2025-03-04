@@ -57,6 +57,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     override val rView: RView get() = this as RView
     var additionalTestingData: Any? = null
 
+    open val cannotBeCovered: Boolean get() = true
+
     abstract var showOnPrint: Boolean
     private var isShutdown = false
 
