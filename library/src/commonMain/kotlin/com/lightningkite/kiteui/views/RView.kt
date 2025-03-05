@@ -364,7 +364,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     var debugName: String? = null
     override fun toString(): String {
-        return debugName ?: (theme.id + " " + this::class.qualifiedName + "@" + this.identityHashCode().toString(16))
+        return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
 }
 

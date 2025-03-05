@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.ScreenTransition
+import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -12,32 +15,32 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.()->ViewModifiable) {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
     overlayFrame?.run {
         withoutAnimation {
 
-        beforeNextElementSetup {
-            opacity = 0.0
-            launch {
-                val t = theme
-                delay(1)
-                opacity = 1.0
-                delay(duration.inWholeMilliseconds)
+            beforeNextElementSetup {
                 opacity = 0.0
-                delay(t.transitionDuration)
-                this@run.removeChild(this@beforeNextElementSetup)
+                launch {
+                    val t = theme
+                    delay(1)
+                    opacity = 1.0
+                    delay(duration.inWholeMilliseconds)
+                    opacity = 0.0
+                    delay(t.transitionDuration)
+                    this@run.removeChild(this@beforeNextElementSetup)
+                }
             }
-        }
-        atBottomCenter - col {
-            spacing = 2.rem
-            dialog - content()
-            space()
-        }
+            atBottomCenter - col {
+                spacing = 2.rem
+                DialogSemantic.onNext - content()
+                space()
+            }
         }
     }
 }
 
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit) {
+fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
     this.overlayFrame!!.run {
         withoutAnimation {
@@ -59,10 +62,31 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()->Unit)
                 }
                 willRemove = dismissBackground {
                     onClick { if (dismissable) closePopovers() }
-                    centered - dialog - frame {
+                    centered - DialogSemantic.onNext - frame {
                         content()
                     }
                 }
+            }
+        }
+    }
+}
+
+fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+    var willRemove: RView? = null
+    this.overlayFrame!!.run {
+        withoutAnimation {
+            popoverWriter {
+                willRemove?.let {
+                    it.animateOut(transition.reverse) {
+                        overlayFrame!!.removeChild(it)
+                    }
+                }
+            }.run {
+                beforeNextElementSetup {
+                    animateIn(transition.forward)
+                }
+                content()
+                willRemove = lastWrittenView
             }
         }
     }

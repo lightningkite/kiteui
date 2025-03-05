@@ -83,6 +83,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     override fun leakDetect() {
         WeakReference(native).checkLeakAfterDelay(1000)
+        native.actualElementForLeakTracking?.let {
+            WeakReference(it).checkLeakAfterDelay(1000)
+        }
     }
 
     private var prevThemeClass: String? = null
@@ -140,6 +143,7 @@ expect class FutureElementAttributes
 expect class FutureElement {
     constructor()
 
+    val actualElementForLeakTracking: Any?
     var xmlns: String?
     var tag: String
     val attributes: FutureElementAttributes

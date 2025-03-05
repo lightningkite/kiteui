@@ -55,6 +55,7 @@ fun ViewWriter.closeSiblingPopovers() {
 fun ViewWriter.popoverWriter(close: ()->Unit): ViewWriter {
     val writer = object : ViewWriter(), CalculationContext by this {
         override val context: RContext = this@popoverWriter.context.split()
+        override fun willAddChild(view: RView) = this@popoverWriter.willAddChild(view)
         override fun addChild(view: RView) = this@popoverWriter.addChild(view)
     }
     this@popoverWriter.closeSiblingPopovers()

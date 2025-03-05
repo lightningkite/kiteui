@@ -16,6 +16,7 @@ import kotlin.js.json
 import kotlin.random.Random
 
 actual class FutureElement actual constructor() {
+    actual val actualElementForLeakTracking: Any? get() = element
     val elementToDo = ArrayList<(Element) -> Unit>()
     var element: Element? = null
         private set(value) {

@@ -13,7 +13,7 @@ actual class ScreenTransition(
     val name: String,
     val enter: () -> Transition?,
     val exit: () -> Transition?,
-    ) {
+) {
     actual companion object {
         actual val None: ScreenTransition
             get() = ScreenTransition(

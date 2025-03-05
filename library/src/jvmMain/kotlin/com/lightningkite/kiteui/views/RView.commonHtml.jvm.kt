@@ -21,6 +21,7 @@ actual class FutureElementAttributes(val underlyingMap: MutableMap<String, Strin
 }
 
 actual class FutureElement actual constructor() {
+    actual val actualElementForLeakTracking: Any? get() = null
     actual var xmlns: String? = null
     actual var tag: String = "tag"
     actual var classes: MutableSet<String> = HashSet()

@@ -27,6 +27,17 @@ object DialogSamplesPage : Page {
                     dialogPageNavigator.navigate(DialogSampleScreen1)
                 }
             }
+            button {
+                h6 { content = "Launch Test Bottom Sheet" }
+                onClick {
+                    openBottomSheet {
+                        col {
+                            h2("Bottom sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
         }
     }
 }

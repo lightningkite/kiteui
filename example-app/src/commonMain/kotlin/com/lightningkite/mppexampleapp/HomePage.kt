@@ -12,12 +12,15 @@ import com.lightningkite.readable.Property
 import com.lightningkite.readable.Readable
 import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
 import com.lightningkite.kiteui.views.direct.onClick
+import com.lightningkite.kiteui.views.direct.openBottomSheet
+import com.lightningkite.kiteui.views.direct.recyclerView
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
@@ -27,8 +30,11 @@ import com.lightningkite.kiteui.views.direct.stack
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
+import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
@@ -36,6 +42,16 @@ class HomePage: Page {
     override val title: Readable<String> get() = Constant("KiteUI")
     override fun ViewWriter.render(): ViewModifiable = run {
         return article {
+//            launch {
+//                delay(100)
+//                openBottomSheet {
+//                    recyclerView {
+//                        children(Constant((1..100).toList()), id = { it }) {
+//                            card - text { ::content{ it().toString() } }
+//                        }
+//                    }
+//                }
+//            }
             centered - h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
