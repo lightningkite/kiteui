@@ -191,6 +191,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
         get() = controller.showsPlaybackControls
         set(value) {
             controller.showsPlaybackControls = value
+            controller.updatesNowPlayingInfoCenter = value
         }
     actual var loop: Boolean = false
     actual var scaleType: ImageScaleType = ImageScaleType.Crop
