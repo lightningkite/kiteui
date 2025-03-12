@@ -11,7 +11,7 @@ import kotlin.time.Duration
 
 actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
-    createNewView: ViewWriter.() -> Unit
+    createNewView: ViewWriter.() -> ViewModifiable?
 ) {
     val keyframeName = context.kiteUiCss.transition(transition)
 

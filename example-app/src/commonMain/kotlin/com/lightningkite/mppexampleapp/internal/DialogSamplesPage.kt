@@ -2,10 +2,13 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.overlayFrame
 
 @Routable("sample/dialog")
 object DialogSamplesPage : Page {
@@ -28,10 +31,56 @@ object DialogSamplesPage : Page {
                 }
             }
             button {
-                h6 { content = "Launch Test Bottom Sheet" }
+                h6 { content = "Launch Test Bottom Sheet Old" }
                 onClick {
                     openBottomSheet {
                         col {
+                            h2("Bottom sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
+            button {
+                h6 { content = "Launch Test bottomSheet" }
+                onClick {
+                    coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
+                        DialogSemantic.onNext - col {
+                            centered - coordinatorDragHandle()
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
+                            h2("Bottom sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
+            button {
+                h6 { content = "Launch Test leftSlidingPanel" }
+                onClick {
+                    coordinatorFrame!!.leftSlidingPanel {
+                        DialogSemantic.onNext - col {
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
+                            h2("Bottom sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
+            button {
+                h6 { content = "Launch Test rightSlidingPanel" }
+                onClick {
+                    coordinatorFrame!!.rightSlidingPanel {
+                        DialogSemantic.onNext - col {
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
                             h2("Bottom sheet")
                             text("bottom text")
                         }

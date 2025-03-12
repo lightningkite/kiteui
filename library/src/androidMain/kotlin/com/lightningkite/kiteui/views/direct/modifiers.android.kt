@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.children
 
@@ -94,6 +95,8 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
         if (params is SimplifiedLinearLayoutLayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else if (params is FrameLayout.LayoutParams)
+            params.gravity = horizontalGravity or verticalGravity
+        else if (params is CoordinatorLayout.LayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else
             println("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")

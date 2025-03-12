@@ -11,7 +11,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         themeChoice += ClickableSemantic
         native.tag = "input"
         native.attributes.type = "radio"
-        native.classes.add("checkbox")
+        native.classes.add("radio")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
     }

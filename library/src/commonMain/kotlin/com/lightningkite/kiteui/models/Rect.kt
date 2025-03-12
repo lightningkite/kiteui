@@ -51,4 +51,11 @@ data class Edges(
     val verticalSum get() = top + bottom
     constructor(dimension: Dimension): this(dimension, dimension, dimension, dimension)
     operator fun plus(other: Edges) = Edges(left + other.left, top + other.top, right + other.right, bottom + other.bottom)
+    operator fun minus(other: Edges) = Edges(left - other.left, top - other.top, right - other.right, bottom - other.bottom)
+    operator fun times(other: Int) = Edges(left * other, top * other, right * other, bottom * other)
+    operator fun div(other: Int) = Edges(left / other, top / other, right / other, bottom / other)
+    operator fun times(other: Float) = Edges(left * other, top * other, right * other, bottom * other)
+    operator fun div(other: Float) = Edges(left / other, top / other, right / other, bottom / other)
+    operator fun times(other: Double) = Edges(left * other, top * other, right * other, bottom * other)
+    operator fun div(other: Double) = Edges(left / other, top / other, right / other, bottom / other)
 }

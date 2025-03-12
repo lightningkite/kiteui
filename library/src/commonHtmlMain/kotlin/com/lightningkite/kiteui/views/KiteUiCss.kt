@@ -230,7 +230,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             * {
                 transition-timing-function: linear;
                 transition-delay: 0s;
-                transition-property: color, background-image, background-color, border-color, outline-color, box-shadow, border-radius, opacity, backdrop-filter;
+                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
             }
 
             [hidden] {
@@ -292,7 +292,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kiteui-separator {
-                background-color: currentcolor;
+                background-color: var(--separator-color, currentcolor);
                 min-width: 1px;
                 min-height: 1px;
             }
@@ -943,7 +943,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { transitionDuration }?.let { addToCss(directSel, "--transition-duration", it.toCss()) }
         theme.diff(diff) { background }
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
-        theme.diff(diff) { cornerRadii }?.let { addToCss(directSel, "border-radius", it.toRawCornerRadius()) }
+        theme.diff(diff) { cornerRadii }?.let { addToCss(backSel, "border-radius", it.toRawCornerRadius()) }
         theme.diff(diff) { foreground }?.let {
             addToCss(directSel, "color-scheme", if(it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
             when (it) {
@@ -968,6 +968,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 is Color -> addToCss(directSel, "--icon-color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "--icon-color", "")
                 else -> addToCss(directSel, "--icon-color", it.closestColor().toWeb())
+            }
+        }
+        theme.diff(diff) { separator }?.let {
+            when (it) {
+                is Color -> addToCss(directSel, "--separator-color", it.toWeb())
+                is FadingColor -> addToCss(directSel, "--separator-color", "")
+                else -> addToCss(directSel, "--separator-color", it.closestColor().toWeb())
             }
         }
 

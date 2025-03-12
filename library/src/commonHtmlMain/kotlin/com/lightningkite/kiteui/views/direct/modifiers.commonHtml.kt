@@ -198,7 +198,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
     wrapNextIn(object: RViewWrapper(context) {
         init {
             native.tag = "div"
-            native.classes.add("hidingContainer")
+            native.classes.add("noInteraction")
             native.classes.add("kiteui-stack")
             nativeAnimateHideBinding(default, condition)
         }

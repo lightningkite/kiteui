@@ -20,6 +20,6 @@ actual class Separator actual constructor(context: RContext): RView(context) {
 
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme)
-        native.backgroundColor = theme.theme.foreground.closestColor().toUiColor()
+        native.backgroundColor = theme.theme.separator.closestColor().toUiColor()
     }
 }

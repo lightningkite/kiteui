@@ -22,7 +22,7 @@ actual class Separator actual constructor(context: RContext): RView(context) {
         val theme = theme.theme
         val c = native.parent as? SimplifiedLinearLayout
         val v = native
-        v.setBackgroundColor(theme.foreground.closestColor().colorInt())
+        v.setBackgroundColor(theme.separator.closestColor().colorInt())
         val size = theme.outlineWidth.value.coerceAtLeast(1f).toInt()
         v.thickness = size
         (v.parent as? SimplifiedLinearLayout)?.let {

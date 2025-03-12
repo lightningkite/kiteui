@@ -9,18 +9,20 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
+        native.style.overflowX = "hidden"
+        native.style.overflowY = "hidden"
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)
     }
     var previousLast: RView? = null
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {
+    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
         nativeSwap(transition, createNewView)
     }
 }
 
-expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit
+expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit
 //{
 //    val keyframeName = KiteUiCss.transition(transition)
 //

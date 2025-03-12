@@ -73,7 +73,7 @@ inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifia
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return col {
         spacing = 0.px
-        subtext(label)
+        FieldLabelSemantic.onNext - text(label)
         fieldTheme - content()
         SubtextSemantic.onNext - errorText()
     }

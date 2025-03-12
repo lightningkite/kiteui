@@ -98,21 +98,23 @@ object ControlPerformanceTesting : Page {
                 swapping(
                     current = { bindMode() },
                     views = {
+                        lateinit var v: ViewModifiable
                         ms[it]!!.first.value += measureTime {
-                            renderMain()
+                            v = renderMain()
                         }
                         ms[it]!!.second.value += 1
+                        v
                     }
                 )
             }
         }
     }
 
-    fun ViewWriter.renderMain() {
+    fun ViewWriter.renderMain(): ViewModifiable {
         val booleanContent = Property(true).also {
             it.addListener { println("booleanContent changed!") }
         }
-        col {
+        return scrolling - col {
 
             h1 { content = "Controls" }
 
@@ -523,6 +525,6 @@ object ControlPerformanceTesting : Page {
 
                 } in scrollsHorizontally
             } in card
-        } in scrolling
+        }
     }
 }

@@ -60,13 +60,13 @@ actual fun RView.nativeSetSrc(url: String?, onSuccess: () -> Unit, onError: () -
         newElement.style.opacity = "0"
         val now = clockMillis()
         window.setTimeout({
-            println("window.setTimeout({   -  ${loadNum} == ${native.loadNum}")
+//            println("window.setTimeout({   -  ${loadNum} == ${native.loadNum}")
             if (loadNum == native.loadNum) {
                 native.classes.add("loading")
             }
         }, 16)
         newElement.onerror = { dyn, msg, a, b, c ->
-            println("newElement.onerror = { dyn, msg, a, b, c ->   -  ${loadNum} == ${native.loadNum}")
+//            println("newElement.onerror = { dyn, msg, a, b, c ->   -  ${loadNum} == ${native.loadNum}")
             if (loadNum == native.loadNum) {
                 native.classes.remove("loading")
                 native.loadNum++
@@ -74,7 +74,7 @@ actual fun RView.nativeSetSrc(url: String?, onSuccess: () -> Unit, onError: () -
             onError()
         }
         newElement.onload = label@{
-            println("newElement.onload = label@{   -  ${loadNum} == ${native.loadNum}")
+//            println("newElement.onload = label@{   -  ${loadNum} == ${native.loadNum}")
             if (loadNum == native.loadNum) {
                 native.classes.remove("loading")
                 native.loadNum++
@@ -86,7 +86,7 @@ actual fun RView.nativeSetSrc(url: String?, onSuccess: () -> Unit, onError: () -
             val children = (0..<element.children.length).mapNotNull { element.children[it] }
             val myIndex = children.indexOf(newElement)
             if (myIndex == -1) return@label Unit
-            if ((clockMillis() - now).also { println("Diff is ${it}") } < 32) {
+            if ((clockMillis() - now) < 32) {
                 // disable animations and get it done; no reason to show the user an animation
                 newElement.withoutAnimation {
                     newElement.style.opacity = "1"

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.NewViewWriter
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIfAllowed
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
@@ -22,7 +23,7 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout()
     private var currentView: RView? = null
 
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> Unit): Unit {
+    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
 //        clearChildren()
 //        createNewView()
 //        native.informParentOfSizeChange()

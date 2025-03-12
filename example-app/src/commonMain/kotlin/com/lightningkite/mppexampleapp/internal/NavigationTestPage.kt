@@ -16,7 +16,7 @@ object NavigationTestPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Navigation" }
-            fun navSelector(label: String, value: ViewWriter.(AppNav.() -> Unit) -> Unit) {
+            fun navSelector(label: String, value: ViewWriter.(AppNav.() -> Unit) -> ViewModifiable) {
                 button {
                     text { content = label }
                     onClick {

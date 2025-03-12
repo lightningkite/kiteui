@@ -13,6 +13,7 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -256,14 +257,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     else -> themeAndBack.theme.padding
                 }
                 val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                fun shouldApply(direction: Int, alreadyHasPadding: Boolean) = generateSequence(this) { it.parent }
-                    .zipWithNext()
-                    .all { (child, parent) -> parent.childTouches(child) and direction == direction }
-                    .and(
-                        alreadyHasPadding ||
-                        children.asSequence()
-                            .any { childTouches(it) and direction == direction && it.cannotBeCovered }
-                    )
+                fun shouldApply(direction: Int, alreadyHasPadding: Boolean): Boolean {
+                    return generateSequence(this) { it.parent }
+                        .zipWithNext()
+                        .all { (child, parent) -> parent.childTouches(child) and direction == direction }
+                        .and(
+                            alreadyHasPadding ||
+                                    (children.asSequence()
+                                        .any { childTouches(it) and direction == direction && it.cannotBeCovered })
+                        )
+                }
 
                 val shouldApplyLeft = shouldApply(Gravity.LEFT, padding.left.value > 0)
                 val shouldApplyTop = shouldApply(Gravity.TOP, padding.top.value > 0)
@@ -289,6 +292,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
+        if(fullyStarted) ViewCompat.requestApplyInsets(view.native)
         if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 

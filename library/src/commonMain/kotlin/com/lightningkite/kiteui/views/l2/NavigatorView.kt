@@ -30,6 +30,7 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
                     this.pageNavigator = n
                     if (screen != null)
                         with(screen) { MainContentSemantic.onNext - padded - render() }
+                    else null
                 }
             }
         )
@@ -58,6 +59,7 @@ fun ViewWriter.navigatorViewDialog(): SwapView {
                     this.pageNavigator = n
                     if (screen != null)
                         with(screen) { DialogSemantic.onNext - render() }
+                    else null
                 }
             }
         )

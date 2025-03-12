@@ -30,9 +30,10 @@ abstract class ViewWriter: CoroutineScope {
     // Modifier and wrapper handling
 
     var beforeNextElementSetup: (RView.() -> Unit)? = null
-    inline fun beforeNextElementSetup(crossinline action: RView.() -> Unit) {
+    inline fun beforeNextElementSetup(crossinline action: RView.() -> Unit): ViewWrapper {
         val prev = beforeNextElementSetup
         beforeNextElementSetup = { prev?.invoke(this); action() }
+        return ViewWrapper
     }
 
     var _wrapElement: RView? = null

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.probablyAppleUser
+import com.lightningkite.kiteui.views.direct.Separator
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -87,6 +88,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
+        separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
@@ -105,6 +107,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        separatorOverride = separatorOverride,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -121,6 +124,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
+        separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
@@ -139,6 +143,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        separatorOverride = separatorOverride,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -155,6 +160,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
+        separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
@@ -173,6 +179,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        separatorOverride = separatorOverride,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -210,6 +217,9 @@ data object LoadingSemantic : Semantic("ld") {
     ).withBackNoPadding
 }
 
+data object FieldLabelSemantic: Semantic("flabel") {
+    override fun default(theme: Theme): ThemeAndBack = theme[SubtextSemantic]
+}
 data object WorkingSemantic : Semantic("wrk") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         foreground = theme.foreground.applyAlpha(0.5f),
@@ -287,6 +297,7 @@ data object DisabledSemantic : Semantic("dis") {
 data object CompactSemantic : Semantic("cmp") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
         spacing = theme.spacing / 2,
+        padding = theme.padding / 2,
     )
 }
 
@@ -552,6 +563,7 @@ class Theme(
     val iconOverride: Paint? = null,
     val outline: Paint = Color.black,
     val outlineWidth: Dimension = 0.px,
+    val separatorOverride: Paint? = null,
     val background: Paint = Color.white,
 
     val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
@@ -565,6 +577,7 @@ class Theme(
     val derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
 ) {
     val icon: Paint get() = iconOverride ?: foreground
+    val separator: Paint get() = separatorOverride ?: foreground.applyAlpha(0.5f)
 
     fun with(back: Boolean, padding: Boolean) = if (back) {
         if (padding) withBack
@@ -606,6 +619,7 @@ class Theme(
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
+        separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
@@ -622,6 +636,7 @@ class Theme(
         iconOverride = iconOverride,
         outline = outline,
         outlineWidth = outlineWidth,
+        separatorOverride = separatorOverride,
         background = background,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
@@ -641,6 +656,7 @@ class Theme(
         iconOverride: Paint? = this.iconOverride,
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
+        separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
@@ -659,6 +675,7 @@ class Theme(
         iconOverride = iconOverride,
         outline = outline,
         outlineWidth = outlineWidth,
+        separatorOverride = separatorOverride,
         background = background,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,

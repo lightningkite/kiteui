@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -14,10 +15,13 @@ import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.BottomSheetState
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.coordinatorDragHandle
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
+import com.lightningkite.kiteui.views.direct.h6
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.openBottomSheet
 import com.lightningkite.kiteui.views.direct.recyclerView
@@ -31,6 +35,8 @@ import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
 import kotlinx.coroutines.delay
@@ -118,6 +124,53 @@ class HomePage: Page {
             space()
             text("Version: ${Build.version}")
             // TODO: Getting Started
+
+            button {
+                h6 { content = "Launch Test bottomSheet" }
+                onClick {
+                    coordinatorFrame!!.bottomSheet(blockBehind = true, startState = BottomSheetState.PARTIALLY_EXPANDED) {
+                        DialogSemantic.onNext - col {
+                            centered - coordinatorDragHandle()
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
+                            h2("Bottom sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
+            button {
+                h6 { content = "Launch Test leftSlidingPanel" }
+                onClick {
+                    coordinatorFrame!!.leftSlidingPanel(blockBehind = true) {
+                        DialogSemantic.onNext - col {
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
+                            h2("Left sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
+            button {
+                h6 { content = "Launch Test rightSlidingPanel" }
+                onClick {
+                    coordinatorFrame!!.rightSlidingPanel(blockBehind = true) {
+                        DialogSemantic.onNext - col {
+                            button {
+                                text("Close")
+                                onClick { it.close() }
+                            }
+                            h2("Right sheet")
+                            text("bottom text")
+                        }
+                    }
+                }
+            }
         }
     }
 }

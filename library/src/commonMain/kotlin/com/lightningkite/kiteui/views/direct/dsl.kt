@@ -227,6 +227,18 @@ inline fun ViewWriter.frame(setup: Frame.() -> Unit = {}): Frame {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
+inline fun ViewWriter.coordinatorFrame(setup: CoordinatorFrame.() -> Unit = {}): CoordinatorFrame {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(CoordinatorFrame(context) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.coordinatorDragHandle(setup: CoordinatorDragHandle.() -> Unit = {}): CoordinatorDragHandle {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(CoordinatorDragHandle(context) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
 inline fun ViewWriter.swapView(setup: SwapView.() -> Unit = {}): SwapView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(SwapView(context) , setup)

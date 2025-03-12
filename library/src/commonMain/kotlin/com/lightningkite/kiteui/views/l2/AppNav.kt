@@ -41,7 +41,7 @@ interface AppNav {
 }
 
 
-val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
+val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
     Property(
         ViewWriter::appNavBottomTabs
     )
@@ -59,10 +59,10 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
+fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
-    OuterSemantic.onNext - col {
+    return OuterSemantic.onNext - col {
         debugName = "outer nav"
         bar - row {
             debugName = "top bar"
@@ -96,10 +96,10 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit) {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
+fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    OuterSemantic.onNext - col {
+    return OuterSemantic.onNext - col {
         bar - row {
             showOnPrint = false
             setup(appNav)
@@ -123,9 +123,9 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit) {
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
+fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    OuterSemantic.onNext - col {
+    return OuterSemantic.onNext - col {
         debugName = "outer nav"
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
@@ -183,9 +183,9 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit) {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit) {
+fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    OuterSemantic.onNext - col {
+    return OuterSemantic.onNext - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
             showOnPrint = false

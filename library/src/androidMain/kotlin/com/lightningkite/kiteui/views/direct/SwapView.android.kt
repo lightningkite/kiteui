@@ -32,7 +32,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
 
     actual fun swap(
         transition: ScreenTransition,
-        createNewView: ViewWriter.() -> Unit,
+        createNewView: ViewWriter.() -> ViewModifiable?,
     ) {
 
         native.visibility = View.VISIBLE

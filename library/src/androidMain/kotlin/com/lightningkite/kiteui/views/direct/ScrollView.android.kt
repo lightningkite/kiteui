@@ -99,7 +99,6 @@ class ScrollView constructor(
     private data class SnapCandidate(val view: View, val fx: Int, val fy: Int, val cx: Int, val cy: Int)
 
     private fun snaps() {
-        println("snaps - $snapToElements")
         val configuration = ViewConfiguration.get(native.context)
         val mTouchSlop = configuration.scaledTouchSlop
         val mMinimumVelocity = configuration.scaledMinimumFlingVelocity
@@ -121,7 +120,6 @@ class ScrollView constructor(
         val r = android.graphics.Rect(0, 0, 0, 0)
         var hOffset = Int.MAX_VALUE
         var vOffset = Int.MAX_VALUE
-        println("Determining snap...")
         if (scrollSnapStop) {
             val candidates = native.children.flatMap { (it as? ViewGroup)?.children ?: sequenceOf() }
                 .map {
@@ -166,7 +164,6 @@ class ScrollView constructor(
                 candidates.filter { it.cy > 0 }.minByOrNull { abs(it.cy) } ?: candidates.maxBy { it.cy }
             hOffset = sequenceOf(lowerXCandidate, upperXCandidate).minBy { abs(it.fx) }.cx
             vOffset = sequenceOf(lowerYCandidate, upperYCandidate).minBy { abs(it.fy) }.cy
-            println("Snaps!  $cx $cy ->| $fx $fy, $hOffset $vOffset")
         } else {
             var hFOffset = Int.MAX_VALUE
             var vFOffset = Int.MAX_VALUE
@@ -205,7 +202,6 @@ class ScrollView constructor(
                         }
                     }
                 }
-            println("Snaps!  $cx $cy -> $fx $fy, $hOffset $vOffset")
         }
         if (hOffset != Int.MAX_VALUE && abs(hOffset) > 1)
             native.smoothScrollBy(hOffset, 0)
