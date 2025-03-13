@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.render
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.kiteui.views.direct.stack
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner

@@ -12,7 +12,11 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
+import com.lightningkite.readable.invoke
 import com.lightningkite.readable.reactive
+import kotlinx.coroutines.launch
+
+private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
@@ -27,8 +31,6 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         Frame.internalAddChildStack(this, index, view)
     }
 
-    val expanded = Property(false)
-
     actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
@@ -38,7 +40,8 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         blockBehind: Boolean,
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
-        expanded.value = startState == BottomSheetState.EXPANDED
+
+        val expanded = Property(startState)
         var willRemove: RView? = null
         val transition = ScreenTransitions.VerticalSlide
         withoutAnimation {
@@ -49,17 +52,18 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 }
             }.run {
+                bottomSheetState = expanded
                 beforeNextElementSetup {
                     animateIn(transition.forward)
                 }
                 willRemove = col {
                     spacing = 0.px
                     ignoreInteraction = true
-                    expanding - onlyWhen { !expanded() } - frame {
+                    expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
                         ignoreInteraction = true
                     }
                     expanding - content(object : BottomSheetControl {
-                        override val state: Writable<BottomSheetState> = Property(BottomSheetState.EXPANDED)
+                        override val state: Writable<BottomSheetState> = expanded
                         override fun close() {
                             closePopovers()
                         }
@@ -87,9 +91,21 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 beforeNextElementSetup {
                     animateIn(transition.forward)
                 }
-                align(Align.Start, Align.Stretch) - content(object: SlidingPanelControl {
-                    override fun close() { closePopovers() }
-                })
+                val control = object : SlidingPanelControl {
+                    override fun close() {
+                        closePopovers()
+                    }
+                }
+                if(ratio == null) {
+                    align(Align.Start, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        spacing = 0.px
+                        ignoreInteraction = true
+                        weight(ratio) - content(control)
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                    }
+                }
                 willRemove = lastWrittenView
             }
         }
@@ -113,9 +129,21 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 beforeNextElementSetup {
                     animateIn(transition.forward)
                 }
-                align(Align.End, Align.Stretch) - content(object: SlidingPanelControl {
-                    override fun close() { closePopovers() }
-                })
+                val control = object : SlidingPanelControl {
+                    override fun close() {
+                        closePopovers()
+                    }
+                }
+                if(ratio == null) {
+                    align(Align.End, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        spacing = 0.px
+                        ignoreInteraction = true
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                        weight(ratio) - content(control)
+                    }
+                }
                 willRemove = lastWrittenView
             }
         }
@@ -136,23 +164,24 @@ actual class CoordinatorDragHandle actual constructor(context: RContext) : RView
         Frame.internalAddChildStack(this, index, view)
     }
 
-    val expanded get() = generateSequence(this as RView) { it.parent }
-        .filterIsInstance<CoordinatorFrame>()
-        .firstOrNull()
-        ?.expanded ?: Property(false)
-
     val iconView = icon {
         source = Icon.expand
     }
 
     override fun postSetup() {
         super.postSetup()
-        val e = expanded
+        val e = bottomSheetState ?: return
         native.addEventListener("click") {
-            e.value = !e.value
+            launch {
+                e set when(e()) {
+                    BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
+                    BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
+                    else -> BottomSheetState.PARTIALLY_EXPANDED
+                }
+            }
         }
         iconView.reactive {
-            iconView.source = if(e()) Icon.collapse else Icon.expand
+            iconView.source = if(e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
         }
     }
 }

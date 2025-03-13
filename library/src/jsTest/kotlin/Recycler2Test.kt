@@ -6,7 +6,7 @@ import kotlin.test.Test
 class Recycler2Test {
     @Test fun scrollRules() = assertManualReview(
         file = "ScrollView.commonHtml.js.kt",
-        currentHash = "aff58fef14fdbdb6aabe8236fc44b85b7b20a34a",
+        currentHash = "acc67f4627fa42136602297e74040999ea4b4fa1",
         reviewedHash = "0f4b6b88598a3c96efe056e33bc922515bad01bf",
         whatToTest = """
             This file is *extremely sensitive* to view pagers and recycler views.
@@ -21,7 +21,7 @@ class Recycler2Test {
     )
     @Test fun r2Bullshit() = assertManualReview(
         file = "Recycler2.kt",
-        currentHash = "01ae32459f2386c4f4ed0b94a745527f1b9f9adf",
+        currentHash = "f2adccc217a44c6b94b6ed4b11ddeca4d3049958",
         reviewedHash = "28fac6ee4dd0786eec6c9a4b3dc797c2ed14d8e4",
         whatToTest = """
             This file is *extremely sensitive* to view pagers and recycler views.
