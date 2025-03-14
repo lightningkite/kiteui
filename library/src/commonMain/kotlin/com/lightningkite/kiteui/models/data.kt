@@ -636,6 +636,7 @@ data class KeyboardHints(
     val case: KeyboardCase = KeyboardCase.None,
     val type: KeyboardType = KeyboardType.Text,
     val autocomplete: AutoComplete? = null,
+    val includePasskeys: Boolean = false,
     val autocorrect: Boolean = true,
 ) {
     companion object {
