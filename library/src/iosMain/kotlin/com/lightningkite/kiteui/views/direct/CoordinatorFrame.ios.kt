@@ -1,18 +1,27 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.DisabledSemantic
+import com.lightningkite.kiteui.models.DownSemantic
+import com.lightningkite.kiteui.models.FocusSemantic
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.animateIn
-import com.lightningkite.kiteui.views.animateOut
+import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
-import kotlin.let
-import kotlin.run
+import com.lightningkite.readable.invoke
+import com.lightningkite.readable.reactive
+import kotlinx.coroutines.launch
+import platform.UIKit.UIView
+
+private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
@@ -27,24 +36,33 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         blockBehind: Boolean,
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
+
+        val expanded = Property(startState)
         var willRemove: RView? = null
         val transition = ScreenTransitions.VerticalSlide
+        fun closePanel() {
+            willRemove?.let {
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
+                }
+            }}
         withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        overlayFrame!!.removeChild(it)
+            bottomSheetState = expanded
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            willRemove = col {
+                spacing = 0.px
+                ignoreInteraction = true
+                expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
+                    ignoreInteraction = true
+                }
+                expanding - content(object : BottomSheetControl {
+                    override val state: Writable<BottomSheetState> = expanded
+                    override fun close() {
+                        closePanel()
                     }
-                }
-            }.run {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                content(object: BottomSheetControl {
-                    override val state: Writable<BottomSheetState> = Property(BottomSheetState.EXPANDED)
-                    override fun close() { closePopovers() }
                 })
-                willRemove = lastWrittenView
             }
         }
     }
@@ -56,22 +74,33 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
-        withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        overlayFrame!!.removeChild(it)
-                    }
+        fun closePanel() {
+            willRemove?.let {
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
                 }
-            }.run {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                align(Align.Start, Align.Stretch) - content(object: SlidingPanelControl {
-                    override fun close() { closePopovers() }
-                })
-                willRemove = lastWrittenView
             }
+        }
+        withoutAnimation {
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            if(ratio == null) {
+                align(Align.Start, Align.Stretch) - content(control)
+            } else {
+                row {
+                    spacing = 0.px
+                    ignoreInteraction = true
+                    weight(ratio) - content(control)
+                    weight(1f - ratio) - frame { ignoreInteraction = true }
+                }
+            }
+            willRemove = lastWrittenView
         }
     }
 
@@ -82,28 +111,67 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions.HorizontalSlide
-        withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        overlayFrame!!.removeChild(it)
-                    }
+        fun closePanel() {
+            willRemove?.let {
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
                 }
-            }.run {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                align(Align.End, Align.Stretch) - content(object: SlidingPanelControl {
-                    override fun close() { closePopovers() }
-                })
-                willRemove = lastWrittenView
             }
+        }
+        withoutAnimation {
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            if(ratio == null) {
+                align(Align.End, Align.Stretch) - content(control)
+            } else {
+                row {
+                    spacing = 0.px
+                    ignoreInteraction = true
+                    weight(1f - ratio) - frame { ignoreInteraction = true }
+                    weight(ratio) - content(control)
+                }
+            }
+            willRemove = lastWrittenView
         }
     }
 }
 
 
 actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout()
+    override val native = FrameLayoutButton()
+
+    val iconView = icon {
+        source = Icon.expand
+    }
+
+    override fun postSetup() {
+        super.postSetup()
+        val e = bottomSheetState ?: return
+        native.setOnClick {
+            launch {
+                e set when(e()) {
+                    BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
+                    BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
+                    else -> BottomSheetState.PARTIALLY_EXPANDED
+                }
+            }
+        }
+        iconView.reactive {
+            iconView.source = if(e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
+        }
+    }
+
+    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
+        var t = theme[ClickableSemantic]
+        if(native.highlighted) t = t[DownSemantic]
+        if(native.focused) t = t[FocusSemantic]
+        return super.applyState(t)
+    }
 }
 

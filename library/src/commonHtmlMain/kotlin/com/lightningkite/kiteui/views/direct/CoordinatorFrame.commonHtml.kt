@@ -44,31 +44,29 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         val expanded = Property(startState)
         var willRemove: RView? = null
         val transition = ScreenTransitions.VerticalSlide
+        fun closePanel() {
+            willRemove?.let {
+            it.animateOut(transition.reverse) {
+                this@CoordinatorFrame.removeChild(it)
+            }
+        }}
         withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        this@CoordinatorFrame.removeChild(it)
-                    }
-                }
-            }.run {
-                bottomSheetState = expanded
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                willRemove = col {
-                    spacing = 0.px
+            bottomSheetState = expanded
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            willRemove = col {
+                spacing = 0.px
+                ignoreInteraction = true
+                expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
                     ignoreInteraction = true
-                    expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
-                        ignoreInteraction = true
-                    }
-                    expanding - content(object : BottomSheetControl {
-                        override val state: Writable<BottomSheetState> = expanded
-                        override fun close() {
-                            closePopovers()
-                        }
-                    })
                 }
+                expanding - content(object : BottomSheetControl {
+                    override val state: Writable<BottomSheetState> = expanded
+                    override fun close() {
+                        closePanel()
+                    }
+                })
             }
         }
     }
@@ -80,34 +78,33 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
-        withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        this@CoordinatorFrame.removeChild(it)
-                    }
+        fun closePanel() {
+            willRemove?.let {
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
                 }
-            }.run {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                val control = object : SlidingPanelControl {
-                    override fun close() {
-                        closePopovers()
-                    }
-                }
-                if(ratio == null) {
-                    align(Align.Start, Align.Stretch) - content(control)
-                } else {
-                    row {
-                        spacing = 0.px
-                        ignoreInteraction = true
-                        weight(ratio) - content(control)
-                        weight(1f - ratio) - frame { ignoreInteraction = true }
-                    }
-                }
-                willRemove = lastWrittenView
             }
+        }
+        withoutAnimation {
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            if(ratio == null) {
+                align(Align.Start, Align.Stretch) - content(control)
+            } else {
+                row {
+                    spacing = 0.px
+                    ignoreInteraction = true
+                    weight(ratio) - content(control)
+                    weight(1f - ratio) - frame { ignoreInteraction = true }
+                }
+            }
+            willRemove = lastWrittenView
         }
     }
 
@@ -118,34 +115,33 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions.HorizontalSlide
-        withoutAnimation {
-            popoverWriter {
-                willRemove?.let {
-                    it.animateOut(transition.reverse) {
-                        this@CoordinatorFrame.removeChild(it)
-                    }
+        fun closePanel() {
+            willRemove?.let {
+                it.animateOut(transition.reverse) {
+                    this@CoordinatorFrame.removeChild(it)
                 }
-            }.run {
-                beforeNextElementSetup {
-                    animateIn(transition.forward)
-                }
-                val control = object : SlidingPanelControl {
-                    override fun close() {
-                        closePopovers()
-                    }
-                }
-                if(ratio == null) {
-                    align(Align.End, Align.Stretch) - content(control)
-                } else {
-                    row {
-                        spacing = 0.px
-                        ignoreInteraction = true
-                        weight(1f - ratio) - frame { ignoreInteraction = true }
-                        weight(ratio) - content(control)
-                    }
-                }
-                willRemove = lastWrittenView
             }
+        }
+        withoutAnimation {
+            beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            if(ratio == null) {
+                align(Align.End, Align.Stretch) - content(control)
+            } else {
+                row {
+                    spacing = 0.px
+                    ignoreInteraction = true
+                    weight(1f - ratio) - frame { ignoreInteraction = true }
+                    weight(ratio) - content(control)
+                }
+            }
+            willRemove = lastWrittenView
         }
     }
 }

@@ -58,26 +58,26 @@ fun Theme.Companion.flat(
                 }.toRGB()
             ).withBack
         },
-        UnselectedSemantic to {
-            val existing = it.background.closestColor().toHSP()
-            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
-                it.withoutBack
-            } else {
-                it.copy(
-                    id = "uns",
-                    background = it.background.closestColor().copy(alpha = 0f),
-                    foreground = it.outline.closestColor(),
-                    outlineWidth = 1.dp
-                ).withBack
-            }
-        },
-        SelectedSemantic to {
-            it.copy(id = "sel", background = it.background.closestColor().toHSP().let {
-                it.copy(brightness = it.brightness + brightnessStep * 2)
-            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
-                it.copy(brightness = it.brightness + brightnessStep * 2)
-            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
-        },
+//        UnselectedSemantic to {
+//            val existing = it.background.closestColor().toHSP()
+//            if(abs(existing.brightness - 0.5f) > brightnessStep * 3) {
+//                it.withoutBack
+//            } else {
+//                it.copy(
+//                    id = "uns",
+//                    background = it.background.closestColor().copy(alpha = 0f),
+//                    foreground = it.outline.closestColor(),
+//                    outlineWidth = 1.dp
+//                ).withBack
+//            }
+//        },
+//        SelectedSemantic to {
+//            it.copy(id = "sel", background = it.background.closestColor().toHSP().let {
+//                it.copy(brightness = it.brightness + brightnessStep * 2)
+//            }.toRGB(), outline = it.outline.closestColor().toHSP().let {
+//                it.copy(brightness = it.brightness + brightnessStep * 2)
+//            }.toRGB(), outlineWidth = it.outlineWidth * 2).withBack
+//        },
         HoverSemantic to {
             it.copy(id = "hov", background = it.background.closestColor().toHSP().let {
                 it.copy(brightness = it.brightness + brightnessStep)

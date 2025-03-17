@@ -148,12 +148,13 @@ actual class ScrollingBehaviorImpl actual constructor(
             behavior = if(animated) ScrollBehavior.SMOOTH else ScrollBehavior.INSTANT
         ))
     }
-    var sdn = 0
+    private var scrollToInstance = 0
     fun disableSnapTemporarily() {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
     }
     actual override fun scrollToKeepAnimations(x: Double, y: Double) {
+        val myInstance = ++scrollToInstance
         if(viewDebugTarget == on) println("ScrollView.scrollToKeepAnimations($x, $y)")
         disableSnapTemporarily()
         native.onElement {
@@ -167,42 +168,23 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
             it.scrollLeft = x
             it.scrollTop = y
-//                it.scrollTo(ScrollToOptions(it.scrollLeft, it.scrollTop, ScrollBehavior.INSTANT))
-
-            run {
-                // ugly dirty painful safari fix
-                var count = 0
-                var printer = {}
-                printer = label@{
-                    val c = count++
-                    // fuck you, set the position
+            val amount = 32
+            for(count in 1..(amount-1)) {
+                window.setTimeout(label@{
+                    if(myInstance != scrollToInstance) return@label
+                    println("offset count $count: ${it.scrollLeft}, ${it.scrollTop}")
                     it.scrollLeft = x
                     it.scrollTop = y
-//                it.scrollTo(ScrollToOptions(it.scrollLeft, it.scrollTop, ScrollBehavior.INSTANT))
-                    if (count < 15) window.setTimeout(printer, 1)
-                }
-                printer()
+                }, count)
             }
-            window.requestAnimationFrame {
-                println("Animation frame occurred")
-            }
-            run {
-                var count = 0
-                var printer = {}
-                printer = label@{
-                    val c = count++
-                    println("offset count $count: ${it.scrollLeft}, ${it.scrollTop}")
-                    if(count < 15) window.setTimeout(printer, 1)
-                }
-                printer()
-            }
-            afterTimeout(16) {
-                lockScrollReportAt = null
+            afterTimeout(amount.toLong()) label@{
+                if(myInstance != scrollToInstance) return@label
                 if(snapToElements.first != null || snapToElements.second != null) {
                     snapToElements = snapToElements  // reset css
                     it.scrollLeft = x
                     it.scrollTop = y
                 }
+                lockScrollReportAt = null
                 lockScrollEnd.invokeAll()
             }
         }

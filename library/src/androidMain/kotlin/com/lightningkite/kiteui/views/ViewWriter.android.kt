@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.userAgent
 import com.lightningkite.readable.CalculationContext
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.invokeAllSafe
@@ -21,10 +22,12 @@ import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.http.*
+import io.ktor.util.Platform
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.RuntimeException
 import java.lang.ref.WeakReference
@@ -44,6 +47,9 @@ object AndroidAppContext {
     val ktorClient: HttpClient by lazy {
         HttpClient(OkHttp) {
             install(WebSockets)
+            install(UserAgent) {
+                agent = com.lightningkite.kiteui.Platform.userAgent
+            }
             install(HttpCache) {
                 publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttp")))
             }

@@ -26,6 +26,9 @@ import kotlin.coroutines.suspendCoroutine
 
 val client = HttpClient {
     install(WebSockets)
+    install(UserAgent) {
+        agent = Platform.userAgent
+    }
     install(HttpCache) {
 //        publicStorage(object: CacheStorage {
 //            override suspend fun find(url: Url, varyKeys: Map<String, String>): CachedResponseData? {

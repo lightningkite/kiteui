@@ -334,18 +334,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 border-radius: 999px;
                 content: "";
                 display: block;
-                width: 1rem;
-                height: 1rem;
-                top: 0.15rem;
-                left: 0.15rem;
+                width: 50%;
+                height: 50%;
+                top: 25%;
+                left: 25%;
                 background-color: currentcolor;
                 opacity: 0.4;
                 transform: scale(0);
                 transition-property: opacity, transform;
                 transition-timing-function: linear;
+                transition-duration: var(--transition-duration, 0.25s);
             }
 
-            .radio {
+            .radio.radio.radio {
                 appearance: none;
                 width: 1.5rem;
                 height: 1.5rem;
@@ -354,6 +355,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px !important;
                 border-width: 0.1rem;
                 border-style: solid;
+                outline: none;
+                border-color: var(--icon-color, currentcolor);
             }
 
             :checked.checkbox::after {
@@ -365,25 +368,27 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 position: absolute;
                 content: "";
                 display: block;
-                width: 0.8rem;
-                height: 0.3rem;
-                top: 0.3rem;
-                left: 0.16rem;
-                border-left-color: currentcolor;
-                border-bottom: 0.2rem solid;
+                width: 50%;
+                height: 20%;
+                top: 25%;
+                left: 20%;
+                border-color: currentcolor;
                 border-left-style: solid;
                 border-left-width: 0.2rem;
+                border-bottom-width: 0.2rem;
+                border-bottom-style: solid;
                 opacity: 0.4;
                 transform: rotate(-45deg) scale(0);
                 transition-property: opacity, transform;
                 transition-timing-function: linear;
+                transition-duration: var(--transition-duration, 0.25s);
             }
 
             .checkbox:checked {
                 opacity: 1;
             }
 
-            .checkbox {
+            .checkbox.checkbox.checkbox {
                 appearance: none;
                 width: 1.5rem;
                 height: 1.5rem;
@@ -391,6 +396,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px !important;
                 border-width: 0.1rem;
                 border-style: solid;
+                border-color: var(--icon-color, currentcolor);
+                border-radius: 20%;
+                outline: none;
                 opacity: 0.75;
             }
 
@@ -416,9 +424,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition: 0.3s;
             }
 
-            .switch:not(:checked) {
-                background-color: rgb(204, 204, 204) !important;
-                background-image: none !important;
+            .switch:checked {
+                background-color: #20a020 !important;
             }
 
             .switch {
@@ -430,7 +437,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
                 appearance: none;
                 border-radius: 9999px !important;
-                background-color: rgba(100, 116, 139, 0.377);
+                background-color: color-mix(in srgb, currentcolor 20%, transparent) !important;
+                background-image: none !important;
                 transition: 0.3s;
             }
 
