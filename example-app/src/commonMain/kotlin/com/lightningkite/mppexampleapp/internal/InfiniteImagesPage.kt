@@ -56,7 +56,6 @@ object InfiniteImagesPage : Page {
                 unpadded - button {
                     ::transitionId { it().toString() }
                     sizeConstraints(aspectRatio = 1.0) - image {
-                        viewDebugTarget = this
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
                     }

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.reactive.Action
 import kotlinx.coroutines.*
+import kotlin.coroutines.AbstractCoroutineContextKey
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
@@ -242,7 +243,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     private val job = SupervisorJob()
     @JsName("contextSetup")
     private fun contextSetup() = MutableCoroutineContext().apply {
-        add(Dispatchers.Main.immediate)
         add(this@RViewHelper.job)
         add(CoroutineExceptionHandler { coroutineContext, throwable ->
             if (throwable !is CancellationException) {
@@ -258,6 +258,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
                 listenForStatus(readable)
             }
         })
+        add(Dispatchers.Main.immediate)
     }
     override val coroutineContext: CoroutineContext = contextSetup()
 
@@ -375,34 +376,27 @@ abstract class RViewWrapper(context: RContext) : RView(context) {
 
 class MutableCoroutineContext: CoroutineContext {
     val list = ArrayList<CoroutineContext.Element>()
-    var interceptor: CoroutineContext.Element? = null
     fun add(context: CoroutineContext) {
         context.fold(Unit) { _, element -> add(element) }
     }
     fun add(element: CoroutineContext.Element) {
-        if(element.key == ContinuationInterceptor.Key) interceptor = element
-        else list.add(element)
+        list.add(element)
     }
     override fun <R> fold(initial: R, operation: (R, CoroutineContext.Element) -> R): R {
-        var out: R = interceptor?.let { operation(initial, it) } ?: initial
-        out = list.fold(out, operation)
-        return out
+        return list.fold(initial, operation)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E? {
-        if(key == ContinuationInterceptor.Key) return interceptor as E?
-        return list.lastOrNull { it.key == key } as E?
+        for(index in list.lastIndex downTo 0) {
+            return list[index][key] ?: continue
+        }
+        return null
     }
 
     override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext {
         return MutableCoroutineContext().apply {
-            if(key != ContinuationInterceptor.Key) {
-                this@MutableCoroutineContext.interceptor?.let { this@apply.interceptor = it }
-                this@MutableCoroutineContext.list.forEach { if(it.key != key) this@apply.add(it) }
-            } else {
-                this@apply.list.addAll(this@MutableCoroutineContext.list)
-            }
+            this@MutableCoroutineContext.list.forEach { if(it[key] == null) this@apply.add(it) }
         }
     }
 }
