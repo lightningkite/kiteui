@@ -1,5 +1,6 @@
 language = Objective-C
 package = com.lightningkite.kiteui.objc
+headerFilter = a
 ---
 #import <objc/runtime.h>
 #import <UIKit/UIImage.h>
@@ -15,6 +16,9 @@ package = com.lightningkite.kiteui.objc
 #import <Foundation/NSData.h>
 #import <Foundation/NSURLResponse.h>
 #import <Foundation/NSError.h>
+#import <UIKit/UIPresentationController.h>
+#import <UIKit/UISheetPresentationController.h>
+#import <UIKit/UIKitDefines.h>
 
 typedef void (^ LoadImageCallback)(__kindof id<NSItemProviderReading> object, NSError *error);
 void loadImageFromProvider(NSItemProvider *provider, LoadImageCallback callback) {
@@ -33,6 +37,20 @@ id cgColorRefasIdType(CGColorRef color) {
     return (__bridge id) color;
 }
 
+@interface UIViewController (UIPresentationController)
+
+@property (nullable, nonatomic, readonly) UIPresentationController *presentationController API_AVAILABLE(ios(8.0));
+@property (nullable, nonatomic, readonly) UISheetPresentationController *sheetPresentationController API_AVAILABLE(ios(15.0)) API_UNAVAILABLE(tvos, watchos);
+@property (nullable, nonatomic, readonly) UIPopoverPresentationController *popoverPresentationController API_AVAILABLE(ios(8.0));
+
+// Gets the presentation controller managing this view controller. If the original presentation controller has adapted, this returns the adaptive presentation controller. If this view controller has not yet been presented, this property returns nil.
+ @property (nullable, nonatomic, readonly) UIPresentationController *activePresentationController API_AVAILABLE(ios(16.0), tvos(16.0)) API_UNAVAILABLE(watchos);
+
+// modalInPresentation is set on the view controller when you wish to force the presentation hosting the view controller into modal behavior. When this is active, the presentation will prevent interactive dismiss and ignore events outside of the presented view controller's bounds until this is set to NO.
+@property (nonatomic, getter=isModalInPresentation) BOOL modalInPresentation API_AVAILABLE(ios(13.0)) API_UNAVAILABLE(watchos);
+
+@end
+
 @protocol KeyValueObserver
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
 @end
@@ -44,7 +62,6 @@ id cgColorRefasIdType(CGColorRef color) {
 @property (nullable, nonatomic, readonly, strong) __kindof UIView *inputAccessoryView API_AVAILABLE(ios(3.2)) API_UNAVAILABLE(visionos);
 
 @end
-
 
 @protocol UIViewWithSpacingRules
 - (id)getSpacingOverrideProperty;
@@ -71,4 +88,14 @@ id cgColorRefasIdType(CGColorRef color) {
 - (void)touchesEnded:(id)ended withEvent:(id)event;	// 0x32db3ec1
 - (void)touchesMoved:(id)moved withEvent:(id)event;	// 0x32db3ebd
 - (void)reset;	// 0x32b6b499
+@end
+
+
+@interface UISheetPresentationControllerDetent (Alt)
+
+// A system detent for a sheet that is approximately half the height of the screen, and is inactive in compact height.
++ (instancetype)mediumDetent;
+
+// A system detent for a sheet at full height.
++ (instancetype)largeDetent;
 @end

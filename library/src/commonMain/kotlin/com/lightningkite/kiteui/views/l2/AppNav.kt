@@ -47,8 +47,8 @@ val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> 
     )
 )
 
-fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit) {
-    appBase(main, dialog) {
+fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): ViewModifiable {
+    return appBase(main, dialog) {
         swapView {
             debugName = "swapView for appNavFactory"
             swapping(

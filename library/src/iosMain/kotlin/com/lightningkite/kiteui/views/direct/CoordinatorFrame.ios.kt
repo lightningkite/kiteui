@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
@@ -20,7 +21,13 @@ import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
 import com.lightningkite.readable.reactive
 import kotlinx.coroutines.launch
+import platform.UIKit.UISheetPresentationControllerDetentIdentifier
+import platform.UIKit.UISheetPresentationController
 import platform.UIKit.UIView
+import platform.UIKit.UIViewController
+import com.lightningkite.kiteui.objc.presentationController
+import platform.UIKit.UIModalPresentationPageSheet
+import platform.UIKit.UISheetPresentationControllerDetent
 
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
@@ -37,32 +44,34 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         blockBehind: Boolean,
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
-
-        var willRemove: RView? = null
-//        val transition = ScreenTransitions.VerticalSlide
+        val viewController = UIViewController()
+        viewController.modalPresentationStyle = UIModalPresentationPageSheet
         val control = object : BottomSheetControl {
             override val state: Writable<BottomSheetState> = Property(startState)
             override fun close() {
-                willRemove?.let {
-//                    it.animateOut(transition.reverse) {
-                        this@CoordinatorFrame.removeChild(it)
-//                    }
-                }
-                willRemove = null
+                viewController.dismissViewControllerAnimated(true) {}
             }
         }
-        withoutAnimation {
-            bottomSheetState = control.state
-            willRemove = col {
-                spacing = 0.px
-                ignoreInteraction = true
-                expanding - onlyWhen { control.state() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
-                    ignoreInteraction = true
-                }
-                expanding - content(control)
+        viewController.kiteUi(context) {
+            beforeNextElementSetup {
+                parent = this@CoordinatorFrame
             }
+            content(control)
         }
-//        willRemove?.animateIn(transition.forward)
+        (viewController.presentationController as? UISheetPresentationController)?.apply {
+            detents = listOf(
+                UISheetPresentationControllerDetent.Companion.mediumDetent(),
+                UISheetPresentationControllerDetent.Companion.largeDetent()
+            )
+            prefersGrabberVisible = draggable
+            selectedDetentIdentifier = when (startState) {
+                BottomSheetState.EXPANDED -> UISheetPresentationControllerDetent.Companion.largeDetent().identifier
+                else -> UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+            }
+            largestUndimmedDetentIdentifier = UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+            setLargestUndimmedDetentIdentifier(UISheetPresentationControllerDetent.Companion.mediumDetent().identifier)
+        }
+        ExternalServices.currentPresenter(viewController)
     }
 
     actual fun leftSlidingPanel(

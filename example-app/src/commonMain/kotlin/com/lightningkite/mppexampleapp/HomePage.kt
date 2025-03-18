@@ -130,7 +130,7 @@ class HomePage: Page {
                 onClick {
                     coordinatorFrame!!.bottomSheet(blockBehind = true, startState = BottomSheetState.PARTIALLY_EXPANDED) {
                         DialogSemantic.onNext - col {
-                            centered - coordinatorDragHandle()
+//                            centered - coordinatorDragHandle()
                             button {
                                 text("Close")
                                 onClick { it.close() }

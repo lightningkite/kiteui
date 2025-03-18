@@ -23,6 +23,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.readable.onRemove
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -35,6 +36,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     actual override var showOnPrint: Boolean = true
+
+    init {
+        CoroutineContext
+    }
 
     open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)

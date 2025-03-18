@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package com.lightningkite.kiteui.views
 
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.cgRectValue
@@ -9,8 +12,14 @@ import com.lightningkite.readable.Readable
 import com.lightningkite.readable.invoke
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.direct.observe
+import com.lightningkite.kiteui.views.kiteUi
+import com.lightningkite.kiteui.views.setup
 import kotlinx.cinterop.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -20,42 +29,67 @@ import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
+import kotlin.collections.get
+import kotlin.coroutines.CoroutineContext
+import kotlin.experimental.ExperimentalNativeApi
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
+fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> Unit) {
+fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> ViewModifiable) {
     setup({ themeReadable.invoke() }, app)
 }
 
-var rootViewController: UIViewController? = null
-    private set
 
-private val systemBarBackground = UIView()
-val setSystemBarBackground = systemBarBackground::setBackgroundColor
+class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: WeakReference<UIView>) : NSObject() {
+    var keyboardAnimationDuration: Double = 0.25
 
-fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
-    rootViewController = this
-    ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
-//    UIView.setAnimationsEnabled(false)
-
-    @OptIn(DelicateCoroutinesApi::class)
-    val writer = object : ViewWriter(), CalculationContext by AppScope {
-        override val context: RContext = RContext(this@setup)
-        override fun addChild(view: RView) {
-            this@setup.view.addSubview(view.native)
-        }
-
-        init {
-            beforeNextElementSetup {
-                ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
-            }
+    @ObjCAction
+    fun keyboardWillChangeFrame(notification: NSNotification?) {
+        val userInfo = notification?.userInfo ?: return
+        val keyboardFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue ?: return
+        val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
+        keyboardAnimationDuration =
+            (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?: return
+//            UIView.animateWithDuration(keyboardAnimationDuration) {
+        bottom.get()?.constant =
+            keyboardHeight - (view.get()?.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
+//            }
+        afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
+            view.get()?.findFirstResponderChild()?.scrollToMe(true)
         }
     }
-    writer.app()
 
-    val subview = view.subviews.first() as UIView
+    @ObjCAction
+    fun keyboardWillHideNotification() {
+//            UIView.animateWithDuration(keyboardAnimationDuration) {
+        bottom.get()?.constant = 0.0
+//            }
+    }
+
+    @ObjCAction
+    fun hideKeyboardWhenTappedAround() {
+        view.get()?.findFirstResponderChild()?.resignFirstResponder()
+    }
+}
+
+fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+    val job = SupervisorJob()
+    val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
+        Readable.reportException(throwable)
+    } + Dispatchers.Main.immediate
+    @OptIn(DelicateCoroutinesApi::class)
+    val writer = object : ViewWriter(), CalculationContext {
+        override val coroutineContext: CoroutineContext = scope
+        override val context: RContext = context
+        override fun addChild(view: RView) {
+            this@kiteUi.view.addSubview(view.native)
+        }
+    }
+    val created = writer.app()
+
+    val subview = created.rView.native
     subview.translatesAutoresizingMaskIntoConstraints = false
     subview.topAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
     subview.leftAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.leftAnchor).setActive(true)
@@ -63,68 +97,10 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
 
-    view.addSubview(systemBarBackground)
-    systemBarBackground.translatesAutoresizingMaskIntoConstraints = false
-    systemBarBackground.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
-    systemBarBackground.leftAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.leftAnchor).setActive(true)
-    systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
-    systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
-    writer.reactiveScope {
-        systemBarBackground.backgroundColor = themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
-    }
-
-    writer.reactiveScope {
-        view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
-    }
-
-    ExternalServices.rootView = subview
-
-    class Observer : NSObject() {
-        var keyboardAnimationDuration: Double = 0.25
-
-        @ObjCAction
-        fun keyboardWillChangeFrame(notification: NSNotification?) {
-            val userInfo = notification?.userInfo ?: return
-            val keyboardFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue ?: return
-            val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
-            keyboardAnimationDuration =
-                (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?: return
-//            UIView.animateWithDuration(keyboardAnimationDuration) {
-                bottom.constant =
-                    keyboardHeight - (this@setup.view.window?.safeAreaInsets?.useContents { this.bottom } ?: 0.0)
-//            }
-            afterTimeout((keyboardAnimationDuration * 1000.0).toLong()) {
-                this@setup.view.findFirstResponderChild()?.scrollToMe(true)
-            }
-        }
-
-        @ObjCAction
-        fun keyboardWillHideNotification() {
-//            UIView.animateWithDuration(keyboardAnimationDuration) {
-                bottom.constant = 0.0
-//            }
-        }
-
-        @ObjCAction
-        fun hideKeyboardWhenTappedAround() {
-            view.findFirstResponderChild()?.resignFirstResponder()
-        }
-
-//        init {
-//            memScoped {
-//                val mc = alloc<UIntVar>()
-//                val list = class_copyMethodList(object_getClass(this@Observer) as ObjCClass, mc.ptr)!!
-//                for(i in 0 until mc.value.toInt()) {
-//                    val x: Method = list[i]!!
-//                    println(platform.objc.sel_getName(method_getName(x))?.toKString())
-//                }
-//                nativeHeap.free(list)
-//            }
-//        }
-    }
-
-    val observer: Observer = Observer()
-
+    val observer: KeyboardObserver = KeyboardObserver(
+        WeakReference(bottom),
+        WeakReference(view)
+    )
     NSNotificationCenter.defaultCenter.addObserver(
         observer = observer,
         selector = sel_registerName("keyboardWillChangeFrame:"),
@@ -137,7 +113,6 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
         name = UIKeyboardWillHideNotification,
         `object` = null
     )
-    extensionStrongRef = observer
 
     val g = UITapGestureRecognizer(target = observer, action = sel_registerName("hideKeyboardWhenTappedAround"))
     g.cancelsTouchesInView = false
@@ -146,12 +121,52 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     val remover = subview.observe("bounds") {
         subview.layoutLayers()
     }
-    view.addSubview(object: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
-        override fun willMoveToWindow(newWindow: UIWindow?) {
-            super.willMoveToWindow(newWindow)
-            if(newWindow == null) {
-                remover()
-            }
-        }
+    view.addSubview(RemoveView {
+        println("Shutting down VC")
+        view.removeGestureRecognizer(g)
+        NSNotificationCenter.defaultCenter.removeObserver(observer)
+        remover()
+        job.cancel()
+        created.rView.shutdown()
     })
+}
+
+private class RemoveView(var onRemove: (()->Unit)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+    init {
+        this.hidden = true
+    }
+    override fun willMoveToWindow(newWindow: UIWindow?) {
+        super.willMoveToWindow(newWindow)
+        if (newWindow == null) {
+            onRemove?.invoke()
+            onRemove = null
+        }
+    }
+}
+
+fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> ViewModifiable) {
+    val systemBarBackground = UIView()
+
+    view.addSubview(systemBarBackground)
+    systemBarBackground.translatesAutoresizingMaskIntoConstraints = false
+    systemBarBackground.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
+    systemBarBackground.leftAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.leftAnchor).setActive(true)
+    systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
+    systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
+    kiteUi {
+        beforeNextElementSetup {
+            ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
+        }
+        reactiveScope {
+            systemBarBackground.backgroundColor =
+                themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
+        }
+        reactiveScope {
+            view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
+        }
+        app()
+    }
+    ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
+    ExternalServices.rootView = view
+
 }

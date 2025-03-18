@@ -15,8 +15,6 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
-val ktorVersion = "3.0.0"
-
 val lk = project.lk {
     kotlinTestManualPlugin()
 }
@@ -47,18 +45,15 @@ kotlin {
         }
     }
     jvm()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-//    listOf(
-//        iosX64(),
-//        iosArm64(),
-//        iosSimulatorArm64()
-//    ).forEach {
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
 //        it.binaries.framework {
 //            baseName = "library"
 //        }
-//    }
+    }
     js(IR) {
         browser {
             testTask {
