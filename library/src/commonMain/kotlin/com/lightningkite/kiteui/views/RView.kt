@@ -328,7 +328,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     // Cleanup Insurance
     open fun shutdown() {
-        if(parent?.lastWrittenView == this) parent?.lastWrittenView = null
         job.cancel()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {

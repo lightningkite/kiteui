@@ -18,14 +18,41 @@ class ScrollView(
     override val horizontal: Boolean,
     override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
-    override val native = ScrollLayout()
+    override val native = FrameLayout()
+    val scroller = ScrollLayout()
+    init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
+
+    override fun internalAddChild(index: Int, view: RView) {
+        if (index == scroller.subviews.size)
+            scroller.addSubview(view.native)
+        else
+            scroller.insertSubview(view.native, index.toLong())
+        if (children[index].native != scroller.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        if (children[index].native != scroller.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (index >= scroller.subviews.size || index < 0) {
+            throw IllegalStateException("Index $index not in 0..<${scroller.subviews.size}")
+        }
+        (scroller.subviews[index] as UIView).removeFromSuperview()
+    }
+
+    override fun internalClearChildren() {
+        scroller.subviews.toList().forEach {
+            (it as UIView).let {
+                it.removeFromSuperview()
+            }
+        }
+    }
+
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {
-//            println("scrollViewDidScroll: ${native.contentOffset.useContents { "$x, $y" }}")
+//            println("scrollViewDidScroll: ${scroller.contentOffset.useContents { "$x, $y" }}")
             if (scrollCalcOngoing) return
             scrollCalcOngoing = true
             scroll.invokeAll()
@@ -48,7 +75,7 @@ class ScrollView(
             _directlyInteractingWithScroller.value = false
 
             // snap!
-            val candidates = native.subviews.asSequence().flatMap {
+            val candidates = scroller.subviews.asSequence().flatMap {
                 (it as UIView).subviews.asSequence() as Sequence<UIView>
             }
             if(candidates.none()) return
@@ -125,30 +152,30 @@ class ScrollView(
     }
 
     init {
-        native.horizontal = !vertical  //TODO: Support both directions
-        native.onSizeChange = label@{
+        scroller.horizontal = !vertical  //TODO: Support both directions
+        scroller.onSizeChange = label@{
             if (scrollCalcOngoing) return@label
             scrollCalcOngoing = true
             sizeChange.invokeAll()
             scrollCalcOngoing = false
         }
-        native.delegate = dg
+        scroller.delegate = dg
         onRemove {
-            native.delegate = null
-            native.onSizeChange = {}
+            scroller.delegate = null
+            scroller.onSizeChange = {}
         }
     }
 
     override var showScrollBars: Boolean = true
         set(value) {
             field = value
-            native.showsHorizontalScrollIndicator = value
-            native.showsVerticalScrollIndicator = value
+            scroller.showsHorizontalScrollIndicator = value
+            scroller.showsVerticalScrollIndicator = value
         }
     override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
-        val (ox, oy) = native.contentOffset.useContents { x to y }
-        val (vw, vh) = native.bounds.useContents { size.width to size.height }
-        native.bounds.useContents {
+        val (ox, oy) = scroller.contentOffset.useContents { x to y }
+        val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
+        scroller.bounds.useContents {
             Rect.fromSize(
                 left = ox,
                 top = oy,
@@ -158,9 +185,9 @@ class ScrollView(
         }
     }
     override val content: Readable<Rect> = (sizeChange).lensListenable {
-        val (sw, sh) = native.contentSize.useContents { width to height }
-        val (vw, vh) = native.bounds.useContents { size.width to size.height }
-        native.bounds.useContents {
+        val (sw, sh) = scroller.contentSize.useContents { width to height }
+        val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
+        scroller.bounds.useContents {
             Rect.fromSize(
                 width = vw + sw,
                 height = vh + sh,
@@ -175,20 +202,20 @@ class ScrollView(
             field = value
             // scroll to nearest?
             if(value.first == null && value.second == null) {
-                native.decelerationRate = UIScrollViewDecelerationRateNormal
+                scroller.decelerationRate = UIScrollViewDecelerationRateNormal
             } else {
-                native.decelerationRate = UIScrollViewDecelerationRateFast
+                scroller.decelerationRate = UIScrollViewDecelerationRateFast
             }
-//            native.content
+//            scroller.content
         }
     override var scrollSnapStop: Boolean = false
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
-        val (existingX, existingY) = native.contentOffset.useContents { x to y }
-        val (maxX, maxY) = native.contentSize.useContents { width to height }
-        val (sizeX, sizeY) = native.bounds.useContents { size.width to size.height }
+        val (existingX, existingY) = scroller.contentOffset.useContents { x to y }
+        val (maxX, maxY) = scroller.contentSize.useContents { width to height }
+        val (sizeX, sizeY) = scroller.bounds.useContents { size.width to size.height }
 //        println("ScrollView.scrollTo: ${existingX.toInt()}, ${existingY.toInt()} += ${left.toInt()}, ${top.toInt()}")
-        native.setContentOffset(
+        scroller.setContentOffset(
             CGPointMake(
                 x = if (horizontal) left.coerceAtMost(maxX - sizeX).coerceAtLeast(0.0) else 0.0,
                 y = if (vertical) top.coerceAtMost(maxY - sizeY).coerceAtLeast(0.0) else 0.0,
@@ -200,24 +227,24 @@ class ScrollView(
         scrollTo(
             left = when(horizontal) {
                 Align.Start -> element.native.bounds.useContents { origin.x }
-                Align.Center -> (element.native.bounds.useContents { origin.x * 2 + size.width }) / 2 - native.bounds.useContents { size.width } / 2
-                Align.End -> (element.native.bounds.useContents { origin.x + size.width }) - native.bounds.useContents { size.width }
-                Align.Stretch -> (element.native.bounds.useContents { origin.x * 2 + size.width }) / 2 - native.bounds.useContents { size.width } / 2
+                Align.Center -> (element.native.bounds.useContents { origin.x * 2 + size.width }) / 2 - scroller.bounds.useContents { size.width } / 2
+                Align.End -> (element.native.bounds.useContents { origin.x + size.width }) - scroller.bounds.useContents { size.width }
+                Align.Stretch -> (element.native.bounds.useContents { origin.x * 2 + size.width }) / 2 - scroller.bounds.useContents { size.width } / 2
             }.toDouble(),
             top = when(vertical) {
                 Align.Start -> element.native.bounds.useContents { origin.y }
-                Align.Center -> (element.native.bounds.useContents { origin.y * 2 + size.height }) / 2 - native.bounds.useContents { size.height } / 2
-                Align.End -> (element.native.bounds.useContents { origin.y + size.height }) - native.bounds.useContents { size.height }
-                Align.Stretch -> (element.native.bounds.useContents { origin.y * 2 + size.height }) / 2 - native.bounds.useContents { size.height } / 2
+                Align.Center -> (element.native.bounds.useContents { origin.y * 2 + size.height }) / 2 - scroller.bounds.useContents { size.height } / 2
+                Align.End -> (element.native.bounds.useContents { origin.y + size.height }) - scroller.bounds.useContents { size.height }
+                Align.Stretch -> (element.native.bounds.useContents { origin.y * 2 + size.height }) / 2 - scroller.bounds.useContents { size.height } / 2
             }.toDouble(),
             animated = animated
         )
     }
 
     override fun scrollToKeepAnimations(x: Double, y: Double) {
-        val (existingX, existingY) = native.contentOffset.useContents { this.x to this.y }
+        val (existingX, existingY) = scroller.contentOffset.useContents { this.x to this.y }
         // Don't apply boundary locks here - caller knows what they're doing.
-        native.contentOffset = CGPointMake(
+        scroller.contentOffset = CGPointMake(
             x = if (horizontal) x else existingX,
             y = if (vertical) y else existingY,
         )

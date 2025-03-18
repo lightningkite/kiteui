@@ -8,4 +8,6 @@ actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> ViewModifiable?
 ) {
+    clearChildren()
+    createNewView()
 }

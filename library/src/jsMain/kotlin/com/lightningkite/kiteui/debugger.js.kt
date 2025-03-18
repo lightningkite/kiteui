@@ -55,8 +55,18 @@ private class PlatformConsole(val tag: String): Console {
     }
 }
 
-actual class WeakReference<T: Any> actual constructor(private val referred: T) {
-    actual fun get(): T? = referred
+private external interface WeakRef<T> {
+    fun deref(): T?
+}
+
+actual class WeakReference<T: Any> actual constructor(referred: T) {
+    actual fun get(): T? = native?.deref()
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    private val native: WeakRef<T>? = try {
+        js("WeakRef(referred)") as? WeakRef<T>
+    } catch(e: dynamic) {
+        null
+    }
 }
 //internal val anyIdentityHashCodeJsRef: (Any)->Int = js("""
 //    (obj) => {

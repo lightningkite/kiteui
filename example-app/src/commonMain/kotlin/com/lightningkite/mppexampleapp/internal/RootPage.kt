@@ -19,6 +19,7 @@ import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
+import com.lightningkite.kiteui.views.direct.switch
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
 import com.lightningkite.kiteui.views.l2.icon

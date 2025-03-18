@@ -17,6 +17,7 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
 import com.lightningkite.readable.invoke
+import com.lightningkite.readable.onRemove
 import com.lightningkite.readable.reactive
 import kotlinx.coroutines.launch
 import platform.UIKit.UIView
@@ -37,34 +38,31 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
 
-        val expanded = Property(startState)
         var willRemove: RView? = null
-        val transition = ScreenTransitions.VerticalSlide
-        fun closePanel() {
-            willRemove?.let {
-                it.animateOut(transition.reverse) {
-                    this@CoordinatorFrame.removeChild(it)
+//        val transition = ScreenTransitions.VerticalSlide
+        val control = object : BottomSheetControl {
+            override val state: Writable<BottomSheetState> = Property(startState)
+            override fun close() {
+                willRemove?.let {
+//                    it.animateOut(transition.reverse) {
+                        this@CoordinatorFrame.removeChild(it)
+//                    }
                 }
-            }}
-        withoutAnimation {
-            bottomSheetState = expanded
-            beforeNextElementSetup {
-                animateIn(transition.forward)
+                willRemove = null
             }
+        }
+        withoutAnimation {
+            bottomSheetState = control.state
             willRemove = col {
                 spacing = 0.px
                 ignoreInteraction = true
-                expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
+                expanding - onlyWhen { control.state() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
                     ignoreInteraction = true
                 }
-                expanding - content(object : BottomSheetControl {
-                    override val state: Writable<BottomSheetState> = expanded
-                    override fun close() {
-                        closePanel()
-                    }
-                })
+                expanding - content(control)
             }
         }
+//        willRemove?.animateIn(transition.forward)
     }
 
     actual fun leftSlidingPanel(
@@ -82,15 +80,12 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
-            if(ratio == null) {
+            willRemove = if (ratio == null) {
                 align(Align.Start, Align.Stretch) - content(control)
             } else {
                 row {
@@ -99,9 +94,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     weight(ratio) - content(control)
                     weight(1f - ratio) - frame { ignoreInteraction = true }
                 }
-            }
-            willRemove = lastWrittenView
+            }.rView
         }
+        willRemove?.animateIn(transition.forward)
     }
 
     actual fun rightSlidingPanel(
@@ -119,15 +114,12 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
-            if(ratio == null) {
+            willRemove = if (ratio == null) {
                 align(Align.End, Align.Stretch) - content(control)
             } else {
                 row {
@@ -136,9 +128,10 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     weight(1f - ratio) - frame { ignoreInteraction = true }
                     weight(ratio) - content(control)
                 }
-            }
-            willRemove = lastWrittenView
+            }.rView
+
         }
+        willRemove?.animateIn(transition.forward)
     }
 }
 
@@ -153,24 +146,24 @@ actual class CoordinatorDragHandle actual constructor(context: RContext) : RView
     override fun postSetup() {
         super.postSetup()
         val e = bottomSheetState ?: return
-        native.setOnClick {
+        onRemove(native.setOnClick {
             launch {
-                e set when(e()) {
+                e set when (e()) {
                     BottomSheetState.EXPANDED -> BottomSheetState.PARTIALLY_EXPANDED
                     BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetState.EXPANDED
                     else -> BottomSheetState.PARTIALLY_EXPANDED
                 }
             }
-        }
+        })
         iconView.reactive {
-            iconView.source = if(e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
+            iconView.source = if (e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
         }
     }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme[ClickableSemantic]
-        if(native.highlighted) t = t[DownSemantic]
-        if(native.focused) t = t[FocusSemantic]
+        if (native.highlighted) t = t[DownSemantic]
+        if (native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
 }

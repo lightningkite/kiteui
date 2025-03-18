@@ -111,10 +111,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
 //            println("  it.alpha < 0.001")
             continue
         }
-        if (it.extensionIgnoreInteraction == true) {
-//            println("  it.extensionIgnoreInteraction == true")
-            continue
-        }
+
         val converted = it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol)
         if (!it.pointInside(converted, withEvent)) {
 //            println("  !it.pointInside(converted, withEvent)")
@@ -125,12 +122,23 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
             it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol),
             withEvent
         )
-//        println("  hitResult: $hitResult")
-//        println("  my userInteractionEnabled: $userInteractionEnabled")
         return when {
-            hitResult != null -> hitResult
-            userInteractionEnabled -> this
-            else -> null
+            hitResult != null -> {
+//                println("  hitResult != null")
+                hitResult
+            }
+            it.extensionIgnoreInteraction == true -> {
+//                println("  it.extensionIgnoreInteraction == true")
+                continue
+            }
+            userInteractionEnabled -> {
+//                println("  userInteractionEnabled")
+                this
+            }
+            else -> {
+//                println("  else")
+                null
+            }
         }
     }
 //    println("$this give up: $userInteractionEnabled")

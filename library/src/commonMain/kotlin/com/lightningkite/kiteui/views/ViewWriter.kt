@@ -18,7 +18,6 @@ abstract class ViewWriter: CoroutineScope {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
-    var lastWrittenView: RView? = null
 
     fun split(): ViewWriter = object : ViewWriter(), CoroutineScope by this {
         override val context: RContext = this@ViewWriter.context.split()
@@ -58,7 +57,6 @@ abstract class ViewWriter: CoroutineScope {
     fun <T : RView> writePost(p: ViewWriter, view: T) {
         view.postSetup()
         p.addChild(view)
-        lastWrittenView = view
     }
 
     @OptIn(ExperimentalContracts::class)

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.reactive.*
@@ -19,38 +20,27 @@ import kotlin.time.Duration.Companion.seconds
 
 @Routable("ultra-basic")
 object UltraBasicPage : Page {
-    val count = object : ImmediateWritable<Int> {
-        val listeners = ArrayList<() -> Unit>()
-        override var value: Int = 0
-            set(value) {
-                field = value
-                listeners.forEach { it() }
-            }
-
-        override fun addListener(listener: () -> Unit): () -> Unit {
-            listeners.add(listener)
-            println("Added listener $listener")
-            return {
-                listeners.remove(listener)
-                println("Removed listener $listener; remaining: ${listeners.joinToString()}")
-            }
-        }
-    }
+    val count = Property(0)
 
     override fun ViewWriter.render(): ViewModifiable = run {
 //        frame {
 //            onRemove { println("stack onRemove") }
-            button {
-                onRemove { println("button onRemove") }
-                text {
-                    onRemove { println("text onRemove") }
-                    if (CoroutineScopeStack.current() !== this) throw IllegalStateException("Scopes don't match")
-                    ::content { count().toString() }
-                }
+        col {
+            text("Wait...")
+            launch {
+                delay(0.5.seconds)
+                pageNavigator.navigate(CounterPage)
+            }
+//            button {
+//                text {
+//                    ::content { count().toString() }
+//                }
 //            text { reactive { content = count().toString() } }
 //            text("Increment")
-                onClick { count.value++ }
-            }
+//                onClick { count.value++ }
+//            }
+//            link { to = { CounterPage }; text("Jump to counter") }
+        }
 //        }
     }
 }

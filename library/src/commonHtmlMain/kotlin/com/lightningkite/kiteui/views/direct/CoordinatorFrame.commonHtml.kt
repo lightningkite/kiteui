@@ -94,7 +94,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            if(ratio == null) {
+            willRemove = if(ratio == null) {
                 align(Align.Start, Align.Stretch) - content(control)
             } else {
                 row {
@@ -103,8 +103,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     weight(ratio) - content(control)
                     weight(1f - ratio) - frame { ignoreInteraction = true }
                 }
-            }
-            willRemove = lastWrittenView
+            }.rView
         }
     }
 
@@ -131,7 +130,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            if(ratio == null) {
+            willRemove = if(ratio == null) {
                 align(Align.End, Align.Stretch) - content(control)
             } else {
                 row {
@@ -140,8 +139,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     weight(1f - ratio) - frame { ignoreInteraction = true }
                     weight(ratio) - content(control)
                 }
-            }
-            willRemove = lastWrittenView
+            }.rView
         }
     }
 }

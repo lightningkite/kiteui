@@ -85,8 +85,7 @@ fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() 
                 beforeNextElementSetup {
                     animateIn(transition.forward)
                 }
-                content()
-                willRemove = lastWrittenView
+                willRemove = content().rView
             }
         }
     }
