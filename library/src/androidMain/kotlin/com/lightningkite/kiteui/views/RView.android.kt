@@ -37,10 +37,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override var showOnPrint: Boolean = true
 
-    init {
-        CoroutineContext
-    }
-
     open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 

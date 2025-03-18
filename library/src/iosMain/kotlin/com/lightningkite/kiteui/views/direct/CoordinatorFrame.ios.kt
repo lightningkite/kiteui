@@ -59,17 +59,24 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             content(control)
         }
         (viewController.presentationController as? UISheetPresentationController)?.apply {
-            detents = listOf(
-                UISheetPresentationControllerDetent.Companion.mediumDetent(),
-                UISheetPresentationControllerDetent.Companion.largeDetent()
-            )
-            prefersGrabberVisible = draggable
-            selectedDetentIdentifier = when (startState) {
-                BottomSheetState.EXPANDED -> UISheetPresentationControllerDetent.Companion.largeDetent().identifier
-                else -> UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+            if(partialRatio < 0.75f) {
+                detents = listOf(
+                    UISheetPresentationControllerDetent.Companion.mediumDetent(),
+                    UISheetPresentationControllerDetent.Companion.largeDetent()
+                )
+
+                selectedDetentIdentifier = when (startState) {
+                    BottomSheetState.EXPANDED -> UISheetPresentationControllerDetent.Companion.largeDetent().identifier
+                    else -> UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+                }
+                largestUndimmedDetentIdentifier = UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+            } else {
+                detents = listOf(
+                    UISheetPresentationControllerDetent.Companion.largeDetent()
+                )
+                selectedDetentIdentifier = UISheetPresentationControllerDetent.Companion.largeDetent().identifier
             }
-            largestUndimmedDetentIdentifier = UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
-            setLargestUndimmedDetentIdentifier(UISheetPresentationControllerDetent.Companion.mediumDetent().identifier)
+            prefersGrabberVisible = draggable
         }
         ExternalServices.currentPresenter(viewController)
     }
