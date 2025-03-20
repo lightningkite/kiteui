@@ -24,16 +24,19 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
         getNewCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect,
         overdraw: Rect,
-        padding: Double,
+        paddingTop: Double,
+        paddingLeft: Double,
+        paddingRight: Double,
+        paddingBottom: Double,
         spacing: Double,
     ) {
-        val cellSize = (viewport.right - viewport.left - padding * 2 - (columns - 1) * spacing) / columns
+        val cellSize = (viewport.right - viewport.left - paddingLeft - paddingRight - (columns - 1) * spacing) / columns
         val constrain = Size(
             width = cellSize,
             height = 10000.0
         )
         val cellOffsets = (0..<columns).map {
-            padding + it * spacing + it * cellSize
+            paddingTop + it * spacing + it * cellSize
         }
 
         val (anchorRowY, anchorRowIndex) = (anchor?.let {
@@ -54,8 +57,8 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                     }
                     val max = ratio?.let { cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
                     when (it.align) {
-                        Align.Start -> viewport.top + padding
-                        Align.End -> viewport.bottom - max - padding
+                        Align.Start -> viewport.top + paddingTop
+                        Align.End -> viewport.bottom - max - paddingBottom
                         else -> viewport.centerY - max / 2
                     } to currentIndex
                 }
@@ -77,12 +80,12 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             viewport.top + viewport.height * it.ratioOfFocus - partialIndexOffset to focusRowIndex
         } ?: run {
             log?.log("estimateJumpAnchor was dumped; no existin cells?")
-            (viewport.top + padding to dataRange.first.div(columns).times(columns))
+            (viewport.top + paddingTop to dataRange.first.div(columns).times(columns))
         }).let {
             // anchor correction for out of bounds
             if(it.second < dataRange.first - columns) {
                 log?.log("Anchor ignored due to out-of-range")
-                (viewport.top + padding to dataRange.first.div(columns).times(columns))
+                (viewport.top + paddingTop to dataRange.first.div(columns).times(columns))
             } else if(it.second > dataRange.last + columns) {
                 log?.log("Anchor ignored due to out-of-range")
                 val currentIndex = dataRange.last.div(columns).times(columns)
@@ -93,7 +96,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                     ) else null
                 }
                 val max = ratio?.let { cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
-                (viewport.bottom - max - padding to currentIndex)
+                (viewport.bottom - max - paddingBottom to currentIndex)
             } else it
         }
         log?.log("ANCHOR $anchorRowY gets index ${anchorRowIndex}")

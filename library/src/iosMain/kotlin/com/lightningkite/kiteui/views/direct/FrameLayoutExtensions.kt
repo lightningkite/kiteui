@@ -169,7 +169,7 @@ fun UIView.frameLayoutSizeThatFits(
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
     var t = PerformanceInfo.trace("calcSizeFrame")
     val padding = extensionPadding ?: Edges.ZERO
-    val remaining = size.copy(width = size.width - 2 * padding.horizontalSum.value, height = size.height - 2 * padding.verticalSum.value)
+    val remaining = size.copy(width = size.width - padding.horizontalSum.value, height = size.height - padding.verticalSum.value)
 
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView

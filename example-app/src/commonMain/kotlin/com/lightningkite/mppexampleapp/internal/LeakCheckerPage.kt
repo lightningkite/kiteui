@@ -68,7 +68,6 @@ object CounterPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
             text {
-                if (CoroutineScopeStack.current() !== this) throw IllegalStateException("Scopes don't match")
                 ::content { "${count()}" }
             }
             button {

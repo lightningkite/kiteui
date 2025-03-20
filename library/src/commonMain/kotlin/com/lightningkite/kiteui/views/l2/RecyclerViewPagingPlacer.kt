@@ -17,7 +17,10 @@ class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
         getNewCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect,
         overdraw: Rect,
-        padding: Double,
+        paddingTop: Double,
+        paddingLeft: Double,
+        paddingRight: Double,
+        paddingBottom: Double,
         spacing: Double,
     ) {
         existingCells.forEach {

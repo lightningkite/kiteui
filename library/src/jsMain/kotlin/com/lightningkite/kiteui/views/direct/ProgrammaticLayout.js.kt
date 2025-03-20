@@ -55,18 +55,24 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         get() = super.paddingByEdge
         set(value) {
             super.paddingByEdge = value
-            paddingPx = value?.left?.px ?: 0.0
-            //TODO: full edges to API
+            paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
+            paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
+            paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
+            paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
         }
     override var spacing: Dimension?
         get() = super.spacing
         set(value) {
             super.spacing = value
-            spacingPx = spacing?.px ?: theme.spacing.px
+            spacingCurrentPx = spacing?.px ?: theme.spacing.px
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        spacingPx = spacing?.px ?: theme.spacing.px
+        spacingCurrentPx = spacing?.px ?: theme.spacing.px
+        paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
+        paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
+        paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
+        paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
     }
 
     override fun internalClearChildren() {
@@ -74,12 +80,19 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         log?.log("children clear calls invalidateLayout()")
         invalidateLayout()
     }
-    private var spacingPx: Double = 0.0
-    private var paddingPx: Double = 0.0
+    private var spacingCurrentPx: Double = 0.0
+    private var paddingTopCurrentPx: Double = 0.0
+    private var paddingLeftCurrentPx: Double = 0.0
+    private var paddingRightCurrentPx: Double = 0.0
+    private var paddingBottomCurrentPx: Double = 0.0
 
     private val inProgress = object : ProgrammingLayoutInProgress {
-        override val spacing: Double get() = spacingPx
-        override val padding: Double get() = paddingPx
+        override val spacing: Double get() = spacingCurrentPx
+        override val padding: Double get() = paddingLeftCurrentPx
+        override val paddingTop: Double get() = paddingTopCurrentPx
+        override val paddingLeft: Double get() = paddingLeftCurrentPx
+        override val paddingRight: Double get() = paddingRightCurrentPx
+        override val paddingBottom: Double get() = paddingBottomCurrentPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
             val e = child.native.element as? HTMLElement ?: return Size(0.0, 0.0)
             val existing = e.asDynamic().__existingMeasure as? Size

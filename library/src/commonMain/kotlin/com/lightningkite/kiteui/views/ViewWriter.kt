@@ -6,24 +6,28 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.readable.CoroutineScopeStack
-import com.lightningkite.readable.CoroutineScopeStack.end
-import com.lightningkite.readable.CoroutineScopeStack.start
+import com.lightningkite.readable.CoroutineScopeHelpers
 import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-abstract class ViewWriter: CoroutineScope {
+abstract class ViewWriter: CoroutineScopeHelpers() {
     abstract val context: RContext
     open fun willAddChild(view: RView) {}
     abstract fun addChild(view: RView)
 
-    fun split(): ViewWriter = object : ViewWriter(), CoroutineScope by this {
-        override val context: RContext = this@ViewWriter.context.split()
-        override fun addChild(view: RView) {
-            this@ViewWriter.addChild(view)
+    fun split(): ViewWriter {
+        val r = object : ViewWriter(), CoroutineScope by this {
+            override val context: RContext = this@ViewWriter.context.split()
+            override fun addChild(view: RView) = this@ViewWriter.addChild(view)
+            override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
         }
+        r.beforeNextElementSetup = this@ViewWriter.beforeNextElementSetup
+        r._wrapElement = this@ViewWriter._wrapElement
+        this@ViewWriter.beforeNextElementSetup = null
+        this@ViewWriter._wrapElement = null
+        return r
     }
 
     // Modifier and wrapper handling
@@ -48,7 +52,6 @@ abstract class ViewWriter: CoroutineScope {
 
     fun <T : RView> writePre(p: ViewWriter, view: T) {
         p.willAddChild(view)
-        start(view)
         _wrapElement = null
         beforeNextElementSetup?.invoke(view)
         beforeNextElementSetup = null
@@ -64,16 +67,8 @@ abstract class ViewWriter: CoroutineScope {
         contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
         val p = _wrapElement ?: this
         writePre(p, view)
-        try {
-            setup(view)
-            writePost(p, view)
-        } catch(e: Exception) {
-            ConsoleRoot.warn("Failed to setup $view: $e")
-            e.printStackTrace2()
-            throw e
-        } finally {
-            end(view)
-        }
+        setup(view)
+        writePost(p, view)
         return view
     }
 

@@ -20,16 +20,19 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
         getNewCell: (Int, Size) -> RecyclerViewPlaceable,
         viewport: Rect,
         overdraw: Rect,
-        padding: Double,
+        paddingTop: Double,
+        paddingLeft: Double,
+        paddingRight: Double,
+        paddingBottom: Double,
         spacing: Double,
     ) {
-        val cellSize = (viewport.bottom - viewport.top - padding * 2 - (rows - 1) * spacing) / rows
+        val cellSize = (viewport.bottom - viewport.top - paddingTop - paddingBottom - (rows - 1) * spacing) / rows
         val constrain = Size(
             height = cellSize,
             width = 10000.0
         )
         val cellOffsets = (0..<rows).map {
-            padding + it * spacing + it * cellSize
+            paddingLeft + it * spacing + it * cellSize
         }
 
         val (anchorRowX, anchorRowIndex) = anchor?.let {
@@ -50,8 +53,8 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
                     }
                     val max = cells.maxOf { it?.size?.width ?: 0.0 }
                     when (it.align) {
-                        Align.Start -> viewport.left + padding
-                        Align.End -> viewport.right - max - padding
+                        Align.Start -> viewport.left + paddingLeft
+                        Align.End -> viewport.right - max - paddingRight
                         else -> viewport.centerX - max / 2
                     } to currentIndex
                 }
@@ -63,7 +66,7 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
         }?.let {
 //            println("Using existing cells for anchor: ${it.left} to ${it.index.div(columns).times(columns)}")
             it.left to it.index.div(rows).times(rows)
-        } ?: (viewport.left + padding to dataRange.first.div(rows).times(rows))
+        } ?: (viewport.left + paddingLeft to dataRange.first.div(rows).times(rows))
 
         // Place rightwards, one row at a time
         var currentX = anchorRowX

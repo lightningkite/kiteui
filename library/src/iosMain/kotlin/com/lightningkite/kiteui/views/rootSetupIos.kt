@@ -122,24 +122,28 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
         subview.layoutLayers()
     }
     view.addSubview(RemoveView {
-        println("Shutting down VC")
-        view.removeGestureRecognizer(g)
-        NSNotificationCenter.defaultCenter.removeObserver(observer)
-        remover()
-        job.cancel()
-        created.rView.shutdown()
+        if(movingFromParentViewController || beingDismissed) {
+            println("Shutting down VC")
+            view.removeGestureRecognizer(g)
+            NSNotificationCenter.defaultCenter.removeObserver(observer)
+            remover()
+            job.cancel()
+            created.rView.shutdown()
+            true
+        } else false
     })
 }
 
-private class RemoveView(var onRemove: (()->Unit)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     init {
         this.hidden = true
     }
     override fun willMoveToWindow(newWindow: UIWindow?) {
         super.willMoveToWindow(newWindow)
         if (newWindow == null) {
-            onRemove?.invoke()
-            onRemove = null
+            if(onRemove?.invoke() == true) {
+                onRemove = null
+            }
         }
     }
 }

@@ -75,7 +75,6 @@ object RootPage : Page {
                 linkPage { VideoElementPage }
                 linkPage { ViewPagerElementPage }
                 linkPage { ThemesPage }
-                linkPage { ControlPerformanceTesting }
                 linkPage { ControlsPage }
                 linkPage { FormsPage }
                 linkPage { NavigationTestPage }

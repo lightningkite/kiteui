@@ -19,7 +19,7 @@ class WrapperView : UIView(CGRectZero.readValue()) {
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val p = extensionPadding ?: Edges.ZERO
         return ((subviews.firstOrNull() as? UIView)?.sizeThatFits(size) ?: size).useContents {
-            CGSizeMake(width + p.horizontalSum.value * 2, height + p.verticalSum.value * 2)
+            CGSizeMake(width + p.horizontalSum.value, height + p.verticalSum.value)
         }
     }
 
@@ -30,8 +30,8 @@ class WrapperView : UIView(CGRectZero.readValue()) {
             (subviews.firstOrNull() as? UIView)?.setPsuedoframe(
                 p.left.value,
                 p.top.value,
-                this@useContents.size.width - p.horizontalSum.value * 2,
-                this@useContents.size.height - p.verticalSum.value * 2,
+                this@useContents.size.width - p.horizontalSum.value,
+                this@useContents.size.height - p.verticalSum.value,
             )
         }
     }

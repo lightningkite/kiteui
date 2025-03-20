@@ -79,7 +79,7 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(lk.readable(1))
+                api(lk.readable(2))
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)

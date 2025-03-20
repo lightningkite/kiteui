@@ -22,38 +22,19 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         themeChoice = ThemeDerivation {
             it.copy(
                 id = "rad",
-                outline = it.foreground,
+                outline = it.icon,
+                iconOverride = it.foreground,
                 outlineWidth = maxOf(it.outlineWidth, 1.dp),
                 spacing = it.spacing / 4,
+                padding = it.padding / 4,
                 cornerRadii = CornerRadii.RatioOfSize(0.5f),
-                derivations = mapOf(
-                    SelectedSemantic to { it.withBack },
-                    UnselectedSemantic to { it.withBack },
-                )
             ).withBack
         }
-        icon(Icon.done, "") {
+        icon(Icon.dot, "") {
             ::visible.invoke { checked() }
         }
-    }
-
-    init {
-        onRemove(native.observe("highlighted", { refreshTheming() }))
-        onRemove(native.observe("selected", { refreshTheming() }))
-        onRemove(native.observe("enabled", { refreshTheming() }))
-        _checked.addListener { refreshTheming() }
         onRemove(native.setOnClick {
-            _checked.value = true
+            _checked.value = !_checked.value
         })
-    }
-
-    override fun applyState(theme: ThemeAndBack): ThemeAndBack {
-        var t = theme
-        if(_checked.value) t = t[SelectedSemantic]
-        else t = t[UnselectedSemantic]
-        if(!enabled) t = t[DisabledSemantic]
-        if(native.highlighted) t = t[DownSemantic]
-        if(native.focused) t = t[FocusSemantic]
-        return super.applyState(t)
     }
 }

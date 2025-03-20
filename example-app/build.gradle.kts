@@ -8,6 +8,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.*
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 
 plugins {
     kotlin("multiplatform")
@@ -17,6 +20,13 @@ plugins {
     id("dev.opensavvy.vite.kotlin") version "0.4.0"
 }
 apply<KiteUiPlugin>()
+
+rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
+    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+        YarnLockMismatchReport.WARNING // NONE | FAIL
+    rootProject.the<YarnRootExtension>().reportNewYarnLock = true
+    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
+}
 
 group = "com.lightningkite"
 version = "1.0-SNAPSHOT"
@@ -109,6 +119,9 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+            dependencies {
+                implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
+            }
         }
     }
 

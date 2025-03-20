@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.Theme
@@ -30,6 +31,10 @@ interface ProgrammaticLayoutDelegate {
 interface ProgrammingLayoutInProgress {
     val spacing: Double
     val padding: Double
+    val paddingTop: Double
+    val paddingLeft: Double
+    val paddingRight: Double
+    val paddingBottom: Double
     fun measure(child: RView, sizeConstraint: Size): Size
     fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
     fun existingPosition(child: RView): Rect

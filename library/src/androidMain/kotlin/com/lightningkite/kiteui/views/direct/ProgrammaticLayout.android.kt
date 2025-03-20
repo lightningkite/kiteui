@@ -32,24 +32,33 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         get() = super.paddingByEdge
         set(value) {
             super.paddingByEdge = value
-            native.padding = value?.left?.value?.toDouble() ?: 0.0
-            //TODO: full edges to API
+            native.paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
+            native.paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
+            native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
+            native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
         }
     override var spacing: Dimension?
         get() = super.spacing
         set(value) {
             super.spacing = value
-            native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
+            native.spacingCurrentPx = spacing?.px ?: theme.spacing.px
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacing = spacing?.value?.toDouble() ?: theme.spacing.value.toDouble()
+        native.spacingCurrentPx = spacing?.px ?: theme.spacing.px
+        native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
+        native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
+        native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
+        native.paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
     }
 }
 
 class NProgrammaticLayout(context: Context) : ViewGroup(context) {
-    var spacing: Double = 0.0
-    var padding: Double = 0.0
+    var spacingCurrentPx: Double = 0.0
+    var paddingTopCurrentPx: Double = 0.0
+    var paddingLeftCurrentPx: Double = 0.0
+    var paddingRightCurrentPx: Double = 0.0
+    var paddingBottomCurrentPx: Double = 0.0
 
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
@@ -58,8 +67,12 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
     lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
-        override val spacing: Double get() = this@NProgrammaticLayout.spacing
-        override val padding: Double get() = this@NProgrammaticLayout.padding
+        override val spacing: Double get() = spacingCurrentPx
+        override val padding: Double get() = paddingLeftCurrentPx
+        override val paddingTop: Double get() = paddingTopCurrentPx
+        override val paddingLeft: Double get() = paddingLeftCurrentPx
+        override val paddingRight: Double get() = paddingRightCurrentPx
+        override val paddingBottom: Double get() = paddingBottomCurrentPx
 
         override fun measure(child: RView, sizeConstraint: Size): Size {
             child.native.measure(

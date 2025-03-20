@@ -39,6 +39,16 @@ class Recycler2(
         set(value) {
             cells.spacing = value
         }
+    var paddingByEdge: Edges?
+        get() = cells.paddingByEdge
+        set(value) {
+            cells.paddingByEdge = value
+        }
+    var padding: Dimension?
+        get() = cells.padding
+        set(value) {
+            cells.padding = value
+        }
     var exists: Boolean
         get() = outerFrame.exists
         set(value) {
@@ -90,6 +100,7 @@ class Recycler2(
                 else atBottom - sizeConstraints(height = 1.rem, maxHeight = 1.rem)
                 scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
+                    ignoreInteraction = Platform.current != Platform.Web
                 } - programmatic {
                     fakeScrollContent = this
                     ThemeDerivation {
@@ -140,12 +151,12 @@ class Recycler2(
             // Nice!  Just scroll away!
             scroll.scrollTo(
                 left = if (vertical) 0.0 else when (align) {
-                    Align.Start -> it.left - lastRecordedPadding
+                    Align.Start -> it.left - lastRecordedPaddingLeft
                     Align.End -> it.right - previousViewport.width
                     else -> it.centerX - previousViewport.width / 2
                 },
                 top = if (!vertical) 0.0 else when (align) {
-                    Align.Start -> it.top - lastRecordedPadding
+                    Align.Start -> it.top - lastRecordedPaddingTop
                     Align.End -> it.bottom - previousViewport.height
                     else -> it.centerY - previousViewport.height / 2
                 },
@@ -165,12 +176,12 @@ class Recycler2(
                         // Nice!  Just scroll away!
                         scroll.scrollTo(
                             left = if (vertical) 0.0 else when (align) {
-                                Align.Start -> it.left - lastRecordedPadding
+                                Align.Start -> it.left - lastRecordedPaddingLeft
                                 Align.End -> it.right - previousViewport.width
                                 else -> it.centerX - previousViewport.width / 2
                             },
                             top = if (!vertical) 0.0 else when (align) {
-                                Align.Start -> it.top - lastRecordedPadding
+                                Align.Start -> it.top - lastRecordedPaddingTop
                                 Align.End -> it.bottom - previousViewport.height
                                 else -> it.centerY - previousViewport.height / 2
                             },
@@ -341,7 +352,10 @@ class Recycler2(
     private var suppressFakeScrollEvent: Boolean = false
     private var fakeScrollSize: Double = 0.0
     private var fakeScrollOffset: Double = 0.0
-    private var lastRecordedPadding: Double = 0.0
+    private var lastRecordedPaddingTop: Double = 0.0
+    private var lastRecordedPaddingLeft: Double = 0.0
+    private var lastRecordedPaddingRight: Double = 0.0
+    private var lastRecordedPaddingBottom: Double = 0.0
 
     private val fakeScrollLayoutDelegate = object : ProgrammaticLayoutDelegate {
         override fun measure(layout: ProgrammaticLayout, inProgress: ProgrammingLayoutInProgress, within: Size): Size {
@@ -489,7 +503,10 @@ class Recycler2(
             inProgress: ProgrammingLayoutInProgress,
             within: Size
         ): Size {
-            lastRecordedPadding = inProgress.padding
+            lastRecordedPaddingTop = inProgress.paddingTop
+            lastRecordedPaddingLeft = inProgress.paddingLeft
+            lastRecordedPaddingRight = inProgress.paddingRight
+            lastRecordedPaddingBottom = inProgress.paddingBottom
             if (stahp) return lastMeasure!!
             val default = within
             if (within == Size.Zero) {
@@ -605,7 +622,10 @@ class Recycler2(
                     previousViewport = previousViewport,
                     viewport = viewport,
                     overdraw = overdraw,
-                    padding = inProgress.padding,
+                    paddingTop = inProgress.paddingTop,
+                    paddingLeft = inProgress.paddingLeft,
+                    paddingRight = inProgress.paddingRight,
+                    paddingBottom = inProgress.paddingBottom,
                     spacing = inProgress.spacing,
                 )
                 previousViewport = viewport
@@ -626,9 +646,9 @@ class Recycler2(
             sentinelSize = if (lastCell != null) {
                 (
                         if (vertical)
-                            lastCell.bottom + inProgress.padding
+                            lastCell.bottom + inProgress.paddingBottom
                         else
-                            lastCell.right + inProgress.padding
+                            lastCell.right + inProgress.paddingRight
                         )
                     .also {
                         if (viewport.bottom > it) {
@@ -670,33 +690,33 @@ class Recycler2(
             if (firstCell != null) {
                 // Shift everyone to attach to the top, preventing scrolling away past there
                 if (vertical) {
-                    if (abs(inProgress.padding - firstCell.top) > 1.0) {
+                    if (abs(inProgress.paddingTop - firstCell.top) > 1.0) {
                         log?.log("WILL OFFSET AT ${viewport}")
-                        if (viewport.top < firstCell.top - inProgress.padding + 0.1) {
-                            log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell.top} - ${inProgress.padding}")
-                            requestOffset(0.0, -firstCell.top + inProgress.padding)
+                        if (viewport.top < firstCell.top - inProgress.paddingTop + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.top} < ${firstCell.top} - ${inProgress.paddingTop}")
+                            requestOffset(0.0, -firstCell.top + inProgress.paddingTop)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
                         } else if (!isMoving.value) {
-                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell.top} -> ${inProgress.padding}")
-                            requestOffset(0.0, -firstCell.top + inProgress.padding)
+                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell.top} -> ${inProgress.paddingTop}")
+                            requestOffset(0.0, -firstCell.top + inProgress.paddingTop)
                         }
                     }
                 } else {
-                    if (abs(inProgress.padding - firstCell.left) > 1.0) {
+                    if (abs(inProgress.paddingLeft - firstCell.left) > 1.0) {
                         log?.log("WILL OFFSET AT ${viewport}")
-                        if (viewport.left < firstCell.left - inProgress.padding + 0.1) {
-                            log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell.left} - ${inProgress.padding}")
-                            requestOffset(-firstCell.left + inProgress.padding, 0.0)
+                        if (viewport.left < firstCell.left - inProgress.paddingLeft + 0.1) {
+                            log?.log("JERK REQUIRED: ${viewport.left} < ${firstCell.left} - ${inProgress.paddingLeft}")
+                            requestOffset(-firstCell.left + inProgress.paddingLeft, 0.0)
                             anchor = RecyclerViewAnchor.SpecificElement(data.range.first, Align.Start)
                             log?.log("anchor = ${anchor} (Offset follow up)")
                             //dang it, we have to rerun the layout to ensure every space is properly populated.
                             runPlacer()
                         } else if (!isMoving.value) {
-                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell.left} -> ${inProgress.padding}")
-                            requestOffset(-firstCell.left + inProgress.padding, 0.0)
+                            log?.log("SHIFTING CELLS TO ATTACH TO TOP: ${firstCell.left} -> ${inProgress.paddingLeft}")
+                            requestOffset(-firstCell.left + inProgress.paddingLeft, 0.0)
                         }
                     }
                 }

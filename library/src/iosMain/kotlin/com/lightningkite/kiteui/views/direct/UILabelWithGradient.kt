@@ -99,8 +99,8 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         val padding = extensionPadding ?: Edges.ZERO
         gradientLayer?.frame = bounds
         bounds.useContents {
-            val insetWidth = this@useContents.size.width - 2 * padding.horizontalSum.value
-            val insetHeight = this@useContents.size.height - 2 * padding.verticalSum.value
+            val insetWidth = this@useContents.size.width - padding.horizontalSum.value
+            val insetHeight = this@useContents.size.height - padding.verticalSum.value
             uiViewWithLabelMask.setFrame(CGRectMake(
                 padding.left.value,
                 padding.top.value,
