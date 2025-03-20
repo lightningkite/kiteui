@@ -26,6 +26,8 @@ import platform.UIKit.UISheetPresentationController
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
 import com.lightningkite.kiteui.objc.presentationController
+import kotlinx.cinterop.useContents
+import kotlinx.coroutines.delay
 import platform.UIKit.UIModalPresentationPageSheet
 import platform.UIKit.UISheetPresentationControllerDetent
 
@@ -52,29 +54,52 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 viewController.dismissViewControllerAnimated(true) {}
             }
         }
-        viewController.kiteUi(context) {
+        viewController.kiteUi(context.split()) {
             beforeNextElementSetup {
                 parent = this@CoordinatorFrame
+                launch {
+                    while(true) {
+                        delay(100)
+                        refreshTheming()
+                    }
+                }
             }
-            content(control)
+            frame {
+                overlayFrame = this
+                content(control)
+            }
+        }
+        val windowHeight = context.controller.view.frame.useContents { size.height }
+        val relativeToWindow = native.convertRect(native.bounds, toView = context.controller.view)
+        val fullSize = windowHeight - relativeToWindow.useContents { origin.y }
+        println("windowHeight: $windowHeight")
+        println("relativeToWindow: ${relativeToWindow.useContents { origin.y }}")
+        println("fullSize: $fullSize")
+        val wholeDetent = UISheetPresentationControllerDetent.Companion.customDetentWithIdentifier(null) {
+            fullSize
+        }
+        val partialDetent = UISheetPresentationControllerDetent.Companion.customDetentWithIdentifier(null) {
+            fullSize * partialRatio
         }
         (viewController.presentationController as? UISheetPresentationController)?.apply {
-            if(partialRatio < 0.75f) {
+            if(partialRatio < 0.99) {
                 detents = listOf(
-                    UISheetPresentationControllerDetent.Companion.mediumDetent(),
-                    UISheetPresentationControllerDetent.Companion.largeDetent()
+                    partialDetent,
+                    wholeDetent,
                 )
 
                 selectedDetentIdentifier = when (startState) {
-                    BottomSheetState.EXPANDED -> UISheetPresentationControllerDetent.Companion.largeDetent().identifier
-                    else -> UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+                    BottomSheetState.EXPANDED -> wholeDetent.identifier
+                    else -> partialDetent.identifier
                 }
-                largestUndimmedDetentIdentifier = UISheetPresentationControllerDetent.Companion.mediumDetent().identifier
+                largestUndimmedDetentIdentifier = wholeDetent.identifier
+//                largestUndimmedDetentIdentifier = partialDetent.identifier
             } else {
                 detents = listOf(
-                    UISheetPresentationControllerDetent.Companion.largeDetent()
+                    wholeDetent
                 )
-                selectedDetentIdentifier = UISheetPresentationControllerDetent.Companion.largeDetent().identifier
+                largestUndimmedDetentIdentifier = wholeDetent.identifier
+                selectedDetentIdentifier = wholeDetent.identifier
             }
             prefersGrabberVisible = draggable
         }

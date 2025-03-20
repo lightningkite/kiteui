@@ -123,7 +123,6 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     }
     view.addSubview(RemoveView {
         if(movingFromParentViewController || beingDismissed) {
-            println("Shutting down VC")
             view.removeGestureRecognizer(g)
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
