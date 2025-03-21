@@ -22,7 +22,7 @@ import kotlin.math.max
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
     if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
-    var padding = extensionPadding ?: Edges.ZERO
+    val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
@@ -154,7 +154,7 @@ fun UIView.frameLayoutSizeThatFits(
     val measuredSize = Size()
 
     val sizes = frameLayoutCalcSizes(inputSize, childSizeCache)
-    val padding = extensionPadding ?: Edges.ZERO
+    val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
     for ((index, size) in sizes.withIndex()) {
         measuredSize.width = max(measuredSize.width, size.width + padding.horizontalSum.value)
         measuredSize.height = max(measuredSize.height, size.height + padding.verticalSum.value)
@@ -168,7 +168,7 @@ fun UIView.frameLayoutSizeThatFits(
 
 private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<HashMap<Size, Size>>): List<Size> {
     var t = PerformanceInfo.trace("calcSizeFrame")
-    val padding = extensionPadding ?: Edges.ZERO
+    val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
     val remaining = size.copy(width = size.width - padding.horizontalSum.value, height = size.height - padding.verticalSum.value)
 
     return subviews.mapIndexed { index: Int, it: Any? ->

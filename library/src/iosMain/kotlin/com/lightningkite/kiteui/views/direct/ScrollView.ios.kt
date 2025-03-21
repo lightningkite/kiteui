@@ -6,6 +6,8 @@ import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
+import com.lightningkite.kiteui.views.extensionHorizontalAlign
+import com.lightningkite.kiteui.views.extensionVerticalAlign
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
@@ -19,6 +21,14 @@ class ScrollView(
     override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
     override val native = FrameLayout()
+    override fun childTouches(side: Side, child: RView): Boolean {
+        return when(side) {
+            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
+            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
+            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
+        }
+    }
     val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
@@ -31,6 +41,7 @@ class ScrollView(
             scroller.addSubview(view.native)
         else
             scroller.insertSubview(view.native, index.toLong())
+        view.handleSafeInsets(passedDownSafeInsets)
         if (children[index].native != scroller.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
     }
 

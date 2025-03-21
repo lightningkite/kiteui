@@ -531,8 +531,11 @@ data class SizeConstraints(
     )
 }
 
-enum class Align {
-    Start, Center, End, Stretch
+enum class Align(val touchesStart: Boolean, val touchesEnd: Boolean) {
+    Start(true, false),
+    Center(false, false),
+    End(false, true),
+    Stretch(true, true)
 }
 
 enum class TextOverflow {

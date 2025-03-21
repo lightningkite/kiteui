@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui.models
 
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
+
 data class Size(
     val width: Double,
     val height: Double
@@ -51,6 +54,9 @@ data class Edges(
     val verticalSum get() = top + bottom
     constructor(dimension: Dimension): this(dimension, dimension, dimension, dimension)
     operator fun plus(other: Edges) = Edges(left + other.left, top + other.top, right + other.right, bottom + other.bottom)
+    @JvmName("plusEdgesNullable")
+    @JsName("plusEdgesNullable")
+    operator fun plus(other: Edges?) = if(other == null) this else this + other
     operator fun minus(other: Edges) = Edges(left - other.left, top - other.top, right - other.right, bottom - other.bottom)
     operator fun times(other: Int) = Edges(left * other, top * other, right * other, bottom * other)
     operator fun div(other: Int) = Edges(left / other, top / other, right / other, bottom / other)

@@ -71,6 +71,9 @@ var UIView.extensionSpacingBeforeOverride: Dimension? by UIViewSpacingBeforeOver
 private val UIViewPadding = ExtensionProperty<UIView, Edges>()
 var UIView.extensionPadding: Edges? by UIViewPadding
 
+private val UIViewSafeInsetPadding = ExtensionProperty<UIView, Edges>()
+var UIView.extensionSafeInsetPadding: Edges? by UIViewSafeInsetPadding
+
 private val UIViewSizeRules = ExtensionProperty<UIView, SizeConstraints>()
 var UIView.extensionSizeConstraints: SizeConstraints? by UIViewSizeRules
 

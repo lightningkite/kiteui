@@ -10,6 +10,14 @@ import platform.UIKit.UIView
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton()
+    override fun childTouches(side: Side, child: RView): Boolean {
+        return when(side) {
+            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
+            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
+            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
+        }
+    }
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {

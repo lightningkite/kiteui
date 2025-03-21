@@ -57,7 +57,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val mySizeWithoutPadding = bounds.useContents { size.local }
-        val padding = extensionPadding ?: Edges.ZERO
+        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
         mySizeWithoutPadding.primary -= padding.primarySum
         mySizeWithoutPadding.secondary -= padding.secondarySum
 
@@ -108,7 +108,7 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
     private var lastReportedSize: Size? = null
     override fun layoutSubviews() {
         val mySizeWithoutPadding = bounds.useContents { size.local }
-        val padding = extensionPadding ?: Edges.ZERO
+        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
         mySizeWithoutPadding.primary -= padding.primarySum
         mySizeWithoutPadding.secondary -= padding.secondarySum
         if (viewDebugTarget?.native === subviews.firstOrNull()) println("Parent ScrollLayout Laying out within $mySizeWithoutPadding")

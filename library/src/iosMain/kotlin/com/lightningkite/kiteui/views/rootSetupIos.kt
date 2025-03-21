@@ -91,10 +91,10 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
 
     val subview = created.rView.native
     subview.translatesAutoresizingMaskIntoConstraints = false
-    subview.topAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
-    subview.leftAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.leftAnchor).setActive(true)
-    subview.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
-    val bottom = view.safeAreaLayoutGuide.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
+    subview.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
+    subview.leftAnchor.constraintEqualToAnchor(view.leftAnchor).setActive(true)
+    subview.rightAnchor.constraintEqualToAnchor(view.rightAnchor).setActive(true)
+    val bottom = view.bottomAnchor.constraintEqualToAnchor(subview.bottomAnchor)
     bottom.setActive(true)
 
     val observer: KeyboardObserver = KeyboardObserver(
@@ -121,7 +121,17 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     val remover = subview.observe("bounds") {
         subview.layoutLayers()
     }
-    view.addSubview(RemoveView {
+    val safeInsets = {
+        created.rView.handleSafeInsets(view.safeAreaInsets.useContents {
+            Edges(
+                left = Dimension(left),
+                right = Dimension(right),
+                top = Dimension(top),
+                bottom = Dimension(this.bottom),
+            )
+        })
+    }
+    view.addSubview(RemoveView(onSafeInsetsChange = safeInsets, onRemove = {
         if(movingFromParentViewController || beingDismissed) {
             view.removeGestureRecognizer(g)
             NSNotificationCenter.defaultCenter.removeObserver(observer)
@@ -130,10 +140,11 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
             created.rView.shutdown()
             true
         } else false
-    })
+    }))
+    safeInsets()
 }
 
-private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class RemoveView(var onSafeInsetsChange: (()->Unit)? = null, var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     init {
         this.hidden = true
     }
@@ -144,6 +155,10 @@ private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake
                 onRemove = null
             }
         }
+    }
+
+    override fun safeAreaInsetsDidChange() {
+        onSafeInsetsChange?.invoke()
     }
 }
 

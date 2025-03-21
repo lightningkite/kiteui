@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
-import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
@@ -16,7 +15,6 @@ import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIColor
-import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import kotlin.experimental.ExperimentalNativeApi
@@ -122,6 +120,62 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 child.native.layoutLayers(spacing)
             }
         }
+
+    internal enum class Side { Left, Top, Right, Bottom}
+    internal open fun childTouches(side: Side, child: RView): Boolean = false
+    protected var passedDownSafeInsets: Edges? = null
+    internal fun handleSafeInsets(edges: Edges?) {
+        if(edges == null) {
+            if(passedDownSafeInsets != null) {
+                passedDownSafeInsets = null
+                for(child in children) {
+                    child.handleSafeInsets(null)
+                }
+            }
+            return
+        }
+        val padding = paddingByEdge ?: when {
+            !themeAndBack.padding -> Edges.ZERO
+            else -> themeAndBack.theme.padding
+        }
+        fun shouldApply(side: Side, alreadyHasPadding: Boolean): Boolean {
+            return generateSequence(this) { it.parent }
+                .zipWithNext()
+                .all { (child, parent) -> parent.childTouches(side, child) }
+                .and(
+                    alreadyHasPadding ||
+                            (children.asSequence()
+                                .any { childTouches(side, it) && it.cannotBeCovered })
+                )
+        }
+
+        val shouldApplyLeft = shouldApply(Side.Left, padding.left.value > 0)
+        val shouldApplyTop = shouldApply(Side.Top, padding.top.value > 0)
+        val shouldApplyRight = shouldApply(Side.Right, padding.right.value > 0)
+        val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
+        val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+        val toPassDown = if (!shouldApplyAny) {
+            native.extensionSafeInsetPadding = null
+            edges
+        } else {
+            native.extensionSafeInsetPadding = Edges(
+                left = if (shouldApplyLeft) edges.left else 0.px,
+                top = if (shouldApplyTop) edges.top else 0.px,
+                right = if (shouldApplyRight) edges.right else 0.px,
+                bottom = if (shouldApplyBottom) edges.bottom else 0.px,
+            )
+            Edges(
+                left = if (shouldApplyLeft) 0.px else edges.left,
+                top = if (shouldApplyTop) 0.px else edges.top,
+                right = if (shouldApplyRight) 0.px else edges.right,
+                bottom = if (shouldApplyBottom) 0.px else edges.bottom,
+            )
+        }.takeUnless { it == Edges.ZERO }
+        passedDownSafeInsets = toPassDown
+        for (child in children) {
+            child.handleSafeInsets(toPassDown)
+        }
+    }
 
     actual override fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
@@ -288,6 +342,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.addSubview(view.native)
         else
             native.insertSubview(view.native, index.toLong())
+        view.handleSafeInsets(passedDownSafeInsets)
         if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
     }
 

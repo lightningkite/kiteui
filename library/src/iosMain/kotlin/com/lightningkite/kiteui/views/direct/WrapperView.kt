@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.views.extensionPadding
+import com.lightningkite.kiteui.views.extensionSafeInsetPadding
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.UICoordinateSpaceProtocol
@@ -17,21 +18,21 @@ class WrapperView : UIView(CGRectZero.readValue()) {
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val p = extensionPadding ?: Edges.ZERO
+        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
         return ((subviews.firstOrNull() as? UIView)?.sizeThatFits(size) ?: size).useContents {
-            CGSizeMake(width + p.horizontalSum.value, height + p.verticalSum.value)
+            CGSizeMake(width + padding.horizontalSum.value, height + padding.verticalSum.value)
         }
     }
 
     override fun layoutSubviews() {
         super.layoutSubviews()
-        val p = extensionPadding ?: Edges.ZERO
+        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
         bounds.useContents {
             (subviews.firstOrNull() as? UIView)?.setPsuedoframe(
-                p.left.value,
-                p.top.value,
-                this@useContents.size.width - p.horizontalSum.value,
-                this@useContents.size.height - p.verticalSum.value,
+                padding.left.value,
+                padding.top.value,
+                this@useContents.size.width - padding.horizontalSum.value,
+                this@useContents.size.height - padding.verticalSum.value,
             )
         }
     }

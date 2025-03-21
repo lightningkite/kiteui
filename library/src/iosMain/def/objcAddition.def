@@ -1,6 +1,6 @@
 language = Objective-C
 package = com.lightningkite.kiteui.objc
-headerFilter = a
+headerFilter = UIKit/UIApplication.h
 ---
 #import <objc/runtime.h>
 #import <UIKit/UIImage.h>
@@ -19,6 +19,12 @@ headerFilter = a
 #import <UIKit/UIPresentationController.h>
 #import <UIKit/UISheetPresentationController.h>
 #import <UIKit/UIKitDefines.h>
+#import <UIKit/UIApplication.h>
+
+@protocol PlaceholderToForceImportOfUIApplicationDelegate
+//- (UIApplicationDelegate *) getDg;
+- (id<UIApplicationDelegate>)getDg;
+@end
 
 typedef void (^ LoadImageCallback)(__kindof id<NSItemProviderReading> object, NSError *error);
 void loadImageFromProvider(NSItemProvider *provider, LoadImageCallback callback) {

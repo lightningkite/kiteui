@@ -11,7 +11,10 @@ typealias KiteUiNavigator = PageNavigator
 typealias ScreenStack = PageNavigator
 class PageNavigator(private val routesGetter: ()->Routes) {
     val routes: Routes by lazy { routesGetter() }
-    
+
+    fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
+    fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
+
     val stack: Property<List<Page>> = Property(listOf())
     fun wrap(screen: Page): Page = screen
     

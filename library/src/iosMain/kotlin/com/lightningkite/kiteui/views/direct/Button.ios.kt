@@ -9,6 +9,14 @@ import com.lightningkite.kiteui.views.*
 
 actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = FrameLayoutButton()
+    override fun childTouches(side: Side, child: RView): Boolean {
+        return when(side) {
+            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
+            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
+            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
+        }
+    }
 
     init {
         activityIndicator {
