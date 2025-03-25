@@ -104,6 +104,8 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
             reload()
         }
 
+    private var previousRequestBuilder: RequestBuilder<Drawable>? = null
+
     private fun reload() {
         val value = source
         fun RequestBuilder<Drawable>.load() {
@@ -122,13 +124,14 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
                     else -> {}
                 }
             }
+            previousRequestBuilder = requestOptions
             requestOptions.into(native.target)
         }
         fun RequestBuilder<Drawable>.finish() {
-            val previous = native.drawable
-            println("Loading with existing drawable ${previous}")
-            if(previous == null) placeholder(placeholder).transition(withCrossFade(100)).load()
-            else this.placeholder(previous).transition(withCrossFade(100)).load()
+            // Instead of directly pulling the old ImageView drawable and using it in the fade, access the drawable via
+            // glide using the previous request so as not to circumvent the glide cache and cause resources to be prematurely freed
+            val withThumbnailOrPlaceholder = previousRequestBuilder?.let(::thumbnail) ?: placeholder(placeholder)
+            withThumbnailOrPlaceholder.transition(withCrossFade(100)).load()
         }
         when (value) {
             is ImageLocal -> Glide.with(native).load(value.file.uri).finish()

@@ -79,10 +79,12 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
         val windowHeight = context.controller.view.frame.useContents { size.height }
         val relativeToWindow = native.convertRect(native.bounds, toView = context.controller.view)
-        val fullSize = windowHeight - relativeToWindow.useContents { origin.y }
-        println("windowHeight: $windowHeight")
-        println("relativeToWindow: ${relativeToWindow.useContents { origin.y }}")
-        println("fullSize: $fullSize")
+        val bottomInset = context.controller.view.safeAreaInsets.useContents { bottom }
+        val fullSize = windowHeight - relativeToWindow.useContents { origin.y } - bottomInset
+//        println("windowHeight: $windowHeight")
+//        println("relativeToWindow: ${relativeToWindow.useContents { origin.y }}")
+//        println("bottomInset: $bottomInset")
+//        println("fullSize: $fullSize")
         val wholeDetent = UISheetPresentationControllerDetent.Companion.customDetentWithIdentifier(null) {
             fullSize
         }
