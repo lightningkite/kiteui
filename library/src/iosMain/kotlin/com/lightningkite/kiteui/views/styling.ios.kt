@@ -131,8 +131,8 @@ class CAGradientLayerResizing : CAGradientLayer {
         val cornersList: MutableList<UIRectCorner> = mutableListOf()
         if(radii.topLeft) cornersList.add(UIRectCornerTopLeft)
         if(radii.topRight) cornersList.add(UIRectCornerTopRight)
-        if(radii.bottomLeft) cornersList.add(UIRectCornerBottomRight)
-        if(radii.bottomRight) cornersList.add(UIRectCornerBottomLeft)
+        if(radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
+        if(radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
 
         val corners = cornersList.reduce { acc, current -> acc or current }
         val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds,

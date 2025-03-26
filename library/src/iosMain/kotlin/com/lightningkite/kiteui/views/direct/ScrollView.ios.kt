@@ -36,30 +36,7 @@ class ScrollView(
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-    override fun internalAddChild(index: Int, view: RView) {
-        if (index == scroller.subviews.size)
-            scroller.addSubview(view.native)
-        else
-            scroller.insertSubview(view.native, index.toLong())
-        view.handleSafeInsets(passedDownSafeInsets)
-        if (children[index].native != scroller.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
-    }
-
-    override fun internalRemoveChild(index: Int) {
-        if (children[index].native != scroller.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
-        if (index >= scroller.subviews.size || index < 0) {
-            throw IllegalStateException("Index $index not in 0..<${scroller.subviews.size}")
-        }
-        (scroller.subviews[index] as UIView).removeFromSuperview()
-    }
-
-    override fun internalClearChildren() {
-        scroller.subviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
-        }
-    }
+    override val addChildTarget get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {

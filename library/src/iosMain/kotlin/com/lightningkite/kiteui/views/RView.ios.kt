@@ -337,25 +337,26 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         ObjCountTrackers.track(native)
     }
 
+    protected open val addChildTarget: UIView get() = native
     actual override fun internalAddChild(index: Int, view: RView) {
-        if (index == native.subviews.size)
-            native.addSubview(view.native)
+        if (index == addChildTarget.subviews.size)
+            addChildTarget.addSubview(view.native)
         else
-            native.insertSubview(view.native, index.toLong())
+            addChildTarget.insertSubview(view.native, index.toLong())
         view.handleSafeInsets(passedDownSafeInsets)
-        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
+        if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if (children[index].native != native.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.subviews}")
-        if (index >= native.subviews.size || index < 0) {
-            throw IllegalStateException("Index $index not in 0..<${native.subviews.size}")
+        if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
+        if (index >= addChildTarget.subviews.size || index < 0) {
+            throw IllegalStateException("Index $index not in 0..<${addChildTarget.subviews.size}")
         }
-        (native.subviews[index] as UIView).removeFromSuperview()
+        (addChildTarget.subviews[index] as UIView).removeFromSuperview()
     }
 
     actual override fun internalClearChildren() {
-        native.subviews.toList().forEach {
+        addChildTarget.subviews.toList().forEach {
             (it as UIView).let {
                 it.removeFromSuperview()
             }

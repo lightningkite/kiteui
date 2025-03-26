@@ -5,6 +5,6 @@ expect class RContext: RContextHelper {
     override val darkMode: Boolean?
 }
 abstract class RContextHelper {
-    val addons = HashMap<String, Any?>()
+    val addons = HashMap<String, Any?>()  // TODO: Use record
     abstract val darkMode: Boolean?
 }

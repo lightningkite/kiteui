@@ -9,11 +9,19 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
-    override val native: FrameLayoutButton = FrameLayoutButton()
+    override val native: WrapperView = WrapperView()
+    val button = FrameLayoutButton()
+    override val addChildTarget get() = button
+    init {
+        button.extensionHorizontalAlign = Align.Center
+        button.extensionVerticalAlign = Align.Center
+        native.addSubview(button)
+    }
+
     actual inline var enabled: Boolean
-        get() = native.enabled
+        get() = button.enabled
         set(value) {
-            native.enabled = value
+            button.enabled = value
         }
     private val _checked = Property(false)
     actual val checked: ImmediateWritable<Boolean> get() = _checked
@@ -30,10 +38,10 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
                 cornerRadii = CornerRadii.RatioOfSize(0.5f),
             ).withBack
         }
-        icon(Icon.dot, "") {
+        centered - icon(Icon.dot, "") {
             ::visible.invoke { checked() }
         }
-        onRemove(native.setOnClick {
+        onRemove(button.setOnClick {
             _checked.value = !_checked.value
         })
     }

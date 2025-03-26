@@ -125,6 +125,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     init {
         this.working.addListener {
+            //TODO: Make it take longer for 'working' semantic to apply
             if (working.value) native.classes.add("working")
             else native.classes.remove("working")
         }
@@ -175,11 +176,3 @@ expect fun RView.nativeScrollIntoView(
     vertical: Align?,
     animate: Boolean
 )
-
-interface DomValueMap<V> {
-    operator fun get(key: String): V?
-    operator fun set(key: String, value: V?)
-    fun keysHashCode(): Int
-    fun contentHashCode(): Int
-    fun contentEquals(record: DomValueMap<V>): Boolean
-}

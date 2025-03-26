@@ -79,6 +79,7 @@ kotlin {
     js {
         binaries.executable()
         browser()
+//        useEsModules()
     }
 //    wasmJs {
 //        binaries.executable()

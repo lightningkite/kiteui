@@ -241,6 +241,7 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
     fun setImageInternal(scope: RView, value: ImageSource?, size: Size?): Unit = with(scope) {
         if (!animationsEnabled) {
             image2 = null
+            displayedSource = null
             informParentOfSizeChange()
         }
         when (value) {

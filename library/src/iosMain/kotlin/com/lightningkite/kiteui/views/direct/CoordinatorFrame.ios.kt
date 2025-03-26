@@ -26,6 +26,8 @@ import platform.UIKit.UISheetPresentationController
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
 import com.lightningkite.kiteui.objc.presentationController
+import com.lightningkite.kiteui.views.popoverWriter
+import com.lightningkite.readable.BasicListenable
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import platform.UIKit.UIModalPresentationPageSheet
@@ -63,6 +65,21 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         viewController.kiteUi(context.split()) {
+            closeSiblingPopovers()
+            val childCloser = BasicListenable()
+            var closeCurrent = {}
+            var stopListeningToCloser = {}
+            fun internalClose() {
+                stopListeningToCloser()
+                closeCurrent()
+                control.close()
+            }
+            stopListeningToCloser = popoverClosers.addListener {
+                childCloser.invokeAll()
+                internalClose()
+            }
+            popoverClosers = childCloser
+
             beforeNextElementSetup {
                 parent = this@CoordinatorFrame
                 launch {
@@ -130,22 +147,25 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 }
             }
         }
-        withoutAnimation {
-            val control = object : SlidingPanelControl {
-                override fun close() {
-                    closePanel()
+        val popoverWriter = popoverWriter { closePanel() }
+        with(popoverWriter) {
+            withoutAnimation {
+                val control = object : SlidingPanelControl {
+                    override fun close() {
+                        closePanel()
+                    }
                 }
+                willRemove = if (ratio == null) {
+                    align(Align.Start, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        spacing = 0.px
+                        ignoreInteraction = true
+                        weight(ratio) - content(control)
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                    }
+                }.rView
             }
-            willRemove = if (ratio == null) {
-                align(Align.Start, Align.Stretch) - content(control)
-            } else {
-                row {
-                    spacing = 0.px
-                    ignoreInteraction = true
-                    weight(ratio) - content(control)
-                    weight(1f - ratio) - frame { ignoreInteraction = true }
-                }
-            }.rView
         }
         willRemove?.animateIn(transition.forward)
     }
@@ -164,23 +184,25 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 }
             }
         }
-        withoutAnimation {
-            val control = object : SlidingPanelControl {
-                override fun close() {
-                    closePanel()
+        val popoverWriter = popoverWriter { closePanel() }
+        with(popoverWriter) {
+            withoutAnimation {
+                val control = object : SlidingPanelControl {
+                    override fun close() {
+                        closePanel()
+                    }
                 }
+                willRemove = if (ratio == null) {
+                    align(Align.End, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        spacing = 0.px
+                        ignoreInteraction = true
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                        weight(ratio) - content(control)
+                    }
+                }.rView
             }
-            willRemove = if (ratio == null) {
-                align(Align.End, Align.Stretch) - content(control)
-            } else {
-                row {
-                    spacing = 0.px
-                    ignoreInteraction = true
-                    weight(1f - ratio) - frame { ignoreInteraction = true }
-                    weight(ratio) - content(control)
-                }
-            }.rView
-
         }
         willRemove?.animateIn(transition.forward)
     }
