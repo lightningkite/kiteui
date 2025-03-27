@@ -63,7 +63,7 @@ class LazyProperty<T>(
             }
         }
         val currentSharedState = shared.state
-        if(!overridden && (!useLastWhileLoading || currentSharedState.ready)) state = shared.state
+        if(!overridden && (!useLastWhileLoading || currentSharedState.ready)) state = currentSharedState
     }
 
     private fun stopListeningToShared() {
