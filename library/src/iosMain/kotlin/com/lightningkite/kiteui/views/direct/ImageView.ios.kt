@@ -209,12 +209,6 @@ class MyImageView : UIImageView(CGRectZero.readValue()) {
                     mySize.width,
                     mySize.height
                 )
-                println("loadingIndicator.setPsuedoframe " +
-                        "${outerSize.width / 2 - mySize.width / 2}, " +
-                        "${outerSize.height / 2 - mySize.height / 2}, " +
-                        "${mySize.width}, " +
-                        "${mySize.height}, " +
-                        "")
             }
         }
     }

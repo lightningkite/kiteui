@@ -251,6 +251,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             if (!fullyApply) {
                 backgroundLayer?.removeFromSuperlayer()
                 backgroundLayer = null
+                return@animateIfAllowed
             }
             val layer = backgroundLayer ?: run {
                 val newLayer = CAGradientLayerResizing()

@@ -44,12 +44,6 @@ actual fun RView.animateOut(
     done: (() -> Unit)?
 ) {
     if(!animationsEnabled) return
-    println("ANIMATING FROM")
-    native.transform.useContents {
-        println("a: $a, b: $b, c: $c, d: $d, tx: $tx, ty: $ty")
-    }
-    native.bounds.useContents { println("RELATIVE TO ${origin.x}, ${origin.y}") }
-    println("alpha: ${native.alpha}")
     UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { done?.invoke() },
@@ -57,14 +51,7 @@ actual fun RView.animateOut(
             val before = isInAnimationBlock
             isInAnimationBlock = true
             try {
-                println("GOING TO ")
                 transition.exit(native)
-
-                native.transform.useContents {
-                    println("a: $a, b: $b, c: $c, d: $d, tx: $tx, ty: $ty")
-                }
-                native.bounds.useContents { println("RELATIVE TO ${origin.x}, ${origin.y}") }
-                println("alpha: ${native.alpha}")
             } finally {
                 isInAnimationBlock = before
             }

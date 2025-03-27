@@ -145,6 +145,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 it.animateOut(transition.reverse) {
                     this@CoordinatorFrame.removeChild(it)
                 }
+                willRemove = null
             }
         }
         val popoverWriter = popoverWriter { closePanel() }
@@ -152,7 +153,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             withoutAnimation {
                 val control = object : SlidingPanelControl {
                     override fun close() {
-                        closePanel()
+                        closePopovers()
                     }
                 }
                 willRemove = if (ratio == null) {
@@ -182,6 +183,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 it.animateOut(transition.reverse) {
                     this@CoordinatorFrame.removeChild(it)
                 }
+                willRemove = null
             }
         }
         val popoverWriter = popoverWriter { closePanel() }
@@ -189,7 +191,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             withoutAnimation {
                 val control = object : SlidingPanelControl {
                     override fun close() {
-                        closePanel()
+                        closePopovers()
                     }
                 }
                 willRemove = if (ratio == null) {
