@@ -46,7 +46,7 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
 
     init {
         userInteractionEnabled = true
-        addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside)
+        addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside or UIControlEventTouchUpOutside)
     }
     fun setOnClick(action: ()->Unit): ()->Unit {
         onClick = action
