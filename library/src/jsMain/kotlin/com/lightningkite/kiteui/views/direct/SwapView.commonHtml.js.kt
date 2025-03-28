@@ -13,31 +13,29 @@ actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> ViewModifiable?
 ) {
-    clearChildren()
-    createNewView()
-//    val keyframeName = context.kiteUiCss.transition(transition)
-//
-//    val transitionTime = theme.transitionDuration
-//    previousLast?.let { view ->
-//        view.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime forwards" }
-//        launch {
-//            delay(theme.transitionDuration)
-//            removeChild(view)
-//        }
-//    }
-//    withoutAnimation {
-//        createNewView()
-//    }
-//    children.lastOrNull().takeUnless { it == previousLast }?.let { newView ->
-//        previousLast = newView
-//        exists = true
-//        newView.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
-//    } ?: run {
-//        previousLast = null
-//        if (exists) {
-//            afterTimeout(transitionTime.inWholeMilliseconds) {
-//                exists = false
-//            }
-//        }
-//    }
+    val keyframeName = context.kiteUiCss.transition(transition)
+
+    val transitionTime = theme.transitionDuration
+    previousLast?.let { view ->
+        view.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-exit $transitionTime forwards" }
+        launch {
+            delay(theme.transitionDuration)
+            removeChild(view)
+        }
+    }
+    withoutAnimation {
+        createNewView()
+    }
+    children.lastOrNull().takeUnless { it == previousLast }?.let { newView ->
+        previousLast = newView
+        exists = true
+        newView.native.onElement { (it as HTMLElement).style.animation = "${keyframeName}-enter $transitionTime forwards" }
+    } ?: run {
+        previousLast = null
+        if (exists) {
+            afterTimeout(transitionTime.inWholeMilliseconds) {
+                exists = false
+            }
+        }
+    }
 }

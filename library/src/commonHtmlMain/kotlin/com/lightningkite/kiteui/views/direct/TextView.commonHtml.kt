@@ -47,6 +47,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
     actual fun setBasicHtmlContent(html: String) {
+        native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
     }
 }
