@@ -9,48 +9,58 @@ import com.lightningkite.kiteui.views.*
 
 actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
     init {
-        native.tag = "textarea"
-        native.classes.add("editable")
-        native.style.resize = "none"
-        native.addEventListener("keyup") { ev ->
+        native.tag = "div"
+        native.classes.add("textarea-container")
+    }
+    val textarea = FutureElement().apply {
+        tag = "textarea"
+        classes.add("editable")
+        style.resize = "none"
+        addEventListener("keyup") { ev ->
             ev as KeyboardEvent
             if (ev.code == KeyCodes.enter) {
-                action?.startAction(this)
+                action?.startAction(this@TextArea)
             }
         }
+        native.appendChild(this)
     }
-    actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    actual val content: ImmediateWritable<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    init {
+        content.addListener {
+            native.setAttribute("data-replicated-value", content.value)
+        }
+    }
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             when (value.autocomplete) {
                 AutoComplete.Email -> {
-                    native.attributes.autocomplete = "email"
+                    textarea.attributes.autocomplete = "email"
                 }
 
                 AutoComplete.Password -> {
-                    native.attributes.autocomplete = "current-password"
+                    textarea.attributes.autocomplete = "current-password"
                 }
 
                 AutoComplete.NewPassword -> {
-                    native.attributes.autocomplete = "new-password"
+                    textarea.attributes.autocomplete = "new-password"
                 }
 
                 AutoComplete.Phone -> {
-                    native.attributes.autocomplete = "tel"
+                    textarea.attributes.autocomplete = "tel"
                 }
 
                 null -> {
-                    native.attributes.autocomplete = "off"
+                    textarea.attributes.autocomplete = "off"
                 }
             }
         }
     actual var hint: String = ""
         set(value) {
             field = value
-            native.attributes.placeholder = value
+            textarea.attributes.placeholder = value
         }
     actual var enabled: Boolean
-        get() = !(native.attributes.disabled ?: false)
-        set(value) { native.attributes.disabled = !value }
+        get() = !(textarea.attributes.disabled ?: false)
+        set(value) { textarea.attributes.disabled = !value }
 }

@@ -46,6 +46,13 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
 
     init {
         native.addSubview(textField)
+        textField.textContainer.heightTracksTextView = false
+        textField.scrollEnabled = false
+    }
+    init {
+        delegate.listeners.add {
+            textField.informParentOfSizeChange()
+        }
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme

@@ -609,6 +609,35 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
+            
+            .textarea-container {
+              /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
+              display: grid;
+            }
+            .textarea-container::after {
+              /* Note the weird space! Needed to preventy jumpy behavior */
+              content: attr(data-replicated-value) " ";
+
+              /* This is how textarea text behaves */
+              white-space: pre-wrap;
+
+              /* Hidden from view, clicks, and screen readers */
+              visibility: hidden;
+              
+              padding: 2px;
+            }
+            .textarea-container > textarea {
+              /* You could leave this, but after a user resizes, then it ruins the auto sizing */
+              resize: none;
+            }
+            .textarea-container > textarea,
+            .textarea-container::after {
+              /* Identical styling required!! */
+              font: inherit;
+
+              /* Place on top of each other */
+              grid-area: 1 / 1 / 2 / 2;
+            }
 
             .kiteui-space {
                 display: inline-block;
