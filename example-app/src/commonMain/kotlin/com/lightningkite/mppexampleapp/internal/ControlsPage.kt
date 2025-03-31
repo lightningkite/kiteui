@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
@@ -67,6 +68,11 @@ object ControlsPage : Page {
                         }
                     }
                 }
+                reactiveSuspending {
+                    fetch("https://lightningkite.com/wrong-page").let {
+                        if (!it.ok) throw Exception(it.text())
+                    }
+                }
                 text { ::content { ratio().times(100).roundToInt().toString() + "%" } }
                 row {
                     expanding - space {}
@@ -104,7 +110,9 @@ object ControlsPage : Page {
                         onClick {
                             delay(100)
                             error = !error
-                            if(error) throw PlainTextException("We broke!")
+                            if(error) fetch("https://lightningkite.com/wrong-page").let {
+                                if (!it.ok) throw Exception(it.text())
+                            }
                             else delay(100)
                         }; text {
                         content = "Card"

@@ -37,7 +37,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
                 padding = it.padding / 4,
             ).withBack
         }
-        icon(Icon.done, "") {
+        icon(Icon.done.copy(width = 1.rem, height = 1.rem), "") {
             ::visible.invoke { checked() }
         }
         onRemove(button.setOnClick {

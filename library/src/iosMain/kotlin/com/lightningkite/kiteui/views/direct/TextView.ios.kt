@@ -143,7 +143,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             error = null
         )
         originalHtml = x
-        label.attributedText = x
+        updateFont()
         native.linkSetup()
     }
 }
