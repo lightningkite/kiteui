@@ -167,10 +167,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
             is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
             is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
-            // TODO: Implement per-corner radii on Android
-            is CornerRadii.PerCorner -> 0f
+            is CornerRadii.PerCorner -> it.value.value
         }
-        backgroundBlock?.cornerRadii = floatArrayOf(cr, cr, cr, cr, cr, cr, cr, cr)
+
+        val asPerCorner = theme.cornerRadii as? CornerRadii.PerCorner
+        val topLeft = if (asPerCorner?.topLeft != false) cr else 0f
+        val topRight = if (asPerCorner?.topRight != false) cr else 0f
+        val bottomRight = if (asPerCorner?.bottomRight != false) cr else 0f
+        val bottomLeft = if (asPerCorner?.bottomLeft != false) cr else 0f
+        backgroundBlock?.cornerRadii =
+            floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
     }
 
     private var edgeToEdgePadding: Edges? = null
@@ -338,26 +344,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
         updateCorners()
-    }
-
-    protected fun applyThemeWithClipping(theme: ThemeAndBack) {
-        updatePadding()
-        if (theme.drawBackground) {
-            native.elevation = theme.theme.elevation.value
-        } else {
-            native.elevation = 0f
-        }
-        if (theme.drawBackground) {
-            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
-            backgroundBlock = backgroundDrawable
-            updateCorners()
-            background = backgroundDrawable
-        } else {
-            val backgroundDrawable = theme.theme.backgroundClippingDrawableWithoutCorners()
-            backgroundBlock = backgroundDrawable
-            updateCorners()
-            background = backgroundDrawable
-        }
     }
 }
 
