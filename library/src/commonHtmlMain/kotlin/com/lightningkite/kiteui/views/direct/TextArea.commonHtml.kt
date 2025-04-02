@@ -39,7 +39,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
                     native.attributes.autocomplete = "tel"
                 }
 
-                null -> {
+                AutoComplete.OneTimeCode,null -> {
                     native.attributes.autocomplete = "off"
                 }
             }

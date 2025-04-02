@@ -41,6 +41,7 @@ kotlin {
             api("androidx.media3:media3-exoplayer:1.4.1")
             api("androidx.media3:media3-ui:1.4.1")
             api("androidx.media3:media3-common:1.4.1")
+            api("androidx.autofill:autofill:1.3.0-rc01")
         }
         this.compilerOptions {
             this.jvmTarget.set(JvmTarget.JVM_1_8)

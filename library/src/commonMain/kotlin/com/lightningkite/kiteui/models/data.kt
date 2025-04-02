@@ -649,7 +649,7 @@ data class KeyboardHints(
             KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
         val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
         val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
-        val oneTimeCode = KeyboardHints(KeyboardCase.Letters,KeyboardType.Text,autocomplete = AutoComplete.OneTimeCode)
+        val oneTimeCode = KeyboardHints(KeyboardCase.Letters,KeyboardType.Text,autocomplete = AutoComplete.OneTimeCode,autocorrect = false)
     }
 }
 

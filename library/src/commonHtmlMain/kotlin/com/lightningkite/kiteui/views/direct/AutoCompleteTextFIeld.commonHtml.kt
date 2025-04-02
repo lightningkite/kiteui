@@ -53,8 +53,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
                 AutoComplete.Phone -> {
                     native.attributes.autocomplete = "tel"
                 }
-
-                null -> {
+                AutoComplete.OneTimeCode, null -> {
                     native.attributes.autocomplete = "off"
                 }
             }

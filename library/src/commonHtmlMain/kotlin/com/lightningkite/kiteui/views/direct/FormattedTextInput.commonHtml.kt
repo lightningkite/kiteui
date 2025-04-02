@@ -98,7 +98,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
                     native.attributes.autocomplete = "tel"
                 }
 
-                null -> {
+                null, AutoComplete.OneTimeCode -> {
                     native.attributes.autocomplete = "off"
                 }
             }
