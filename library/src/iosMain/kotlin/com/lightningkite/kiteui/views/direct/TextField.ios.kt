@@ -125,6 +125,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 AutoComplete.Email -> UITextContentTypeUsername
                 AutoComplete.Password -> UITextContentTypePassword
                 AutoComplete.NewPassword -> UITextContentTypeNewPassword
+                AutoComplete.OneTimeCode -> UITextContentTypeOneTimeCode
                 else -> null
             }
             textField.autocorrectionType = when {
