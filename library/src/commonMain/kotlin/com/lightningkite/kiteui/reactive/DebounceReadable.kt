@@ -10,8 +10,8 @@ data class DebounceReadable<T>(val source: Readable<T>, val duration: Duration) 
     override val state: ReadableState<T> get() = source.state
 }
 data class DebounceListenable(val source: Listenable, val duration: Duration) : Listenable {
-    private var changeCount = 0
     override fun addListener(listener: () -> Unit): () -> Unit {
+        var changeCount = 0
         return source.addListener {
             val num = ++changeCount
             afterTimeout(duration.inWholeMilliseconds) {
