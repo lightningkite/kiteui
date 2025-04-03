@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.readable.reactiveScope
-import com.lightningkite.kiteui.viewDebugTarget
 
 
 operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
@@ -143,7 +142,7 @@ val ViewWriter.underline: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(spacing = it.spacing * multiplier).withoutBack }.onNext
+fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(spacing = it.gap * multiplier).withoutBack }.onNext
 
 
 fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {

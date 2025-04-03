@@ -84,7 +84,7 @@ object RecyclerViewPage : Page {
                                 }
                             }
                         }
-                        onlyWhen { expanded() == it() } - col {
+                        shownWhen { expanded() == it() } - col {
 //                            ::exists { expanded() == it() }
                             text { ::content { "Content for ${it()} == ${expanded()}" } }
                             text("More Content")

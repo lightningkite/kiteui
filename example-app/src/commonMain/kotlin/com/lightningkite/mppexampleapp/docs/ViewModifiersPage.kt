@@ -3,7 +3,6 @@ package com.lightningkite.mppexampleapp.docs
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.Property
-import com.lightningkite.readable.bind
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.*
@@ -284,7 +283,7 @@ object ViewModifiersPage : DocPage {
                         text { reactiveScope { content = if (condition()) "Hide" else "Show" } }
                         checked bind condition
                     }
-                    onlyWhen(condition = { condition() }) - text("Show Text Only When Toggled")
+                    shownWhen(condition = { condition() }) - text("Show Text Only When Toggled")
                 }
             }
         }

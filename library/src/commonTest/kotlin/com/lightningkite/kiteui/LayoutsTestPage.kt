@@ -19,7 +19,7 @@ class LayoutsTestPage : Page {
             card - frame {
                 above = this
                 checks += {
-                    assertEquals(start.parentRectangle().bottom + theme.spacing.canvasUnits, parentRectangle().top, 1.0)
+                    assertEquals(start.parentRectangle().bottom + theme.gap.canvasUnits, parentRectangle().top, 1.0)
                 }
             }
             h2("Sample").apply {
@@ -27,7 +27,7 @@ class LayoutsTestPage : Page {
                     assertEquals(true, parent?.themeAndBack?.drawBackground)
                     assertEquals(true, parent?.themeAndBack?.padding)
                     assertEquals(
-                        theme.spacing.canvasUnits,
+                        theme.gap.canvasUnits,
                         screenRectangle()?.top?.minus(above?.screenRectangle()?.bottom ?: 0.0) ?: 0.0,
                         1.0
                     )
@@ -37,7 +37,7 @@ class LayoutsTestPage : Page {
                 expanding - text("Left").apply {
                     checks += {
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.spacing.canvasUnits / 2,
+                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.gap.canvasUnits / 2,
                             (parentRectangle()?.right ?: 0.0),
                             1.0
                         )
@@ -46,7 +46,7 @@ class LayoutsTestPage : Page {
                 expanding - text("Right").apply {
                     checks += {
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.spacing.canvasUnits / 2,
+                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.gap.canvasUnits / 2,
                             (parentRectangle()?.left ?: 0.0),
                             1.0
                         )
@@ -58,7 +58,7 @@ class LayoutsTestPage : Page {
             // Verify that spacing is set between each item produced by the forEach.
             col {
                 val customSpacing = 25.px
-                spacing = customSpacing
+                gap = customSpacing
                 val textList = shared { listOf("Text 1", "Text 2", "Text 3").withIndex().toList() }
                 val textViews = mutableListOf<TextView>()
                 forEach(textList) { (index, it) ->

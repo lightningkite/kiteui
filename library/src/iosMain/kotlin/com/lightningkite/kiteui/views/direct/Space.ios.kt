@@ -1,13 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
 
 import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
@@ -19,7 +15,7 @@ actual class Space actual constructor(context: RContext, private val multiplier:
     override val cannotBeCovered: Boolean get() = false
     override val native = NSpace()
     override fun applyTheme(theme: ThemeAndBack) {
-        native.natSize = CGSizeMake(theme.theme.spacing.value * multiplier, theme.theme.spacing.value * multiplier)
+        native.natSize = CGSizeMake(theme.theme.gap.value * multiplier, theme.theme.gap.value * multiplier)
     }
     init {
 //        sizeConstraints =

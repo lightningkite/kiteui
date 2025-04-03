@@ -24,7 +24,7 @@ fun Theme.Companion.material(
     font = body,
     elevation = elevation,
     cornerRadii = cornerRadii,
-    spacing = spacing,
+    gap = spacing,
     outline = outline,
     outlineWidth = outlineWidth,
     foreground = foreground,

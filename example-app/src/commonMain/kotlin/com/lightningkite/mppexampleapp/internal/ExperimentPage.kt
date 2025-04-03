@@ -2,18 +2,11 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.*
-import com.lightningkite.mppexampleapp.Resources
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.random.Random
-import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("experiment")
 object ExperimentPage : Page {
@@ -23,7 +16,7 @@ object ExperimentPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             card - col {
-                spacing = 0.5.rem
+                gap = 0.5.rem
                 paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
                 h1("Weird spacing time")
                 spacingOverrideBeforeNext(10.rem)
@@ -33,7 +26,7 @@ object ExperimentPage : Page {
                 spacingOverrideBeforeNext(0.rem)
                 text {
                     content = "Really close"
-                    exists = false
+                    shown = false
                 }
                 spacingOverrideBeforeNext(1.rem)
                 text("Less close")

@@ -54,7 +54,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         }?.let {
             setOrAddDrawable(1, it)
             layerDrawable.setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
-            layerDrawable.setLayerInsetEnd(1, theme.theme.spacing.value.toInt())
+            layerDrawable.setLayerInsetEnd(1, theme.theme.gap.value.toInt())
         }
         updateCorners()
 

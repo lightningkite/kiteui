@@ -1,24 +1,19 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.l2.errorText
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.toast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 import kotlin.time.measureTime
 
 @Routable("controls")
@@ -466,7 +461,7 @@ object ControlsPage : Page {
                         )
                     }
                     padded - frame {
-                        spacing = 0.px
+                        gap = 0.px
                         image { source = ImageRemote("https://picsum.photos/seed/2/200/300") } in sizedBox(
                             SizeConstraints(
                                 width = 5.rem

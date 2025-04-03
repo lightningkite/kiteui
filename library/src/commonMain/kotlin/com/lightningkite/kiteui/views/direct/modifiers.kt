@@ -191,4 +191,8 @@ val ViewWriter.unpadded: ViewWrapper
 val ViewWriter.withDefaultPadding: ViewWrapper get() = padded
 
 @ViewModifierDsl3
-expect fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper
+expect fun ViewWriter.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper
+
+@ViewModifierDsl3
+@Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
+fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper = shownWhen(default, condition)

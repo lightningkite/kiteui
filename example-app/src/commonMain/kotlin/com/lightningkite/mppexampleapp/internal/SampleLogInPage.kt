@@ -2,17 +2,13 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.await
-import com.lightningkite.readable.bind
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
@@ -24,7 +20,7 @@ object SampleLogInPage : Page {
         val email = Property("")
         val password = Property("")
         frame {
-            spacing = 0.rem
+            gap = 0.rem
             image {
                 source = Resources.imagesSolera
                 scaleType = ImageScaleType.Crop

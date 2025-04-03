@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
-import kotlinx.cinterop.ExperimentalForeignApi
 
 
 actual class Checkbox actual constructor(context: RContext) : RView(context) {
@@ -33,7 +32,7 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
                 outline = it.icon,
                 iconOverride = it.foreground,
                 outlineWidth = maxOf(it.outlineWidth, 1.dp),
-                spacing = it.spacing / 4,
+                spacing = it.gap / 4,
                 padding = it.padding / 4,
             ).withBack
         }

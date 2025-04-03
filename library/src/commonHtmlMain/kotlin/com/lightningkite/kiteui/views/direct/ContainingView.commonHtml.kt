@@ -143,7 +143,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
                     if(view.native.style.width.isNullOrEmpty()) view.native.style.width = "100%"
                 }
             }
-            val amnt = spacing ?: theme.spacing
+            val amnt = spacing ?: theme.gap
             view.native.style.marginBottom = amnt.value
         }
     }
@@ -157,7 +157,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         if (!complex) {
-            val amnt = spacing ?: theme.spacing
+            val amnt = spacing ?: theme.gap
             for (child in children) {
                 child.native.style.marginBottom = amnt.value
             }
