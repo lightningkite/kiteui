@@ -62,6 +62,7 @@ object AndroidAppContext {
     val executor by lazy {
         ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, ArrayBlockingQueue(10))
     }
+    lateinit var fileProviderAuthority: String
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)

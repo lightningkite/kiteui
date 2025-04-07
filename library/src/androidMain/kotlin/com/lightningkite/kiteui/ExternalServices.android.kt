@@ -190,9 +190,24 @@ actual object ExternalServices {
         return out.toURI()
     }
 
+    private fun <T> List<T>.identity(): T? = first().takeIf { all { it == first() } }
+
     actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
-        // Sharing actual files will likely require configuration of a FileProvider
-        TODO()
+        val files = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) }
+            .map { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, AndroidAppContext.fileProviderAuthority, it) }
+        val commonMimeType = namesToBlobs.map { it.second.type }.identity() ?: "*/*"
+
+        val shareIntent = Intent().apply {
+            if (files.size == 1) {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, files.first())
+            } else {
+                action = Intent.ACTION_SEND_MULTIPLE
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(files))
+            }
+            type = commonMimeType
+        }
+        AndroidAppContext.activityCtx?.startActivity(shareIntent)
     }
 
     actual fun share(title: String, message: String?, url: String?) {
@@ -242,5 +257,10 @@ actual object ExternalServices {
                 putExtra(CalendarContract.Events.EVENT_LOCATION, location)
             }
         ) { _, _ -> }
+    }
+
+    private fun Blob.saveToTemporaryFile(name: String): File {
+        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(type)
+        return File(AndroidAppContext.applicationCtx.cacheDir, "$name.$extension").apply { writeBytes(data) }
     }
 }
