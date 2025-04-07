@@ -35,6 +35,8 @@ object ExperimentPage : Page {
                     content = "Really close"
                     exists = false
                 }
+                spacingOverrideBeforeNext((-0.5).rem)
+                text("Pull up and overlap some")
                 spacingOverrideBeforeNext(1.rem)
                 text("Less close")
             }

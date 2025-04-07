@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.stack
 import com.lightningkite.kiteui.views.setup
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -26,9 +27,9 @@ class LayoutTest {
             override fun viewDidLoad() {
                 super.viewDidLoad()
                 setup(Theme(id = "unitTest")) {
-                    root = frame {
+                    frame {
                         s.render(this)
-                    }
+                    }.also { root = it }
                 }
             }
         }

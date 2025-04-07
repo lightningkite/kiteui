@@ -1053,6 +1053,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             else -> childTop = paddingTop
         }
         var i = 0
+        var gapApplied = false
         while (i < count) {
             val child = getChildAt(i)
             if (child == null) {
@@ -1074,11 +1075,16 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                     Gravity.LEFT -> childLeft = paddingLeft
                     else -> childLeft = paddingLeft
                 }
+                if(gapApplied) {
+                    childTop += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                } else {
+                    gapApplied = true
+                }
                 setChildFrame(
                     child, childLeft, childTop + getLocationOffset(child),
                     childWidth, childHeight
                 )
-                childTop += childHeight + ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt() + getNextLocationOffset(child)
+                childTop += childHeight + getNextLocationOffset(child)
                 i += getChildrenSkipCount(child, i)
             }
             i++
@@ -1143,6 +1149,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             start = count - 1
             dir = -1
         }
+        var gapApplied = false
         var i = 0
         while (i < count) {
             val childIndex = start + dir * i
@@ -1192,12 +1199,16 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
 
                     else -> childTop = paddingTop
                 }
+                if(gapApplied) {
+                    childLeft += ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt()
+                } else {
+                    gapApplied = true
+                }
                 setChildFrame(
                     child, childLeft + getLocationOffset(child), childTop,
                     childWidth, childHeight
                 )
-                childLeft += (childWidth + ((lp.gapBeforeOverride ?: gap) * lp.gapRatio).toInt() +
-                        getNextLocationOffset(child))
+                childLeft += (childWidth + getNextLocationOffset(child))
                 i += getChildrenSkipCount(child, childIndex)
             }
             i++
