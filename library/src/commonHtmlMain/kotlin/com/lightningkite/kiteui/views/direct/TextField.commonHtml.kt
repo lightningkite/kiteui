@@ -51,7 +51,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                     native.attributes.autocomplete = "tel"
                 }
 
-                null -> {
+                AutoComplete.OneTimeCode,null -> {
                     native.attributes.autocomplete = "off"
                 }
             }
