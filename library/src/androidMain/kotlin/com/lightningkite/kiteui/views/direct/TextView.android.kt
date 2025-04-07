@@ -7,11 +7,11 @@ import android.graphics.text.LineBreakConfig
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.text.Html
-import android.text.Layout
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
@@ -88,7 +88,16 @@ actual class TextView actual constructor(context: RContext) :
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
     }
     actual fun setBasicHtmlContent(html: String) {
-        native.movementMethod = LinkMovementMethod.getInstance()
+        if(html.contains("<a")) {
+            native.movementMethod = LinkMovementMethod.getInstance()
+        } else {
+            native.movementMethod = null
+            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                native.setFocusable(View.FOCUSABLE_AUTO)
+            }
+            native.isClickable = false
+            native.isLongClickable = false
+        }
         native.text = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
     }
 }

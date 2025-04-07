@@ -39,6 +39,7 @@ kotlin {
             api(libs.media3Exoplayer)
             api(libs.media3Ui)
             api(libs.media3Common)
+            api(libs.androidxAutofill)
         }
         this.compilerOptions {
             this.jvmTarget.set(JvmTarget.JVM_1_8)

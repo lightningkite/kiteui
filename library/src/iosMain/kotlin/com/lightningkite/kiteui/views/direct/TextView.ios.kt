@@ -144,7 +144,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         )
         originalHtml = x
         updateFont()
-        native.linkSetup()
+        native.linkSetup(html.contains("<a"))
     }
 }
 
