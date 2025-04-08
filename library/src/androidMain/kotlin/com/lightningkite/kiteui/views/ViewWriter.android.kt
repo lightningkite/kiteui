@@ -1,42 +1,23 @@
 package com.lightningkite.kiteui.views
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewParent
-import androidx.core.view.children
 import com.lightningkite.kiteui.KiteUiActivity
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.kiteui.models.Angle
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.userAgent
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.invokeAllSafe
-import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.http.*
-import io.ktor.util.Platform
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.lang.RuntimeException
 import java.lang.ref.WeakReference
-import java.util.WeakHashMap
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 object AndroidAppContext {
     lateinit var applicationCtx: Context
@@ -62,7 +43,13 @@ object AndroidAppContext {
     val executor by lazy {
         ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, ArrayBlockingQueue(10))
     }
-    lateinit var fileProviderAuthority: String
+
+    /**
+     * All KiteUI Android apps should have a file provider defined in their manifest with the authority on the file
+     * provider set as follows, based on the Android package name. The file provider is used in the implementation of
+     * several ExternalServices and is referenced using this authority string.
+     */
+    val fileProviderAuthority: String get() = applicationCtx.packageName + ".fileprovider"
 
     fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit) = activityCtx?.startActivityForResult(intent = intent, options = options, onResult = onResult)
     fun requestPermissions(vararg permissions: String, onResult: (KiteUiActivity.PermissionResult)->Unit) = activityCtx?.requestPermissions(permissions = permissions, onResult = onResult)

@@ -99,10 +99,9 @@ actual object ExternalServices {
         front: Boolean = false,
         capture: String = MediaStore.ACTION_IMAGE_CAPTURE,
     ): FileReference? = suspendCancellableCoroutine { cont ->
-        val fileProviderAuthority = AndroidAppContext.applicationCtx.packageName + ".fileprovider"
         val file = File(AndroidAppContext.applicationCtx.cacheDir, "images").also { it.mkdirs() }
             .let { File.createTempFile("image", ".jpg", it) }
-            .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, fileProviderAuthority, it) }
+            .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, AndroidAppContext.fileProviderAuthority, it) }
 
         AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
             if (!it.accepted) return@requestPermissions cont.resume(null)
