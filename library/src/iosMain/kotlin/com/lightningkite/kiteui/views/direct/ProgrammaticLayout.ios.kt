@@ -38,10 +38,10 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
             native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
         }
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
+            super.gap = value
             native.spacingCurrentPx = spacing?.canvasUnits ?: theme.gap.canvasUnits
         }
 

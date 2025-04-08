@@ -83,7 +83,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    override var spacing: Dimension?
+    override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value

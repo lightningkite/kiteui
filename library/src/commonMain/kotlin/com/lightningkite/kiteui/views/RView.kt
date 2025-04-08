@@ -376,7 +376,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 }
 
 abstract class RViewWrapper(context: RContext) : RView(context) {
-    override var spacing: Dimension? = null
+    override var gap: Dimension? = null
         get() = field ?: parent?.gap
 }
 

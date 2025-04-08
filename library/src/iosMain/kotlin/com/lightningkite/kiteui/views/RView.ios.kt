@@ -45,7 +45,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    override var exists: Boolean
+    override var shown: Boolean
         get() = super.shown
         set(value) {
             super.shown = value
@@ -79,7 +79,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
     private val mySpacing get() = (spacing ?: theme.gap)
-    override var spacing: Dimension?
+    override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value

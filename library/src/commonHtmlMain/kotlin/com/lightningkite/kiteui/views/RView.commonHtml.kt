@@ -38,7 +38,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.style.visibility = if (value) "visible" else "hidden"
         }
 
-    override var spacing: Dimension?
+    override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value
