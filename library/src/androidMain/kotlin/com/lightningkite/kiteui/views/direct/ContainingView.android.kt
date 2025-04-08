@@ -1,24 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.animation.LayoutTransition
 import android.content.Context
-import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.FrameLayout
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.LinearGradient
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
@@ -83,14 +74,14 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             }
         }
     }
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
-            native.gap = (value ?: theme.spacing).value.roundToInt()
+            super.gap = value
+            native.gap = (value ?: theme.gap).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: theme.spacing).value.roundToInt()
+        native.gap = (spacing ?: theme.gap).value.roundToInt()
     }
 }
 
@@ -137,14 +128,14 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
             }
         }
     }
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
-            native.gap = (value ?: theme.spacing).value.roundToInt()
+            super.gap = value
+            native.gap = (value ?: theme.gap).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: theme.spacing).value.roundToInt()
+        native.gap = (spacing ?: theme.gap).value.roundToInt()
     }
 }
 

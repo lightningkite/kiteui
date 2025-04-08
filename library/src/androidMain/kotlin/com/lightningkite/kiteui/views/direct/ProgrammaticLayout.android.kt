@@ -4,18 +4,10 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BasicListenable
-import com.lightningkite.readable.LateInitProperty
-import com.lightningkite.readable.Listenable
-import com.lightningkite.readable.Readable
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import kotlinx.datetime.format.Padding
-import java.util.WeakHashMap
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
@@ -37,15 +29,15 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
             native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
         }
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
-            native.spacingCurrentPx = spacing?.px ?: theme.spacing.px
+            super.gap = value
+            native.spacingCurrentPx = spacing?.px ?: theme.gap.px
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacingCurrentPx = spacing?.px ?: theme.spacing.px
+        native.spacingCurrentPx = spacing?.px ?: theme.gap.px
         native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
         native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
         native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0

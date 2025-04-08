@@ -61,13 +61,13 @@ object LayoutExamplesPage : Page {
                     }
 //                    gravity(Align.End, Align.Center) - row {
                     align(Align.End, Align.Center) - row {
-                        onlyWhen { showIcons() } - centered - toggleButton {
+                        shownWhen { showIcons() } - centered - toggleButton {
                             icon {
                                 source = Icon.starFilled
                             }
                         }
 
-                        onlyWhen { true } - centered - link {
+                        shownWhen { true } - centered - link {
                             icon {
                                 source = Icon.done
                                 description = "Update"
@@ -82,13 +82,13 @@ object LayoutExamplesPage : Page {
                         button { icon { source = Icon.notification }}
                         centered - menuButton {
                             col {
-                                spacing = 0.25.rem
+                                gap = 0.25.rem
                                 centered - sizeConstraints(width = 2.rem, height = 2.rem) - image {
                                     description = ""
                                     source = Resources.imagesSolera
                                 }
                                 subtext {
-                                    ::exists { false }
+                                    ::shown { false }
                                     ::content {
                                         "Test dealership"
                                     }
@@ -235,49 +235,49 @@ object LayoutExamplesPage : Page {
                     checkbox { checked bind showExtra }
                     text("Show extra view")
                 }
-                onlyWhen { showExtra() } - text("Showing an extra view!")
+                shownWhen { showExtra() } - text("Showing an extra view!")
                 card - row {
-                    spacing = 0.rem
+                    gap = 0.rem
                     text("0.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    shownWhen { showExtra() } - frame { important - text("X") }
                     frame { important - text("X") }
                 }
                 card - row {
-                    spacing = 0.5.rem
+                    gap = 0.5.rem
                     text("0.5")
                     important - text("X")
-                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    shownWhen { showExtra() } - frame { important - text("X") }
                     frame { important - text("X") }
                 }
                 card - row {
-                    spacing = 1.rem
+                    gap = 1.rem
                     text("1.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    shownWhen { showExtra() } - frame { important - text("X") }
                     frame { important - text("X") }
                 }
                 card - row {
-                    spacing = 2.rem
+                    gap = 2.rem
                     text("2.0")
                     important - text("X")
-                    onlyWhen { showExtra() } - frame { important - text("X") }
+                    shownWhen { showExtra() } - frame { important - text("X") }
                     frame { important - text("X") }
                 }
                 card - button {
-                    spacing = 0.rem
+                    gap = 0.rem
                     text("spacing = 0.rem")
                 }
                 card - button {
-                    spacing = 0.5.rem
+                    gap = 0.5.rem
                     text("spacing = 0.5.rem")
                 }
                 card - button {
-                    spacing = 1.rem
+                    gap = 1.rem
                     text("spacing = 1.rem")
                 }
                 card - button {
-                    spacing = 2.rem
+                    gap = 2.rem
                     text("spacing = 2.rem")
                 }
             }

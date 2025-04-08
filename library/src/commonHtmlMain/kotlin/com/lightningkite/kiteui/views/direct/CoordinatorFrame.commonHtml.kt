@@ -8,8 +8,6 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.icon
-import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
 import com.lightningkite.readable.invoke
@@ -58,7 +56,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             willRemove = col {
                 spacing = 0.px
                 ignoreInteraction = true
-                expanding - onlyWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
+                expanding - shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
                     ignoreInteraction = true
                 }
                 expanding - content(object : BottomSheetControl {

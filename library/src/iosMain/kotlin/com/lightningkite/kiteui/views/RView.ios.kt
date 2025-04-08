@@ -45,10 +45,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    override var exists: Boolean
-        get() = super.exists
+    override var shown: Boolean
+        get() = super.shown
         set(value) {
-            super.exists = value
+            super.shown = value
             native.hidden = !value
             if (fullyStarted) {
                 native.informParentOfSizeChange()
@@ -78,11 +78,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    private val mySpacing get() = (spacing ?: theme.spacing)
-    override var spacing: Dimension?
-        get() = super.spacing
+    private val mySpacing get() = (spacing ?: theme.gap)
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
+            super.gap = value
             native.spacingOverride?.value = value
             val spacing = mySpacing.value
             for (child in children) {

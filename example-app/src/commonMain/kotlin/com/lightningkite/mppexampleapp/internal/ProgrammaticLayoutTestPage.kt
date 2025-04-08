@@ -28,7 +28,7 @@ object ProgrammaticLayoutTestPage : Page {
                 important - button {
                     col {
                         text("Obnoxious Bouncing")
-                        onlyWhen { move() } - col {
+                        shownWhen { move() } - col {
                             text("We're currently jamming down!")
                             text("We're currently jamming down!")
                             text("We're currently jamming down!")

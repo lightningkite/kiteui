@@ -25,7 +25,7 @@ object ReactiveToolsPage : Page, DocPage {
 
     fun ViewWriter.bufferedNumberInput(sets: Writable<in Double>): ViewModifiable {
         return fieldTheme - row {
-            spacing = 0.5.rem
+            gap = 0.5.rem
             val buffer = Property<Double?>(null)
             space(0.5)
             weight(2f) - numberInput {
@@ -33,7 +33,7 @@ object ReactiveToolsPage : Page, DocPage {
                 content bind buffer
             }
             card - button {
-                spacing = 0.5.rem
+                gap = 0.5.rem
                 ::enabled { buffer().let { it != null } }
                 centered - text("Set Value")
                 onClick {
@@ -78,7 +78,7 @@ object ReactiveToolsPage : Page, DocPage {
                     val inputNumber = Property<Double?>(null)
                 """.trimIndent()) {
                     col {
-                        spacing = 2.rem
+                        gap = 2.rem
                         row {
                             bold - text("Timer: ")
                             text { ::content { "${timer()} seconds" } }
@@ -87,18 +87,18 @@ object ReactiveToolsPage : Page, DocPage {
                             centered - bold - text("Counter: ")
 
                             fieldTheme - row {
-                                spacing = 0.5.rem
+                                gap = 0.5.rem
                                 centered - sizeConstraints(width = 5.rem) - text {
                                     align = Align.Center
                                     ::content { counter().toString() }
                                 }
                                 card - button {
-                                    spacing = 0.5.rem
+                                    gap = 0.5.rem
                                     centered - text("-")
                                     onClick { counter.value-- }
                                 }
                                 card - button {
-                                    spacing = 0.5.rem
+                                    gap = 0.5.rem
                                     centered - text("+")
                                     onClick { counter.value++ }
                                 }

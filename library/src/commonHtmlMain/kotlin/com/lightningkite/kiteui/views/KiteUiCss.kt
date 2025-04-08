@@ -950,7 +950,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
-        theme.diff(diff) { spacing }?.let { addToCss(directSel, "--spacing", it.value) }
+        theme.diff(diff) { gap }?.let { addToCss(directSel, "--spacing", it.value) }
         theme.diff(diff) { padding }?.let { addToCss(directSel, "--padding", it.css()) }
         theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
         theme.diff(diff) { font.font }?.let { addToCss(directSel, "font-family", it.let { dynamicCss.font(it) }) }

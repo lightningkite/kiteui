@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DialogSemantic
-import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
@@ -32,7 +31,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
                 }
             }
             atBottomCenter - col {
-                spacing = 2.rem
+                gap = 2.rem
                 DialogSemantic.onNext - content()
                 space()
             }

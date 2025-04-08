@@ -142,7 +142,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         native.hidden = !default
         var runNumber = 0

@@ -73,11 +73,11 @@ fun <T> RView.forEachUpdating(
             }*/
                 val children = currentView.children
                 for (index in 0 until placeholdersWhileLoading) {
-                    children[index].exists = true
+                    children[index].shown = true
                     currentViews[index].unset()
                 }
                 for (index in placeholdersWhileLoading..<currentViews.size) {
-                    children[index].exists = false
+                    children[index].shown = false
                 }
             }
         }) {
@@ -99,11 +99,11 @@ fun <T> RView.forEachUpdating(
             }*/
                 val children = currentView.children
                 for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
-                    children[index].exists = true
+                    children[index].shown = true
                     currentViews[index].value = itemList[index]
                 }
                 for (index in itemList.size..<currentViews.size) {
-                    children[index].exists = false
+                    children[index].shown = false
                 }
             }
         }

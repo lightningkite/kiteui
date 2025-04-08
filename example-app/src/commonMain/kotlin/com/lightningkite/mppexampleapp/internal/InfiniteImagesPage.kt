@@ -80,7 +80,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
                     val renders = Property(0)
                     frame {
                         ::transitionId { currImage().toString() }
-                        spacing = 0.25.rem
+                        gap = 0.25.rem
                         zoomableImage {
                             reactiveScope {
                                 renders.value++

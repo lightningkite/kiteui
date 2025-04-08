@@ -181,8 +181,8 @@ object DataPage : DocPage {
                             """.trimIndent()
                         ) {
                             col {
-                                onlyWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
-                                onlyWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
+                                shownWhen { secondsElapsed() % 2 == 0 } - text("We're on an even second")
+                                shownWhen { secondsElapsed() % 2 != 0 } - text("We're on an odd second")
                             }
                         }
                         text("This is much easier on the DOM, so you'll get better performance too.")

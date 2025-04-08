@@ -46,7 +46,7 @@ object DocSearchPage : Page {
                         content bind query
                     }
                     centered - button {
-                        spacing = 0.1.rem
+                        gap = 0.1.rem
                         icon { source = Icon.close }
                         onClick {
                             query set ""
@@ -70,7 +70,7 @@ object DocSearchPage : Page {
                         card - link {
                             ::to { it().first }
                             col {
-                                spacing = 0.25.rem
+                                gap = 0.25.rem
                                 text { ::content { it().first().title() } }
                                 subtext { ::content { it().second.joinToString() }}
                             }
