@@ -20,6 +20,7 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
 
     init {
         activityIndicator {
+            opacity = 0.0
             ::opacity.invoke { if (this@Button.working()) 1.0 else 0.0 }
             native.extensionSizeConstraints = SizeConstraints(minWidth = null, minHeight = null)
         }

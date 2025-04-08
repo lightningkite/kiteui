@@ -8,6 +8,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
@@ -20,6 +21,7 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
+import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.readable.AppState
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
@@ -63,61 +65,67 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         lateinit var b: BottomSheetBehavior<View>
         var backToRemove: RView? = null
         val state = Property(startState)
-        val control = object: BottomSheetControl {
+        val control = object : BottomSheetControl {
             override val state: Writable<BottomSheetState> = state
             override fun close() {
                 b.state = BottomSheetBehavior.STATE_HIDDEN
             }
         }
-        backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
-        beforeNextElementSetup {
-            b = BottomSheetBehavior<View>(context.activity, null).apply {
-                this.halfExpandedRatio = partialRatio
-                peekSize?.value?.toInt()?.let { this.peekHeight = it }
-                this.state = BottomSheetBehavior.STATE_COLLAPSED
-                state.addListener {
-                    this.state = when (state.value) {
-                        BottomSheetState.EXPANDED -> BottomSheetBehavior.STATE_EXPANDED
-                        BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetBehavior.STATE_HALF_EXPANDED
-                        BottomSheetState.COLLAPSED -> BottomSheetBehavior.STATE_COLLAPSED
-                    }
-                }
-                launch {
-                    delay(16)
-                    this@apply.state = when (state.value) {
-                        BottomSheetState.EXPANDED -> BottomSheetBehavior.STATE_EXPANDED
-                        BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetBehavior.STATE_HALF_EXPANDED
-                        BottomSheetState.COLLAPSED -> BottomSheetBehavior.STATE_COLLAPSED
-                    }
-                }
-                isFitToContents = false
-                isShouldRemoveExpandedCorners = shouldRemoveExpandedCorners
-                isDraggable = draggable
-                this.isHideable = true
-                addBottomSheetCallback(object: BottomSheetBehavior.BottomSheetCallback() {
-                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
-                    }
+        withoutAnimation {
 
-                    override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        when(newState) {
-                            BottomSheetBehavior.STATE_EXPANDED -> state.value = BottomSheetState.EXPANDED
-                            BottomSheetBehavior.STATE_HALF_EXPANDED -> state.value = BottomSheetState.PARTIALLY_EXPANDED
-                            BottomSheetBehavior.STATE_COLLAPSED -> state.value = BottomSheetState.COLLAPSED
-                            BottomSheetBehavior.STATE_DRAGGING -> {}
-                            BottomSheetBehavior.STATE_HIDDEN -> {
-                                this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
-                                backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
-                            }
-                            BottomSheetBehavior.STATE_SETTLING -> {}
+            backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
+            beforeNextElementSetup {
+                b = BottomSheetBehavior<View>(context.activity, null).apply {
+                    this.halfExpandedRatio = partialRatio
+                    peekSize?.value?.toInt()?.let { this.peekHeight = it }
+                    state.addListener {
+                        this.state = when (state.value) {
+                            BottomSheetState.EXPANDED -> BottomSheetBehavior.STATE_EXPANDED
+                            BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetBehavior.STATE_HALF_EXPANDED
+                            BottomSheetState.COLLAPSED -> BottomSheetBehavior.STATE_COLLAPSED
                         }
                     }
-                })
-                //TODO: blocksBehind
-            }
-            (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
+                    launch {
+                        delay(32)
+                        this@apply.state = when (state.value) {
+                            BottomSheetState.EXPANDED -> BottomSheetBehavior.STATE_EXPANDED
+                            BottomSheetState.PARTIALLY_EXPANDED -> BottomSheetBehavior.STATE_HALF_EXPANDED
+                            BottomSheetState.COLLAPSED -> BottomSheetBehavior.STATE_COLLAPSED
+                        }
+                    }
+                    isFitToContents = false
+                    isShouldRemoveExpandedCorners = shouldRemoveExpandedCorners
+                    isDraggable = draggable
+                    this.isHideable = true
+                    addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                            backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
+                        }
 
-        } - content(control)
+                        override fun onStateChanged(bottomSheet: View, newState: Int) {
+                            when (newState) {
+                                BottomSheetBehavior.STATE_EXPANDED -> state.value = BottomSheetState.EXPANDED
+                                BottomSheetBehavior.STATE_HALF_EXPANDED -> state.value =
+                                    BottomSheetState.PARTIALLY_EXPANDED
+
+                                BottomSheetBehavior.STATE_COLLAPSED -> state.value = BottomSheetState.COLLAPSED
+                                BottomSheetBehavior.STATE_DRAGGING -> {}
+                                BottomSheetBehavior.STATE_HIDDEN -> {
+                                    this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
+                                    backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
+                                }
+
+                                BottomSheetBehavior.STATE_SETTLING -> {}
+                            }
+                        }
+                    })
+                    this.state = BottomSheetBehavior.STATE_HIDDEN
+                }
+                (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
+                b.state = BottomSheetBehavior.STATE_HIDDEN
+
+            } - content(control)
+        }
     }
 
     actual fun leftSlidingPanel(
@@ -127,7 +135,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null
-        val control = object: SlidingPanelControl {
+        val control = object : SlidingPanelControl {
             override fun close() {
                 b.state = SideSheetBehavior.STATE_HIDDEN
             }
@@ -140,13 +148,14 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     delay(16)
                     this@apply.state = SideSheetBehavior.STATE_EXPANDED
                 }
-                addCallback(object: SideSheetCallback() {
+                addCallback(object : SideSheetCallback() {
                     override fun onStateChanged(sheet: View, newState: Int) {
-                        when(newState) {
+                        when (newState) {
                             SideSheetBehavior.STATE_HIDDEN -> {
                                 this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
                                 backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
                             }
+
                             else -> {}
                         }
                     }
@@ -173,7 +182,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null
-        val control = object: SlidingPanelControl {
+        val control = object : SlidingPanelControl {
             override fun close() {
                 b.state = SideSheetBehavior.STATE_HIDDEN
             }
@@ -186,13 +195,14 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     delay(16)
                     this@apply.state = SideSheetBehavior.STATE_EXPANDED
                 }
-                addCallback(object: SideSheetCallback() {
+                addCallback(object : SideSheetCallback() {
                     override fun onStateChanged(sheet: View, newState: Int) {
-                        when(newState) {
+                        when (newState) {
                             SideSheetBehavior.STATE_HIDDEN -> {
                                 this@CoordinatorFrame.removeChild(this@beforeNextElementSetup)
                                 backToRemove?.let { this@CoordinatorFrame.removeChild(it) }
                             }
+
                             else -> {}
                         }
                     }

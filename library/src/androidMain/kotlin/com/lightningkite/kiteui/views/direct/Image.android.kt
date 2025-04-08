@@ -185,7 +185,7 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
     actual var naturalSize: Boolean = true
 
     override fun applyTheme(theme: ThemeAndBack) {
-        super.applyThemeWithClipping(theme)
+        super.applyTheme(theme)
         (placeholder as? CircularProgressDrawable)?.let {
             it.setColorSchemeColors(
                 theme.theme.icon.closestColor().colorInt(),

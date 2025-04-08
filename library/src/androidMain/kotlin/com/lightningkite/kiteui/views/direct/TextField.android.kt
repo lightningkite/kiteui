@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
+import androidx.autofill.HintConstants
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
@@ -215,10 +216,13 @@ var EditText.keyboardHints: KeyboardHints
         n.inputType = inputType
         if(VERSION.SDK_INT >= VERSION_CODES.O) {
             when (value.autocomplete) {
-                AutoComplete.Email -> View.AUTOFILL_HINT_EMAIL_ADDRESS
-                AutoComplete.Password, AutoComplete.NewPassword -> View.AUTOFILL_HINT_PASSWORD
-                AutoComplete.Phone -> View.AUTOFILL_HINT_PHONE
+                AutoComplete.Email -> arrayOf(View.AUTOFILL_HINT_EMAIL_ADDRESS)
+                AutoComplete.Password, AutoComplete.NewPassword -> arrayOf(View.AUTOFILL_HINT_PASSWORD)
+                AutoComplete.Phone -> arrayOf(View.AUTOFILL_HINT_PHONE)
+                AutoComplete.OneTimeCode -> arrayOf(HintConstants.AUTOFILL_HINT_SMS_OTP, HintConstants.AUTOFILL_HINT_EMAIL_OTP)
                 null -> null
-            }?.let { n.setAutofillHints(it) }
+            }?.let {
+                n.setAutofillHints(*it)
+            }
         }
     }

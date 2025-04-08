@@ -158,9 +158,15 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
     }
 
     val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
-    internal fun linkSetup() {
-        userInteractionEnabled = true
-        uiViewWithLabelMask.userInteractionEnabled = true
-        uiViewWithLabelMask.addGestureRecognizer(recognizer)
+    internal fun linkSetup(active: Boolean) {
+        userInteractionEnabled = active
+        uiViewWithLabelMask.userInteractionEnabled = active
+        if(active) {
+            uiViewWithLabelMask.addGestureRecognizer(recognizer)
+        } else {
+            if(recognizer.view != null) {
+                uiViewWithLabelMask.removeGestureRecognizer(recognizer)
+            }
+        }
     }
 }
