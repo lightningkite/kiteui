@@ -21,26 +21,34 @@ object ExperimentPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
-            card - col {
-                spacing = 0.5.rem
-                paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
-                h1("Weird spacing time")
-                spacingOverrideBeforeNext(10.rem)
-                text("Really far down")
-                spacingOverrideBeforeNext(0.rem)
-                text("Really close")
-                spacingOverrideBeforeNext(0.rem)
-                text {
-                    content = "Really close"
-                    exists = false
-                }
-                spacingOverrideBeforeNext((-0.5).rem)
-                text("Pull up and overlap some")
-                spacingOverrideBeforeNext(1.rem)
-                text("Less close")
+        col {
+            fieldTheme - textArea {
+                // resizing content test
+                content.value = ("This is some longer text that I'm hoping can demonstrate wrapping effectively.")
             }
         }
+
+//        scrolling - col {
+//            card - col {
+//                spacing = 0.5.rem
+//                paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
+//                h1("Weird spacing time")
+//                spacingOverrideBeforeNext(10.rem)
+//                text("Really far down")
+//                spacingOverrideBeforeNext(0.rem)
+//                text("Really close")
+//                spacingOverrideBeforeNext(0.rem)
+//                text {
+//                    content = "Really close"
+//                    exists = false
+//                }
+//                spacingOverrideBeforeNext((-0.5).rem)
+//                text("Pull up and overlap some")
+//                spacingOverrideBeforeNext(1.rem)
+//                text("Less close")
+//            }
+//        }
+
 //        col {
 //            expanding - recyclerView {
 //                log = ConsoleRoot.tag("X")
