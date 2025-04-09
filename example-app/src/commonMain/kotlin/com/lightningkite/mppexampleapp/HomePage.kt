@@ -136,7 +136,8 @@ class HomePage: Page {
                                 onClick { it.close() }
                             }
                             h2("Bottom sheet")
-                            text("bottom text")
+                            expanding - space()
+                            card - text("bottom text")
                         }
                     }
                 }
@@ -144,7 +145,7 @@ class HomePage: Page {
             button {
                 h6 { content = "Launch Test leftSlidingPanel" }
                 onClick {
-                    coordinatorFrame!!.leftSlidingPanel(blockBehind = true) {
+                    coordinatorFrame!!.leftSlidingPanel(blockBehind = false, ratio = 0.5f) {
                         DialogSemantic.onNext - col {
                             button {
                                 text("Close")
@@ -159,7 +160,7 @@ class HomePage: Page {
             button {
                 h6 { content = "Launch Test rightSlidingPanel" }
                 onClick {
-                    coordinatorFrame!!.rightSlidingPanel(blockBehind = true) {
+                    coordinatorFrame!!.rightSlidingPanel(blockBehind = false, ratio = 0.5f) {
                         DialogSemantic.onNext - col {
                             button {
                                 text("Close")

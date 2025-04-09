@@ -92,57 +92,54 @@ actual class ImageView actual constructor(context: RContext) : RView(context) {
         }
     }
 
-
+    private var previousRequestBuilder: RequestBuilder<Drawable>? = null
     actual var source: ImageSource? = null
         set(value) {
             if((native.context as? Activity)?.isDestroyed == true) return
+            if(!animationsEnabled) {
+                native.setImageDrawable(null)
+                previousRequestBuilder = null
+            }
             if (refreshOnParamChange && value is ImageRemote) {
                 if (value.url == (field as? ImageRemote)?.url) return
             } else if (value == field) return
-            if(!animationsEnabled) native.setImageDrawable(null)
             field = value
-            reload()
-        }
+            val value = source
+            fun RequestBuilder<Drawable>.load() {
+                var requestOptions = this
+                if ((!requestOptions.isTransformationSet
+                            && requestOptions.isTransformationAllowed) && native.getScaleType() != null
+                ) {
+                    when (native.getScaleType()) {
+                        ImageView.ScaleType.CENTER_CROP -> requestOptions = requestOptions.clone().optionalCenterCrop()
+                        ImageView.ScaleType.CENTER_INSIDE -> requestOptions = requestOptions.clone().optionalCenterInside()
+                        ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
+                            requestOptions.clone().optionalFitCenter()
 
-    private var previousRequestBuilder: RequestBuilder<Drawable>? = null
-
-    private fun reload() {
-        val value = source
-        fun RequestBuilder<Drawable>.load() {
-            var requestOptions = this
-            if ((!requestOptions.isTransformationSet
-                        && requestOptions.isTransformationAllowed) && native.getScaleType() != null
-            ) {
-                when (native.getScaleType()) {
-                    ImageView.ScaleType.CENTER_CROP -> requestOptions = requestOptions.clone().optionalCenterCrop()
-                    ImageView.ScaleType.CENTER_INSIDE -> requestOptions = requestOptions.clone().optionalCenterInside()
-                    ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
-                        requestOptions.clone().optionalFitCenter()
-
-                    ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
-                    ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
-                    else -> {}
+                        ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
+                        ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
+                        else -> {}
+                    }
                 }
+                previousRequestBuilder = requestOptions
+                requestOptions.into(native.target)
             }
-            previousRequestBuilder = requestOptions
-            requestOptions.into(native.target)
+            fun RequestBuilder<Drawable>.finish() {
+                // Instead of directly pulling the old ImageView drawable and using it in the fade, access the drawable via
+                // glide using the previous request so as not to circumvent the glide cache and cause resources to be prematurely freed
+                val withThumbnailOrPlaceholder = previousRequestBuilder?.let(::thumbnail) ?: placeholder(placeholder)
+                withThumbnailOrPlaceholder.transition(withCrossFade(100)).load()
+            }
+            when (value) {
+                is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
+                is ImageRaw -> Glide.with(native).load(value.data.data).finish()
+                is ImageRemote -> Glide.with(native).load(value.url).finish()
+                is ImageResource -> Glide.with(native).load(value.resource).load()
+                is ImageVector -> native.setImageDrawable(PathDrawable(value))
+                null -> native.setImageDrawable(null)
+                else -> TODO()
+            }
         }
-        fun RequestBuilder<Drawable>.finish() {
-            // Instead of directly pulling the old ImageView drawable and using it in the fade, access the drawable via
-            // glide using the previous request so as not to circumvent the glide cache and cause resources to be prematurely freed
-            val withThumbnailOrPlaceholder = previousRequestBuilder?.let(::thumbnail) ?: placeholder(placeholder)
-            withThumbnailOrPlaceholder.transition(withCrossFade(100)).load()
-        }
-        when (value) {
-            is ImageLocal -> Glide.with(native).load(value.file.uri).finish()
-            is ImageRaw -> Glide.with(native).load(value.data.data).finish()
-            is ImageRemote -> Glide.with(native).load(value.url).finish()
-            is ImageResource -> Glide.with(native).load(value.resource).load()
-            is ImageVector -> native.setImageDrawable(PathDrawable(value))
-            null -> native.setImageDrawable(null)
-            else -> TODO()
-        }
-    }
 
     actual var scaleType: ImageScaleType
         get() {

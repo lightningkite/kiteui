@@ -46,8 +46,6 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
 
     init {
         native.addSubview(textField)
-        textField.textContainer.heightTracksTextView = false
-        textField.scrollEnabled = false
     }
     init {
         delegate.listeners.add {

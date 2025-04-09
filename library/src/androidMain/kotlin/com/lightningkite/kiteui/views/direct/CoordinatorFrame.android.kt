@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -63,6 +64,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
         lateinit var b: BottomSheetBehavior<View>
+        var sub: ViewModifiable? = null
         var backToRemove: RView? = null
         val state = Property(startState)
         val control = object : BottomSheetControl {
@@ -72,7 +74,6 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-
             backToRemove = if (blockBehind) dismissBackground { opacity = 0.0; onClick { control.close() } } else null
             beforeNextElementSetup {
                 b = BottomSheetBehavior<View>(context.activity, null).apply {
@@ -99,6 +100,11 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                            println("onSlide $sub $slideOffset")
+                            sub?.rView?.native?.run {
+                                layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top).also { println("Height is $it") }
+                                requestLayout()
+                            }
                             backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
                         }
 
@@ -124,7 +130,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
                 b.state = BottomSheetBehavior.STATE_HIDDEN
 
-            } - content(control)
+            } - col { sub = content(control) }
         }
     }
 
