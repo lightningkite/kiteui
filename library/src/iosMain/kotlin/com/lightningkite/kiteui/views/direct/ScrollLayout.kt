@@ -26,6 +26,10 @@ object ScrollLayoutMeta {
 class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol {
     var horizontal: Boolean = true
 
+    override fun forceRemeasures() {
+        setNeedsLayout()
+        informParentOfSizeChangeDueToChild()
+    }
     override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
         informParentOfSizeChangeDueToChild()

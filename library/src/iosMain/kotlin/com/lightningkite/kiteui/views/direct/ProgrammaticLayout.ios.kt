@@ -99,6 +99,10 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         return r
     }
 
+    override fun forceRemeasures() {
+        myInvalidated = true
+        superview?.informParentOfSizeChangeDueToChild()
+    }
     override fun subviewDidChangeSizing(view: UIView?) {
         if(inLayout) return
         else {

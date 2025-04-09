@@ -57,6 +57,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     override fun debugDescription(): String? =
         "${super.debugDescription()} $debugDescriptionInfo $debugDescriptionInfo2"
 
+    override fun forceRemeasures() {
+        lastLaidOutSize = null
+        childSizeCache.forEach { it.clear() }
+    }
     override fun subviewDidChangeSizing(view: UIView?) {
         val view = view ?: return
         val index = subviews.indexOf(view)
@@ -218,16 +222,18 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     }
 
     var lastLaidOutSize: Size? = null
+    var lastLaidOutPadding: Edges? = null
     override fun layoutSubviews() {
         val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
         if(subviews.any { it == viewDebugTarget?.native }) {
             println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
         }
         val mySize = bounds.useContents { size.local }
-        if (lastLaidOutSize == mySize) return
+        if (lastLaidOutSize == mySize && lastLaidOutPadding == padding) return
         var t = PerformanceInfo.trace("layoutLinear")
 
         lastLaidOutSize = mySize
+        lastLaidOutPadding = padding
         var primary = padding.primaryStart
         t.pause()
         val sizes = calcSizes(frame.useContents { size.local }, true)

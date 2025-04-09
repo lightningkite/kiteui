@@ -31,6 +31,7 @@ class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProto
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
     override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
     override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)

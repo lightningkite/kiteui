@@ -62,6 +62,7 @@ actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
             frameLayoutLayoutAnchoredSubviews(childSizeCache, anchor)
         }
     }
+    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
     override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
