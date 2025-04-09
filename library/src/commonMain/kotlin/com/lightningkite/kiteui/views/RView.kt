@@ -6,8 +6,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.reactive.Action
 import kotlinx.coroutines.*
-import kotlin.coroutines.AbstractCoroutineContextKey
-import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
 import kotlin.random.Random
@@ -64,9 +62,17 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     private var isShutdown = false
 
     open var opacity: Double = 1.0
-    open var exists: Boolean = true
+    open var shown: Boolean = true
+    @Deprecated("Renamed to 'shown'", ReplaceWith("shown"))
+    var exists: Boolean
+        get() = shown
+        set(value) { shown = value }
     open var visible: Boolean = true
-    open var spacing: Dimension? = null
+    open var gap: Dimension? = null
+    @Deprecated("Renamed to 'gap'", ReplaceWith("gap"))
+    var spacing: Dimension?
+        get() = gap
+        set(value) { gap = value }
     open var ignoreInteraction: Boolean = false
     var padding: Dimension?
         get() = paddingByEdge?.left
@@ -108,8 +114,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
 
     protected val parentSpacing: Dimension
-        get() = (parent?.spacing
-            ?: (parent?.themeAndBack?.theme?.spacing)
+        get() = (parent?.gap
+            ?: (parent?.themeAndBack?.theme?.gap)
             ?: 0.px)
     protected var fullyStarted = false
     abstract fun applyTheme(theme: ThemeAndBack)
@@ -370,8 +376,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 }
 
 abstract class RViewWrapper(context: RContext) : RView(context) {
-    override var spacing: Dimension? = null
-        get() = field ?: parent?.spacing
+    override var gap: Dimension? = null
+        get() = field ?: parent?.gap
 }
 
 class MutableCoroutineContext: CoroutineContext {

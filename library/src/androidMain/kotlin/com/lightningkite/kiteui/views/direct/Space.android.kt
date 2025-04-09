@@ -2,8 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
 import android.view.View
-import android.widget.Space
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
@@ -15,8 +13,8 @@ actual class Space actual constructor(context: RContext, val multiplier: Double)
     override val cannotBeCovered: Boolean get() = false
     override val native = NSpace(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
-        native.mySuggestedMinimumWidth = (theme.theme.spacing * multiplier).value.roundToInt()
-        native.mySuggestedMinimumHeight = (theme.theme.spacing * multiplier).value.roundToInt()
+        native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()
+        native.mySuggestedMinimumHeight = (theme.theme.gap * multiplier).value.roundToInt()
     }
 }
 

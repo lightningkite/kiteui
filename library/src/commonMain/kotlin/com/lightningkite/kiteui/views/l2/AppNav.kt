@@ -83,13 +83,13 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
                 ellipsis = true
             }
             navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty() }
+            ::shown { appNav.existsProperty() }
         }
         expanding - frame {
             debugName = "menu and navigator container"
             navigatorView(pageNavigator)
-            atStart - onlyWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
-                spacing = 0.px
+            atStart - shownWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+                gap = 0.px
             }
         }
     }
@@ -117,7 +117,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
             expanding - centered - navGroupTop(appNav.navItemsProperty)
             space()
             centered - navGroupActions(appNav.actionsProperty)
-            ::exists { appNav.existsProperty() }
+            ::shown { appNav.existsProperty() }
         }
         expanding - navigatorView(pageNavigator)
     }
@@ -135,7 +135,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                 setup(appNav)
                 atStart - InteractiveSemantic.onNext - button {
                     row {
-                        spacing = 0.px
+                        gap = 0.px
                         centered - icon(Icon.chevronLeft, "Go Back")
                         centered - text {
                             ::content {
@@ -152,7 +152,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                     ellipsis = true
                 }
                 atEnd - navGroupActions(appNav.actionsProperty)
-                ::exists { appNav.existsProperty() }
+                ::shown { appNav.existsProperty() }
             }
         } else {
             bar - row {
@@ -170,7 +170,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                     ellipsis = true
                 }
                 navGroupActions(appNav.actionsProperty)
-                ::exists { appNav.existsProperty() }
+                ::shown { appNav.existsProperty() }
             }
         }
         expanding - navigatorView(pageNavigator)
@@ -178,7 +178,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
         navGroupTabs(appNav.navItemsProperty) {
             debugName = "navGroupTabs"
             showOnPrint = false
-            ::exists { appNav.existsProperty() && !AppState.softInputOpen() }
+            ::shown { appNav.existsProperty() && !AppState.softInputOpen() }
         }
     }
 }
@@ -203,11 +203,11 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
             expanding - space {}
             navGroupActions(appNav.actionsProperty)
 
-            ::exists { appNav.existsProperty() }
+            ::shown { appNav.existsProperty() }
         }
         expanding - row {
             scrolling - navGroupColumn(appNav.navItemsProperty) {
-                ::exists { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
+                ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
             expanding - navigatorView(pageNavigator)

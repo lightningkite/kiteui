@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.probablyAppleUser
-import com.lightningkite.kiteui.views.direct.Separator
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -82,7 +81,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -118,7 +117,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -154,7 +153,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -249,7 +248,7 @@ data object FieldSemantic : Semantic("fld") {
             is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
             is CornerRadii.ForceConstant -> base
             is CornerRadii.RatioOfSize -> base
-            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.spacing * base.value)
+            is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(theme.gap * base.value)
             is CornerRadii.PerCorner -> base
         }
     )
@@ -296,7 +295,7 @@ data object DisabledSemantic : Semantic("dis") {
 
 data object CompactSemantic : Semantic("cmp") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
-        spacing = theme.spacing / 2,
+        spacing = theme.gap / 2,
         padding = theme.padding / 2,
     )
 }
@@ -454,7 +453,7 @@ class ThemeBuilder {
         font = base.font
         elevation = base.elevation
         cornerRadii = base.cornerRadii
-        spacing = base.spacing
+        spacing = base.gap
         this.padding = base.padding
         foreground = base.foreground
         iconOverride = base.iconOverride
@@ -479,7 +478,7 @@ class ThemeBuilder {
     var elevation: Dimension = base.elevation
     var cornerRadii: CornerRadii = base.cornerRadii
 
-    var spacing: Dimension = base.spacing
+    var spacing: Dimension = base.gap
     var padding: Edges = base.padding
 
     var foreground: Paint = base.foreground
@@ -521,7 +520,7 @@ class ThemeBuilder {
             font = font,
             elevation = elevation,
             cornerRadii = cornerRadii,
-            spacing = spacing,
+            gap = spacing,
             padding = padding,
             foreground = foreground,
             iconOverride = iconOverride,
@@ -556,8 +555,8 @@ class Theme(
     val elevation: Dimension = 1.px,
     val cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
 
-    val spacing: Dimension = 1.rem,
-    val padding: Edges = Edges(spacing),
+    val gap: Dimension = 1.rem,
+    val padding: Edges = Edges(gap),
 
     val foreground: Paint = Color.black,
     val iconOverride: Paint? = null,
@@ -613,7 +612,7 @@ class Theme(
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -630,7 +629,7 @@ class Theme(
         font = font,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = spacing,
         padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
@@ -650,7 +649,7 @@ class Theme(
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -669,7 +668,7 @@ class Theme(
         font = font,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = spacing,
         padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
@@ -690,7 +689,7 @@ class Theme(
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -709,7 +708,7 @@ class Theme(
         font = font,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = spacing,
         padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
@@ -768,7 +767,7 @@ class Theme(
         font = body,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = spacing,
         padding = padding,
         foreground = foreground,
         iconOverride = iconOverride,
@@ -814,7 +813,7 @@ class Theme(
         font: FontAndStyle = this.font,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,
@@ -888,7 +887,7 @@ class Theme(
         body: FontAndStyle? = null,
         elevation: Dimension = this.elevation,
         cornerRadii: CornerRadii = this.cornerRadii,
-        spacing: Dimension = this.spacing,
+        spacing: Dimension = this.gap,
         padding: Edges = this.padding,
         foreground: Paint = this.foreground,
         iconOverride: Paint? = this.iconOverride,

@@ -31,14 +31,14 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
                     withoutAnimation {
                         sub()
                         view = children[0]
-                        view?.exists = false
+                        view?.shown = false
                     }
-                    view?.exists = true
+                    view?.shown = true
                 } else {
-                    view?.exists = true
+                    view?.shown = true
                 }
             } else {
-                view?.exists = false
+                view?.shown = false
             }
         }
     }
@@ -47,7 +47,7 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
 @ViewDsl
 fun RView.errorText(): ViewModifiable {
     val errors = Property<Set<Exception>>(setOf())
-    return onlyWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
+    return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
         this@errorText += object: ExceptionHandler {
             override val priority: Float
                 get() = 1f
@@ -72,7 +72,7 @@ fun RView.errorText(): ViewModifiable {
 inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return col {
-        spacing = 0.px
+        gap = 0.px
         FieldLabelSemantic.onNext - text(label)
         fieldTheme - content()
         SubtextSemantic.onNext - errorText()

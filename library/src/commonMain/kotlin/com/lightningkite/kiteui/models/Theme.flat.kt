@@ -17,7 +17,7 @@ fun Theme.Companion.flat(
     font = body,
     elevation = 0.dp,
     cornerRadii = CornerRadii.RatioOfSpacing(0.8f),
-    spacing = 0.75.rem,
+    gap = 0.75.rem,
     outlineWidth = 0.px,
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
@@ -120,7 +120,7 @@ fun Theme.Companion.flat(
                     is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
                     is CornerRadii.ForceConstant -> base
                     is CornerRadii.RatioOfSize -> base
-                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.spacing * base.value)
+                    is CornerRadii.RatioOfSpacing -> CornerRadii.ForceConstant(it.gap * base.value)
                     is CornerRadii.PerCorner -> base
                 }
             ).withBack

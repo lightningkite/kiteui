@@ -56,12 +56,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    override var exists: Boolean
-        get() = super.exists
+    override var shown: Boolean
+        get() = super.shown
         set(value) {
-            super.exists = value
+            super.shown = value
             // Setting visibility to GONE does not work if an animation is running
-            if (!exists) {
+            if (!shown) {
                 native.clearAnimation()
             }
             native.visibility = if (value) {
@@ -85,10 +85,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
+            super.gap = value
             for (child in children) child.updateCorners()
         }
 

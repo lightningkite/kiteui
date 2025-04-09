@@ -94,7 +94,7 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     val l: Label
     col {
         val label = subtext()
-        spacing = 0.px
+        gap = 0.px
         l = Label(label, this)
         setup(l)
     }

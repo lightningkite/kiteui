@@ -24,10 +24,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.style.opacity = value.toString()
         }
 
-    override var exists: Boolean
-        get() = super.exists
+    override var shown: Boolean
+        get() = super.shown
         set(value) {
-            super.exists = value
+            super.shown = value
             native.attributes.hidden = !value
         }
 
@@ -38,10 +38,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.style.visibility = if (value) "visible" else "hidden"
         }
 
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
+            super.gap = value
             native.setStyleProperty("--spacing", value?.value)
         }
 

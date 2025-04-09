@@ -4,8 +4,6 @@ import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
-import com.lightningkite.readable.LateInitProperty
-import com.lightningkite.readable.Readable
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -15,12 +13,10 @@ import com.lightningkite.kiteui.views.layoutSubviewsAndLayers
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
-import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
@@ -42,15 +38,15 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
             native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
         }
-    override var spacing: Dimension?
-        get() = super.spacing
+    override var gap: Dimension?
+        get() = super.gap
         set(value) {
-            super.spacing = value
-            native.spacingCurrentPx = spacing?.canvasUnits ?: theme.spacing.canvasUnits
+            super.gap = value
+            native.spacingCurrentPx = spacing?.canvasUnits ?: theme.gap.canvasUnits
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacingCurrentPx = spacing?.canvasUnits ?: theme.spacing.canvasUnits
+        native.spacingCurrentPx = spacing?.canvasUnits ?: theme.gap.canvasUnits
         native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
         native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
         native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0

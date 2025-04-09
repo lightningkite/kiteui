@@ -40,8 +40,8 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
         it.weight?.let { w -> weight(w) }
         when (it) {
             is NavAction -> button {
-                exists = false
-                ::exists { it.hidden?.invoke(this) != true }
+                shown = false
+                ::shown { it.hidden?.invoke(this) != true }
                 display(it)
                 onClick {
                     it.onSelect()
@@ -50,8 +50,8 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
             }
 
             is NavExternal -> externalLink {
-                exists = false
-                ::exists { it.hidden?.invoke(this) != true }
+                shown = false
+                ::shown { it.hidden?.invoke(this) != true }
                 ::to { it.to(this) }
                 display(it)
                 this.onNavigate(onNavigate)
@@ -59,18 +59,18 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
 
             is NavGroup -> {
                 col {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
-                    spacing = 0.px
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
+                    gap = 0.px
                     padded - row {
                         centered - navElementIconAndCountHorizontal(it)
                         centered - text { ::content { it.title(this) } }
                     }
                     row {
-                        spacing = 0.px
+                        gap = 0.px
                         space()
                         expanding - col {
-                            spacing = 0.px
+                            gap = 0.px
                             navGroupColumnInner(shared { it.children(this) }, onNavigate)
                         }
                     }
@@ -79,8 +79,8 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
 
             is NavCustom -> {
                 frame {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     it.long(this@frame)
                 }
             }
@@ -88,9 +88,9 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
             is NavLink -> link {
                 selectedIfRouteMatches(it)
                 resetsStack = true
-                exists = false
+                shown = false
 
-                ::exists { it.hidden?.invoke() != true }
+                ::shown { it.hidden?.invoke() != true }
                 ::to { it.destination(this) }
                 display(it)
                 this.onNavigate(onNavigate)
@@ -116,8 +116,8 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
         }
         navElement.count?.let { count ->
             atTopEnd - compact - critical - frame {
-                exists = false
-                ::exists { count() != null }
+                shown = false
+                ::shown { count() != null }
                 subtext {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "*" }
                 }
@@ -127,36 +127,36 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     forEach(readable) {
         when (it) {
             is NavAction -> unpadded - button {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 navElementIconAndCount(it)
                 onClick { it.onSelect() }
             }
 
             is NavExternal -> unpadded - externalLink {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 ::to { it.to() }
                 navElementIconAndCount(it)
             }
 
             is NavGroup -> row {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 navGroupActionsInner(shared { it.children() })
             }
 
             is NavCustom -> frame {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 it.square(this@forEach)
             }
 
             is NavLink -> unpadded - link {
                 selectedIfRouteMatches(it)
                 resetsStack = true
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 ::to { it.destination() }
                 navElementIconAndCount(it)
             }
@@ -175,30 +175,30 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
     forEach(readable) {
         when (it) {
             is NavAction -> button {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 text { ::content { it.title() } }
                 onClick { it.onSelect() }
             }
 
             is NavExternal -> externalLink {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 ::to { it.to() }
                 text { ::content { it.title() } }
             }
 
             is NavCustom -> {
                 frame {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     it.square(this@forEach)
                 }
             }
 
             is NavGroup -> menuButton {
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 preferredDirection = PopoverPreferredDirection.belowRight
                 opensMenu {
                     navGroupColumn(shared { it.children() }, { closePopovers() })
@@ -209,8 +209,8 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
             is NavLink -> link {
                 selectedIfRouteMatches(it)
                 resetsStack = true
-                exists = false
-                ::exists { it.hidden?.invoke() != true }
+                shown = false
+                ::shown { it.hidden?.invoke() != true }
                 ::to { it.destination() }
                 text { ::content { it.title() } }
             }
@@ -226,8 +226,8 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
         }
         navElement.count?.let { count ->
             align(Align.End, Align.Start) - compact - critical - frame {
-                exists = false
-                ::exists { count() != null }
+                shown = false
+                ::shown { count() != null }
                 space(0.01)
                 centered - subtext {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
@@ -245,8 +245,8 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
         }
         navElement.count?.let { count ->
             centered - compact - critical - frame {
-                exists = false
-                ::exists { count() != null }
+                shown = false
+                ::shown { count() != null }
                 space(0.01)
                 centered - text {
                     ::content { count()?.takeIf { it > 0 }?.toString() ?: "" }
@@ -268,22 +268,22 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
         forEach(readable) {
             when (it) {
                 is NavAction -> expanding - button {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     display(it)
                     onClick { it.onSelect() }
                 }
 
                 is NavExternal -> expanding - externalLink {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     ::to { it.to() }
                     display(it)
                 }
 
                 is NavGroup -> expanding - menuButton {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     display(it)
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
@@ -292,8 +292,8 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                 }
 
                 is NavCustom -> {
-                    exists = false
-                    ::exists { it.hidden?.invoke() != true }
+                    shown = false
+                    ::shown { it.hidden?.invoke() != true }
                     expanding
                     it.tall(this)
                 }
@@ -302,8 +302,8 @@ fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: Contain
                     expanding - link {
                         selectedIfRouteMatches(it)
                         resetsStack = true
-                        exists = false
-                        ::exists { it.hidden?.invoke() != true }
+                        shown = false
+                        ::shown { it.hidden?.invoke() != true }
                         display(it)
                         ::to { it.destination() }
                     }

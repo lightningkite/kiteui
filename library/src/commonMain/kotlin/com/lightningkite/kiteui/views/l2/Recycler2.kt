@@ -35,9 +35,9 @@ class Recycler2(
         get() = outerFrame
 
     var spacing: Dimension?
-        get() = cells.spacing
+        get() = cells.gap
         set(value) {
-            cells.spacing = value
+            cells.gap = value
         }
     var paddingByEdge: Edges?
         get() = cells.paddingByEdge
@@ -50,9 +50,9 @@ class Recycler2(
             cells.padding = value
         }
     var exists: Boolean
-        get() = outerFrame.exists
+        get() = outerFrame.shown
         set(value) {
-            outerFrame.exists = value
+            outerFrame.shown = value
         }
 
     private val _centerIndex = Property(0)
@@ -227,7 +227,7 @@ class Recycler2(
 
         fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
 //            view.withoutAnimation {
-            view.exists = true
+            view.shown = true
             view.opacity = 1.0
 //            }
 //            if (data != this.data.value) log?.log("CELL RECYCLED: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
@@ -243,13 +243,13 @@ class Recycler2(
             val reuse = reuseableCells
             activeCells.remove(this)
             afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
-                view.exists = false
+                view.shown = false
                 reuse.add(this@MyCell)
             }
         }
 
         fun instantDismiss() {
-            view.exists = false
+            view.shown = false
             activeCells.remove(this)
             reuseableCells.add(this@MyCell)
         }
@@ -583,7 +583,7 @@ class Recycler2(
                             overdraw.bottom,
                         )
                     ) {
-                        it.view.exists = false
+                        it.view.shown = false
                         activeCells.remove(it)
                         reuseableCells.add(it)
                         true

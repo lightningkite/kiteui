@@ -12,7 +12,6 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
-import androidx.core.view.children
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
@@ -344,7 +343,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)
@@ -354,7 +353,7 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
 //            }
 //        }
 
-        exists = default
+        shown = default
         var existingAnimator: ValueAnimator? = null
         var goal = default
         reactiveScope {
@@ -362,13 +361,13 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
             if (goal == value) return@reactiveScope
             goal = value
             if (native.layoutParams == null) {
-                exists = value
+                shown = value
                 return@reactiveScope
             }
             existingAnimator?.cancel()
             existingAnimator = null
             val parent = parent
-            exists = true
+            shown = true
             val p = parent?.native
             if (animationsEnabled) {
                 existingAnimator = if (value) {
@@ -403,12 +402,12 @@ actual fun ViewWriter.onlyWhen(default: Boolean, condition: ReactiveContext.() -
                     }
                 }.setDuration(theme.transitionDuration.inWholeMilliseconds).also {
                     it.doOnEnd {
-                        exists = value
+                        shown = value
                     }
                     it.start()
                 }
             } else {
-                exists = value
+                shown = value
             }
         }
     }

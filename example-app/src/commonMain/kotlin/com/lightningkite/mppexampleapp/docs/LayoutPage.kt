@@ -255,14 +255,14 @@ object LayoutPage : DocPage {
                                     card - text("C")
                                 }
                                 col {
-                                    spacing = 1.px
+                                    gap = 1.px
                                     card - text("spacing = 1.px")
                                     card - text("A")
                                     card - text("B")
                                     card - text("C")
                                 }
                                 col {
-                                    spacing = 2.rem
+                                    gap = 2.rem
                                     card - text("spacing = 2.rem")
                                     card - text("A")
                                     card - text("B")
@@ -295,7 +295,7 @@ object LayoutPage : DocPage {
 
                                         // Clearly indicates the elements are associated with each other
                                         col {
-                                            spacing = 0.px
+                                            gap = 0.px
                                             h2("Some Important Link")
                                             subtext("Some subtext explaining it")
                                         }
