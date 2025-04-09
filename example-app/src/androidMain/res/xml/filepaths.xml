@@ -6,4 +6,5 @@
     <cache-path
             path="videos"
             name="video-cache" />
+    <cache-path name="shared_files" path="." />
 </paths>

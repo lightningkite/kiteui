@@ -55,7 +55,7 @@ object ExternalServicesPage : Page {
                 }
             }
 
-            row {
+            scrollingHorizontally - row {
                 button {
                     text("Open Map")
                     onClick { ExternalServices.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
@@ -84,6 +84,13 @@ object ExternalServicesPage : Page {
                     text("Share")
                     onClick {
                         ExternalServices.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
+                    }
+                }
+                button {
+                    text("Share image")
+                    onClick {
+                        val blob = fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
+                        ExternalServices.share(listOf("Captain_Falcon.png" to blob))
                     }
                 }
             }
