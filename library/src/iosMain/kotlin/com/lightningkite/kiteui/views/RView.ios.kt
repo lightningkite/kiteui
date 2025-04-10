@@ -155,15 +155,25 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
         val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
         val toPassDown = if (!shouldApplyAny) {
-            native.extensionSafeInsetPadding = null
+            val newValue = null
+//            if(native.extensionSafeInsetPadding != newValue) {
+//            println("native.extensionSafeInsetPadding = $newValue")
+                native.extensionSafeInsetPadding = newValue
+                native.informParentOfSizeChange()
+//            }
             edges
         } else {
-            native.extensionSafeInsetPadding = Edges(
+            val newValue = Edges(
                 left = if (shouldApplyLeft) edges.left else 0.px,
                 top = if (shouldApplyTop) edges.top else 0.px,
                 right = if (shouldApplyRight) edges.right else 0.px,
                 bottom = if (shouldApplyBottom) edges.bottom else 0.px,
             )
+//            if(native.extensionSafeInsetPadding != newValue) {
+//            println("native.extensionSafeInsetPadding = $newValue")
+                native.extensionSafeInsetPadding = newValue
+                native.informParentOfSizeChange()
+//            }
             Edges(
                 left = if (shouldApplyLeft) 0.px else edges.left,
                 top = if (shouldApplyTop) 0.px else edges.top,

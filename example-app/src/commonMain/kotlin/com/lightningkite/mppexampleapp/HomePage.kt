@@ -7,18 +7,21 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Readable
 import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.atBottom
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.BottomSheetState
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.coordinatorDragHandle
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
 import com.lightningkite.kiteui.views.direct.h6
@@ -32,10 +35,14 @@ import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.direct.stack
 import com.lightningkite.kiteui.views.direct.text
+import com.lightningkite.kiteui.views.direct.textArea
+import com.lightningkite.kiteui.views.direct.textInput
 import com.lightningkite.kiteui.views.expanding
+import com.lightningkite.kiteui.views.fieldTheme
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
@@ -130,14 +137,13 @@ class HomePage: Page {
                 onClick {
                     coordinatorFrame!!.bottomSheet(blockBehind = true, startState = BottomSheetState.PARTIALLY_EXPANDED) {
                         DialogSemantic.onNext - col {
-//                            centered - coordinatorDragHandle()
-                            button {
-                                text("Close")
-                                onClick { it.close() }
+                            centered - text("Holy sheet! Col")
+                            expanding - frame()
+                            atBottom - fieldTheme - textArea() {
+                                viewDebugTarget = this
+                                hint = "Test input"
+                                content.value = "Sample"
                             }
-                            h2("Bottom sheet")
-                            expanding - space()
-                            card - text("bottom text")
                         }
                     }
                 }

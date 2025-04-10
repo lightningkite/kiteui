@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.readable.Readable
 import com.lightningkite.readable.invoke
@@ -130,8 +131,9 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
                 bottom = Dimension(this.bottom),
             )
         })
+        Unit
     }
-    view.addSubview(RemoveView(onSafeInsetsChange = safeInsets, onRemove = {
+    view.addSubview(RemoveView(onRemove = {
         if(movingFromParentViewController || beingDismissed) {
             view.removeGestureRecognizer(g)
             NSNotificationCenter.defaultCenter.removeObserver(observer)
@@ -141,10 +143,12 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
             true
         } else false
     }))
-    safeInsets()
+    afterTimeout(10) {
+        safeInsets()
+    }
 }
 
-private class RemoveView(var onSafeInsetsChange: (()->Unit)? = null, var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     init {
         this.hidden = true
     }
@@ -153,12 +157,9 @@ private class RemoveView(var onSafeInsetsChange: (()->Unit)? = null, var onRemov
         if (newWindow == null) {
             if(onRemove?.invoke() == true) {
                 onRemove = null
+//                onSafeInsetsChange = null
             }
         }
-    }
-
-    override fun safeAreaInsetsDidChange() {
-        onSafeInsetsChange?.invoke()
     }
 }
 
