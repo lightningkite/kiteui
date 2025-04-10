@@ -20,14 +20,14 @@ suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx
         onOpen {
             AppScope.launch {
                 delay(100L)
-                if(!alreadyResumed) {
+                if (!alreadyResumed) {
                     alreadyResumed = true
                     it.resume(Unit)
                 }
             }
         }
         onClose { code ->
-            if(!alreadyResumed) {
+            if (!alreadyResumed) {
                 alreadyResumed = true
                 it.resumeWithException(ConnectionException("Socket closed almost immediately.  Code $code"))
             }
@@ -39,18 +39,19 @@ fun retryWebsocket(
     url: String,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null
+    log: Console? = null,
 ): RetryWebsocket = retryWebsocket(
     underlyingSocket = { websocket(url) },
     pingTime = pingTime,
     gate = gate,
     log = log
 )
+
 fun retryWebsocket(
-    underlyingSocket: () -> WebSocket,
+    underlyingSocket: suspend () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null
+    log: Console? = null,
 ): RetryWebsocket {
     log?.log("Creating")
     val baseDelay = 1000L
@@ -69,7 +70,7 @@ fun retryWebsocket(
     var lastPong = clockMillis()
     var instanceCount: Int = 0
     var currentWebSocketId = -1
-    fun reset() {
+    suspend fun reset() {
         val id = instanceCount++
         currentWebSocketId = id
         currentWebSocket = underlyingSocket().also { socket ->
@@ -128,9 +129,9 @@ fun retryWebsocket(
         val shouldBeOn = Property(false)
 
         override fun beginUse(): () -> Unit {
-            if(listenerCounter++ == 0) shouldBeOn.value = true
+            if (listenerCounter++ == 0) shouldBeOn.value = true
             return {
-                if(--listenerCounter == 0) shouldBeOn.value = false
+                if (--listenerCounter == 0) shouldBeOn.value = false
             }
         }
 
@@ -218,7 +219,10 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
                 action(json.decodeFromString(receive, it))
             } catch (e: Exception) {
                 @OptIn(ExperimentalSerializationApi::class)
-                Exception("Failed to decode message; expected a ${receive.descriptor.serialName} but got '${it.take(150)}'", e).report()
+                Exception(
+                    "Failed to decode message; expected a ${receive.descriptor.serialName} but got '${it.take(150)}'",
+                    e
+                ).report()
             }
         }
     }
@@ -233,7 +237,6 @@ interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
 
     }
 }
-
 
 
 interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
