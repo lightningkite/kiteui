@@ -34,6 +34,10 @@ val client: HttpClient
         return AndroidAppContext.ktorClient
     }
 
+val websocketClient: HttpClient get() {
+    return AndroidAppContext.ktorWebsocketClient
+}
+
 private val fetchLog = ConsoleRoot.tag("fetch")
 
 actual suspend fun fetch(
@@ -198,7 +202,7 @@ class WebSocketWrapper(val url: String) : WebSocket {
         @Suppress("OPT_IN_USAGE")
         AppScope.launch(Dispatchers.IO) {
             try {
-                client.webSocket(url) {
+                websocketClient.webSocket(url) {
                     withContext(Dispatchers.Main) {
                         onOpen.forEach { it() }
                     }

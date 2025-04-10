@@ -26,8 +26,10 @@ import io.ktor.client.plugins.cache.*
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.http.*
+import okhttp3.ConnectionPool
 import java.lang.RuntimeException
 import java.lang.ref.WeakReference
+import java.time.Duration
 import java.util.WeakHashMap
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -41,14 +43,43 @@ object AndroidAppContext {
     val density: Float by lazy { res.displayMetrics.density }
     val oneRem: Float by lazy { density * 14 }
     var autoCompleteLayoutResource: Int = android.R.layout.simple_list_item_1
+    val okHttpEngineForFetch = OkHttp.create {
+        config {
+            connectTimeout(Duration.ofSeconds(30))
+            readTimeout(Duration.ofSeconds(30))
+            writeTimeout(Duration.ofSeconds(30))
+        }
+    }
+    val okHttpEngineForWebsockets = OkHttp.create {
+        // Apply specific configurations for the OkHttp engine used for WebSockets
+        config {
+            writeTimeout(Duration.ofSeconds(30))
+        }
+    }
+
     val ktorClient: HttpClient by lazy {
-        HttpClient(OkHttp) {
-            install(WebSockets)
+        HttpClient(okHttpEngineForFetch) {
+            // Install Client-level plugins and configurations
             install(HttpCache) {
                 publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttp")))
             }
         }
     }
+
+    val ktorWebsocketClient: HttpClient by lazy {
+        HttpClient(okHttpEngineForWebsockets) {
+            // Install Client-level plugins
+            install(WebSockets) {
+                // Configure Ktor's WebSocket features
+                pingIntervalMillis = 20_000 // Match OkHttp's ping
+            }
+            install(HttpCache) {
+                publicStorage(FileStorage(applicationCtx.cacheDir.resolve("cachehttpwebsockets")))
+            }
+
+        }
+    }
+
     var activityCtxRef: WeakReference<KiteUiActivity>? = null
     var activityCtx: KiteUiActivity?
         get() = activityCtxRef?.get()
