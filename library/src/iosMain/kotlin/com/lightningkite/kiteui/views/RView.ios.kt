@@ -157,7 +157,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val toPassDown = if (!shouldApplyAny) {
             val newValue = null
 //            if(native.extensionSafeInsetPadding != newValue) {
-            println("native.extensionSafeInsetPadding = $newValue")
+//            println("native.extensionSafeInsetPadding = $newValue")
                 native.extensionSafeInsetPadding = newValue
                 native.informParentOfSizeChange()
 //            }
@@ -170,7 +170,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 bottom = if (shouldApplyBottom) edges.bottom else 0.px,
             )
 //            if(native.extensionSafeInsetPadding != newValue) {
-            println("native.extensionSafeInsetPadding = $newValue")
+//            println("native.extensionSafeInsetPadding = $newValue")
                 native.extensionSafeInsetPadding = newValue
                 native.informParentOfSizeChange()
 //            }
