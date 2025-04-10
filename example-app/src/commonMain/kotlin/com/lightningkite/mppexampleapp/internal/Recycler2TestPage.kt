@@ -53,7 +53,8 @@ object Recycler2TestPage : Page {
                     numberInput { content bind elementCount.nullable().asDouble() }
                 }
             }
-            recyclerView = expanding - Recycler2(this).apply {
+            expanding - Recycler2(this).apply {
+                recyclerView = this
                 log = ConsoleRoot.tag("R2")
                 placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = ConsoleRoot.tag("Placer") }
 //                this.snapToElements = null to Align.Start

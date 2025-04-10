@@ -54,7 +54,7 @@ object RecyclerViewPage : Page {
             }
             recyclerView {
                 recyclerView = this
-                spacing = 0.5.rem
+                gap = 0.5.rem
 //                columns = 2
                 reactive {
                     val index = expanded()

@@ -15,7 +15,7 @@ fun Theme.Companion.material3(
     body: FontAndStyle = FontAndStyle(systemDefaultFont),
     elevation: Dimension = 1.dp,
     cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
-    spacing: Dimension = 1.rem,
+    gap: Dimension = 1.rem,
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.px,
 ) = Theme(
@@ -23,7 +23,7 @@ fun Theme.Companion.material3(
     font = body,
     elevation = elevation,
     cornerRadii = cornerRadii,
-    gap = spacing,
+    gap = gap,
     outline = outline,
     outlineWidth = outlineWidth,
     foreground = foreground,
@@ -32,7 +32,7 @@ fun Theme.Companion.material3(
         OuterSemantic to {
             it.alter(
                 cascading = false,
-                spacing = 0.px,
+                gap = 0.px,
             ).withBackNoPadding
         },
         HeaderSemantic to {
@@ -77,7 +77,7 @@ object M3Theme {
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         elevation: Dimension = 1.dp,
         cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
-        spacing: Dimension = 1.rem,
+        gap: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.px,
     ) = Theme.material3(
@@ -93,7 +93,7 @@ object M3Theme {
         body = body,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = gap,
         outline = outline,
         outlineWidth = outlineWidth,
     )

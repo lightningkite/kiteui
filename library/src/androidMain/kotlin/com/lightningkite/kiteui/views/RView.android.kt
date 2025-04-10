@@ -355,6 +355,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 }
 
 var animationsEnabled: Boolean = true
+actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
 actual inline fun RView.withoutAnimation(action: () -> Unit) = native.withoutAnimation(action)
 inline fun View.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {

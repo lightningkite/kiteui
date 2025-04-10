@@ -55,7 +55,7 @@ class LayoutsTestPage : Page {
             }
 
 
-            // Verify that spacing is set between each item produced by the forEach.
+            // Verify that gap is set between each item produced by the forEach.
             col {
                 val customSpacing = 25.px
                 gap = customSpacing

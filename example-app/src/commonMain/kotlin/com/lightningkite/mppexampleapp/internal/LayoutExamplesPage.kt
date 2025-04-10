@@ -229,7 +229,7 @@ object LayoutExamplesPage : Page {
             }
 
             card - col {
-                h2("Custom spacing test")
+                h2("Custom gap test")
                 val showExtra = Property(false)
                 row {
                     checkbox { checked bind showExtra }
@@ -266,19 +266,19 @@ object LayoutExamplesPage : Page {
                 }
                 card - button {
                     gap = 0.rem
-                    text("spacing = 0.rem")
+                    text("gap = 0.rem")
                 }
                 card - button {
                     gap = 0.5.rem
-                    text("spacing = 0.5.rem")
+                    text("gap = 0.5.rem")
                 }
                 card - button {
                     gap = 1.rem
-                    text("spacing = 1.rem")
+                    text("gap = 1.rem")
                 }
                 card - button {
                     gap = 2.rem
-                    text("spacing = 2.rem")
+                    text("gap = 2.rem")
                 }
             }
 

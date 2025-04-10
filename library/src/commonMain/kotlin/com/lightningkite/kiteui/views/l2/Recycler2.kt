@@ -34,7 +34,7 @@ class Recycler2(
     override val rView: RView
         get() = outerFrame
 
-    var spacing: Dimension?
+    var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
@@ -626,7 +626,7 @@ class Recycler2(
                     paddingLeft = inProgress.paddingLeft,
                     paddingRight = inProgress.paddingRight,
                     paddingBottom = inProgress.paddingBottom,
-                    spacing = inProgress.spacing,
+                    gap = inProgress.gap,
                 )
                 previousViewport = viewport
                 anchor = null

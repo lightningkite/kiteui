@@ -17,7 +17,7 @@ interface RecyclerViewPlacer {
         paddingLeft: Double,
         paddingRight: Double,
         paddingBottom: Double,
-        spacing: Double,
+        gap: Double,
     )
 
     fun prebake(

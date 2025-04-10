@@ -49,7 +49,7 @@ object HorizontalRecyclerViewPage : Page {
             }
             horizontalRecyclerView {
                 recyclerView = this
-                spacing = 0.5.rem
+                gap = 0.5.rem
                 columns = 2
                 this.scrollToIndex(10, Align.Start)
                 children(items) {

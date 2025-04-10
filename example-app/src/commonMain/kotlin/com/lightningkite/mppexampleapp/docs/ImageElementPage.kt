@@ -45,7 +45,7 @@ object ImageElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 col {
-                    expanding - image {
+                    sizeConstraints(height = 10.rem) - image {
                         scaleType = ImageScaleType.Crop
                         ::source { currentImage() }
                     }

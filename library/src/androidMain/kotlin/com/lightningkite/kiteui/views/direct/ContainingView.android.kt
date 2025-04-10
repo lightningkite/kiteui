@@ -81,7 +81,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             native.gap = (value ?: theme.gap).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: theme.gap).value.roundToInt()
+        native.gap = (gap ?: theme.gap).value.roundToInt()
     }
 }
 
@@ -135,7 +135,7 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
             native.gap = (value ?: theme.gap).value.roundToInt()
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.gap = (spacing ?: theme.gap).value.roundToInt()
+        native.gap = (gap ?: theme.gap).value.roundToInt()
     }
 }
 

@@ -115,7 +115,7 @@ fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //    val parentSpacingCalc = lastSpacing
 //
 //    val hp = (view as? HasSpacingMultiplier)?.spacingOverride
-//    lastSpacing = { hp?.await() ?: currentTheme().spacing }
+//    lastSpacing = { hp?.await() ?: currentTheme().gap }
 //
 //    view.calculationContext.reactiveScope {
 //        val theme = currentTheme()
@@ -128,13 +128,13 @@ fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //        val useBackground = shouldTransition
 //
 //        if (usePadding) {
-//            val v = ((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing)
+//            val v = ((view as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.gap)
 //            view.setPaddingAll(v.value.toInt())
 //        } else {
 //            view.setPaddingAll(0)
 //        }
 //
-////        val parentSpacing = if(isRoot) 0f else ((view.parent as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.spacing).value
+////        val parentSpacing = if(isRoot) 0f else ((view.parent as? HasSpacingMultiplier)?.spacingOverride?.await() ?: theme.gap).value
 //
 //        if (viewLoads && view.androidCalculationContext.loading.await()) {
 //            val parentSpacing = parentSpacingCalc().value

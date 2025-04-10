@@ -30,6 +30,7 @@ object DocSearchPage : Page {
         { VideoElementPage },
         { ViewPagerElementPage },
         { ImageElementPage },
+        { ZoomableImageElementPage },
         { IconsPage },
         { ViewModifiersPage },
         { LayoutPage }

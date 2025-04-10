@@ -115,7 +115,7 @@ fun Theme.Companion.flat(
                 outlineWidth = 1.px,
                 background = it.background.closestColor(),
                 revert = true,
-//                spacing = it.spacing / 2,
+//                gap = it.gap / 2,
                 cornerRadii = when(val base = it.cornerRadii) {
                     is CornerRadii.Constant -> CornerRadii.ForceConstant(base.value)
                     is CornerRadii.ForceConstant -> base
@@ -143,7 +143,7 @@ fun Theme.Companion.flat(
             ).withBack
         },
         DialogSemantic to {
-            it.copy(id="dlg", outlineWidth = 1.dp, spacing = 2.rem, revert = true).withBack
+            it.copy(id="dlg", outlineWidth = 1.dp, gap = 2.rem, revert = true).withBack
         },
     ),
 )

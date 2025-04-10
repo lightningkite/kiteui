@@ -146,7 +146,7 @@ object ExternalServicesPage : Page {
                 }
             }
 
-            sizeConstraints(height = 30.rem) - zoomableImage {
+            sizeConstraints(height = 30.rem) - image {
                 ::source { image.invoke() }
                 scaleType = ImageScaleType.Crop
             }
