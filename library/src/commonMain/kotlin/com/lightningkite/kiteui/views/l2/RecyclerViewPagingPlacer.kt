@@ -21,7 +21,7 @@ class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
         paddingLeft: Double,
         paddingRight: Double,
         paddingBottom: Double,
-        spacing: Double,
+        gap: Double,
     ) {
         existingCells.forEach {
             log?.log("    Index ${it.index} at ${it.left} (viewport.left: ${viewport.left}, previousViewport.left: ${previousViewport.left})")

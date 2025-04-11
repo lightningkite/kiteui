@@ -16,7 +16,7 @@ fun Theme.Companion.material(
     body: FontAndStyle = FontAndStyle(systemDefaultFont),
     elevation: Dimension = 1.dp,
     cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
-    spacing: Dimension = 1.rem,
+    gap: Dimension = 1.rem,
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.dp,
 ) = Theme(
@@ -24,7 +24,7 @@ fun Theme.Companion.material(
     font = body,
     elevation = elevation,
     cornerRadii = cornerRadii,
-    gap = spacing,
+    gap = gap,
     outline = outline,
     outlineWidth = outlineWidth,
     foreground = foreground,
@@ -33,7 +33,7 @@ fun Theme.Companion.material(
         OuterSemantic to {
             it.alter(
                 cascading = false,
-                spacing = 0.px,
+                gap = 0.px,
             ).withBackNoPadding
         },
         HeaderSemantic to {
@@ -98,7 +98,7 @@ object MaterialLikeTheme {
         body: FontAndStyle = FontAndStyle(systemDefaultFont),
         elevation: Dimension = 1.dp,
         cornerRadii: CornerRadii = CornerRadii.RatioOfSpacing(1f),
-        spacing: Dimension = 1.rem,
+        gap: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.dp,
     ) = Theme.material(
@@ -113,7 +113,7 @@ object MaterialLikeTheme {
         body = body,
         elevation = elevation,
         cornerRadii = cornerRadii,
-        spacing = spacing,
+        gap = gap,
         outline = outline,
         outlineWidth = outlineWidth
     )

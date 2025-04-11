@@ -64,11 +64,11 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         get() = super.gap
         set(value) {
             super.gap = value
-            spacingCurrentPx = spacing?.px ?: theme.gap.px
+            spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        spacingCurrentPx = spacing?.px ?: theme.gap.px
+        spacingCurrentPx = gap?.px ?: theme.gap.px
         paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
         paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
         paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
@@ -87,7 +87,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var paddingBottomCurrentPx: Double = 0.0
 
     private val inProgress = object : ProgrammingLayoutInProgress {
-        override val spacing: Double get() = spacingCurrentPx
+        override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
         override val paddingLeft: Double get() = paddingLeftCurrentPx

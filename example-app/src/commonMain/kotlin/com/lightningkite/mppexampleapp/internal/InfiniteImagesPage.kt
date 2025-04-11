@@ -81,15 +81,19 @@ class ImageViewPager(val initialIndex: Int) : Page {
                     frame {
                         ::transitionId { currImage().toString() }
                         gap = 0.25.rem
-                        zoomableImage {
+                        image {
                             reactiveScope {
                                 renders.value++
                                 val index = currImage()
-                                source = ImageRemote("https://picsum.photos/seed/${index}/100/100")
-                                async(index) { delay(1) }
-                                source = ImageRemote("https://picsum.photos/seed/${index}/1000/1000")
+                                info = ImageView.Info(
+                                    sources = listOf(
+                                        ImageRemote("https://picsum.photos/seed/${index}/100/100"),
+                                        ImageRemote("https://picsum.photos/seed/${index}/1000/1000"),
+                                    ),
+                                    scaleType = ImageScaleType.Fit,
+                                    description = "an image"
+                                )
                             }
-                            scaleType = ImageScaleType.Fit
                         }
                         centered - h2 { ::content { renders().toString() } }
                     }

@@ -32,7 +32,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
                 outline = it.icon,
                 iconOverride = it.foreground,
                 outlineWidth = maxOf(it.outlineWidth, 1.dp),
-                spacing = it.gap / 4,
+                gap = it.gap / 4,
                 padding = it.padding / 4,
                 cornerRadii = CornerRadii.RatioOfSize(0.5f),
             ).withBack

@@ -24,15 +24,15 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
         paddingLeft: Double,
         paddingRight: Double,
         paddingBottom: Double,
-        spacing: Double,
+        gap: Double,
     ) {
-        val cellSize = (viewport.bottom - viewport.top - paddingTop - paddingBottom - (rows - 1) * spacing) / rows
+        val cellSize = (viewport.bottom - viewport.top - paddingTop - paddingBottom - (rows - 1) * gap) / rows
         val constrain = Size(
             height = cellSize,
             width = 10000.0
         )
         val cellOffsets = (0..<rows).map {
-            paddingLeft + it * spacing + it * cellSize
+            paddingLeft + it * gap + it * cellSize
         }
 
         val (anchorRowX, anchorRowIndex) = anchor?.let {
@@ -82,11 +82,11 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
             for (i in 0..<rows) {
                 cells[i]?.place(top = cellOffsets[i], left = currentX, bottom = cellOffsets[i] + cellSize, right = currentX + max)
             }
-            currentX += max + spacing
+            currentX += max + gap
             currentIndex += rows
         }
         // Place leftwards, one row at a time
-        currentX = anchorRowX - spacing
+        currentX = anchorRowX - gap
         currentIndex = anchorRowIndex - rows
         while (currentX > overdraw.left && currentIndex + rows - 1 >= dataRange.first) {
             val cells = (0..<rows).map {
@@ -99,7 +99,7 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
             for (i in 0..<rows) {
                 cells[i]?.place(top = cellOffsets[i], left = currentX - max, bottom = cellOffsets[i] + cellSize, right = currentX)
             }
-            currentX -= max + spacing
+            currentX -= max + gap
             currentIndex -= rows
         }
     }

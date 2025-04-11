@@ -54,7 +54,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 animateIn(transition.forward)
             }
             willRemove = col {
-                spacing = 0.px
+                gap = 0.px
                 ignoreInteraction = true
                 expanding - shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED } - frame {
                     ignoreInteraction = true
@@ -96,7 +96,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 align(Align.Start, Align.Stretch) - content(control)
             } else {
                 row {
-                    spacing = 0.px
+                    gap = 0.px
                     ignoreInteraction = true
                     weight(ratio) - content(control)
                     weight(1f - ratio) - frame { ignoreInteraction = true }
@@ -132,7 +132,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 align(Align.End, Align.Stretch) - content(control)
             } else {
                 row {
-                    spacing = 0.px
+                    gap = 0.px
                     ignoreInteraction = true
                     weight(1f - ratio) - frame { ignoreInteraction = true }
                     weight(ratio) - content(control)

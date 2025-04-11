@@ -488,7 +488,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 display: block;
                 width: 32px !important;
                 height: 32px !important;
-                opacity: 0.5 !important;
+                opacity: 0.5;
                 background: none !important;
                 box-shadow: none !important;
                 border-style: solid !important;
@@ -556,19 +556,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 object-fit: contain;
             }
 
-            .swapImage.scaleType-NoScale > img {
+            img.scaleType-NoScale {
                 object-fit: none;
             }
 
-            .swapImage.scaleType-Stretch > img {
+            img.scaleType-Stretch {
                 object-fit: fill;
             }
 
-            .swapImage.scaleType-Crop > img {
+            img.scaleType-Crop {
                 object-fit: cover;
             }
 
-            .swapImage.scaleType-Fit > img {
+            img.scaleType-Fit {
                 object-fit: contain;
             }
 

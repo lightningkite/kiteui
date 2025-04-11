@@ -239,7 +239,7 @@ object ViewModifiersPage : DocPage {
 
             h2("Padded")
             text("The padded modifier is used to add padding to a box.")
-            text("You can override the default padding by setting the theme spacing value.")
+            text("You can override the default padding by setting the theme gap value.")
             example(
                 """
                 col {

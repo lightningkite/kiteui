@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.l2.titledSection
 
 @Routable("docs/layout")
 object LayoutPage : DocPage {
-    override val covers: List<String> = listOf("layout", "row", "column", "rowCollapsingToColumn", "frame", "sizeConstraints", "size", "spacing", "padding")
+    override val covers: List<String> = listOf("layout", "row", "column", "rowCollapsingToColumn", "frame", "sizeConstraints", "size", "gap", "padding")
 
     override fun ViewWriter.render(): ViewModifiable = run {
         article {
@@ -218,8 +218,8 @@ object LayoutPage : DocPage {
 
                     titledSection("Spacing") {
                         text("Spacing refers to the distance between elements in a row or column.")
-                        text("By default, spacing is controlled by the current theme, but this can be overridden per element.")
-                        emphasized - text("Spacing set via 'spacing = ' is per element and does not cascade to children.")
+                        text("By default, gap is controlled by the current theme, but this can be overridden per element.")
+                        emphasized - text("Spacing set via 'gap = ' is per element and does not cascade to children.")
 
                         example(
                             """
@@ -231,15 +231,15 @@ object LayoutPage : DocPage {
                                     card - text("C")
                                 }
                                 col {
-                                    spacing = 1.px
-                                    card - text("spacing = 1.px")
+                                    gap = 1.px
+                                    card - text("gap = 1.px")
                                     card - text("A")
                                     card - text("B")
                                     card - text("C")
                                 }
                                 col {
-                                    spacing = 2.rem
-                                    card - text("spacing = 2.rem")
+                                    gap = 2.rem
+                                    card - text("gap = 2.rem")
                                     card - text("A")
                                     card - text("B")
                                     card - text("C")
@@ -256,14 +256,14 @@ object LayoutPage : DocPage {
                                 }
                                 col {
                                     gap = 1.px
-                                    card - text("spacing = 1.px")
+                                    card - text("gap = 1.px")
                                     card - text("A")
                                     card - text("B")
                                     card - text("C")
                                 }
                                 col {
                                     gap = 2.rem
-                                    card - text("spacing = 2.rem")
+                                    card - text("gap = 2.rem")
                                     card - text("A")
                                     card - text("B")
                                     card - text("C")
@@ -272,7 +272,7 @@ object LayoutPage : DocPage {
                         }
 
                         titledSection("Per-Element Spacing") {
-                            emphasized - text("Please avoid using per-element spacing.  You can frequently achieve the same layouts in simpler ways.")
+                            emphasized - text("Please avoid using per-element gap.  You can frequently achieve the same layouts in simpler ways.")
                             text("For example, let's say you want some text elements closer together in a column than the other elements.")
                             text("The clearest way to represent this is by grouping elements.")
                             example("""
@@ -282,7 +282,7 @@ object LayoutPage : DocPage {
 
                                         // Clearly indicates the elements are associated with each other
                                         col {
-                                            spacing = 0.px
+                                            gap = 0.px
                                             h2("Some Important Link")
                                             subtext("Some subtext explaining it")
                                         }
@@ -302,11 +302,11 @@ object LayoutPage : DocPage {
                                     }
                                 }
                             }
-                            emphasized - text("However, per-element spacing useful in some situations.  Here's how to do it:")
+                            emphasized - text("However, per-element gap useful in some situations.  Here's how to do it:")
                             example("""
                                 col {
                                     card - text("Start")
-                                    card - text("Normal spacing above me")
+                                    card - text("Normal gap above me")
                                     spacingOverrideBeforeNext(2.px)
                                     card - text("2.px above me")
                                     spacingOverrideBeforeNext(5.rem)
@@ -315,7 +315,7 @@ object LayoutPage : DocPage {
                             """.trimIndent()) {
                                 col {
                                     card - text("Start")
-                                    card - text("Normal spacing above me")
+                                    card - text("Normal gap above me")
                                     spacingOverrideBeforeNext(2.px)
                                     card - text("2.px above me")
                                     spacingOverrideBeforeNext(5.rem)

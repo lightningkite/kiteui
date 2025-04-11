@@ -33,8 +33,8 @@ actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(
 //        this,
 //        foreground = {
 //            extensionSizeConstraints = SizeConstraints(
-//                minHeight = it.spacing,
-//                minWidth = it.spacing
+//                minHeight = it.gap,
+//                minWidth = it.gap
 //            )
 //        },
 //    ) {
@@ -47,8 +47,8 @@ actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(
 //        this,
 //        foreground = {
 //            extensionSizeConstraints = SizeConstraints(
-//                minHeight = it.spacing * multiplier,
-//                minWidth = it.spacing * multiplier
+//                minHeight = it.gap * multiplier,
+//                minWidth = it.gap * multiplier
 //            )
 //        },
 //    ) {

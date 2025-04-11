@@ -238,7 +238,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
 //
 //            setDrawable(1, dropdown)
 //            setLayerGravity(1, Gravity.END or Gravity.CENTER_VERTICAL)
-//            setLayerInsetEnd(1, it.spacing.value.toInt())
+//            setLayerInsetEnd(1, it.gap.value.toInt())
 //        }, foreground = { theme, nselect -> nselect.setPaddingAll(0) }, background = {
 //            native.setPopupBackgroundDrawable(it.backgroundDrawable(8.dp.value, true))
 //        }) {

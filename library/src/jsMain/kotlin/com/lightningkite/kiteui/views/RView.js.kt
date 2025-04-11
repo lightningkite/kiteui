@@ -9,6 +9,7 @@ actual inline fun RView.withoutAnimation(action: () -> Unit) {
 }
 
 var animationsEnabled: Boolean = true
+actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
 inline fun HTMLElement.withoutAnimation(action: () -> Unit) {
     val animate = animationsEnabled
     try {

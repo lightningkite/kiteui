@@ -42,11 +42,11 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         get() = super.gap
         set(value) {
             super.gap = value
-            native.spacingCurrentPx = spacing?.canvasUnits ?: theme.gap.canvasUnits
+            native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
         }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacingCurrentPx = spacing?.canvasUnits ?: theme.gap.canvasUnits
+        native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
         native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
         native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
         native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
@@ -68,7 +68,7 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         }
     var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
-        override val spacing: Double get() = spacingCurrentPx
+        override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
         override val paddingLeft: Double get() = paddingLeftCurrentPx

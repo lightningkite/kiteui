@@ -78,15 +78,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    private val mySpacing get() = (spacing ?: theme.gap)
+    private val mySpacing get() = (gap ?: theme.gap)
     override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value
             native.spacingOverride?.value = value
-            val spacing = mySpacing.value
+            val gap = mySpacing.value
             for (child in children) {
-                child.native.layoutLayers(spacing)
+                child.native.layoutLayers(gap)
             }
         }
 
@@ -115,9 +115,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         get() = super.paddingByEdge
         set(value) {
             super.paddingByEdge = value
-            val spacing = mySpacing.value
+            val gap = mySpacing.value
             for (child in children) {
-                child.native.layoutLayers(spacing)
+                child.native.layoutLayers(gap)
             }
         }
 
@@ -224,8 +224,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     //    run { applyElevation(if (value.useBackground == UseBackground.Yes) value.theme.elevation else 0.px) }
 //    run {
 //        applyPadding(
-//            if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (spacing
-//                ?: if (useNavSpacing) value.theme.navSpacing else value.theme.spacing) else null
+//            if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (gap
+//                ?: if (useNavSpacing) value.theme.navSpacing else value.theme.gap) else null
 //        )
 //    }
 //    run { applyForeground(value.theme) }
@@ -256,7 +256,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val fullyApply = theme.drawBackground
         animateIfAllowed {
 //            native.clearOldLayers()
-//            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.spacing)
+//            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.gap)
 //            native.layoutLayers()
             if (!fullyApply) {
                 backgroundLayer?.removeFromSuperlayer()
@@ -377,6 +377,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
+actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }

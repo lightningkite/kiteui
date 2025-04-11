@@ -4,6 +4,8 @@ import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ImageScaleType
+import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RContext
@@ -71,14 +73,38 @@ inline fun ViewWriter.icon(setup: IconView.() -> Unit = {}): IconView {
 @ViewDsl
 inline fun ViewWriter.image(setup: ImageView.() -> Unit = {}): ImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(ImageView(context) , setup)
+    return ImageView(this).apply {
+        setup()
+        postSetup()
+    }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(ZoomableImageView(context) , setup)
+    return ZoomableImageView(this).apply {
+        setup()
+        postSetup()
+    }
 }
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType, setup: RawImageView.() -> Unit = {}): RawImageView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(RawImageView(context, source, description, scaleType) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(RawImageViewZoomable(context, source, description, scaleType) , setup)
+}
+//@OptIn(ExperimentalContracts::class)
+//@ViewDsl
+//inline fun ViewWriter.zoomableImage(setup: ZoomableImageView.() -> Unit = {}): ZoomableImageView {
+//    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+//    return write(ZoomableImageView(context) , setup)
+//}
 class Label(val label: TextView, val container: RowOrCol): ViewWriter(), ViewModifiable by container {
     override val context: RContext
         get() = container.context

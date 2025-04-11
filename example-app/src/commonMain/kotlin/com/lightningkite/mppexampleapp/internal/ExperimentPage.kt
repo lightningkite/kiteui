@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlin.random.Random
 
 @Routable("experiment")
 object ExperimentPage : Page {
@@ -14,32 +15,79 @@ object ExperimentPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
-            card - col {
-                gap = 0.5.rem
-                paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
-                h1("Weird spacing time")
-                spacingOverrideBeforeNext(10.rem)
-                text("Really far down")
-                spacingOverrideBeforeNext(0.rem)
-                text("Really close")
-                spacingOverrideBeforeNext(0.rem)
-                text {
-                    content = "Really close"
-                    shown = false
+        col {
+            val data = Property<List<Char>>(listOf('A', 'B', 'C'))
+            text {::content { data().joinToString() }}
+            row {
+                forEachById(data, { it }) {
+                    card - text { ::content { it().toString()} }
                 }
-                spacingOverrideBeforeNext((-0.5).rem)
-                text("Pull up and overlap some")
-                spacingOverrideBeforeNext(1.rem)
-                text("Less close")
+            }
+            row {
+                forEachAnimated(data) {
+                    card - text(it.toString())
+                }
+            }
+            button {
+                text("Insert")
+                action = Action("", frequencyCap = null) {
+                    val letter = 'A' + (Random.nextInt(26))
+                    if(letter in data.value) return@Action
+                    else data.value = data.value.toMutableList().apply { add(data.value.indices.randomOrNull() ?: 0, letter) }
+                }
+            }
+            button {
+                text("Remove")
+                action = Action("", frequencyCap = null) {
+                    data.value = data.value.toMutableList().apply {
+                        data.value.indices.randomOrNull()?.let { removeAt(it) }
+                    }
+                }
+            }
+            val img: ImageView
+            row {
+                sizeConstraints(width = 10.rem, height = 10.rem) - image {
+                    source = ImageRemote("https://timetracker-files20230201174841315900000003.s3.us-west-2.amazonaws.com/uploaded/577b5e22-57a4-498c-9966-908b26bba6bb.file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARR4DEGXXWAKUENQZ%2F20250410%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250410T162000Z&X-Amz-Expires=86400&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCIDnaAHpWOWQIWCUFZr7x8qtpLbJ2OY1AH03FwFzh7pI1AiANItfnvbdUsAmO4X9DreK4l%2BWWc51lPQ8vD0VHyqS5Gir9Agip%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDEwNzExMjMxNDM1MSIMozSv3KEIOF6vbNRlKtECqeIpdmIPdwSvrXf3OL78T2ikmKMsu3rzZdHWAq4%2BSOvwiekbUzvIOKIyyBG4zRcKnQFYyIERxcTPh4T%2FBx68wAXFqMFdaYidglmHw3sA%2FU%2B%2FIPzqJFT3Az7kQ9dHC7MGsddim0Zcx8vVurNwItaJC5WcgdrPiKheP9WRvxQ4u31EbFD8n%2Bs5FV5Iy%2FZZ85DhND3PmDZCcq5HS%2FVM6TShTYE07iYUtwNTe3%2Fj31K7MKDJe%2Fnxrhj8BpaBX%2BIx7LOM%2BmZe5YzEZHE820q1wQOMw5zQri4cbY7Fuo6UZmyOsA4D9RYbgFVRFZXe2CP5U%2F9m4hM7xhOWcK%2BjEm%2FxXEx%2Fw9wuXGa51ULP7%2BkPPW1eAjmVx3gzD07VYSQtO2O8z%2BJ1BjjIEjPhZXBOFMxN0fwYu%2Brm7ENq89CpW7TioaXgVQCR%2F5YsjFBLaLwmyvm4ZB6aMjDz3N%2B%2FBjqfAaZF5HfWqPC3DKTXXwyszFAbBTBCrvJPsHvgZZqU1tOuOtT71d0OGSbiR1RQhdiRvHjNlVGX9QEtMw6YUiGNU8cKcNwpekzNqnsb9GSCWlyWOROCsUyul2zMzLJLPjywj2FAmNqO%2FOdARcduGnVPH4Xj98qhsNgXG3hiE0NxoZjAImTB0NRUVHHMRChmN9BGm5qHHv5wxYJwyoXb8xDHmg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=0ae9b446ed5567b2241cb6807fd41b760e224dd1922226c9f8419f8WRONG")
+                    source = ImageRemote("https://timetracker-files20230201174841315900000003.s3.us-west-2.amazonaws.com/uploaded/577b5e22-57a4-498c-9966-908b26bba6bb.file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARR4DEGXXWAKUENQZ%2F20250410%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250410T162000Z&X-Amz-Expires=86400&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCIDnaAHpWOWQIWCUFZr7x8qtpLbJ2OY1AH03FwFzh7pI1AiANItfnvbdUsAmO4X9DreK4l%2BWWc51lPQ8vD0VHyqS5Gir9Agip%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDEwNzExMjMxNDM1MSIMozSv3KEIOF6vbNRlKtECqeIpdmIPdwSvrXf3OL78T2ikmKMsu3rzZdHWAq4%2BSOvwiekbUzvIOKIyyBG4zRcKnQFYyIERxcTPh4T%2FBx68wAXFqMFdaYidglmHw3sA%2FU%2B%2FIPzqJFT3Az7kQ9dHC7MGsddim0Zcx8vVurNwItaJC5WcgdrPiKheP9WRvxQ4u31EbFD8n%2Bs5FV5Iy%2FZZ85DhND3PmDZCcq5HS%2FVM6TShTYE07iYUtwNTe3%2Fj31K7MKDJe%2Fnxrhj8BpaBX%2BIx7LOM%2BmZe5YzEZHE820q1wQOMw5zQri4cbY7Fuo6UZmyOsA4D9RYbgFVRFZXe2CP5U%2F9m4hM7xhOWcK%2BjEm%2FxXEx%2Fw9wuXGa51ULP7%2BkPPW1eAjmVx3gzD07VYSQtO2O8z%2BJ1BjjIEjPhZXBOFMxN0fwYu%2Brm7ENq89CpW7TioaXgVQCR%2F5YsjFBLaLwmyvm4ZB6aMjDz3N%2B%2FBjqfAaZF5HfWqPC3DKTXXwyszFAbBTBCrvJPsHvgZZqU1tOuOtT71d0OGSbiR1RQhdiRvHjNlVGX9QEtMw6YUiGNU8cKcNwpekzNqnsb9GSCWlyWOROCsUyul2zMzLJLPjywj2FAmNqO%2FOdARcduGnVPH4Xj98qhsNgXG3hiE0NxoZjAImTB0NRUVHHMRChmN9BGm5qHHv5wxYJwyoXb8xDHmg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=0ae9b446ed5567b2241cb6807fd41b760e224dd1922226c9f8419f8d7d66e630")
+                }
+                sizeConstraints(width = 10.rem, height = 10.rem) - image {
+                    source = ImageRemote("https://timetracker-files20230201174841315900000003.s3.us-west-2.amazonaws.com/uploaded/577b5e22-57a4-498c-9966-908b26bba6bb.file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARR4DEGXXWAKUENQZ%2F20250410%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250410T162000Z&X-Amz-Expires=86400&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCIDnaAHpWOWQIWCUFZr7x8qtpLbJ2OY1AH03FwFzh7pI1AiANItfnvbdUsAmO4X9DreK4l%2BWWc51lPQ8vD0VHyqS5Gir9Agip%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDEwNzExMjMxNDM1MSIMozSv3KEIOF6vbNRlKtECqeIpdmIPdwSvrXf3OL78T2ikmKMsu3rzZdHWAq4%2BSOvwiekbUzvIOKIyyBG4zRcKnQFYyIERxcTPh4T%2FBx68wAXFqMFdaYidglmHw3sA%2FU%2B%2FIPzqJFT3Az7kQ9dHC7MGsddim0Zcx8vVurNwItaJC5WcgdrPiKheP9WRvxQ4u31EbFD8n%2Bs5FV5Iy%2FZZ85DhND3PmDZCcq5HS%2FVM6TShTYE07iYUtwNTe3%2Fj31K7MKDJe%2Fnxrhj8BpaBX%2BIx7LOM%2BmZe5YzEZHE820q1wQOMw5zQri4cbY7Fuo6UZmyOsA4D9RYbgFVRFZXe2CP5U%2F9m4hM7xhOWcK%2BjEm%2FxXEx%2Fw9wuXGa51ULP7%2BkPPW1eAjmVx3gzD07VYSQtO2O8z%2BJ1BjjIEjPhZXBOFMxN0fwYu%2Brm7ENq89CpW7TioaXgVQCR%2F5YsjFBLaLwmyvm4ZB6aMjDz3N%2B%2FBjqfAaZF5HfWqPC3DKTXXwyszFAbBTBCrvJPsHvgZZqU1tOuOtT71d0OGSbiR1RQhdiRvHjNlVGX9QEtMw6YUiGNU8cKcNwpekzNqnsb9GSCWlyWOROCsUyul2zMzLJLPjywj2FAmNqO%2FOdARcduGnVPH4Xj98qhsNgXG3hiE0NxoZjAImTB0NRUVHHMRChmN9BGm5qHHv5wxYJwyoXb8xDHmg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=0ae9b446ed5567b2241cb6807fd41b760e224dd1922226c9f8419f8WRONG")
+                    img = this
+                }
+            }
+            button {
+                text("Reattempt load")
+                onClick {
+                    img.source = ImageRemote("https://timetracker-files20230201174841315900000003.s3.us-west-2.amazonaws.com/uploaded/577b5e22-57a4-498c-9966-908b26bba6bb.file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARR4DEGXXWAKUENQZ%2F20250410%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250410T162000Z&X-Amz-Expires=86400&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCIDnaAHpWOWQIWCUFZr7x8qtpLbJ2OY1AH03FwFzh7pI1AiANItfnvbdUsAmO4X9DreK4l%2BWWc51lPQ8vD0VHyqS5Gir9Agip%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDEwNzExMjMxNDM1MSIMozSv3KEIOF6vbNRlKtECqeIpdmIPdwSvrXf3OL78T2ikmKMsu3rzZdHWAq4%2BSOvwiekbUzvIOKIyyBG4zRcKnQFYyIERxcTPh4T%2FBx68wAXFqMFdaYidglmHw3sA%2FU%2B%2FIPzqJFT3Az7kQ9dHC7MGsddim0Zcx8vVurNwItaJC5WcgdrPiKheP9WRvxQ4u31EbFD8n%2Bs5FV5Iy%2FZZ85DhND3PmDZCcq5HS%2FVM6TShTYE07iYUtwNTe3%2Fj31K7MKDJe%2Fnxrhj8BpaBX%2BIx7LOM%2BmZe5YzEZHE820q1wQOMw5zQri4cbY7Fuo6UZmyOsA4D9RYbgFVRFZXe2CP5U%2F9m4hM7xhOWcK%2BjEm%2FxXEx%2Fw9wuXGa51ULP7%2BkPPW1eAjmVx3gzD07VYSQtO2O8z%2BJ1BjjIEjPhZXBOFMxN0fwYu%2Brm7ENq89CpW7TioaXgVQCR%2F5YsjFBLaLwmyvm4ZB6aMjDz3N%2B%2FBjqfAaZF5HfWqPC3DKTXXwyszFAbBTBCrvJPsHvgZZqU1tOuOtT71d0OGSbiR1RQhdiRvHjNlVGX9QEtMw6YUiGNU8cKcNwpekzNqnsb9GSCWlyWOROCsUyul2zMzLJLPjywj2FAmNqO%2FOdARcduGnVPH4Xj98qhsNgXG3hiE0NxoZjAImTB0NRUVHHMRChmN9BGm5qHHv5wxYJwyoXb8xDHmg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=0ae9b446ed5567b2241cb6807fd41b760e224dd1922226c9f8419f8d7d66e630")
+                }
             }
         }
+//        scrolling - col {
+//            card - col {
+//                gap = 0.5.rem
+//                paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
+//                h1("Weird gap time")
+//                spacingOverrideBeforeNext(10.rem)
+//                text("Really far down")
+//                spacingOverrideBeforeNext(0.rem)
+//                text("Really close")
+//                spacingOverrideBeforeNext(0.rem)
+//                text {
+//                    content = "Really close"
+//                    shown = false
+//                }
+//                spacingOverrideBeforeNext((-0.5).rem)
+//                text("Pull up and overlap some")
+//                spacingOverrideBeforeNext(1.rem)
+//                text("Less close")
+//            }
+//        }
 
 //        scrolling - col {
 //            card - col {
-//                spacing = 0.5.rem
+//                gap = 0.5.rem
 //                paddingByEdge = Edges(left = 3.rem, top = 1.rem, right = 0.rem, bottom = 2.rem)
-//                h1("Weird spacing time")
+//                h1("Weird gap time")
 //                spacingOverrideBeforeNext(10.rem)
 //                text("Really far down")
 //                spacingOverrideBeforeNext(0.rem)

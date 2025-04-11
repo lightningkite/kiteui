@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ViewWrapper
+import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.direct.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
 @ViewModifierDsl3 val ViewWriter.atStart get() = align(Align.Start, Align.Stretch)
@@ -108,3 +111,143 @@ fun <T> RView.forEachUpdating(
             }
         }
     }
+
+fun <T, ID> RowOrCol.forEachById(
+    items: Readable<List<T>>,
+    id: (T)->ID,
+    preHidingModifiers: ViewWriter.(ID)-> ViewWrapper = { ViewWrapper },
+    render: ViewWriter.(Readable<T>) -> ViewModifiable
+) {
+    val oldEarly = ArrayList<Any>()
+    data class OldViewInfo(
+        var oldIndex: Int,
+        val oldId: ID,
+        val data: Property<T>,
+        val view: RView,
+        val shown: Property<Boolean>
+    ) {
+        var dead = false
+        fun hide() {
+            if(dead) return
+            dead = true
+            shown.value = false
+            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
+                removeChild(view)
+                oldEarly.remove(this)
+            }
+        }
+    }
+    val old = oldEarly as ArrayList<OldViewInfo>
+    reactive {
+        val new = items()
+        var oldPos = 0
+        new.forEachIndexed { index, toRender ->
+            var matchIndex = -1
+            for(checkIndex in oldPos..<old.size) {
+                if(old[checkIndex].oldId == id(toRender)) {
+                    matchIndex = checkIndex
+                    break
+                }
+            }
+            if (matchIndex != -1) {
+                for(index in oldPos until matchIndex) {
+                    old[index].hide()
+                }
+                oldPos = matchIndex + 1
+                old[matchIndex].data.value = toRender
+            } else {
+                val shown = Property(false)
+                val data = Property(toRender)
+                val indexWriter = object: ViewWriter() {
+                    override val context: RContext get() = this@forEachById.context
+                    override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
+                    override fun addChild(view: RView) {
+                        addChild(oldPos, view)
+                    }
+
+                    override fun willAddChild(view: RView) {
+                        this@forEachById.willAddChild(view)
+                    }
+                }
+                val view = with(indexWriter) { preHidingModifiers(id(toRender)) - shownWhen { shown() } - render(data) }
+                old.add(oldPos, OldViewInfo(
+                    oldIndex = index,
+                    oldId = id(toRender),
+                    data = data,
+                    view = view.rView,
+                    shown = shown
+                ))
+                afterTimeout(16) { shown.value = true }
+                oldPos++
+            }
+        }
+        old.subList(oldPos, old.size).forEach { it.hide() }
+    }
+}
+fun <T> RowOrCol.forEachAnimated(
+    items: Readable<List<T>>,
+    preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { ViewWrapper },
+    render: ViewWriter.(T) -> ViewModifiable
+) {
+    val oldEarly = ArrayList<Any>()
+    data class OldViewInfo(
+        var oldIndex: Int,
+        val data: T,
+        val view: RView,
+        val shown: Property<Boolean>
+    ) {
+        var dead = false
+        fun hide() {
+            if(dead) return
+            dead = true
+            shown.value = false
+            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
+                removeChild(view)
+                oldEarly.remove(this)
+            }
+        }
+    }
+    val old = oldEarly as ArrayList<OldViewInfo>
+    reactive {
+        val new = items()
+        var oldPos = 0
+        new.forEachIndexed { index, toRender ->
+            var matchIndex = -1
+            for(checkIndex in oldPos..<old.size) {
+                if(old[checkIndex].data == toRender) {
+                    matchIndex = checkIndex
+                    break
+                }
+            }
+            if (matchIndex != -1) {
+                for(index in oldPos until matchIndex) {
+                    old[index].hide()
+                }
+                oldPos = matchIndex + 1
+            } else {
+                val shown = Property(false)
+                val indexWriter = object: ViewWriter() {
+                    override val context: RContext get() = this@forEachAnimated.context
+                    override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext
+                    override fun addChild(view: RView) {
+                        addChild(oldPos, view)
+                    }
+
+                    override fun willAddChild(view: RView) {
+                        this@forEachAnimated.willAddChild(view)
+                    }
+                }
+                val view = with(indexWriter) { preHidingModifiers(toRender) - shownWhen { shown() } - render(toRender) }
+                old.add(oldPos, OldViewInfo(
+                    oldIndex = index,
+                    data = toRender,
+                    view = view.rView,
+                    shown = shown
+                ))
+                afterTimeout(16) { shown.value = true }
+                oldPos++
+            }
+        }
+        old.subList(oldPos, old.size).forEach { it.hide() }
+    }
+}

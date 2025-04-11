@@ -28,15 +28,15 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
         paddingLeft: Double,
         paddingRight: Double,
         paddingBottom: Double,
-        spacing: Double,
+        gap: Double,
     ) {
-        val cellSize = (viewport.right - viewport.left - paddingLeft - paddingRight - (columns - 1) * spacing) / columns
+        val cellSize = (viewport.right - viewport.left - paddingLeft - paddingRight - (columns - 1) * gap) / columns
         val constrain = Size(
             width = cellSize,
             height = 10000.0
         )
         val cellOffsets = (0..<columns).map {
-            paddingTop + it * spacing + it * cellSize
+            paddingTop + it * gap + it * cellSize
         }
 
         val (anchorRowY, anchorRowIndex) = (anchor?.let {
@@ -115,11 +115,11 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             for (i in 0..<columns) {
                 cells[i]?.place(cellOffsets[i], currentY, cellOffsets[i] + cellSize, currentY + max)
             }
-            currentY += max + spacing
+            currentY += max + gap
             currentIndex += columns
         }
         // Place upwards, one row at a time
-        currentY = anchorRowY - spacing
+        currentY = anchorRowY - gap
         currentIndex = anchorRowIndex - columns
         while (currentY > overdraw.top && currentIndex + columns - 1 >= dataRange.first) {
             val cells = (0..<columns).map {
@@ -132,7 +132,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             for (i in 0..<columns) {
                 cells[i]?.place(cellOffsets[i], currentY - max, cellOffsets[i] + cellSize, currentY)
             }
-            currentY -= max + spacing
+            currentY -= max + gap
             currentIndex -= columns
         }
     }

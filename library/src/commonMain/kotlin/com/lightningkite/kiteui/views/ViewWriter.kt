@@ -100,8 +100,10 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
     // Theme, ViewWrapper, ThemeDerivation, Boolean
     // Theme, ViewWrapper, ThemeDerivation, Unit, Boolean, RView
     // contains / minus
-    @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper { return ViewWrapper }
-    @ViewModifierDsl3 inline operator fun <T: ViewModifiable> ViewWrapper.minus(view: T): T = view
+    @ViewModifierDsl3 operator fun ViewWrapper.minus(view: ViewWrapper): ViewWrapper {
+        return if (this !== ViewWrapper.Companion) this else view
+    }
+    @ViewModifierDsl3 operator fun ViewWrapper.minus(view: ViewModifiable): ViewModifiable = this.view() ?: view
 
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit): ViewWrapper { return ViewWrapper }
     @Deprecated("Will not be supported in the future.  Please use proper modifier style with -.") @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean): ViewWrapper { return ViewWrapper }

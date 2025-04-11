@@ -195,8 +195,10 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
 //    }
+    var v: RView? = null
     wrapNextIn(object: RViewWrapper(context) {
         init {
+            v = this
             native.tag = "div"
             native.classes.add("noInteraction")
             native.classes.add("kiteui-stack")
@@ -207,7 +209,9 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
             Frame.internalAddChildStack(this, index, view)
         }
     })
-    return ViewWrapper
+    return object: ViewWrapper() {
+        override fun view(): RView? = v
+    }
 }
 
 internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: ReactiveContext.() -> Boolean)
