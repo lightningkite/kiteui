@@ -56,7 +56,13 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         blockBehind: Boolean,
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
-        val viewController = UIViewController()
+        val viewController = object : UIViewController(null, null) {
+            val previousPresenter = ExternalServices.currentPresenter
+            override fun viewDidDisappear(animated: Boolean) {
+                super.viewDidDisappear(animated)
+                ExternalServices.currentPresenter = previousPresenter
+            }
+        }
         viewController.modalPresentationStyle = UIModalPresentationPageSheet
         val control = object : BottomSheetControl {
             override val state: Writable<BottomSheetState> = Property(startState)
@@ -131,6 +137,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             prefersGrabberVisible = draggable
         }
         ExternalServices.currentPresenter(viewController)
+        ExternalServices.currentPresenter = { viewController.presentViewController(it, animated = true, completion = null) }
     }
 
     actual fun leftSlidingPanel(
