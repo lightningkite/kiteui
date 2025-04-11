@@ -48,7 +48,14 @@ actual object ExternalServices {
         UTTypeMovie,
         UTTypeSourceCode,
     )
+
+    var currentlyPresented: UIViewController? = null
     var currentPresenter: (UIViewController) -> Unit = {}
+
+    private fun present(vc: UIViewController) {
+        currentlyPresented?.takeIf { it.isViewLoaded() }?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
+    }
+
     lateinit var rootView: UIView
     actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
@@ -69,7 +76,14 @@ actual object ExternalServices {
                         picker.dismissViewControllerAnimated(true) {
                             dispatch_async(queue = dispatch_get_main_queue(), block = {
                                 (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-                                    cont.resume(FileReference(result.itemProvider))
+                                    val suggestedType = result.itemProvider.registeredContentTypes
+                                        .filterIsInstance<UTType>()
+                                        .first { type ->
+                                            mimeTypes.any { mimeType ->
+                                                type.matchesMimeType(mimeType)
+                                            }
+                                        }
+                                    cont.resume(FileReference(result.itemProvider, suggestedType))
                                 } ?: cont.resume(null)
                             })
                         }
@@ -77,7 +91,7 @@ actual object ExternalServices {
                 }
             controller.delegate = delegate
             controller.extensionStrongRef = delegate
-            currentPresenter(controller)
+            present(controller)
             cont.invokeOnCancellation {
                 try {
                     controller.dismissViewControllerAnimated(true, {})
@@ -98,7 +112,7 @@ actual object ExternalServices {
                         didPickDocumentPicker: UIDocumentPickerViewController
                     ) {
                         didPickDocumentPicker.delegate = this
-                        currentPresenter(didPickDocumentPicker)
+                        present(didPickDocumentPicker)
                     }
 
                     override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
@@ -135,7 +149,7 @@ actual object ExternalServices {
                 }
             controller.delegate = delegate
             controller.extensionStrongRef = delegate
-            currentPresenter(controller)
+            present(controller)
             cont.invokeOnCancellation {
                 try {
                     controller.dismissViewControllerAnimated(true, {})
@@ -184,7 +198,7 @@ actual object ExternalServices {
                     }
                 controller.delegate = delegate
                 controller.extensionStrongRef = delegate
-                currentPresenter(controller)
+                present(controller)
                 cont.invokeOnCancellation {
                     try {
                         controller.dismissViewControllerAnimated(true, {})
@@ -205,7 +219,7 @@ actual object ExternalServices {
                             didPickDocumentPicker: UIDocumentPickerViewController
                         ) {
                             didPickDocumentPicker.delegate = this
-                            currentPresenter(didPickDocumentPicker)
+                            present(didPickDocumentPicker)
                         }
 
                         override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
@@ -242,7 +256,7 @@ actual object ExternalServices {
                     }
                 controller.delegate = delegate
                 controller.extensionStrongRef = delegate
-                currentPresenter(controller)
+                present(controller)
                 cont.invokeOnCancellation {
                     try {
                         controller.dismissViewControllerAnimated(true, {})
@@ -362,7 +376,7 @@ actual object ExternalServices {
             }
         controller.delegate = delegate
         controller.extensionStrongRef = delegate
-        currentPresenter(controller)
+        present(controller)
         cont.invokeOnCancellation {
             try {
                 controller.dismissViewControllerAnimated(true, null)
@@ -500,7 +514,7 @@ actual object ExternalServices {
 
 
     private fun showShareSheet(messages: List<String?> = listOf(), items: List<NSURL?> = listOf()) {
-        currentPresenter(UIActivityViewController(messages + items, null).apply {
+        present(UIActivityViewController(messages + items, null).apply {
             popoverPresentationController?.sourceView = rootView
             popoverPresentationController?.sourceRect = CGRectMake(rootView.frame.useContents { origin.x + size.width / 2 }, rootView.frame.useContents { origin.y + size.height / 2 }, 1.0, 1.0)
         })
@@ -589,7 +603,7 @@ actual object ExternalServices {
                     event.startDate = start.toInstant(zone).toNSDate()
                     event.endDate = end.toInstant(zone).toNSDate()
                     addController.event = event
-                    currentPresenter(addController)
+                    present(addController)
                 }
             }
         }
@@ -638,7 +652,7 @@ actual object ExternalServices {
 //                    option.1()
 //                }))
             }
-            currentPresenter(optionsView)
+            present(optionsView)
         }
     }
 }
