@@ -60,7 +60,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open val cannotBeCovered: Boolean get() = true
 
     abstract var showOnPrint: Boolean
-    private var isShutdown = false
+    var isShutdown = false
+        private set
 
     open var opacity: Double = 1.0
     open var shown: Boolean = true

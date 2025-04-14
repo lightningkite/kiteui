@@ -58,6 +58,7 @@ object RootPage : Page {
                     }
                 } in card
 
+                linkPage { SwapViewPage }
                 linkPage { RichTextButtonPage }
                 linkPage { R2VPPage }
                 linkPage { ProgrammaticLayoutTestPage }
