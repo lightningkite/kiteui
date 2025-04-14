@@ -34,7 +34,7 @@ fun EditText.focusIsKeyboard(): EditText {
             if (hasFocus)
                 v.context.getSystemService<InputMethodManager>()?.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT)
             else if((v.context as? Activity)?.currentFocus == null) {
-                v.context.getSystemService<InputMethodManager>()?.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_IMPLICIT_ONLY)
+                v.context.getSystemService<InputMethodManager>()?.hideSoftInputFromWindow(v.windowToken, 0) // use 0 to work on samsung instead InputMethodManager.HIDE_IMPLICIT_ONLY
             }
         }
     }
