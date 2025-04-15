@@ -10,7 +10,11 @@ expect open class Event {
 expect open class UIEvent: Event {
 }
 expect open class KeyboardEvent: UIEvent {
-    val code: String
+    open val code: String
+    open val ctrlKey: Boolean
+    open val shiftKey: Boolean
+    open val altKey: Boolean
+    open val metaKey: Boolean
 }
 expect open class WheelEvent: MouseEvent {
     val deltaX: Double
