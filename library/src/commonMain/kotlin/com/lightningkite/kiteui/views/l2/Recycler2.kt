@@ -371,18 +371,18 @@ class Recycler2(
                 if (vertical) {
                     inProgress.place(
                         fakeScrollIndicator,
-                        left = -s * 10 - 1,
+                        left = 0.0,
                         top = fakeScrollSize - 1,
-                        right = -s * 10,
+                        right = 1.0,
                         bottom = fakeScrollSize,
                     )
                 } else {
                     inProgress.place(
                         fakeScrollIndicator,
                         left = fakeScrollSize - 1,
-                        top = -s * 10 - 1,
+                        top = 0.0,
                         right = fakeScrollSize,
-                        bottom = -s * 10,
+                        bottom = 1.0,
                     )
                 }
                 fakeScroll.scrollTo(
