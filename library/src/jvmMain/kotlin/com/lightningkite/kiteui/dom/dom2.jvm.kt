@@ -10,7 +10,11 @@ actual open class Event {
 actual open class UIEvent: Event() {
 }
 actual open class KeyboardEvent: UIEvent() {
-    actual val code: String = ""
+    actual open val code: String = ""
+    actual open val ctrlKey: Boolean = false
+    actual open val shiftKey: Boolean = false
+    actual open val altKey: Boolean = false
+    actual open val metaKey: Boolean = false
 }
 actual open class WheelEvent: MouseEvent() {
     actual val deltaX: Double = 0.0

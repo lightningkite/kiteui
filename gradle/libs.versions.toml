@@ -1,3 +1,4 @@
+
 [versions]
 appcompat = "1.7.0"
 cardview = "1.0.0"
@@ -18,6 +19,7 @@ timber = "5.0.1"
 transition = "1.5.1"
 
 [libraries]
+androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0-rc01" }
 appcompat = { module = "androidx.appcompat:appcompat", version = { ref = "appcompat" } }
 cardview = { module = "androidx.cardview:cardview", version = { ref = "cardview" } }
 comLightningkiteReadable = { module = "com.lightningkite:readable", version = "2.0.0" }
@@ -45,7 +47,6 @@ robolectric = { module = "org.robolectric:robolectric", version = { ref = "robol
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = { ref = "swiperefreshlayout" } }
 timber = { module = "com.jakewharton.timber:timber", version = { ref = "timber" } }
 transition = { module = "androidx.transition:transition", version = { ref = "transition" } }
-androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0-rc01" }
 
 [plugins]
 comLightningkiteTestingManual = { id = "com.lightningkite.testing.manual", version = "0.0.8" }
