@@ -1,16 +1,11 @@
 package com.lightningkite.mppexampleapp.widgets
 
-import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.FontAndStyle
-import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.WordBreak
 import com.lightningkite.kiteui.models.times
-import com.lightningkite.kiteui.nsdata
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.direct.TextView
-import com.lightningkite.kiteui.views.direct.UILabelWithGradient
+import com.lightningkite.kiteui.views.direct.UILabelWithLayerBackground
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.toUIFontWeight
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -24,18 +19,8 @@ import platform.Foundation.addAttribute
 import platform.Foundation.create
 import platform.Foundation.enumerateAttribute
 import platform.Foundation.length
-import platform.UIKit.NSDocumentTypeDocumentAttribute
 import platform.UIKit.NSFontAttributeName
-import platform.UIKit.NSHTMLTextDocumentType
-import platform.UIKit.NSLineBreakByCharWrapping
-import platform.UIKit.NSLineBreakByClipping
-import platform.UIKit.NSLineBreakByTruncatingTail
-import platform.UIKit.NSLineBreakByWordWrapping
 import platform.UIKit.NSStrikethroughStyleAttributeName
-import platform.UIKit.NSTextAlignmentCenter
-import platform.UIKit.NSTextAlignmentJustified
-import platform.UIKit.NSTextAlignmentLeft
-import platform.UIKit.NSTextAlignmentRight
 import platform.UIKit.NSUnderlineStyleAttributeName
 import platform.UIKit.NSUnderlineStyleNone
 import platform.UIKit.NSUnderlineStyleSingle
@@ -46,13 +31,11 @@ import platform.UIKit.UIFontDescriptorTraitsAttribute
 import platform.UIKit.UIFontWeightBold
 import platform.UIKit.UIFontWeightSemibold
 import platform.UIKit.UIFontWeightTrait
-import platform.UIKit.UIViewContentMode
 import platform.UIKit.UIView
-import platform.UIKit.create
 
 @OptIn(ExperimentalForeignApi::class)
 actual class Code actual constructor(context: RContext) : RView(context) {
-    val actualNative = UILabelWithGradient()
+    val actualNative = UILabelWithLayerBackground()
     override val native: UIView = actualNative
     val label get() = actualNative.label
 
