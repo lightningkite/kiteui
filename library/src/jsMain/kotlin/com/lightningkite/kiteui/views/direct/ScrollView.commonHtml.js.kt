@@ -186,7 +186,6 @@ actual class ScrollingBehaviorImpl actual constructor(
             for (count in 1..(amount - 1)) {
                 window.setTimeout(label@{
                     if (myInstance != scrollToInstance) return@label
-                    println("offset count $count: ${it.scrollLeft}, ${it.scrollTop}")
                     it.scrollLeft = x
                     it.scrollTop = y
                 }, count)
