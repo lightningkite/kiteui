@@ -6,8 +6,8 @@ import kotlin.test.Test
 class Recycler2Test {
     @Test fun scrollRules() = assertManualReview(
         file = "ScrollView.commonHtml.js.kt",
-        currentHash = "5040c7dfd58c2e223d86ea2b1383cb53e92311d9",
-        reviewedHash = "5040c7dfd58c2e223d86ea2b1383cb53e92311d9",
+        currentHash = "fba7a2cd837572a70abc5359b1fbdbd244240cfd",
+        reviewedHash = "fba7a2cd837572a70abc5359b1fbdbd244240cfd",
         whatToTest = """
             This file is *extremely sensitive* to view pagers and recycler views.
             As such, upon editing this file you must retest manually:
