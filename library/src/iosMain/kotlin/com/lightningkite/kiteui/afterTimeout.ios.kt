@@ -1,8 +1,6 @@
 package com.lightningkite.kiteui
 
 import platform.darwin.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
     var stillRun: Boolean = true
