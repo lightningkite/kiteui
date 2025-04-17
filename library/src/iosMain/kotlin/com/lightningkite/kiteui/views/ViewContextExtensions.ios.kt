@@ -19,6 +19,7 @@ actual fun ViewWriter.overlayWriter(body: RView.() -> Unit) {
             this@overlayWriter.overlayFrame?.theme?.let { overlayTheme -> themeChoice = ThemeDerivation { overlayTheme.withoutBack } }
         }
         frame {
+            overlayFrame = this
             body()
         }.also {
             it.children.first().onShutdown {
