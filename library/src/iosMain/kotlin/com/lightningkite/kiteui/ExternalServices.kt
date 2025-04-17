@@ -52,7 +52,7 @@ actual object ExternalServices {
     var currentlyPresented: UIViewController? = null
     var currentPresenter: (UIViewController) -> Unit = {}
 
-    private fun present(vc: UIViewController) {
+    fun present(vc: UIViewController) {
         currentlyPresented?.takeIf { it.isViewLoaded() }?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
     }
 
