@@ -2,8 +2,12 @@ name: TestPullRequest
 
 on:
   pull_request:
-    branches: master
+    branches:
+      - main
+      - version-**
   workflow_dispatch:
+    - main
+    - version-**
 
 jobs:
   test_project:
@@ -11,6 +15,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
 
       - uses: actions/setup-java@v4
         with:

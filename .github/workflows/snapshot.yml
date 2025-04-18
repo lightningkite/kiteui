@@ -8,11 +8,13 @@ on:
 
 jobs:
   release:
-    name: Test and Upload SnapShot
+    name: Test and Upload Release
     runs-on: macos-latest
     steps:
 
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
 
       - uses: actions/setup-java@v4
         with:

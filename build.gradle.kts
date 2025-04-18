@@ -12,11 +12,10 @@ buildscript {
         maven("https://jitpack.io")
     }
     dependencies {
-        classpath("com.lightningkite:lk-gradle-helpers:1.2.0")
+        classpath(libs.lkGradleHelpers)
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:2.0.0")
-        classpath("com.android.tools.build:gradle:8.5.2")
+        classpath(libs.gradle)
     }
 }
 allprojects {
