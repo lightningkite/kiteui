@@ -88,7 +88,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    private var prevThemeClass: String? = null
+    protected var prevThemeClass: String? = null
     actual override fun applyTheme(theme: ThemeAndBack) {
         if(theme.drawBackground) {
             native.classes.add("transition")
