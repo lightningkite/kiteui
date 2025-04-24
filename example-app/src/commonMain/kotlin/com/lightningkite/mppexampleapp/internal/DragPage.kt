@@ -22,9 +22,12 @@ object DragPage : Page {
     override fun ViewWriter.render(): ViewModifiable = col {
         h2("Drag test")
         text("Behold some dragging magic!")
-        card - text {
-            content = "Dragging from here leaves the text 'Hello there!'"
-            dragData = DragData("Stuff", "text/plain", "Hello there!")
+        card - link {
+            to = { this@DragPage }
+            dragData = DragData("Stuff", "x-application/thing", "Hello there!")
+            text {
+                content = "Dragging from here leaves the text 'Hello there!'"
+            }
         }
         field("Sample input") { textInput {  }}
         card - frame {

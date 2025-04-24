@@ -123,7 +123,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         get() = super.dragData
         set(value) {
             super.dragData = value
-            if(value == null) native.setOnLongClickListener(null)
+            if (value == null) native.setOnLongClickListener(null)
             else native.setOnLongClickListener {
                 native.startDrag(
                     ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
@@ -138,16 +138,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         get() = super.dropTargetDelegate
         set(value) {
             super.dropTargetDelegate = value
-            if(value == null) native.setOnDragListener(null)
+            if (value == null) native.setOnDragListener(null)
             else native.setOnDragListener { v, event ->
                 val ev =
                     DragEvent(
-                        data = event.clipData.let {DragData(it.description.label.toString(), it.description.getMimeType(0), it.getItemAt(0).text.toString()) },
+                        data = event.clipData.let {
+                            DragData(
+                                it.description.label.toString(),
+                                (0..<it.itemCount).associate { i -> it.description.getMimeType(i) to it.getItemAt(i).text.toString() },
+                            )
+                        },
                         xInView = event.x.toDouble(),
                         yInView = event.y.toDouble(),
                     )
-                when(event.action) {
-                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(ev)
+                when (event.action) {
+                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(
+                        ev
+                    )
+
                     android.view.DragEvent.ACTION_DROP -> value.drop(ev)
                     else -> true
                 }
@@ -224,13 +232,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     private var edgeToEdgePadding: Edges? = null
         set(value) {
-            if(field != value) {
+            if (field != value) {
                 field = value
                 updatePadding()
                 children.forEach {
-                    if(value != null) {
+                    if (value != null) {
                         fun walkdown(it: RView) {
-                            if(it.edgeToEdgePadding != null) {
+                            if (it.edgeToEdgePadding != null) {
                                 it.edgeToEdgePadding = null
                             }
                             it.children.forEach { walkdown(it) }
@@ -287,12 +295,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //        val previousTrace =
 //            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
 //                .toList()
-        if(viewDebugTarget == this) println("--postsetup--")
-        if(viewDebugTarget == this) println("hasInteractiveParent: $hasInteractiveParent")
-        if(viewDebugTarget == this) println("interactive parent is: ${generateSequence(this) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
-        if(viewDebugTarget == this) println("wasClickable: $wasClickable")
-        if(viewDebugTarget == this) println("wasFocusable: $wasFocusable")
-        if(viewDebugTarget == this) println("ignoreInteraction: $ignoreInteraction")
+        if (viewDebugTarget == this) println("--postsetup--")
+        if (viewDebugTarget == this) println("hasInteractiveParent: $hasInteractiveParent")
+        if (viewDebugTarget == this) println("interactive parent is: ${generateSequence(this) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
+        if (viewDebugTarget == this) println("wasClickable: $wasClickable")
+        if (viewDebugTarget == this) println("wasFocusable: $wasFocusable")
+        if (viewDebugTarget == this) println("ignoreInteraction: $ignoreInteraction")
         if (!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
             native.setOnClickListener {
                 println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
@@ -345,7 +353,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
-        if(fullyStarted) ViewCompat.requestApplyInsets(view.native)
+        if (fullyStarted) ViewCompat.requestApplyInsets(view.native)
         if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 

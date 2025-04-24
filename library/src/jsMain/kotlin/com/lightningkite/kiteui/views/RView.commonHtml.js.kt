@@ -336,10 +336,9 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
     native.onElement {
         if (listener != null) {
             (it as HTMLElement).ondragover = { e ->
-                val t = e.dataTransfer!!.types[0]
                 if (listener.over(
                         com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", t, e.dataTransfer!!.getData(t)),
+                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
                             xInView = e.x,
                             yInView = e.y
                         )
@@ -350,10 +349,9 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
                 }
             }
             (it as HTMLElement).ondrop = { e ->
-                val t = e.dataTransfer!!.types[0]
                 if (listener.drop(
                         com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", t, e.dataTransfer!!.getData(t)),
+                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
                             xInView = e.x,
                             yInView = e.y
                         )
