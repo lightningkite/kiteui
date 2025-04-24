@@ -230,10 +230,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.dragData = value
             // TODO
         }
-    override var onDrop: ((DragData) -> Boolean)?
-        get() = super.onDrop
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
         set(value) {
-            super.onDrop = value
+            super.dropTargetDelegate = value
             // TODO
         }
 

@@ -134,15 +134,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 true
             }
         }
-    override var onDrop: ((DragData) -> Boolean)?
-        get() = super.onDrop
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
         set(value) {
-            super.onDrop = value
+            super.dropTargetDelegate = value
             if(value == null) native.setOnDragListener(null)
             else native.setOnDragListener { v, event ->
-                value(event.clipData.let {
-                    DragData(it.description.label.toString(), it.description.getMimeType(0), it.getItemAt(0).text.toString())
-                })
+                val ev =
+                    DragEvent(
+                        data = event.clipData.let {DragData(it.description.label.toString(), it.description.getMimeType(0), it.getItemAt(0).text.toString()) },
+                        xInView = event.x.toDouble(),
+                        yInView = event.y.toDouble(),
+                    )
+                when(event.action) {
+                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(ev)
+                    android.view.DragEvent.ACTION_DROP -> value.drop(ev)
+                    else -> true
+                }
             }
         }
 

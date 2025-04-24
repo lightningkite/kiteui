@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Rect
 
 actual class FutureElementStyle(val underlyingMap: MutableMap<String, String>) {
@@ -136,4 +137,4 @@ actual fun RView.nativeScrollIntoView(
 }
 
 actual fun RView.nativeSetDragData(data: DragData?) {}
-actual fun RView.nativeOnDrop(listener: ((DragData) -> Boolean)?) {}
+actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {}

@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.PersistentProperty
@@ -28,19 +29,24 @@ object DragPage : Page {
         field("Sample input") { textInput {  }}
         card - frame {
             text("Print dropped item to console")
-            onDrop = {
-                println(it)
-                true
+            dropTargetDelegate = object: DropTargetDelegate {
+                override fun drop(event: DragEvent): Boolean {
+                    println(event.data.data)
+                    return true
+                }
             }
         }
         sizeConstraints(height = 10.rem) - row {
             val left = Property<List<String>>(listOf())
             val right = Property<List<String>>(listOf())
             expanding - card - scrolling - col {
-                onDrop = {
-                    left.value += it.data
-                    right.value -= it.data
-                    true
+                dropTargetDelegate = object: DropTargetDelegate {
+                    override fun drop(event: DragEvent): Boolean {
+                        val it = event.data
+                        left.value += it.data
+                        right.value -= it.data
+                        return true
+                    }
                 }
                 forEachAnimated(left) {
                     card - text {
@@ -50,10 +56,13 @@ object DragPage : Page {
                 }
             }
             expanding - card - scrolling - col {
-                onDrop = {
-                    right.value += it.data
-                    left.value -= it.data
-                    true
+                dropTargetDelegate = object: DropTargetDelegate {
+                    override fun drop(event: DragEvent): Boolean {
+                        val it = event.data
+                        right.value += it.data
+                        left.value -= it.data
+                        return true
+                    }
                 }
                 forEachAnimated(right) {
                     card - text {
@@ -70,22 +79,27 @@ object DragPage : Page {
                 card - text {
                     ::content { it() }
                     ::dragData { DragData(it(), "text/plain", it()) }
-                    onDrop = { dropped ->
-                        launch {
-                            val index = data.value.indexOf(it())
-                            val t = data.value.filter { it != dropped.data }
-                            data.value = t.subList(0, index) + dropped.data + t.subList(index, t.size)
+                    dropTargetDelegate = object: DropTargetDelegate {
+                        override fun drop(event: DragEvent): Boolean {
+                            launch {
+                                val dropped = event.data
+                                val index = data.value.indexOf(it())
+                                val t = data.value.filter { it != dropped.data }
+                                data.value = t.subList(0, index) + dropped.data + t.subList(index, t.size)
+                            }
+                            return true
                         }
-                        true
                     }
                 }
             }
-            onDrop = {
+            outerFrame.dropTargetDelegate = object: DropTargetDelegate {
+                override fun drop(event: DragEvent): Boolean {
+                    val it = event.data
                 // Move it to the end
                 data.value -= it.data
                 data.value += it.data
-                true
-            }
+                return true
+            }}
         }
     }
 

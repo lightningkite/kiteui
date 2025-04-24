@@ -71,10 +71,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.attributes.draggable = value != null
             nativeSetDragData(value)
         }
-    override var onDrop: ((DragData) -> Boolean)?
-        get() = super.onDrop
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
         set(value) {
-            super.onDrop = value
+            super.dropTargetDelegate = value
             nativeOnDrop(value)
         }
 
@@ -193,4 +193,4 @@ expect fun RView.nativeScrollIntoView(
 )
 
 expect fun RView.nativeSetDragData(data: DragData?)
-expect fun RView.nativeOnDrop(listener: ((DragData) -> Boolean)?)
+expect fun RView.nativeOnDrop(listener: DropTargetDelegate?)
