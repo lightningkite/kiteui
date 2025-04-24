@@ -63,6 +63,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.classes.remove("noInteraction")
         }
 
+    // drag 'n drop
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            native.attributes.draggable = value != null
+            nativeSetDragData(value)
+        }
+    override var onDrop: ((DragData) -> Boolean)?
+        get() = super.onDrop
+        set(value) {
+            super.onDrop = value
+            nativeOnDrop(value)
+        }
+
 
     actual override fun scrollIntoView(
         horizontal: Align?,
@@ -176,3 +191,6 @@ expect fun RView.nativeScrollIntoView(
     vertical: Align?,
     animate: Boolean
 )
+
+expect fun RView.nativeSetDragData(data: DragData?)
+expect fun RView.nativeOnDrop(listener: ((DragData) -> Boolean)?)
