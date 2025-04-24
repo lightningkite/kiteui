@@ -46,7 +46,7 @@ actual fun RView.animateOut(
     if(!animationsEnabled) return
     UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
-        completion = { done?.invoke() },
+        completion = { if (!isShutdown) done?.invoke() },
         animations = {
             val before = isInAnimationBlock
             isInAnimationBlock = true
