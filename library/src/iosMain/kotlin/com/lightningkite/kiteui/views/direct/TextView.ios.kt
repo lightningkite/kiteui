@@ -1,30 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
-
-import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.nsdata
-import com.lightningkite.kiteui.objc.toObjcId
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
-import kotlinx.cinterop.useContents
-import platform.CoreGraphics.CGPointMake
-import platform.CoreGraphics.CGRectMake
-import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.*
-import platform.QuartzCore.CAGradientLayer
-import platform.QuartzCore.CALayer
-import platform.QuartzCore.kCAGradientLayerAxial
-import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.*
-import platform.objc.sel_registerName
-
-
 
 actual class TextView actual constructor(context: RContext) : RView(context) {
-    override val native = UILabelWithGradient()
+    override val native = UILabelWithLayerBackground()
     val label get() = native.label
 
     init {
@@ -123,7 +107,9 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme);
+        val theme = theme.theme
         native.foreground = theme.foreground
         fontAndStyle = theme.font
 
