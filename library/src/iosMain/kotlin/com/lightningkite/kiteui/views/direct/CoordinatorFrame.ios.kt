@@ -82,6 +82,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 childCloser.invokeAll()
                 internalClose()
             }
+            rootPopoverCloser = childCloser
             popoverClosers = childCloser
 
             beforeNextElementSetup {

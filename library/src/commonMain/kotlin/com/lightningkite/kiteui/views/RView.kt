@@ -337,6 +337,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         return (handle(myView) ?: ExceptionToMessages.root.handle(myView, exception))
     }
 
+    val shutdownListeners = mutableSetOf<() -> Unit>()
+    fun onShutdown(action: () -> Unit): () -> Unit {
+        shutdownListeners.add(action)
+        return { shutdownListeners.remove(action) }
+    }
 
     // Cleanup Insurance
     open fun shutdown() {
@@ -352,6 +357,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
         if (leakDetection) leakDetect()
         isShutdown = true
+        shutdownListeners.forEach { it() }
     }
 
     open fun leakDetect() {
