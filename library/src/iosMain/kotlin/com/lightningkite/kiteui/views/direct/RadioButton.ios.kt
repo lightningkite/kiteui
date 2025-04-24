@@ -41,7 +41,8 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
             ::visible.invoke { checked() }
         }
         onRemove(button.setOnClick {
-            _checked.value = !_checked.value
+            // Stay checked if already checked; don't allow radio buttons to become unchecked by clicking
+            _checked.value = !_checked.value || _checked.value
         })
     }
 }

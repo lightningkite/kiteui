@@ -63,6 +63,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.classes.remove("noInteraction")
         }
 
+    // drag 'n drop
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            native.attributes.draggable = value != null
+            nativeSetDragData(value)
+        }
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            nativeOnDrop(value)
+        }
+
 
     actual override fun scrollIntoView(
         horizontal: Align?,
@@ -88,7 +103,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    private var prevThemeClass: String? = null
+    protected var prevThemeClass: String? = null
     actual override fun applyTheme(theme: ThemeAndBack) {
         if(theme.drawBackground) {
             native.classes.add("transition")
@@ -176,3 +191,6 @@ expect fun RView.nativeScrollIntoView(
     vertical: Align?,
     animate: Boolean
 )
+
+expect fun RView.nativeSetDragData(data: DragData?)
+expect fun RView.nativeOnDrop(listener: DropTargetDelegate?)

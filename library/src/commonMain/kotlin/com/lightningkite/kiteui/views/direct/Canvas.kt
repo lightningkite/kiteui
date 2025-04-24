@@ -33,6 +33,8 @@ abstract class CanvasDelegate {
     open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }
 
+class KeyCodeWithModifiers(val code: KeyCode, val alt: Boolean, val ctrl: Boolean, val shift: Boolean, val meta: Boolean)
+
 expect class KeyCode
 expect object KeyCodes {
     val left: KeyCode

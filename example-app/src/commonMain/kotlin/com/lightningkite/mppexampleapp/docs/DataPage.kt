@@ -83,10 +83,15 @@ object DataPage : DocPage {
                                         emit(n++)
                                     }
                                 }
-                                secondsElapsed.addListener { println("secondsElapsed.state: ${'$'}{secondsElapsed.state}") }  
+                                val listenerRemoveHandle = secondsElapsed.addListener { println("secondsElapsed.state: ${'$'}{secondsElapsed.state}") }
+                                // You need to clean up your listeners!
+                                // Calling the returned lambda allows you to do so.
+                                // Here, we ask KiteUI to run it when the view is removed.
+                                onRemove(listenerRemoveHandle)
                             """.trimIndent()
                         }
-                        secondsElapsed.addListener { println("secondsElapsed.state: ${secondsElapsed.state}") }
+                        val listenerRemoveHandle = secondsElapsed.addListener { println("secondsElapsed.state: ${secondsElapsed.state}") }
+                        onRemove(listenerRemoveHandle)
                         text("This should print an increasing number every second.")
                     }
                 }

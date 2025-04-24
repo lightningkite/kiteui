@@ -6,7 +6,7 @@ plugins {
     `kotlin-dsl`
     signing
     id("com.vanniktech.maven.publish") version "0.30.0"
-    id("org.jetbrains.dokka")
+    // alias(libs.plugins.dokka)
 }
 
 gradlePlugin {

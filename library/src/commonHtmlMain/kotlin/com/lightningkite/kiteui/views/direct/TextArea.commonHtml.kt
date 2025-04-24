@@ -16,10 +16,12 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         tag = "textarea"
         classes.add("editable")
         style.resize = "none"
-        addEventListener("keyup") { ev ->
+        addEventListener("keydown") { ev ->
             ev as KeyboardEvent
-            if (ev.code == KeyCodes.enter) {
+            if (ev.code == KeyCodes.enter && !ev.shiftKey && action != null) {
                 action?.startAction(this@TextArea)
+                ev.preventDefault()
+                ev.stopImmediatePropagation()
             }
         }
         native.appendChild(this)

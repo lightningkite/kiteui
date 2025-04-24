@@ -63,11 +63,6 @@ object ControlsPage : Page {
                         }
                     }
                 }
-                reactiveSuspending {
-                    fetch("https://lightningkite.com/wrong-page").let {
-                        if (!it.ok) throw Exception(it.text())
-                    }
-                }
                 text { ::content { ratio().times(100).roundToInt().toString() + "%" } }
                 row {
                     expanding - space {}

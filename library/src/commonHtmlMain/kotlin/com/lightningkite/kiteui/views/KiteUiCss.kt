@@ -432,8 +432,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 position: relative;
                 overflow: visible;
                 padding: 0px !important;
-                height: 1.5rem;
-                width: 3rem;
+                height: 1.5rem !important;
+                width: 3rem !important;
                 cursor: pointer;
                 appearance: none;
                 border-radius: 9999px !important;

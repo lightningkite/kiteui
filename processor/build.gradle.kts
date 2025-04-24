@@ -3,7 +3,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.dokka")
+    // alias(libs.plugins.dokka)
     signing
     id("com.vanniktech.maven.publish") version "0.30.0"
 }

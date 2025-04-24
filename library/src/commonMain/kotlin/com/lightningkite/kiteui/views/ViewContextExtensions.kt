@@ -74,3 +74,5 @@ fun ViewWriter.popoverWriter(close: ()->Unit): ViewWriter {
     writer.popoverClosers = childCloser
     return writer
 }
+
+expect fun ViewWriter.overlayWriter(body: RView.() -> Unit)

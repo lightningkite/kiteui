@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
@@ -26,6 +27,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
             list.mapIndexed { index, it ->
                 native.appendChild(FutureElement().apply {
                     tag = "option"
+                    classes.add("checkResponsive")
                     attributes.valueString = index.toString()
                     content = render(it)
                     attributes.selected = (it == v)
@@ -56,6 +58,16 @@ actual class Select actual constructor(context: RContext) : RView(context) {
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        val p = prevThemeClass
+        val newClass = context.kiteUiCss.themeInteractive(theme.theme)
+        super.applyTheme(theme)
+        native.children.forEach { o ->
+            p?.let { o.classes.remove(it) }
+            o.classes.add(newClass)
+        }
+    }
 }
 
 //fun HTMLElement.__resetContentToOptionList(options: List<WidgetOption>, selected: String) {
