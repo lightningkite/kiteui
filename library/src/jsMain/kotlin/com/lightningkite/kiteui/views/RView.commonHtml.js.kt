@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -302,3 +303,32 @@ actual fun RView.nativeScrollIntoView(
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
+actual fun RView.nativeSetDragData(data: DragData?) {
+    native.onElement {
+        if(data != null) {
+            (it as HTMLElement).ondragstart = { it.dataTransfer!!.setData(data.mimeType, data.data) }
+        } else {
+            (it as HTMLElement).ondragstart = null
+        }
+    }
+}
+actual fun RView.nativeOnDrop(listener: ((DragData) -> Boolean)?) {
+    native.onElement {
+        if(listener != null) {
+            (it as HTMLElement).ondragover = { e ->
+                e.preventDefault()
+            }
+            (it as HTMLElement).ondrop = { e ->
+                println("onDrop hit!")
+                val t = e.dataTransfer!!.types[0]
+                if(listener(DragData("", t, e.dataTransfer!!.getData(t)))) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+        } else {
+            (it as HTMLElement).ondragover = null
+            (it as HTMLElement).ondrop = null
+        }
+    }
+}

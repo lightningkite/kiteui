@@ -81,6 +81,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open var paddingByEdge: Edges? = null
     open var transitionId: String? = null
 
+    // drag 'n drop
+    open var dragData: DragData? = null
+    open var onDrop: ((DragData) -> Boolean)? = null
+
     abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
     abstract fun requestFocus()
 
