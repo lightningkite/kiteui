@@ -81,6 +81,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open var paddingByEdge: Edges? = null
     open var transitionId: String? = null
 
+    // drag 'n drop
+    open var dragData: DragData? = null
+    open var dropTargetDelegate: DropTargetDelegate? = null
+
     abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
     abstract fun requestFocus()
 
@@ -374,6 +378,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     override fun toString(): String {
         return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
+}
+
+interface DropTargetDelegate {
+    fun over(event: DragEvent): Boolean = true
+    fun drop(event: DragEvent): Boolean
 }
 
 abstract class RViewWrapper(context: RContext) : RView(context) {

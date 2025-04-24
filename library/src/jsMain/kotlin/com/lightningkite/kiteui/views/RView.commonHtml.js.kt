@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -24,6 +25,7 @@ actual class FutureElement actual constructor() {
             style.native = (value as? HTMLElement)?.style ?: (value as? SVGElement)?.style
             attributes.native = value
         }
+
     fun hydrate(value: Element) {
         id = value.id
         content = value.innerHTML.takeUnless { it.isBlank() }
@@ -65,9 +67,18 @@ actual class FutureElement actual constructor() {
         return e
     }
 
-    actual fun click() { onElement { (it as HTMLElement).click() } }
-    actual fun focus() { onElement { (it as HTMLElement).focus() } }
-    actual fun blur() { onElement { (it as HTMLElement).blur() } }
+    actual fun click() {
+        onElement { (it as HTMLElement).click() }
+    }
+
+    actual fun focus() {
+        onElement { (it as HTMLElement).focus() }
+    }
+
+    actual fun blur() {
+        onElement { (it as HTMLElement).blur() }
+    }
+
     actual fun screenRectangle(): Rect? {
         return element?.getBoundingClientRect()?.let {
             Rect(
@@ -92,24 +103,26 @@ actual class FutureElement actual constructor() {
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
-        element?.addEventListener(name, { it:Event -> listener(it) }) ?: run {
-            @Suppress("UNCHECKED_CAST") val old = eventsBack["on$name"] as? (Event)->Unit
-            eventsBack["on$name"] = { it:Event -> old?.invoke(it);  listener(it) }
+        element?.addEventListener(name, { it: Event -> listener(it) }) ?: run {
+            @Suppress("UNCHECKED_CAST") val old = eventsBack["on$name"] as? (Event) -> Unit
+            eventsBack["on$name"] = { it: Event -> old?.invoke(it); listener(it) }
         }
     }
+
     actual inline fun replaceEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
         element?.let { it.asDynamic()["on$name"] = { it: Event -> listener(it) } } ?: run {
-            eventsBack["on$name"] = { it:Event -> listener(it) }
+            eventsBack["on$name"] = { it: Event -> listener(it) }
         }
     }
+
     val futureStyles = json()
     actual fun setStyleProperty(key: String, value: String?) {
         val element = element
-        if(element == null) {
-            if(value == null) {
+        if (element == null) {
+            if (value == null) {
                 remove(futureStyles, key)
 //                futureStyles.set(key, null)
             } else {
@@ -117,25 +130,26 @@ actual class FutureElement actual constructor() {
             }
         } else {
             val style = (element as? HTMLElement)?.style ?: (element as? SVGElement)?.style ?: return
-            if(value == null) {
+            if (value == null) {
                 style.removeProperty(key)
             } else {
                 style.setProperty(key, value)
             }
         }
     }
+
     val futureAttributes = json()
     actual fun setAttribute(key: String, value: String?) {
         val element = element
-        if(element == null) {
-            if(value == null) {
+        if (element == null) {
+            if (value == null) {
                 remove(futureAttributes, key)
 //                futureAttributes.set(key, null)
             } else {
                 futureAttributes.set(key, value)
             }
         } else {
-            if(value == null) {
+            if (value == null) {
                 element.removeAttribute(key)
             } else {
                 element.setAttribute(key, value)
@@ -187,6 +201,7 @@ actual class FutureElement actual constructor() {
         }
         assertSizeMatch()
     }
+
     actual fun appendChild(index: Int, element: FutureElement) {
         assertSizeMatch()
         if (index > lastChildren.size) throw IllegalStateException()
@@ -217,9 +232,12 @@ actual class FutureElement actual constructor() {
 
     private fun assertSizeMatch() {
         this.element?.let {
-            if(it.childElementCount != lastChildren.size) throw IllegalStateException("Size mismatch - ${it.childElementCount} vs ${lastChildren.size}")
+            if (it.childElementCount != lastChildren.size) throw IllegalStateException("Size mismatch - ${it.childElementCount} vs ${lastChildren.size}")
             lastChildren.forEachIndexed { index, child ->
-                if(child.element != it.children.item(index)) console.warn("WARNING: Child order inconsistency at index $index", it)
+                if (child.element != it.children.item(index)) console.warn(
+                    "WARNING: Child order inconsistency at index $index",
+                    it
+                )
             }
         }
         // assert order
@@ -271,6 +289,7 @@ private fun forEach(receiver: Json, action: (key: String, value: dynamic) -> Uni
         action(key, receiver[key])
     }
 }
+
 private fun remove(receiver: Json, key: String) {
     js("delete receiver[key]")
 }
@@ -286,6 +305,7 @@ fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.Stretch -> ScrollLogicalPosition.START
     null -> ScrollLogicalPosition.NEAREST
 }
+
 actual fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
@@ -302,3 +322,50 @@ actual fun RView.nativeScrollIntoView(
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
+actual fun RView.nativeSetDragData(data: DragData?) {
+    native.onElement {
+        if (data != null) {
+            (it as HTMLElement).ondragstart = { it.dataTransfer!!.setData(data.mimeType, data.data) }
+        } else {
+            (it as HTMLElement).ondragstart = null
+        }
+    }
+}
+
+actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
+    native.onElement {
+        if (listener != null) {
+            (it as HTMLElement).ondragover = { e ->
+                val t = e.dataTransfer!!.types[0]
+                if (listener.over(
+                        com.lightningkite.kiteui.models.DragEvent(
+                            data = DragData("", t, e.dataTransfer!!.getData(t)),
+                            xInView = e.x,
+                            yInView = e.y
+                        )
+                    )
+                ) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            (it as HTMLElement).ondrop = { e ->
+                val t = e.dataTransfer!!.types[0]
+                if (listener.drop(
+                        com.lightningkite.kiteui.models.DragEvent(
+                            data = DragData("", t, e.dataTransfer!!.getData(t)),
+                            xInView = e.x,
+                            yInView = e.y
+                        )
+                    )
+                ) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+        } else {
+            (it as HTMLElement).ondragover = null
+            (it as HTMLElement).ondrop = null
+        }
+    }
+}

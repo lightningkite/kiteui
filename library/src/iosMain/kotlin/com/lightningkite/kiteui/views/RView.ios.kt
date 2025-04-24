@@ -221,15 +221,22 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    //    run { applyElevation(if (value.useBackground == UseBackground.Yes) value.theme.elevation else 0.px) }
-//    run {
-//        applyPadding(
-//            if (forcePadding ?: (value.useBackground == UseBackground.Yes || hasAlternateBackedStates())) (gap
-//                ?: if (useNavSpacing) value.theme.navSpacing else value.theme.gap) else null
-//        )
-//    }
-//    run { applyForeground(value.theme) }
-//    run { applyBackground(value.theme, value.useBackground != UseBackground.No) }
+
+
+    // drag 'n drop
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            // TODO
+        }
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            // TODO
+        }
+
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import android.animation.ValueAnimator
+import android.content.ClipData
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -23,6 +24,8 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
+import com.lightningkite.readable.Constant
+import com.lightningkite.readable.Readable
 import com.lightningkite.readable.onRemove
 import kotlin.math.min
 
@@ -113,6 +116,44 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.transitionId = value
             native.transitionName = value
         }
+
+
+    // drag 'n drop
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            if(value == null) native.setOnLongClickListener(null)
+            else native.setOnLongClickListener {
+                native.startDrag(
+                    ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
+                    View.DragShadowBuilder(native),
+                    null,
+                    0
+                )
+                true
+            }
+        }
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            if(value == null) native.setOnDragListener(null)
+            else native.setOnDragListener { v, event ->
+                val ev =
+                    DragEvent(
+                        data = event.clipData.let {DragData(it.description.label.toString(), it.description.getMimeType(0), it.getItemAt(0).text.toString()) },
+                        xInView = event.x.toDouble(),
+                        yInView = event.y.toDouble(),
+                    )
+                when(event.action) {
+                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(ev)
+                    android.view.DragEvent.ACTION_DROP -> value.drop(ev)
+                    else -> true
+                }
+            }
+        }
+
 
     actual override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean) {
         generateSequence(native) {
