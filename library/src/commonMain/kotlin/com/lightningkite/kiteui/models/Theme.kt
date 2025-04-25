@@ -226,6 +226,14 @@ data object WorkingSemantic : Semantic("wrk") {
     )
 }
 
+data object ListSemantic : Semantic("lst") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack
+}
+
+data object InsetSemantic : Semantic("inset") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
 data object CardSemantic : Semantic("crd") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }

@@ -6,10 +6,12 @@ import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
+import com.lightningkite.kiteui.views.l2.children
 
 @Routable("docs")
 object DocSearchPage : Page {
@@ -54,9 +56,8 @@ object DocSearchPage : Page {
                         }
                     }
                 }
-                expanding - recyclerView {
-                    new.log = ConsoleRoot.tag("r2")
-                    new.placer = RecyclerViewPlacerVerticalGrid(1).apply { log = ConsoleRoot.tag("placer") }
+                expanding - ListSemantic.onNext - recyclerView {
+                    placer = RecyclerViewPlacerVerticalGrid(1).apply { log = ConsoleRoot.tag("placer") }
                     children(shared {
                         docsPages().mapNotNull {
                             val q = query()
@@ -67,7 +68,7 @@ object DocSearchPage : Page {
                             if (matchingTerms.isEmpty()) return@mapNotNull null
                             it to matchingTerms
                         }
-                    }) {
+                    }, { it }) {
                         card - link {
                             ::to { it().first }
                             col {

@@ -613,6 +613,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .textarea-container {
               /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
               display: grid;
+              position: relative;
             }
             .textarea-container::after {
               /* Note the weird space! Needed to preventy jumpy behavior */
@@ -629,6 +630,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .textarea-container > textarea {
               /* You could leave this, but after a user resizes, then it ruins the auto sizing */
               resize: none;
+              position: absolute;
+              left: 0;
+              right: 0;
+              top: 0;
+              bottom: 0;
             }
             .textarea-container > textarea,
             .textarea-container::after {
@@ -961,8 +967,6 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             ?.let { addToCss(directSel, "text-transform", it.let { if (it) "uppercase" else "none" }) }
         theme.diff(diff) { font.lineSpacingMultiplier }
             ?.let { addToCss(directSel, "line-height", it.toString()) }
-        theme.diff(diff) { font.additionalLetterSpacing }
-            ?.let { addToCss(directSel, "letter-spacing", it.value) }
         theme.diff(diff) {
             when {
                 font.strikethrough && font.underline -> "underline line-through"

@@ -85,11 +85,17 @@ class Recycler2(
     init {
         with(viewWriter) {
             frame {
+                padding = 0.px
                 outerFrame = this
-                scrolling(vertical = vertical, horizontal = !vertical) {
+                beforeNextElementSetup {
+                    padding = 0.px
+                    themeTakeNonCascadingFromParent = true
+                } - scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
-                } - programmatic {
+                } - ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext - programmatic {
+                    padding = null
+                    themeTakeNonCascadingFromParent = true
 //                    viewDebugTarget = this
                     cells = this
                     unpadded - frame {

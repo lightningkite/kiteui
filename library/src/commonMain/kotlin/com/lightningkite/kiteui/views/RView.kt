@@ -98,6 +98,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     // Theming
 
     private val id = Random.nextInt()
+    var themeTakeNonCascadingFromParent: Boolean = false
+        set(value) {
+            field = value
+            refreshTheming()
+        }
     var themeChoice: ThemeDerivation = ThemeDerivation.none
         set(value) {
             field = value
@@ -120,8 +125,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
 
     protected val parentSpacing: Dimension
-        get() = (parent?.gap
-            ?: (parent?.themeAndBack?.theme?.gap)
+        get() = (parent?.padding
+            ?: (parent?.themeAndBack?.theme?.padding?.top)
             ?: 0.px)
     protected var fullyStarted = false
     abstract fun applyTheme(theme: ThemeAndBack)
@@ -139,8 +144,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             if (this == viewDebugTarget) println("refreshThemeing abandoned due to parent $parent not being fully started")
             return
         }
-        if (this == viewDebugTarget) println("refreshTheming will set!")
-        val t = applyState(themeChoice(parent?.themeAndBack?.theme?.let { it.revert ?: it } ?: Theme.placeholder))
+        val themeBorrowed = if(themeTakeNonCascadingFromParent) parent?.theme ?: Theme.placeholder
+        else parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
+        if (this == viewDebugTarget) println("refreshTheming will set!  Parent theme is ${themeBorrowed.id}")
+        val t = applyState(themeChoice(themeBorrowed))
         if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
         themeAndBack = t
     }
