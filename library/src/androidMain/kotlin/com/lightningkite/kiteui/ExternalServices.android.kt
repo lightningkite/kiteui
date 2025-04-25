@@ -14,14 +14,15 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.lightningkite.kiteui.views.AndroidAppContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import java.io.File
-import java.net.URI
 import kotlin.coroutines.resume
 
 actual object ExternalServices {
@@ -165,28 +166,42 @@ actual object ExternalServices {
     @SuppressLint("MissingPermission")
     actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
-        val permissionResult = AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (permissionResult.accepted) {
-            val base = AndroidAppContext.applicationCtx.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS).firstOrNull() ?: throw Exception("No external download directory; unable to download file")
-            downloadContinued(name, blob, base)
-        }
-    }
-    private suspend fun downloadContinued(name: String, blob: Blob, base: File): URI {
-        val nameWithoutExt = name.substringBeforeLast('.')
-        val nameExt = name.substringAfterLast('.', "").takeUnless { it.isBlank() } ?: MimeTypeMap.getSingleton().getExtensionFromMimeType(blob.type) ?: when(blob.type) {
-            "audio/mp4" -> "mp4"
-            else -> "file"
-        }
+        if(VERSION.SDK_INT < VERSION_CODES.Q) {
+            AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                if (it.accepted) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        if (!downloadsDir.exists()) downloadsDir.mkdirs()
+                        val file = File(downloadsDir, name)
+                        withContext(Dispatchers.IO) {
+                            file.writeBytes(blob.data)
+                        }
+                    }
+                }
+            }
+        } else {
+            val resolver = AndroidAppContext.applicationCtx.contentResolver
+            val mimeType = blob.type
+            val downloadsCollection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
-        var out = base.resolve("$nameWithoutExt.$nameExt")
-        var num = 2
-        while(out.exists()) {
-            out = base.resolve("$nameWithoutExt-$num.$nameExt")
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, name)
+                put(MediaStore.Downloads.MIME_TYPE, mimeType)
+                put(MediaStore.Downloads.IS_PENDING, 1)
+            }
+            val uri = resolver.insert(downloadsCollection, contentValues)
+                ?: return
+
+            withContext(Dispatchers.IO) {
+                resolver.openOutputStream(uri)?.use { output ->
+                    output.write(blob.data)
+                }
+            }
+            contentValues.clear()
+            contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+            resolver.update(uri, contentValues, null, null)
+            Toast.makeText(AndroidAppContext.activityCtx!!, "Download complete", Toast.LENGTH_SHORT).show()
         }
-        withContext(Dispatchers.IO) {
-            out.writeBytes(blob.data)
-        }
-        return out.toURI()
     }
 
     private fun <T> List<T>.identity(): T? = first().takeIf { all { it == first() } }
