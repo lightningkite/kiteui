@@ -50,6 +50,11 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         super.willAddChild(view)
     }
 
+    override fun internalAddChild(index: Int, view: RView) {
+        view.native.z = index.toFloat() // Coordinator Frame layout uses elevation by default to determine the z axis, so we have to set this ourselves
+        super.internalAddChild(index, view)
+    }
+
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
