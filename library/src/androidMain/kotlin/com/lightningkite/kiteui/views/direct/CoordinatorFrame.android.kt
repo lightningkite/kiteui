@@ -22,6 +22,7 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
+import com.lightningkite.kiteui.views.maybeThemeFromLast
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.readable.AppState
 import com.lightningkite.readable.Property
@@ -48,6 +49,11 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     override fun willAddChild(view: RView) {
         view.native.layoutParams = defaultLayoutParams()
         super.willAddChild(view)
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        view.native.z = index.toFloat() // Coordinator Frame layout uses elevation by default to determine the z axis, so we have to set this ourselves
+        super.internalAddChild(index, view)
     }
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
