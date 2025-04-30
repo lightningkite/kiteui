@@ -220,10 +220,6 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayoutButton()
 
-    val iconView = icon {
-        source = Icon.expand
-    }
-
     override fun postSetup() {
         super.postSetup()
         val e = bottomSheetState ?: return
@@ -236,9 +232,6 @@ actual class CoordinatorDragHandle actual constructor(context: RContext) : RView
                 }
             }
         })
-        iconView.reactive {
-            iconView.source = if (e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
-        }
     }
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
