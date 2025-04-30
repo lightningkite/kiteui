@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.models.ThemeDerivation.Companion.invoke
 import com.lightningkite.kiteui.models.UrlCacheStrategy
 import com.lightningkite.kiteui.views.RContext
 
@@ -95,7 +97,10 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                 buildList {
                     with(rView) {
                         for (imageSource in it.sources) {
+                            ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
                             add(rawImage(imageSource, it.description ?: "", it.scaleType) {
+                                themeTakeNonCascadingFromParent = true
+                                themeChoice
                                 opacity = 0.0
                                 reactive {
                                     this@rawImage.state.state().handle(
