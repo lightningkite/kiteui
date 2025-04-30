@@ -25,6 +25,8 @@ import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
 import com.lightningkite.kiteui.views.direct.h6
+import com.lightningkite.kiteui.views.direct.hintPopover
+import com.lightningkite.kiteui.views.direct.menuButton
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.openBottomSheet
 import com.lightningkite.kiteui.views.direct.recyclerView
@@ -132,49 +134,17 @@ class HomePage: Page {
             text("Version: ${Build.version}")
             // TODO: Getting Started
 
-            button {
-                h6 { content = "Launch Test bottomSheet" }
-                onClick {
-                    coordinatorFrame!!.bottomSheet(blockBehind = true, startState = BottomSheetState.PARTIALLY_EXPANDED) {
-                        DialogSemantic.onNext - col {
-                            centered - text("Holy sheet! Col")
-                            expanding - frame()
-                            atBottom - fieldTheme - textArea() {
-                                viewDebugTarget = this
-                                hint = "Test input"
-                                content.value = "Sample"
-                            }
-                        }
-                    }
-                }
-            }
-            button {
-                h6 { content = "Launch Test leftSlidingPanel" }
-                onClick {
-                    coordinatorFrame!!.leftSlidingPanel(blockBehind = false, ratio = 0.5f) {
-                        DialogSemantic.onNext - col {
-                            button {
-                                text("Close")
-                                onClick { it.close() }
-                            }
-                            h2("Left sheet")
-                            text("bottom text")
-                        }
-                    }
-                }
-            }
-            button {
-                h6 { content = "Launch Test rightSlidingPanel" }
-                onClick {
-                    coordinatorFrame!!.rightSlidingPanel(blockBehind = false, ratio = 0.5f) {
-                        DialogSemantic.onNext - col {
-                            button {
-                                text("Close")
-                                onClick { it.close() }
-                            }
-                            h2("Right sheet")
-                            text("bottom text")
-                        }
+
+            centered - menuButton {
+                text("open")
+                opensMenu {
+                    col {
+                        card - text("A")
+                        card - text("B")
+                        card - text("C")
+                        card - text("D")
+                        hintPopover { text("some hint") } - card - text("E")
+                        card - text("F")
                     }
                 }
             }

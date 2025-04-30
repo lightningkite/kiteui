@@ -68,22 +68,11 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 viewController.dismissViewControllerAnimated(true) {}
             }
         }
+        popoverCloser?.invoke()
+        popoverCloser = { control.close() }
         viewController.kiteUi(context.split()) {
-            closeSiblingPopovers()
-            val childCloser = BasicListenable()
-            var closeCurrent = {}
-            var stopListeningToCloser = {}
-            fun internalClose() {
-                stopListeningToCloser()
-                closeCurrent()
-                control.close()
-            }
-            stopListeningToCloser = popoverClosers.addListener {
-                childCloser.invokeAll()
-                internalClose()
-            }
-            rootPopoverCloser = childCloser
-            popoverClosers = childCloser
+            popoverParent = this@CoordinatorFrame
+            popoverCloser = null
 
             beforeNextElementSetup {
                 parent = this@CoordinatorFrame
