@@ -31,30 +31,36 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 KeyboardType.Email -> "email"
             }
 
+            val primaryAutocompleteValue: String?
             when (value.autocomplete) {
                 AutoComplete.Email -> {
                     native.attributes.type = "email"
-                    native.attributes.autocomplete = "email"
+                    primaryAutocompleteValue = "email"
                 }
 
                 AutoComplete.Password -> {
                     native.attributes.type = "password"
-                    native.attributes.autocomplete = "current-password"
+                    primaryAutocompleteValue = "current-password"
                 }
 
                 AutoComplete.NewPassword -> {
                     native.attributes.type = "password"
-                    native.attributes.autocomplete = "new-password"
+                    primaryAutocompleteValue = "new-password"
                 }
 
                 AutoComplete.Phone -> {
-                    native.attributes.autocomplete = "tel"
+                    primaryAutocompleteValue = "tel"
                 }
 
-                AutoComplete.OneTimeCode,null -> {
-                    native.attributes.autocomplete = "off"
+                AutoComplete.OneTimeCode, null -> {
+                    primaryAutocompleteValue = null
                 }
             }
+
+            native.attributes.autocomplete = listOfNotNull(
+                primaryAutocompleteValue,
+                "webauthn".takeIf { value.includePasskeys }
+            ).joinToString(" ").takeIf { it.isNotEmpty() } ?: "off"
         }
     init {
         native.addEventListener("keyup") { ev ->
