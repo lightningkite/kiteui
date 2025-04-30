@@ -53,7 +53,7 @@ actual object ExternalServices {
     var currentPresenter: (UIViewController) -> Unit = {}
 
     fun present(vc: UIViewController) {
-        currentlyPresented?.takeIf { it.isViewLoaded() }?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
+        currentlyPresented?.takeIf { it.isBeingPresented() }?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
     }
 
     lateinit var rootView: UIView
