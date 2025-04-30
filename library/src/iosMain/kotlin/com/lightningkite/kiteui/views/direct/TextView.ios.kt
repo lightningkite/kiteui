@@ -75,6 +75,12 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             ))
         } else {
             val src = NSMutableAttributedString.create(originalHtml!!)
+
+            // There isn't a good way to determine if a color has been explicitly set in the HTML
+            // An NSForegroundColorAttribute is set either way
+            // For now, we blindly overwrite the base color for the HTML segment to match the KiteUI theme
+            src.addAttribute(NSForegroundColorAttributeName, theme.foreground.closestColor().toUiColor(), NSMakeRange(0U, src.length))
+
             src.enumerateAttribute(
                 NSFontAttributeName,
                 inRange = NSMakeRange(0U, src.length),
