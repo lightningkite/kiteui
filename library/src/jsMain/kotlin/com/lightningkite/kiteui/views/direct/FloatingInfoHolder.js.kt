@@ -201,6 +201,10 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 window.addEventListener("mousemove", mouseMove)
 
                 removeElementFromOverlay = {
+                    blockView?.let {
+                        source.overlayFrame!!.removeChild(it)
+                    }
+                    blockView = null
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
