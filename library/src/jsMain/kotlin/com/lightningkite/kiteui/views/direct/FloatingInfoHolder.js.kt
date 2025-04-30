@@ -55,29 +55,13 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
 
     actual fun open() {
         if (existingView != null) return
-        val writer = object : ViewWriter(), CalculationContext by source {
-            override val context: RContext = source.context.split()
-            override fun addChild(view: RView) = source.overlayFrame!!.addChild(view)
+        var removeElementFromOverlay = {}
+        val popoverWriter = source.popoverWriter(source.overlayFrame!!) {
+            removeElementFromOverlay()
         }
-        source.closeSiblingPopovers()
-        val childCloser = BasicListenable()
-        var closeCurrent = {}
-        var stopListeningToCloser = {}
-        fun close() {
-            stopListeningToCloser()
-            closeCurrent()
-            blockView?.let {
-                source.overlayFrame!!.removeChild(it)
-            }
-            blockView = null
-        }
-        stopListeningToCloser = source.popoverClosers.addListener {
-            childCloser.invokeAll()
-            close()
-        }
-        writer.popoverClosers = childCloser
-        with(writer) {
+        with(popoverWriter) {
             frame {
+                source.keepPopoverOpen(this)
                 currentDirection = preferredDirection
                 existingView = this
                 themeChoice = DialogSemantic
@@ -195,7 +179,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
 
                 val mouseMove = { it: Event ->
                     it as MouseEvent
-                    if (blockView == null) {
+                    if (blockView == null && popoverKeepOpen <= 0) {
                         val clientRect = (source.native.element as HTMLElement).getBoundingClientRect()
                         val popUpRect = (native.element as HTMLElement).getBoundingClientRect()
                         if (min(
@@ -216,7 +200,11 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 }
                 window.addEventListener("mousemove", mouseMove)
 
-                closeCurrent = {
+                removeElementFromOverlay = {
+                    blockView?.let {
+                        source.overlayFrame!!.removeChild(it)
+                    }
+                    blockView = null
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
@@ -238,6 +226,6 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     }
 
     actual fun close() {
-        source.closePopovers()
+        source.closeSiblingPopovers()
     }
 }

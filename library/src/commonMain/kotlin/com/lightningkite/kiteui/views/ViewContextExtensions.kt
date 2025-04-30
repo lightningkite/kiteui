@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -42,36 +43,34 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
 )
 val ViewWriter.navigator by ViewWriter::pageNavigator
 
-var ViewWriter.rootPopoverCloser by rContextAddon(BasicListenable())
-var ViewWriter.popoverClosers by rContextAddonGenerate { rootPopoverCloser }
+var ViewWriter.popoverParent by rContextAddonGenerate<ViewWriter?> { null }
+var ViewWriter.popoverCloser by rContextAddonGenerate<(() -> Unit)?> { null }
+var ViewWriter.popoverKeepOpen by rContextAddonGenerate<Int> { 0 }
+
 fun ViewWriter.closePopovers() {
-    rootPopoverCloser.invokeAll()
+    popoverCloser?.invoke()
+    popoverCloser = null
+    popoverParent?.closePopovers()
 }
-
 fun ViewWriter.closeSiblingPopovers() {
-    popoverClosers.invokeAll()
+    popoverCloser?.invoke()
+    popoverCloser = null
+}
+fun ViewWriter.keepPopoverOpen(lifecycle: CoroutineScope) {
+    popoverKeepOpen++
+    lifecycle.onRemove { popoverKeepOpen-- }
 }
 
-fun ViewWriter.popoverWriter(close: ()->Unit): ViewWriter {
+fun ViewWriter.popoverWriter(overlay: ViewWriter = this, close: ()->Unit): ViewWriter {
+    popoverCloser?.invoke()
+    popoverCloser = close
     val writer = object : ViewWriter(), CalculationContext by this {
         override val context: RContext = this@popoverWriter.context.split()
-        override fun willAddChild(view: RView) = this@popoverWriter.willAddChild(view)
-        override fun addChild(view: RView) = this@popoverWriter.addChild(view)
+        override fun willAddChild(view: RView) = overlay.willAddChild(view)
+        override fun addChild(view: RView) = overlay.addChild(view)
     }
-    this@popoverWriter.closeSiblingPopovers()
-    val childCloser = BasicListenable()
-    var closeCurrent = {}
-    var stopListeningToCloser = {}
-    fun internalClose() {
-        stopListeningToCloser()
-        closeCurrent()
-        close()
-    }
-    stopListeningToCloser = this@popoverWriter.popoverClosers.addListener {
-        childCloser.invokeAll()
-        internalClose()
-    }
-    writer.popoverClosers = childCloser
+    writer.popoverParent = this@popoverWriter
+    writer.popoverCloser = null
     return writer
 }
 
