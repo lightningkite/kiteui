@@ -202,16 +202,32 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
             native.tag = "div"
             native.classes.add("noInteraction")
             native.classes.add("kiteui-stack")
-            nativeAnimateHideBinding(default, condition)
+            native.attributes.hidden = !default
+            reactive {
+                if(areAnimationsEnabled && fullyStarted) {
+                    if(condition()) {
+                        nativeAnimateShow()
+                    } else {
+                        nativeAnimateHide()
+                    }
+                } else {
+                    native.attributes.hidden = !condition()
+                }
+            }
         }
         override fun internalAddChild(index: Int, view: RView) {
             super.internalAddChild(index, view)
+            view.themeTakeNonCascadingFromParent = true
             Frame.internalAddChildStack(this, index, view)
         }
+
+        override val mySpacingForChildren: Dimension
+            get() = parent?.mySpacingForChildren ?: 0.px
     })
     return object: ViewWrapper() {
         override fun view(): RView? = v
     }
 }
 
-internal expect fun RView.nativeAnimateHideBinding(default: Boolean, condition: ReactiveContext.() -> Boolean)
+internal expect fun RView.nativeAnimateShow()
+internal expect fun RView.nativeAnimateHide()

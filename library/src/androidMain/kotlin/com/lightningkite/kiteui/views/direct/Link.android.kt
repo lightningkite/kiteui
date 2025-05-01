@@ -21,11 +21,13 @@ actual class Link actual constructor(context: RContext): RView(context) {
             field = value
             native.setOnClickListener { view ->
                 value?.invoke()?.let { it ->
-                    launch { onNavigate() }
-                    if (resetsStack) {
-                        onNavigator.reset(it)
-                    } else {
-                        onNavigator.navigate(it)
+                    launch {
+                        onNavigate()
+                        if (resetsStack) {
+                            onNavigator.reset(it)
+                        } else {
+                            onNavigator.navigate(it)
+                        }
                     }
                 }
             }

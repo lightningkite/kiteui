@@ -20,12 +20,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
 import com.lightningkite.readable.onRemove
 import kotlin.math.min
 
@@ -216,8 +215,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val cr = when (val it = theme.cornerRadii) {
             is CornerRadii.ForceConstant -> it.value.value
             is CornerRadii.RatioOfSize -> if (it.ratio >= 0.5f) 9999f else it.ratio * min(native.width, native.height)
-            is CornerRadii.Constant -> min(parentSpacing.value, it.value.value)
-            is CornerRadii.RatioOfSpacing -> it.value * parentSpacing.value
+            is CornerRadii.Constant -> min((parent?.mySpacingForChildren ?: 0.px).value, it.value.value)
+            is CornerRadii.RatioOfSpacing -> it.value * (parent?.mySpacingForChildren ?: 0.px).value
             is CornerRadii.PerCorner -> it.value.value
         }
 

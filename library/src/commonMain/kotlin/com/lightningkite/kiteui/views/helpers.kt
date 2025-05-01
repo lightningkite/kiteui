@@ -126,14 +126,19 @@ fun <T, ID> RowOrCol.forEachById(
         val view: RView,
         val shown: Property<Boolean>
     ) {
-        var dead = false
+        var livenessIter = 0
+        fun show() {
+            livenessIter++
+            shown.value = true
+        }
         fun hide() {
-            if(dead) return
-            dead = true
+            val n = ++livenessIter
             shown.value = false
-            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
-                removeChild(view)
-                oldEarly.remove(this)
+            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
+                if(n == livenessIter) {
+                    removeChild(view)
+                    oldEarly.remove(this)
+                }
             }
         }
     }
@@ -154,7 +159,10 @@ fun <T, ID> RowOrCol.forEachById(
                     old[index].hide()
                 }
                 oldPos = matchIndex + 1
-                old[matchIndex].data.value = toRender
+                old[matchIndex].let {
+                    it.data.value = toRender
+                    it.show()
+                }
             } else {
                 val shown = Property(false)
                 val data = Property(toRender)
@@ -177,7 +185,7 @@ fun <T, ID> RowOrCol.forEachById(
                     view = view.rView,
                     shown = shown
                 ))
-                afterTimeout(16) { shown.value = true }
+                afterTimeout(1) { shown.value = true }
                 oldPos++
             }
         }
@@ -196,14 +204,19 @@ fun <T> RowOrCol.forEachAnimated(
         val view: RView,
         val shown: Property<Boolean>
     ) {
-        var dead = false
+        var livenessIter = 0
+        fun show() {
+            livenessIter++
+            shown.value = true
+        }
         fun hide() {
-            if(dead) return
-            dead = true
+            val n = ++livenessIter
             shown.value = false
-            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
-                removeChild(view)
-                oldEarly.remove(this)
+            afterTimeout(view.theme.transitionDuration.inWholeMilliseconds + 100) {
+                if(n == livenessIter) {
+                    removeChild(view)
+                    oldEarly.remove(this)
+                }
             }
         }
     }
@@ -215,6 +228,7 @@ fun <T> RowOrCol.forEachAnimated(
             var matchIndex = -1
             for(checkIndex in oldPos..<old.size) {
                 if(old[checkIndex].data == toRender) {
+                    old[checkIndex].show()
                     matchIndex = checkIndex
                     break
                 }
@@ -244,7 +258,7 @@ fun <T> RowOrCol.forEachAnimated(
                     view = view.rView,
                     shown = shown
                 ))
-                afterTimeout(16) { shown.value = true }
+                shown.value = true
                 oldPos++
             }
         }

@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
@@ -29,6 +30,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.shown = value
             native.attributes.hidden = !value
+            (parent as? RowOrCol)?.rerunOptimizedBottomMarginCalc()
         }
 
     override var visible: Boolean
@@ -122,7 +124,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         prevThemeClass = newClass
         native.classes.add(newClass)
 
-        native.setStyleProperty("--parentSpacing", parentSpacing.value)
+        native.setStyleProperty("--parentSpacing", parent?.mySpacingForChildren?.value ?: "0px")
         native.flushClasses()
     }
 
