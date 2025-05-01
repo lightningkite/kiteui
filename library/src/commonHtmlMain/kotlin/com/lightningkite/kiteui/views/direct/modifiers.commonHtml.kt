@@ -203,15 +203,24 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
             native.classes.add("noInteraction")
             native.classes.add("kiteui-stack")
             native.attributes.hidden = !default
+            var currentState = default
             reactive {
                 if(areAnimationsEnabled && fullyStarted) {
-                    if(condition()) {
-                        nativeAnimateShow()
-                    } else {
-                        nativeAnimateHide()
+                    val c = condition()
+                    if(c != currentState) {
+                        if (condition()) {
+                            nativeAnimateShow()
+                        } else {
+                            nativeAnimateHide()
+                        }
                     }
+                    currentState = c
                 } else {
-                    native.attributes.hidden = !condition()
+                    val c = condition()
+                    if(c != currentState) {
+                        native.attributes.hidden = !condition()
+                    }
+                    currentState = c
                 }
             }
         }
