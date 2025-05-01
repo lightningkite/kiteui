@@ -26,8 +26,12 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     }
     init {
         onRemove(native.setOnClick {
-            to?.let { UIApplication.sharedApplication.openURL(NSURL(string = it), mapOf<Any?, Any?>()) {} }
-            launch { onNavigate() }
+            to?.let { to ->
+                launch {
+                    onNavigate()
+                    UIApplication.sharedApplication.openURL(NSURL(string = to), mapOf<Any?, Any?>()) {}
+                }
+            }
         })
     }
 

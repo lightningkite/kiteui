@@ -21,13 +21,15 @@ actual class Link actual constructor(context: RContext): RView(context) {
     }
     init {
         onRemove(native.setOnClick {
-            to?.invoke()?.let {
-                if(resetsStack) {
-                    onNavigator.reset(it)
-                } else {
-                    onNavigator.navigate(it)
+            to?.invoke()?.let { it ->
+                launch {
+                    onNavigate()
+                    if (resetsStack) {
+                        onNavigator.reset(it)
+                    } else {
+                        onNavigator.navigate(it)
+                    }
                 }
-                launch { onNavigate() }
             }
         })
     }

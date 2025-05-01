@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.toObjcId
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
@@ -332,7 +333,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 }
 
                 zPosition = -99999.0
-                parentSpacing = this@RView.parentSpacing.value
+                parentSpacing = (parent?.mySpacingForChildren ?: 0.px).value
                 desiredCornerRadius = theme.theme.cornerRadii
 
                 val bounds = this@RView.native.layerSize()
