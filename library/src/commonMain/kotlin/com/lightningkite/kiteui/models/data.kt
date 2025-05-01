@@ -84,7 +84,7 @@ data class Icon(
         viewBoxWidth,
         viewBoxHeight,
         pathDatas.map { ImageVector.Path(color, null, 0.0, null, it) } + strokePathDatas.map {
-            ImageVector.Path(null, color.closestColor(), it.strokeWidth.px, it.strokeLineCap, it.path)
+            ImageVector.Path(it.fill, color.closestColor(), it.strokeWidth.px, it.strokeLineCap, it.path)
         }
     )
 
