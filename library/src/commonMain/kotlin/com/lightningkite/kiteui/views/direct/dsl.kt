@@ -362,7 +362,7 @@ inline fun ViewWriter.recyclerView(setup: Recycler2.() -> Unit = {}): Recycler2 
 @ViewDsl
 inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return Recycler2(this, true).apply {
+    return Recycler2(this, false).apply {
 
         placer = RecyclerViewPagingPlacer()
         snapToElements = Align.Center
