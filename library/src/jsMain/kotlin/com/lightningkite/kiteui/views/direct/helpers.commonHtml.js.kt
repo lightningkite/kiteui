@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.readable.BaseListenable
 import com.lightningkite.readable.Listenable
 import com.lightningkite.kiteui.views.*
@@ -84,14 +85,35 @@ fun HTMLElement.measureByDuplicate(max: Size): Size {
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
     clone.style.visibility = "hidden"
-    clone.style.width = "unset"
-    clone.style.height = "unset"
-    clone.style.maxWidth = "${max.width}px"
-    clone.style.maxHeight = "${max.height}px"
+    clone.style.width = if(max.width < 9999.0) "${max.width}px" else "unset"
+    clone.style.height = if(max.height < 9999.0) "${max.height}px" else "unset"
+    clone.style.maxWidth = "unset"
+    clone.style.maxHeight = "unset"
     clone.style.position = "fixed"
     document.body!!.appendChild(clone)
     val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
     document.body!!.removeChild(clone)
+//    console.log("Measuring by duplicate with max size $sizeConstraints got ${out}", this)
+    return out
+}
+
+fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
+    // This is nasty, but this is the only cross-browser safe way to do this.
+    // We clone the view and check its size.
+    val clone = this.cloneNode(true) as HTMLElement
+    clone.style.visibility = "hidden"
+    clone.style.minWidth = sizeConstraints.minWidth?.value ?: "unset"
+    clone.style.maxWidth = sizeConstraints.maxWidth?.value ?: "unset"
+    clone.style.minHeight = sizeConstraints.minHeight?.value ?: "unset"
+    clone.style.maxHeight = sizeConstraints.maxHeight?.value ?: "unset"
+//    clone.style.aspectRatio = sizeConstraints.aspectRatio?.value ?: "unset"
+    clone.style.width = sizeConstraints.width?.value ?: "unset"
+    clone.style.height = sizeConstraints.height?.value ?: "unset"
+    clone.style.position = "fixed"
+    document.body!!.appendChild(clone)
+    val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
+    document.body!!.removeChild(clone)
+//    console.log("Measuring by duplicate with max size $sizeConstraints got ${out}", this)
     return out
 }
 

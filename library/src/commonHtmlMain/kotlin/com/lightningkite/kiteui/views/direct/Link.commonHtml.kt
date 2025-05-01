@@ -18,13 +18,13 @@ actual class Link actual constructor(context: RContext) : RView(context) {
             it.preventDefault()
             val destination = to?.invoke()
             if(destination != null) {
-                if (resetsStack) {
-                    onNavigator.reset(destination)
-                } else {
-                    onNavigator.navigate(destination)
-                }
-                onNavigate?.let {
-                    launch { it() }
+                launch {
+                    onNavigate()
+                    if (resetsStack) {
+                        onNavigator.reset(destination)
+                    } else {
+                        onNavigator.navigate(destination)
+                    }
                 }
             }
         }

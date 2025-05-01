@@ -3,6 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
@@ -143,8 +145,22 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
                     if(view.native.style.width.isNullOrEmpty()) view.native.style.width = "100%"
                 }
             }
+        }
+    }
+
+    override fun postSetup() {
+        super.postSetup()
+        rerunOptimizedBottomMarginCalc()
+    }
+
+    fun rerunOptimizedBottomMarginCalc() {
+        if(!complex) {
+            val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
             val amnt = gap ?: theme.gap
-            view.native.style.marginBottom = amnt.value
+            for (child in children) child.native.style.marginBottom = amnt.value
+            if(this == viewDebugTarget)
+                println("last shown index: ${children.indexOf(newLastShownElement)}")
+            newLastShownElement?.native?.style?.marginBottom = "0"
         }
     }
 
@@ -156,12 +172,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
     }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        if (!complex) {
-            val amnt = gap ?: theme.gap
-            for (child in children) {
-                child.native.style.marginBottom = amnt.value
-            }
-        }
+        rerunOptimizedBottomMarginCalc()
     }
     private fun enterFlexMode() {
         if (!complex) {
