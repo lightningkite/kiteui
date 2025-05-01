@@ -846,12 +846,11 @@ class Recycler2(
             } ?: run {
                 // Don't update the center index if we've just executed a scroll jump; it will be wrong as cell positions
                 // have not yet updated
-                val newCenterIndex = activeCells.minByOrNull {
+                _centerIndex.value = activeCells.minByOrNull {
                     val dx = it.centerX - viewport.centerX
                     val dy = it.centerY - viewport.centerY
                     dx * dx + dy * dy
                 }?.index ?: 0
-                _centerIndex.value = newCenterIndex
             }
             _displayedRangeFirst.value = (activeCells.minOfOrNull { it.index } ?: 0)
             _displayedRangeLast.value = (activeCells.maxOfOrNull { it.index } ?: 0)
