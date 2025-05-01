@@ -40,6 +40,14 @@ actual class Video actual constructor(context: RContext) : RView(context) {
 
     val controller = AVPlayerViewController().apply {
         delegate = ios
+
+        // Most UIViews use UIViewAutoresizingNone by default, but AVPlayerViewController does not and causes
+        // contention with size and positioning logic in KiteUI
+        view.autoresizingMask = UIViewAutoresizingNone
+
+        // AVPlayerViewController sets black as the default background color which interferes with the background color
+        // set by the KiteUI theme
+        view.backgroundColor = UIColor.colorWithWhite(0.0, 0.0)
     }
     override val native = controller.view
 
