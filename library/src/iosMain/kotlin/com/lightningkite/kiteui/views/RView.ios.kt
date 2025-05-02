@@ -241,6 +241,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null
+
+    /**
+     * No matter how we set the zPosition or the "at" argument of the insertSublayer call, layers always cover the
+     * content of UIImageView elements. Thus, we require a method of disabling the KiteUI background drawing entirely
+     * for subclasses of RView. In this way, themes with a back may be applied so that corner radius is respected
+     * without drawing anything that would cover the content of the view.
+     */
+    protected open val disableBackground = false
+
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
@@ -281,51 +290,53 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             previousLoadAnimationHandle = null
             with(layer) {
                 if (fullyApply) {
-                    when (val b = theme.theme.background) {
-                        is Color -> {
-                            val c = b.toUiColor().CGColor!!
-                            this.type = kCAGradientLayerAxial
-                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                            this.colors = listOf(c, c).map { it.toObjcId() }
-                            this.startPoint = CGPointMake(0.0, 0.0)
-                            this.endPoint = CGPointMake(1.0, 1.0)
-                        }
-
-                        is FadingColor -> {
-                            val c = b.base.toUiColor().CGColor!!
-                            this.type = kCAGradientLayerAxial
-                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                            this.colors = listOf(c, c).map { it.toObjcId() }
-                            this.startPoint = CGPointMake(0.0, 0.0)
-                            this.endPoint = CGPointMake(1.0, 1.0)
-                            previousLoadAnimationHandle = AppState.animationFrame.addListener {
-                                val i = Color.interpolate(
-                                    b.base,
-                                    b.alternate,
-                                    (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()
-                                ).toUiColor().CGColor!!
-                                this.colors = listOf(i, i).map { it.toObjcId() }
+                    if (!disableBackground) {
+                        when (val b = theme.theme.background) {
+                            is Color -> {
+                                val c = b.toUiColor().CGColor!!
+                                this.type = kCAGradientLayerAxial
+                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                this.colors = listOf(c, c).map { it.toObjcId() }
+                                this.startPoint = CGPointMake(0.0, 0.0)
+                                this.endPoint = CGPointMake(1.0, 1.0)
                             }
-                        }
 
-                        is LinearGradient -> {
-                            this.type = kCAGradientLayerAxial
-                            this.locations = b.stops.map {
-                                NSNumber.numberWithFloat(it.ratio)
+                            is FadingColor -> {
+                                val c = b.base.toUiColor().CGColor!!
+                                this.type = kCAGradientLayerAxial
+                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                this.colors = listOf(c, c).map { it.toObjcId() }
+                                this.startPoint = CGPointMake(0.0, 0.0)
+                                this.endPoint = CGPointMake(1.0, 1.0)
+                                previousLoadAnimationHandle = AppState.animationFrame.addListener {
+                                    val i = Color.interpolate(
+                                        b.base,
+                                        b.alternate,
+                                        (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()
+                                    ).toUiColor().CGColor!!
+                                    this.colors = listOf(i, i).map { it.toObjcId() }
+                                }
                             }
-                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
-                            this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
-                            this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
-                        }
 
-                        is RadialGradient -> {
-                            this.type = kCAGradientLayerRadial
-                            this.locations = b.stops.map {
-                                NSNumber.numberWithFloat(it.ratio)
+                            is LinearGradient -> {
+                                this.type = kCAGradientLayerAxial
+                                this.locations = b.stops.map {
+                                    NSNumber.numberWithFloat(it.ratio)
+                                }
+                                this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                                this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
+                                this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
                             }
-                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
-                            this.startPoint = CGPointMake(0.5, 0.5)
-                            this.endPoint = CGPointMake(0.0, 0.0)
+
+                            is RadialGradient -> {
+                                this.type = kCAGradientLayerRadial
+                                this.locations = b.stops.map {
+                                    NSNumber.numberWithFloat(it.ratio)
+                                }
+                                this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                                this.startPoint = CGPointMake(0.5, 0.5)
+                                this.endPoint = CGPointMake(0.0, 0.0)
+                            }
                         }
                     }
                     borderWidth = theme.theme.outlineWidth.value

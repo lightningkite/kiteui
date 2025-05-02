@@ -94,6 +94,8 @@ actual abstract class RawImageViewLike constructor(
         }
         else -> null
     }
+
+    override val disableBackground = true
 }
 
 actual class RawImageView actual constructor(
