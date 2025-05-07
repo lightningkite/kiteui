@@ -14,12 +14,13 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
         native.addEventListener("click") {
+            onClick?.let { launch { it() } }
             if(newTab) return@addEventListener
             it.preventDefault()
             val destination = to?.invoke()
             if(destination != null) {
                 launch {
-                    onNavigate()
+                    onNavigate?.invoke()
                     if (resetsStack) {
                         onNavigator.reset(destination)
                     } else {
@@ -52,9 +53,14 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         }
     actual var resetsStack: Boolean = false
 
-    private var onNavigate: suspend () -> Unit = {}
+    private var onNavigate: (suspend () -> Unit)? = null
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
+    }
+
+    private var onClick: (suspend () -> Unit)? = null
+    actual fun onClick(action: suspend () -> Unit): Unit {
+        onClick = action
     }
 
     actual inline var enabled: Boolean
