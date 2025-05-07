@@ -5,10 +5,12 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -33,7 +35,10 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         this.delegate = this@TextArea.delegate
         this.textContainerInset = UIEdgeInsetsMake(0.0, 0.0, 0.0, 0.0)
         this.textContainer.lineFragmentPadding = 0.0
-        inputAccessoryView = UIToolbar().apply {
+
+        // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+        // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+        inputAccessoryView = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
             barStyle = UIBarStyleDefault
             setTranslucent(true)
             sizeToFit()
