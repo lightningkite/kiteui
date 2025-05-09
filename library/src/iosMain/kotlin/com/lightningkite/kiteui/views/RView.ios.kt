@@ -96,20 +96,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.ignoreInteraction = value
             native.extensionIgnoreInteraction = value
-//        if (value) {
-//            val actionHolder = object : NSObject() {
-//                @ObjCAction
-//                fun eventHandler() {
-//                }
-//            }
-//            val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-//            native.addGestureRecognizer(rec)
-//            onRemove {
-//                // Retain the sleeve until disposed
-//                rec.enabled
-//                actionHolder.description
-//            }
-//        }
         }
 
     override var paddingByEdge: Edges?
@@ -122,23 +108,26 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    internal enum class Side { Left, Top, Right, Bottom}
+    internal enum class Side { Left, Top, Right, Bottom }
+
     internal open fun childTouches(side: Side, child: RView): Boolean = false
     protected var passedDownSafeInsets: Edges? = null
     internal fun handleSafeInsets(edges: Edges?) {
-        if(edges == null) {
-            if(passedDownSafeInsets != null) {
+        if (edges == null) {
+            if (passedDownSafeInsets != null) {
                 passedDownSafeInsets = null
-                for(child in children) {
+                for (child in children) {
                     child.handleSafeInsets(null)
                 }
             }
             return
         }
+//        println("$this.handleSafeInsets($edges)")
         val padding = paddingByEdge ?: when {
             !themeAndBack.padding -> Edges.ZERO
             else -> themeAndBack.theme.padding
         }
+
         fun shouldApply(side: Side, alreadyHasPadding: Boolean): Boolean {
             return generateSequence(this) { it.parent }
                 .zipWithNext()
@@ -155,13 +144,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val shouldApplyRight = shouldApply(Side.Right, padding.right.value > 0)
         val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
         val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+//        println("  shouldApplyLeft = $shouldApplyLeft")
+//        println("  shouldApplyTop = $shouldApplyTop")
+//        println("  shouldApplyRight = $shouldApplyRight")
+//        println("  shouldApplyBottom = $shouldApplyBottom")
         val toPassDown = if (!shouldApplyAny) {
             val newValue = null
-//            if(native.extensionSafeInsetPadding != newValue) {
 //            println("native.extensionSafeInsetPadding = $newValue")
-                native.extensionSafeInsetPadding = newValue
-                native.informParentOfSizeChange()
-//            }
+            native.extensionSafeInsetPadding = newValue
+            native.informParentOfSizeChange()
             edges
         } else {
             val newValue = Edges(
@@ -170,11 +161,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 right = if (shouldApplyRight) edges.right else 0.px,
                 bottom = if (shouldApplyBottom) edges.bottom else 0.px,
             )
-//            if(native.extensionSafeInsetPadding != newValue) {
-//            println("native.extensionSafeInsetPadding = $newValue")
-                native.extensionSafeInsetPadding = newValue
-                native.informParentOfSizeChange()
-//            }
+//            println("  native.extensionSafeInsetPadding = $newValue")
+            native.extensionSafeInsetPadding = newValue
+            native.informParentOfSizeChange()
             Edges(
                 left = if (shouldApplyLeft) 0.px else edges.left,
                 top = if (shouldApplyTop) 0.px else edges.top,
@@ -221,7 +210,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
     }
-
 
 
     // drag 'n drop

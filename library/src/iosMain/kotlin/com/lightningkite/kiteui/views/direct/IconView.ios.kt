@@ -76,7 +76,7 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
     override fun layoutSubviews() {
         super.layoutSubviews()
         val currentSize = bounds.useContents { size.width to size.height }
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val contentAreaSize = currentSize.first - padding.horizontalSum.value to currentSize.second - padding.verticalSum.value
 
         val scale = min(contentAreaSize.first / iconOriginalSize.first, contentAreaSize.second / iconOriginalSize.second)
@@ -91,7 +91,7 @@ actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingR
     }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val scaleFactor = preferredScaleFactor()
         return CGSizeMake(
             icon?.width?.value?.let { it * scaleFactor + padding.horizontalSum.value } ?: 0.0,

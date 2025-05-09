@@ -31,43 +31,57 @@ val appTheme = Property<Theme>(defaultTheme)
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true
     return appBase(navigator, dialog) {
-        swapView {
-            swapping(
-                current = { appNavFactory() },
-                views = {
-                    it(this, {
-                        appName = "KiteUI Sample App"
-                        ::navItems {
-                            listOf(
-                                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-                                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                            )
-                        }
+        appNavFactory.value.invoke(this){
+            appName = "KiteUI Sample App"
+            ::navItems {
+                listOf(
+                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                    NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                )
+            }
 
-                        ::exists {
-                            navigator.currentPage() !is UseFullPage
-                        }
+            ::exists {
+                navigator.currentPage() !is UseFullPage
+            }
 
-                        actions = listOf(
-                            NavLink(
-                                title = { "Search" },
-                                icon = { Icon.search },
-                                destination = { { DocSearchPage } }
-                            ),
-//            NavExternal(
-//                title = { "Open Source" },
-//                icon = { Icon.download },
-//                to = {
-//                    val className = mainPageNavigator.currentPage()!!::class.toString().removePrefix("class ")
-//                    "https://github.com/lightningkite/kiteui/main/${className}"
-//                }
-//            )
-                        )
-                    })
-                }
+            actions = listOf(
+                NavLink(
+                    title = { "Search" },
+                    icon = { Icon.search },
+                    destination = { { DocSearchPage } }
+                ),
             )
         }
+//        swapView {
+//            swapping(
+//                current = { appNavFactory() },
+//                views = {
+//                    it(this, {
+//                        appName = "KiteUI Sample App"
+//                        ::navItems {
+//                            listOf(
+//                                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+//                                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+//                                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+//                            )
+//                        }
+//
+//                        ::exists {
+//                            navigator.currentPage() !is UseFullPage
+//                        }
+//
+//                        actions = listOf(
+//                            NavLink(
+//                                title = { "Search" },
+//                                icon = { Icon.search },
+//                                destination = { { DocSearchPage } }
+//                            ),
+//                        )
+//                    })
+//                }
+//            )
+//        }
     }
 }
 
