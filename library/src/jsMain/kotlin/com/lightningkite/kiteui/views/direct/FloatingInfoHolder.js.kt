@@ -184,6 +184,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                                 }
 
                                 Align.Stretch -> {
+                                    ty = 0.0
+                                    tym = 0
                                     e.style.top = "0px"
                                     e.style.bottom = "0px"
                                 }
@@ -213,6 +215,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                                 }
 
                                 Align.Stretch -> {
+                                    tx = 0.0
+                                    txm = 0
                                     e.style.left = "0px"
                                     e.style.right = "0px"
                                 }
