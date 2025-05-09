@@ -21,9 +21,10 @@ actual class Link actual constructor(context: RContext): RView(context) {
     }
     init {
         onRemove(native.setOnClick {
+            onClick?.let { launch { it() } }
             to?.invoke()?.let { it ->
                 launch {
-                    onNavigate()
+                    onNavigate?.invoke()
                     if (resetsStack) {
                         onNavigator.reset(it)
                     } else {
@@ -39,9 +40,14 @@ actual class Link actual constructor(context: RContext): RView(context) {
     actual var newTab: Boolean = false
     actual var resetsStack: Boolean = false
 
-    private var onNavigate: suspend () -> Unit = {}
+    private var onNavigate: (suspend () -> Unit)? = null
     actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
+    }
+
+    private var onClick: (suspend () -> Unit)? = null
+    actual fun onClick(action: suspend () -> Unit): Unit {
+        onClick = action
     }
 
     actual var enabled: Boolean

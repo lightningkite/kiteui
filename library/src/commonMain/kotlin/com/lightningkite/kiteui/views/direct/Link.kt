@@ -13,5 +13,6 @@ expect class Link(context: RContext) : RView {
     var onNavigator: PageNavigator
     var newTab: Boolean
     var resetsStack: Boolean
+    fun onClick(action: suspend () -> Unit)
     fun onNavigate(action: suspend () -> Unit)
 }
