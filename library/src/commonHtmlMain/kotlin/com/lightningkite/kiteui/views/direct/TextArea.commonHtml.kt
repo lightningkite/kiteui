@@ -18,7 +18,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         style.resize = "none"
         addEventListener("keydown") { ev ->
             ev as KeyboardEvent
-            if (ev.code == KeyCodes.enter && !ev.shiftKey && !ev && action != null) {
+            if (ev.code == KeyCodes.enter && !ev.shiftKey && action != null) {
                 action?.startAction(this@TextArea)
                 ev.preventDefault()
                 ev.stopImmediatePropagation()
