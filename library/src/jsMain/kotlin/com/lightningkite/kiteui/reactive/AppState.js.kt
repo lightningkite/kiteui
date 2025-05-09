@@ -24,7 +24,7 @@ actual object AppState {
         WindowStatistics(
             width = Dimension(window.innerWidth.toString() + "px"),
             height = Dimension(window.innerHeight.toString() + "px"),
-            density = 1f
+            density = window.devicePixelRatio.toFloat()
         )
     ).also {
         window.addEventListener("resize", { ev ->
