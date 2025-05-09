@@ -147,8 +147,6 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                                     proposed.top >= screen.top && proposed.bottom <= screen.bottom
                             }
 
-                        println("Actual is $currentDirection")
-
                         if(currentDirection == null) {
                             closeButton()
                             e.style.left = "0px"
