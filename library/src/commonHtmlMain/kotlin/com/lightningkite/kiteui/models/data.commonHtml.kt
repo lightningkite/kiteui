@@ -4,32 +4,62 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.encodeURIComponent
 
-actual typealias DimensionRaw = String
+actual data class DimensionRaw(
+    val px: Double = 0.0,
+    val rem: Double = 0.0,
+): Comparable<DimensionRaw> {
+    val roughPx get() = px + rem * 16
+    override fun toString(): String {
+        return when {
+            px == 0.0 -> "${rem}rem"
+            rem == 0.0 -> "${px}px"
+            else -> "calc(${px}px + ${rem}rem)"
+        }
+    }
+    override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
+}
+fun Dimension(
+    px: Double = 0.0,
+    rem: Double = 0.0,
+) = Dimension(DimensionRaw(px, rem))
+
 actual val Int.px: Dimension
-    get() = Dimension("${this}px")
+    get() = Dimension(px = this.toDouble())
 
 actual val Int.rem: Dimension
-    get() = Dimension("${this}rem")
+    get() = Dimension(rem = this.toDouble())
 
 actual val Double.rem: Dimension
-    get() = Dimension("${this}rem")
+    get() = Dimension(rem = this)
 
 actual val Int.dp: Dimension
-    get() = Dimension("${this}px")
+    get() = Dimension(px = this.toDouble())
 
 actual val Double.dp: Dimension
-    get() = Dimension("${this}px")
+    get() = Dimension(px = this)
 
-actual inline operator fun Dimension.plus(other: Dimension): Dimension = Dimension("calc(${this.value} + ${other.value})")
-actual inline operator fun Dimension.minus(other: Dimension): Dimension = Dimension("calc(${this.value} - ${other.value})")
-actual inline operator fun Dimension.times(other: Float): Dimension = Dimension("calc(${this.value} * ${other})")
-actual inline operator fun Dimension.div(other: Float): Dimension = Dimension("calc(${this.value} / ${other})")
-actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension("calc(min(${this.value}, ${other.value}))")
-actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension("calc(max(${this.value}, ${other.value}))")
+actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
+    px = this.value.px + other.value.px,
+    rem = this.value.rem + other.value.rem,
+)
+actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
+    px = this.value.px - other.value.px,
+    rem = this.value.rem - other.value.rem,
+)
+actual operator fun Dimension.times(other: Float): Dimension = Dimension(
+    px = this.value.px * other,
+    rem = this.value.rem * other,
+)
+actual operator fun Dimension.div(other: Float): Dimension = Dimension(
+    px = this.value.px / other,
+    rem = this.value.rem / other,
+)
+actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
+actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
-fun CornerRadii.toRawCornerRadius(): DimensionRaw = when (this) {
+fun CornerRadii.toRawCornerRadius(): String = when (this) {
     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
-    is CornerRadii.ForceConstant -> value.value
+    is CornerRadii.ForceConstant -> value.value.toString()
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
     is CornerRadii.RatioOfSpacing -> "calc(var(--parentSpacing, 0px) * ${value})"
     is CornerRadii.PerCorner -> listOf(this.topLeft, this.topRight,  this.bottomRight, this.bottomLeft).joinToString(" ") {
@@ -62,7 +92,7 @@ actual sealed class AudioSource actual constructor()
 actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
 fun Dimension.toBoxShadow(): String {
-    if (value == "0px")
+    if (value.roughPx == 0.0)
         return "none"
     val offsetX = 0.px.value
     val offsetY = value

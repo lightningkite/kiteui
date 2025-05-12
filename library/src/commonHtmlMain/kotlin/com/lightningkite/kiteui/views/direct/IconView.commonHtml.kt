@@ -24,8 +24,8 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
                 native.appendChild(FutureElement().apply {
                     tag = "svg"
                     xmlns = "http://www.w3.org/2000/svg"
-                    style.width = value.width.value
-                    style.height = value.height.value
+                    style.width = value.width.value.toString()
+                    style.height = value.height.value.toString()
                     setStyleProperty("fill", "currentColor")
                     setStyleProperty("stroke", "currentColor")
                     setStyleProperty("stroke-width", "0")
