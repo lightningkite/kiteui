@@ -4,16 +4,15 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import platform.CoreGraphics.CGRectMake
 
 
 actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
@@ -37,7 +36,9 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         backgroundColor = UIColor.clearColor
         delegate = NextFocusDelegateShared
         if (alwaysToolbar) {
-            inputAccessoryView = UIToolbar().apply {
+            // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+            // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+            inputAccessoryView = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
                 barStyle = UIBarStyleDefault
                 setTranslucent(true)
                 sizeToFit()

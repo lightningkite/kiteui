@@ -17,7 +17,9 @@ import kotlin.experimental.ExperimentalNativeApi
 class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
     val calculationContextWeak = WeakReference(calculationContext)
 
-    val toolbar = UIToolbar().apply {
+    // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+    // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+    val toolbar = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
         barStyle = UIBarStyleDefault
         setTranslucent(true)
         sizeToFit()

@@ -96,20 +96,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.ignoreInteraction = value
             native.extensionIgnoreInteraction = value
-//        if (value) {
-//            val actionHolder = object : NSObject() {
-//                @ObjCAction
-//                fun eventHandler() {
-//                }
-//            }
-//            val rec = UITapGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
-//            native.addGestureRecognizer(rec)
-//            onRemove {
-//                // Retain the sleeve until disposed
-//                rec.enabled
-//                actionHolder.description
-//            }
-//        }
         }
 
     override var paddingByEdge: Edges?
@@ -122,23 +108,26 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    internal enum class Side { Left, Top, Right, Bottom}
+    internal enum class Side { Left, Top, Right, Bottom }
+
     internal open fun childTouches(side: Side, child: RView): Boolean = false
     protected var passedDownSafeInsets: Edges? = null
     internal fun handleSafeInsets(edges: Edges?) {
-        if(edges == null) {
-            if(passedDownSafeInsets != null) {
+        if (edges == null) {
+            if (passedDownSafeInsets != null) {
                 passedDownSafeInsets = null
-                for(child in children) {
+                for (child in children) {
                     child.handleSafeInsets(null)
                 }
             }
             return
         }
+//        println("$this.handleSafeInsets($edges)")
         val padding = paddingByEdge ?: when {
             !themeAndBack.padding -> Edges.ZERO
             else -> themeAndBack.theme.padding
         }
+
         fun shouldApply(side: Side, alreadyHasPadding: Boolean): Boolean {
             return generateSequence(this) { it.parent }
                 .zipWithNext()
@@ -155,13 +144,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val shouldApplyRight = shouldApply(Side.Right, padding.right.value > 0)
         val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
         val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+//        println("  shouldApplyLeft = $shouldApplyLeft")
+//        println("  shouldApplyTop = $shouldApplyTop")
+//        println("  shouldApplyRight = $shouldApplyRight")
+//        println("  shouldApplyBottom = $shouldApplyBottom")
         val toPassDown = if (!shouldApplyAny) {
             val newValue = null
-//            if(native.extensionSafeInsetPadding != newValue) {
 //            println("native.extensionSafeInsetPadding = $newValue")
-                native.extensionSafeInsetPadding = newValue
-                native.informParentOfSizeChange()
-//            }
+            native.extensionSafeInsetPadding = newValue
+            native.informParentOfSizeChange()
             edges
         } else {
             val newValue = Edges(
@@ -170,11 +161,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 right = if (shouldApplyRight) edges.right else 0.px,
                 bottom = if (shouldApplyBottom) edges.bottom else 0.px,
             )
-//            if(native.extensionSafeInsetPadding != newValue) {
-//            println("native.extensionSafeInsetPadding = $newValue")
-                native.extensionSafeInsetPadding = newValue
-                native.informParentOfSizeChange()
-//            }
+//            println("  native.extensionSafeInsetPadding = $newValue")
+            native.extensionSafeInsetPadding = newValue
+            native.informParentOfSizeChange()
             Edges(
                 left = if (shouldApplyLeft) 0.px else edges.left,
                 top = if (shouldApplyTop) 0.px else edges.top,
@@ -223,7 +212,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
 
-
     // drag 'n drop
     override var dragData: DragData?
         get() = super.dragData
@@ -241,6 +229,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null
+
+    /**
+     * No matter how we set the zPosition or the "at" argument of the insertSublayer call, layers always cover the
+     * content of UIImageView elements. Thus, we require a method of disabling the KiteUI background drawing entirely
+     * for subclasses of RView. In this way, themes with a back may be applied so that corner radius is respected
+     * without drawing anything that would cover the content of the view.
+     */
+    protected open val disableBackground = false
+
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
@@ -281,51 +278,53 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             previousLoadAnimationHandle = null
             with(layer) {
                 if (fullyApply) {
-                    when (val b = theme.theme.background) {
-                        is Color -> {
-                            val c = b.toUiColor().CGColor!!
-                            this.type = kCAGradientLayerAxial
-                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                            this.colors = listOf(c, c).map { it.toObjcId() }
-                            this.startPoint = CGPointMake(0.0, 0.0)
-                            this.endPoint = CGPointMake(1.0, 1.0)
-                        }
-
-                        is FadingColor -> {
-                            val c = b.base.toUiColor().CGColor!!
-                            this.type = kCAGradientLayerAxial
-                            this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                            this.colors = listOf(c, c).map { it.toObjcId() }
-                            this.startPoint = CGPointMake(0.0, 0.0)
-                            this.endPoint = CGPointMake(1.0, 1.0)
-                            previousLoadAnimationHandle = AppState.animationFrame.addListener {
-                                val i = Color.interpolate(
-                                    b.base,
-                                    b.alternate,
-                                    (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()
-                                ).toUiColor().CGColor!!
-                                this.colors = listOf(i, i).map { it.toObjcId() }
+                    if (!disableBackground) {
+                        when (val b = theme.theme.background) {
+                            is Color -> {
+                                val c = b.toUiColor().CGColor!!
+                                this.type = kCAGradientLayerAxial
+                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                this.colors = listOf(c, c).map { it.toObjcId() }
+                                this.startPoint = CGPointMake(0.0, 0.0)
+                                this.endPoint = CGPointMake(1.0, 1.0)
                             }
-                        }
 
-                        is LinearGradient -> {
-                            this.type = kCAGradientLayerAxial
-                            this.locations = b.stops.map {
-                                NSNumber.numberWithFloat(it.ratio)
+                            is FadingColor -> {
+                                val c = b.base.toUiColor().CGColor!!
+                                this.type = kCAGradientLayerAxial
+                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                this.colors = listOf(c, c).map { it.toObjcId() }
+                                this.startPoint = CGPointMake(0.0, 0.0)
+                                this.endPoint = CGPointMake(1.0, 1.0)
+                                previousLoadAnimationHandle = AppState.animationFrame.addListener {
+                                    val i = Color.interpolate(
+                                        b.base,
+                                        b.alternate,
+                                        (sin(clockMillis() / 2000.0 * PI * 2) / 2 + 0.5).toFloat()
+                                    ).toUiColor().CGColor!!
+                                    this.colors = listOf(i, i).map { it.toObjcId() }
+                                }
                             }
-                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
-                            this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
-                            this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
-                        }
 
-                        is RadialGradient -> {
-                            this.type = kCAGradientLayerRadial
-                            this.locations = b.stops.map {
-                                NSNumber.numberWithFloat(it.ratio)
+                            is LinearGradient -> {
+                                this.type = kCAGradientLayerAxial
+                                this.locations = b.stops.map {
+                                    NSNumber.numberWithFloat(it.ratio)
+                                }
+                                this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                                this.startPoint = CGPointMake(-b.angle.cos() * .5 + .5, -b.angle.sin() * .5 + .5)
+                                this.endPoint = CGPointMake(b.angle.cos() * .5 + .5, b.angle.sin() * .5 + .5)
                             }
-                            this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
-                            this.startPoint = CGPointMake(0.5, 0.5)
-                            this.endPoint = CGPointMake(0.0, 0.0)
+
+                            is RadialGradient -> {
+                                this.type = kCAGradientLayerRadial
+                                this.locations = b.stops.map {
+                                    NSNumber.numberWithFloat(it.ratio)
+                                }
+                                this.colors = b.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
+                                this.startPoint = CGPointMake(0.5, 0.5)
+                                this.endPoint = CGPointMake(0.0, 0.0)
+                            }
                         }
                     }
                     borderWidth = theme.theme.outlineWidth.value

@@ -80,7 +80,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     var textSize: Dimension = 1.rem
         set(value) {
             field = value
-            native.style.fontSize = value.value
+            native.style.fontSize = value.value.toString()
         }
 
     actual var suggestions: List<String> = listOf()

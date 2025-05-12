@@ -99,7 +99,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizeLocal = size.local
         val measuredSize = Size()
 
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val sizes = calcSizes(sizeLocal, sizeLocal.primary == ScrollLayoutMeta.unboundSize)
         measuredSize.primary += padding.primaryStart
         var first = true
@@ -148,7 +148,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var t = PerformanceInfo.trace("calcSizeLinear")
 //        let size = padding.shrinkSize(size)
         val remaining = size.copy()
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         remaining.primary -= padding.primarySum
         remaining.secondary -= padding.secondarySum
 
@@ -224,7 +224,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     var lastLaidOutSize: Size? = null
     var lastLaidOutPadding: Edges? = null
     override fun layoutSubviews() {
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         if(subviews.any { it == viewDebugTarget?.native }) {
             println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
         }

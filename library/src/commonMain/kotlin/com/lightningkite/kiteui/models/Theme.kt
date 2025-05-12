@@ -289,7 +289,7 @@ data object DownSemantic : Semantic("dwn") {
 data object FocusSemantic : Semantic("fcs") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         outlineWidth = theme.outlineWidth + 2.dp,
-        outline = theme.outline.map { it.highlight(1f) },
+        outline = theme.background.map { it.highlight(1f) },
     )
 }
 

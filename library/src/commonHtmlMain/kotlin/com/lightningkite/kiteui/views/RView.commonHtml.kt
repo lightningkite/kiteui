@@ -44,17 +44,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         get() = super.gap
         set(value) {
             super.gap = value
-            native.setStyleProperty("--spacing", value?.value)
+            native.setStyleProperty("--spacing", value?.value?.toString())
         }
 
     override var paddingByEdge: Edges?
         get() = super.paddingByEdge
         set(value) {
             super.paddingByEdge = value
-            native.style.paddingLeft = value?.left?.value ?: "unset"
-            native.style.paddingTop = value?.top?.value ?: "unset"
-            native.style.paddingRight = value?.right?.value ?: "unset"
-            native.style.paddingBottom = value?.bottom?.value ?: "unset"
+            native.style.paddingLeft = value?.left?.value?.toString() ?: "unset"
+            native.style.paddingTop = value?.top?.value?.toString() ?: "unset"
+            native.style.paddingRight = value?.right?.value?.toString() ?: "unset"
+            native.style.paddingBottom = value?.bottom?.value?.toString() ?: "unset"
         }
 
     override var ignoreInteraction: Boolean
@@ -124,7 +124,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         prevThemeClass = newClass
         native.classes.add(newClass)
 
-        native.setStyleProperty("--parentSpacing", parent?.mySpacingForChildren?.value ?: "0px")
+        native.setStyleProperty("--parentSpacing", parent?.mySpacingForChildren?.value?.toString() ?: "0px")
         native.flushClasses()
     }
 

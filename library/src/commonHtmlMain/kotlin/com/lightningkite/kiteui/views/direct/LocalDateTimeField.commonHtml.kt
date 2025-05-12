@@ -57,7 +57,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
     var textSize: Dimension = 1.rem
         set(value) {
             field = value
-            native.style.fontSize = value.value
+            native.style.fontSize = value.value.toString()
         }
     actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
@@ -121,7 +121,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
     var textSize: Dimension = 1.rem
         set(value) {
             field = value
-            native.style.fontSize = value.value
+            native.style.fontSize = value.value.toString()
         }
     actual var range: ClosedRange<LocalDate>? = null
         set(value) {
@@ -184,7 +184,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
     var textSize: Dimension = 1.rem
         set(value) {
             field = value
-            native.style.fontSize = value.value
+            native.style.fontSize = value.value.toString()
         }
     actual var range: ClosedRange<LocalTime>? = null
         set(value) {

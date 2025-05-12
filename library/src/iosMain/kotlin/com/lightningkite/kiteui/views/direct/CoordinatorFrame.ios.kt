@@ -71,7 +71,6 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         popoverCloser?.invoke()
         popoverCloser = { control.close() }
         viewController.kiteUi(context.split()) {
-            popoverParent = this@CoordinatorFrame
             popoverCloser = null
 
             beforeNextElementSetup {
@@ -143,22 +142,25 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = null
             }
         }
-        val popoverWriter = popoverWriter { closePanel() }
+        val popoverWriter = popoverWriter(popoverRoot = true) { closePanel() }
         with(popoverWriter) {
             withoutAnimation {
                 val control = object : SlidingPanelControl {
                     override fun close() {
-                        closePopovers()
+                        this@CoordinatorFrame.closePopovers()
                     }
                 }
-                willRemove = if (ratio == null) {
-                    align(Align.Start, Align.Stretch) - content(control)
-                } else {
-                    row {
-                        gap = 0.px
-                        ignoreInteraction = true
-                        weight(ratio) - content(control)
-                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                willRemove = frame {
+                    overlayFrame = this
+                    if (ratio == null) {
+                        align(Align.Start, Align.Stretch) - content(control)
+                    } else {
+                        row {
+                            gap = 0.px
+                            ignoreInteraction = true
+                            weight(ratio) - content(control)
+                            weight(1f - ratio) - frame { ignoreInteraction = true }
+                        }
                     }
                 }.rView
             }
@@ -181,22 +183,25 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = null
             }
         }
-        val popoverWriter = popoverWriter { closePanel() }
+        val popoverWriter = popoverWriter(popoverRoot = true) { closePanel() }
         with(popoverWriter) {
             withoutAnimation {
                 val control = object : SlidingPanelControl {
                     override fun close() {
-                        closePopovers()
+                        this@CoordinatorFrame.closePopovers()
                     }
                 }
-                willRemove = if (ratio == null) {
-                    align(Align.End, Align.Stretch) - content(control)
-                } else {
-                    row {
-                        gap = 0.px
-                        ignoreInteraction = true
-                        weight(1f - ratio) - frame { ignoreInteraction = true }
-                        weight(ratio) - content(control)
+                willRemove = frame {
+                    overlayFrame = this
+                    if (ratio == null) {
+                        align(Align.End, Align.Stretch) - content(control)
+                    } else {
+                        row {
+                            gap = 0.px
+                            ignoreInteraction = true
+                            weight(1f - ratio) - frame { ignoreInteraction = true }
+                            weight(ratio) - content(control)
+                        }
                     }
                 }.rView
             }

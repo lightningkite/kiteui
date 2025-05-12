@@ -56,14 +56,6 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifia
                                 icon = { Icon.search },
                                 destination = { { DocSearchPage } }
                             ),
-//            NavExternal(
-//                title = { "Open Source" },
-//                icon = { Icon.download },
-//                to = {
-//                    val className = mainPageNavigator.currentPage()!!::class.toString().removePrefix("class ")
-//                    "https://github.com/lightningkite/kiteui/main/${className}"
-//                }
-//            )
                         )
                     })
                 }

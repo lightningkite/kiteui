@@ -16,30 +16,19 @@ import kotlin.math.min
 @Routable("sample/pong")
 object PongSamplePage : Page {
 
-    override fun ViewWriter.render() = scrolling - col {
-        sizeConstraints(maxHeight = 30.rem) - canvas {
-            val dg = PongDelegate()
-            delegate = dg
-            var last = clockMillis()
-            reactiveScope {
-                rerunOn(AppState.animationFrame)
-                val now = clockMillis()
-                val diff = now - last
-                last = now
-                dg.frame(diff / 1000.0)
-                dg.invalidate()
-            }
-        }
-        repeat(40) {
-            text("More content to test scrolling")
+    override fun ViewWriter.render() = canvas {
+        val dg = PongDelegate()
+        delegate = dg
+        var last = clockMillis()
+        reactiveScope {
+            rerunOn(AppState.animationFrame)
+            val now = clockMillis()
+            val diff = now - last
+            last = now
+            dg.frame(diff / 1000.0)
+            dg.invalidate()
         }
     }
-//    fun Canvas.onPointerHold(action: suspend (get: suspend ()->Point)->Unit) {
-//        action.createCoroutineUnintercepted(receiver = iterator, completion = )
-//        onPointerDown {
-//
-//        }
-//    }
 }
 
 
@@ -181,6 +170,7 @@ class PongDelegate : CanvasDelegate() {
     }
 
     override fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+        eventText = "$x / $width, $y / $height"
         return onPointerUp(id, x, y, width, height)
     }
 

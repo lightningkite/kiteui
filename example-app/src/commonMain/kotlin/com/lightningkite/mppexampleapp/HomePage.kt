@@ -57,16 +57,6 @@ class HomePage: Page {
     override val title: Readable<String> get() = Constant("KiteUI")
     override fun ViewWriter.render(): ViewModifiable = run {
         return article {
-//            launch {
-//                delay(100)
-//                openBottomSheet {
-//                    recyclerView {
-//                        children(Constant((1..100).toList()), id = { it }) {
-//                            card - text { ::content{ it().toString() } }
-//                        }
-//                    }
-//                }
-//            }
             centered - h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
@@ -132,22 +122,6 @@ class HomePage: Page {
             text("TODO")
             space()
             text("Version: ${Build.version}")
-            // TODO: Getting Started
-
-
-            centered - menuButton {
-                text("open")
-                opensMenu {
-                    col {
-                        card - text("A")
-                        card - text("B")
-                        card - text("C")
-                        card - text("D")
-                        hintPopover { text("some hint") } - card - text("E")
-                        card - text("F")
-                    }
-                }
-            }
         }
     }
 }

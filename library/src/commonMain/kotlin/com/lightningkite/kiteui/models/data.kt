@@ -574,6 +574,20 @@ data class PopoverPreferredDirection(
         val leftBottom: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.End)
         val leftTop: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Start)
         val leftCenter: PopoverPreferredDirection = PopoverPreferredDirection(true, after = false, align = Align.Center)
+        val all = listOf(
+            belowRight,
+            belowLeft,
+            belowCenter,
+            aboveRight,
+            aboveLeft,
+            aboveCenter,
+            rightBottom,
+            rightTop,
+            rightCenter,
+            leftBottom,
+            leftTop,
+            leftCenter,
+        )
     }
 
     fun forceLeft(): PopoverPreferredDirection = if (horizontal) copy(after = false) else copy(align = Align.Start)

@@ -78,7 +78,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val smallerSize = size.useContents {
             CGSizeMake(
                 width = width - padding.horizontalSum.value,
@@ -97,7 +97,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     override fun layoutSubviews() {
         super.layoutSubviews()
-        val padding = extensionPadding?.plus(extensionSafeInsetPadding) ?: Edges.ZERO
+        val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         gradientLayer?.frame = bounds
         bounds.useContents {
             val insetWidth = this@useContents.size.width - padding.horizontalSum.value

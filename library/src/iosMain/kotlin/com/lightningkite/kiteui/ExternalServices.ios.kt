@@ -49,10 +49,12 @@ actual object ExternalServices {
     )
 
     var currentlyPresented: UIViewController? = null
+        // Return null if the view controller is not in view (and cannot be used to present another view controller)
+        get() = field?.takeIf { it.viewLoaded && it.view.window != null }
     var currentPresenter: (UIViewController) -> Unit = {}
 
     fun present(vc: UIViewController) {
-        currentlyPresented?.takeIf { it.isBeingPresented() }?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
+        currentlyPresented?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
     }
 
     lateinit var rootView: UIView

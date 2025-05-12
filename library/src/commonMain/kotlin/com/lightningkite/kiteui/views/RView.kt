@@ -125,7 +125,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
 
     open val mySpacingForChildren: Dimension
-        get() = padding ?: themeAndBack.theme.padding.top
+        get()  {
+            val pad = padding ?: themeAndBack.theme.padding.top
+            val gap = gap ?: themeAndBack.theme.gap
+            return minOf(pad, gap)
+        }
     protected var fullyStarted = false
     abstract fun applyTheme(theme: ThemeAndBack)
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme

@@ -58,6 +58,7 @@ object RootPage : Page {
                     }
                 } in card
 
+                linkPage { PopoverTestingPage }
                 linkPage { SwapViewPage }
                 linkPage { DragPage }
                 linkPage { RichTextButtonPage }

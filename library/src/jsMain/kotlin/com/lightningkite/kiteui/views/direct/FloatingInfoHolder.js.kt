@@ -1,14 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
-import com.lightningkite.readable.BasicListenable
-import com.lightningkite.readable.CalculationContext
+import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.DOMRectInit
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
@@ -21,11 +24,26 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
     val theme get() = source.theme
     val maxDist = 32
     var blockView: RView? = null
+    var closeView: RView? = null
     var existingView: RView? = null
 
     actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     var currentDirection: PopoverPreferredDirection = preferredDirection
     actual var menuGenerator: Frame.() -> Unit = { space() }
+
+    fun closeButton() {
+        if (closeView != null) return
+        val o = source.overlayFrame ?: return
+        val v = existingView ?: return
+        with<RView, Unit>(o) {
+            beforeNextElementSetup { closeView = this } - atTopEnd - button {
+                icon(Icon.close, "Close")
+                onClick {
+                    close()
+                }
+            }
+        }
+    }
 
     actual fun block() {
         if (blockView != null) return
@@ -78,87 +96,131 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                 fun reposition() {
                     native.onElement { e ->
                         e as HTMLElement
-                        with(e) {
-                            for(i in 0..1) {
-                                val r = source.native.element!!.getBoundingClientRect()
-                                style.removeProperty("top")
-                                style.removeProperty("left")
-                                style.removeProperty("right")
-                                style.removeProperty("bottom")
-                                style.removeProperty("transform")
-                                if (currentDirection.horizontal) {
-                                    if (currentDirection.after) {
-                                        tx = r.right
-                                        txm = 0
-                                    } else {
-                                        tx = r.left
-                                        txm = -100
-                                    }
-                                    when (currentDirection.align) {
-                                        Align.Start -> {
-                                            ty = r.bottom
-                                            tym = -100
-                                        }
+                        val sourcePosition = source.native.element!!.getBoundingClientRect()
+                        val screen = document.body!!.getBoundingClientRect()
+                        val size = e.getBoundingClientRect()
+                        e.style.removeProperty("top")
+                        e.style.removeProperty("left")
+                        e.style.removeProperty("right")
+                        e.style.removeProperty("bottom")
+                        e.style.removeProperty("transform")
+                        val gap = 0
 
-                                        Align.End -> {
-                                            ty = r.top
-                                            tym = 0
-                                        }
-
-                                        else -> {
-                                            ty = (r.top + r.bottom) / 2
-                                            tym = -50
-                                        }
-                                    }
-                                } else {
-                                    if (currentDirection.after) {
-                                        ty = r.bottom
-                                        tym = 0
-                                    } else {
-                                        ty = r.top
-                                        tym = -100
-                                    }
-                                    when (currentDirection.align) {
-                                        Align.Start -> {
-                                            tx = r.right
-                                            txm = -100
-                                        }
-
-                                        Align.End -> {
-                                            tx = r.left
-                                            txm = 0
-                                        }
-
-                                        else -> {
-                                            tx = (r.left + r.right) / 2
-                                            txm = -50
-                                        }
-                                    }
+                        fun PopoverPreferredDirection.bounds(): DOMRect {
+                            return if(this.horizontal) {
+                                val x = if(this.after)
+                                    sourcePosition.right + gap
+                                else
+                                    sourcePosition.left - gap - size.width
+                                when(this.align) {
+                                    Align.Start -> DOMRect(x, sourcePosition.bottom - size.height, size.width, size.height)
+                                    Align.End -> DOMRect(x, sourcePosition.top, size.width, size.height)
+                                    Align.Center -> DOMRect(x, sourcePosition.centerY - size.height / 2, size.width, size.height)
+                                    Align.Stretch -> DOMRect(x, 0.0, size.width, screen.height)
                                 }
-                                style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
-
-                                val screen = document.body!!.getBoundingClientRect()
-                                val rect = e.getBoundingClientRect()
-                                var altered = false
-                                if (rect.right > screen.right) {
-                                    currentDirection = currentDirection.forceLeft()
-                                    altered = true
+                            } else {
+                                val y = if(this.after)
+                                    sourcePosition.bottom + gap
+                                else
+                                    sourcePosition.top - gap - size.height
+                                when(this.align) {
+                                    Align.Start -> DOMRect(sourcePosition.right - size.width, y, size.width, size.height)
+                                    Align.End -> DOMRect(sourcePosition.left, y, size.width, size.height)
+                                    Align.Center -> DOMRect(sourcePosition.centerX - size.width / 2, y, size.width, size.height)
+                                    Align.Stretch -> DOMRect(0.0, y, screen.width, size.height)
                                 }
-                                if (rect.left < screen.left) {
-                                    currentDirection = currentDirection.forceRight()
-                                    altered = true
-                                }
-                                if (rect.bottom > screen.bottom) {
-                                    currentDirection = currentDirection.forceTop()
-                                    altered = true
-                                }
-                                if (rect.top < screen.top) {
-                                    currentDirection = currentDirection.forceBottom()
-                                    altered = true
-                                }
-                                if(!altered) break
                             }
                         }
+                        val currentDirection = buildList {
+                            add(preferredDirection)
+                            for(otherAlign in Align.entries)
+                                add(preferredDirection.copy(align = otherAlign))
+                            for(otherAlign in listOf(preferredDirection.align)+Align.entries)
+                                add(preferredDirection.copy(after = !preferredDirection.after, align = otherAlign))
+                            val altAligns = if(preferredDirection.after) listOf(Align.End, Align.Center, Align.Start, Align.Stretch) else listOf(Align.Start, Align.Center, Align.End, Align.Stretch)
+                            for(otherAlign in altAligns)
+                                add(preferredDirection.copy(horizontal = !preferredDirection.horizontal, after = !preferredDirection.after, align = otherAlign))
+                        }
+                            .firstOrNull {
+                                val proposed = it.bounds()
+                                proposed.left >= screen.left && proposed.right <= screen.right &&
+                                    proposed.top >= screen.top && proposed.bottom <= screen.bottom
+                            }
+
+                        if(currentDirection == null) {
+                            closeButton()
+                            e.style.left = "0px"
+                            e.style.right = "0px"
+                            e.style.bottom = "0px"
+                            e.style.top = "0px"
+                            tx = 0.0
+                            ty = 0.0
+                            txm = 0
+                            tym = 0
+                        } else if (currentDirection.horizontal) {
+                            if (currentDirection.after) {
+                                tx = sourcePosition.right
+                                txm = 0
+                            } else {
+                                tx = sourcePosition.left
+                                txm = -100
+                            }
+                            when (currentDirection.align) {
+                                Align.Start -> {
+                                    ty = sourcePosition.bottom
+                                    tym = -100
+                                }
+
+                                Align.End -> {
+                                    ty = sourcePosition.top
+                                    tym = 0
+                                }
+
+                                Align.Center -> {
+                                    ty = (sourcePosition.top + sourcePosition.bottom) / 2
+                                    tym = -50
+                                }
+
+                                Align.Stretch -> {
+                                    ty = 0.0
+                                    tym = 0
+                                    e.style.top = "0px"
+                                    e.style.bottom = "0px"
+                                }
+                            }
+                        } else {
+                            if (currentDirection.after) {
+                                ty = sourcePosition.bottom
+                                tym = 0
+                            } else {
+                                ty = sourcePosition.top
+                                tym = -100
+                            }
+                            when (currentDirection.align) {
+                                Align.Start -> {
+                                    tx = sourcePosition.right
+                                    txm = -100
+                                }
+
+                                Align.End -> {
+                                    tx = sourcePosition.left
+                                    txm = 0
+                                }
+
+                                Align.Center -> {
+                                    tx = (sourcePosition.left + sourcePosition.right) / 2
+                                    txm = -50
+                                }
+
+                                Align.Stretch -> {
+                                    tx = 0.0
+                                    txm = 0
+                                    e.style.left = "0px"
+                                    e.style.right = "0px"
+                                }
+                            }
+                        }
+                        e.style.transform = "translate(${tx}px, ${ty}px) translate($txm%, $tym%)"
                     }
                 }
 
@@ -205,6 +267,10 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         source.overlayFrame!!.removeChild(it)
                     }
                     blockView = null
+                    closeView?.let {
+                        source.overlayFrame!!.removeChild(it)
+                    }
+                    closeView = null
                     window.removeEventListener("scroll", repos, true)
                     window.removeEventListener("mousemove", mouseMove)
                     native.onElement { e ->
@@ -218,6 +284,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                                 }, it.inWholeMilliseconds.toInt())
                             }
                         e.style.opacity = "0"
+                        e.style.setProperty("pointer-events", "none")
                     }
                     existingView = null
                 }
@@ -229,3 +296,6 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         source.closeSiblingPopovers()
     }
 }
+
+val DOMRect.centerY get() =  (top + bottom) / 2
+val DOMRect.centerX get() =  (left + right) / 2

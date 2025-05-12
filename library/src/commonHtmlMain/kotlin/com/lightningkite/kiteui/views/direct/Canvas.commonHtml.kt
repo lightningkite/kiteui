@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.*
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
 
@@ -28,35 +29,61 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             if(delegate?.onWheel(event.deltaX, event.deltaY, event.deltaZ) == true)
                 event.preventDefault()
         }
+        val dpr = AppState.windowInfo.value.density
         native.addEventListener("pointerdown") { event ->
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
-            if(delegate?.onPointerDown(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
-                event.preventDefault()
+            if(delegate?.onPointerDown(
+                    event.pointerId,
+                    (event.pageX - b.x) * dpr,
+                    (event.pageY - b.y) * dpr,
+                    (b.width) * dpr,
+                    (b.height) * dpr
+            ) == true) event.preventDefault()
         }
         native.addEventListener("pointermove") { event ->
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
-            if(delegate?.onPointerMove(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
-                event.preventDefault()
+            if(delegate?.onPointerMove(
+                    event.pointerId,
+                    (event.pageX - b.x) * dpr,
+                    (event.pageY - b.y) * dpr,
+                    (b.width) * dpr,
+                    (b.height) * dpr
+            ) == true) event.preventDefault()
         }
         native.addEventListener("pointerup") { event ->
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
-            if(delegate?.onPointerUp(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
-                event.preventDefault()
+            if(delegate?.onPointerUp(
+                    event.pointerId,
+                    (event.pageX - b.x) * dpr,
+                    (event.pageY - b.y) * dpr,
+                    (b.width) * dpr,
+                    (b.height) * dpr
+            ) == true) event.preventDefault()
         }
         native.addEventListener("pointercancel") { event ->
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
-            if(delegate?.onPointerCancel(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
-                event.preventDefault()
+            if(delegate?.onPointerCancel(
+                    event.pointerId,
+                    (event.pageX - b.x) * dpr,
+                    (event.pageY - b.y) * dpr,
+                    (b.width) * dpr,
+                    (b.height) * dpr
+            ) == true) event.preventDefault()
         }
         native.addEventListener("pointerleave") { event ->
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
-            if(delegate?.onPointerCancel(event.pointerId, event.pageX - b.x, event.pageY - b.y, b.width, b.height) == true)
-                event.preventDefault()
+            if(delegate?.onPointerCancel(
+                    event.pointerId,
+                    (event.pageX - b.x) * dpr,
+                    (event.pageY - b.y) * dpr,
+                    (b.width) * dpr,
+                    (b.height) * dpr
+            ) == true) event.preventDefault()
         }
         setupResizeListener()
     }
