@@ -23,6 +23,20 @@ object ExperimentPage : Page {
     val elementCount = Property(7)
 
     override fun ViewWriter.render(): ViewModifiable = run {
+        col {
+            val c = Property("")
+            text {
+                ::content { c() }
+            }
+            button {
+                text("Shorten")
+                onClick { c.value = "Short" }
+            }
+            button {
+                text("Lengthen")
+                onClick { c.value = "Some lengthier text" }
+            }
+        }
 //        col {
 //            card - col {
 //                val show = Property(false)
@@ -35,19 +49,20 @@ object ExperimentPage : Page {
 //                shownWhen { show() } - card - text { content = "B" }
 //            }
 //        }
-        sizeConstraints(height = 30.rem) - card - col {
-            val show = Property(false)
-            viewDebugTarget = this
-            expanding - card - text("A")
-            expanding - shownWhen { !show() } - card - text { content = "B" }
-            expanding - shownWhen { !show() } - card - text { content = "D" }
-            expanding - card - button {
-                onClick { show.value = !show.value }
-                text("OK")
-            }
-            expanding - shownWhen { show() } - card - text { content = "C" }
-            expanding - shownWhen { show() } - card - text { content = "E" }
-        }
+
+//        sizeConstraints(height = 30.rem) - card - col {
+//            val show = Property(false)
+//            viewDebugTarget = this
+//            expanding - card - text("A")
+//            expanding - shownWhen { !show() } - card - text { content = "B" }
+//            expanding - shownWhen { !show() } - card - text { content = "D" }
+//            expanding - card - button {
+//                onClick { show.value = !show.value }
+//                text("OK")
+//            }
+//            expanding - shownWhen { show() } - card - text { content = "C" }
+//            expanding - shownWhen { show() } - card - text { content = "E" }
+//        }
 
 //        var expanded = Property(-1)
 //        val items = shared { (1..elementCount()).toList() }

@@ -1,21 +1,35 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.locale.RenderSize
+import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.atBottomEnd
+import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
+import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Readable
+import com.lightningkite.readable.contains
 import com.lightningkite.readable.equalTo
+import com.lightningkite.readable.reactive
+import com.lightningkite.readable.sharedProcess
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlin.math.PI
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -24,505 +38,547 @@ object AvailableViews : DocPage {
     override val covers: List<String>
         get() = listOf("Available KiteUI Views")
 
+    fun ViewWriter.example(
+        name: String,
+        description: String,
+        code: String,
+        result: RowOrCol.() -> Unit
+    ): ViewModifiable {
+        return card - rowCollapsingToColumn(79.rem) {
+            weight(1f) - col {
+                gap = 0.25.rem
+                text(name)
+                subtext { setBasicHtmlContent(description) }
+            }
+            separator()
+            weight(3f) - rowCollapsingToColumn(40.rem) {
+                weight(2f) - scrollingHorizontally - code { content = code }
+                separator()
+                weight(1f) - col {
+                    result()
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalUuidApi::class)
     override fun ViewWriter.render(): ViewModifiable = run {
         article {
             titledSection("Available Views") {
-                text("Activity Indicator")
-                example("""
-                    centered - col {
-                         sizeConstraints(width = 2.rem, height = 2.rem) - centered - activityIndicator {  }
-                         centered - text("Loading...")
-                    }
-                """.trimIndent()) {
-                     centered - col {
-                         sizeConstraints(width = 2.rem, height = 2.rem) - centered - activityIndicator {  }
-                         centered - text("Loading...")
-                    }
+
+                titledSection("Containers") {
+                    example(
+                        name = "row",
+                        description = "Horizontal stuff",
+                        code = """
+                            row {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            row {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        }
+                    )
+                    example(
+                        name = "col",
+                        description = "Vertical stuff",
+                        code = """
+                            sizeConstraints(height = 10.rem) - col {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 10.rem) - col {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        }
+                    )
+                    example(
+                        name = "frame",
+                        description = "Stuff stacked on top of one another",
+                        code = """
+                            sizeConstraints(height = 10.rem) - card - frame {
+                                atTopStart - text("A")
+                                centered - text("B")
+                                atBottomEnd - text("C")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 10.rem) - frame {
+                                atTopStart - card - text("A")
+                                centered - card - text("B")
+                                atBottomEnd - card - text("C")
+                            }
+                        }
+                    )
                 }
-                text("AutoCompleteTextField")
-                example("""
-                    centered - col {
-                        autoCompleteTextField { keyboardHints = KeyboardHints() }
+
+                titledSection("Display Only") {
+                    example(
+                        name = "activityIndicator",
+                        description = "Creates a spinning icon to indicate loading",
+                        code = "activityIndicator()",
+                        result = { activityIndicator() }
+                    )
+                    example(
+                        name = "image",
+                        description = "Displays a changeable image.",
+                        code = """
+                    sizeConstraints(height = 8.rem) - image {
+                        source = ImageRemote(url = "https://picsum.photos/200/200")
                     }
-                """.trimIndent()) {
-                    centered - col {
-                        autoCompleteTextField { keyboardHints = KeyboardHints() }
-                    }
+                    """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 8.rem) - image {
+                                source = ImageRemote(url = "https://picsum.photos/200/200")
+                            }
+                        }
+                    )
+                    example(
+                        name = "video",
+                        description = "Displays a changeable video.",
+                        code = """
+                            sizeConstraints(height = 10.rem) - video {
+                                source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                                showControls = true
+                            }
+                    """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 10.rem) - video {
+                                source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                                showControls = true
+                            }
+                        }
+                    )
+                    example(
+                        name = "separator",
+                        description = "Creates a thin line in a row or column.",
+                        code = """
+                        text("ONE")
+                        separator {}
+                        text("TWO")
+                    """.trimIndent(),
+                        result = {
+                            text("ONE")
+                            separator {}
+                            text("TWO")
+                        }
+                    )
+                    example(
+                        name = "space",
+                        description = "Creates a thin line in a row or column.",
+                        code = """
+                        text("ONE")
+                        space()
+                        text("TWO")
+                        text("THREE")
+                    """.trimIndent(),
+                        result = {
+                            text("ONE")
+                            space()
+                            text("TWO")
+                            text("THREE")
+                        }
+                    )
+
+                    example(
+                        name = "textView",
+                        description = "Show a piece of text",
+                        code = """
+                        text("Hello world!")
+                        text { content = "Also, hello world." }
+                        text {
+                            setBasicHtmlContent("Supported tags can be found &lt;a href=\"https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview\">here</a>.
+                        }
+                    """.trimIndent(),
+                        result = {
+                            text("Hello world!")
+                            text { content = "Also, hello world." }
+                            text {
+                                setBasicHtmlContent("Supported tags can be found <a href=\"https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview\">here</a>.")
+                            }
+                        }
+                    )
                 }
-                text("Button")
-                example("""
-                    centered - col {
+                titledSection("Form Controls") {
+                    example(
+                        name = "button",
+                        description = "A button that triggers an action, which can be long-running.",
+                        code = """
                         button {
-                            action = Action("Button Pressed", icon = Icon.help) {
-                                toast(text = "Boom!!")
+                            text("A dangerous button")
+                            action = Action("Explode") {
+                                delay(1.seconds)
+                                toast("KABOOM!!!")
                             }
-                            text { content = "Press The Button!"}
-                        }
-                    }""") {
-                    centered - col {
-                        centered - sizeConstraints(width = 16.rem) - button {
-                            action = Action("Button Pressed", icon = Icon.help) {
-                                toast(text = "Boom!!")
-                            }
-                            centered - text { content = "Press The Button!"}
-                        }
-                    }
-                }
-//                text("Canvas, The canvas component matches the WEB Canvas Api,")
-                text {
-                    setBasicHtmlContent("""
-                        <p>Canvas, The canvas component is based off of the WEB Canvas Api, the following examples are from the MDN Canvas docs found here <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes">MDN Shapes Tutorial</a></p>
-                    """.trimIndent())
-                }
-                example("""
-                    centered - col {
-                        canvas {
-                            delegate = object : CanvasDelegate() {
-                                override fun draw(context: DrawingContext2D) = with(context) {
-                                    super.draw(context)
-
-                                    context.fillRect(25.0, 25.0, 100.0, 100.0)
-                                    context.clearRect(45.0, 45.0, 60.0, 60.0)
-                                    context.strokeRect(50.0, 50.0, 50.0, 50.0)
+                        } 
+                    """.trimIndent(),
+                        result = {
+                            button {
+                                text("A dangerous button")
+                                action = Action("Explode") {
+                                    delay(1.seconds)
+                                    toast("KABOOM!!!")
                                 }
                             }
                         }
-                        canvas {
-                            delegate = object : CanvasDelegate() {
-                                override fun draw(ctx: DrawingContext2D) = with(ctx) {
-                                    super.draw(ctx)
-
-                                    repeat(5) { i ->
-                                        repeat(4) { j ->
-                                            ctx.beginPath()
-                                            val x = 25.0 + j * 50.0 // x coordinate
-                                            val y = 25.0 + i * 50.0 // y coordinate
-                                            val radius = 20.0 // Arc radius
-                                            val startAngle = Angle(0.0) // Starting point on circle
-                                            val endAngle = Angle(PI + (PI * j) / 2) // End point on circle
-                                            val counterclockwise = i % 2 != 0 // clockwise or counterclockwise
-
-                                            ctx.appendArc(x, y, radius, startAngle, endAngle, counterclockwise)
-
-                                            if (i > 1) {
-                                                ctx.fill()
-                                            } else {
-                                                ctx.stroke()
-                                            }
+                    )
+                    example(
+                        name = "checkbox",
+                        description = "Used in forms to include things.",
+                        code = """
+                        col {
+                            val selected = Property<Set<String>>(setOf("Ketchup"))
+                            for(option in listOf("Ketchup", "Mustard", "Mayo")) {
+                                row {
+                                    centered - checkbox {
+                                        checked bind selected.contains(option)
+                                    }
+                                    centered - expanding - text(option)
+                                }
+                            }
+                            centered - text {
+                                ::content { "Include " + selected().joinToString(", ") }
+                            }
+                        }
+                    """.trimIndent(),
+                        result = {
+                            col {
+                                val selected = Property<Set<String>>(setOf("Ketchup"))
+                                for (option in listOf("Ketchup", "Mustard", "Mayo")) {
+                                    row {
+                                        centered - checkbox {
+                                            checked bind selected.contains(option)
                                         }
+                                        centered - expanding - text(option)
                                     }
                                 }
-                            }
-                        }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        canvas {
-                            delegate = object : CanvasDelegate() {
-                                override fun draw(context: DrawingContext2D) = with(context) {
-                                    super.draw(context)
-
-                                    context.fillPaint = Color.white
-                                    context.strokePaint = Color.white
-                                    context.fillRect(25.0, 25.0, 100.0, 100.0)
-                                    context.clearRect(45.0, 45.0, 60.0, 60.0)
-                                    context.strokeRect(50.0, 50.0, 50.0, 50.0)
+                                centered - text {
+                                    ::content { "Include " + selected().joinToString(", ") }
                                 }
                             }
                         }
-                        canvas {
-                            delegate = object : CanvasDelegate() {
-                                override fun draw(context: DrawingContext2D) = with(context) {
-                                    super.draw(context)
-                                    context.fillPaint = Color.white
-                                    context.strokePaint = Color.white
-                                    repeat(5) { i ->
-                                        repeat(4) { j ->
-                                            context.beginPath()
-                                            val x = 25.0 + j * 50.0 // x coordinate
-                                            val y = 25.0 + i * 50.0 // y coordinate
-                                            val radius = 20.0 // Arc radius
-                                            val startAngle = Angle(0.0) // Starting point on circle
-                                            val endAngle = Angle(PI + (PI * j) / 2) // End point on circle
-                                            val counterclockwise = i % 2 != 0 // clockwise or counterclockwise
-
-                                            context.appendArc(x, y, radius, startAngle, endAngle, counterclockwise)
-
-                                            if (i > 1) {
-                                                context.fill()
-                                            } else {
-                                                context.stroke()
-                                            }
+                    )
+                    example(
+                        name = "radioButton",
+                        description = "Used in forms to pick a single option.",
+                        code = """
+                        col {
+                            val selected = Property<String>("Chicken")
+                            centered - text("Pick one")
+                            for(option in listOf("Chicken", "Steak", "Shrimp")) {
+                                row {
+                                    centered - radioButton {
+                                        checked bind selected.equalTo(option)
+                                    }
+                                    centered - expanding - text(option)
+                                }
+                            }
+                            centered - text {
+                                ::content { "Meat selected: " + selected() }
+                            }
+                        }
+                    """.trimIndent(),
+                        result = {
+                            col {
+                                val selected = Property<String>("Chicken")
+                                centered - text("Pick one")
+                                for (option in listOf("Chicken", "Steak", "Shrimp")) {
+                                    row {
+                                        centered - radioButton {
+                                            checked bind selected.equalTo(option)
                                         }
+                                        centered - expanding - text(option)
                                     }
                                 }
-                            }
-                        }
-                    }
-                }
-                text("Checkbox")
-                example("""
-                    centered - col {
-                        var check: Checkbox
-                        sizeConstraints(width = 2.rem, height = 2.rem) - centered - checkbox {
-                            check = this
-                            enabled = true
-                        }
-                        centered - text {
-                            reactive {
-                                content = "Checkbox is ${'$'}{ if(check.checked()) "checked" else "not checked" }"
-                            }
-                        }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        var check: Checkbox
-                        sizeConstraints(width = 2.rem, height = 2.rem) - centered - checkbox {
-                            check = this
-                            enabled = true
-                        }
-                        centered - text {
-                            ::content { "Checked is ${ if(check.checked()) "true" else "false" }" }
-                        }
-                    }
-                }
-                text("DismissBackground")
-                example("""
-                    col {
-                        text { content = "The following container will now no background"}
-                        centered - sizeConstraints(height = 4.rem) - col {
-                            dismissBackground {  }
-                        }
-                    }
-                """.trimIndent()) {
-                    col {
-                        centered - text { content = "The following container will have no background"}
-                        centered - sizeConstraints(height = 8.rem, width = 40.rem) - col {
-                            dismissBackground {  }
-                        }
-                    }
-                }
-                text("Add images to your application with an image block, within the block provide a source ")
-                example("""val random = Random(2349052345)
-                    centered - col {
-                        row {
-                            expanding - frame {}
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${'$'}{random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${'$'}{random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${'$'}{random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = Icon.help.copy(width = 100.dp, height = 100.dp).toImageSource(Color.white)
-                            }
-                            expanding - frame {}
-                        }
-                    }""") {
-                    val random = Random(2349052345)
-                    centered - col {
-                        row {
-                            expanding - frame {}
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = ImageRemote(url = "https://picsum.photos/seed/${random.nextInt()}/100/100")
-                            }
-                            sizeConstraints(height = 100.dp) - image {
-                                source = Icon.help.copy(width = 100.dp, height = 100.dp).toImageSource(Color.white)
-                            }
-                            expanding - frame {}
-                        }
-                    }
-                }
-                text("Field")
-                example("""
-                    centered - col {
-                        label {
-                            content = "First Name"
-                            object : Semantic(key = "inputbackground") {
-                                override fun default(theme: Theme): ThemeAndBack {
-                                    return theme.copy(background = Color.black).withBack
+                                centered - text {
+                                    ::content { "Meat selected: " + selected() }
                                 }
-                            }.onNext - textInput {  }
+                            }
                         }
-                    }""") {
-                    centered - col {
+                    )
+                    example(
+                        name = "field",
+                        description = "Wraps another input with a label.",
+                        code = """
+                        val name = Property("")
                         field(label = "First Name") {
-                            object : Semantic(key = "inputbackground") {
-                                override fun default(theme: Theme): ThemeAndBack {
-                                    return theme.copy(background = Color.black).withBack
-                                }
-                            }.onNext - textInput {  }
+                            textInput { content bind name }
                         }
-                    }
-                }
-                text("LocalDateField allows you to select a date. You can listen to updates using the views content property which is of type ImmediateWritable<LocalDate>. Set a specific Date / DateTime range using the range property.")
-                example("""
-                    centered - col {
-                        val dateField  = localDateField {
+                        text { ::content { "Name is ${'$'}{name()}" } }
+                    """.trimIndent(),
+                        result = {
+                            val name = Property("")
+                            field(label = "First Name") {
+                                textInput { content bind name }
+                            }
+                            text { ::content { "Name is ${name()}" } }
+                        }
+                    )
+                    example(
+                        name = "localDateField",
+                        description = "A field for entering a date.",
+                        code = """
+                        val date = Property<LocalDate?>(null)
+                        localDateField {
                             range = LocalDate(1970, 1, 1)..LocalDate(year = 1971, 12, 31)
+                            content bind date
                         }
-                        text { ::content { "Date Selected: ${'$'}{dateField.content()}" }}
-                    }
-                    """) {
-                    centered - col {
-                        val dateField  = localDateField {
-                            range = LocalDate(1970, 1, 1)..LocalDate(year = 1971, 12, 31)
+                        text { ::content { "Date Selected: ${'$'}{date()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
+                   
+                    """.trimIndent(),
+                        result = {
+                            val date = Property<LocalDate?>(null)
+                            localDateField {
+                                range = LocalDate(1970, 1, 1)..LocalDate(year = 1971, 12, 31)
+                                content bind date
+                            }
+                            text { ::content { "Date Selected: ${date()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
                         }
-                        text { ::content { "Date Selected: ${dateField.content()}" }}
-                    }
-                }
-                text("RadioButton")
-                example("""
-                    centered - col {
-                        val selected = Property(0)
-                        centered - row {
-                            repeat(3) { index -> radioButton {
-                                checked bind selected.equalTo(index) }
-                            }
+                    )
+                    example(
+                        name = "localTimeField",
+                        description = "A field for entering a time.",
+                        code = """
+                        val time = Property<LocalTime?>(null)
+                        localTimeField {
+                            content bind time
                         }
-                    }""") {
-                    centered - col {
-                        val selected = Property(0)
-                        centered - row {
-                            repeat(3) { index -> radioButton {
-                                checked bind selected.equalTo(index) }
+                        text { ::content { "Time Selected: ${'$'}{time()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
+                   
+                    """.trimIndent(),
+                        result = {
+                            val time = Property<LocalTime?>(null)
+                            localTimeField {
+                                content bind time
                             }
+                            text { ::content { "Time Selected: ${time()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
                         }
-                    }
-                }
-                text("RadioToggleButton")
-                example("""""") {
-                    centered - col {
-                        centered - radioToggleButton {  }
-                    }
-                }
-                text("RecyclerView to be used with very long lists.")
-                example("""                    
-                    sizeConstraints(height = 200.dp) - Recycler2(this, vertical = true)
-                        .apply {
-                            //Determines the layout of the data.
-                            placer = RecyclerViewPlacerVerticalGrid(1)
-
-                            val mainRenderer: RecyclerViewRenderer<String> = object : RecyclerViewRenderer<String> {
-                                override fun render(
-                                    viewWriter: ViewWriter,
-                                    data: Readable<String>,
-                                    index: Readable<Int>,
-                                ): ViewModifiable {
-                                    return with(viewWriter) {
-                                        text { ::content { data() } }
-                                    }
-                                }
-                            }
-
-                            rendererSet = object : RecyclerViewRendererSet<String, String> {
-                                override fun id(item: String): String = item
-                                override fun renderer(item: String): RecyclerViewRenderer<String> = mainRenderer
-                            }
-
-                            val ids: List<String> = (0..100).toList().map { Uuid.random().toString() }
-
-                            data = object : RecyclerViewData<String, String> {
-                                override val range: IntRange
-                                    get() = 0..100
-
-                                override fun get(index: Int): String {
-                                    return ids[index]
-                                }
-                            }
+                    )
+                    example(
+                        name = "localDateTimeField",
+                        description = "A field for entering both a date and a time.",
+                        code = """
+                        val date = Property<LocalDateTime?>(null)
+                        localDateTimeField {
+                            content bind date
                         }
-                    """) {
-
-                    centered - sizeConstraints(height = 800.dp) - Recycler2(this, vertical = true)
-                        .apply {
-                            weight(1f)
-                            //Determines the layout of the data.
-                            placer = RecyclerViewPlacerVerticalGrid(1)
-
-                            val mainRenderer: RecyclerViewRenderer<StringID> = object : RecyclerViewRenderer<StringID> {
-                                override fun render(
-                                    viewWriter: ViewWriter,
-                                    data: Readable<String>,
-                                    index: Readable<Int>,
-                                ): ViewModifiable {
-                                    return with(viewWriter) {
-                                        text { ::content { data() } }
-                                    }
-                                }
+                        text { ::content { "Date Selected: ${'$'}{date()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
+                   
+                    """.trimIndent(),
+                        result = {
+                            val date = Property<LocalDateTime?>(null)
+                            localDateTimeField {
+                                content bind date
                             }
-
-                            rendererSet = object : RecyclerViewRendererSet<String, StringID> {
-                                override fun id(item: String): String = item
-                                override fun renderer(item: String): RecyclerViewRenderer<String> = mainRenderer
-                            }
-
-                            val ids: List<String> = (0..500).toList().map { Uuid.random().toString() }
-
-                            data = object : RecyclerViewData<String, StringID> {
-                                override val range: IntRange
-                                    get() = 0..100
-
-                                override fun get(index: Int): StringID {
-                                    return ids[index]
-                                }
-                            }
+                            text { ::content { "Date Selected: ${date()?.renderToString(RenderSize.Full) ?: "N/A"}" } }
                         }
-                }
-                text("Select")
-                example("""
-                     centered - col {
+                    )
+                    example(
+                        name = "select",
+                        description = "A drop-down selection input.",
+                        code = """
                         text { content = "LOTR Characters" }
-                        val characters = Property(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
-                        val valueChanged = Property(characters.state.get().first())
+                        val characters = Constant(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
+                        val valueChanged = Property(characters.value.first())
                         select {
-                            bind(edits = valueChanged, data = characters) { character ->
-                                character
-                            }
+                            bind(edits = valueChanged, data = characters) { character -> character }
                         }
-
                         text { ::content { "Character Selected ${'$'}{valueChanged()}" } }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        text { content = "LOTR Characters" }
-                        val characters = Property(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
-                        val valueChanged = Property(characters.state.get().first())
-                        select {
-                            bind(edits = valueChanged, data = characters) { character ->
-                                character
+                    """.trimIndent(),
+                        result = {
+                            text { content = "LOTR Characters" }
+                            val characters = Constant(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
+                            val valueChanged = Property(characters.value.first())
+                            select {
+                                bind(edits = valueChanged, data = characters) { character -> character }
+                            }
+                            text { ::content { "Character Selected ${valueChanged()}" } }
+                        }
+                    )
+
+                    example(
+                        name = "switch",
+                        description = "A switch, intended to do something immediately when changed.",
+                        code = """
+                        val switchValue = Property(false)
+                        row {
+                            expanding - text("My switch")
+                            switch { checked bind switchValue } 
+                        }
+                        text { ::content { "Switch is ${'$'}{ if(switchValue()) "ON" else "OFF" }" } }
+                    """.trimIndent(),
+                        result = {
+                            val switchValue = Property(false)
+                            row {
+                                expanding - text("My switch")
+                                switch { checked bind switchValue }
+                            }
+                            text { ::content { "Switch is ${if (switchValue()) "ON" else "OFF"}" } }
+                        }
+                    )
+                    example(
+                        name = "textArea",
+                        description = "The text area",
+                        code = """
+                        val longText = Property("")
+                        sizeConstraints(height = 120.dp) - scrolling - textArea { 
+                            content bind longText
+                            hint = "Some hint"
+                        }
+                        sizeConstraints(height = 120.dp) - scrolling - text { ::content { "Entered Input: ${'$'}{longText()}" } }
+                    """.trimIndent(),
+                        result = {
+                            val longText = Property("")
+                            sizeConstraints(height = 120.dp) - scrolling - textArea {
+                                content bind longText
+                                hint = "Some hint"
+                            }
+                            sizeConstraints(height = 120.dp) - scrolling - text { ::content { "Entered Input: ${longText()}" } }
+                        }
+                    )
+                    example(
+                        name = "textInput",
+                        description = "The text area",
+                        code = """
+                        val text = Property("")
+                        textInput { 
+                            content bind text
+                            hint = "Some hint"
+                        }
+                        text { ::content { "Entered Input: ${'$'}{text()}" } }
+                    """.trimIndent(),
+                        result = {
+                            val text = Property("")
+                            textInput {
+                                content bind text
+                                hint = "Some hint"
+                            }
+                            text { ::content { "Entered Input: ${text()}" } }
+                        }
+                    )
+                }
+                titledSection("Advanced Components") {
+                    example(
+                        name = "canvas",
+                        description = "The canvas component is based off of the WEB Canvas Api, the following examples are from the <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes\">MDN Shapes Tutorial</a>.",
+                        code = """
+                        canvas {
+                        delegate = object : CanvasDelegate() {
+                            override fun draw(context: DrawingContext2D) = with(context) {
+                                super.draw(context)
+                                context.fillPaint = Color.white
+                                context.strokePaint = Color.white
+                                repeat(5) { i ->
+                                    repeat(4) { j ->
+                                        context.beginPath()
+                                        val x = 25.0 + j * 50.0 // x coordinate
+                                        val y = 25.0 + i * 50.0 // y coordinate
+                                        val radius = 20.0 // Arc radius
+                                        val startAngle = Angle(0.0) // Starting point on circle
+                                        val endAngle = Angle(PI + (PI * j) / 2) // End point on circle
+                                        val counterclockwise = i % 2 != 0 // clockwise or counterclockwise
+
+                                        context.appendArc(x, y, radius, startAngle, endAngle, counterclockwise)
+
+                                        if (i > 1) {
+                                            context.fill()
+                                        } else {
+                                            context.stroke()
+                                        }
+                                    }
+                                }
                             }
                         }
+                    }
+                    """.trimIndent(),
+                        result = {
+                            canvas {
+                                delegate = object : CanvasDelegate() {
+                                    override fun draw(context: DrawingContext2D) = with(context) {
+                                        super.draw(context)
+                                        context.fillPaint = Color.white
+                                        context.strokePaint = Color.white
+                                        repeat(5) { i ->
+                                            repeat(4) { j ->
+                                                context.beginPath()
+                                                val x = 25.0 + j * 50.0 // x coordinate
+                                                val y = 25.0 + i * 50.0 // y coordinate
+                                                val radius = 20.0 // Arc radius
+                                                val startAngle = Angle(0.0) // Starting point on circle
+                                                val endAngle = Angle(PI + (PI * j) / 2) // End point on circle
+                                                val counterclockwise = i % 2 != 0 // clockwise or counterclockwise
 
-                        text { ::content { "Character Selected ${valueChanged()}" } }
-                    }
-                }
-                text("Separator, provides dividers between items")
-                example("""
-                    centered - col {
-                        text { content = "ONE" }
-                        separator {}
-                        text { content = "TWO" }
-                        separator {}
-                        text { content = "THREE" }
-                        separator {}
-                        text { content = "FOUR" }
-                    }""") {
-                    centered - col {
-                        text { content = "ONE" }
-                        separator {}
-                        text { content = "TWO" }
-                        separator {}
-                        text { content = "THREE" }
-                        separator {}
-                        text { content = "FOUR" }
-                    }
-                }
-                text("Space, Add some space between views")
-                example("""
-                    centered - col {
-                        text { content = "ONE" }
-                        space {}
-                        text { content = "TWO" }
-                        text { content = "THREE" }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        text { content = "ONE" }
-                        space {}
-                        text { content = "TWO" }
-                        text { content = "THREE" }
-                    }
-                }
+                                                context.appendArc(x, y, radius, startAngle, endAngle, counterclockwise)
 
-                text("Switch")
-                example("""
-                    val switchValue = Property(false)
-                    centered - col {
-                        switch { checked bind  switchValue }
-                    }
-                    text { ::content { "Switch Is ${'$'}{ if(switchValue()) "ON" else "OFF" }" } }""") {
-                    val switchValue = Property(false)
-                    centered - col {
-                        switch { checked bind  switchValue }
-                        text { ::content { "Switch Is ${ if(switchValue()) "ON" else "OFF" }" } }
-                    }
-                }
-                text("TextArea: Enter a large amount of text")
-                example("""
-                    centered - col {
-                        var textInput: TextArea
-                        sizeConstraints(height = 120.dp, width = 600.dp) - scrolling - textArea { textInput = this }
-                        sizeConstraints(height = 120.dp, width = 600.dp) - scrolling - text { ::content { "Entered Input: ${'$'}{textInput.content()}" } }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        var textInput: TextArea
-                        sizeConstraints(height = 120.dp, width = 600.dp) - scrolling - textArea { textInput = this }
-                        sizeConstraints(height = 120.dp, width = 600.dp) - scrolling - text { ::content { "Entered Input: ${textInput.content()}" } }
-                    }
-                }
-                text("TextInput: get some user input")
-                example("""
-                    centered - col {
-                        val input = textInput { hint = "Enter some text" }
-                        scrolling - text { ::content { "Entered Input: ${'$'}{input.content()}" } }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        val input = textInput { hint = "Enter some text" }
-                        sizeConstraints(height = 120.dp, width = 600.dp) - scrolling - text { ::content { "Entered Input: ${input.content()}" } }
-                    }
-                }
-                text("TextView: Give the user some information")
-                example("""
-                    centered - col {
-                        text { content = "Benjamin Franklin performed his famous kite experiment in June 1752." }
-                    }
-                """.trimIndent()) {
-                    centered - col {
-                        text { content = "Benjamin Franklin performed his famous kite experiment in June 1752." }
-                    }
-                }
-                text("ToggleButton")
-                example("""
-                    centered - col {
-                        toggleButton {
-                            text { content = "Select Me" }
-                        }.also { button ->
-                            text { ::content { "Selected: ${'$'}{ button.checked() }" } }
+                                                if (i > 1) {
+                                                    context.fill()
+                                                } else {
+                                                    context.stroke()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "dismissBackground",
+                        description = "Creates a dimmed background for making floating modals.",
+                        code = """
+                    dismissBackground {
+                        centered - card - text("I'm like a dialog")
+                        onClick {
+                            println("Put logic to dismiss here")
                         }
                     }
-                """.trimIndent()) {
-                    centered - col {
-                        var button: ToggleButton
-                        centered - sizeConstraints(width = 400.dp) - toggleButton {
-                            button = this
-                            centered - text { content = "Select Me" }
+                    """.trimIndent(),
+                        result = {
+                            dismissBackground {
+                                centered - card - text("I'm like a dialog")
+                                onClick {
+                                    println("Put logic to dismiss here")
+                                }
+                            }
                         }
-                        centered - text { ::content { "Selected: ${ button.checked() }" } }
-                    }
+                    )
+
+                    example(
+                        name = "recyclerView",
+                        description = "Used when you have many, many items that needed represented in a scrollable area.",
+                        code = """
+                        expanding - recyclerView {
+                            //Determines the layout of the data.
+                            placer = RecyclerViewPlacerVerticalGrid(1)
+    
+                            children(Constant((1..10000).toList()), id = { it }, render = { item ->
+                                card - text { ::content { "Item ${'$'}{item()}" } }
+                            })
+                        }
+                    """.trimIndent(),
+                        result = {
+                            expanding - recyclerView {
+                                //Determines the layout of the data.
+                                placer = RecyclerViewPlacerVerticalGrid(1)
+
+                                children(Constant((1..10000).toList()), id = { it }, render = { item ->
+                                    card - text { ::content { "Item ${item()}" } }
+                                })
+                            }
+                        }
+                    )
                 }
-//                text("TwoPane")
-//                example("""""") {
-//                    centered - col {
-//                    }
-//                }
-//                text("WebView")
-//                example("""""") {
-//                    centered - col {
-//
-//                    }
-//                }
             }
         }
     }
