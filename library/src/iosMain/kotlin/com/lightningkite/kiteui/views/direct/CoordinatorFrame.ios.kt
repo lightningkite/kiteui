@@ -4,34 +4,29 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.FocusSemantic
-import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Writable
 import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
-import com.lightningkite.readable.reactive
 import kotlinx.coroutines.launch
-import platform.UIKit.UISheetPresentationControllerDetentIdentifier
 import platform.UIKit.UISheetPresentationController
-import platform.UIKit.UIView
 import platform.UIKit.UIViewController
 import com.lightningkite.kiteui.objc.presentationController
 import com.lightningkite.kiteui.views.popoverWriter
-import com.lightningkite.readable.BasicListenable
+import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
-import platform.UIKit.UIModalPresentationPageSheet
-import platform.UIKit.UISheetPresentationControllerDetent
+import platform.UIKit.*
+import platform.darwin.NSObject
+import platform.objc.sel_registerName
 
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
@@ -46,6 +41,13 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
+
+    // The system only keeps weak references to the following objects, so we must keep our own references for the
+    // lifetime of the view
+    private var leftSwipeTarget: NSObject? = null
+    private var leftSwipeRecognizer: UISwipeGestureRecognizer? = null
+    private var rightSwipeTarget: NSObject? = null
+    private var rightSwipeRecognizer: UISwipeGestureRecognizer? = null
 
     actual fun bottomSheet(
         peekSize: Dimension?,
@@ -207,6 +209,34 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         willRemove?.animateIn(transition.forward)
+    }
+
+    actual fun onLeftSwipe(action: suspend () -> Unit) {
+        leftSwipeTarget = object : NSObject() {
+            @ObjCAction
+            fun handleLeftSwipe(sender: UISwipeGestureRecognizer) {
+                launch { action() }
+            }
+        }
+        leftSwipeRecognizer?.let(native::removeGestureRecognizer)
+        leftSwipeRecognizer = UISwipeGestureRecognizer(leftSwipeTarget, sel_registerName("handleLeftSwipe:")).apply {
+            direction = UISwipeGestureRecognizerDirectionLeft
+        }.also(native::addGestureRecognizer)
+        native.userInteractionEnabled = true
+    }
+
+    actual fun onRightSwipe(action: suspend () -> Unit) {
+        rightSwipeTarget = object : NSObject() {
+            @ObjCAction
+            fun handleRightSwipe(sender: UISwipeGestureRecognizer) {
+                launch { action() }
+            }
+        }
+        rightSwipeRecognizer?.let(native::removeGestureRecognizer)
+        rightSwipeRecognizer = UISwipeGestureRecognizer(rightSwipeTarget, sel_registerName("handleRightSwipe:")).apply {
+            direction = UISwipeGestureRecognizerDirectionRight
+        }.also(native::addGestureRecognizer)
+        native.userInteractionEnabled = true
     }
 }
 
