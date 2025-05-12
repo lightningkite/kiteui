@@ -748,7 +748,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     private fun Dimension.toBoxShadow(): String {
-        if (value == "0px")
+        if (value.roughPx == 0.0)
             return "none"
         val offsetX = 0.px.value
         val offsetY = value
@@ -941,17 +941,17 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
 
         theme.diff(diff) { outlineWidth }?.let {
-            addToCss(backSel, "outline-width", it.value)
+            addToCss(backSel, "outline-width", it.value.toString())
             addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
-            addToCss(backSel, "outline-offset", it.times(-1).value)
+            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
         theme.diff(diff) { elevation }?.let {
             addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
         }
 
-        theme.diff(diff) { gap }?.let { addToCss(directSel, "--spacing", it.value) }
+        theme.diff(diff) { gap }?.let { addToCss(directSel, "--spacing", it.value.toString()) }
         theme.diff(diff) { padding }?.let { addToCss(directSel, "--padding", it.css()) }
-        theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value) }
+        theme.diff(diff) { font.size }?.let { addToCss(directSel, "font-size", it.value.toString()) }
         theme.diff(diff) { font.font }?.let { addToCss(directSel, "font-family", it.let { dynamicCss.font(it) }) }
         theme.diff(diff) { font.weight }?.let { addToCss(directSel, "font-weight", it.toString()) }
         theme.diff(diff) { font.italic }
@@ -1019,7 +1019,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     val rowCollapsingToColumnHandled = HashSet<String>()
     fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
-        val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.filter { it.isLetterOrDigit() } }}"
+        val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
                 """

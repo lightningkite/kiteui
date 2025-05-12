@@ -102,13 +102,12 @@ fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
     clone.style.visibility = "hidden"
-    clone.style.minWidth = sizeConstraints.minWidth?.value ?: "unset"
-    clone.style.maxWidth = sizeConstraints.maxWidth?.value ?: "unset"
-    clone.style.minHeight = sizeConstraints.minHeight?.value ?: "unset"
-    clone.style.maxHeight = sizeConstraints.maxHeight?.value ?: "unset"
-//    clone.style.aspectRatio = sizeConstraints.aspectRatio?.value ?: "unset"
-    clone.style.width = sizeConstraints.width?.value ?: "unset"
-    clone.style.height = sizeConstraints.height?.value ?: "unset"
+    clone.style.minWidth = sizeConstraints.minWidth?.value?.toString() ?: "unset"
+    clone.style.maxWidth = sizeConstraints.maxWidth?.value?.toString() ?: "unset"
+    clone.style.minHeight = sizeConstraints.minHeight?.value?.toString() ?: "unset"
+    clone.style.maxHeight = sizeConstraints.maxHeight?.value?.toString() ?: "unset"
+    clone.style.width = sizeConstraints.width?.value?.toString() ?: "unset"
+    clone.style.height = sizeConstraints.height?.value?.toString() ?: "unset"
     clone.style.position = "fixed"
     document.body!!.appendChild(clone)
     val out = Size(clone.scrollWidth.toDouble() + 1.0, clone.scrollHeight.toDouble() + 1.0)
