@@ -6,10 +6,6 @@ import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSObject

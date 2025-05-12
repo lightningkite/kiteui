@@ -10,11 +10,12 @@ import com.lightningkite.kiteui.views.direct.swapping
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat("default", Angle(0.55f)).customize(
     "default2",
-    transitionDuration = 1.0.seconds,
+    transitionDuration = 150.milliseconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
     derivations = mapOf(
         EmphasizedSemantic to {
