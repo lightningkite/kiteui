@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -36,7 +35,7 @@ object DocSearchPage : Page {
         { IconsPage },
         { ViewModifiersPage },
         { LayoutPage },
-        { AvailableViews }
+        { CheatSheat }
     ))
 
     override fun ViewWriter.render(): ViewModifiable = run {

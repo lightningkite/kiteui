@@ -12,29 +12,26 @@ import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.centeredVertically
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
+import com.lightningkite.kiteui.views.forEach
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
 import com.lightningkite.readable.contains
 import com.lightningkite.readable.equalTo
-import com.lightningkite.readable.reactive
-import com.lightningkite.readable.sharedProcess
 import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlin.math.PI
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @Routable("docs/available-views")
-object AvailableViews : DocPage {
+object CheatSheat : DocPage {
     override val covers: List<String>
         get() = listOf("Available KiteUI Views")
 
@@ -468,6 +465,67 @@ object AvailableViews : DocPage {
                         }
                     )
                 }
+
+                titledSection("View Modifiers") {
+                    example(name = "scrolling", description = "Adds vertical scrolling to the view", code = """
+                        scrolling - col {
+                            val property = Property((0..10).toList())
+                            forEach(property) {
+                                text { content = "String ${'$'}it" }
+                            }
+                        }
+                    """.trimIndent(), result = {
+                        sizeConstraints(height = 100.dp) - scrolling - col {
+                            val property = Property((0..10).toList())
+                            forEach(property) {
+                                text { content = "String $it" }
+                            }
+                        }
+                    })
+                    example(name = "scrollingHorizontally", description = "Adds horizontal scrolling to the view.", code = """
+                         scrollingHorizontally - row {
+                            val property = Property((0..10).toList())
+                            forEach(property) {
+                                text { content = "String ${'$'}it" }
+                            }
+                        }
+                    """.trimIndent(), result = {
+                        col {
+                            scrollingHorizontally - row {
+                                val property = Property((0..20).toList())
+                                forEach(property) {
+                                    text { content = "String $it" }
+                                }
+                            }
+                        }
+                    })
+                    example(name = "scrollingBoth", description = "Adds vertical and horizontal scrolling to the view.", code = """
+                        scrollingBoth {} - col {
+                            val property = Property((0..10).toList())
+                            forEach(property) { col ->
+                                row {
+                                    val property = Property((0..20).toList())
+                                    forEach(property) { row ->
+                                        text { content = "Col: ${'$'}col Row: ${'$'}row" }
+                                    }
+                                }
+                            }
+                        }
+                    """.trimIndent(), result = {
+                        sizeConstraints(height = 150.dp) - scrollingBoth {} - col {
+                            val property = Property((0..10).toList())
+                            forEach(property) { col ->
+                                row {
+                                    val property = Property((0..20).toList())
+                                    forEach(property) { row ->
+                                        text { content = "Col: $col Row: $row" }
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+
                 titledSection("Advanced Components") {
                     example(
                         name = "canvas",

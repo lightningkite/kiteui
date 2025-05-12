@@ -53,7 +53,7 @@ fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper = align(
 val ViewWriter.scrolls: ViewWrapper get() = __scrollsUncontracted(true, false)
 
 @ViewModifierDsl3
-@Deprecated("use scrollsHorizontally instead", ReplaceWith("scrollsHorizontally"))
+@Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollsHorizontally"))
 val ViewWriter.scrollsHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
 
 @ViewModifierDsl3
