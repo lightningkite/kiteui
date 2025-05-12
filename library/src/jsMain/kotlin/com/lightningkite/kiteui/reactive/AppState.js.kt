@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.WindowStatistics
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.direct.KeyCode
 import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.browser.document
@@ -22,14 +23,14 @@ actual object AppState {
         get() = _AnimationFrame
     internal val _windowInfo = Property(
         WindowStatistics(
-            width = Dimension(window.innerWidth.toString() + "px"),
-            height = Dimension(window.innerHeight.toString() + "px"),
+            width = window.innerWidth.px,
+            height = window.innerHeight.px,
             density = window.devicePixelRatio.toFloat()
         )
     ).also {
         window.addEventListener("resize", { ev ->
-            val newwidth = Dimension(window.innerWidth.toString() + "px")
-            val newheight = Dimension(window.innerHeight.toString() + "px")
+            val newwidth = window.innerWidth.px
+            val newheight = window.innerHeight.px
             if (it.value.width != newwidth || it.value.height != newheight) {
                 it.value = WindowStatistics(
                     width = newwidth,

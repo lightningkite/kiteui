@@ -157,7 +157,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         if(!complex) {
             val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
             val amnt = gap ?: theme.gap
-            for (child in children) child.native.style.marginBottom = amnt.value
+            for (child in children) child.native.style.marginBottom = amnt.value.toString()
             if(this == viewDebugTarget)
                 println("last shown index: ${children.indexOf(newLastShownElement)}")
             newLastShownElement?.native?.style?.marginBottom = "0"

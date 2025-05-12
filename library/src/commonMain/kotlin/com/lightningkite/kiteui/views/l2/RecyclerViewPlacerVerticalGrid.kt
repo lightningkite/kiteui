@@ -11,8 +11,20 @@ import kotlin.math.abs
 
 @Deprecated("Call directly instead", ReplaceWith("RecyclerViewPlacerVerticalGrid(columns, ratio)"))
 fun RecyclerViewPlacerVerticalTrueGrid(columns: Int, ratio: Double = 1.0) = RecyclerViewPlacerVerticalGrid(columns, ratio)
-class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null) :
+class RecyclerViewPlacerVerticalGrid(
+    val columns: Int,
+    val ratio: Double? = null,
+    val sizeDoesNotChange: Boolean = false,
+) :
     RecyclerViewPlacerGrid {
+    val sizeByType = HashMap<RecyclerViewRenderer<*>, Double>()
+    fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
+        ?: sizeByType[type]
+        ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }
+    fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
+        ?: sizeByType[type]
+        ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
+
     var log: Console? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
@@ -42,7 +54,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
         val (anchorRowY, anchorRowIndex) = (anchor?.let {
             when(it) {
                 is RecyclerViewAnchor.FuzzyIndex -> {
-                    val averageRowHeight = ratio?.let { cellSize * it } ?: existingCells.sumOf { it.bottom - it.top } / existingCells.size
+                    val averageRowHeight = existingCells.sumOf { it.existingHeight(cellSize) } / existingCells.size
                     val focusRowIndex = it.index.coerceIn(dataRange.first.toDouble(), dataRange.last.toDouble()).div(columns).toInt().times(columns)
                     val partialIndexOffset = it.index.rem(columns) / columns * averageRowHeight
                     viewport.top + viewport.height * it.ratioOfFocus - partialIndexOffset to focusRowIndex
@@ -55,7 +67,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                             constrain
                         ) else null
                     }
-                    val max = ratio?.let { cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
+                    val max = cells.maxOf { it?.height(cellSize) ?: 0.0 }
                     when (it.align) {
                         Align.Start -> viewport.top + paddingTop
                         Align.End -> viewport.bottom - max - paddingBottom
@@ -74,7 +86,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
             // approximate anchor
             val it = estimateJumpAnchor(existingCells, true, viewport) ?: return@run null
             log?.log("estimateJumpAnchor got $it")
-            val averageRowHeight = ratio?.let { cellSize * it } ?: existingCells.sumOf { it.bottom - it.top } / existingCells.size
+            val averageRowHeight = existingCells.sumOf { it.height(cellSize) } / existingCells.size
             val focusRowIndex = it.index.coerceIn(dataRange.first.toDouble(), dataRange.last.toDouble()).div(columns).toInt().times(columns)
             val partialIndexOffset = it.index.rem(columns) / columns * averageRowHeight
             viewport.top + viewport.height * it.ratioOfFocus - partialIndexOffset to focusRowIndex
@@ -95,7 +107,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                         constrain
                     ) else null
                 }
-                val max = ratio?.let { cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
+                val max = cells.maxOf { it?.height(cellSize) ?: 0.0 }
                 (viewport.bottom - max - paddingBottom to currentIndex)
             } else it
         }
@@ -111,7 +123,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                     constrain
                 ) else null
             }
-            val max = ratio?.let{ cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
+            val max = cells.maxOf { it?.height(cellSize) ?: 0.0 }
             for (i in 0..<columns) {
                 cells[i]?.place(cellOffsets[i], currentY, cellOffsets[i] + cellSize, currentY + max)
             }
@@ -128,7 +140,7 @@ class RecyclerViewPlacerVerticalGrid(val columns: Int, val ratio: Double? = null
                     constrain
                 ) else null
             }
-            val max = ratio?.let{ cellSize * it } ?: cells.maxOf { it?.size?.height ?: 0.0 }
+            val max = cells.maxOf { it?.height(cellSize) ?: 0.0 }
             for (i in 0..<columns) {
                 cells[i]?.place(cellOffsets[i], currentY - max, cellOffsets[i] + cellSize, currentY)
             }

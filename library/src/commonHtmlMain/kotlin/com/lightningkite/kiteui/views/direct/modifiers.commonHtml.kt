@@ -127,16 +127,16 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
         if (constraints.minHeight == null) native.style.minHeight = null
-        else native.style.minHeight = constraints.minHeight.value
+        else native.style.minHeight = constraints.minHeight.value.toString()
 
         if (constraints.maxHeight == null) native.style.maxHeight = null
-        else native.style.maxHeight = constraints.maxHeight.value
+        else native.style.maxHeight = constraints.maxHeight.value.toString()
 
         if (constraints.minWidth == null) native.style.minWidth = null
-        else native.style.minWidth = constraints.minWidth.value
+        else native.style.minWidth = constraints.minWidth.value.toString()
 
         if (constraints.maxWidth == null) native.style.maxWidth = null
-        else native.style.maxWidth = constraints.maxWidth.value
+        else native.style.maxWidth = constraints.maxWidth.value.toString()
 
         if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
         else native.setStyleProperty(
@@ -145,10 +145,10 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         )
 
         if (constraints.width == null) native.style.width = null
-        else native.style.width = constraints.width.value
+        else native.style.width = constraints.width.value.toString()
 
         if (constraints.height == null) native.style.height = null
-        else native.style.height = constraints.height.value
+        else native.style.height = constraints.height.value.toString()
     }
     return ViewWrapper
 }
@@ -160,16 +160,16 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
         reactiveScope {
             val constraints = constraints()
             if (constraints.minHeight == null) native.style.minHeight = null
-            else native.style.minHeight = constraints.minHeight.value
+            else native.style.minHeight = constraints.minHeight.value.toString()
 
             if (constraints.maxHeight == null) native.style.maxHeight = null
-            else native.style.maxHeight = constraints.maxHeight.value
+            else native.style.maxHeight = constraints.maxHeight.value.toString()
 
             if (constraints.minWidth == null) native.style.minWidth = null
-            else native.style.minWidth = constraints.minWidth.value
+            else native.style.minWidth = constraints.minWidth.value.toString()
 
             if (constraints.maxWidth == null) native.style.maxWidth = null
-            else native.style.maxWidth = constraints.maxWidth.value
+            else native.style.maxWidth = constraints.maxWidth.value.toString()
 
             if (constraints.aspectRatio == null) native.setStyleProperty("aspect-ratio", null)
             else native.setStyleProperty(
@@ -178,10 +178,10 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
             )
 
             if (constraints.width == null) native.style.width = null
-            else native.style.width = constraints.width.value
+            else native.style.width = constraints.width.value.toString()
 
             if (constraints.height == null) native.style.height = null
-            else native.style.height = constraints.height.value
+            else native.style.height = constraints.height.value.toString()
         }
     }
     return ViewWrapper
