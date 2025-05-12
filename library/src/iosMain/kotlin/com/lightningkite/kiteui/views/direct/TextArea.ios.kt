@@ -5,10 +5,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ObjCAction
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName

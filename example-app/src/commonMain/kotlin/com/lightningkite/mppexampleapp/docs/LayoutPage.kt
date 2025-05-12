@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.emphasized
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.titledSection
+import com.lightningkite.readable.Property
 
 @Routable("docs/layout")
 object LayoutPage : DocPage {
@@ -344,6 +345,39 @@ object LayoutPage : DocPage {
                     text("If the window's width is less than the breakpoint, the layout will be vertical will ignore weights.")
                     emphasized - text("Again, rowCollapsingToColumn ignores weights/expanding when vertical.")
                     text("This is critical to the above layout: in vertical mode, if weights weren't ignored, the elements would typically be calculated to be height zero.")
+                }
+                titledSection("Simple List of Elements") {
+                    text("Sometimes you have a fairly small list of data that you want to display.")
+                    example("""
+                        val strings = Property(listOf("First", "Second", "Third", "Fourth"))
+                        col {
+                            forEach(strings) {
+                                text { content = it }
+                            }
+                        }
+                    """.trimIndent()) {
+                        val strings = Property(listOf("First", "Second", "Third", "Fourth"))
+                        col {
+                            forEach(strings) {
+                                text { content = it }
+                            }
+                        }
+                    }
+                    text("Have a small dataset that needs to scroll add the scrolling\nor scrollingHorizontally view modifiers.")
+                    example("""
+                        sizeConstraints(height = 10.rem) - scrolling - col {
+                            val strings = Property((0..20).toList().map { "String ${'$'}it" })
+                            forEach(strings) { string ->
+                                text { content = string }
+                            }
+                        }""".trimIndent()) {
+                        sizeConstraints(height = 10.rem) - scrolling - col {
+                            val strings = Property((0..20).toList().map { "String $it" })
+                            forEach(strings) { string ->
+                                text { content = string }
+                            }
+                        }
+                    }
                 }
                 titledSection("Frame and Other Layouts") {
                     text("Frames are layouts that allow you to pull an element to a particular edge or corner and let them overlap.")

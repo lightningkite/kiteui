@@ -1,11 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.toObjcId
-import com.lightningkite.readable.await
-import com.lightningkite.readable.reactiveScope
-import com.lightningkite.kiteui.views.RView
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.*
@@ -14,10 +9,8 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import platform.UIKit.UIScrollView
 import kotlin.math.min
-import platform.Foundation.*
 import platform.UIKit.UIRectCorner
 import platform.UIKit.UIBezierPath
-import platform.UIKit.UIRectCornerAllCorners
 import platform.UIKit.UIRectCornerBottomLeft
 import platform.UIKit.UIRectCornerBottomRight
 import platform.UIKit.UIRectCornerTopLeft
@@ -43,7 +36,6 @@ internal inline fun UIView.layoutSubviewsAndLayers() {
 
 fun UIView.roundCorners(corners: UIRectCorner, radius: CGFloat) {
 //    val path = UIBezierPath.bezierPathWithRoundedRect(this.bounds, byRoundingCorners = UIRectCornerTopRight, cornerRadii = CGSizeMake(radius, radius))
-
 //    this.layer.maskedCorners
 //    val mask = CAShapeLayer()
 //    layer.mask = mask

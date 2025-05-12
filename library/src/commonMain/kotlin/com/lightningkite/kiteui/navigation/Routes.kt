@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
 import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Listenable
-import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered

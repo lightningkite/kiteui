@@ -341,8 +341,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .radio.radio.radio {
                 appearance: none;
-                width: 25px;
-                height: 25px;
+                width: 25px !important;
+                height: 25px !important;
                 position: relative;
                 border-radius: 999px !important;
                 padding: 0px !important;
@@ -383,8 +383,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
             .checkbox.checkbox.checkbox {
                 appearance: none;
-                width: 25px;
-                height: 25px;
+                width: 25px !important;
+                height: 25px !important;
                 position: relative;
                 padding: 0px !important;
                 border-width: 0.1rem;
