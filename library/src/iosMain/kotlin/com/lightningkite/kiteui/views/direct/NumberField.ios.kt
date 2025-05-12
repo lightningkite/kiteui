@@ -19,7 +19,9 @@ import platform.objc.sel_registerName
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.views.direct.TextInput
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.*
+import platform.CoreGraphics.CGRectMake
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 
@@ -41,7 +43,10 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         backgroundColor = UIColor.clearColor
         keyboardType = UIKeyboardTypeDecimalPad
         delegate = NextFocusDelegateShared
-        inputAccessoryView = UIToolbar().apply {
+
+        // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
+        // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
+        inputAccessoryView = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
             barStyle = UIBarStyleDefault
             setTranslucent(true)
             sizeToFit()
