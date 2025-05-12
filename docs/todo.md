@@ -4,12 +4,7 @@
 - Make a platform specific component
 - Data
   - Routable / params 
-  - Query parameters 
-  - Property
-  - PersistentProperty
-  - shared
-  - reactiveScope
-  - launch
+  - Query parameters
 - Components
   - ActivityIndicator
   - AutoCompleteTextField
