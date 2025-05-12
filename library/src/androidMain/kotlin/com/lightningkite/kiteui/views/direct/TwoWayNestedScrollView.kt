@@ -759,9 +759,9 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 val xDiff = abs((x - mLastMotionX).toDouble()).toInt()
                 val yDiff = abs((y - mLastMotionY).toDouble()).toInt()
                 val doX = xDiff > mTouchSlop
-                        && (nestedScrollAxes and ViewCompat.SCROLL_AXIS_HORIZONTAL) == 0
+                        && (nestedScrollAxes and ViewCompat.SCROLL_AXIS_HORIZONTAL) == 0 && !lockX
                 val doY = yDiff > mTouchSlop
-                        && (nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL) == 0
+                        && (nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL) == 0 && !lockY
                 if (doX || doY) {
                     mIsBeingDragged = true
                     mLastMotionX = x

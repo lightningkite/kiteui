@@ -140,6 +140,14 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }.rView
         }
     }
+
+    actual fun onLeftSwipe(action: suspend () -> Unit) {
+
+    }
+
+    actual fun onRightSwipe(action: suspend () -> Unit) {
+
+    }
 }
 
 

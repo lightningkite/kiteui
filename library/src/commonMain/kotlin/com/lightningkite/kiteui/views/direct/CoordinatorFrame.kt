@@ -28,6 +28,8 @@ expect class CoordinatorFrame(context: RContext) : RView {
         blockBehind: Boolean = false,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
     )
+    fun onLeftSwipe(action: suspend () -> Unit)
+    fun onRightSwipe(action: suspend () -> Unit)
 }
 
 enum class BottomSheetState {
