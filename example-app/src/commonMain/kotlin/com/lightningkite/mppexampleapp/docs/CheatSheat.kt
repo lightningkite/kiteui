@@ -7,7 +7,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.atBottom
 import com.lightningkite.kiteui.views.atBottomEnd
+import com.lightningkite.kiteui.views.atEnd
+import com.lightningkite.kiteui.views.atStart
+import com.lightningkite.kiteui.views.atTop
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
 import com.lightningkite.kiteui.views.card
@@ -126,6 +130,24 @@ object CheatSheat : DocPage {
                         description = "Creates a spinning icon to indicate loading",
                         code = "activityIndicator()",
                         result = { activityIndicator() }
+                    )
+                    example(
+                        name = "icon",
+                        description = "Displays a changeable icon.",
+                        code = """
+                            icon(Icon.help, "Help")
+                            icon {
+                                source = Icon.notification
+                                description = "Notification"
+                            }
+                        """.trimIndent(),
+                        result = {
+                            icon(Icon.help, "Help")
+                            icon {
+                                source = Icon.notification
+                                description = "Notification"
+                            }
+                        }
                     )
                     example(
                         name = "image",
@@ -468,62 +490,219 @@ object CheatSheat : DocPage {
 
                 titledSection("View Modifiers") {
                     example(name = "scrolling", description = "Adds vertical scrolling to the view", code = """
-                        scrolling - col {
-                            val property = Property((0..10).toList())
-                            forEach(property) {
-                                text { content = "String ${'$'}it" }
+                        sizeConstraints(height = 100.dp) - scrolling - col {
+                            for(it in 0..10) {
+                                text { content = "Element ${'$'}it" }
                             }
                         }
                     """.trimIndent(), result = {
                         sizeConstraints(height = 100.dp) - scrolling - col {
-                            val property = Property((0..10).toList())
-                            forEach(property) {
-                                text { content = "String $it" }
+                            for(it in 0..10) {
+                                text { content = "Element $it" }
                             }
                         }
                     })
                     example(name = "scrollingHorizontally", description = "Adds horizontal scrolling to the view.", code = """
                          scrollingHorizontally - row {
-                            val property = Property((0..10).toList())
-                            forEach(property) {
-                                text { content = "String ${'$'}it" }
+                            for(it in 0..10) {
+                                text { content = "Element ${'$'}it" }
                             }
                         }
                     """.trimIndent(), result = {
                         col {
                             scrollingHorizontally - row {
-                                val property = Property((0..20).toList())
-                                forEach(property) {
-                                    text { content = "String $it" }
+                                for(it in 0..10) {
+                                    text { content = "Element $it" }
                                 }
                             }
                         }
                     })
                     example(name = "scrollingBoth", description = "Adds vertical and horizontal scrolling to the view.", code = """
                         scrollingBoth {} - col {
-                            val property = Property((0..10).toList())
-                            forEach(property) { col ->
+                            for(y in 0..10) {
                                 row {
-                                    val property = Property((0..20).toList())
-                                    forEach(property) { row ->
-                                        text { content = "Col: ${'$'}col Row: ${'$'}row" }
+                                    for(x in 0..10) {
+                                        text { content = "(${'$'}x, ${'$'}y)" }
                                     }
                                 }
                             }
                         }
                     """.trimIndent(), result = {
                         sizeConstraints(height = 150.dp) - scrollingBoth {} - col {
-                            val property = Property((0..10).toList())
-                            forEach(property) { col ->
+                            for(y in 0..10) {
                                 row {
-                                    val property = Property((0..20).toList())
-                                    forEach(property) { row ->
-                                        text { content = "Col: $col Row: $row" }
+                                    for(x in 0..10) {
+                                        text { content = "($x, $y)" }
                                     }
                                 }
                             }
                         }
                     })
+
+                    example(
+                        name = "hintPopover",
+                        description = "Shows a hint view on hover.",
+                        code = """
+                            hintPopover {
+                                row {
+                                    icon(Icon.help, "")
+                                    text("Some rich information")
+                                }
+                            } - card - text("Hover over me!")
+                        """.trimIndent(),
+                        result = {
+                            hintPopover {
+                                row {
+                                    icon(Icon.help, "")
+                                    text("Some rich information")
+                                }
+                            } - card - text("Hover over me!")
+                        }
+                    )
+                    example(
+                        name = "textPopover",
+                        description = "Shows a hint view with text only on hover.",
+                        code = """
+                            textPopover("Some info!") - card - text("Hover over me!")
+                        """.trimIndent(),
+                        result = {
+                            textPopover("Some info!") - card - text("Hover over me!")
+                        }
+                    )
+                    example(
+                        name = "weight",
+                        description = "Indicates this view should take a ratio of the remaining space.",
+                        code = """
+                            row {
+                                weight(1f) - card - text("A")
+                                weight(2f) - card - text("B")
+                                card - text("C")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            row {
+                                weight(1f) - card - text("A")
+                                weight(2f) - card - text("B")
+                                card - text("C")
+                            }
+                        }
+                    )
+                    example(
+                        name = "expanding",
+                        description = "A shortcut for weight(1f).",
+                        code = """
+                            row {
+                                expanding - card - text("A")
+                                card - text("B")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            row {
+                                expanding - card - text("A")
+                                card - text("B")
+                            }
+                        }
+                    )
+                    example(
+                        name = "align",
+                        description = "Controls alignment within a container.  Has shortcuts in the form of 'at[Y][X}'.",
+                        code = """
+                            sizeConstraints(height = 7.rem) - card - row {
+                                atTop - card - text("T")
+                                centered - card - text("C")
+                                atBottom - card - text("B")
+                                align(Align.Stretch, Align.Stretch) - card - text("S")
+                            }
+                            card - col {
+                                atStart - card - text("Start")
+                                centered - card - text("Centered")
+                                atEnd - card - text("End")
+                                align(Align.Stretch, Align.Stretch) - card - text("Stretch")
+                            }
+                            sizeConstraints(height = 12.rem) - card - frame {
+                                atTopStart - card - text("Top Start")
+                                align(Align.Stretch, Align.Center) - card - text("Stretch/Center")
+                                atEnd - card - text("End")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 7.rem) - card - row {
+                                atTop - card - text("T")
+                                centered - card - text("C")
+                                atBottom - card - text("B")
+                                align(Align.Stretch, Align.Stretch) - card - text("S")
+                            }
+                            card - col {
+                                atStart - card - text("Start")
+                                centered - card - text("Centered")
+                                atEnd - card - text("End")
+                                align(Align.Stretch, Align.Stretch) - card - text("Stretch")
+                            }
+                            sizeConstraints(height = 12.rem) - card - frame {
+                                atTopStart - card - text("Top Start")
+                                align(Align.Stretch, Align.Center) - card - text("Stretch/Center")
+                                atEnd - card - text("End")
+                            }
+                        }
+                    )
+                    example(
+                        name = "sizeConstraints",
+                        description = "Sets requirements on the size of the view.",
+                        code = """
+                            sizeConstraints(height = 3.rem) - card - text("Sized")
+                            atStart - sizeConstraints(width = 5.rem) - card - text("Very Short")
+                            atStart - sizeConstraints(width = 200.rem) - card - text("Try for 200")
+                        """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 3.rem) - card - text("Sized")
+                            atStart - sizeConstraints(width = 5.rem) - card - text("Very Short")
+                            atStart - sizeConstraints(width = 200.rem) - card - text("Try for 200")
+                        }
+                    )
+                    example(
+                        name = "padded",
+                        description = "Forces a view to have padding.",
+                        code = """
+                            card - text("Naturally has padding")
+                            padded - text("Has virtual padding")
+                        """.trimIndent(),
+                        result = {
+                            card - text("Naturally has padding")
+                            padded - text("Has virtual padding")
+                        }
+                    )
+                    example(
+                        name = "unpadded",
+                        description = "Forces a view to have no padding.",
+                        code = """
+                            text("Naturally no padding")
+                            unpadded - card - text("Forced no padding")
+                        """.trimIndent(),
+                        result = {
+                            text("Naturally no padding")
+                            unpadded - card - text("Forced no padding")
+                        }
+                    )
+                    example(
+                        name = "shownWhen",
+                        description = "Shows or hides a view dynamically.  Animated.",
+                        code = """
+                            val visible = Property(true)
+                            row {
+                                expanding - text("Visible")
+                                switch { checked bind visible }
+                            }
+                            shownWhen { visible() } - text("Only visible when on")
+                        """.trimIndent(),
+                        result = {
+                            val visible = Property(true)
+                            row {
+                                expanding - text("Visible")
+                                switch { checked bind visible }
+                            }
+                            shownWhen { visible() } - text("Only visible when on")
+                        }
+                    )
                 }
 
                 titledSection("Advanced Components") {
