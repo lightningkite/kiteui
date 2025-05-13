@@ -13,8 +13,8 @@ import com.lightningkite.mppexampleapp.internal.RootPage
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.flat("default", Angle(0.55f)).customize(
-    "default2",
+val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
+    "defaulter",
     transitionDuration = 150.milliseconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
     derivations = mapOf(
@@ -26,7 +26,6 @@ val defaultTheme = Theme.flat("default", Angle(0.55f)).customize(
             ).withoutBack
         }
     ))
-val altDefault = Theme.material("m")
 val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {

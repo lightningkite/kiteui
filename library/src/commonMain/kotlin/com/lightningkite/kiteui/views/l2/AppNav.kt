@@ -205,7 +205,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
 
             ::shown { appNav.existsProperty() }
         }
-        expanding - row {
+        expanding - OuterSemantic.onNext - row {
             scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false

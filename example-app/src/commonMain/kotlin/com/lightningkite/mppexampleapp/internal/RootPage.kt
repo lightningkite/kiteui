@@ -3,6 +3,7 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.gc
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.invoke
@@ -45,7 +46,7 @@ object RootPage : Page {
                         "Note the magnifying glass in the top right corner - clicking it will open the source of the current screen on GitHub!"
                 }
             }
-            col {
+            ListSemantic.onNext - col {
 
                 fun ViewWriter.linkPage(screen: () -> Page) = link {
                     to = screen
