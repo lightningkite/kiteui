@@ -40,12 +40,25 @@ object CheatSheet : DocPage {
         val tags: Set<String> = setOf()
     )
 
+    data object LinkSemantic : Semantic("link") {
+        override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+            derivations = mapOf(
+                HoverSemantic to {
+                    it.withoutBack(
+                        font = it.font.copy(underline = true)
+                    )
+                }
+            )
+        )
+    }
+
     val known = HashSet<ExampleEntry>()
     val jump = Property<ExampleEntry?>(null)
     fun ViewWriter.example(
         name: String,
         description: String,
         code: String,
+        references: Set<ExampleEntry> = emptySet(),
         result: RowOrCol.() -> Unit
     ): ViewModifiable {
         val e = ExampleEntry(name)
@@ -62,6 +75,23 @@ object CheatSheet : DocPage {
                 gap = 0.25.rem
                 text(name)
                 subtext { setBasicHtmlContent(description) }
+
+                if (references.isNotEmpty()) {
+                    space()
+                    label {
+                        content = "See Also:"
+                        for (reference in references) {
+                            LinkSemantic.onNext - button {
+                                subtext("- ${reference.name}")
+                                onClick {
+                                    jump.value = reference
+                                    delay(1000)
+                                    jump.value = null
+                                }
+                            }
+                        }
+                    }
+                }
             }
             separator()
             weight(3f) - rowCollapsingToColumn(40.rem) {
@@ -571,6 +601,54 @@ object CheatSheet : DocPage {
                             text { ::content { "Entered Input: ${text()}" } }
                         }
                     )
+                    example(
+                        name = "numberInput",
+                        description = "Input for numbers",
+                        code = """
+                            val number = Property<Double?>(null)
+                            numberInput {
+                                content bind number
+                                hint = "A number"
+                            }
+                            text { ::content { "Entered Number: ${'$'}{number()}" } }
+                        """.trimIndent()
+                    ) {
+                        val number = Property<Double?>(null)
+                        numberInput {
+                            content bind number
+                            hint = "A number"
+                        }
+                        text { ::content { "Entered Number: ${number()}" } }
+                    }
+                    example(
+                        name = "phoneNumberInput",
+                        description = "Input for phone numbers. Uses formattedTextInput under the hood.",
+                        code = """
+                            val number = Property<String>("")
+                            field("Phone Number") {
+                                phoneNumberInput {
+                                    format = PhoneNumberFormat.USA
+    
+                                    content bind number
+                                    hint = "A phone number"
+                                }
+                            }
+                            text { ::content { "Entered Phone Number: ${'$'}{number()}" } }
+                        """.trimIndent(),
+                        references = setOf(ExampleEntry("formattedTextInput"))
+                    ) {
+                        val number = Property<String>("")
+                        field("Phone Number") {
+                            phoneNumberInput {
+                                format = PhoneNumberFormat.USA
+
+                                content bind number
+                                hint = "A phone number"
+                            }
+                        }
+                        text { ::content { "Filtered Phone Number: ${number()}" } }
+                    }
+
                 }
 
                 titledSection("View Modifiers") {
@@ -977,6 +1055,60 @@ object CheatSheet : DocPage {
                             }
                         }
                     )
+
+                    example(
+                        name = "formattedTextInput",
+                        description = "raw text input that you can filter and format as you please.",
+                        code = """
+                            val input = Property("")
+                            {
+                            field("Enter Hex Color") {
+                                formattedTextInput {
+                                    content bind input
+    
+                                    // Hexadecimal format
+                                    val hexCharacters = ('0'..'9') + ('a'..'f') + ('A'..'F')
+                                    format(
+                                        isRawData = { it in hexCharacters.toSet() },
+                                        formatter = { if (it.isBlank()) "" else "#${'$'}{it.take(6)}" }
+                                    )
+                                }
+                            }
+                            text {    
+                                // theme code not shown
+                                ::content { "Filtered input: ${'$'}{input()}" }
+                            }
+                        """.trimIndent()
+                    ) {
+                        val input = Property("")
+                        field("Enter Hex Color") {
+                            formattedTextInput {
+                                content bind input
+
+                                // Hexadecimal format
+                                val hexCharacters = ('0'..'9') + ('a'..'f') + ('A'..'F')
+                                format(
+                                    isRawData = { it in hexCharacters.toSet() },
+                                    formatter = { if (it.isBlank()) "" else "#${it.take(6)}" }
+                                )
+                            }
+                        }
+
+                        text {
+                            val debounced = input.debounce(200)
+
+                            dynamicTheme {
+                                val color = try {
+                                    Color.fromHexString(debounced())
+                                } catch (e: NumberFormatException) {
+                                    Color.white
+                                }
+                                SetForeground(color)
+                            }
+
+                            ::content { "Filtered input: ${input()}" }
+                        }
+                    }
                 }
                 titledSection("Other (not yet categorized)") {
                     example(
@@ -1200,3 +1332,10 @@ object CheatSheet : DocPage {
 }
 
 typealias StringID = String
+
+private data class SetForeground(val color: Color) : Semantic("frgnd-${color.toInt()}") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        foreground = color,
+        background = if (color.perceivedBrightness > 0.5f) Color.black else Color.gray(0.9f)
+    )
+}
