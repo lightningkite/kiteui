@@ -19,12 +19,9 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.mppexampleapp.widgets.code
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.contains
-import com.lightningkite.readable.equalTo
-import com.lightningkite.readable.reactive
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -55,7 +52,7 @@ object CheatSheet : DocPage {
         known += e
         return card - rowCollapsingToColumn(79.rem) {
             dynamicTheme {
-                if(jump() == e) ImportantSemantic
+                if (jump() == e) ImportantSemantic
                 else null
             }
             reactive {
@@ -113,6 +110,24 @@ object CheatSheet : DocPage {
                         """.trimIndent(),
                         result = {
                             sizeConstraints(height = 10.rem) - col {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        }
+                    )
+                    example(
+                        name = "rowCollapsingToColumn",
+                        description = "Horizontal stuff that becomes vertical stuff at specified size",
+                        code = """
+                            rowCollapsingToColumn(70.rem) {
+                                card - text("A")
+                                weight(1f) - card - text("B")
+                                card - text("C")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            rowCollapsingToColumn(70.rem) {
                                 card - text("A")
                                 weight(1f) - card - text("B")
                                 card - text("C")
@@ -244,6 +259,38 @@ object CheatSheet : DocPage {
                             }
                         }
                     )
+                    example(
+                        name = "subtext",
+                        description = "Show a smaller piece of text",
+                        code = """
+                        subtext("Hello world!")
+                        subtext { content = "Also, hello world." }
+                    """.trimIndent(),
+                        result = {
+                            subtext("Hello world!")
+                            subtext { content = "Also, hello world." }
+                        }
+                    )
+                    example(
+                        name = "h1 - h6",
+                        description = "Headers h1 through h6",
+                        code = """
+                            h1("Header 1")
+                            h2("Header 2")
+                            h3("Header 3")
+                            h4("Header 4")
+                            h5("Header 5")
+                            h6("Header 6")
+                    """.trimIndent(),
+                        result = {
+                            h1("Header 1")
+                            h2("Header 2")
+                            h3("Header 3")
+                            h4("Header 4")
+                            h5("Header 5")
+                            h6("Header 6")
+                        }
+                    )
                 }
                 titledSection("Form Controls") {
                     example(
@@ -339,6 +386,28 @@ object CheatSheet : DocPage {
                                 centered - text {
                                     ::content { "Meat selected: " + selected() }
                                 }
+                            }
+                        }
+                    )
+                    example(
+                        name = "toggleButton",
+                        description = "Button that switches between two states",
+                        code = """
+                            val toggled = Property<Boolean>(false)
+                            toggleButton {
+                                centered - text {
+                                    ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
+                                }
+                                checked bind toggled
+                            }
+                    """.trimIndent(),
+                        result = {
+                            val toggled = Property<Boolean>(false)
+                            toggleButton {
+                                centered - text {
+                                    ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
+                                }
+                                checked bind toggled
                             }
                         }
                     )
@@ -629,6 +698,30 @@ object CheatSheet : DocPage {
                         }
                     )
                     example(
+                        name = "centered",
+                        description = "Centers within a container",
+                        code = """
+                          sizeConstraints(height = 8.rem) - card - row {
+                                card - expanding - text("I am not centered")
+                                centered - card - expanding - text("I am centered")
+                            }
+                            card - col {
+                                card - text("I am not centered")
+                                centered - card - text("I am centered")
+                            }
+                        """.trimIndent(),
+                        result = {
+                            card - row {
+                                card - expanding - text("I am not centered")
+                                centered - card - expanding - text("I am centered")
+                            }
+                            card - col {
+                                card - text("I am not centered")
+                                centered - card - text("I am centered")
+                            }
+                        }
+                    )
+                    example(
                         name = "align",
                         description = "Controls alignment within a container.  Has shortcuts in the form of 'at[Y][X}'.",
                         code = """
@@ -706,6 +799,18 @@ object CheatSheet : DocPage {
                         result = {
                             text("Naturally no padding")
                             unpadded - card - text("Forced no padding")
+                        }
+                    )
+                    example(
+                        name = "compact",
+                        description = "Reduces the padding on a view",
+                        code = """
+                            card - text("Regular card")
+                            compact - card - text("Compact card")
+                        """.trimIndent(),
+                        result = {
+                            card - text("Regular card")
+                            compact - card - text("Compact card")
                         }
                     )
                     example(
@@ -869,6 +974,204 @@ object CheatSheet : DocPage {
                                 children(Constant((1..10000).toList()), id = { it }, render = { item ->
                                     card - text { ::content { "Item ${item()}" } }
                                 })
+                            }
+                        }
+                    )
+                }
+                titledSection("Other (not yet categorized)") {
+                    example(
+                        name = "menuButton",
+                        description = "Button that opens a menu",
+                        code = """
+                        menuButton {
+                                requireClick = true
+                                preferredDirection = PopoverPreferredDirection.aboveCenter
+
+                                text("Click me")
+                                opensMenu {
+                                    col {
+                                        centered - text("Menu")
+                                        button { text("I am a button") }
+                                    }
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            menuButton {
+                                requireClick = true
+                                preferredDirection = PopoverPreferredDirection.aboveCenter
+
+                                text("Click me")
+                                opensMenu {
+                                    col {
+                                        centered - text("Menu")
+                                        button { text("I am a button") }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "link",
+                        description = "Link to an internal page",
+                        code = """
+                        link {
+                                text { content = "Home page" }
+                                to = { RootPage }
+                                newTab = true
+                            }
+                    """.trimIndent(),
+                        result = {
+                            link {
+                                text { content = "Home page" }
+                                to = { RootPage }
+                                newTab = true
+                            }
+                        }
+                    )
+                    example(
+                        name = "externalLink",
+                        description = "Link to an external page",
+                        code = """
+                        externalLink {
+                                text { content = "Link to Stack Overflow" }
+                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
+                                newTab = true
+                            }
+                    """.trimIndent(),
+                        result = {
+                            externalLink {
+                                text { content = "Link to Stack Overflow" }
+                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
+                                newTab = true
+                            }
+                        }
+                    )
+                    example(
+                        name = "progressBar",
+                        description = "Horizontal progress indicator",
+                        code = """
+                            progressBar { ratio = 0.4f }
+                            progressBar { ratio = 0.6f }
+                            progressBar { ratio = 0.8f }
+                            progressBar { ratio = 1f }
+                    """.trimIndent(),
+                        result = {
+                            progressBar { ratio = 0.4f }
+                            progressBar { ratio = 0.6f }
+                            progressBar { ratio = 0.8f }
+                            progressBar { ratio = 1f }
+                        }
+                    )
+                    example(
+                        name = "circularProgress",
+                        description = "Circular progress indicator",
+                        code = """
+                            row {
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            row {
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                            }
+                        }
+                    )
+                    example(
+                        name = "toast",
+                        description = "Brief message pop up to inform the user of an action outcome",
+                        code = """
+                        button {
+                                text("Click Me")
+                                action = Action("Show toast") {
+                                    toast("I am a toast!")
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            button {
+                                text("Show Toast")
+                                action = Action("Show toast") {
+                                    toast("I am a toast!")
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "confirmDanger",
+                        description = "Show a dialog to confirm an action",
+                        code = """
+                        button {
+                                text("Do a dangerous thing")
+                                onClick {
+                                    confirmDanger(
+                                        "Danger",
+                                        "Are you sure you wish to do this dangerous thing?"
+                                    ) {
+                                        println("Did a dangerous thing!")
+                                    }
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            button {
+                                text("Do a dangerous thing")
+                                onClick {
+                                    confirmDanger(
+                                        "Danger",
+                                        "Are you sure you wish to do this dangerous thing?"
+                                    ) {
+                                        println("Did a dangerous thing!")
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "alert",
+                        description = "Show an alert dialog",
+                        code = """
+                        button {
+                                text("Alert Me")
+                                onClick {
+                                    alert("Alert", "This is an alert")
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            button {
+                                text("Alert Me")
+                                onClick {
+                                    alert("Alert", "This is an alert")
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "forEach",
+                        description = "",
+                        code = """
+                            val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
+
+                            col {
+                                forEach(shared { fruits }) { fruit ->
+                                    card - text(fruit)
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
+
+                            col {
+                                forEach(shared { fruits }) { fruit ->
+                                    card - text(fruit)
+                                }
                             }
                         }
                     )
