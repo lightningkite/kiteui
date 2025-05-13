@@ -35,7 +35,7 @@ object DocSearchPage : Page {
         { IconsPage },
         { ViewModifiersPage },
         { LayoutPage },
-        { CheatSheat }
+        { CheatSheet }
     ))
 
     override fun ViewWriter.render(): ViewModifiable = run {

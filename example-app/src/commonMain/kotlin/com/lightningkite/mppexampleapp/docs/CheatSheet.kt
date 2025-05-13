@@ -14,18 +14,17 @@ import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.atTop
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
-import com.lightningkite.kiteui.views.card
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.kiteui.views.centeredVertically
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
-import com.lightningkite.kiteui.views.forEach
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.widgets.code
 import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.contains
 import com.lightningkite.readable.equalTo
+import com.lightningkite.readable.reactive
 import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -35,17 +34,33 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
 @Routable("docs/available-views")
-object CheatSheat : DocPage {
+object CheatSheet : DocPage {
     override val covers: List<String>
         get() = listOf("Available KiteUI Views")
 
+    data class ExampleEntry(
+        val name: String,
+        val tags: Set<String> = setOf()
+    )
+
+    val known = HashSet<ExampleEntry>()
+    val jump = Property<ExampleEntry?>(null)
     fun ViewWriter.example(
         name: String,
         description: String,
         code: String,
         result: RowOrCol.() -> Unit
     ): ViewModifiable {
+        val e = ExampleEntry(name)
+        known += e
         return card - rowCollapsingToColumn(79.rem) {
+            dynamicTheme {
+                if(jump() == e) ImportantSemantic
+                else null
+            }
+            reactive {
+                if (jump() == e) scrollIntoView(null, Align.Center, true)
+            }
             weight(1f) - col {
                 gap = 0.25.rem
                 text(name)
@@ -63,7 +78,7 @@ object CheatSheat : DocPage {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): ViewModifiable = frame {
         article {
             titledSection("Available Views") {
 
@@ -174,7 +189,8 @@ object CheatSheat : DocPage {
                     """.trimIndent(),
                         result = {
                             sizeConstraints(height = 10.rem) - video {
-                                source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                                source =
+                                    VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                                 showControls = true
                             }
                         }
@@ -489,35 +505,43 @@ object CheatSheat : DocPage {
                 }
 
                 titledSection("View Modifiers") {
-                    example(name = "scrolling", description = "Adds vertical scrolling to the view", code = """
+                    example(
+                        name = "scrolling", description = "Adds vertical scrolling to the view", code = """
                         sizeConstraints(height = 100.dp) - scrolling - col {
                             for(it in 0..10) {
                                 text { content = "Element ${'$'}it" }
                             }
                         }
                     """.trimIndent(), result = {
-                        sizeConstraints(height = 100.dp) - scrolling - col {
-                            for(it in 0..10) {
-                                text { content = "Element $it" }
+                            sizeConstraints(height = 100.dp) - scrolling - col {
+                                for (it in 0..10) {
+                                    text { content = "Element $it" }
+                                }
                             }
-                        }
-                    })
-                    example(name = "scrollingHorizontally", description = "Adds horizontal scrolling to the view.", code = """
+                        })
+                    example(
+                        name = "scrollingHorizontally",
+                        description = "Adds horizontal scrolling to the view.",
+                        code = """
                          scrollingHorizontally - row {
                             for(it in 0..10) {
                                 text { content = "Element ${'$'}it" }
                             }
                         }
-                    """.trimIndent(), result = {
-                        col {
-                            scrollingHorizontally - row {
-                                for(it in 0..10) {
-                                    text { content = "Element $it" }
+                    """.trimIndent(),
+                        result = {
+                            col {
+                                scrollingHorizontally - row {
+                                    for (it in 0..10) {
+                                        text { content = "Element $it" }
+                                    }
                                 }
                             }
-                        }
-                    })
-                    example(name = "scrollingBoth", description = "Adds vertical and horizontal scrolling to the view.", code = """
+                        })
+                    example(
+                        name = "scrollingBoth",
+                        description = "Adds vertical and horizontal scrolling to the view.",
+                        code = """
                         scrollingBoth {} - col {
                             for(y in 0..10) {
                                 row {
@@ -527,17 +551,18 @@ object CheatSheat : DocPage {
                                 }
                             }
                         }
-                    """.trimIndent(), result = {
-                        sizeConstraints(height = 150.dp) - scrollingBoth {} - col {
-                            for(y in 0..10) {
-                                row {
-                                    for(x in 0..10) {
-                                        text { content = "($x, $y)" }
+                    """.trimIndent(),
+                        result = {
+                            sizeConstraints(height = 150.dp) - scrollingBoth {} - col {
+                                for (y in 0..10) {
+                                    row {
+                                        for (x in 0..10) {
+                                            text { content = "($x, $y)" }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    })
+                        })
 
                     example(
                         name = "hintPopover",
@@ -703,6 +728,38 @@ object CheatSheat : DocPage {
                             shownWhen { visible() } - text("Only visible when on")
                         }
                     )
+                    example(
+                        name = "(themes)",
+                        description = "There are a lot of theme-oriented modifiers.  They change the look of something.  The exact look depends on the theme.",
+                        code = """
+                            text("None")
+                            card - text("card")
+                            fieldTheme - text("fieldTheme")
+                            bar - text("bar")
+                            nav - text("nav")
+                            important - text("important")
+                            critical - text("critical")
+                            warning - text("warning")
+                            danger - text("danger")
+                            affirmative - text("affirmative")
+                            emphasized - text("emphasized")
+                            InsetSemantic.onNext - text("InsetSemantic.onNext")
+                        """.trimIndent(),
+                        result = {
+                            text("None")
+                            card - text("card")
+                            fieldTheme - text("fieldTheme")
+                            bar - text("bar")
+                            nav - text("nav")
+                            important - text("important")
+                            critical - text("critical")
+                            warning - text("warning")
+                            danger - text("danger")
+                            affirmative - text("affirmative")
+                            emphasized - text("emphasized")
+                            InsetSemantic.onNext - text("InsetSemantic.onNext")
+                        }
+                    )
                 }
 
                 titledSection("Advanced Components") {
@@ -815,6 +872,24 @@ object CheatSheat : DocPage {
                             }
                         }
                     )
+                }
+            }
+        }
+        atTopEnd - col {
+            fieldTheme - row {
+                textInput {
+                    hint = "Quick jump..."
+                    action = Action("Quick jump") {
+                        val match = known.filter() { it.name.contains(content.value, ignoreCase = true) }
+                            .minByOrNull { it.name.length }
+                            ?: known.filter { it.tags.any { it.contains(content.value, ignoreCase = true) } }
+                                .minByOrNull { it.name.length }
+                        if (match != null) {
+                            jump.value = match
+                            delay(1.seconds)
+                            jump.value = null
+                        }
+                    }
                 }
             }
         }
