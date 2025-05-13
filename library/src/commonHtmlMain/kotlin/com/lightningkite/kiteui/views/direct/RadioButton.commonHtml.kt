@@ -9,7 +9,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
     init {
         native.tag = "input"
         native.attributes.type = "radio"
-        native.classes.add("checkbox")
+        native.classes.add("radio")
         native.classes.add("checkResponsive")
         native.classes.add("clickable")
     }
