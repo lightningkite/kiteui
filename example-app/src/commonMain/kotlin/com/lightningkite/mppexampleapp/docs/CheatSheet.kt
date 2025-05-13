@@ -148,7 +148,7 @@ object CheatSheet : DocPage {
                     )
                     example(
                         name = "rowCollapsingToColumn",
-                        description = "Horizontal stuff that becomes vertical stuff at specified size",
+                        description = "Horizontal stuff that becomes vertical stuff at specified screen width",
                         code = """
                             rowCollapsingToColumn(70.rem) {
                                 card - text("A")
@@ -190,6 +190,42 @@ object CheatSheet : DocPage {
                         description = "Creates a spinning icon to indicate loading",
                         code = "activityIndicator()",
                         result = { activityIndicator() }
+                    )
+                    example(
+                        name = "progressBar",
+                        description = "Horizontal progress indicator",
+                        code = """
+                            progressBar { ratio = 0.4f }
+                            progressBar { ratio = 0.6f }
+                            progressBar { ratio = 0.8f }
+                            progressBar { ratio = 1f }
+                    """.trimIndent(),
+                        result = {
+                            progressBar { ratio = 0.4f }
+                            progressBar { ratio = 0.6f }
+                            progressBar { ratio = 0.8f }
+                            progressBar { ratio = 1f }
+                        }
+                    )
+                    example(
+                        name = "circularProgress",
+                        description = "Circular progress indicator",
+                        code = """
+                            row {
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            row {
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                            }
+                        }
                     )
                     example(
                         name = "icon",
@@ -322,7 +358,7 @@ object CheatSheet : DocPage {
                         }
                     )
                 }
-                titledSection("Form Controls") {
+                titledSection("Interactive Elements") {
                     example(
                         name = "button",
                         description = "A button that triggers an action, which can be long-running.",
@@ -345,6 +381,76 @@ object CheatSheet : DocPage {
                             }
                         }
                     )
+                    example(
+                        name = "menuButton",
+                        description = "Button that opens a menu",
+                        code = """
+                        menuButton {
+                                requireClick = true
+                                preferredDirection = PopoverPreferredDirection.aboveCenter
+
+                                text("Click me")
+                                opensMenu {
+                                    col {
+                                        centered - text("Menu")
+                                        button { text("I am a button") }
+                                    }
+                                }
+                            }
+                    """.trimIndent(),
+                        result = {
+                            menuButton {
+                                requireClick = true
+                                preferredDirection = PopoverPreferredDirection.aboveCenter
+
+                                text("Click me")
+                                opensMenu {
+                                    col {
+                                        centered - text("Menu")
+                                        button { text("I am a button") }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    example(
+                        name = "link",
+                        description = "Link to an internal page",
+                        code = """
+                        link {
+                                text { content = "Home page" }
+                                to = { RootPage }
+                                newTab = true
+                            }
+                    """.trimIndent(),
+                        result = {
+                            link {
+                                text { content = "Home page" }
+                                to = { RootPage }
+                                newTab = true
+                            }
+                        }
+                    )
+                    example(
+                        name = "externalLink",
+                        description = "Link to an external page",
+                        code = """
+                        externalLink {
+                                text { content = "Link to Stack Overflow" }
+                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
+                                newTab = true
+                            }
+                    """.trimIndent(),
+                        result = {
+                            externalLink {
+                                text { content = "Link to Stack Overflow" }
+                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
+                                newTab = true
+                            }
+                        }
+                    )
+                }
+                titledSection("Form Controls") {
                     example(
                         name = "checkbox",
                         description = "Used in forms to include things.",
@@ -1110,111 +1216,7 @@ object CheatSheet : DocPage {
                         }
                     }
                 }
-                titledSection("Other (not yet categorized)") {
-                    example(
-                        name = "menuButton",
-                        description = "Button that opens a menu",
-                        code = """
-                        menuButton {
-                                requireClick = true
-                                preferredDirection = PopoverPreferredDirection.aboveCenter
-
-                                text("Click me")
-                                opensMenu {
-                                    col {
-                                        centered - text("Menu")
-                                        button { text("I am a button") }
-                                    }
-                                }
-                            }
-                    """.trimIndent(),
-                        result = {
-                            menuButton {
-                                requireClick = true
-                                preferredDirection = PopoverPreferredDirection.aboveCenter
-
-                                text("Click me")
-                                opensMenu {
-                                    col {
-                                        centered - text("Menu")
-                                        button { text("I am a button") }
-                                    }
-                                }
-                            }
-                        }
-                    )
-                    example(
-                        name = "link",
-                        description = "Link to an internal page",
-                        code = """
-                        link {
-                                text { content = "Home page" }
-                                to = { RootPage }
-                                newTab = true
-                            }
-                    """.trimIndent(),
-                        result = {
-                            link {
-                                text { content = "Home page" }
-                                to = { RootPage }
-                                newTab = true
-                            }
-                        }
-                    )
-                    example(
-                        name = "externalLink",
-                        description = "Link to an external page",
-                        code = """
-                        externalLink {
-                                text { content = "Link to Stack Overflow" }
-                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
-                                newTab = true
-                            }
-                    """.trimIndent(),
-                        result = {
-                            externalLink {
-                                text { content = "Link to Stack Overflow" }
-                                to = "https://stackoverflow.com/questions/9754076/which-html-tags-are-supported-by-android-textview"
-                                newTab = true
-                            }
-                        }
-                    )
-                    example(
-                        name = "progressBar",
-                        description = "Horizontal progress indicator",
-                        code = """
-                            progressBar { ratio = 0.4f }
-                            progressBar { ratio = 0.6f }
-                            progressBar { ratio = 0.8f }
-                            progressBar { ratio = 1f }
-                    """.trimIndent(),
-                        result = {
-                            progressBar { ratio = 0.4f }
-                            progressBar { ratio = 0.6f }
-                            progressBar { ratio = 0.8f }
-                            progressBar { ratio = 1f }
-                        }
-                    )
-                    example(
-                        name = "circularProgress",
-                        description = "Circular progress indicator",
-                        code = """
-                            row {
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
-                            }
-                    """.trimIndent(),
-                        result = {
-                            row {
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
-                            }
-                        }
-                    )
+                titledSection("Dialogs") {
                     example(
                         name = "toast",
                         description = "Brief message pop up to inform the user of an action outcome",
@@ -1285,6 +1287,8 @@ object CheatSheet : DocPage {
                             }
                         }
                     )
+                }
+                titledSection("Other (not yet categorized)") {
                     example(
                         name = "forEach",
                         description = "",
