@@ -29,8 +29,9 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             if(delegate?.onWheel(event.deltaX, event.deltaY, event.deltaZ) == true)
                 event.preventDefault()
         }
-        val dpr = AppState.windowInfo.value.density
+
         native.addEventListener("pointerdown") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerDown(
@@ -42,6 +43,7 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointermove") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerMove(
@@ -53,6 +55,7 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointerup") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerUp(
@@ -64,6 +67,7 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointercancel") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerCancel(
@@ -75,6 +79,7 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointerleave") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerCancel(
