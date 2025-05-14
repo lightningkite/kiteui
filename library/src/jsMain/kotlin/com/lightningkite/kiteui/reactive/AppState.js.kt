@@ -35,7 +35,7 @@ actual object AppState {
                 it.value = WindowStatistics(
                     width = newwidth,
                     height = newheight,
-                    density = 1f
+                    density = window.devicePixelRatio.toFloat()
                 )
             }
         })
