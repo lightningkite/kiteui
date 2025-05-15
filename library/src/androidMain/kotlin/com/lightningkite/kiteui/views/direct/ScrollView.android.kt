@@ -1,15 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.annotation.SuppressLint
 import android.hardware.SensorManager
 import android.os.Build
 import android.view.*
 import android.view.ViewTreeObserver.OnPreDrawListener
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
-import android.widget.OverScroller
 import androidx.core.view.children
-import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
@@ -18,7 +14,6 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
-import java.lang.reflect.Modifier
 import kotlin.math.*
 
 class ScrollView constructor(
@@ -257,6 +252,13 @@ class ScrollView constructor(
 
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
+
+    override fun onPullToRefresh(action: (suspend () -> Unit)?) {
+
+    }
+
+    override var showRefreshIndicator: Boolean = false
+
     private val _directlyInteractingWithScroller = Property(false)
     override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 

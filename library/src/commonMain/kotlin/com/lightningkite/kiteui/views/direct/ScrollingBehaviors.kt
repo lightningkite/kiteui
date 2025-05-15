@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.readable.Readable
-import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
 interface ScrollingBehaviors {
@@ -17,6 +16,8 @@ interface ScrollingBehaviors {
     var scrollSnapStop: Boolean
     fun scrollTo(left: Double, top: Double, animated: Boolean)
     fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+    fun onPullToRefresh(action: (suspend () -> Unit)?)
+    var showRefreshIndicator: Boolean
 
     /**
      * Should not interrupt animations.

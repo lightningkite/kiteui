@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.readable.*
@@ -29,7 +28,9 @@ expect class ScrollingBehaviorImpl constructor(
 
      override var scrollSnapStop: Boolean
 
+     override fun onPullToRefresh(action: (suspend () -> Unit)?)
 
+     override var showRefreshIndicator: Boolean
 
      override fun scrollTo(left: Double, top: Double, animated: Boolean)
 

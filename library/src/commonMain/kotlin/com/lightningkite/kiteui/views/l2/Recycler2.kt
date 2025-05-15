@@ -123,6 +123,9 @@ class Recycler2(
         }
     }
 
+    fun onPullToRefresh(action: (suspend () -> Unit)?) = scroll.onPullToRefresh(action)
+    var showRefreshIndicator by scroll::showRefreshIndicator
+
     var overdraw = 20.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
