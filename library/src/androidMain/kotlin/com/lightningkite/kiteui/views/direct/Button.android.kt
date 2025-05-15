@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 
 actual class Button actual constructor(context: RContext): RViewWithAction(context) {
@@ -53,5 +54,12 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
+    }
+
+    actual fun onLongClick(action: (suspend () -> Unit)?) {
+        native.setOnLongClickListener {
+            launch { action?.invoke() }
+            action != null
+        }
     }
 }
