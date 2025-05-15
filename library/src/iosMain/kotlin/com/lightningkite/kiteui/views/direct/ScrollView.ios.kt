@@ -2,18 +2,26 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.FrequencyCapAction
+import com.lightningkite.kiteui.utils.takeAtLeast
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
 import com.lightningkite.kiteui.views.extensionHorizontalAlign
 import com.lightningkite.kiteui.views.extensionVerticalAlign
+import com.lightningkite.kiteui.views.toUiColor
 import kotlinx.cinterop.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 import platform.darwin.NSObject
+import platform.objc.sel_registerName
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 
 class ScrollView(
     context: RContext,
@@ -29,7 +37,7 @@ class ScrollView(
             Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
-    val scroller = ScrollLayout()
+    private val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false
@@ -100,10 +108,10 @@ class ScrollView(
                 Align.End -> targetContentOffset.pointed.y + viewportYSize
                 else -> targetContentOffset.pointed.y + viewportYSize / 2
             }
-            println("currentX: $currentX")
-            println("currentY: $currentY")
-            println("focusX: $focusX")
-            println("focusY: $focusY")
+//            println("currentX: $currentX")
+//            println("currentY: $currentY")
+//            println("focusX: $focusX")
+//            println("focusY: $focusY")
 
 
             val (candidatesX, candidatesY) = if(scrollSnapStop) {
@@ -197,6 +205,74 @@ class ScrollView(
 //            scroller.content
         }
     override var scrollSnapStop: Boolean = false
+
+    private var refreshControl: UIRefreshControl? = null
+        set(value) {
+            if (value == null) {
+                field?.removeFromSuperview()
+            } else {
+                scroller.addSubview(value)
+            }
+            field = value
+        }
+    private var refreshTarget: NSObject? = null
+    override var pullToRefreshAction: FrequencyCapAction?
+        get() = TODO("Not yet implemented")
+        set(value) {
+            if (value == null) {
+                refreshControl = null
+            } else {
+                refreshControl = refreshControl?.also { existingControl ->
+                    refreshTarget?.let { target ->
+                        existingControl.removeTarget(
+                            target,
+                            sel_registerName("handlePullDown:"),
+                            UIControlEventValueChanged
+                        )
+                    }
+                } ?: UIRefreshControl().apply {
+                    tintColor = theme.foreground.closestColor().toUiColor()
+                }
+
+                refreshTarget = object : NSObject() {
+                    @ObjCAction
+                    fun handlePullDown(sender: UIView) {
+                        launch {
+                            takeAtLeast(2.seconds) {
+                                value.startAction(this)
+                            }
+                            refreshControl?.endRefreshing()
+
+                            // Debounce pull-to-refresh requests
+                            refreshControl?.removeFromSuperview()
+                            delay(value.frequencyCap)
+                            refreshControl?.let { scroller.addSubview(it) }
+                        }
+                    }
+                }
+
+                refreshControl?.addTarget(
+                    refreshTarget,
+                    sel_registerName("handlePullDown:"),
+                    UIControlEventValueChanged
+                )
+            }
+        }
+
+    override var showRefreshIndicator: Boolean
+        set(value) {
+            if (value) {
+                refreshControl?.beginRefreshing()
+            } else {
+                refreshControl?.endRefreshing()
+            }
+        }
+        get() = refreshControl?.refreshing ?: false
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        refreshControl?.tintColor = theme.theme.foreground.closestColor().toUiColor()
+    }
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         val (existingX, existingY) = scroller.contentOffset.useContents { x to y }

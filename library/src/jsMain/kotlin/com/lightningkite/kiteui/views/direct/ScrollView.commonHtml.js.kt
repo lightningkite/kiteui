@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
+import com.lightningkite.kiteui.reactive.FrequencyCapAction
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
@@ -136,6 +137,10 @@ actual class ScrollingBehaviorImpl actual constructor(
             field = value
             native.setStyleProperty("scroll-snap-stop", if (value) "always" else "normal")
         }
+
+    actual override var pullToRefreshAction: FrequencyCapAction? = null
+
+    actual override var showRefreshIndicator: Boolean = false
 
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
