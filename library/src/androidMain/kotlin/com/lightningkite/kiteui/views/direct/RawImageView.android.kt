@@ -45,6 +45,7 @@ actual class RawImageView actual constructor(
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
+    resizeWhenLoaded: Boolean,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state

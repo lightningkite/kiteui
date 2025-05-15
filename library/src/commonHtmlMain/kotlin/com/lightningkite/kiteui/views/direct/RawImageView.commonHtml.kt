@@ -47,6 +47,7 @@ actual class RawImageView actual constructor(
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
+    resizeWhenLoaded: Boolean,
 ) : RawImageViewLike(context, source, description, scaleType) {
     override val cannotBeCovered: Boolean get() = false
 
