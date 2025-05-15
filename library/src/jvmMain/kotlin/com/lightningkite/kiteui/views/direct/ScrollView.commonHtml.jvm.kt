@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.readable.*
@@ -55,6 +54,10 @@ actual class ScrollingBehaviorImpl actual constructor(
             field = value
             native.setStyleProperty("scroll-snap-stop", if(value) "always" else "normal")
         }
+    actual override fun onPullToRefresh(action: (suspend () -> Unit)?) {
+
+    }
+    actual override var showRefreshIndicator: Boolean = false
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
     actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {

@@ -137,6 +137,12 @@ actual class ScrollingBehaviorImpl actual constructor(
             native.setStyleProperty("scroll-snap-stop", if (value) "always" else "normal")
         }
 
+    actual override fun onPullToRefresh(action: (suspend () -> Unit)?) {
+
+    }
+
+    actual override var showRefreshIndicator: Boolean = false
+
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
         disableSnapTemporarily()
