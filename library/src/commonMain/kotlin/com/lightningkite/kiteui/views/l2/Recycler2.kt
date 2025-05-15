@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.FrequencyCapAction
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -13,6 +14,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class Recycler2(
@@ -123,7 +125,8 @@ class Recycler2(
         }
     }
 
-    fun onPullToRefresh(action: (suspend () -> Unit)?) = scroll.onPullToRefresh(action)
+    fun onPullToRefresh(frequencyCap: Duration = 5.seconds, action: (suspend () -> Unit)) = scroll.onPullToRefresh(frequencyCap, action)
+    var pullToRefreshAction: FrequencyCapAction? by scroll::pullToRefreshAction
     var showRefreshIndicator by scroll::showRefreshIndicator
 
     var overdraw = 20.0
