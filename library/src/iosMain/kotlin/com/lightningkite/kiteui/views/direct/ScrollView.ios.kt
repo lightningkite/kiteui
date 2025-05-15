@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.FrequencyCapAction
 import com.lightningkite.kiteui.utils.takeAtLeast
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.RContext
@@ -107,10 +108,10 @@ class ScrollView(
                 Align.End -> targetContentOffset.pointed.y + viewportYSize
                 else -> targetContentOffset.pointed.y + viewportYSize / 2
             }
-            println("currentX: $currentX")
-            println("currentY: $currentY")
-            println("focusX: $focusX")
-            println("focusY: $focusY")
+//            println("currentX: $currentX")
+//            println("currentY: $currentY")
+//            println("focusX: $focusX")
+//            println("focusY: $focusY")
 
 
             val (candidatesX, candidatesY) = if(scrollSnapStop) {
@@ -215,46 +216,48 @@ class ScrollView(
             field = value
         }
     private var refreshTarget: NSObject? = null
-    override fun onPullToRefresh(action: (suspend () -> Unit)?) {
-        if (action == null) {
-            refreshControl = null
-        } else {
-            refreshControl = refreshControl?.also { existingControl ->
-                refreshTarget?.let { target ->
-                    existingControl.removeTarget(
-                        target,
-                        sel_registerName("handlePullDown:"),
-                        UIControlEventValueChanged
-                    )
+    override var pullToRefreshAction: FrequencyCapAction?
+        get() = TODO("Not yet implemented")
+        set(value) {
+            if (value == null) {
+                refreshControl = null
+            } else {
+                refreshControl = refreshControl?.also { existingControl ->
+                    refreshTarget?.let { target ->
+                        existingControl.removeTarget(
+                            target,
+                            sel_registerName("handlePullDown:"),
+                            UIControlEventValueChanged
+                        )
+                    }
+                } ?: UIRefreshControl().apply {
+                    tintColor = theme.foreground.closestColor().toUiColor()
                 }
-            } ?: UIRefreshControl().apply {
-                tintColor = theme.foreground.closestColor().toUiColor()
-            }
 
-            refreshTarget = object : NSObject() {
-                @ObjCAction
-                fun handlePullDown(sender: UIView) {
-                    launch {
-                        takeAtLeast(2.seconds) {
-                            action()
+                refreshTarget = object : NSObject() {
+                    @ObjCAction
+                    fun handlePullDown(sender: UIView) {
+                        launch {
+                            takeAtLeast(2.seconds) {
+                                value.startAction(this)
+                            }
+                            refreshControl?.endRefreshing()
+
+                            // Debounce pull-to-refresh requests
+                            refreshControl?.removeFromSuperview()
+                            delay(value.frequencyCap)
+                            refreshControl?.let { scroller.addSubview(it) }
                         }
-                        refreshControl?.endRefreshing()
-
-                        // Debounce pull-to-refresh requests
-                        refreshControl?.removeFromSuperview()
-                        delay(5.seconds)
-                        refreshControl?.let { scroller.addSubview(it) }
                     }
                 }
-            }
 
-            refreshControl?.addTarget(
-                refreshTarget,
-                sel_registerName("handlePullDown:"),
-                UIControlEventValueChanged
-            )
+                refreshControl?.addTarget(
+                    refreshTarget,
+                    sel_registerName("handlePullDown:"),
+                    UIControlEventValueChanged
+                )
+            }
         }
-    }
 
     override var showRefreshIndicator: Boolean
         set(value) {

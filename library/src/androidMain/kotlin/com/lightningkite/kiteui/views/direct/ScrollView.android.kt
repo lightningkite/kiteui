@@ -9,6 +9,7 @@ import androidx.core.view.children
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.reactive.FrequencyCapAction
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -253,9 +254,7 @@ class ScrollView constructor(
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
 
-    override fun onPullToRefresh(action: (suspend () -> Unit)?) {
-
-    }
+    override var pullToRefreshAction: FrequencyCapAction? = null
 
     override var showRefreshIndicator: Boolean = false
 
