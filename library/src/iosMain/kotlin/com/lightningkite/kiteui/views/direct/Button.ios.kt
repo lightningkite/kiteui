@@ -6,6 +6,7 @@ import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.launch
 
 actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = FrameLayoutButton()
@@ -54,5 +55,13 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         if (native.highlighted) t = t[DownSemantic]
         if (native.focused) t = t[FocusSemantic]
         return super.applyState(t)
+    }
+
+    actual fun onLongClick(action: (suspend () -> Unit)?) {
+        onRemove(native.setOnLongPress {
+            launch {
+                action?.invoke()
+            }
+        })
     }
 }
