@@ -9,6 +9,12 @@ import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.plus
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
+import com.lightningkite.kiteui.utils.cg
+import com.lightningkite.kiteui.utils.div
+import com.lightningkite.kiteui.utils.local
+import com.lightningkite.kiteui.utils.minus
+import com.lightningkite.kiteui.utils.plus
+import com.lightningkite.kiteui.utils.times
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -165,16 +171,29 @@ actual class RawImageViewZoomable actual constructor(
     val doubleTapTarget: NSObject = object: NSObject() {
         @ObjCAction
         fun handleDoubleTap(sender: UITapGestureRecognizer) {
-            println("Doubletap")
+            if (sender.state != UIGestureRecognizerStateEnded) return
+
             val midZoom = (native.maximumZoomScale - native.minimumZoomScale) / 2.0 + native.minimumZoomScale
             if (native.zoomScale < midZoom) {
-                native.setZoomScale(native.maximumZoomScale, true)
+                val touch = sender.locationInView(native).local
+                val origin = native.frame.useContents { size.width / 2 to size.height / 2 }
+
+                val offset = touch - origin
+                val scaledOffset = (native.frame.useContents { size.width to size.height } * (native.maximumZoomScale - 1)) / 2
+                val newContentOffset = scaledOffset + offset * native.maximumZoomScale
+
+                UIView.animateWithDuration(0.3) {
+                    native.setZoomScale(native.maximumZoomScale)
+                    native.setContentOffset(newContentOffset.cg)
+                }
             } else {
                 native.setZoomScale(native.minimumZoomScale, true)
             }
         }
     }
-    val doubleTapRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:"))
+    val doubleTapRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
+        numberOfTapsRequired = 2UL
+    }
     override val native = UIScrollView(CGRectZero.readValue()).apply {
         addGestureRecognizer(doubleTapRecognizer)
         showsHorizontalScrollIndicator = false
@@ -184,7 +203,6 @@ actual class RawImageViewZoomable actual constructor(
         maximumZoomScale = 4.0
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
-
     }
     val imageView = UIImageView(CGRectZero.readValue()).apply {
         contentMode = when (scaleType) {
@@ -208,8 +226,6 @@ actual class RawImageViewZoomable actual constructor(
         }
     }
     init {
-        val doubleTapRecognizer = UITapGestureRecognizer(this, sel_registerName("handleDoubleTap:"))
-        doubleTapRecognizer.numberOfTapsRequired = 2UL
         imageView.translatesAutoresizingMaskIntoConstraints = false
         native.delegate = dg
         native.addSubview(imageView)
