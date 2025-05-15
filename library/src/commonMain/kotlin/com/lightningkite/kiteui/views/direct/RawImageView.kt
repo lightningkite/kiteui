@@ -19,6 +19,7 @@ expect class RawImageView(
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
+    resizeWhenLoaded: Boolean = true,
 ) : RawImageViewLike {
     override val state: Readable<Unit>
 }

@@ -103,6 +103,7 @@ actual class RawImageView actual constructor(
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
+    resizeWhenLoaded: Boolean,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state
@@ -125,7 +126,7 @@ actual class RawImageView actual constructor(
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
                 _state.state = ReadableState(Unit)
                 native.image = img
-                native.informParentOfSizeChange()
+                if (resizeWhenLoaded) native.informParentOfSizeChange()
             } catch(e: Exception) {
                 _state.state = ReadableState.exception(e)
             }
