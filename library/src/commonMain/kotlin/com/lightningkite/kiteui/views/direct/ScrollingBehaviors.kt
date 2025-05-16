@@ -17,6 +17,7 @@ interface ScrollingBehaviors {
     var scrollSnapStop: Boolean
     fun scrollTo(left: Double, top: Double, animated: Boolean)
     fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+    var ignoreInteraction: Boolean
 
     /**
      * Should not interrupt animations.
