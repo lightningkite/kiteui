@@ -3,6 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.*
 
 
-expect class Frame(context: RContext) : RView {
+expect class Frame(context: RContext, cannotBeCovered: Boolean = false) : RView {
 
 }
