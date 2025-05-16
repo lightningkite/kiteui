@@ -12,4 +12,16 @@ actual class RContext(val controller: UIViewController) : RContextHelper() {
             UIUserInterfaceStyle.UIUserInterfaceStyleLight -> false
             else -> null
         }
+
+    // !!! SETUP REQUIRED !!!
+    // To enable immersive mode for iOS, you must:
+    //    1) set "View controller-based status bar appearance" to YES in your Info.plist
+    //    2) override prefersStatusBarHidden in your view controller and point it to this variable
+    actual var immersiveMode: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                controller.setNeedsStatusBarAppearanceUpdate()
+            }
+        }
 }
