@@ -167,4 +167,8 @@ class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSizeOverrid
             lastReportedSize = mySizeWithoutPadding
         }
     }
+
+    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+        return frameLayoutHitTest(point, withEvent)
+    }
 }

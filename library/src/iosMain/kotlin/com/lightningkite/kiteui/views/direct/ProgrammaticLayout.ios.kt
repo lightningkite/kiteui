@@ -12,9 +12,11 @@ import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
 import com.lightningkite.kiteui.views.layoutSubviewsAndLayers
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSize
 import platform.CoreGraphics.CGSizeMake
+import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
@@ -137,5 +139,9 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             }, inProgress, bounds.useContents { Size(size.width, size.height) })
             inLayout = false
         }
+    }
+
+    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+        return frameLayoutHitTest(point, withEvent)
     }
 }

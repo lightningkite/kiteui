@@ -29,7 +29,7 @@ expect class ScrollingBehaviorImpl constructor(
 
      override var scrollSnapStop: Boolean
 
-
+     override var ignoreInteraction: Boolean
 
      override fun scrollTo(left: Double, top: Double, animated: Boolean)
 

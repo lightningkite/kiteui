@@ -109,12 +109,14 @@ class Recycler2(
                     ignoreInteraction = Platform.current != Platform.Web
                 } - programmatic {
                     fakeScrollContent = this
+                    ignoreInteraction = Platform.current != Platform.Web
                     ThemeDerivation {
                         it.copy(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
                     }.onNext - unpadded - frame {
+                        ignoreInteraction = Platform.current != Platform.Web
                         fakeScrollIndicator = this
                         opacity = 0.0
                     }
