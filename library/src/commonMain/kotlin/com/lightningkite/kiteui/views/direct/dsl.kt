@@ -247,7 +247,7 @@ inline fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): S
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.frame(cannotBeCovered: Boolean, setup: Frame.() -> Unit = {}): Frame {
+inline fun ViewWriter.frame(cannotBeCovered: Boolean = false, setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Frame(context, cannotBeCovered) , setup)
 }
