@@ -12,4 +12,5 @@ actual class RContext(
     actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons.putAll(this@RContext.addons) }
     actual override val darkMode: Boolean? get() = null
     override fun toString(): String = "RContext@$id"
+    actual var immersiveMode: Boolean = false
 }
