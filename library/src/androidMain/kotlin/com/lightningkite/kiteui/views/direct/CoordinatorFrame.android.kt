@@ -8,14 +8,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -32,7 +30,7 @@ import kotlinx.coroutines.launch
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = CoordinatorLayout(context.activity)
+    override val native = CoordinatorLayoutWithGestures(context.activity)
     override fun childTouches(child: RView): Int {
         val p = child.lparams as CoordinatorLayout.LayoutParams
         var total = 0
@@ -57,7 +55,6 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
 
     actual fun bottomSheet(
         peekSize: Dimension?,
@@ -231,6 +228,14 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
 
         } - content(control)
+    }
+
+    actual fun onLeftSwipe(action: suspend () -> Unit) {
+        native.onLeftSwipeAction = { launch { action() } }
+    }
+
+    actual fun onRightSwipe(action: suspend () -> Unit) {
+        native.onRightSwipeAction = { launch { action() } }
     }
 }
 
