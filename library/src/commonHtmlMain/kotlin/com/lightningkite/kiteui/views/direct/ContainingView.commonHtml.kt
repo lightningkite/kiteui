@@ -87,8 +87,14 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         native.style.flexDirection = "column"
         native.classes += "kiteui-flex"
         native.classes += "kiteui-col"
+        native.classes.add("optimized")
     }
     private var complex = false
+        private set(value) {
+            field = value
+            if(!value) native.classes.add("optimized")
+            else native.classes.remove("optimized")
+        }
     actual var vertical: Boolean = true
         set(value) {
             field = value
@@ -121,7 +127,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
         if (!complex) {
             // Optimized mode requires weird stuff
-            view.native.classes.add("optColChild")
             when(align) {
                 Align.Start -> {
                     view.native.style.marginLeft = "unset"
@@ -146,6 +151,16 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
                 }
             }
         }
+        rerunOptimizedBottomMarginCalc()
+    }
+
+    override fun internalClearChildren() {
+        super.internalClearChildren()
+        rerunOptimizedBottomMarginCalc()
+    }
+    override fun internalRemoveChild(index: Int) {
+        super.internalRemoveChild(index)
+        rerunOptimizedBottomMarginCalc()
     }
 
     override fun postSetup() {
@@ -179,7 +194,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             complex = true
             native.style.display = "flex"
             for (child in children) {
-                native.classes.remove("optColChild")
                 child.native.style.marginBottom = "0px"
             }
         }

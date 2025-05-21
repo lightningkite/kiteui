@@ -24,19 +24,44 @@ object ExperimentPage : Page {
 
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
-            val c = Property("")
-            text {
-                ::content { c() }
+            val items = sharedProcess<List<Int>> {
+                val out = ArrayList<Int>()
+                var num = 0
+                out.add(num++)
+                out.add(num++)
+                out.add(num++)
+                emit(out.toList())
+                while (true) {
+                    println("Iter $num")
+                    if (out.size > 10 && Random.nextBoolean()) out.removeAt(out.indices.random())
+                    else out.add(num++)
+                    emit(out.toList())
+                    delay(1000)
+                }
             }
-            button {
-                text("Shorten")
-                onClick { c.value = "Short" }
+            card - text {
+                ::content { items().joinToString() }
             }
-            button {
-                text("Lengthen")
-                onClick { c.value = "Some lengthier text" }
+            expanding - card - col {
+                forEach(items) {
+                    card - text(it.toString())
+                }
             }
         }
+//        col {
+//            val c = Property("")
+//            text {
+//                ::content { c() }
+//            }
+//            button {
+//                text("Shorten")
+//                onClick { c.value = "Short" }
+//            }
+//            button {
+//                text("Lengthen")
+//                onClick { c.value = "Some lengthier text" }
+//            }
+//        }
 //        col {
 //            card - col {
 //                val show = Property(false)
