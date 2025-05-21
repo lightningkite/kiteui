@@ -27,6 +27,9 @@ data class LinearGradient(
     val angle: Angle = Angle.zero,
     val screenStatic: Boolean = false,
 ) : Paint {
+    companion object {
+        val INVALID = LinearGradient(listOf())
+    }
     override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
     override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
