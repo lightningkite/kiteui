@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("recycler-view")
-object RecyclerViewPage : Page {
+object RecyclerViewTestPage : Page {
     override val title: Readable<String>
         get() = super.title
 

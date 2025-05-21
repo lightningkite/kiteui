@@ -6,11 +6,9 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
-import com.lightningkite.kiteui.views.direct.Frame
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.frame
@@ -20,7 +18,6 @@ import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
-import com.lightningkite.kiteui.views.direct.switch
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
 import com.lightningkite.kiteui.views.l2.icon
@@ -95,7 +92,7 @@ object RootPage : Page {
                 linkPage { DialogSamplesPage }
                 linkPage { ExternalServicesPage }
                 linkPage { FullExampleScreen() }
-                linkPage { RecyclerViewPage }
+                linkPage { RecyclerViewTestPage }
                 linkPage { PerformanceTestPage }
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }

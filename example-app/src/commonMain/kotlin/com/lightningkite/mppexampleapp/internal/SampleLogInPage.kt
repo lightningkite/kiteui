@@ -11,7 +11,9 @@ import com.lightningkite.readable.Property
 import com.lightningkite.readable.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.readable.invoke
 import kotlinx.coroutines.delay
 
 @Routable("sample/login")
@@ -30,17 +32,15 @@ object SampleLogInPage : Page {
                 expanding - space()
                 centered - sizeConstraints(maxWidth = 50.rem) - card - col {
                     h1 { content = "My App" }
-                    label {
-                        content = "Email"
-                        sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                    sizeConstraints(width = 20.rem) - field("Email") {
+                        fieldTheme - textInput {
                             hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
                     }
-                    label {
-                        content = "Password"
-                        sizeConstraints(width = 20.rem) - fieldTheme - textField {
+                    sizeConstraints(width = 20.rem) - field("Password") {
+                        fieldTheme - textInput {
                             hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
@@ -66,7 +66,7 @@ object SampleLogInPage : Page {
     }
 
     private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
-        fetch("fake-login/${email.await()}")
+        fetch("fake-login/${email()}")
         pageNavigator.navigate(ControlsPage)
     }
 }

@@ -14,9 +14,9 @@ A Kotlin Multiplatform UI Framework inspired by Solid.js.
 ## Interesting design decisions
 
 - Base navigation around URLs to be very compatible with web
+- Use fine-grained reactivity
 - Use themes for styling; avoid direct styling.
 - Derive theme variants from existing themes.  Make theme variants semantically based.
-- Don't use kotlinx.coroutines, it's too big - include a custom, simpler, and more limited implementation
 - Don't use a KMP network client, they're all too big - include a custom, simpler, and more limited implementation
 
 ## Project Status
@@ -44,47 +44,57 @@ If you want to try another theme, start [here](https://kiteui.cs.lightningkite.c
 
 ```kotlin
 @Routable("sample/login")
-object SampleLogInPage : KiteUiPage {
-    override fun ViewContext.render() {
+object SampleLogInPage : Page {
+    override fun ViewWriter.render(): ViewModifiable = run {
         val email = Property("")
         val password = Property("")
         frame {
+            gap = 0.rem
             image {
-                source = ImageRemote("https://picsum.photos/seed/login/1080/1920")
-                scaleType = ImageMode.Crop
-                alpha = 0.5
-            } in bordering
-            col {
-                space {} in weight(1f)
-                col {
+                source = Resources.imagesSolera
+                scaleType = ImageScaleType.Crop
+                opacity = 0.5
+            }
+            padded - scrolling - col {
+                expanding - space()
+                centered - sizeConstraints(maxWidth = 50.rem) - card - col {
                     h1 { content = "My App" }
-                    label {
-                        content = "Email"
-                        textField {
+                    sizeConstraints(width = 20.rem) - field("Email") {
+                        fieldTheme - textInput {
+                            hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
                     }
-                    label {
-                        content = "Password"
-                        textField {
+                    sizeConstraints(width = 20.rem) - field("Password") {
+                        fieldTheme - textInput {
+                            hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
-                        }
-                    }
-                    button {
-                        h6 { content = "Log In" }
-                        onClick {
-                            launch {
-                                fetch("fake-login/${email.await()}")
-                                navigator.navigate(ControlsPage)
+                            action = Action(
+                                title = "Log In",
+                                icon = Icon.login,
+                            ) {
+                                fakeLogin(email)
                             }
                         }
-                    } in important
-                } in card in sizedBox(SizeConstraints(maxWidth = 50.rem))
-                space {} in weight(1f)
-            } in scrolling in withPadding
-        } in bordering
+                    }
+                    centered - sizeConstraints(width = 15.rem) - important - button {
+                        h6 { content = "Log In" }
+                        onClick {
+                            delay(1000)
+                            fakeLogin(email)
+                        }
+                    }
+                }
+                expanding - space()
+            }
+        }
+    }
+
+    private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
+        fetch("fake-login/${email()}")
+        pageNavigator.navigate(ControlsPage)
     }
 }
 ```

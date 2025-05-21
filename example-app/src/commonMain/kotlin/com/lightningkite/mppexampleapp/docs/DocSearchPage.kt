@@ -35,6 +35,7 @@ object DocSearchPage : Page {
         { IconsPage },
         { ViewModifiersPage },
         { LayoutPage },
+        { RecyclerViewPage },
         { CheatSheet }
     ))
 
