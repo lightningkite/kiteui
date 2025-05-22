@@ -388,3 +388,10 @@ inline fun ViewWriter.horizontalRecyclerView(setup: Recycler2.() -> Unit = {}): 
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return Recycler2(this, false).apply(setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.resizablePanes(setup: ResizablePanes.() -> Unit = {}): ResizablePanes {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ResizablePanes(context), setup)
+}
