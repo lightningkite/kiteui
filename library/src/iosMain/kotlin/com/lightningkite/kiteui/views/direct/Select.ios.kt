@@ -13,7 +13,7 @@ import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 
-actual class Select actual constructor(context: RContext): RView(context) {
+actual class Select actual constructor(context: RContext): RView(context), InputAccessibility {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init {
@@ -102,4 +102,8 @@ actual class Select actual constructor(context: RContext): RView(context) {
         if(textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    override var ariaRequired: Boolean? = null
+        // iOS doesn't have a direct equivalent to aria-required
+        // We simply store the value but don't try to set it on any object
 }

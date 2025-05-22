@@ -109,6 +109,75 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             for (child in children) child.updateCorners()
         }
 
+    // Accessibility properties
+    override var tabIndex: Int
+        get() = super.tabIndex
+        set(value) {
+            super.tabIndex = value
+            if (value >= 0) {
+                native.isFocusable = true
+                native.isFocusableInTouchMode = true
+            } else {
+                native.isFocusable = false
+                native.isFocusableInTouchMode = false
+            }
+        }
+
+    override var ariaLabel: String?
+        get() = super.ariaLabel
+        set(value) {
+            super.ariaLabel = value
+            native.contentDescription = value
+        }
+
+    override var ariaHidden: Boolean?
+        get() = super.ariaHidden
+        set(value) {
+            super.ariaHidden = value
+            if (value == true) {
+                native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            } else {
+                native.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            }
+        }
+
+    override var ariaExpanded: Boolean?
+        get() = super.ariaExpanded
+        set(value) {
+            super.ariaExpanded = value
+            // Android doesn't have a direct equivalent to aria-expanded
+            // We could use a custom AccessibilityNodeInfo in the future
+        }
+
+    override var ariaRole: AriaRole?
+        get() = super.ariaRole
+        set(value) {
+            super.ariaRole = value
+            // Android uses class hierarchy rather than roles
+            // For some common roles we can set appropriate class behavior
+            when (value) {
+                AriaRole.Button -> {
+                    native.isClickable = true
+                    native.isFocusable = true
+                }
+                // Add more role mappings as needed
+                else -> {}
+            }
+        }
+
+    override var ariaLive: Boolean
+        get() = super.ariaLive
+        set(value) {
+            super.ariaLive = value
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                native.accessibilityLiveRegion = if (value) {
+                    View.ACCESSIBILITY_LIVE_REGION_POLITE
+                } else {
+                    View.ACCESSIBILITY_LIVE_REGION_NONE
+                }
+            }
+        }
+
     override var transitionId: String?
         get() = super.transitionId
         set(value) {

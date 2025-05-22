@@ -15,7 +15,7 @@ import platform.objc.sel_registerName
 import platform.CoreGraphics.CGRectMake
 
 
-actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class TextInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     companion object {
         var alwaysToolbar = false
     }
@@ -214,5 +214,17 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         if (textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
-}
 
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // iOS doesn't have a direct equivalent to aria-required
+            // We could update the accessibilityLabel to include "required" if needed
+            if (value == true && textField.accessibilityLabel != null) {
+                val currentLabel = textField.accessibilityLabel.toString()
+                if (!currentLabel.contains(", required")) {
+                    textField.accessibilityLabel = "$currentLabel, required"
+                }
+            }
+        }
+}

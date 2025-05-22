@@ -19,7 +19,7 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -166,4 +166,16 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         keyboardHints = KeyboardHints(KeyboardCase.Sentences)
     }
 
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // Android doesn't have a direct equivalent to aria-required
+            // We could update the contentDescription to include "required" if needed
+            if (value == true && native.contentDescription != null) {
+                val currentDesc = native.contentDescription.toString()
+                if (!currentDesc.contains("(required)")) {
+                    native.contentDescription = "$currentDesc (required)"
+                }
+            }
+        }
 }

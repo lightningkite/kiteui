@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.AriaRole
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
@@ -11,6 +12,7 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
         native.attributes.type = "checkbox"
         native.classes.add("switch")
         native.classes.add("checkResponsive")
+        ariaRole = AriaRole.Switch
     }
     actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",

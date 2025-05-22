@@ -54,7 +54,7 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(container: ViewWriter): ViewModifiable {
+class PhoneNumberInput(container: ViewWriter): ViewModifiable, InputAccessibility {
     override val coroutineContext: CoroutineContext
         get() = input.coroutineContext
     private val input = container.formattedTextInput {
@@ -71,6 +71,10 @@ class PhoneNumberInput(container: ViewWriter): ViewModifiable {
     val content: ImmediateWritable<String> by input::content
     var hint: String by input::hint
     var align: Align by input::align
+
+    override var ariaRequired: Boolean?
+        get() = (input as InputAccessibility).ariaRequired
+        set(value) { (input as InputAccessibility).ariaRequired = value }
 }
 
 operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }

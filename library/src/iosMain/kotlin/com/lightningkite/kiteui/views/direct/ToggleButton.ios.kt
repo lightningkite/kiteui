@@ -8,7 +8,7 @@ import platform.UIKit.UIView
 
 
 
-actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+actual class ToggleButton actual constructor(context: RContext) : RView(context), InputAccessibility {
     override val native: FrameLayoutButton = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -44,4 +44,8 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         if(native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    override var ariaRequired: Boolean? = null
+        // iOS doesn't have a direct equivalent to aria-required
+        // We simply store the value but don't try to set it on any object
 }

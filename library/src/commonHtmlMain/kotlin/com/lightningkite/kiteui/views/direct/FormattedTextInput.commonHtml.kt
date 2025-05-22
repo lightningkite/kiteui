@@ -7,7 +7,7 @@ import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -123,6 +123,16 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                native.setAttribute("aria-required", null)
+            } else {
+                native.setAttribute("aria-required", value.toString())
+            }
+        }
 }
 
 expect val FormattedTextInput.selectionStart: Int?

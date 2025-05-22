@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
+import com.lightningkite.kiteui.models.AriaRole
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
@@ -31,6 +32,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
                 }
             }
             atBottomCenter - col {
+                ariaRole = AriaRole.Dialog
                 gap = 2.rem
                 DialogSemantic.onNext - content()
                 space()
@@ -62,6 +64,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
                 willRemove = dismissBackground {
                     onClick { if (dismissable) closePopovers() }
                     centered - DialogSemantic.onNext - frame {
+                        ariaRole = AriaRole.Dialog
                         content()
                     }
                 }
@@ -83,6 +86,7 @@ fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() 
             }.run {
                 beforeNextElementSetup {
                     animateIn(transition.forward)
+                    ariaRole = AriaRole.Dialog
                 }
                 willRemove = content().rView
             }

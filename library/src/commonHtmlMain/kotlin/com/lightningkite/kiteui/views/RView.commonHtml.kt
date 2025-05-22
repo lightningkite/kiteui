@@ -80,6 +80,70 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             nativeOnDrop(value)
         }
 
+    // Accessibility properties
+    override var tabIndex: Int
+        get() = super.tabIndex
+        set(value) {
+            super.tabIndex = value
+            native.attributes.tabIndex = value
+        }
+
+    override var ariaLabel: String?
+        get() = super.ariaLabel
+        set(value) {
+            super.ariaLabel = value
+            if (value == null) {
+                native.setAttribute("aria-label", null)
+            } else {
+                native.setAttribute("aria-label", value)
+            }
+        }
+
+    override var ariaHidden: Boolean?
+        get() = super.ariaHidden
+        set(value) {
+            super.ariaHidden = value
+            if (value == null) {
+                native.setAttribute("aria-hidden", null)
+            } else {
+                native.setAttribute("aria-hidden", value.toString())
+            }
+        }
+
+    override var ariaExpanded: Boolean?
+        get() = super.ariaExpanded
+        set(value) {
+            super.ariaExpanded = value
+            if (value == null) {
+                native.setAttribute("aria-expanded", null)
+            } else {
+                native.setAttribute("aria-expanded", value.toString())
+            }
+        }
+
+    override var ariaRole: AriaRole?
+        get() = super.ariaRole
+        set(value) {
+            super.ariaRole = value
+            if (value == null) {
+                native.setAttribute("role", null)
+            } else {
+                native.setAttribute("role", value.toString())
+            }
+        }
+
+    override var ariaLive: Boolean
+        get() = super.ariaLive
+        set(value) {
+            super.ariaLive = value
+            if (!value) {
+                native.setAttribute("aria-live", null)
+            } else {
+                native.setAttribute("aria-live", "polite")
+            }
+        }
+
+
 
     actual override fun scrollIntoView(
         horizontal: Align?,

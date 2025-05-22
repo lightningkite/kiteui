@@ -1,12 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
+import com.lightningkite.kiteui.models.AriaRole
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 
-actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+actual class ToggleButton actual constructor(context: RContext) : RView(context), InputAccessibility {
     val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
@@ -14,6 +15,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         classes.add("checkResponsive")
         attributes.hidden = true
         style.display = "none"
+        ariaRole = AriaRole.Checkbox
     }
 
     init {
@@ -36,6 +38,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
             }
         })
         native.appendChild(input)
+        native.setAttribute("aria-checked", "false")
     }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
@@ -53,6 +56,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
                 native.classes.add("checked")
             else
                 native.classes.remove("checked")
+            native.setAttribute("aria-checked", checked.value.toString())
         }
     }
 
@@ -60,5 +64,15 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         get() = input.attributes.disabled != true
         set(value) {
             input.attributes.disabled = !value
+        }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                input.setAttribute("aria-required", null)
+            } else {
+                input.setAttribute("aria-required", value.toString())
+            }
         }
 }

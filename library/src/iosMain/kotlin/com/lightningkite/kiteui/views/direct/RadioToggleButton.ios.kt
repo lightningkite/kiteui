@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 
-actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+actual class RadioToggleButton actual constructor(context: RContext) : RView(context), InputAccessibility {
     override val native: FrameLayoutButton = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -41,4 +41,8 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         if(native.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    override var ariaRequired: Boolean? = null
+        // iOS doesn't have a direct equivalent to aria-required
+        // We simply store the value but don't try to set it on any object
 }

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.AriaRole
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
@@ -49,6 +50,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         if (blockView != null) return
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
+        v.requestFocus()
         o.addChild(
             o.children.indexOf(v),
             object : RView(o.context) {
@@ -71,6 +73,8 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         )
     }
 
+    var lastFocus: HTMLElement? = null
+
     actual fun open() {
         if (existingView != null) return
         var removeElementFromOverlay = {}
@@ -79,10 +83,14 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         }
         with(popoverWriter) {
             frame {
+                ariaRole = AriaRole.Dialog
                 source.keepPopoverOpen(this)
+                native.setAttribute("aria-modal", "true")
                 currentDirection = preferredDirection
                 existingView = this
                 themeChoice = DialogSemantic
+                tabIndex = -1
+                lastFocus = window.document.activeElement as HTMLElement?
                 native.style.position = "absolute"
                 native.style.zIndex = "999"
                 native.style.height = "auto"
@@ -287,6 +295,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         e.style.setProperty("pointer-events", "none")
                     }
                     existingView = null
+                    lastFocus?.focus()
                 }
             }
         }

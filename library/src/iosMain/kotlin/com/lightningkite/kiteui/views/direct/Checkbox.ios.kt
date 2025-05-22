@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 
 
-actual class Checkbox actual constructor(context: RContext) : RView(context) {
+actual class Checkbox actual constructor(context: RContext) : RView(context), InputAccessibility {
     override val native: WrapperView = WrapperView()
     val button = FrameLayoutButton()
     override val addChildTarget get() = button
@@ -43,4 +43,8 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
             _checked.value = !_checked.value
         })
     }
+
+    override var ariaRequired: Boolean? = null
+        // iOS doesn't have a direct equivalent to aria-required
+        // We simply store the value but don't try to set it on any object
 }

@@ -6,7 +6,7 @@ import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Property
 import com.lightningkite.kiteui.views.*
 
-actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+actual class RadioToggleButton actual constructor(context: RContext) : RView(context), InputAccessibility {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = true }
@@ -34,4 +34,17 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
     }
 
     override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // Android doesn't have a direct equivalent to aria-required
+            // We could update the contentDescription to include "required" if needed
+            if (value == true && native.contentDescription != null) {
+                val currentDesc = native.contentDescription.toString()
+                if (!currentDesc.contains("(required)")) {
+                    native.contentDescription = "$currentDesc (required)"
+                }
+            }
+        }
 }

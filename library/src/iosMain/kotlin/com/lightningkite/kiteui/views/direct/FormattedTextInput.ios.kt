@@ -12,7 +12,7 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -203,4 +203,17 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         if (textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // iOS doesn't have a direct equivalent to aria-required
+            // We could update the accessibilityLabel to include "required" if needed
+            if (value == true && textField.accessibilityLabel != null) {
+                val currentLabel = textField.accessibilityLabel.toString()
+                if (!currentLabel.contains(", required")) {
+                    textField.accessibilityLabel = "$currentLabel, required"
+                }
+            }
+        }
 }

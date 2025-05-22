@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -119,6 +119,16 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                native.setAttribute("aria-required", null)
+            } else {
+                native.setAttribute("aria-required", value.toString())
+            }
+        }
 }
 
 expect val NumberInput.selectionStart: Int?

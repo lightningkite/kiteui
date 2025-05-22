@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.views.*
 actual class IconView actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
-        native.setAttribute("role", "img")
         native.classes.add("viewDraws")
         native.classes.add("icon")
     }
@@ -15,6 +14,11 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)
     }
+
+    companion object {
+        private var incrementing = 0
+    }
+    private val unique = incrementing++
 
     actual var source: Icon? = null
         set(value) {
@@ -24,6 +28,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
                 native.appendChild(FutureElement().apply {
                     tag = "svg"
                     xmlns = "http://www.w3.org/2000/svg"
+                    setAttribute("aria-labelledby", "icon-$unique")
                     style.width = value.width.value.toString()
                     style.height = value.height.value.toString()
                     setStyleProperty("fill", "currentColor")
@@ -59,6 +64,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
                     ?: it.appendChild(FutureElement().apply {
                         tag = "title"
                         content = value
+                        id = "icon-$unique"
                     })
             }
         }

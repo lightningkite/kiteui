@@ -18,7 +18,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 
-actual class Select actual constructor(context: RContext): RView(context) {
+actual class Select actual constructor(context: RContext): RView(context), InputAccessibility {
     override val native = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
@@ -60,6 +60,19 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
         background = layerDrawable
     }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // Android doesn't have a direct equivalent to aria-required
+            // We could update the contentDescription to include "required" if needed
+            if (value == true && native.contentDescription != null) {
+                val currentDesc = native.contentDescription.toString()
+                if (!currentDesc.contains("(required)")) {
+                    native.contentDescription = "$currentDesc (required)"
+                }
+            }
+        }
 
     actual fun <T> bind(
         edits: Writable<T>,

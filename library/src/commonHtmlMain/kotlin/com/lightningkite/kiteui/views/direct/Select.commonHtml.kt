@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-actual class Select actual constructor(context: RContext) : RView(context) {
+actual class Select actual constructor(context: RContext) : RView(context), InputAccessibility {
     init {
         native.tag = "select"
         native.classes.add("editable")
@@ -58,6 +58,16 @@ actual class Select actual constructor(context: RContext) : RView(context) {
     actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                native.setAttribute("aria-required", null)
+            } else {
+                native.setAttribute("aria-required", value.toString())
+            }
+        }
 
     override fun applyTheme(theme: ThemeAndBack) {
         val p = prevThemeClass

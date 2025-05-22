@@ -82,6 +82,14 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open var paddingByEdge: Edges? = null
     open var transitionId: String? = null
 
+    // Accessibility properties
+    open var tabIndex: Int = -1
+    open var ariaLabel: String? = null
+    open var ariaHidden: Boolean? = null
+    open var ariaExpanded: Boolean? = null
+    open var ariaRole: AriaRole? = null
+    open var ariaLive: Boolean = false
+
     // drag 'n drop
     open var dragData: DragData? = null
     open var dropTargetDelegate: DropTargetDelegate? = null

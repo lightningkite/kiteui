@@ -7,7 +7,7 @@ import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+actual class TextInput actual constructor(context: RContext) : RViewWithAction(context), InputAccessibility {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -89,4 +89,13 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                native.setAttribute("aria-required", null)
+            } else {
+                native.setAttribute("aria-required", value.toString())
+            }
+        }
 }

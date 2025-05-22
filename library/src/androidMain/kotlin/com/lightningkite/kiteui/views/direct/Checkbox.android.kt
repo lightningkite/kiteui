@@ -19,7 +19,7 @@ import com.lightningkite.readable.await
 import com.lightningkite.kiteui.views.*
 
 
-actual class Checkbox actual constructor(context: RContext): RView(context) {
+actual class Checkbox actual constructor(context: RContext): RView(context), InputAccessibility {
     override val native = AndroidCheckBox(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme
@@ -46,4 +46,17 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
     }
 
     actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            // Android doesn't have a direct equivalent to aria-required
+            // We could update the contentDescription to include "required" if needed
+            if (value == true && native.contentDescription != null) {
+                val currentDesc = native.contentDescription.toString()
+                if (!currentDesc.contains("(required)")) {
+                    native.contentDescription = "$currentDesc (required)"
+                }
+            }
+        }
 }

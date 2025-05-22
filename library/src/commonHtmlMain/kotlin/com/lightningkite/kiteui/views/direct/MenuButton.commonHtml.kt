@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.AriaRole
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
@@ -12,6 +13,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         native.tag = "button"
         native.classes.add("kiteui-stack")
         native.classes.add("clickable")
+        ariaRole = AriaRole.Menu
         native.addEventListener("click") {
             floating.open()
             floating.block()
@@ -38,4 +40,3 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         floating.menuGenerator = createMenu
     }
 }
-

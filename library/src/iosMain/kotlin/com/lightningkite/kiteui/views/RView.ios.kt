@@ -15,9 +15,15 @@ import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import platform.UIKit.UIAccessibilityTraitButton
+import platform.UIKit.UIAccessibilityTraitHeader
+import platform.UIKit.UIAccessibilityTraitLink
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
+import platform.UIKit.accessibilityLabel
+import platform.UIKit.accessibilityTraits
+import platform.UIKit.isAccessibilityElement
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.sin
@@ -105,6 +111,77 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             val gap = mySpacing.value
             for (child in children) {
                 child.native.layoutLayers(gap)
+            }
+        }
+
+    // Accessibility properties
+    override var tabIndex: Int
+        get() = super.tabIndex
+        set(value) {
+            super.tabIndex = value
+            // iOS doesn't have tabIndex directly, but we can control if it's in the focus order
+            if (value >= 0) {
+                native.isAccessibilityElement = true
+                // Store the tabIndex for custom focus order implementation
+//                native.setAssociatedObject(tabIndexKey, value)
+            } else {
+                // Negative tabIndex means not in the tab order
+                native.isAccessibilityElement = false
+            }
+        }
+
+    override var ariaLabel: String?
+        get() = super.ariaLabel
+        set(value) {
+            super.ariaLabel = value
+            native.accessibilityLabel = value
+        }
+
+    override var ariaHidden: Boolean?
+        get() = super.ariaHidden
+        set(value) {
+            super.ariaHidden = value
+            native.isAccessibilityElement = !(value ?: false)
+        }
+
+    override var ariaExpanded: Boolean?
+        get() = super.ariaExpanded
+        set(value) {
+            super.ariaExpanded = value
+            // iOS doesn't have a direct equivalent to aria-expanded
+            // We could use accessibilityTraits in the future
+        }
+
+    override var ariaRole: AriaRole?
+        get() = super.ariaRole
+        set(value) {
+            super.ariaRole = value
+            // iOS uses traits rather than roles
+            // For some common roles we can set appropriate traits
+            when (value) {
+                AriaRole.Button -> {
+                    native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitButton
+                }
+                AriaRole.Heading -> {
+                    native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitHeader
+                }
+                AriaRole.Link -> {
+                    native.accessibilityTraits = native.accessibilityTraits or UIAccessibilityTraitLink
+                }
+                // Add more role mappings as needed
+                else -> {}
+            }
+        }
+
+    override var ariaLive: Boolean
+        get() = super.ariaLive
+        set(value) {
+            super.ariaLive = value
+            // iOS doesn't have a direct equivalent to aria-live
+            // For dynamic content, we'd need to post notifications
+            if (value) {
+                // Store this value and use it when content changes
+                // In the future, we could implement a notification system
             }
         }
 

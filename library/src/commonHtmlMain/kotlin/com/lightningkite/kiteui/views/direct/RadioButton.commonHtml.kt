@@ -6,7 +6,7 @@ import com.lightningkite.readable.ReadableState
 import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.views.*
 
-actual class RadioButton actual constructor(context: RContext) : RView(context) {
+actual class RadioButton actual constructor(context: RContext) : RView(context), InputAccessibility {
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"
@@ -25,5 +25,15 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value
+        }
+
+    override var ariaRequired: Boolean? = null
+        set(value) {
+            field = value
+            if (value == null) {
+                native.setAttribute("aria-required", null)
+            } else {
+                native.setAttribute("aria-required", value.toString())
+            }
         }
 }
