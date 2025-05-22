@@ -20,9 +20,9 @@ object DocSearchPage : Page {
 
     val docsPages = Property(listOf(
         // TODO: Gradle tasks
-        // TODO: Resources
         // TODO: Platform-specific views
         // TODO: Custom widgets
+        { ResourcesPage },
         { DataPage },
         { ReactiveToolsPage },
         { ThemingPage },
