@@ -25,7 +25,10 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     actual val volume: Writable<Float> = nativeVolume
     actual var showControls: Boolean
         get() = native.attributes.controls != null
-        set(value) { native.attributes.controls = value }
+        set(value) {
+            native.attributes.controls = value
+            native.attributes.playsInline = !value
+        }
     actual var loop: Boolean
         get() = native.attributes.loopBoolean != null
         set(value) { native.attributes.loopBoolean = value }
