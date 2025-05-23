@@ -13,8 +13,8 @@ import com.lightningkite.kiteui.views.*
 import kotlin.math.roundToInt
 
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class Frame actual constructor(context: RContext, cannotBeCovered: Boolean) : RView(context) {
+    override val cannotBeCovered: Boolean = cannotBeCovered
     override val native = FrameLayout(context.activity)
     override fun childTouches(child: RView): Int {
         val p = child.lparams as FrameLayout.LayoutParams
@@ -31,8 +31,8 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class RowOrCol actual constructor(context: RContext, cannotBeCovered: Boolean) : RView(context) {
+    override val cannotBeCovered: Boolean = cannotBeCovered
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(

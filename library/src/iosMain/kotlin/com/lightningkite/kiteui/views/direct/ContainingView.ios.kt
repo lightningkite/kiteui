@@ -7,9 +7,9 @@ import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+actual class RowOrCol actual constructor(context: RContext, cannotBeCovered: Boolean) : RView(context) {
     override val native = LinearLayout()
-    override val cannotBeCovered: Boolean get() = false
+    override val cannotBeCovered: Boolean = cannotBeCovered
 
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -84,8 +84,8 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     }
 }
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class Frame actual constructor(context: RContext, cannotBeCovered: Boolean) : RView(context) {
+    override val cannotBeCovered: Boolean = cannotBeCovered
     override val native = FrameLayout()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
