@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import kotlin.UnsupportedOperationException
 
 actual class ScrollingBehaviorImpl actual constructor(
     val on: RView,
@@ -55,6 +55,10 @@ actual class ScrollingBehaviorImpl actual constructor(
             field = value
             native.setStyleProperty("scroll-snap-stop", if(value) "always" else "normal")
         }
+    actual override var ignoreInteraction: Boolean
+        get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
+        set(value) {}
+
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
     actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {

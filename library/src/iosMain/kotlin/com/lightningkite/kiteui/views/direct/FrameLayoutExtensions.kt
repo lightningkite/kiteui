@@ -147,7 +147,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         }
     }
 //    println("$this give up: $userInteractionEnabled")
-    return if(userInteractionEnabled) this else null
+    return if (extensionIgnoreInteraction != true) this else null
 }
 
 

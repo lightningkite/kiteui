@@ -137,6 +137,10 @@ actual class ScrollingBehaviorImpl actual constructor(
             native.setStyleProperty("scroll-snap-stop", if (value) "always" else "normal")
         }
 
+    actual override var ignoreInteraction: Boolean
+        get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
+        set(value) {}
+
     actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
         disableSnapTemporarily()

@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
 import com.lightningkite.kiteui.views.extensionHorizontalAlign
+import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.extensionVerticalAlign
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
@@ -159,6 +160,13 @@ class ScrollView(
             field = value
             scroller.showsHorizontalScrollIndicator = value
             scroller.showsVerticalScrollIndicator = value
+        }
+    override var ignoreInteraction: Boolean
+        get() = super.ignoreInteraction
+        set(value) {
+            super.ignoreInteraction = value
+            scroller.extensionIgnoreInteraction = value
+            scroller.scrollEnabled = !value
         }
     override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = scroller.contentOffset.useContents { x to y }
