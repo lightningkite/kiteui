@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.models.WindowStatistics
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.coroutines.CoroutineScope
 
 @Deprecated("Use AppState instead", ReplaceWith("AppState.animationFrame", "com.lightningkite.readable.AppState")) val AnimationFrame: Listenable get() = AppState.animationFrame
