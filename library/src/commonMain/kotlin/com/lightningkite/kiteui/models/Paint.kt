@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -18,7 +19,9 @@ data class FadingColor(val base: Color, val alternate: Color): Paint {
     override fun closestColor(): Color = base
     override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
 }
+@Serializable
 data class GradientStop(val ratio: Float, val color: Color)
+@Serializable
 data class LinearGradient(
     val stops: List<GradientStop>,
     /**
@@ -57,6 +60,7 @@ data class LinearGradient(
     fun invert() = copy(stops = stops.map { it.copy(color = it.color.invert()) })
 }
 
+@Serializable
 data class RadialGradient(
     val stops: List<GradientStop>,
     val screenStatic: Boolean = false,
@@ -82,6 +86,7 @@ data class RadialGradient(
     }
 }
 
+@Serializable
 data class Color(
     val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {

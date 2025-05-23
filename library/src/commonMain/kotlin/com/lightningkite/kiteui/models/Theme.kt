@@ -76,6 +76,10 @@ abstract class Semantic(val key: String) : ThemeDerivation {
     open fun default(theme: Theme): ThemeAndBack = theme.withoutBack
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
 
+    object Registry {
+
+    }
+
     fun Theme.withBack(
         cascading: Boolean = false,
         font: FontAndStyle? = null,
