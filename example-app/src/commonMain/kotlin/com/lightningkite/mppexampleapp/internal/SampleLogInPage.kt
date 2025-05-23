@@ -7,8 +7,8 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources

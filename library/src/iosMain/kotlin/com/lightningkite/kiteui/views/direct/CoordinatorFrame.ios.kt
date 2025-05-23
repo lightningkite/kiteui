@@ -12,10 +12,10 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Writable
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.onRemove
 import kotlinx.coroutines.launch
 import platform.UIKit.UISheetPresentationController
 import platform.UIKit.UIViewController

@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.readable.AppScope
-import com.lightningkite.readable.Property
+import com.lightningkite.signal.AppScope
+import com.lightningkite.signal.Property
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine

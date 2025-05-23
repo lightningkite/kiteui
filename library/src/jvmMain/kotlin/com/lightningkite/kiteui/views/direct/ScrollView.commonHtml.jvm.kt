@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
 actual class ScrollingBehaviorImpl actual constructor(

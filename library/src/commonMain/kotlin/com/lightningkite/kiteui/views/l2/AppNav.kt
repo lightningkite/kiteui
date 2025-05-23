@@ -6,9 +6,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.*
 
 data class UserInfo(
     val name: String,

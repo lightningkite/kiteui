@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl

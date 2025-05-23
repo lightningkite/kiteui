@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.Readable
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 

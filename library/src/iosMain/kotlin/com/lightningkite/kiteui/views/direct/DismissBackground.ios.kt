@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.launch

@@ -4,8 +4,8 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Readable
 
 expect abstract class RawImageViewLike: RView {
     val source: ImageSource

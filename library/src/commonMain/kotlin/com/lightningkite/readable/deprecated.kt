@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.DependentAction
 import com.lightningkite.kiteui.reactive.FrequencyCapAction
 import com.lightningkite.kiteui.reactive.RetryableAction
+import com.lightningkite.signal.AppScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.serializer
 import kotlin.time.Duration

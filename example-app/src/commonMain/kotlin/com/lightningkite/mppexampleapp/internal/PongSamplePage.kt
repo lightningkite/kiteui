@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.clockMillis
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import kotlin.math.abs
 import kotlin.math.min
 

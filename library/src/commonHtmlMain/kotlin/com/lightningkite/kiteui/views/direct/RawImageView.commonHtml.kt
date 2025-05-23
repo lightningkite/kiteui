@@ -12,10 +12,10 @@ import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.RawReadable
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.RawReadable
+import com.lightningkite.signal.Readable
 import kotlin.js.JsName
 
 actual abstract class RawImageViewLike(

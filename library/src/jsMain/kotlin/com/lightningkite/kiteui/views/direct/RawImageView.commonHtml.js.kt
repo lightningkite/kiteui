@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.src
-import com.lightningkite.readable.ReadableState
+import com.lightningkite.signal.ReadableState
 import org.w3c.dom.HTMLImageElement
 
 actual fun RawImageViewLike.nativeLoad(url: String?) {

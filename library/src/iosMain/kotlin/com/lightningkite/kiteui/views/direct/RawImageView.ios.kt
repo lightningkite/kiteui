@@ -26,7 +26,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.max
 import kotlin.math.roundToInt
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import platform.darwin.NSObject

@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.readable.AppScope
+import com.lightningkite.signal.AppScope
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*

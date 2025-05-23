@@ -13,8 +13,8 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.lens
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.lens
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction

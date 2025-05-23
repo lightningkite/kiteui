@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.RContext
 import kotlinx.browser.document
 import kotlinx.browser.window

@@ -7,8 +7,8 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.reactive
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*

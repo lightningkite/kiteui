@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.Listenable
+import com.lightningkite.signal.Listenable
 import com.lightningkite.kiteui.views.HtmlElementLike
 
 

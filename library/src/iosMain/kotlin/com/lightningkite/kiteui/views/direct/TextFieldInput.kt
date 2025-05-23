@@ -4,13 +4,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.Action
-import com.lightningkite.readable.CalculationContext
+import com.lightningkite.signal.CalculationContext
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
-import com.lightningkite.readable.Property
+import com.lightningkite.signal.Property
 import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)

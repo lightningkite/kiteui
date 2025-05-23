@@ -9,9 +9,9 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.cgRectValue
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.*
+import com.lightningkite.signal.Readable
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.direct.observe
 import com.lightningkite.kiteui.views.kiteUi
 import com.lightningkite.kiteui.views.setup

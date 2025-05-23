@@ -9,9 +9,9 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.await
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.ReactiveContext
+import com.lightningkite.signal.await
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.internal.LeakCheckerPage

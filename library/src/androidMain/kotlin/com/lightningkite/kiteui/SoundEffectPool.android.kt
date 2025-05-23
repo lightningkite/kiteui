@@ -4,9 +4,9 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.invokeAllSafe
+import com.lightningkite.signal.invokeAllSafe
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.readable.AppScope
+import com.lightningkite.signal.AppScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch

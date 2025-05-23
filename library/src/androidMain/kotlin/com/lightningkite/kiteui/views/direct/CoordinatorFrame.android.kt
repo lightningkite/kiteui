@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -21,9 +22,8 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
 import com.lightningkite.kiteui.views.withoutAnimation
-import com.lightningkite.readable.AppState
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Writable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

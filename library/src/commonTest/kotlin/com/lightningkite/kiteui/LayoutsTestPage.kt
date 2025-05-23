@@ -2,7 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.shared
+import com.lightningkite.signal.shared
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.*

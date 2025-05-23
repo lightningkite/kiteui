@@ -9,9 +9,9 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.signal.CalculationContext
+import com.lightningkite.signal.ReactiveContext
+import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.UIKit.UILongPressGestureRecognizer

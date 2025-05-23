@@ -3,7 +3,7 @@
 //import com.lightningkite.kiteui.FallbackRoute
 //import com.lightningkite.kiteui.decodeURIComponent
 //import com.lightningkite.kiteui.encodeURIComponent
-//import com.lightningkite.readable.*
+//import com.lightningkite.signal.*
 //import kotlinx.browser.document
 //import kotlinx.browser.window
 //import org.w3c.dom.*

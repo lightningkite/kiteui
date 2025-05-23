@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.signal.BaseListenable
+import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 

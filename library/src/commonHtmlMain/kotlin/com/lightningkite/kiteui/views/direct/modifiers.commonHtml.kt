@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.signal.*
+import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.CoroutineScope
 

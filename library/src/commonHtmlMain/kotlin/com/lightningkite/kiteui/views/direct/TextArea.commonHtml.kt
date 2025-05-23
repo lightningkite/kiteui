@@ -3,8 +3,8 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {

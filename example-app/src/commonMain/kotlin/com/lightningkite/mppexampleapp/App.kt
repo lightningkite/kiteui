@@ -3,7 +3,7 @@ package com.lightningkite.mppexampleapp
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.swapView
 import com.lightningkite.kiteui.views.direct.swapping

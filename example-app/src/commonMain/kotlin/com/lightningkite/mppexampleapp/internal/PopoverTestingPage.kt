@@ -5,9 +5,9 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.await
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.coroutines.CoroutineScope

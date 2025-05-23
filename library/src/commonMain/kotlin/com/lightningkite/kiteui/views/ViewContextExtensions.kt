@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty

@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.autoplay
 
 actual val Video.nativeTime: Writable<Double> get() = Property(0.0)

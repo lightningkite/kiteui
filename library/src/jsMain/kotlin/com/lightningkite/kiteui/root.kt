@@ -3,11 +3,11 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.basePath
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.CalculationContext
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.readable.AppScope
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.AppScope
+import com.lightningkite.signal.Readable
 import kotlinx.browser.document
 import kotlinx.coroutines.DelicateCoroutinesApi
 

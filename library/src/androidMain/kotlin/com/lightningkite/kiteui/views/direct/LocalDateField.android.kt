@@ -6,9 +6,9 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 

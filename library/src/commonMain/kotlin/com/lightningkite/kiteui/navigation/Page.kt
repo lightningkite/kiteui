@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.Constant
+import com.lightningkite.signal.Readable
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space

@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.rContextAddonInit
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.Constant
+import com.lightningkite.signal.Readable
 
 
 @Deprecated("Renamed to PageNavigator", ReplaceWith("PageNavigator")) typealias ScreenNavigator = PageNavigator

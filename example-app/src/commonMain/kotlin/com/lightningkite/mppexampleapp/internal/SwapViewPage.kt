@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.swapView
 import com.lightningkite.kiteui.views.direct.swapping
-import com.lightningkite.readable.sharedProcess
+import com.lightningkite.signal.sharedProcess
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.Readable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 

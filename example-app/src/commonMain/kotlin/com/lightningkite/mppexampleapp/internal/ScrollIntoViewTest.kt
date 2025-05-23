@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.reactive
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*

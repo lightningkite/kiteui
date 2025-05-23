@@ -13,10 +13,10 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Writable
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 

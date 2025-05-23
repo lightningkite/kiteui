@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources

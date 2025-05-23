@@ -1,11 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
+import com.lightningkite.signal.BaseListenable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.ReadableState
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*

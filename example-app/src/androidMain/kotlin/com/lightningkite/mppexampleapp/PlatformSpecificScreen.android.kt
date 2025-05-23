@@ -3,9 +3,9 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.bind
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.bind
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources

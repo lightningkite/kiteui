@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.models.InvalidSemantic
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field

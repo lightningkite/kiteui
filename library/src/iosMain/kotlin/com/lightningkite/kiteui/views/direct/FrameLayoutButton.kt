@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.Property
+import com.lightningkite.signal.CalculationContext
+import com.lightningkite.signal.Property
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*

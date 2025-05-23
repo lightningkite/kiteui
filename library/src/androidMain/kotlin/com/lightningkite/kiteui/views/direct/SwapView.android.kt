@@ -17,7 +17,7 @@ import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.readable.CalculationContext
+import com.lightningkite.signal.CalculationContext
 import com.lightningkite.kiteui.views.*
 
 

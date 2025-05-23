@@ -20,7 +20,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {

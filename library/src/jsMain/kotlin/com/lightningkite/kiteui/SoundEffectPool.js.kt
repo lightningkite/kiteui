@@ -2,7 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.basePath
-import com.lightningkite.readable.AppScope
+import com.lightningkite.signal.AppScope
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.Deferred

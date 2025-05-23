@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 actual class Video actual constructor(context: RContext) : RView(context) {

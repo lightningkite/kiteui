@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.Constant
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Readable
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atBottom
 import com.lightningkite.kiteui.views.card

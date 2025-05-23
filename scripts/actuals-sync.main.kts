@@ -25,7 +25,7 @@ class Implementation(val variant: String, val todoElementType: String) {
             import com.lightningkite.kiteui.*
             import com.lightningkite.kiteui.models.*
             import com.lightningkite.kiteui.navigation.*
-            import com.lightningkite.readable.*
+            import com.lightningkite.signal.*
             import com.lightningkite.kiteui.views.*
             import kotlinx.datetime.*
         """.trimIndent())
@@ -150,7 +150,7 @@ CodeEmitter.common(
     import com.lightningkite.kiteui.*
     import com.lightningkite.kiteui.models.*
     import com.lightningkite.kiteui.navigation.*
-    import com.lightningkite.readable.*
+    import com.lightningkite.signal.*
     import com.lightningkite.kiteui.views.*
     import com.lightningkite.kiteui.views.canvas.*
     import kotlinx.datetime.*

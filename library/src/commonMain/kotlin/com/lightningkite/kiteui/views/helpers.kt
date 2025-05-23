@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min

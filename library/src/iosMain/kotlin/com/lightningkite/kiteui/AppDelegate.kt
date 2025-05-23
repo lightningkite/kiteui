@@ -2,7 +2,7 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.readable.ReactiveContext
+import com.lightningkite.signal.ReactiveContext
 import platform.UIKit.UIApplicationOpenURLOptionsKey
 
 abstract class KiteUiAppDelegate {

@@ -5,10 +5,10 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
-import com.lightningkite.readable.bind
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.await
+import com.lightningkite.signal.bind
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating

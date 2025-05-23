@@ -11,11 +11,11 @@ import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.ReadableState
 import android.widget.CheckBox as AndroidCheckBox
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.await
+import com.lightningkite.signal.Writable
+import com.lightningkite.signal.await
 import com.lightningkite.kiteui.views.*
 
 

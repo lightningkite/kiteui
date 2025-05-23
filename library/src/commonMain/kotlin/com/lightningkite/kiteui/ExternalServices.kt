@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.readable.AppScope
+import com.lightningkite.signal.AppScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone

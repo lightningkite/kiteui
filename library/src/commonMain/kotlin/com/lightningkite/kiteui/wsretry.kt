@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob

@@ -2,9 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.ReadableState
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*

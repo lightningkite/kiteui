@@ -1,7 +1,7 @@
 //package com.lightningkite.kiteui
 //
 //import com.lightningkite.kiteui.*
-//import com.lightningkite.readable.*
+//import com.lightningkite.signal.*
 //import com.lightningkite.lightningdb.*
 //import com.lightningkite.lightningserver.db.ClientModelRestEndpoints
 //import com.lightningkite.now

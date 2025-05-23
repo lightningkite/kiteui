@@ -4,8 +4,8 @@ import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.readable.Listenable
-import com.lightningkite.readable.Readable
+import com.lightningkite.signal.Listenable
+import com.lightningkite.signal.Readable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 

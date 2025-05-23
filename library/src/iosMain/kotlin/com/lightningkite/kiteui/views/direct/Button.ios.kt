@@ -2,9 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.onRemove
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.onRemove
+import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 actual class Button actual constructor(context: RContext) : RViewWithAction(context) {

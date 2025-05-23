@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.kiteui.views.l2.icon
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.invoke
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

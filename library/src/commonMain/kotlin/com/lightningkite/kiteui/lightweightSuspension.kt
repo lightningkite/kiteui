@@ -2,7 +2,7 @@
 
 package com.lightningkite.kiteui
 
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.first

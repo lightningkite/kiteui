@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 

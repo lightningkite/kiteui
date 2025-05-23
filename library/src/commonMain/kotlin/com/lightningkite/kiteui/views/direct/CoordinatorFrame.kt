@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.Writable
 
 
 expect class CoordinatorFrame(context: RContext) : RView {

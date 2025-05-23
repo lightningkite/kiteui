@@ -8,10 +8,10 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.reactive
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.Writable
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.reactive
 import kotlinx.coroutines.launch
 
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
@@ -180,6 +180,9 @@ actual class CoordinatorDragHandle actual constructor(context: RContext) : RView
                 }
             }
         }
+
+//        reactive {}
+
         iconView.reactive {
             iconView.source = if(e() == BottomSheetState.EXPANDED) Icon.collapse else Icon.expand
         }

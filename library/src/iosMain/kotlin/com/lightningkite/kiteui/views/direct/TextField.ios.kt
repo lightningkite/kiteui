@@ -3,8 +3,8 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents

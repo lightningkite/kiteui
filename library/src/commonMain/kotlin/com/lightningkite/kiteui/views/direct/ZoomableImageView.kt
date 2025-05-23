@@ -11,9 +11,9 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.readable.RawReadable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.reactive
+import com.lightningkite.signal.RawReadable
+import com.lightningkite.signal.ReadableState
+import com.lightningkite.signal.reactive
 import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 import kotlin.coroutines.CoroutineContext

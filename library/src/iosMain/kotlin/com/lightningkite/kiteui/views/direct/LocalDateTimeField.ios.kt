@@ -3,9 +3,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.signal.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.datetime.*

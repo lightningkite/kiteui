@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.direct.horizontalRecyclerView
 import com.lightningkite.kiteui.views.direct.unpadded
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
-import com.lightningkite.readable.Constant
+import com.lightningkite.signal.Constant
 import com.lightningkite.kiteui.views.l2.children
 
 object ViewPagerCenterIndexTestPage : Page {

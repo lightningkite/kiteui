@@ -6,9 +6,9 @@ import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.navigation.render
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.ReactiveContext
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.KeyCodes
 import com.lightningkite.kiteui.views.direct.swapView
@@ -16,7 +16,7 @@ import com.lightningkite.kiteui.views.direct.swapping
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.l2.appBase
 import com.lightningkite.kiteui.views.l2.navigatorView
-import com.lightningkite.readable.AppScope
+import com.lightningkite.signal.AppScope
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.delay

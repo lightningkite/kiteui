@@ -3,9 +3,9 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.ReactiveContext
-//import com.lightningkite.readable.ReactiveScopeData
+import com.lightningkite.signal.CalculationContext
+import com.lightningkite.signal.ReactiveContext
+//import com.lightningkite.signal.ReactiveScopeData
 //import com.lightningkite.kiteui.launch as otherLaunch
 
 //@Deprecated("")

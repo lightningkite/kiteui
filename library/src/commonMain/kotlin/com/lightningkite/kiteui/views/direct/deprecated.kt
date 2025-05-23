@@ -5,7 +5,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Icon
-import com.lightningkite.readable.invoke
+import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl

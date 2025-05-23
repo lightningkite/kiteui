@@ -7,8 +7,8 @@ import android.graphics.drawable.StateListDrawable
 import android.widget.CheckBox
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 actual class Switch actual constructor(context: RContext): RView(context) {

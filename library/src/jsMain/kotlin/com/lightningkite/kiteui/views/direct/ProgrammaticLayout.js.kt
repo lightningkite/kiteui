@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement

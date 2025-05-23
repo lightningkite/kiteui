@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.mainPageNavigator
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 

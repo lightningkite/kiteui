@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.Property
+import com.lightningkite.signal.CalculationContext
+import com.lightningkite.signal.Property
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import platform.CoreGraphics.CGAffineTransformRotate
@@ -15,7 +15,7 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.readable.invokeAllSafe
+import com.lightningkite.signal.invokeAllSafe
 import platform.QuartzCore.CATransaction
 
 typealias NView = UIView

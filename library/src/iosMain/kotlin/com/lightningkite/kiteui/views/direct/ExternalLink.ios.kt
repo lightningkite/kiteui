@@ -2,9 +2,9 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.await
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.onRemove
+import com.lightningkite.signal.await
+import com.lightningkite.signal.invoke
+import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.launch

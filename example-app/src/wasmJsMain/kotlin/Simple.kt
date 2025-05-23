@@ -2,8 +2,8 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
+import com.lightningkite.signal.Property
+import com.lightningkite.signal.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.appBase
