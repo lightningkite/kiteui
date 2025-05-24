@@ -24,10 +24,10 @@ class ScrollView(
     override val native = FrameLayout()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
+            SafeAreaEdge.LEFT -> child.native.extensionHorizontalAlign?.touchesStart != false
+            SafeAreaEdge.TOP -> child.native.extensionVerticalAlign?.touchesStart != false
+            SafeAreaEdge.RIGHT -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            SafeAreaEdge.BOTTOM -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
     val scroller = ScrollLayout()

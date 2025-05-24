@@ -53,6 +53,14 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
 
 expect val RView.areAnimationsEnabled: Boolean
 expect inline fun RView.withoutAnimation(action: () -> Unit)
+
+/**
+ * Enum representing the edges of a view for safe insets handling.
+ */
+enum class SafeAreaEdge {
+    LEFT, TOP, RIGHT, BOTTOM
+}
+
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     override val rView: RView get() = this as RView
     var additionalTestingData: Any? = null
@@ -81,6 +89,100 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         set(value) { paddingByEdge = value?.let(::Edges) }
     open var paddingByEdge: Edges? = null
     open var transitionId: String? = null
+
+    // Safe insets handling
+    protected var safeAreaInsets: Edges? = null
+
+    /**
+     * Determines if a child view touches a specific edge of this view.
+     * Platform-specific implementations should override this method.
+     */
+    open fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean = true
+
+    /**
+     * Handles safe insets by determining which edges should have insets applied
+     * and passing remaining insets to children.
+     */
+    open fun handleSafeAreaInsets(edges: Edges?) {
+        println("[DEBUG_LOG] handleSafeAreaInsets called on ${this::class.simpleName} with edges: $edges")
+        if (edges == null) {
+            if (safeAreaInsets != null) {
+                println("[DEBUG_LOG] Clearing safeAreaInsets (was $safeAreaInsets)")
+                safeAreaInsets = null
+                for (child in children) {
+                    child.handleSafeAreaInsets(null)
+                }
+            }
+            return
+        }
+
+        val padding = paddingByEdge ?: when {
+            !themeAndBack.padding -> Edges.ZERO
+            else -> themeAndBack.theme.padding
+        }
+        println("[DEBUG_LOG] Padding: $padding")
+
+        fun shouldApply(edge: SafeAreaEdge, alreadyHasPadding: Boolean): Boolean {
+            val parentChainAllows = generateSequence(this) { it.parent as? RViewHelper }
+                .zipWithNext()
+                .all { (child, parent) -> parent.childTouchesEdge(child as RView, edge) }
+
+            val childRequires = children.asSequence()
+                .any { childTouchesEdge(it, edge) && it.cannotBeCovered }
+
+            println("[DEBUG_LOG] Edge $edge: parentChainAllows=$parentChainAllows, alreadyHasPadding=$alreadyHasPadding, childRequires=$childRequires")
+            return parentChainAllows && (alreadyHasPadding || childRequires)
+        }
+
+        val leftHasPadding = padding.left > 0.px
+        val topHasPadding = padding.top > 0.px
+        val rightHasPadding = padding.right > 0.px
+        val bottomHasPadding = padding.bottom > 0.px
+        println("[DEBUG_LOG] Has padding: left=$leftHasPadding, top=$topHasPadding, right=$rightHasPadding, bottom=$bottomHasPadding")
+
+        val shouldApplyLeft = shouldApply(SafeAreaEdge.LEFT, leftHasPadding)
+        val shouldApplyTop = shouldApply(SafeAreaEdge.TOP, topHasPadding)
+        val shouldApplyRight = shouldApply(SafeAreaEdge.RIGHT, rightHasPadding)
+        val shouldApplyBottom = shouldApply(SafeAreaEdge.BOTTOM, bottomHasPadding)
+        val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
+        println("[DEBUG_LOG] Should apply: left=$shouldApplyLeft, top=$shouldApplyTop, right=$shouldApplyRight, bottom=$shouldApplyBottom, any=$shouldApplyAny")
+
+        val appliedInsets = if (!shouldApplyAny) {
+            println("[DEBUG_LOG] Not applying any insets, passing all to children")
+            safeAreaInsets = null
+            edges
+        } else {
+            val newInsets = Edges(
+                left = if (shouldApplyLeft) edges.left else 0.px,
+                top = if (shouldApplyTop) edges.top else 0.px,
+                right = if (shouldApplyRight) edges.right else 0.px,
+                bottom = if (shouldApplyBottom) edges.bottom else 0.px,
+            )
+            println("[DEBUG_LOG] Setting safeAreaInsets to $newInsets")
+            safeAreaInsets = newInsets
+            Edges(
+                left = if (shouldApplyLeft) 0.px else edges.left,
+                top = if (shouldApplyTop) 0.px else edges.top,
+                right = if (shouldApplyRight) 0.px else edges.right,
+                bottom = if (shouldApplyBottom) 0.px else edges.bottom,
+            )
+        }.takeUnless { it == Edges.ZERO }
+        println("[DEBUG_LOG] Passing insets to children: $appliedInsets")
+
+        updatePadding()
+
+        for (child in children) {
+            child.handleSafeAreaInsets(appliedInsets)
+        }
+    }
+
+    /**
+     * Updates padding based on safe insets and theme padding.
+     * Platform-specific implementations should call this method when needed.
+     */
+    protected open fun updatePadding() {
+        // To be implemented by platform-specific classes
+    }
 
     // drag 'n drop
     open var dragData: DragData? = null

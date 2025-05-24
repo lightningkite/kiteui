@@ -33,14 +33,6 @@ private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContext
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
     // lifetime of the view

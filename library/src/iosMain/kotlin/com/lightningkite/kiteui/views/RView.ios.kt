@@ -110,71 +110,26 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     internal enum class Side { Left, Top, Right, Bottom }
 
-    internal open fun childTouches(side: Side, child: RView): Boolean = false
-    protected var passedDownSafeInsets: Edges? = null
-    internal fun handleSafeInsets(edges: Edges?) {
-        if (edges == null) {
-            if (passedDownSafeInsets != null) {
-                passedDownSafeInsets = null
-                for (child in children) {
-                    child.handleSafeInsets(null)
-                }
-            }
-            return
+    // Override childTouchesEdge to use iOS-specific childTouches
+    // Frame Layout implementation by default
+    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
+        val result = when(edge) {
+            SafeAreaEdge.LEFT -> child.native.extensionHorizontalAlign?.touchesStart != false
+            SafeAreaEdge.TOP -> child.native.extensionVerticalAlign?.touchesStart != false
+            SafeAreaEdge.RIGHT -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            SafeAreaEdge.BOTTOM -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
-//        println("$this.handleSafeInsets($edges)")
-        val padding = paddingByEdge ?: when {
-            !themeAndBack.padding -> Edges.ZERO
-            else -> themeAndBack.theme.padding
-        }
+        println("[DEBUG_LOG] iOS childTouchesEdge on ${this::class.simpleName} for child ${child::class.simpleName}, edge=$edge, horizontalAlign=${child.native.extensionHorizontalAlign}, verticalAlign=${child.native.extensionVerticalAlign}, result=$result")
+        return result
+    }
 
-        fun shouldApply(side: Side, alreadyHasPadding: Boolean): Boolean {
-            return generateSequence(this) { it.parent }
-                .zipWithNext()
-                .all { (child, parent) -> parent.childTouches(side, child) }
-                .and(
-                    alreadyHasPadding ||
-                            (children.asSequence()
-                                .any { childTouches(side, it) && it.cannotBeCovered })
-                )
-        }
-
-        val shouldApplyLeft = shouldApply(Side.Left, padding.left.value > 0)
-        val shouldApplyTop = shouldApply(Side.Top, padding.top.value > 0)
-        val shouldApplyRight = shouldApply(Side.Right, padding.right.value > 0)
-        val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
-        val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-//        println("  shouldApplyLeft = $shouldApplyLeft")
-//        println("  shouldApplyTop = $shouldApplyTop")
-//        println("  shouldApplyRight = $shouldApplyRight")
-//        println("  shouldApplyBottom = $shouldApplyBottom")
-        val toPassDown = if (!shouldApplyAny) {
-            val newValue = null
-//            println("native.extensionSafeInsetPadding = $newValue")
-            native.extensionSafeInsetPadding = newValue
-            native.informParentOfSizeChange()
-            edges
-        } else {
-            val newValue = Edges(
-                left = if (shouldApplyLeft) edges.left else 0.px,
-                top = if (shouldApplyTop) edges.top else 0.px,
-                right = if (shouldApplyRight) edges.right else 0.px,
-                bottom = if (shouldApplyBottom) edges.bottom else 0.px,
-            )
-//            println("  native.extensionSafeInsetPadding = $newValue")
-            native.extensionSafeInsetPadding = newValue
-            native.informParentOfSizeChange()
-            Edges(
-                left = if (shouldApplyLeft) 0.px else edges.left,
-                top = if (shouldApplyTop) 0.px else edges.top,
-                right = if (shouldApplyRight) 0.px else edges.right,
-                bottom = if (shouldApplyBottom) 0.px else edges.bottom,
-            )
-        }.takeUnless { it == Edges.ZERO }
-        passedDownSafeInsets = toPassDown
-        for (child in children) {
-            child.handleSafeInsets(toPassDown)
-        }
+    // Update padding based on safe insets
+    protected override fun updatePadding() {
+        println("[DEBUG_LOG] iOS updatePadding called on ${this::class.simpleName}")
+        println("[DEBUG_LOG] safeAreaInsets: $safeAreaInsets")
+        native.extensionSafeInsetPadding = safeAreaInsets
+        println("[DEBUG_LOG] extensionPadding: ${native.extensionPadding}, extensionSafeInsetPadding: ${native.extensionSafeInsetPadding}")
+        native.informParentOfSizeChange()
     }
 
     actual override fun screenRectangle(): Rect? {
@@ -361,7 +316,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             addChildTarget.addSubview(view.native)
         else
             addChildTarget.insertSubview(view.native, index.toLong())
-        view.handleSafeInsets(passedDownSafeInsets)
+        view.handleSafeAreaInsets(safeAreaInsets)
         if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
     }
 

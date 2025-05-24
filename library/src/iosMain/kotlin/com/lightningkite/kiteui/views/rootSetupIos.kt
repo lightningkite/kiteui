@@ -123,7 +123,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
         subview.layoutLayers()
     }
     val safeInsets = {
-        created.rView.handleSafeInsets(view.safeAreaInsets.useContents {
+        created.rView.handleSafeAreaInsets(view.safeAreaInsets.useContents {
             Edges(
                 left = Dimension(left),
                 right = Dimension(right),

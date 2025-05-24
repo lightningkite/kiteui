@@ -25,14 +25,6 @@ import platform.CoreGraphics.CGAffineTransformMake
 actual class SwapView actual constructor(context: RContext): RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
     private var currentView: RView? = null
 
     init {

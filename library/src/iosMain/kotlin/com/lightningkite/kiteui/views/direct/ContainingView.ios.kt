@@ -11,12 +11,12 @@ actual class RowOrCol actual constructor(context: RContext, cannotBeCovered: Boo
     override val native = LinearLayout()
     override val cannotBeCovered: Boolean = cannotBeCovered
 
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> if(!vertical) child == children.firstOrNull() else child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> if(vertical) child == children.firstOrNull() else child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> if(!vertical) child == children.lastOrNull() else child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> if(vertical) child == children.lastOrNull() else child.native.extensionVerticalAlign?.touchesEnd != false
+    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
+        return when(edge) {
+            SafeAreaEdge.LEFT -> if(!vertical) child == children.firstOrNull() else child.native.extensionHorizontalAlign?.touchesStart != false
+            SafeAreaEdge.TOP -> if(vertical) child == children.firstOrNull() else child.native.extensionVerticalAlign?.touchesStart != false
+            SafeAreaEdge.RIGHT -> if(!vertical) child == children.lastOrNull() else child.native.extensionHorizontalAlign?.touchesEnd != false
+            SafeAreaEdge.BOTTOM -> if(vertical) child == children.lastOrNull() else child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
     actual var vertical: Boolean
@@ -48,12 +48,12 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = LinearLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> if(native.horizontal) child == children.firstOrNull() else child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> if(!native.horizontal) child == children.firstOrNull() else child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> if(native.horizontal) child == children.lastOrNull() else child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> if(!native.horizontal) child == children.lastOrNull() else child.native.extensionVerticalAlign?.touchesEnd != false
+    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
+        return when(edge) {
+            SafeAreaEdge.LEFT -> if(native.horizontal) child == children.firstOrNull() else child.native.extensionHorizontalAlign?.touchesStart != false
+            SafeAreaEdge.TOP -> if(!native.horizontal) child == children.firstOrNull() else child.native.extensionVerticalAlign?.touchesStart != false
+            SafeAreaEdge.RIGHT -> if(native.horizontal) child == children.lastOrNull() else child.native.extensionHorizontalAlign?.touchesEnd != false
+            SafeAreaEdge.BOTTOM -> if(!native.horizontal) child == children.lastOrNull() else child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
 
@@ -87,12 +87,12 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
 actual class Frame actual constructor(context: RContext, cannotBeCovered: Boolean) : RView(context) {
     override val cannotBeCovered: Boolean = cannotBeCovered
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
+    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
+        return when(edge) {
+            SafeAreaEdge.LEFT -> child.native.extensionHorizontalAlign?.touchesStart != false
+            SafeAreaEdge.TOP -> child.native.extensionVerticalAlign?.touchesStart != false
+            SafeAreaEdge.RIGHT -> child.native.extensionHorizontalAlign?.touchesEnd != false
+            SafeAreaEdge.BOTTOM -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
 }

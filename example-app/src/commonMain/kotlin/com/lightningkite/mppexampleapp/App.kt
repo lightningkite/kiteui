@@ -31,35 +31,28 @@ val appTheme = Property<Theme>(defaultTheme)
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true
     return appBase(navigator, dialog) {
-        swapView {
-            swapping(
-                current = { appNavFactory() },
-                views = {
-                    it(this, {
-                        appName = "KiteUI Sample App"
-                        ::navItems {
-                            listOf(
-                                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-                                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                            )
-                        }
+        appNavFactory.value(this, {
+            appName = "KiteUI Sample App"
+            ::navItems {
+                listOf(
+                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                    NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                )
+            }
 
-                        ::exists {
-                            navigator.currentPage() !is UseFullPage
-                        }
+            ::exists {
+                navigator.currentPage() !is UseFullPage
+            }
 
-                        actions = listOf(
-                            NavLink(
-                                title = { "Search" },
-                                icon = { Icon.search },
-                                destination = { { DocSearchPage } }
-                            ),
-                        )
-                    })
-                }
+            actions = listOf(
+                NavLink(
+                    title = { "Search" },
+                    icon = { Icon.search },
+                    destination = { { DocSearchPage } }
+                ),
             )
-        }
+        })
     }
 }
 

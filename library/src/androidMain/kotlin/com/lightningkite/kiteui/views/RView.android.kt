@@ -32,6 +32,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     abstract val native: View
     open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
 
+    // Override childTouchesEdge to use Android-specific childTouches
+    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
+        val touches = childTouches(child)
+        val result = when(edge) {
+            SafeAreaEdge.LEFT -> (touches and Gravity.LEFT) != 0
+            SafeAreaEdge.TOP -> (touches and Gravity.TOP) != 0
+            SafeAreaEdge.RIGHT -> (touches and Gravity.RIGHT) != 0
+            SafeAreaEdge.BOTTOM -> (touches and Gravity.BOTTOM) != 0
+        }
+        println("[DEBUG_LOG] Android childTouchesEdge on ${this::class.simpleName} for child ${child::class.simpleName}, edge=$edge, touches=$touches, result=$result")
+        return result
+    }
+
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
@@ -229,33 +242,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
     }
 
-    private var edgeToEdgePadding: Edges? = null
-        set(value) {
-            if (field != value) {
-                field = value
-                updatePadding()
-                children.forEach {
-                    if (value != null) {
-                        fun walkdown(it: RView) {
-                            if (it.edgeToEdgePadding != null) {
-                                it.edgeToEdgePadding = null
-                            }
-                            it.children.forEach { walkdown(it) }
-                        }
-                        walkdown(it)
-                    }
-                    ViewCompat.requestApplyInsets(it.native)
-                }
-            }
-        }
-
-    protected fun updatePadding() {
+    protected override fun updatePadding() {
+        println("[DEBUG_LOG] Android updatePadding called on ${this::class.simpleName}")
+        println("[DEBUG_LOG] paddingByEdge: $paddingByEdge, themeAndBack.padding: ${themeAndBack.padding}, safeAreaInsets: $safeAreaInsets")
         val padding = (paddingByEdge ?: when {
             !themeAndBack.padding -> null
             else -> themeAndBack.theme.padding
         })?.let {
-            edgeToEdgePadding?.let { e -> it + e } ?: it
+            println("[DEBUG_LOG] Base padding: $it")
+            safeAreaInsets?.let { e -> 
+                val combined = it + e
+                println("[DEBUG_LOG] Combined with safeAreaInsets: $combined")
+                combined
+            } ?: it
         }
+        println("[DEBUG_LOG] Final padding to apply: $padding")
         native.setPadding(
             padding?.left?.value?.toInt() ?: 0,
             padding?.top?.value?.toInt() ?: 0,
@@ -309,40 +310,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         if (!cannotBeCovered) {
             val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
                 if (insetsGetter === WindowInsetsCompat.CONSUMED) {
-                    edgeToEdgePadding = null
+                    handleSafeAreaInsets(null)
                     return@OnApplyWindowInsetsListener insetsGetter
-                }
-                val padding = paddingByEdge ?: when {
-                    !themeAndBack.padding -> Edges.ZERO
-                    else -> themeAndBack.theme.padding
                 }
                 val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                fun shouldApply(direction: Int, alreadyHasPadding: Boolean): Boolean {
-                    return generateSequence(this) { it.parent }
-                        .zipWithNext()
-                        .all { (child, parent) -> parent.childTouches(child) and direction == direction }
-                        .and(
-                            alreadyHasPadding ||
-                                    (children.asSequence()
-                                        .any { childTouches(it) and direction == direction && it.cannotBeCovered })
-                        )
-                }
-
-                val shouldApplyLeft = shouldApply(Gravity.LEFT, padding.left.value > 0)
-                val shouldApplyTop = shouldApply(Gravity.TOP, padding.top.value > 0)
-                val shouldApplyRight = shouldApply(Gravity.RIGHT, padding.right.value > 0)
-                val shouldApplyBottom = shouldApply(Gravity.BOTTOM, padding.bottom.value > 0)
-                val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-                if (!shouldApplyAny) {
-                    edgeToEdgePadding = null
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                edgeToEdgePadding = Edges(
-                    left = if (shouldApplyLeft) insets.left.px else 0.px,
-                    top = if (shouldApplyTop) insets.top.px else 0.px,
-                    right = if (shouldApplyRight) insets.right.px else 0.px,
-                    bottom = if (shouldApplyBottom) insets.bottom.px else 0.px,
+                val safeInsets = Edges(
+                    left = insets.left.px,
+                    top = insets.top.px,
+                    right = insets.right.px,
+                    bottom = insets.bottom.px
                 )
+                handleSafeAreaInsets(safeInsets)
                 WindowInsetsCompat.CONSUMED
             }
             ViewCompat.setOnApplyWindowInsetsListener(native, l)
@@ -384,10 +362,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
         backgroundBlock = backgroundDrawable
-        return oldRippleDrawable?.apply {
-            setColor(rippleColor)
-            setDrawable(0, backgroundDrawable)
-        } ?: RippleDrawable(rippleColor, backgroundDrawable, null)
+        if (oldRippleDrawable != null) {
+            oldRippleDrawable.setColor(rippleColor)
+            // Use reflection to set the drawable to avoid API level issues
+            try {
+                val method = RippleDrawable::class.java.getMethod("setDrawable", Int::class.javaPrimitiveType, Drawable::class.java)
+                method.invoke(oldRippleDrawable, 0, backgroundDrawable)
+            } catch (e: Exception) {
+                // Fallback to creating a new RippleDrawable
+                return RippleDrawable(rippleColor, backgroundDrawable, null)
+            }
+            return oldRippleDrawable
+        } else {
+            return RippleDrawable(rippleColor, backgroundDrawable, null)
+        }
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
