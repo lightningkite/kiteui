@@ -12,6 +12,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -77,6 +78,8 @@ actual suspend fun fetch(
         }
         fetchLog.log("<- $method $url ${response.status}")
         return RequestResponse(response)
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         fetchLog.log("<X $method $url ${e::class} ${e.message}")
         throw ConnectionException("Network request failed", e)
@@ -116,6 +119,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
         try {
             val result = wraps.bodyAsText()
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -126,6 +131,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -228,6 +235,8 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }

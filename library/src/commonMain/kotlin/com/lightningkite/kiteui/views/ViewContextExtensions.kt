@@ -74,4 +74,18 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     return writer
 }
 
-expect fun ViewWriter.overlayWriter(body: RView.() -> Unit)
+/**
+ * Opens a ViewWriter context that can be used to render overlays. Note that on some platforms, this will spawn a new
+ * view tree in the underlying view system. For example, on iOS modal overlays are rendered in a new ViewController,
+ * which can be useful when overlaying over a bottom sheet. A side effect of this behavior is that non-modal overlays
+ * will appear under bottom sheets on iOS.
+ *
+ * @param modal `true` if this overlay is intended as a modal, meaning that it covers and _may_ prevent interaction with
+ * the UI under the modal.
+ *
+ * Note that setting this value to true does not enforce modality, but it may opt the layout in
+ * to a more appropriate presentation strategy used by the native view system. (This behavior could be enforced using
+ * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
+ * *will not* prevent interaction with views below the overlay.
+ */
+expect fun ViewWriter.overlayWriter(modal: Boolean = true, body: RView.() -> Unit)
