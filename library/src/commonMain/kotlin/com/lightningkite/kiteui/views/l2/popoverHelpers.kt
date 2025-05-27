@@ -15,7 +15,7 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
 }
 
 fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
-    overlayWriter {
+    overlayWriter(false) {
         withoutAnimation {
 
             beforeNextElementSetup {
