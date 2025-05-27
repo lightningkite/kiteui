@@ -33,6 +33,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.max
 import kotlin.math.roundToInt
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import platform.darwin.NSObject
@@ -132,6 +133,8 @@ actual class RawImageView actual constructor(
                 _state.state = ReadableState(Unit)
                 native.image = img
                 native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 _state.state = ReadableState.exception(e)
             }

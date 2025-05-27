@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.direct.KeyCode
 import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.delay
@@ -56,6 +57,8 @@ actual object AppState {
                 try {
                     currentLock =
                         (window.navigator.asDynamic().wakeLock.request("screen") as Promise<WakeLockSentinel>).await()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
                 }

@@ -9,6 +9,7 @@ import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration.Companion.days
 
@@ -31,6 +32,8 @@ actual object AppState {
         if(currentLockCount++ == 0) {
             try {
                 AndroidAppContext.activityCtx?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
             }

@@ -217,6 +217,8 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
         this@typed.onMessage {
             try {
                 action(json.decodeFromString(receive, it))
+            } catch (e: CancellationException) {
+                /*squish*/
             } catch (e: Exception) {
                 @OptIn(ExperimentalSerializationApi::class)
                 Exception(

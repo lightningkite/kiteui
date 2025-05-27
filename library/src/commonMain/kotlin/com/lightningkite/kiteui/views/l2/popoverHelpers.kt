@@ -15,7 +15,7 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
 }
 
 fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
-    overlayFrame?.run {
+    overlayWriter {
         withoutAnimation {
 
             beforeNextElementSetup {
@@ -27,7 +27,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
                     delay(duration.inWholeMilliseconds)
                     opacity = 0.0
                     delay(t.transitionDuration)
-                    this@run.removeChild(this@beforeNextElementSetup)
+                    this@overlayWriter.removeChild(this@beforeNextElementSetup)
                 }
             }
             atBottomCenter - col {
@@ -41,14 +41,14 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
 
 fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
-    this.overlayFrame!!.run {
+    overlayWriter {
         withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     launch {
                         it.opacity = 0.0
                         delay(it.theme.transitionDuration)
-                        overlayFrame!!.removeChild(it)
+                        this@overlayWriter.removeChild(it)
                     }
                 }
             }.run {
@@ -72,12 +72,12 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
 
 fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
     var willRemove: RView? = null
-    this.overlayFrame!!.run {
+    overlayWriter {
         withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
-                        overlayFrame!!.removeChild(it)
+                        this@overlayWriter.removeChild(it)
                     }
                 }
             }.run {
