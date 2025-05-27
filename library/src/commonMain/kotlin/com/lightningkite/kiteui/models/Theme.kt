@@ -77,7 +77,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
 
     fun Theme.withBack(
-        cascading: Boolean = false,
+        cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
         cornerRadii: CornerRadii? = null,
@@ -113,7 +113,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         derivations = derivations,
     ).withBack
     fun Theme.withoutBack(
-        cascading: Boolean = false,
+        cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
         cornerRadii: CornerRadii? = null,
