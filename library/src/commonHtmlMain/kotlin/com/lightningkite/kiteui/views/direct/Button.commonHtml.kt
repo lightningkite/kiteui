@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -26,22 +26,25 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         val beginLongPressCountdown = { _: Event ->
             longPressDetect = longPressDetect ?: launch {
                 delay(500)
-                onLongClick?.let {
+                secondaryAction?.let {
                     longPressDetect = null
-                    it()
+                    if (enabled) {
+                        it.startAction(this)
+                    }
                 }
             }
         }
         val cancelOrClick = { event: Event ->
             longPressDetect?.cancel()
             if (longPressDetect != null) {
+                longPressDetect = null
                 action?.startAction(this)
             }
             Unit
         }
         val cancel = { event: Event ->
             longPressDetect?.cancel()
-            Unit
+            longPressDetect = null
         }
 
         native.addEventListener("mousedown", beginLongPressCountdown)
@@ -59,8 +62,4 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
             native.attributes.disabled = !value
         }
 
-    private var onLongClick: (suspend () -> Unit)? = null
-    actual fun onLongClick(action: (suspend () -> Unit)?) {
-        onLongClick = action
-    }
 }

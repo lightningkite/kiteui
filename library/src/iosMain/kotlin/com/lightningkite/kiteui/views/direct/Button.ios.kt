@@ -2,13 +2,11 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.invoke
 import com.lightningkite.readable.onRemove
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
-import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
+actual class Button actual constructor(context: RContext) : RViewWithSecondaryAction(context) {
     override val native = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -34,6 +32,13 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         })
     }
 
+    override fun secondaryActionSet(value: Action?) {
+        super.secondaryActionSet(value)
+        onRemove(native.setOnLongPress {
+            value?.startAction(this)
+        })
+    }
+
     actual var enabled: Boolean
         get() = native.enabled
         set(value) {
@@ -55,13 +60,5 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         if (native.highlighted) t = t[DownSemantic]
         if (native.focused) t = t[FocusSemantic]
         return super.applyState(t)
-    }
-
-    actual fun onLongClick(action: (suspend () -> Unit)?) {
-        onRemove(native.setOnLongPress {
-            launch {
-                action?.invoke()
-            }
-        })
     }
 }

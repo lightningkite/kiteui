@@ -8,10 +8,8 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
-import kotlinx.coroutines.launch
 
-
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
@@ -41,6 +39,14 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
                 action?.startAction(this)
             }
         }
+        native.setOnLongClickListener {
+            if (enabled) {
+                secondaryAction?.startAction(this)
+                secondaryAction != null
+            } else {
+                false
+            }
+        }
     }
 
     actual var enabled: Boolean
@@ -54,12 +60,5 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         var t = theme[ClickableSemantic]
         if(!enabled) t = t[DisabledSemantic]
         return super.applyState(t)
-    }
-
-    actual fun onLongClick(action: (suspend () -> Unit)?) {
-        native.setOnLongClickListener {
-            launch { action?.invoke() }
-            action != null
-        }
     }
 }
