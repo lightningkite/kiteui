@@ -17,6 +17,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -98,6 +99,8 @@ actual suspend fun fetch(
                 }
             }
             return RequestResponse(response)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             fetchLog.log("Attempt $attempt: <X $method $url ${e::class} ${e.message}")
             if (attempt >= maxRetries || e !is UnknownHostException) {
@@ -142,6 +145,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
         try {
             val result = wraps.bodyAsText()
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -152,6 +157,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -254,6 +261,8 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
