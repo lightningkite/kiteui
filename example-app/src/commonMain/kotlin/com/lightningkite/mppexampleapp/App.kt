@@ -5,13 +5,10 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.swapView
-import com.lightningkite.kiteui.views.direct.swapping
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
     "defaulter",

@@ -106,6 +106,8 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         native.classes.add("h${horizontal}")
         native.desiredHorizontalGravity = horizontal
         native.classes.add("v${vertical}")

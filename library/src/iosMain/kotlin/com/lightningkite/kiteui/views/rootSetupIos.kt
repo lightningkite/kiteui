@@ -7,19 +7,14 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.cgRectValue
 import com.lightningkite.readable.Readable
-import com.lightningkite.readable.invoke
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.direct.observe
-import com.lightningkite.kiteui.views.kiteUi
-import com.lightningkite.kiteui.views.setup
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
@@ -30,7 +25,6 @@ import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
-import kotlin.collections.get
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalNativeApi
 

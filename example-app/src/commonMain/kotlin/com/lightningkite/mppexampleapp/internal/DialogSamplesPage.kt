@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
-import com.lightningkite.kiteui.views.l2.overlayFrame
 
 @Routable("sample/dialog")
 object DialogSamplesPage : Page {

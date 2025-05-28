@@ -1,7 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.Shape
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.lightningkite.kiteui.models.Color
@@ -10,12 +8,10 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.kiteui.views.NewViewWriter
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.views.backgroundDrawableWithoutCorners
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.drawableWithoutCorners

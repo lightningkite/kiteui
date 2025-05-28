@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.readable.onRemove
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
@@ -22,7 +23,7 @@ actual fun ViewWriter.overlayWriter(body: RView.() -> Unit) {
             overlayFrame = this
             body()
         }.also {
-            it.children.first().onShutdown {
+            it.children.first().onRemove {
                 viewController.dismissViewControllerAnimated(true) {  }
             }
         }

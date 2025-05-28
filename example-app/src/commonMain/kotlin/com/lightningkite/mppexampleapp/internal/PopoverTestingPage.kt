@@ -2,12 +2,8 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
-import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
