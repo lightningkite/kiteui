@@ -5,10 +5,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.CalculationContext
 import com.lightningkite.readable.Property
-import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
@@ -21,6 +18,9 @@ import platform.darwin.sel_registerName
 
 
 class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+
+    private val tapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("onclick"))
+    private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress"))
 
     val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
@@ -47,17 +47,33 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
 
     init {
         userInteractionEnabled = true
-        addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside or UIControlEventTouchUpOutside)
+        addGestureRecognizer(tapGestureRecognizer)
+        addGestureRecognizer(longPressGestureRecognizer)
     }
+
     fun setOnClick(action: ()->Unit): ()->Unit {
         onClick = action
         return { onClick = null }
     }
+
+    fun setOnLongPress(action: ()->Unit): ()->Unit {
+        onLongPress = action
+        return { onLongPress = null }
+    }
+
     private var onClick: (()->Unit)? = null
     @ObjCAction
     fun onclick() {
         if (enabled) {
             onClick?.invoke()
+        }
+    }
+
+    private var onLongPress: (()->Unit)? = null
+    @ObjCAction
+    fun onLongPress() {
+        if (enabled) {
+            onLongPress?.invoke()
         }
     }
 }
