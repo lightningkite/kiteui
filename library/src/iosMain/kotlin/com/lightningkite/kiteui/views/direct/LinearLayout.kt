@@ -105,7 +105,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.zip(sizes) { view, size ->
             view as UIView
-            if (view.hidden || view.extensionCollapsed == true) return@zip
+            if (view.hidden || view.extensionCollapsed == true || view.toString().contains("_UIContainerWindowPortalView")) return@zip
             if (first) {
                 first = false
             } else {
@@ -119,6 +119,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             }
         }
         measuredSize.primary += padding.primaryEnd
+        if(subviews.any { it == viewDebugTarget?.native }) {
+            println("parent sizeThatFits: ${measuredSize}")
+        }
         return measuredSize.objc
     }
 
@@ -159,7 +162,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         var first = true
         subviews.forEachIndexed { index, it ->
             it as UIView
-            if (it.hidden || it.extensionCollapsed == true) {
+            if (it.hidden || it.extensionCollapsed == true || it.toString().contains("_UIContainerWindowPortalView")) {
                 out[index] = Size(0.0, 0.0)
                 return@forEachIndexed
             }
@@ -180,6 +183,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                     it.extensionSizeConstraints
                 ).local
             }
+            if (viewDebugTarget?.native == it) {
+                println("Loaded size ${required} based on $measureInput")
+            }
             t.resume()
             it.extensionSizeConstraints?.let {
                 it.primaryMax?.let { required.primary = required.primary.coerceAtMost(it.value) }
@@ -198,7 +204,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         subviews.forEachIndexed { index, it ->
             it as UIView
             if (out[index] != null) return@forEachIndexed
-            if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
+            if (it.hidden || it.extensionCollapsed == true || it.toString().contains("_UIContainerWindowPortalView")) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
             val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             t.pause()
@@ -216,6 +222,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             required.secondary = required.secondary.coerceAtLeast(0.0)
             out[index] = required
         }
+        if(viewDebugTarget?.native == this) println("Sizes of children: ${out.indices.joinToString("\n"){ "${subviews}" }}")
         t.cancel()
         @Suppress("UNCHECKED_CAST")
         return out as Array<Size>
@@ -242,7 +249,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         for (index in subviews.indices) {
             val view = subviews[index] as UIView
             val size = sizes[index]
-            if (!(view.hidden || view.extensionCollapsed == true)) {
+            if (!(view.hidden || view.extensionCollapsed == true || view.toString().contains("_UIContainerWindowPortalView"))) {
                 if (first) {
                     first = false
                 } else {

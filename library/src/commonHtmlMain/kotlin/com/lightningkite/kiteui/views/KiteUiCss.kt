@@ -466,11 +466,8 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 overflow: hidden;
             }
             
-            .optColChild {
+            .optimized > * {
                 display: block;
-            }
-            .optColChild:last-child {
-                margin-bottom: 0px !important;
             }
             .weakFill {
                 width: 100%;

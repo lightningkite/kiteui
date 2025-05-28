@@ -8,6 +8,8 @@ import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
 @Routable("sample/dialog")
@@ -28,6 +30,23 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test Dialog" }
                 onClick {
                     dialogPageNavigator.navigate(DialogSampleScreen1)
+                }
+            }
+            button {
+                h6 { content = "Launch edit dialog" }
+                onClick {
+                    dialog {
+                        col {
+                            text("INPUT TIME!")
+                            field("Field") {
+                                textInput {  }
+                            }
+                            button {
+                                text("OK")
+                                onClick { closePopovers() }
+                            }
+                        }
+                    }
                 }
             }
             button {
