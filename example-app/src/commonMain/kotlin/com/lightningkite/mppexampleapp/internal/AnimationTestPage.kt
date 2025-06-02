@@ -8,21 +8,14 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.readable.debounce
-import com.lightningkite.readable.lens
 import com.lightningkite.readable.onRemove
 import com.lightningkite.readable.shared
-import com.lightningkite.readable.sharedProcess
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Routable("animation-test")
 object AnimationTestPage : Page {

@@ -10,7 +10,6 @@ import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
-import kotlinx.coroutines.delay
 
 @Routable("recycler-view-infinite-images")
 object InfiniteImagesPage : Page {
