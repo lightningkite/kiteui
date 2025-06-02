@@ -113,6 +113,8 @@ actual suspend fun fetch(
             }
 
             RequestResponse(response)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Network request failed", e)
         }
@@ -156,6 +158,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
                 }
             }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw e
         }
@@ -170,6 +174,8 @@ actual class RequestResponse(val wraps: HttpResponse) {
                 }
             }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw e
         }
@@ -272,6 +278,8 @@ class WebSocketWrapper(val url: String) : WebSocket {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }

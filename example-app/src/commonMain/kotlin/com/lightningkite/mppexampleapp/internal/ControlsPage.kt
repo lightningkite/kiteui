@@ -426,9 +426,9 @@ object ControlsPage : Page {
                 h2 { content = "Text Fields" }
                 text { ::content { "Text: ${text()}" } }
                 fieldTheme - textField { content bind text }
-                fieldTheme - textField { content bind text } in card
-                fieldTheme - textField { content bind text } in important
-                fieldTheme - textField { content bind text } in critical
+                card - fieldTheme - textField { content bind text }
+                important - fieldTheme - textField { content bind text }
+                critical - fieldTheme - textField { content bind text }
             } in card
 
             col {
