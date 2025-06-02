@@ -31,15 +31,17 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     actual fun invalidateLayout() {
         native.invalidateLayout()
     }
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
-            native.paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
-            native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
-            native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
-        }
+
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        native.paddingTopCurrentPx = value.top.canvasUnits
+        native.paddingLeftCurrentPx = value.left.canvasUnits
+        native.paddingRightCurrentPx = value.right.canvasUnits
+        native.paddingBottomCurrentPx = value.bottom.canvasUnits
+    }
+
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -49,10 +51,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
-        native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
-        native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
-        native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
-        native.paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
     }
 }
 

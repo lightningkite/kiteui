@@ -1,10 +1,14 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.direct.ProgrammaticLayout
 import com.lightningkite.kiteui.views.direct.RowCollapsingToColumn
 import com.lightningkite.kiteui.views.direct.RowOrCol
+import kotlinx.coroutines.NonCancellable.children
 
 open class EdgeTouchHelper(val view: RView) {
     open var top: Boolean = true
@@ -37,6 +41,8 @@ class LinearEdgeTouchHelper(
         refresh_bottom()
         refresh_left()
         refresh_right()
+        rowOrCol.refreshPadding()
+        for(child in rowOrCol.children) child.refreshPadding()
     }
     private fun refresh_top() {
         val actualPadding = rowOrCol.appliedPadding
@@ -126,6 +132,8 @@ class RowCollapsingEdgeTouchHelper(
         refresh_bottom()
         refresh_left()
         refresh_right()
+        rowOrCol.refreshPadding()
+        for(child in rowOrCol.children) child.refreshPadding()
     }
     private fun refresh_top() {
         val actualPadding = rowOrCol.appliedPadding
@@ -206,16 +214,21 @@ class RowCollapsingEdgeTouchHelper(
 }
 
 class FrameEdgeTouchHelper(
-    val parent: RView
+    val parent: RView,
+    val log: Console? = null,
 ): EdgeTouchHelper(parent) {
     override fun onChildrenUpdated() {
+        log?.log("$parent onChildrenUpdated - ${parent.children.joinToString { it.toString()}}")
         super.onChildrenUpdated()
         refresh_top()
         refresh_bottom()
         refresh_left()
         refresh_right()
+        parent.refreshPadding()
+        for(child in parent.children) child.refreshPadding()
     }
     override fun onChildUpdated(child: RView) {
+        log?.log("$parent onChildUpdated $child")
         super.onChildrenUpdated()
         val actualPadding = parent.appliedPadding
         child.edgeTouchHelper.top = top && actualPadding.top == 0.px && child.lastSetVerticalAlign.touchesStart
@@ -226,24 +239,32 @@ class FrameEdgeTouchHelper(
     private fun refresh_top() {
         val actualPadding = parent.appliedPadding
         for(child in parent.children) {
+            if(child == viewDebugTarget)
+                println("child.edgeTouchHelper.top = !willApplyPadding($willApplyPadding) && top($top) && actualPadding.top(${actualPadding.top}) == 0.px && child.lastSetVerticalAlign.touchesStart(${child.lastSetVerticalAlign.touchesStart})")
             child.edgeTouchHelper.top = !willApplyPadding && top && actualPadding.top == 0.px && child.lastSetVerticalAlign.touchesStart
         }
     }
     private fun refresh_bottom() {
         val actualPadding = parent.appliedPadding
         for(child in parent.children) {
+            if(child == viewDebugTarget)
+                println("child.edgeTouchHelper.bottom = !willApplyPadding($willApplyPadding) && bottom($bottom) && actualPadding.bottom(${actualPadding.bottom}) == 0.px && child.lastSetVerticalAlign.touchesEnd(${child.lastSetVerticalAlign.touchesEnd})")
             child.edgeTouchHelper.bottom = !willApplyPadding && bottom && actualPadding.bottom == 0.px && child.lastSetVerticalAlign.touchesEnd
         }
     }
     private fun refresh_left() {
         val actualPadding = parent.appliedPadding
         for(child in parent.children) {
+            if(child == viewDebugTarget)
+                println("child.edgeTouchHelper.left = !willApplyPadding($willApplyPadding) && left($left) && actualPadding.left(${actualPadding.left}) == 0.px && child.lastSetHorizontalAlign.touchesStart(${child.lastSetHorizontalAlign.touchesStart})")
             child.edgeTouchHelper.left = !willApplyPadding && left && actualPadding.left == 0.px && child.lastSetHorizontalAlign.touchesStart
         }
     }
     private fun refresh_right() {
         val actualPadding = parent.appliedPadding
         for(child in parent.children) {
+            if(child == viewDebugTarget)
+                println("child.edgeTouchHelper.right = !willApplyPadding($willApplyPadding) && right($right) && actualPadding.right(${actualPadding.right}) == 0.px && child.lastSetHorizontalAlign.touchesEnd(${child.lastSetHorizontalAlign.touchesEnd})")
             child.edgeTouchHelper.right = !willApplyPadding && right && actualPadding.right == 0.px && child.lastSetHorizontalAlign.touchesEnd
         }
     }

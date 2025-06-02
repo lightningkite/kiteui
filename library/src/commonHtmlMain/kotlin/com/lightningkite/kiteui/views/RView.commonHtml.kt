@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -93,6 +95,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             edgeTouchHelper.willApplyPadding.toString()
         )
         native.setStyleProperty(
+            "--debug-vanilla-padding",
+            paddingByEdge?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
+                ?: "0px")
+        native.setStyleProperty(
             "--debug-edge-padding",
             edgeTouchHelper.paddingToApply?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
                 ?: "0px")
@@ -105,10 +111,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.style.paddingRight = value.right.value.toString()
             native.style.paddingBottom = value.bottom.value.toString()
         } else {
-            native.setStyleProperty("padding-left", null)
-            native.setStyleProperty("padding-top", null)
-            native.setStyleProperty("padding-right", null)
-            native.setStyleProperty("padding-bottom", null)
+            native.style.paddingLeft = null
+            native.style.paddingTop = null
+            native.style.paddingRight = null
+            native.style.paddingBottom = null
         }
     }
 

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
@@ -12,6 +13,8 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         native.style.overflowX = "hidden"
         native.style.overflowY = "hidden"
     }
+
+    override val edgeTouchHelper: EdgeTouchHelper = FrameEdgeTouchHelper(this, ConsoleRoot.tag("$this"))
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)

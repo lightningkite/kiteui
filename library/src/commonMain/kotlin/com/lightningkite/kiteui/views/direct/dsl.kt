@@ -370,13 +370,17 @@ inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                align(Align.Start, Align.Center) - button {
-                    icon(Icon.chevronLeft, "Previous")
-                    onClick { centerIndex set centerIndex() - 1 }
+                align(Align.Start, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronLeft, "Previous")
+                        onClick { centerIndex set centerIndex() - 1 }
+                    }
                 }
-                align(Align.End, Align.Center) - button {
-                    icon(Icon.chevronRight, "Next")
-                    onClick { centerIndex set centerIndex() + 1 }
+                align(Align.End, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronRight, "Next")
+                        onClick { centerIndex set centerIndex() + 1 }
+                    }
                 }
             }
         }

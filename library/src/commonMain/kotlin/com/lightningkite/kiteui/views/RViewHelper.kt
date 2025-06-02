@@ -115,8 +115,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             if (value != field) {
                 field = value
                 edgeTouchHelper.onChildrenUpdated()
+                applyTheme(value)
                 refreshPadding()
-                applyTheme(themeAndBack)
                 if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
                     println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
                 }
@@ -139,7 +139,9 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
         .let { if(working.value) it[WorkingSemantic] else it }
         .let { if(loading.value) it[LoadingSemantic] else it }
-    open fun refreshPadding() {}
+    open fun refreshPadding() {
+        if(viewDebugTarget == this) println("refreshPadding: $appliedPadding + ${edgeTouchHelper.paddingToApply}")
+    }
     fun refreshPaddingRecursively() {
         refreshPadding()
         for(child in children) child.refreshPaddingRecursively()
