@@ -80,6 +80,37 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             nativeOnDrop(value)
         }
 
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        native.setStyleProperty(
+            "--debug-edge-cannotBeCovered",
+            cannotBeCovered.toString()
+        )
+        native.setStyleProperty(
+            "--debug-edge-apply",
+            edgeTouchHelper.willApplyPadding.toString()
+        )
+        native.setStyleProperty(
+            "--debug-edge-padding",
+            edgeTouchHelper.paddingToApply?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
+                ?: "0px")
+        native.setStyleProperty(
+            "--debug-edge-touch",
+            edgeTouchHelper.let { "T ${it.top} R ${it.right} B ${it.bottom} L ${it.left}" })
+        if(paddingByEdge != null || edgeTouchHelper.paddingToApply != null) {
+            native.style.paddingLeft = value.left.value.toString()
+            native.style.paddingTop = value.top.value.toString()
+            native.style.paddingRight = value.right.value.toString()
+            native.style.paddingBottom = value.bottom.value.toString()
+        } else {
+            native.setStyleProperty("padding-left", null)
+            native.setStyleProperty("padding-top", null)
+            native.setStyleProperty("padding-right", null)
+            native.setStyleProperty("padding-bottom", null)
+        }
+    }
 
     actual override fun scrollIntoView(
         horizontal: Align?,
