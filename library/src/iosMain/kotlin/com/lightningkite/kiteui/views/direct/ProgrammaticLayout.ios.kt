@@ -21,7 +21,7 @@ import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)

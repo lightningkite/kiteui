@@ -60,6 +60,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
     init {
         with(rView) {
             centered - activityIndicator {
+                cannotBeCovered = false
                 activityIndicator = this
                 opacity = 0.0
             }
@@ -68,6 +69,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
 
     val shownInfo = RawReadable<Info?>(ReadableState(null))
     val shown by rView::shown
+    var cannotBeCovered = false
 
     fun refresh() {
         if (!ready) return
@@ -92,6 +94,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                         for (imageSource in it.sources) {
                             ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
                             add(rawImage(imageSource, it.description ?: "", it.scaleType) {
+                                this@rawImage.cannotBeCovered = this@ImageView.cannotBeCovered
                                 themeTakeNonCascadingFromParent = true
                                 themeChoice
                                 opacity = 0.0

@@ -37,9 +37,12 @@ import kotlin.random.Random
 
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     override val rView: RView get() = this as RView
-    var additionalTestingData: Any? = null
 
-    open val cannotBeCovered: Boolean get() = true
+    var cannotBeCovered: Boolean = true
+        set(value) {
+            field = value
+            parent?.edgeTouchHelper?.onChildUpdated(this as RView)
+        }
 
     abstract var showOnPrint: Boolean
     var isShutdown = false
@@ -47,6 +50,10 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     open var opacity: Double = 1.0
     open var shown: Boolean = true
+        set(value) {
+            field = value
+            parent?.edgeTouchHelper?.onChildUpdated(this as RView)
+        }
     @Deprecated("Renamed to 'shown'", ReplaceWith("shown"))
     var exists: Boolean
         get() = shown
@@ -62,12 +69,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         get() = paddingByEdge?.left
         set(value) { paddingByEdge = value?.let(::Edges) }
     open var paddingByEdge: Edges? = null
+        set(value) {
+            field = value
+            edgeTouchHelper.onChildrenUpdated()
+        }
     open var transitionId: String? = null
 
     // Safe insets handling
+    var lastSetWeight: Float? = null
     var lastSetHorizontalAlign: Align = Align.Stretch
     var lastSetVerticalAlign: Align = Align.Stretch
-    val edgeTouchHelper = EdgeTouchHelper()
+    var forcedSafeInsets: Edges? = null
+    val safeInsets: Edges? get() = forcedSafeInsets ?: parent?.safeInsets
+    open val edgeTouchHelper: EdgeTouchHelper = FrameEdgeTouchHelper(this as RView)
 
     // drag 'n drop
     open var dragData: DragData? = null
@@ -100,6 +114,8 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         private set(value) {
             if (value != field) {
                 field = value
+                edgeTouchHelper.onChildrenUpdated()
+                refreshPadding()
                 applyTheme(themeAndBack)
                 if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
                     println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
@@ -117,11 +133,17 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             val gap = gap ?: themeAndBack.theme.gap
             return minOf(pad, gap)
         }
+    val appliedPadding get() = paddingByEdge ?: if(themeAndBack.padding) theme.padding else Edges.ZERO
     protected var fullyStarted = false
     abstract fun applyTheme(theme: ThemeAndBack)
     open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
         .let { if(working.value) it[WorkingSemantic] else it }
         .let { if(loading.value) it[LoadingSemantic] else it }
+    open fun refreshPadding() {}
+    fun refreshPaddingRecursively() {
+        refreshPadding()
+        for(child in children) child.refreshPaddingRecursively()
+    }
     fun refreshTheming() {
         if (this == viewDebugTarget) println("refreshTheming")
         if (!fullyStarted) {
@@ -161,6 +183,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         if (view.parent !== this) view.parent = this as RView
         internalChildren.add(index, view)
         internalAddChild(index, view)
+        edgeTouchHelper.onChildrenUpdated()
     }
 
     override fun addChild(view: RView) {
@@ -169,18 +192,19 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         val index = children.size
         internalChildren.add(index, view)
         internalAddChild(index, view)
+        edgeTouchHelper.onChildrenUpdated()
     }
 
     fun removeChild(index: Int) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
-        internalChildren.removeAt(index).also { it.shutdown() }.parent = null
+        internalChildren.removeAt(index).also { it.shutdown() }
+        edgeTouchHelper.onChildrenUpdated()
     }
 
     fun removeChild(view: RView) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
-        view.shutdown()
         val i = children.indexOf(view)
         if (i != -1) removeChild(i)
         else {
@@ -196,6 +220,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             it.shutdown()
             true
         }
+        edgeTouchHelper.onChildrenUpdated()
     }
 
 
@@ -350,6 +375,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
         if (leakDetection) leakDetect()
         isShutdown = true
+        parent = null
     }
 
     open fun leakDetect() {

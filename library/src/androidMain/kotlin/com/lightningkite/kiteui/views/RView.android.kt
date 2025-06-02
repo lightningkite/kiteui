@@ -30,20 +30,6 @@ import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
-    open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
-
-    // Override childTouchesEdge to use Android-specific childTouches
-    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
-        val touches = childTouches(child)
-        val result = when(edge) {
-            SafeAreaEdge.LEFT -> (touches and Gravity.LEFT) != 0
-            SafeAreaEdge.TOP -> (touches and Gravity.TOP) != 0
-            SafeAreaEdge.RIGHT -> (touches and Gravity.RIGHT) != 0
-            SafeAreaEdge.BOTTOM -> (touches and Gravity.BOTTOM) != 0
-        }
-        println("[DEBUG_LOG] Android childTouchesEdge on ${this::class.simpleName} for child ${child::class.simpleName}, edge=$edge, touches=$touches, result=$result")
-        return result
-    }
 
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
@@ -242,38 +228,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
     }
 
-    protected override fun updatePadding() {
-        println("[DEBUG_LOG] Android updatePadding called on ${this::class.simpleName}")
-        println("[DEBUG_LOG] paddingByEdge: $paddingByEdge, themeAndBack.padding: ${themeAndBack.padding}, safeAreaInsets: $safeAreaInsets")
-        val padding = (paddingByEdge ?: when {
-            !themeAndBack.padding -> null
-            else -> themeAndBack.theme.padding
-        })?.let {
-            println("[DEBUG_LOG] Base padding: $it")
-            safeAreaInsets?.let { e -> 
-                val combined = it + e
-                println("[DEBUG_LOG] Combined with safeAreaInsets: $combined")
-                combined
-            } ?: it
-        }
-        println("[DEBUG_LOG] Final padding to apply: $padding")
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
         native.setPadding(
-            padding?.left?.value?.toInt() ?: 0,
-            padding?.top?.value?.toInt() ?: 0,
-            padding?.right?.value?.toInt() ?: 0,
-            padding?.bottom?.value?.toInt() ?: 0,
+            value.left.value.toInt(),
+            value.top.value.toInt(),
+            value.right.value.toInt(),
+            value.bottom.value.toInt(),
         )
     }
 
     actual override fun applyTheme(theme: ThemeAndBack) {
-        ViewCompat.requestApplyInsets(native)
-//        ViewCompat.dispatchApplyWindowInsets(native, ViewCompat.computeSystemWindowInsets())
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
             native.elevation = 0f
         }
-        updatePadding()
         if (theme.drawBackground) {
             val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
             backgroundBlock = backgroundDrawable
@@ -305,26 +277,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.setOnClickListener {
                 println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
-        }
-
-        if (!cannotBeCovered) {
-            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
-                if (insetsGetter === WindowInsetsCompat.CONSUMED) {
-                    handleSafeAreaInsets(null)
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                val safeInsets = Edges(
-                    left = insets.left.px,
-                    top = insets.top.px,
-                    right = insets.right.px,
-                    bottom = insets.bottom.px
-                )
-                handleSafeAreaInsets(safeInsets)
-                WindowInsetsCompat.CONSUMED
-            }
-            ViewCompat.setOnApplyWindowInsetsListener(native, l)
-            onRemove { ViewCompat.setOnApplyWindowInsetsListener(native, null) }
         }
     }
 
@@ -379,7 +331,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
-        updatePadding()
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {

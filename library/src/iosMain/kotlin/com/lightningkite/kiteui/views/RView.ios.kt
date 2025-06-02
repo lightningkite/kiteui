@@ -108,27 +108,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    internal enum class Side { Left, Top, Right, Bottom }
-
-    // Override childTouchesEdge to use iOS-specific childTouches
-    // Frame Layout implementation by default
-    override fun childTouchesEdge(child: RView, edge: SafeAreaEdge): Boolean {
-        val result = when(edge) {
-            SafeAreaEdge.LEFT -> child.native.extensionHorizontalAlign?.touchesStart != false
-            SafeAreaEdge.TOP -> child.native.extensionVerticalAlign?.touchesStart != false
-            SafeAreaEdge.RIGHT -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            SafeAreaEdge.BOTTOM -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-        println("[DEBUG_LOG] iOS childTouchesEdge on ${this::class.simpleName} for child ${child::class.simpleName}, edge=$edge, horizontalAlign=${child.native.extensionHorizontalAlign}, verticalAlign=${child.native.extensionVerticalAlign}, result=$result")
-        return result
-    }
-
     // Update padding based on safe insets
-    protected override fun updatePadding() {
-        println("[DEBUG_LOG] iOS updatePadding called on ${this::class.simpleName}")
-        println("[DEBUG_LOG] safeAreaInsets: $safeAreaInsets")
-        native.extensionSafeInsetPadding = safeAreaInsets
-        println("[DEBUG_LOG] extensionPadding: ${native.extensionPadding}, extensionSafeInsetPadding: ${native.extensionSafeInsetPadding}")
+    override fun refreshPadding() {
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        native.extensionPadding = value
         native.informParentOfSizeChange()
     }
 
@@ -316,7 +300,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             addChildTarget.addSubview(view.native)
         else
             addChildTarget.insertSubview(view.native, index.toLong())
-        view.handleSafeAreaInsets(safeAreaInsets)
         if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
     }
 

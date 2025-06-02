@@ -10,7 +10,7 @@ import kotlin.math.roundToInt
 
 
 actual class Space actual constructor(context: RContext, val multiplier: Double): RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     override val native = NSpace(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()

@@ -99,23 +99,23 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
     if (!pointInside(point, withEvent)) return null
     for (it in subviews.asReversed()) {
         it as UIView
-        println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()}")
+//        println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()}")
         if (it.hidden) {
-            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.hidden")
+//            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.hidden")
             continue
         }
         if (it.extensionCollapsed == true) {
-            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.extensionCollapsed == true")
+//            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.extensionCollapsed == true")
             continue
         }
         if (it.alpha < 0.001) {
-            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.alpha < 0.001")
+//            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.alpha < 0.001")
             continue
         }
 
         val converted = it.convertPoint(point = point, fromCoordinateSpace = this as UICoordinateSpaceProtocol)
         if (!it.pointInside(converted, withEvent)) {
-            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} !it.pointInside(converted, withEvent)")
+//            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} !it.pointInside(converted, withEvent)")
             continue
         }
         // OK, the point is inside.  We're either going to grant it the touch or return nothing for the touch.
@@ -125,28 +125,28 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         )
         return when {
             hitResult != null -> {
-                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null (hitResult: $hitResult)")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null (hitResult: $hitResult)")
                 hitResult
             }
             it.extensionIgnoreInteraction == true -> {
-                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.extensionIgnoreInteraction == true")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.extensionIgnoreInteraction == true")
                 continue
             }
             userInteractionEnabled -> {
-                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} userInteractionEnabled")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} userInteractionEnabled")
                 this
             }
             extensionIgnoreInteraction == true -> {
-                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} extensionIgnoreInteraction")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} extensionIgnoreInteraction")
                 it
             }
             else -> {
-                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} else")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} else")
                 null
             }
         }
     }
-    println("$this give up: $userInteractionEnabled")
+//    println("$this give up: $userInteractionEnabled")
     return if (extensionIgnoreInteraction != true && userInteractionEnabled) this else null
 }
 

@@ -17,7 +17,7 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     override val native = FrameLayout(context.activity)
 
     companion object {

@@ -22,14 +22,6 @@ class ScrollView(
     override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            SafeAreaEdge.LEFT -> child.native.extensionHorizontalAlign?.touchesStart != false
-            SafeAreaEdge.TOP -> child.native.extensionVerticalAlign?.touchesStart != false
-            SafeAreaEdge.RIGHT -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            SafeAreaEdge.BOTTOM -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
     val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
@@ -101,10 +93,6 @@ class ScrollView(
                 Align.End -> targetContentOffset.pointed.y + viewportYSize
                 else -> targetContentOffset.pointed.y + viewportYSize / 2
             }
-            println("currentX: $currentX")
-            println("currentY: $currentY")
-            println("focusX: $focusX")
-            println("focusY: $focusY")
 
 
             val (candidatesX, candidatesY) = if(scrollSnapStop) {

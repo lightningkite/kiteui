@@ -74,6 +74,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
         Readable.reportException(throwable)
     } + Dispatchers.Main.immediate
+
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext {
         override val coroutineContext: CoroutineContext = scope
@@ -114,21 +115,30 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     view.addGestureRecognizer(g)
 
     val remover = subview.observe("bounds") {
-        subview.layoutLayers()
-    }
-    val safeInsets = {
-        created.rView.handleSafeAreaInsets(view.safeAreaInsets.useContents {
-            Edges(
+        view.safeAreaInsets.useContents {
+            created.rView.forcedSafeInsets = Edges(
                 left = Dimension(left),
                 right = Dimension(right),
                 top = Dimension(top),
                 bottom = Dimension(this.bottom),
             )
-        })
-        Unit
+        }
+        created.rView.refreshPaddingRecursively()
+        subview.layoutLayers()
+    }
+    val safeInsets = {
+        view.safeAreaInsets.useContents {
+            created.rView.forcedSafeInsets = Edges(
+                left = Dimension(left),
+                right = Dimension(right),
+                top = Dimension(top),
+                bottom = Dimension(this.bottom),
+            )
+        }
+        created.rView.refreshPaddingRecursively()
     }
     view.addSubview(RemoveView(onRemove = {
-        if(movingFromParentViewController || beingDismissed) {
+        if (movingFromParentViewController || beingDismissed) {
             view.removeGestureRecognizer(g)
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
@@ -142,14 +152,15 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     }
 }
 
-private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     init {
         this.hidden = true
     }
+
     override fun willMoveToWindow(newWindow: UIWindow?) {
         super.willMoveToWindow(newWindow)
         if (newWindow == null) {
-            if(onRemove?.invoke() == true) {
+            if (onRemove?.invoke() == true) {
                 onRemove = null
 //                onSafeInsetsChange = null
             }
