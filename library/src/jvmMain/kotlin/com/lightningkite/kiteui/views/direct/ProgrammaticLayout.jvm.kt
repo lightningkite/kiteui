@@ -8,7 +8,7 @@ import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.style.position = "relative"

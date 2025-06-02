@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.mainPageNavigator
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*

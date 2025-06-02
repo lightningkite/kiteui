@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
@@ -20,15 +20,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         native.silentRequestLayout()
     }
 
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-            native.paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-            native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-            native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
-        }
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -36,12 +27,18 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        native.paddingTopCurrentPx = value.top.canvasUnits
+        native.paddingLeftCurrentPx = value.left.canvasUnits
+        native.paddingRightCurrentPx = value.right.canvasUnits
+        native.paddingBottomCurrentPx = value.bottom.canvasUnits
+    }
+
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.px ?: theme.gap.px
-        native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-        native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-        native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-        native.paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
     }
 }
 

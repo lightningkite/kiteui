@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
-import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Rect
 
 actual class FutureElementStyle(val underlyingMap: MutableMap<String, String>) {
