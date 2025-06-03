@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.KeyCode
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl
@@ -31,35 +32,4 @@ abstract class CanvasDelegate {
     open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
     var invalidate: () -> Unit = {}
     open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
-}
-
-class KeyCodeWithModifiers(val code: KeyCode, val alt: Boolean, val ctrl: Boolean, val shift: Boolean, val meta: Boolean)
-
-expect class KeyCode
-expect object KeyCodes {
-    val left: KeyCode
-    val right: KeyCode
-    val up: KeyCode
-    val down: KeyCode
-    fun letter(char: Char): KeyCode
-    fun num(digit: Int): KeyCode
-    fun numpad(digit: Int): KeyCode
-    val space: KeyCode
-    val enter: KeyCode
-    val tab: KeyCode
-    val escape: KeyCode
-    val leftCtrl: KeyCode
-    val rightCtrl: KeyCode
-    val leftShift: KeyCode
-    val rightShift: KeyCode
-    val leftAlt: KeyCode
-    val rightAlt: KeyCode
-    val equals: KeyCode
-    val dash: KeyCode
-    val backslash: KeyCode
-    val leftBrace: KeyCode
-    val rightBrace: KeyCode
-    val semicolon: KeyCode
-    val comma: KeyCode
-    val period: KeyCode
 }

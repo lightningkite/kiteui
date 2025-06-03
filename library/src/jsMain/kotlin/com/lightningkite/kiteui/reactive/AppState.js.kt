@@ -4,10 +4,9 @@ import com.lightningkite.readable.*
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.views.direct.KeyCode
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException

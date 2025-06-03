@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 

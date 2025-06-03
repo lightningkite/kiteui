@@ -1,9 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -16,10 +20,40 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         Frame.internalAddChildStack(this, index, view)
     }
 
+    private var longPressDetect: Job? = null
+
     init {
-        native.addEventListener("click") {
-            action?.startAction(this)
+        val beginLongPressCountdown = { _: Event ->
+            longPressDetect = longPressDetect ?: launch {
+                delay(500)
+                secondaryAction?.let {
+                    longPressDetect = null
+                    if (enabled) {
+                        it.startAction(this)
+                    }
+                }
+            }
         }
+        val cancelOrClick = { event: Event ->
+            longPressDetect?.cancel()
+            if (longPressDetect != null) {
+                longPressDetect = null
+                action?.startAction(this)
+            }
+            Unit
+        }
+        val cancel = { event: Event ->
+            longPressDetect?.cancel()
+            longPressDetect = null
+        }
+
+        native.addEventListener("mousedown", beginLongPressCountdown)
+        native.addEventListener("touchstart", beginLongPressCountdown)
+
+        native.addEventListener("mouseup", cancelOrClick)
+        native.addEventListener("mouseleave", cancel)
+        native.addEventListener("touchend", cancelOrClick)
+        native.addEventListener("touchcancel", cancel)
     }
 
     actual inline var enabled: Boolean
@@ -27,4 +61,5 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         set(value) {
             native.attributes.disabled = !value
         }
+
 }
