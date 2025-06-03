@@ -14,14 +14,12 @@ import kotlin.math.roundToInt
 
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     override val native = FrameLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
@@ -56,7 +54,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
-    init { cannotBeCovered = false }
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)

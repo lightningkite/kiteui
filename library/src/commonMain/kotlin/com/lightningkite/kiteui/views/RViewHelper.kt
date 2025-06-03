@@ -38,11 +38,6 @@ import kotlin.random.Random
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     override val rView: RView get() = this as RView
 
-    var cannotBeCovered: Boolean = true
-        set(value) {
-            field = value
-        }
-
     abstract var showOnPrint: Boolean
     var isShutdown = false
         private set

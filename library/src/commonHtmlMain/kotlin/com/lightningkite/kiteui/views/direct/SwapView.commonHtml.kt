@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")

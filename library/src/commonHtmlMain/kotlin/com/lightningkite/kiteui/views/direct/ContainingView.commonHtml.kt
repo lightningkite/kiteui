@@ -8,7 +8,6 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -81,7 +80,6 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -201,7 +199,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 }
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

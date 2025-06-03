@@ -9,7 +9,6 @@ import org.w3c.dom.HTMLElement
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.style.position = "relative"

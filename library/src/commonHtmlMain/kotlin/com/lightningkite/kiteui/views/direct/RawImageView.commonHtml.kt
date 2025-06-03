@@ -48,7 +48,6 @@ actual class RawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    init { cannotBeCovered = false }
 
     init {
         native.tag = "img"

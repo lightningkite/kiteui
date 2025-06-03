@@ -94,7 +94,6 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                         for (imageSource in it.sources) {
                             ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
                             add(rawImage(imageSource, it.description ?: "", it.scaleType) {
-                                this@rawImage.cannotBeCovered = this@ImageView.cannotBeCovered
                                 themeTakeNonCascadingFromParent = true
                                 themeChoice
                                 opacity = 0.0

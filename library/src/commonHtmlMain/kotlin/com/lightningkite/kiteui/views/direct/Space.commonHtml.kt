@@ -5,7 +5,6 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class Space actual constructor(context: RContext, multiplier: Double) : RView(context) {
-    init { cannotBeCovered = false }
     init {
         native.tag = "span"
         native.classes.add("kiteui-space")

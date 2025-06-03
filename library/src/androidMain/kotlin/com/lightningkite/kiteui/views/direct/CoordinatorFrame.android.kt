@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     override val native = CoordinatorLayoutWithGestures(context.activity)
 
     override fun willAddChild(view: RView) {

@@ -10,7 +10,6 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class DismissBackground actual constructor(context: RContext): RView(context) {
-    init { cannotBeCovered = false }
     override val native = FrameLayout(context.activity).apply {
         setOnClickListener {
             dialogPageNavigator.clear()
