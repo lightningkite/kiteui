@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.EdgeTouchHelper
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.informParentOfSizeChangeDueToChild
@@ -21,7 +22,7 @@ import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
+    init { cannotBeCovered = true }
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)
@@ -31,6 +32,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     actual fun invalidateLayout() {
         native.invalidateLayout()
     }
+    override val edgeTouchHelper: EdgeTouchHelper = object: EdgeTouchHelper(this) {}
 
     override fun refreshPadding() {
         super.refreshPadding()
@@ -49,6 +51,15 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
         }
 
+    override fun internalAddChild(index: Int, view: RView) {
+        view.edgeTouchHelper.top = false
+        view.edgeTouchHelper.left = false
+        view.edgeTouchHelper.right = false
+        view.edgeTouchHelper.bottom = false
+        view.refreshPadding()
+        super.internalAddChild(index, view)
+    }
+
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
     }
@@ -66,8 +77,11 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             field = value
             setNeedsLayout()
         }
+    private var currentSize: Size = Size.Zero
     var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -75,16 +89,24 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
+            val result = child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
                 if(child == viewDebugTarget)
                     println("Child ${child} measured within $sizeConstraint to be $it")
             }
+            return result
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
             if(child == viewDebugTarget)
                 println("Child ${child} placed at $left, $top, $right, $bottom")
             child.native.setPsuedoframe(left, top, right - left, bottom - top)
+//            rview?.get()?.let { rview ->
+//                child.edgeTouchHelper.left = rview.edgeTouchHelper.left && left <= 0.1
+//                child.edgeTouchHelper.top = rview.edgeTouchHelper.top && top <= 0.1
+//                child.edgeTouchHelper.right = rview.edgeTouchHelper.right && right >= within.width - 0.1
+//                child.edgeTouchHelper.bottom = rview.edgeTouchHelper.bottom && bottom >= within.height - 0.1
+//                child.refreshPaddingRecursively()
+//            }
             child.native.layoutSubviewsAndLayers()
         }
 

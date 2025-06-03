@@ -9,7 +9,7 @@ import org.w3c.dom.HTMLElement
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
+    init { cannotBeCovered = true }
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -40,6 +40,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         view.edgeTouchHelper.left = false
         view.edgeTouchHelper.right = false
         view.edgeTouchHelper.bottom = false
+        view.refreshPadding()
         view.native.onElement { it.asDynamic().__existingMeasure = null }
         view.native.style.position = "absolute"
         view.onRemove(view.native.mutationObserver(true).addListener {
@@ -104,11 +105,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             val existing = e.asDynamic().__existingMeasure as? Size
             val existingConstraint = e.asDynamic().__existingMeasureConstraint as? Size
             if (existing != null && existingConstraint == sizeConstraint) return existing
-            child.edgeTouchHelper.left = false
-            child.edgeTouchHelper.top = false
-            child.edgeTouchHelper.right = false
-            child.edgeTouchHelper.bottom = false
-            child.refreshPaddingRecursively()
             val m = e.measureByDuplicate(sizeConstraint)
             e.asDynamic().__existingMeasure = m
             e.asDynamic().__existingMeasureConstraint = sizeConstraint
@@ -137,11 +133,12 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             child.asDynamic().__last_right = right
             child.asDynamic().__last_bottom = bottom
 
-            child.edgeTouchHelper.left = edgeTouchHelper.left && left <= 0.1
-            child.edgeTouchHelper.top = edgeTouchHelper.top && top <= 0.1
-            child.edgeTouchHelper.right = edgeTouchHelper.right && right >= within.width - 0.1
-            child.edgeTouchHelper.bottom = edgeTouchHelper.bottom && bottom >= within.height - 0.1
-            child.refreshPaddingRecursively()
+//            child.edgeTouchHelper.left = edgeTouchHelper.left && left <= 0.1
+//            child.edgeTouchHelper.top = edgeTouchHelper.top && top <= 0.1
+//            child.edgeTouchHelper.right = edgeTouchHelper.right && right >= within.width - 0.1
+//            child.edgeTouchHelper.bottom = edgeTouchHelper.bottom && bottom >= within.height - 0.1
+//            child.edgeTouchHelper.onChildrenUpdated()
+//            child.refreshPaddingRecursively()
         }
 
         override fun existingPosition(child: RView): Rect = Rect.fromSize(

@@ -12,14 +12,28 @@ import kotlinx.coroutines.NonCancellable.children
 
 open class EdgeTouchHelper(val view: RView) {
     open var top: Boolean = true
+        set(value) {
+            field = value
+            if(view === viewDebugTarget) println("$view top set to $value")
+        }
     open var bottom: Boolean = true
+        set(value) {
+            field = value
+            if(view === viewDebugTarget) println("$view bottom set to $value")
+        }
     open var left: Boolean = true
+        set(value) {
+            field = value
+            if(view === viewDebugTarget) println("$view left set to $value")
+        }
     open var right: Boolean = true
+        set(value) {
+            field = value
+            if(view === viewDebugTarget) println("$view right set to $value")
+        }
 
-    var willApplyPadding = false
-    open fun onChildrenUpdated(){
-        willApplyPadding = (left || top || right || bottom) && view.children.any { it.cannotBeCovered }
-    }
+    val willApplyPadding get() = (left || top || right || bottom) && view.children.any { it.cannotBeCovered }
+    open fun onChildrenUpdated(){}
     open fun onChildUpdated(child: RView) = onChildrenUpdated()
 
     open val paddingToApply: Edges? get() = if(willApplyPadding) {
@@ -36,13 +50,13 @@ class LinearEdgeTouchHelper(
     val rowOrCol: RowOrCol
 ): EdgeTouchHelper(rowOrCol) {
     override fun onChildrenUpdated() {
-        super.onChildrenUpdated()
         refresh_top()
         refresh_bottom()
         refresh_left()
         refresh_right()
         rowOrCol.refreshPadding()
         for(child in rowOrCol.children) child.refreshPadding()
+        super.onChildrenUpdated()
     }
     private fun refresh_top() {
         val actualPadding = rowOrCol.appliedPadding
@@ -127,11 +141,11 @@ class RowCollapsingEdgeTouchHelper(
     val rowOrCol: RowCollapsingToColumn
 ): EdgeTouchHelper(rowOrCol) {
     override fun onChildrenUpdated() {
-        super.onChildrenUpdated()
         refresh_top()
         refresh_bottom()
         refresh_left()
         refresh_right()
+        super.onChildrenUpdated()
         rowOrCol.refreshPadding()
         for(child in rowOrCol.children) child.refreshPadding()
     }
@@ -219,22 +233,22 @@ class FrameEdgeTouchHelper(
 ): EdgeTouchHelper(parent) {
     override fun onChildrenUpdated() {
         log?.log("$parent onChildrenUpdated - ${parent.children.joinToString { it.toString()}}")
-        super.onChildrenUpdated()
         refresh_top()
         refresh_bottom()
         refresh_left()
         refresh_right()
+        super.onChildrenUpdated()
         parent.refreshPadding()
         for(child in parent.children) child.refreshPadding()
     }
     override fun onChildUpdated(child: RView) {
         log?.log("$parent onChildUpdated $child")
-        super.onChildrenUpdated()
         val actualPadding = parent.appliedPadding
         child.edgeTouchHelper.top = top && actualPadding.top == 0.px && child.lastSetVerticalAlign.touchesStart
         child.edgeTouchHelper.bottom = bottom && actualPadding.bottom == 0.px && child.lastSetVerticalAlign.touchesEnd
         child.edgeTouchHelper.left = left && actualPadding.left == 0.px && child.lastSetHorizontalAlign.touchesStart
         child.edgeTouchHelper.right = right && actualPadding.right == 0.px && child.lastSetHorizontalAlign.touchesEnd
+        super.onChildrenUpdated()
     }
     private fun refresh_top() {
         val actualPadding = parent.appliedPadding

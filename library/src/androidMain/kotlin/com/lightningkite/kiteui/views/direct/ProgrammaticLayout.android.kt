@@ -6,12 +6,13 @@ import android.view.ViewGroup
 import androidx.core.view.children
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.EdgeTouchHelper
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
+    init { cannotBeCovered = true }
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
@@ -27,14 +28,24 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
+    override val edgeTouchHelper: EdgeTouchHelper = object: EdgeTouchHelper(this) {}
+
     override fun refreshPadding() {
-        super.refreshPadding()
         val basis = appliedPadding
         val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
         native.paddingTopCurrentPx = value.top.canvasUnits
         native.paddingLeftCurrentPx = value.left.canvasUnits
         native.paddingRightCurrentPx = value.right.canvasUnits
         native.paddingBottomCurrentPx = value.bottom.canvasUnits
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        view.edgeTouchHelper.top = false
+        view.edgeTouchHelper.left = false
+        view.edgeTouchHelper.right = false
+        view.edgeTouchHelper.bottom = false
+        view.refreshPadding()
+        super.internalAddChild(index, view)
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
@@ -48,6 +59,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     var paddingLeftCurrentPx: Double = 0.0
     var paddingRightCurrentPx: Double = 0.0
     var paddingBottomCurrentPx: Double = 0.0
+    private var currentSize: Size = Size.Zero
 
     var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
@@ -56,6 +68,8 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
     lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -77,6 +91,11 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
                 MeasureSpec.makeMeasureSpec((right - left).roundToInt(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((bottom - top).roundToInt(), MeasureSpec.EXACTLY),
             )
+//            child.edgeTouchHelper.left = rview.edgeTouchHelper.left && left <= 0.1
+//            child.edgeTouchHelper.top = rview.edgeTouchHelper.top && top <= 0.1
+//            child.edgeTouchHelper.right = rview.edgeTouchHelper.right && right >= within.width - 0.1
+//            child.edgeTouchHelper.bottom = rview.edgeTouchHelper.bottom && bottom >= within.height - 0.1
+//            child.refreshPaddingRecursively()
             child.native.layout(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
         }
 
@@ -100,7 +119,9 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
             View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(heightMeasureSpec).toDouble()
             else -> 100000.0
         }
-        val r = delegate.measure(rview, inProgress, Size(newWidth, newHeight))
+        val s = Size(newWidth, newHeight)
+        currentSize = s
+        val r = delegate.measure(rview, inProgress, s)
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
     val placed = HashSet<View>()
@@ -109,7 +130,9 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         if(r - l == 0 || b - t == 0) return
         if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
         placed.clear()
-        delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
+        val s = Size((r - l).toDouble(), (b - t).toDouble())
+        currentSize = s
+        delegate.layout(rview, inProgress, s)
         (children - placed).forEach {
             // Force layout missed cells to satisfy Android
             // If you don't do this, requestLayout won't work.

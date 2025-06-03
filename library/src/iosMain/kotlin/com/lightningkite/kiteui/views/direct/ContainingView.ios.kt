@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
+import platform.UIKit.UIView
 
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
@@ -34,6 +35,29 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);
         native.gap = (gap ?: theme.theme.gap).value
+    }
+    override fun internalAddChild(index: Int, view: RView) {
+        if (index == native.arrangedSubviews.size)
+            native.addArrangedSubview(view.native)
+        else
+            native.insertArrangedSubview(view.native, index.toLong())
+        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
+        if (index >= native.arrangedSubviews.size || index < 0) {
+            throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
+        }
+        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+    }
+
+    override fun internalClearChildren() {
+        native.arrangedSubviews.toList().forEach {
+            (it as UIView).let {
+                it.removeFromSuperview()
+            }
+        }
     }
 }
 
@@ -67,6 +91,30 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);
         native.gap = (gap ?: theme.theme.gap).value
+    }
+
+    override fun internalAddChild(index: Int, view: RView) {
+        if (index == native.arrangedSubviews.size)
+            native.addArrangedSubview(view.native)
+        else
+            native.insertArrangedSubview(view.native, index.toLong())
+        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
+    }
+
+    override fun internalRemoveChild(index: Int) {
+        if (children[index].native != native.arrangedSubviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${native.arrangedSubviews}")
+        if (index >= native.arrangedSubviews.size || index < 0) {
+            throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
+        }
+        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+    }
+
+    override fun internalClearChildren() {
+        native.arrangedSubviews.toList().forEach {
+            (it as UIView).let {
+                it.removeFromSuperview()
+            }
+        }
     }
 }
 
