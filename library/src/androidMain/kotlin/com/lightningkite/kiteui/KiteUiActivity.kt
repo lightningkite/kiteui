@@ -82,6 +82,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
             mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
         }
         this.savedInstanceState = savedInstanceState
+        onNewIntent(intent)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

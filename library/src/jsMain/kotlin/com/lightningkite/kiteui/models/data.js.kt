@@ -19,6 +19,7 @@ private val measuringDiv = (document.createElement("div") as HTMLDivElement).app
 }
 actual val Dimension.px: Double get() = value.roughPx
 actual val Dimension.canvasUnits: Double get() = value.roughPx * AppState.windowInfo.value.density
+actual val Dimension.viewUnits: Double get() = value.roughPx
 
 private fun String.cssCalc(): Int {
     measuringDiv.style.height = this
