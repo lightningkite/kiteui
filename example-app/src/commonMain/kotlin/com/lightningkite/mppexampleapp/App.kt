@@ -5,13 +5,14 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.swapView
-import com.lightningkite.kiteui.views.direct.swapping
+import com.lightningkite.kiteui.views.direct.KeyCodes
+import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.frame
+import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
     "defaulter",
@@ -30,36 +31,35 @@ val appTheme = Property<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true
-    return appBase(navigator, dialog) {
-        swapView {
-            swapping(
-                current = { appNavFactory() },
-                views = {
-                    it(this, {
-                        appName = "KiteUI Sample App"
-                        ::navItems {
-                            listOf(
-                                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-                                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                            )
-                        }
-
-                        ::exists {
-                            navigator.currentPage() !is UseFullPage
-                        }
-
-                        actions = listOf(
-                            NavLink(
-                                title = { "Search" },
-                                icon = { Icon.search },
-                                destination = { { DocSearchPage } }
-                            ),
-                        )
-                    })
-                }
+//    return frame {
+//        this.forcedSafeInsets = Edges(100.dp)
+//        col {
+//            text("A")
+//            text("B")
+//            text("C")
+//        }
+//    }
+    return appNav(navigator, dialog) {
+        appName = "KiteUI Sample App"
+        ::navItems {
+            listOf(
+                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
             )
         }
+
+        ::exists {
+            navigator.currentPage() !is UseFullPage
+        }
+
+        actions = listOf(
+            NavLink(
+                title = { "Search" },
+                icon = { Icon.search },
+                destination = { { DocSearchPage } }
+            ),
+        )
     }
 }
 

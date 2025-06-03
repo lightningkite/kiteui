@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.kiteui.views.RView

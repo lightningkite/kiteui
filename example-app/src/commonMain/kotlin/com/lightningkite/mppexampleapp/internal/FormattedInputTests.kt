@@ -6,12 +6,9 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.Property
-import com.lightningkite.readable.bind
-import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.bold
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.field
 
 @Routable("test/formatted-input")

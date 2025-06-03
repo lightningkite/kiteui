@@ -1,17 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.ColorFilter
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.views.ViewWriter
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageView
 import androidx.core.animation.addListener
 import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
@@ -22,7 +17,6 @@ import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout(context.activity)
 
     companion object {

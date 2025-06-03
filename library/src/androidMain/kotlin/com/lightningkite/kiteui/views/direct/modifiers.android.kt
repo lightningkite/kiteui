@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ import com.lightningkite.kiteui.views.*
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
         try {
+            lastSetWeight = amount
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             lp.weight = amount
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -60,7 +62,9 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
         reactiveScope {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                lp.weight = amount()
+                val amount = amount()
+                lp.weight = amount
+                lastSetWeight = amount
                 if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                     lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
@@ -78,6 +82,8 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         val params = lparams
         val horizontalGravity = when (horizontal) {
             Align.Start -> Gravity.START
@@ -336,7 +342,9 @@ actual fun ViewWriter.hasPopover(
 @ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWrapper {
     beforeNextElementSetup {
-        native.tooltipText = message
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            native.tooltipText = message
+        }
     }
     return ViewWrapper
 }
