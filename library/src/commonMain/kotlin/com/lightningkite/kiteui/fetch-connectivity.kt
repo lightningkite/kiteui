@@ -108,7 +108,7 @@ suspend fun connectivityFetch(
                 fetch(url = url, method = method, headers = headers(), body = body)
             } catch(e: ConnectionException) {
                 // Perform a single retry immediately
-                println("WARNING: Forced retry on $method $url")
+                Log.warn("Forced retry on $method $url")
                 val r = try {
                     fetch(url = url, method = method, headers = headers(), body = body)
                 } catch(e: ConnectionException) {

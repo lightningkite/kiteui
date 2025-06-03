@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
@@ -67,7 +68,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val index = arrangedSubviews.indexOf(view)
         if (index != -1) childSizeCache[index].clear()
         else {
-            println("WARN: Child $view not found inside $this")
+            Log.warn("WARN: Child $view not found inside $this")
         }
         lastLaidOutSize = null
         informParentOfSizeChangeDueToChild()
@@ -94,9 +95,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        if(arrangedSubviews.any { it == viewDebugTarget?.native }) {
-            println("parent sizeThatFits: ${size.useContents { "$width x $height" }}")
-        }
         val sizeLocal = size.local
         val measuredSize = Size()
 
@@ -114,15 +112,11 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             }
             measuredSize.primary += size.primary
             measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding.secondarySum)
-            if (viewDebugTarget?.native == view) {
-                println("size: $size")
-                println("measuredSize: $measuredSize")
+            view.debugPrint {
+                "size: $size\nmeasuredSize: $measuredSize"
             }
         }
         measuredSize.primary += padding.primaryEnd
-        if(arrangedSubviews.any { it == viewDebugTarget?.native }) {
-            println("parent sizeThatFits: ${measuredSize}")
-        }
         return measuredSize.objc
     }
 
@@ -193,8 +187,8 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                     it.extensionSizeConstraints
                 ).local
             }
-            if (viewDebugTarget?.native == it) {
-                println("Loaded size ${required} based on $measureInput")
+            debugPrint {
+                ("Loaded size ${required} based on $measureInput")
             }
             t.resume()
             it.extensionSizeConstraints?.let {
@@ -232,7 +226,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             required.secondary = required.secondary.coerceAtLeast(0.0)
             out[index] = required
         }
-        if(viewDebugTarget?.native == this) println("Sizes of children: ${out.indices.joinToString("\n"){ "${arrangedSubviews}" }}")
+        debugPrint { "Sizes of children: ${out.indices.joinToString("\n") { "${subviews}" }}" }
         t.cancel()
         @Suppress("UNCHECKED_CAST")
         return out as Array<Size>
@@ -242,9 +236,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     var lastLaidOutPadding: Edges? = null
     override fun layoutSubviews() {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
-        if(arrangedSubviews.any { it == viewDebugTarget?.native }) {
-            println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
-        }
         val mySize = bounds.useContents { size.local }
         if (lastLaidOutSize == mySize && lastLaidOutPadding == padding) return
         var t = PerformanceInfo.trace("layoutLinear")

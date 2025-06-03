@@ -119,7 +119,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         } else {
             native.classes.remove("transition")
         }
-        if(parent == null) println("Root element: $theme because ${themeChoice}")
         if (theme.padding) {
             native.classes.add("padded")
         } else {

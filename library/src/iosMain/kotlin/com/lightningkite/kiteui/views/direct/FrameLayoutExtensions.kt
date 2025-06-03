@@ -21,7 +21,7 @@ import kotlin.math.max
 
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
-    if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
+    debugPrint { "frameLayoutLayoutSubviews ${mySize}" }
     val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
@@ -45,9 +45,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 
         run {
-            if(viewDebugTarget?.native == this) {
-                println("Don't animate the change")
-            }
+            debugPrint { "Don't animate the change" }
             view.setPsuedoframe(
                 offsetH,
                 offsetV,
@@ -163,10 +161,10 @@ fun UIView.frameLayoutSizeThatFits(
     for ((index, size) in sizes.withIndex()) {
         measuredSize.width = max(measuredSize.width, size.width + padding.horizontalSum.value)
         measuredSize.height = max(measuredSize.height, size.height + padding.verticalSum.value)
-        if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}")
+        debugPrint { "frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}" }
     }
 
-    if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits ${inputSize} -> ${measuredSize}")
+    debugPrint { "frameLayoutSizeThatFits ${inputSize} -> ${measuredSize}" }
     return measuredSize.objc
 }
 
@@ -187,7 +185,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
                 it.extensionSizeConstraints
             ).local
         }
-        if(viewDebugTarget?.native == this) println("frameLayoutCalcSizes child[$index] ${size} -> ${required}")
+        this.debugPrint { "frameLayoutCalcSizes child[$index] ${size} -> ${required}" }
         t.resume()
         it.extensionSizeConstraints?.let {
             it.maxWidth?.let { required.width = required.width.coerceAtMost(it.value) }

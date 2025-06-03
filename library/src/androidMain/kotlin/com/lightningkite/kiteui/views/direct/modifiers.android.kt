@@ -13,6 +13,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
+import com.lightningkite.kiteui.Log
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
@@ -104,7 +105,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
         else if (params is CoordinatorLayout.LayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else
-            println("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
+            Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
         if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
@@ -452,8 +453,6 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
         layoutParams.height = it
         if (!this@heightAnimator.isInLayout) {
             requestLayout()
-        } else {
-            println("Size animator blocked because we're in layout.")
         }
     }.apply {
         animatingSize.add(this@heightAnimator)
@@ -499,8 +498,6 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
         layoutParams.width = it
         if (!this@widthAnimator.isInLayout) {
             requestLayout()
-        } else {
-            println("Size animator blocked because we're in layout.")
         }
         animatingSize.add(this@widthAnimator)
     }.apply {

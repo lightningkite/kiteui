@@ -124,7 +124,6 @@ class ScrollView(
                     Align.Stretch -> targetContentOffset.pointed.y = y.y() - viewportYSize / 2
                 }
             }
-            println("targetContentOffset: ${targetContentOffset.pointed.run { "$x, $y" }}")
         }
     }
 

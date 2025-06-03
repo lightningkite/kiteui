@@ -10,6 +10,7 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.debugPrint
 
 
 fun UIView.sizeThatFits2(
@@ -79,12 +80,14 @@ fun UIView.sizeThatFits2(
         }
         CGSizeMake(w, h)
     } ?: measured
-    if(this === viewDebugTarget?.native) {
-        println("viewDebugTarget constraints: $sizeConstraints")
-        println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
-        println("viewDebugTarget newSizeInput: ${newSizeInput.useContents { "$width, $height" }}")
-        println("viewDebugTarget measured: ${measured.useContents { "$width, $height" }}")
-        println("viewDebugTarget result: ${result.useContents { "$width, $height" }}")
+    debugPrint {
+        buildString {
+            appendLine("viewDebugTarget constraints: $sizeConstraints")
+            appendLine("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget newSizeInput: ${newSizeInput.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget measured: ${measured.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget result: ${result.useContents { "$width, $height" }}")
+        }
     }
     return result
 }

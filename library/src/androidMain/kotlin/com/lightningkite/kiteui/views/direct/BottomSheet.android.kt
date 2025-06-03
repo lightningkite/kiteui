@@ -33,12 +33,10 @@ actual fun ViewWriter.openBottomSheet(
         object: ViewWriter() {
             override val context: RContext get() = this@openBottomSheet.context
             override fun willAddChild(view: RView) {
-                println("willAddChild $view: ${o.theme}")
                 view.parent = o
                 view.themeChoice = ThemeDerivation.Set(o.theme.let { it.revert ?: it }[DialogSemantic].theme)
             }
             override fun addChild(view: RView) {
-                println("Adding child $view")
                 createdView = view
                 dialog.setContentView(view.native)
             }
@@ -55,11 +53,7 @@ actual fun ViewWriter.openBottomSheet(
                     }
                     override fun applyTheme(theme: ThemeAndBack) {
                         super.applyTheme(theme)
-                        println("Theme is ${theme.theme.id}")
                         native.setImageDrawable(drawableWithoutCorners(theme.theme.icon, Color.transparent, 0.px).apply {
-//                            this.
-//                            minimumWidth = 5.rem.value.toInt()
-//                            minimumHeight = 1.rem.value.toInt()
                         })
                     }
                 }) {

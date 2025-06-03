@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.extensionSafeInsetPadding
 import com.lightningkite.kiteui.views.toUiColor
@@ -42,8 +43,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
             )
         }
         return label.sizeThatFits(smallerSize).useContents {
-            if(viewDebugTarget?.native == this@UILabelWithLayerBackground)
-                println("Size that fits on text: $width, $height")
+            debugPrint { "Size that fits on text: $width, $height" }
             CGSizeMake(
                 width = width + padding.horizontalSum.value,
                 height = height.coerceAtLeast(label.font.lineHeight) + padding.verticalSum.value,

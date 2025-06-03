@@ -19,13 +19,11 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -36,7 +34,7 @@ val client: HttpClient
         return AndroidAppContext.ktorClient
     }
 
-private val fetchLog = ConsoleRoot.tag("fetch")
+private val fetchLog = LogRoot.tag("fetch")
 
 actual suspend fun fetch(
     url: String,

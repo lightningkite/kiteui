@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 val client: HttpClient by lazy { webSocketClient }
 
-private val fetchLog = ConsoleRoot.tag("fetch")
+private val fetchLog = LogRoot.tag("fetch")
 
 actual suspend fun fetch(
     url: String,

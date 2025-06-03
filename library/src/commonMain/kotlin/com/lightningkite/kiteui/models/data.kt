@@ -821,6 +821,7 @@ expect val Int.dp: Dimension
 expect val Double.rem: Dimension
 expect val Double.dp: Dimension
 expect val Dimension.px: Double
+expect val Dimension.viewUnits: Double
 expect val Dimension.canvasUnits: Double
 
 expect operator fun Dimension.plus(other: Dimension): Dimension

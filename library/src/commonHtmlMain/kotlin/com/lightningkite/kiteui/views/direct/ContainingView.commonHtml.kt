@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -171,8 +172,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
             val amnt = gap ?: theme.gap
             for (child in children) child.native.style.marginBottom = amnt.value.toString()
-            if(this == viewDebugTarget)
-                println("last shown index: ${children.indexOf(newLastShownElement)}")
+            debugPrint { "last shown index: ${children.indexOf(newLastShownElement)}" }
             newLastShownElement?.native?.style?.marginBottom = "0"
         }
     }

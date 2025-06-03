@@ -1,9 +1,7 @@
 package com.lightningkite.kiteui.reactive
 
-import android.content.Context
-import android.os.PowerManager
 import android.view.WindowManager
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
@@ -11,7 +9,6 @@ import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlin.time.Duration.Companion.days
 
 actual object AppState {
     internal val _animationFrame = BasicListenable()
@@ -35,7 +32,7 @@ actual object AppState {
             } catch (e: CancellationException) {
                 throw e
             } catch(e: Exception) {
-                ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
+                LogRoot.warn("Could not acquire screen lock - probably unsupported", e)
             }
         }
         scope.onRemove {

@@ -1,6 +1,8 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.WeakReference
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -21,7 +23,6 @@ import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)
@@ -81,16 +82,14 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            val result = child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
-                if(child == viewDebugTarget)
-                    println("Child ${child} measured within $sizeConstraint to be $it")
+            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
+                child.debugPrint { "Child ${child} measured within $sizeConstraint to be $it" }
             }
             return result
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {
-            if(child == viewDebugTarget)
-                println("Child ${child} placed at $left, $top, $right, $bottom")
+            child.debugPrint { "Child ${child} placed at $left, $top, $right, $bottom" }
             child.native.setPsuedoframe(left, top, right - left, bottom - top)
             child.native.layoutSubviewsAndLayers()
         }
@@ -135,11 +134,11 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             inLayout = true
             // TODO: is this weird that the result is dropped?
             delegate.measure(rview?.get() ?: run {
-                println("WARNING: ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+                Log.warn("ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
                 return
             }, inProgress, bounds.useContents { Size(size.width, size.height) })
             delegate.layout(rview?.get() ?: run {
-                println("WARNING: ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
+                Log.warn("ProgrammaticLayout.layoutSubviews won't work because RView is inaccessible")
                 return
             }, inProgress, bounds.useContents { Size(size.width, size.height) })
             inLayout = false

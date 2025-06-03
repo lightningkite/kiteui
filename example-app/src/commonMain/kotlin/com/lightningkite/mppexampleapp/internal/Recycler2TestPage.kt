@@ -53,8 +53,8 @@ object Recycler2TestPage : Page {
             }
             expanding - Recycler2(this).apply {
                 recyclerView = this
-                log = ConsoleRoot.tag("R2")
-                placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = ConsoleRoot.tag("Placer") }
+                log = LogRoot.tag("R2")
+                placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = LogRoot.tag("Placer") }
 //                this.snapToElements = null to Align.Start
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(

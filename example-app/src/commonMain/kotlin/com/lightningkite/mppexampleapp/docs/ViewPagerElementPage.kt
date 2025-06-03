@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.rem
@@ -37,7 +37,7 @@ object ViewPagerElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 sizeConstraints(height = 10.rem) - card - viewPager {
-                    new.log = ConsoleRoot.tag("Viewpager")
+                    new.log = LogRoot.tag("Viewpager")
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
 
