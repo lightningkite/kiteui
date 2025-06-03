@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.views.ViewWriter
@@ -8,7 +8,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
-    var log: Console? = null
+    var log: Log? = null
     override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,

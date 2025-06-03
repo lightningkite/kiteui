@@ -21,7 +21,7 @@ object ObjCountTrackers {
     }
     fun track(instance: Any) {
         allWeak.getOrPut(instance::class) {
-            println("Tracking type ${instance::class.qualifiedName}")
+            Log.log("Tracking type ${instance::class.qualifiedName}")
             ArrayList()
         }.add(WeakReference(instance))
     }
@@ -44,7 +44,7 @@ actual fun cleanImageCache() {
 
 actual fun gcReport() {
     ObjCountTrackers.alive.entries.forEach {
-        println("${it.key.qualifiedName}.alive = ${it.value}")
+        Log.log("${it.key.qualifiedName}.alive = ${it.value}")
     }
     ExtensionProperty.debug()
 }

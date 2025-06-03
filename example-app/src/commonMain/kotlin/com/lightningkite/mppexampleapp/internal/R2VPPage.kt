@@ -65,7 +65,7 @@ object R2VPPage : Page {
                         }
                 }
 //                scrollToIndex(50, Align.Center)
-                placer = RecyclerViewPagingPlacer().apply { log = ConsoleRoot.tag("RVP2") }
+                placer = RecyclerViewPagingPlacer().apply { log = LogRoot.tag("RVP2") }
                 rendererSet = object : RecyclerViewRendererSet<Int, Int> {
                     override fun id(item: Int): Int = item
                     override fun renderer(item: Int): RecyclerViewRenderer<Int> = main

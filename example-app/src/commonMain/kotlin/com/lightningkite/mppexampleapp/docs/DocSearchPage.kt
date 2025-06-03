@@ -1,6 +1,6 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
@@ -58,7 +58,7 @@ object DocSearchPage : Page {
                     }
                 }
                 expanding - ListSemantic.onNext - recyclerView {
-                    placer = RecyclerViewPlacerVerticalGrid(1).apply { log = ConsoleRoot.tag("placer") }
+                    placer = RecyclerViewPlacerVerticalGrid(1).apply { log = LogRoot.tag("placer") }
                     children(shared {
                         docsPages().mapNotNull {
                             val q = query()

@@ -18,7 +18,10 @@ import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.debugMode
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
@@ -294,15 +297,19 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //        val previousTrace =
 //            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
 //                .toList()
-        if (viewDebugTarget == this) println("--postsetup--")
-        if (viewDebugTarget == this) println("hasInteractiveParent: $hasInteractiveParent")
-        if (viewDebugTarget == this) println("interactive parent is: ${generateSequence(this) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
-        if (viewDebugTarget == this) println("wasClickable: $wasClickable")
-        if (viewDebugTarget == this) println("wasFocusable: $wasFocusable")
-        if (viewDebugTarget == this) println("ignoreInteraction: $ignoreInteraction")
+        debugPrint {
+            buildString {
+                appendLine("--postsetup--")
+                appendLine("hasInteractiveParent: $hasInteractiveParent")
+                appendLine("interactive parent is: ${generateSequence(this@RView) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
+                appendLine("wasClickable: $wasClickable")
+                appendLine("wasFocusable: $wasFocusable")
+                appendLine("ignoreInteraction: $ignoreInteraction")
+            }
+        }
         if (!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
             native.setOnClickListener {
-                println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
+                Log.log("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
         }
 
@@ -416,4 +423,10 @@ inline fun View.withoutAnimation(action: () -> Unit) {
     } finally {
         animationsEnabled = true
     }
+}
+
+
+inline fun View.debugPrint(get: ()->String) {
+    if(debugMode && viewDebugTarget?.native == this)
+        Log.tag("viewDebugTarget").info(get())
 }

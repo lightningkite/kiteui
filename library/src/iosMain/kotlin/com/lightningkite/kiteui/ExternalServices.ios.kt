@@ -460,7 +460,7 @@ actual object ExternalServices {
     private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
         val hasPermission = PHPhotoLibrary.authorizationStatusForAccessLevel(PHAccessLevelAddOnly) == PHAuthorizationStatusAuthorized
         if (!hasPermission) {
-            println("Lacking Camera Roll add access")
+            Log.warn("Lacking Camera Roll add access")
             val newPermission = withContext(Dispatchers.Main) {
                 suspendCoroutine { continuation ->
                     PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) {
