@@ -25,6 +25,21 @@ abstract class RViewWithAction(context: RContext) : RView(context) {
     }
 }
 
+abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(context) {
+    private var secondaryActionStatusRemove: (() -> Unit)? = null
+    init { onRemove { secondaryActionStatusRemove?.invoke(); secondaryActionStatusRemove = null } }
+    var secondaryAction: Action? = null
+        set(value) {
+            field = value
+            secondaryActionSet(value)
+        }
+
+    open fun secondaryActionSet(value: Action?) {
+        secondaryActionStatusRemove?.invoke()
+        secondaryActionStatusRemove = value?.let { listenForWorking(it) }
+    }
+}
+
 interface ViewModifiable: CoroutineScope {
     val rView: RView
 }
