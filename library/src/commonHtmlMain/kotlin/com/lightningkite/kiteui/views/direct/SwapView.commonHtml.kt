@@ -1,17 +1,19 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")
         native.style.overflowX = "hidden"
         native.style.overflowY = "hidden"
     }
+
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)

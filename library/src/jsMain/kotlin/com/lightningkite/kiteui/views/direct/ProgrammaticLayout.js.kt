@@ -9,7 +9,7 @@ import org.w3c.dom.HTMLElement
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -50,16 +50,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         invalidateLayout()
     }
 
-
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-            paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-            paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-            paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
-        }
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -69,10 +59,6 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         spacingCurrentPx = gap?.px ?: theme.gap.px
-        paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-        paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-        paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-        paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
     }
 
     override fun internalClearChildren() {
@@ -87,6 +73,8 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var paddingBottomCurrentPx: Double = 0.0
 
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -198,6 +186,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var lastFillWidth: Boolean = true
     private var lastFillHeight: Boolean = true
     private var timeoutSet = false
+    private var currentSize: Size = Size.Zero
     actual fun invalidateLayout() {
         log?.log("invalidateLayout()")
         if (timeoutSet) return
@@ -207,6 +196,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
 
             // run measure
+            currentSize = lastConstraintSize
             val natSize = delegate.measure(this, inProgress, lastConstraintSize)
 
             // set width and height to result IF layout rules say minimum, revert otherwise to continue taking space
@@ -220,10 +210,12 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             }
 
             // run layout
-            delegate.layout(this, inProgress, Size(
+            val s = Size(
                 width = if(lastFillWidth) lastConstraintSize.width else natSize.width,
                 height = if(lastFillHeight) lastConstraintSize.height else natSize.height
-            ))
+            )
+            currentSize = s
+            delegate.layout(this, inProgress, s)
 
             window.setTimeout({
                 timeoutSet = false

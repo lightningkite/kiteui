@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
 
     init {
         native.tag = "div"

@@ -29,6 +29,7 @@ interface ProgrammaticLayoutDelegate {
 }
 
 interface ProgrammingLayoutInProgress {
+    val within: Size
     val gap: Double
     val padding: Double
     val paddingTop: Double

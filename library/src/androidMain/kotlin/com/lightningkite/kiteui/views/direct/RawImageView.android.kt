@@ -49,7 +49,7 @@ actual class RawImageView actual constructor(
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state
     override val native: GlideImageView = GlideImageView(context.activity)
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     init {
         native.scaleType = when (scaleType) {
             ImageScaleType.Fit -> AImageView.ScaleType.FIT_CENTER
@@ -183,7 +183,7 @@ actual class RawImageViewZoomable actual constructor(
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     private val _zoomState = Property<ZoomState>(native.imageMatrix)
     actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
     init {
