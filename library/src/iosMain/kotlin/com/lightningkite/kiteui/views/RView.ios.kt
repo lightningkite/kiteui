@@ -389,6 +389,10 @@ actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
 
+inline fun UIView.debugPrint(get: ()->String) {
+    if(debugMode && viewDebugTarget?.native == this)
+        Log.tag("viewDebugTarget").info(get())
+}
 inline fun UIView.withoutAnimation(action: () -> Unit) {
     assertMainThread()
     val before = animationsEnabled

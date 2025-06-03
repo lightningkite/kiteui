@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.exceptions
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.models.Action
 import com.lightningkite.readable.onRemove
@@ -17,7 +18,7 @@ class ExceptionHandlers {
             var open = false
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
                 if(open) {
-                    println("Blocked $exception; already open")
+                    Log.warn("Blocked $exception; already open")
                     return {}
                 }
                 open = true
@@ -25,7 +26,6 @@ class ExceptionHandlers {
                 val message = view.exceptionToMessage(exception)!!
                 view.dialog {
                     onRemove {
-                        println("Closing")
                         open = false
                     }
                     col {

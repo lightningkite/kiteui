@@ -2,10 +2,9 @@
 
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.ImmediateWriteOnly
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -58,7 +57,7 @@ fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, 
         if (filtered.isEmpty()) return null
         return decodeFromStringMap(Wrapper.serializer(serializer), filtered).value
     } catch (e: Exception) {
-        ConsoleRoot.warn("Could not parse query parameter '$key': ${e.message}")
+        LogRoot.warn("Could not parse query parameter '$key': ${e.message}")
         return null
     }
 }

@@ -101,11 +101,6 @@ class ScrollView(
                 Align.End -> targetContentOffset.pointed.y + viewportYSize
                 else -> targetContentOffset.pointed.y + viewportYSize / 2
             }
-            println("currentX: $currentX")
-            println("currentY: $currentY")
-            println("focusX: $focusX")
-            println("focusY: $focusY")
-
 
             val (candidatesX, candidatesY) = if(scrollSnapStop) {
                 sequenceOf(
@@ -136,7 +131,6 @@ class ScrollView(
                     Align.Stretch -> targetContentOffset.pointed.y = y.y() - viewportYSize / 2
                 }
             }
-            println("targetContentOffset: ${targetContentOffset.pointed.run { "$x, $y" }}")
         }
     }
 

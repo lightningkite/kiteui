@@ -102,9 +102,8 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            println("onSlide $sub $slideOffset")
                             sub?.rView?.native?.run {
-                                layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top).also { println("Height is $it") }
+                                layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top)
                                 requestLayout()
                             }
                             backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)

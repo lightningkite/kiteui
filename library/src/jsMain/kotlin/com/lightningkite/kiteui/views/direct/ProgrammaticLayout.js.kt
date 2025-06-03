@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.*
@@ -19,7 +19,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         set(value) {
             field = value; invalidateLayout()
         }
-    var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
+    var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     override fun postSetup() {
         super.postSetup()

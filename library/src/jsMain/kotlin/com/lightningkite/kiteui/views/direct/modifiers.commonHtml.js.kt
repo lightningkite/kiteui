@@ -1,23 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.animationsEnabled
-import com.lightningkite.kiteui.views.hidden
 import com.lightningkite.readable.AppScope
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.dom.addClass
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import kotlin.js.Json
 import kotlin.js.json
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 internal actual fun RView.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
@@ -138,7 +131,7 @@ private data class OngoingAnimation(
     }
 }
 
-private val log: Console? = null// ConsoleRoot.tag("showHide")
+private val log: Log? = null// ConsoleRoot.tag("showHide")
 private val showHideWorker = label@{
 
     val showHideQueue = run {

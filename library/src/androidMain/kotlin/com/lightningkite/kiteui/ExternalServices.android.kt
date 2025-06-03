@@ -114,7 +114,7 @@ actual object ExternalServices {
                 intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
             }
             AndroidAppContext.startActivityForResult(intent) { code, data ->
-                println("Result is $code $data")
+                Log.info("Result is $code $data")
                 if (code == Activity.RESULT_OK) {
                     cont.resume((data?.data ?: file)?.let(::FileReference))
                 } else {
@@ -131,7 +131,7 @@ actual object ExternalServices {
 
     private val DownloadNotificationId: String = "downloads"
 
-    val logger = ConsoleRoot.tag("ExternalServices")
+    val logger = LogRoot.tag("ExternalServices")
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
