@@ -30,7 +30,6 @@ import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
-    open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
 
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
@@ -229,50 +228,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
     }
 
-    private var edgeToEdgePadding: Edges? = null
-        set(value) {
-            if (field != value) {
-                field = value
-                updatePadding()
-                children.forEach {
-                    if (value != null) {
-                        fun walkdown(it: RView) {
-                            if (it.edgeToEdgePadding != null) {
-                                it.edgeToEdgePadding = null
-                            }
-                            it.children.forEach { walkdown(it) }
-                        }
-                        walkdown(it)
-                    }
-                    ViewCompat.requestApplyInsets(it.native)
-                }
-            }
-        }
-
-    protected fun updatePadding() {
-        val padding = (paddingByEdge ?: when {
-            !themeAndBack.padding -> null
-            else -> themeAndBack.theme.padding
-        })?.let {
-            edgeToEdgePadding?.let { e -> it + e } ?: it
-        }
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
         native.setPadding(
-            padding?.left?.value?.toInt() ?: 0,
-            padding?.top?.value?.toInt() ?: 0,
-            padding?.right?.value?.toInt() ?: 0,
-            padding?.bottom?.value?.toInt() ?: 0,
+            value.left.value.toInt(),
+            value.top.value.toInt(),
+            value.right.value.toInt(),
+            value.bottom.value.toInt(),
         )
     }
 
     actual override fun applyTheme(theme: ThemeAndBack) {
-        ViewCompat.requestApplyInsets(native)
-//        ViewCompat.dispatchApplyWindowInsets(native, ViewCompat.computeSystemWindowInsets())
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
             native.elevation = 0f
         }
-        updatePadding()
         if (theme.drawBackground) {
             val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
             backgroundBlock = backgroundDrawable
@@ -304,49 +277,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.setOnClickListener {
                 println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
-        }
-
-        if (!cannotBeCovered) {
-            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
-                if (insetsGetter === WindowInsetsCompat.CONSUMED) {
-                    edgeToEdgePadding = null
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                val padding = paddingByEdge ?: when {
-                    !themeAndBack.padding -> Edges.ZERO
-                    else -> themeAndBack.theme.padding
-                }
-                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                fun shouldApply(direction: Int, alreadyHasPadding: Boolean): Boolean {
-                    return generateSequence(this) { it.parent }
-                        .zipWithNext()
-                        .all { (child, parent) -> parent.childTouches(child) and direction == direction }
-                        .and(
-                            alreadyHasPadding ||
-                                    (children.asSequence()
-                                        .any { childTouches(it) and direction == direction && it.cannotBeCovered })
-                        )
-                }
-
-                val shouldApplyLeft = shouldApply(Gravity.LEFT, padding.left.value > 0)
-                val shouldApplyTop = shouldApply(Gravity.TOP, padding.top.value > 0)
-                val shouldApplyRight = shouldApply(Gravity.RIGHT, padding.right.value > 0)
-                val shouldApplyBottom = shouldApply(Gravity.BOTTOM, padding.bottom.value > 0)
-                val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-                if (!shouldApplyAny) {
-                    edgeToEdgePadding = null
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                edgeToEdgePadding = Edges(
-                    left = if (shouldApplyLeft) insets.left.px else 0.px,
-                    top = if (shouldApplyTop) insets.top.px else 0.px,
-                    right = if (shouldApplyRight) insets.right.px else 0.px,
-                    bottom = if (shouldApplyBottom) insets.bottom.px else 0.px,
-                )
-                WindowInsetsCompat.CONSUMED
-            }
-            ViewCompat.setOnApplyWindowInsetsListener(native, l)
-            onRemove { ViewCompat.setOnApplyWindowInsetsListener(native, null) }
         }
     }
 
@@ -384,14 +314,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
         backgroundBlock = backgroundDrawable
-        return oldRippleDrawable?.apply {
-            setColor(rippleColor)
-            setDrawable(0, backgroundDrawable)
-        } ?: RippleDrawable(rippleColor, backgroundDrawable, null)
+        if (oldRippleDrawable != null) {
+            oldRippleDrawable.setColor(rippleColor)
+            // Use reflection to set the drawable to avoid API level issues
+            try {
+                val method = RippleDrawable::class.java.getMethod("setDrawable", Int::class.javaPrimitiveType, Drawable::class.java)
+                method.invoke(oldRippleDrawable, 0, backgroundDrawable)
+            } catch (e: Exception) {
+                // Fallback to creating a new RippleDrawable
+                return RippleDrawable(rippleColor, backgroundDrawable, null)
+            }
+            return oldRippleDrawable
+        } else {
+            return RippleDrawable(rippleColor, backgroundDrawable, null)
+        }
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
-        updatePadding()
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {

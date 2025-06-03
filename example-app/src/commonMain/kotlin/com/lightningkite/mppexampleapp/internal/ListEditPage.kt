@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*

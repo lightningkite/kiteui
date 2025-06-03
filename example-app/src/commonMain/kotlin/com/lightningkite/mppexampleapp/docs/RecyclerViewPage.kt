@@ -6,9 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
-import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerHorizontalGrid
 import com.lightningkite.kiteui.views.l2.children
-import com.lightningkite.kiteui.views.l2.childrenMultipleTypes
 import com.lightningkite.readable.*
 
 @Routable("docs/recyclerView")

@@ -4,9 +4,6 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.ThemeDerivation.Companion.invoke
-import com.lightningkite.kiteui.models.UrlCacheStrategy
-import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
@@ -14,7 +11,6 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.readable.RawReadable
 import com.lightningkite.readable.ReadableState
 import com.lightningkite.readable.reactive
-import kotlin.contracts.*
 import kotlin.coroutines.CoroutineContext
 
 
@@ -64,6 +60,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
     init {
         with(rView) {
             centered - activityIndicator {
+                cannotBeCovered = false
                 activityIndicator = this
                 opacity = 0.0
             }
@@ -72,6 +69,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
 
     val shownInfo = RawReadable<Info?>(ReadableState(null))
     val shown by rView::shown
+    var cannotBeCovered = false
 
     fun refresh() {
         if (!ready) return
@@ -96,6 +94,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                         for (imageSource in it.sources) {
                             ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
                             add(rawImage(imageSource, it.description ?: "", it.scaleType) {
+                                this@rawImage.cannotBeCovered = this@ImageView.cannotBeCovered
                                 themeTakeNonCascadingFromParent = true
                                 themeChoice
                                 opacity = 0.0

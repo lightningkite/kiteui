@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -80,6 +82,41 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             nativeOnDrop(value)
         }
 
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val basis = appliedPadding
+        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        native.setStyleProperty(
+            "--debug-edge-cannotBeCovered",
+            cannotBeCovered.toString()
+        )
+        native.setStyleProperty(
+            "--debug-edge-apply",
+            edgeTouchHelper.willApplyPadding.toString()
+        )
+        native.setStyleProperty(
+            "--debug-vanilla-padding",
+            paddingByEdge?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
+                ?: "0px")
+        native.setStyleProperty(
+            "--debug-edge-padding",
+            edgeTouchHelper.paddingToApply?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
+                ?: "0px")
+        native.setStyleProperty(
+            "--debug-edge-touch",
+            edgeTouchHelper.let { "T ${it.top} R ${it.right} B ${it.bottom} L ${it.left}" })
+        if(paddingByEdge != null || edgeTouchHelper.paddingToApply != null) {
+            native.style.paddingLeft = value.left.value.toString()
+            native.style.paddingTop = value.top.value.toString()
+            native.style.paddingRight = value.right.value.toString()
+            native.style.paddingBottom = value.bottom.value.toString()
+        } else {
+            native.style.paddingLeft = null
+            native.style.paddingTop = null
+            native.style.paddingRight = null
+            native.style.paddingBottom = null
+        }
+    }
 
     actual override fun scrollIntoView(
         horizontal: Align?,
