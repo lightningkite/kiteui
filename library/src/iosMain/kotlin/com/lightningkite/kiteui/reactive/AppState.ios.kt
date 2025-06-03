@@ -2,8 +2,8 @@ package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import com.lightningkite.readable.*
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi

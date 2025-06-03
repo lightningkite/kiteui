@@ -5,9 +5,9 @@ import android.os.PowerManager
 import android.view.WindowManager
 import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
