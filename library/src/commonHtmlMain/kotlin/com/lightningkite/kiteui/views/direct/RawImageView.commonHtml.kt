@@ -48,7 +48,6 @@ actual class RawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    override val cannotBeCovered: Boolean get() = false
 
     init {
         native.tag = "img"

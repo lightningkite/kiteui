@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.readable.ReactiveContext

@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.reactiveScope
 
 @Routable("sample/websockets")
 object WebSocketPage : Page {

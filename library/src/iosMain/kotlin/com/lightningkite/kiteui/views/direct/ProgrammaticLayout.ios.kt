@@ -21,7 +21,7 @@ import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+    init { cannotBeCovered = false }
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)
@@ -31,15 +31,16 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     actual fun invalidateLayout() {
         native.invalidateLayout()
     }
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
-            native.paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
-            native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
-            native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
-        }
+
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val value = appliedPadding
+        native.paddingTopCurrentPx = value.top.canvasUnits
+        native.paddingLeftCurrentPx = value.left.canvasUnits
+        native.paddingRightCurrentPx = value.right.canvasUnits
+        native.paddingBottomCurrentPx = value.bottom.canvasUnits
+    }
+
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -47,12 +48,12 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
             native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
         }
 
+    override fun internalAddChild(index: Int, view: RView) {
+        super.internalAddChild(index, view)
+    }
+
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
-        native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.canvasUnits ?: 0.0
-        native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.canvasUnits ?: 0.0
-        native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.canvasUnits ?: 0.0
-        native.paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.canvasUnits ?: 0.0
     }
 }
 
@@ -68,8 +69,11 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             field = value
             setNeedsLayout()
         }
+    private var currentSize: Size = Size.Zero
     var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -77,10 +81,11 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
         override val paddingRight: Double get() = paddingRightCurrentPx
         override val paddingBottom: Double get() = paddingBottomCurrentPx
         override fun measure(child: RView, sizeConstraint: Size): Size {
-            return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
+            val result = child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
                 if(child == viewDebugTarget)
                     println("Child ${child} measured within $sizeConstraint to be $it")
             }
+            return result
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {

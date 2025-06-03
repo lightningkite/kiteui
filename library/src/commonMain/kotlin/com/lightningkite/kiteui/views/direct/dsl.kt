@@ -247,9 +247,9 @@ inline fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit = {}): S
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.frame(cannotBeCovered: Boolean = false, setup: Frame.() -> Unit = {}): Frame {
+inline fun ViewWriter.frame(setup: Frame.() -> Unit = {}): Frame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Frame(context, cannotBeCovered) , setup)
+    return write(Frame(context) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -329,21 +329,21 @@ inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.row(cannotBeCovered: Boolean = false, setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context, cannotBeCovered) ) { vertical = false; setup() }
+    return write(RowOrCol(context) ) { vertical = false; setup() }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.column(cannotBeCovered: Boolean = false, setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.column(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context, cannotBeCovered) ) { vertical = true; setup() }
+    return write(RowOrCol(context) ) { vertical = true; setup() }
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.col(cannotBeCovered: Boolean = false, setup: RowOrCol.() -> Unit = {}): RowOrCol {
+inline fun ViewWriter.col(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RowOrCol(context, cannotBeCovered) , { vertical = true; setup() })
+    return write(RowOrCol(context) , { vertical = true; setup() })
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -370,13 +370,17 @@ inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                align(Align.Start, Align.Center) - button {
-                    icon(Icon.chevronLeft, "Previous")
-                    onClick { centerIndex set centerIndex() - 1 }
+                align(Align.Start, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronLeft, "Previous")
+                        onClick { centerIndex set centerIndex() - 1 }
+                    }
                 }
-                align(Align.End, Align.Center) - button {
-                    icon(Icon.chevronRight, "Next")
-                    onClick { centerIndex set centerIndex() + 1 }
+                align(Align.End, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronRight, "Next")
+                        onClick { centerIndex set centerIndex() + 1 }
+                    }
                 }
             }
         }
