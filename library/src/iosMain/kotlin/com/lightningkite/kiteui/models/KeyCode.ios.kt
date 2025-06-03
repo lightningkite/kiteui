@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
+import platform.UIKit.*
 
 actual typealias KeyCode = String
 

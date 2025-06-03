@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.AutoComplete
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Writable

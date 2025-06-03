@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.RContext
@@ -41,7 +42,8 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     fun gestureSink() {
     }
 
-    private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
+    private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")),
+        UIGestureRecognizerCustomPProtocol {
         override fun touchesBegan(began: Any?, withEvent: Any?) {
             val touches = began as Set<UITouch>
             withEvent as UIEvent
