@@ -8,6 +8,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.debugPrint
 import kotlin.math.roundToInt
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
@@ -92,7 +93,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if(viewDebugTarget?.native == this) println("onMeasure on ProgrammaticLayout")
+        debugPrint { "onMeasure on ProgrammaticLayout" }
         val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
             View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
             View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
@@ -110,7 +111,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
-        if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
+        debugPrint { "onLayout on ProgrammaticLayout" }
         placed.clear()
         delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
         (children - placed).forEach {
@@ -130,7 +131,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
     }
 
     override fun requestLayout() {
-        if(viewDebugTarget?.native == this) println("requestLayout on ProgrammaticLayout")
+        debugPrint { "requestLayout on ProgrammaticLayout" }
         if(isInLayout) {
             return
         }

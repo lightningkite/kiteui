@@ -1,9 +1,8 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.readable.*
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.models.px
@@ -12,7 +11,6 @@ import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.await
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
@@ -59,7 +57,7 @@ actual object AppState {
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
+                    LogRoot.warn("Could not acquire screen lock - probably unsupported", e)
                 }
             }
         }

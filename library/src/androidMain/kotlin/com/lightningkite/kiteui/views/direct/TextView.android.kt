@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -76,8 +77,8 @@ actual class TextView actual constructor(context: RContext) :
             }
         }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        if (this == viewDebugTarget) {
-            println("native.setTextColor: ${theme.id} ${theme.foreground}")
+        debugPrint {
+            "native.setTextColor: ${theme.id} ${theme.foreground}"
         }
         native.setTextColor(theme.foreground.colorInt())
         native.setTypeface(theme.font.typeface(context.activity))

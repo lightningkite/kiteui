@@ -11,6 +11,7 @@ import android.widget.OverScroller
 import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.readable.*
@@ -18,6 +19,7 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
+import com.lightningkite.kiteui.views.debugPrint
 import java.lang.reflect.Modifier
 import kotlin.math.*
 
@@ -221,8 +223,7 @@ class ScrollView constructor(
     override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
         override val state: ReadableState<Rect>
             get() {
-                if (viewDebugTarget == children.firstOrNull())
-                    println("Reading actual viewport, got ${native.scrollX}, ${native.scrollY}")
+                debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
                 return ReadableState(
                     Rect.fromSize(
                         (native.scrollX ?: 0).toDouble(),
@@ -297,19 +298,17 @@ class ScrollView constructor(
             var x = queuedJumpX
             var y = queuedJumpY
             if (queuedJumpX == -1.0 && queuedJumpY == -1.0) return@OnPreDrawListener true
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling execution $queuedJumpX $queuedJumpY")
+            native.children.firstOrNull()?.debugPrint { "Scrolling execution $queuedJumpX $queuedJumpY" }
             if (viewDebugTarget?.native == native.children.firstOrNull()) {
                 val child: View = native.getChildAt(0)
-                println("Clamping ${native?.let { it.scrollX + x.roundToInt() }} between ${native.getWidth()} - ${native.paddingRight} - ${native.paddingLeft}, ${child.width})")
-                println("Clamping ${native?.let { it.scrollY + y.roundToInt() }} between ${native.getHeight()} - ${native.paddingBottom} - ${native.paddingTop}, ${child.height})")
             }
             queuedJumpX = -1.0
             queuedJumpY = -1.0
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo($x.roundToInt(), 0)")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo(0, $y.roundToInt())")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset before: ${native.scrollX}, ${native.scrollY}")
+            native.children.firstOrNull()?.debugPrint { ("$native.scrollTo($x.roundToInt(), 0)") }
+            native.children.firstOrNull()?.debugPrint { ("$native.scrollTo(0, $y.roundToInt())") }
+            native.children.firstOrNull()?.debugPrint { "offset before: ${native.scrollX}, ${native.scrollY}" }
             native.scrollTo(x.roundToInt(), y.roundToInt())
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset after: ${native.scrollX}, ${native.scrollY}")
+            native.children.firstOrNull()?.debugPrint { "offset after: ${native.scrollX}, ${native.scrollY}" }
             if (viewDebugTarget?.native == native.children.firstOrNull()) viewport.state.getOrNull()
             true
         }
@@ -325,6 +324,6 @@ class ScrollView constructor(
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x
         queuedJumpY = y
-        if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling queued $queuedJumpX $queuedJumpY")
+        native.children.firstOrNull()?.debugPrint { "Scrolling queued $queuedJumpX $queuedJumpY" }
     }
 }

@@ -39,7 +39,7 @@ fun retryWebsocket(
     url: String,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null,
+    log: Log? = null,
 ): RetryWebsocket = retryWebsocket(
     underlyingSocket = { websocket(url) },
     pingTime = pingTime,
@@ -51,7 +51,7 @@ fun retryWebsocket(
     underlyingSocket: suspend () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null,
+    log: Log? = null,
 ): RetryWebsocket {
     log?.log("Creating")
     val baseDelay = 1000L
