@@ -14,7 +14,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
     actual fun opensMenu(createMenu: Frame.() -> Unit) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
-            this.overlayFrame!!.popoverWriter {
+            popoverWriter(this.overlayFrame!!) {
                 willRemove?.let { overlayFrame!!.removeChild(it) }
             }.run {
                 willRemove = dismissBackground {
@@ -35,7 +35,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         ).withBack
                     }
                     onClick {
-                        closePopovers()
+//                        closePopovers()
                     }
                     atTopStart - dialog - frame {
                         this@dismissBackground.native.apply {
