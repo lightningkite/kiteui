@@ -82,7 +82,6 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     init { cannotBeCovered = false }
-    override val edgeTouchHelper: EdgeTouchHelper = LinearEdgeTouchHelper(this)
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
@@ -203,7 +202,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     init { cannotBeCovered = false }
-    override val edgeTouchHelper: EdgeTouchHelper = RowCollapsingEdgeTouchHelper(this)
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

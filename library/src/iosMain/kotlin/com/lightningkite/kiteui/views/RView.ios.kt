@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.objc.toObjcId
+import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.useContents
@@ -110,8 +110,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     // Update padding based on safe insets
     override fun refreshPadding() {
-        val basis = appliedPadding
-        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        val value = appliedPadding
         native.extensionPadding = value
         native.informParentOfSizeChange()
     }

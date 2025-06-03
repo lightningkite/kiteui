@@ -14,7 +14,6 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         native.style.overflowY = "hidden"
     }
 
-    override val edgeTouchHelper: EdgeTouchHelper = FrameEdgeTouchHelper(this, ConsoleRoot.tag("$this"))
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)

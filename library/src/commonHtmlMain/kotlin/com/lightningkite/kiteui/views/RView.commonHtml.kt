@@ -49,16 +49,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.setStyleProperty("--spacing", value?.value?.toString())
         }
 
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.style.paddingLeft = value?.left?.value?.toString() ?: "unset"
-            native.style.paddingTop = value?.top?.value?.toString() ?: "unset"
-            native.style.paddingRight = value?.right?.value?.toString() ?: "unset"
-            native.style.paddingBottom = value?.bottom?.value?.toString() ?: "unset"
-        }
-
     override var ignoreInteraction: Boolean
         get() = super.ignoreInteraction
         set(value) {
@@ -84,28 +74,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     override fun refreshPadding() {
         super.refreshPadding()
-        val basis = appliedPadding
-        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
-        native.setStyleProperty(
-            "--debug-edge-cannotBeCovered",
-            cannotBeCovered.toString()
-        )
-        native.setStyleProperty(
-            "--debug-edge-apply",
-            edgeTouchHelper.willApplyPadding.toString()
-        )
-        native.setStyleProperty(
-            "--debug-vanilla-padding",
-            paddingByEdge?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
-                ?: "0px")
-        native.setStyleProperty(
-            "--debug-edge-padding",
-            edgeTouchHelper.paddingToApply?.let { "T ${it.top.value} R ${it.right.value} B ${it.bottom.value} L ${it.left.value}" }
-                ?: "0px")
-        native.setStyleProperty(
-            "--debug-edge-touch",
-            edgeTouchHelper.let { "T ${it.top} R ${it.right} B ${it.bottom} L ${it.left}" })
-        if(paddingByEdge != null || edgeTouchHelper.paddingToApply != null) {
+        if(paddingByEdge != null || additionalPadding != null) {
+            val value = appliedPadding
             native.style.paddingLeft = value.left.value.toString()
             native.style.paddingTop = value.top.value.toString()
             native.style.paddingRight = value.right.value.toString()

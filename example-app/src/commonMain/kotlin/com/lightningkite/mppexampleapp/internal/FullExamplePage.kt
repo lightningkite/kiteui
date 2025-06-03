@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -16,6 +17,25 @@ import com.lightningkite.readable.Constant
 class FullScreenPage: Page, UseFullPage {
 
     override fun ViewWriter.render(): ViewModifiable = run {
+//        programmatic {
+//            delegate = ProgrammaticLayoutDelegate.AllFull
+//            frame {
+//                image {
+//                    cannotBeCovered = false
+//                    source = Resources.imagesSolera
+//                    scaleType = ImageScaleType.Crop
+//                }
+//                col {
+//                    viewDebugTarget = this
+//                    h1 { content = "Full Screen!" }
+//                    link {
+//                        text { content = "Go back to root" }
+//                        to = { RootPage }
+//                    }
+//                }
+//            }
+//        }
+
         viewPager {
             children(Constant((1..100).toList()), { it }) {
                 frame {
@@ -34,6 +54,7 @@ class FullScreenPage: Page, UseFullPage {
                 }
             }
         }
+
 //        unpadded - frame {
 //            cannotBeCovered = false
 //            image {

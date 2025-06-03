@@ -39,41 +39,27 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifia
 //            text("C")
 //        }
 //    }
-    return appBase(navigator, dialog) {
-        appNavFactory.value(this, {
-            appName = "KiteUI Sample App"
-            ::navItems {
-                listOf(
-                    NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                    NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
-                    NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
-                )
-            }
-
-            ::exists {
-                navigator.currentPage() !is UseFullPage
-            }
-
-            actions = listOf(
-                NavLink(
-                    title = { "Search" },
-                    icon = { Icon.search },
-                    destination = { { DocSearchPage } }
-                ),
+    return appNav(navigator, dialog) {
+        appName = "KiteUI Sample App"
+        ::navItems {
+            listOf(
+                NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
+                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
+                NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
             )
-        })
-        var times = 0
-        onRemove(AppState.onUniversalKeyboard {
-            if(it.alt && it.code == KeyCodes.letter('e')) {
-                this.forcedSafeInsets = if(times++ % 2 == 0) Edges(100.dp) else Edges.ZERO
-                fun apply(view: RView) {
-                    view.refreshPadding()
-                    for(child in view.children) apply(child)
-                }
-                apply(this)
-                true
-            } else false
-        })
+        }
+
+        ::exists {
+            navigator.currentPage() !is UseFullPage
+        }
+
+        actions = listOf(
+            NavLink(
+                title = { "Search" },
+                icon = { Icon.search },
+                destination = { { DocSearchPage } }
+            ),
+        )
     }
 }
 

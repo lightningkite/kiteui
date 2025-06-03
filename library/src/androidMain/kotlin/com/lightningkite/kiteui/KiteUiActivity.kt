@@ -54,8 +54,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
                     bottom = insets.bottom.px
                 )
                 println("OnApplyWindowInsetsListener: $safeInsets")
-                view.forcedSafeInsets = safeInsets
-                view.refreshPaddingRecursively()
+                context.setSafeInsets(safeInsets)
                 WindowInsetsCompat.CONSUMED
             }
             ViewCompat.setOnApplyWindowInsetsListener(view.native, l)

@@ -230,8 +230,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     override fun refreshPadding() {
         super.refreshPadding()
-        val basis = appliedPadding
-        val value = edgeTouchHelper.paddingToApply?.let { basis + it } ?: basis
+        val value = appliedPadding
         native.setPadding(
             value.left.value.toInt(),
             value.top.value.toInt(),

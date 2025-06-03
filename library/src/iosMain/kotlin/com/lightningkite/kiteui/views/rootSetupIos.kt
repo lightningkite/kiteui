@@ -114,28 +114,18 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     g.cancelsTouchesInView = false
     view.addGestureRecognizer(g)
 
-    val remover = subview.observe("bounds") {
-        view.safeAreaInsets.useContents {
-            created.rView.forcedSafeInsets = Edges(
-                left = Dimension(left),
-                right = Dimension(right),
-                top = Dimension(top),
-                bottom = Dimension(this.bottom),
-            )
-        }
-        created.rView.refreshPaddingRecursively()
-        subview.layoutLayers()
-    }
     val safeInsets = {
         view.safeAreaInsets.useContents {
-            created.rView.forcedSafeInsets = Edges(
+            context.setSafeInsets(Edges(
                 left = Dimension(left),
                 right = Dimension(right),
                 top = Dimension(top),
                 bottom = Dimension(this.bottom),
-            )
+            ))
         }
-        created.rView.refreshPaddingRecursively()
+    }
+    val remover = subview.observe("bounds") {
+        safeInsets()
     }
     view.addSubview(RemoveView(onRemove = {
         if (movingFromParentViewController || beingDismissed) {

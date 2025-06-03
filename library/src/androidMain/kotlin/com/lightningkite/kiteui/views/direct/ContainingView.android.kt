@@ -22,7 +22,6 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     init { cannotBeCovered = false }
-    override val edgeTouchHelper: EdgeTouchHelper = LinearEdgeTouchHelper(this)
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
@@ -58,7 +57,6 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     init { cannotBeCovered = false }
-    override val edgeTouchHelper: EdgeTouchHelper = RowCollapsingEdgeTouchHelper(this)
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
