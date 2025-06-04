@@ -65,6 +65,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     return OuterSemantic.onNext - col {
         debugName = "outer nav"
         bar - row {
+            applySafeInsets(bottom = false)
             debugName = "top bar"
             showOnPrint = false
             setup(appNav)
@@ -86,6 +87,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
             ::shown { appNav.existsProperty() }
         }
         expanding - frame {
+            applySafeInsets(top = false)
             debugName = "menu and navigator container"
             navigatorView(pageNavigator)
             atStart - shownWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
@@ -101,6 +103,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     // Nav 2 top, horizontal
     return OuterSemantic.onNext - col {
         bar - row {
+            applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
@@ -119,7 +122,9 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
             centered - navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
-        expanding - navigatorView(pageNavigator)
+        beforeNextElementSetup {
+            applySafeInsets(top = false)
+        } - expanding - navigatorView(pageNavigator)
     }
 }
 
@@ -130,6 +135,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
             compact - bar - frame {
+                applySafeInsets(bottom = false)
                 debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
@@ -156,6 +162,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
             }
         } else {
             bar - row {
+                applySafeInsets(bottom = false)
                 debugName = "normal app bar"
                 showOnPrint = false
                 setup(appNav)
@@ -173,9 +180,13 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                 ::shown { appNav.existsProperty() }
             }
         }
+        beforeNextElementSetup {
+            applySafeInsets(top = false, bottom = false)
+        }
         expanding - navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
+            applySafeInsets(top = false)
             debugName = "navGroupTabs"
             showOnPrint = false
             ::shown { appNav.existsProperty() && !AppState.softInputOpen() }
@@ -188,6 +199,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
     return OuterSemantic.onNext - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
+            applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
@@ -206,9 +218,15 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
             ::shown { appNav.existsProperty() }
         }
         expanding - OuterSemantic.onNext - row {
+            beforeNextElementSetup {
+                applySafeInsets(right = false)
+            }
             scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
+            }
+            beforeNextElementSetup {
+                applySafeInsets(top = false)
             }
             expanding - navigatorView(pageNavigator)
         }

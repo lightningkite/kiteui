@@ -72,14 +72,12 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
 }
 
 fun UIControl.findNextFocus(): UIView? {
-    println("findNextFocus $this")
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
 }
 
 private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
-    println("findNextParentFocus $this $startingAtIndex")
     findNextChildFocus(startingAtIndex = startingAtIndex)?.let { return it }
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
@@ -87,11 +85,9 @@ private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
 }
 
 private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
-    println("findNextChildFocus $this $startingAtIndex")
     var index = startingAtIndex
     while(index < subviews.size) {
         val sub = subviews[index] as UIView
-        println("findNextChildFocus $this check $index $sub")
         if (sub.canBecomeFirstResponder) {
             return sub
         } else {

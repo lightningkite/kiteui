@@ -3,18 +3,14 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.Semantic
-import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.mppexampleapp.Resources
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 

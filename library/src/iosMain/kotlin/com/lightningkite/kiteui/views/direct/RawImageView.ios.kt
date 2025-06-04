@@ -114,7 +114,7 @@ actual class RawImageView actual constructor(
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state
 
-    override val cannotBeCovered: Boolean get() = false
+    
     override val native = UIImageViewFixedSizing()
 
     init {
@@ -170,7 +170,7 @@ actual class RawImageViewZoomable actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    override val cannotBeCovered: Boolean get() = false
+    
     val doubleTapTarget: NSObject = object: NSObject() {
         @ObjCAction
         fun handleDoubleTap(sender: UITapGestureRecognizer) {
