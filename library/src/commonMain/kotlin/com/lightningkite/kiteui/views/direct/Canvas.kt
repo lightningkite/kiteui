@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.KeyCode
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl
@@ -11,8 +12,6 @@ import kotlin.contracts.*
 
 
 expect class Canvas(context: RContext) : RView {
-
-
     var delegate: CanvasDelegate?
 }
 
@@ -31,5 +30,6 @@ abstract class CanvasDelegate {
     open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
     open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
     var invalidate: () -> Unit = {}
+    var theme: Theme = Theme.placeholder
     open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
 }
