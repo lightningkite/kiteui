@@ -1,5 +1,8 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.models.Edges
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.Readable
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 

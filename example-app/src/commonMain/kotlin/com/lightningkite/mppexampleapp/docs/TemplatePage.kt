@@ -1,13 +1,9 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.*
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.random.Random
 
 object TemplatePage: DocPage {
     override val title: Readable<String>

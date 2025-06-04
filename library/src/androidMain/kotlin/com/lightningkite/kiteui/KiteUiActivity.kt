@@ -14,9 +14,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
 import androidx.core.view.ViewGroupCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
@@ -36,12 +39,30 @@ abstract class KiteUiActivity : AppCompatActivity() {
     abstract val mainNavigator : PageNavigator
 
     lateinit var root: RView
+    private val safeInsetsProperty = Property<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val context: RContext = RContext(this@KiteUiActivity)
+        init {
+            safeInsets = safeInsetsProperty
+        }
         override fun addChild(view: RView) {
             root = view
             setContentView(view.native)
             ViewGroupCompat.installCompatInsetsDispatch(view.native)
+            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
+                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
+                val safeInsets = Edges(
+                    left = insets.left.px,
+                    top = insets.top.px,
+                    right = insets.right.px,
+                    bottom = insets.bottom.px
+                )
+                println("OnApplyWindowInsetsListener: $safeInsets")
+                safeInsetsProperty.value = safeInsets
+                WindowInsetsCompat.CONSUMED
+            }
+            ViewCompat.setOnApplyWindowInsetsListener(view.native, l)
+            view.onRemove { ViewCompat.setOnApplyWindowInsetsListener(view.native, null) }
         }
         init {
             beforeNextElementSetup {

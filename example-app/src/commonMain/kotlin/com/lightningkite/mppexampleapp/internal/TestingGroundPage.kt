@@ -2,13 +2,11 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
 import kotlinx.coroutines.delay
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.models.Align
 import com.lightningkite.mppexampleapp.Resources
 import kotlinx.coroutines.launch
 

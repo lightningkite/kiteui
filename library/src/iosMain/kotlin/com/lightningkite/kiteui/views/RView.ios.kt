@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.objc.toObjcId
+import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.useContents
@@ -108,73 +108,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
 
-    internal enum class Side { Left, Top, Right, Bottom }
-
-    internal open fun childTouches(side: Side, child: RView): Boolean = false
-    protected var passedDownSafeInsets: Edges? = null
-    internal fun handleSafeInsets(edges: Edges?) {
-        if (edges == null) {
-            if (passedDownSafeInsets != null) {
-                passedDownSafeInsets = null
-                for (child in children) {
-                    child.handleSafeInsets(null)
-                }
-            }
-            return
-        }
-//        println("$this.handleSafeInsets($edges)")
-        val padding = paddingByEdge ?: when {
-            !themeAndBack.padding -> Edges.ZERO
-            else -> themeAndBack.theme.padding
-        }
-
-        fun shouldApply(side: Side, alreadyHasPadding: Boolean): Boolean {
-            return generateSequence(this) { it.parent }
-                .zipWithNext()
-                .all { (child, parent) -> parent.childTouches(side, child) }
-                .and(
-                    alreadyHasPadding ||
-                            (children.asSequence()
-                                .any { childTouches(side, it) && it.cannotBeCovered })
-                )
-        }
-
-        val shouldApplyLeft = shouldApply(Side.Left, padding.left.value > 0)
-        val shouldApplyTop = shouldApply(Side.Top, padding.top.value > 0)
-        val shouldApplyRight = shouldApply(Side.Right, padding.right.value > 0)
-        val shouldApplyBottom = shouldApply(Side.Bottom, padding.bottom.value > 0)
-        val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-//        println("  shouldApplyLeft = $shouldApplyLeft")
-//        println("  shouldApplyTop = $shouldApplyTop")
-//        println("  shouldApplyRight = $shouldApplyRight")
-//        println("  shouldApplyBottom = $shouldApplyBottom")
-        val toPassDown = if (!shouldApplyAny) {
-            val newValue = null
-//            println("native.extensionSafeInsetPadding = $newValue")
-            native.extensionSafeInsetPadding = newValue
-            native.informParentOfSizeChange()
-            edges
-        } else {
-            val newValue = Edges(
-                left = if (shouldApplyLeft) edges.left else 0.px,
-                top = if (shouldApplyTop) edges.top else 0.px,
-                right = if (shouldApplyRight) edges.right else 0.px,
-                bottom = if (shouldApplyBottom) edges.bottom else 0.px,
-            )
-//            println("  native.extensionSafeInsetPadding = $newValue")
-            native.extensionSafeInsetPadding = newValue
-            native.informParentOfSizeChange()
-            Edges(
-                left = if (shouldApplyLeft) 0.px else edges.left,
-                top = if (shouldApplyTop) 0.px else edges.top,
-                right = if (shouldApplyRight) 0.px else edges.right,
-                bottom = if (shouldApplyBottom) 0.px else edges.bottom,
-            )
-        }.takeUnless { it == Edges.ZERO }
-        passedDownSafeInsets = toPassDown
-        for (child in children) {
-            child.handleSafeInsets(toPassDown)
-        }
+    // Update padding based on safe insets
+    override fun refreshPadding() {
+        val value = appliedPadding
+        native.extensionPadding = value
+        native.informParentOfSizeChange()
     }
 
     actual override fun screenRectangle(): Rect? {
@@ -361,7 +299,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             addChildTarget.addSubview(view.native)
         else
             addChildTarget.insertSubview(view.native, index.toLong())
-        view.handleSafeInsets(passedDownSafeInsets)
         if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
     }
 
