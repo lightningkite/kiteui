@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.*
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
@@ -10,7 +11,15 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
         set(value) {
             field = value
             onDelegateSet(value)
+            value?.theme = themeAndBack.theme
+            delegate?.invalidate?.invoke()
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        delegate?.theme = theme.theme
+        delegate?.invalidate?.invoke()
+    }
     init {
         native.tag = "canvas"
         native.attributes.tabIndex = 1

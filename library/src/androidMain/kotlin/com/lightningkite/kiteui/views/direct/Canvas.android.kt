@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
@@ -16,7 +17,17 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
 
     actual var delegate: CanvasDelegate?
         get() = native.delegate
-        set(value) { native.delegate = value }
+        set(value) {
+            native.delegate = value
+            value?.theme = themeAndBack.theme
+            delegate?.invalidate?.invoke()
+        }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        delegate?.theme = theme.theme
+        delegate?.invalidate?.invoke()
+    }
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")

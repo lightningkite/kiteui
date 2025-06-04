@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.*
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
@@ -116,6 +117,20 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+    beforeNextElementSetup {
+        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
+    }
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
+actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
+    // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }

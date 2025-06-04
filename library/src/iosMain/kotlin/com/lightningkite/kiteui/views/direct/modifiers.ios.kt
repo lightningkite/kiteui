@@ -14,7 +14,9 @@ import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
+import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UILongPressGestureRecognizer
+import platform.UIKit.UIRefreshControl
 import platform.UIKit.UITapGestureRecognizer
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -118,6 +120,41 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
+actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
+    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+
+    if (vertical) {
+        val refreshControl = UIRefreshControl()
+        refreshControl.addTarget(
+            target = object : NSObject() {
+                @ObjCAction
+                fun handleRefresh() {
+                    refreshAction.startAction(this@__scrollsWithRefreshUncontracted)
+                    reactiveScope {
+                        refreshAction.state().handle(
+                            success = { refreshControl.endRefreshing() },
+                            exception = { refreshControl.endRefreshing() },
+                            notReady = { refreshControl.beginRefreshing() }
+                        )
+                    }
+                }
+            },
+            action = sel_registerName("handleRefresh"),
+            forControlEvents = UIControlEventValueChanged
+        )
+        scrollView.scroller.refreshControl = refreshControl
+    }
+
+    wrapNextIn(scrollView)
     return ViewWrapper
 }
 

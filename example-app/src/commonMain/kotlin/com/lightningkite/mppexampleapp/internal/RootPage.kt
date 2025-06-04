@@ -23,6 +23,7 @@ import com.lightningkite.kiteui.views.direct.weight
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
+import com.lightningkite.mppexampleapp.internal.SliderExamplePage
 
 @Routable("/internal")
 object RootPage : Page {
@@ -78,6 +79,7 @@ object RootPage : Page {
                 linkPage { ViewPagerElementPage }
                 linkPage { ThemesPage }
                 linkPage { ControlsPage }
+                linkPage { SliderExamplePage }
                 linkPage { FormsPage }
                 linkPage { NavigationTestPage }
                 linkPage { LayoutExamplesPage }
@@ -87,6 +89,7 @@ object RootPage : Page {
                 linkPage { LoadAnimationTestPage }
                 linkPage { WebSocketPage }
                 linkPage { CanvasSamplePage }
+                linkPage { GraphExamplePage }
                 linkPage { PongSamplePage }
                 linkPage { ReactivityPage }
                 linkPage { DialogSamplesPage }
