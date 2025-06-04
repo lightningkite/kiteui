@@ -10,7 +10,9 @@ import android.widget.HorizontalScrollView
 import android.widget.OverScroller
 import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
@@ -107,18 +109,18 @@ class ScrollView constructor(
         val mMaximumVelocity = configuration.scaledMaximumFlingVelocity
         vx.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
         vy.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
-        val cx = native.scrollX ?: 0
+        val cx = native.scrollX
         val fx = native.let {
             val vel = vx.xVelocity.roundToInt()
             it.scrollX + getSplineFlingDistance(vel).roundToInt() * -vel.sign
-        } ?: 0
-        val fw = native.width ?: 0
-        val cy = native.scrollY ?: 0
+        }
+        val fw = native.width
+        val cy = native.scrollY
         val fy = native.let {
             val vel = vy.yVelocity.roundToInt()
             it.scrollY + getSplineFlingDistance(vel).roundToInt() * -vel.sign
-        } ?: 0
-        val fh = native.height ?: 0
+        }
+        val fh = native.height
         val r = android.graphics.Rect(0, 0, 0, 0)
         var hOffset = Int.MAX_VALUE
         var vOffset = Int.MAX_VALUE
@@ -287,29 +289,17 @@ class ScrollView constructor(
         )
     }
 
-    //    override fun scrollToKeepAnimations(x: Double, y: Double) {
-////        native.mScroller?.abortAnimation()
-//        println("Scroll before: ${native.scrollX}, ${native.scrollY}")
-//        native.scrollToIgnoringClamp(x.roundToInt(), y.roundToInt())
-//        println("Scroll after: ${native.scrollX}, ${native.scrollY}")
-//    }
     init {
+        // We use a weak reference because for some reason, the onremove cleanup doesn't get rid of the listener.
+        val weak = WeakReference(this)
         val l = OnPreDrawListener {
-            var x = queuedJumpX
-            var y = queuedJumpY
-            if (queuedJumpX == -1.0 && queuedJumpY == -1.0) return@OnPreDrawListener true
-            native.children.firstOrNull()?.debugPrint { "Scrolling execution $queuedJumpX $queuedJumpY" }
-            if (viewDebugTarget?.native == native.children.firstOrNull()) {
-                val child: View = native.getChildAt(0)
-            }
-            queuedJumpX = -1.0
-            queuedJumpY = -1.0
-            native.children.firstOrNull()?.debugPrint { ("$native.scrollTo($x.roundToInt(), 0)") }
-            native.children.firstOrNull()?.debugPrint { ("$native.scrollTo(0, $y.roundToInt())") }
-            native.children.firstOrNull()?.debugPrint { "offset before: ${native.scrollX}, ${native.scrollY}" }
-            native.scrollTo(x.roundToInt(), y.roundToInt())
-            native.children.firstOrNull()?.debugPrint { "offset after: ${native.scrollX}, ${native.scrollY}" }
-            if (viewDebugTarget?.native == native.children.firstOrNull()) viewport.state.getOrNull()
+            val self = weak.get() ?: return@OnPreDrawListener true
+            var x = self.queuedJumpX
+            var y = self.queuedJumpY
+            if (self.queuedJumpX == -1.0 && self.queuedJumpY == -1.0) return@OnPreDrawListener true
+            self.queuedJumpX = -1.0
+            self.queuedJumpY = -1.0
+            self.native.scrollTo(x.roundToInt(), y.roundToInt())
             true
         }
         native.viewTreeObserver.addOnPreDrawListener(l)

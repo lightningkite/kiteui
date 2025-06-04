@@ -94,7 +94,7 @@ object RootPage : Page {
                 linkPage { ReactivityPage }
                 linkPage { DialogSamplesPage }
                 linkPage { ExternalServicesPage }
-                linkPage { FullExampleScreen() }
+                linkPage { FullScreenPage() }
                 linkPage { RecyclerViewTestPage }
                 linkPage { PerformanceTestPage }
                 run {

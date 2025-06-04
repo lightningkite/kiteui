@@ -98,6 +98,13 @@ id cgColorRefasIdType(CGColorRef color) {
 @end
 
 
+@protocol UIViewWithArranging
+@property (nonatomic, copy, readonly) NSArray<__kindof UIView *> * arrangedSubviews;
+- (void) addArrangedSubview:(UIView *) view;
+- (void) insertArrangedSubview:(UIView *) view
+                       atIndex:(NSUInteger) stackIndex;
+@end
+
 @interface UISheetPresentationControllerDetent (Alt)
 
 // A system detent for a sheet that is approximately half the height of the screen, and is inactive in compact height.

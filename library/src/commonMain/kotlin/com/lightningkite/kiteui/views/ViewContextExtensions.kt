@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,8 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
     ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator")
 )
 val ViewWriter.navigator by ViewWriter::pageNavigator
+
+var ViewWriter.safeInsets by rContextAddonGenerate<Readable<Edges>> { Constant(Edges.ZERO) }
 
 var ViewWriter.popoverParent by rContextAddonGenerate<ViewWriter?> { null }
 var ViewWriter.popoverCloser by rContextAddonGenerate<(() -> Unit)?> { null }

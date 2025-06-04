@@ -76,6 +76,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
+        lastSetWeight = amount
         native.style.flexGrow = "$amount"
         native.style.flexShrink = "$amount"
         native.style.flexBasis = "0"
@@ -89,6 +90,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
+            lastSetWeight = amount
             if (amount != 0f) {
                 native.style.flexGrow = "$amount"
                 native.style.flexShrink = "$amount"
@@ -107,6 +109,8 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         native.classes.add("h${horizontal}")
         native.desiredHorizontalGravity = horizontal
         native.classes.add("v${vertical}")

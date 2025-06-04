@@ -5,9 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.dom.addClass
-import kotlinx.dom.createElement
 import kotlinx.dom.hasClass
 import kotlinx.dom.removeClass
 import org.w3c.dom.*

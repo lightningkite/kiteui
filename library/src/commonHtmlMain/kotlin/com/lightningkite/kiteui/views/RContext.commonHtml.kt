@@ -1,6 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.readable.Property
+import com.lightningkite.readable.Readable
 import kotlin.random.Random
 
 actual class RContext(

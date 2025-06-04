@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.invoke
 import com.lightningkite.readable.reactive

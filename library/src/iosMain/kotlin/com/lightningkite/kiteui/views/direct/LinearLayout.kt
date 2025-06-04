@@ -16,6 +16,7 @@ import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CALayer
 import platform.UIKit.*
+import platform.darwin.NSInteger
 import kotlin.math.max
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
@@ -64,7 +65,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     }
     override fun subviewDidChangeSizing(view: UIView?) {
         val view = view ?: return
-        val index = subviews.indexOf(view)
+        val index = arrangedSubviews.indexOf(view)
         if (index != -1) childSizeCache[index].clear()
         else {
             Log.warn("WARN: Child $view not found inside $this")
@@ -101,9 +102,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizes = calcSizes(sizeLocal, sizeLocal.primary == ScrollLayoutMeta.unboundSize)
         measuredSize.primary += padding.primaryStart
         var first = true
-        subviews.zip(sizes) { view, size ->
+        arrangedSubviews.zip(sizes) { view, size ->
             view as UIView
-            if (view.hidden || view.extensionCollapsed == true || view.toString().contains("_UIContainerWindowPortalView")) return@zip
+            if (view.hidden || view.extensionCollapsed == true) return@zip
             if (first) {
                 first = false
             } else {
@@ -119,10 +120,18 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         return measuredSize.objc
     }
 
-    override fun didAddSubview(subview: UIView) {
-        super.didAddSubview(subview)
-        val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
-        childSizeCache.add(index, HashMap())
+    val arrangedSubviews = ArrayList<UIView>()
+    fun addArrangedSubview(view: UIView) {
+        childSizeCache.add(arrangedSubviews.size, HashMap())
+        arrangedSubviews.add(view)
+        addSubview(view)
+        lastLaidOutSize = null
+        informParentOfSizeChangeDueToChild()
+    }
+    fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
+        childSizeCache.add(atIndex.toInt(), HashMap())
+        arrangedSubviews.add(atIndex.toInt(), view)
+        insertSubview(view, atIndex)
         lastLaidOutSize = null
         informParentOfSizeChangeDueToChild()
     }
@@ -132,10 +141,11 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         @Suppress("SENSELESS_COMPARISON")
         if (this != null) {
             lastLaidOutSize = null
-            val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
+            val index = arrangedSubviews.indexOf(subview).also { if (it == -1) throw Exception() }
+            arrangedSubviews.removeAt(index)
             childSizeCache.removeAt(index)
+            informParentOfSizeChangeDueToChild()
         }
-        informParentOfSizeChangeDueToChild()
         super.willRemoveSubview(subview)
     }
 
@@ -151,12 +161,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
         var totalWeight = 0f
 
-        val out = arrayOfNulls<Size?>(subviews.size)
+        val out = arrayOfNulls<Size?>(arrangedSubviews.size)
 
         var first = true
-        subviews.forEachIndexed { index, it ->
+        arrangedSubviews.forEachIndexed { index, it ->
             it as UIView
-            if (it.hidden || it.extensionCollapsed == true || it.toString().contains("_UIContainerWindowPortalView")) {
+            if (it.hidden || it.extensionCollapsed == true) {
                 out[index] = Size(0.0, 0.0)
                 return@forEachIndexed
             }
@@ -195,10 +205,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             out[index] = required
         }
 
-        subviews.forEachIndexed { index, it ->
+        arrangedSubviews.forEachIndexed { index, it ->
             it as UIView
             if (out[index] != null) return@forEachIndexed
-            if (it.hidden || it.extensionCollapsed == true || it.toString().contains("_UIContainerWindowPortalView")) return@forEachIndexed
+            if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
             val available = ((w / totalWeight) * remaining.primary).coerceAtLeast(0.0)
             t.pause()
@@ -226,9 +236,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     var lastLaidOutPadding: Edges? = null
     override fun layoutSubviews() {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
-        debugPrint {
-            "parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}"
-        }
         val mySize = bounds.useContents { size.local }
         if (lastLaidOutSize == mySize && lastLaidOutPadding == padding) return
         var t = PerformanceInfo.trace("layoutLinear")
@@ -240,10 +247,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizes = calcSizes(frame.useContents { size.local }, true)
         t.resume()
         var first = true
-        for (index in subviews.indices) {
-            val view = subviews[index] as UIView
+        for (index in arrangedSubviews.indices) {
+            val view = arrangedSubviews[index] as UIView
             val size = sizes[index]
-            if (!(view.hidden || view.extensionCollapsed == true || view.toString().contains("_UIContainerWindowPortalView"))) {
+            if (!(view.hidden || view.extensionCollapsed == true)) {
                 if (first) {
                     first = false
                 } else {

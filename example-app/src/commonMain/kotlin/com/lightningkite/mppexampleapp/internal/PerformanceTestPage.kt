@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.load
 import com.lightningkite.readable.Property
-import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.delay

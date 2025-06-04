@@ -93,6 +93,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     this.beforeNextElementSetup {
+        lastSetWeight = amount
         native.extensionWeight = amount
     }
     return ViewWrapper
@@ -102,7 +103,9 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
         reactiveScope {
-            native.extensionWeight = amount()
+            val amount = amount()
+            native.extensionWeight = amount
+            lastSetWeight = amount
         }
     }
     return ViewWrapper
@@ -111,6 +114,8 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         native.extensionHorizontalAlign = horizontal
         native.extensionVerticalAlign = vertical
     }
