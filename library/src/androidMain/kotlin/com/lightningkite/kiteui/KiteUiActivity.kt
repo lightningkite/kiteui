@@ -39,7 +39,11 @@ abstract class KiteUiActivity : AppCompatActivity() {
     abstract val mainNavigator : PageNavigator
 
     lateinit var root: RView
+    private val safeInsetsProperty = Property<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
+        init {
+            safeInsets = safeInsetsProperty
+        }
         override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
             root = view
@@ -54,7 +58,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
                     bottom = insets.bottom.px
                 )
                 println("OnApplyWindowInsetsListener: $safeInsets")
-                context.setSafeInsets(safeInsets)
+                safeInsetsProperty.value = safeInsets
                 WindowInsetsCompat.CONSUMED
             }
             ViewCompat.setOnApplyWindowInsetsListener(view.native, l)

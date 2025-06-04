@@ -108,9 +108,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
                 field = value
                 applyTheme(value)
                 refreshPadding()
-                if (children.firstOrNull() == viewDebugTarget && viewDebugTarget != null) {
-                    println("Parent theme: ${value.theme.id} ${value.theme.foreground}")
-                }
                 for (child in internalChildren) {
 //                    if (child.themeChoice !is ThemeChoice.Set)
                     child.refreshTheming()

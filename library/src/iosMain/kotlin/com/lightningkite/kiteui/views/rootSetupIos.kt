@@ -74,6 +74,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
         Readable.reportException(throwable)
     } + Dispatchers.Main.immediate
+    val safeInsetProperty = Property(Edges.ZERO)
 
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext {
@@ -83,6 +84,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
             this@kiteUi.view.addSubview(view.native)
         }
     }
+    writer.safeInsets = safeInsetProperty
     val created = writer.app()
 
     val subview = created.rView.native
@@ -116,7 +118,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
 
     val safeInsets = {
         view.safeAreaInsets.useContents {
-            context.setSafeInsets(Edges(
+            safeInsetProperty.value = (Edges(
                 left = Dimension(left),
                 right = Dimension(right),
                 top = Dimension(top),

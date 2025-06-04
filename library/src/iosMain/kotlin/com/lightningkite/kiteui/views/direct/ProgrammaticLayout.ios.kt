@@ -36,17 +36,17 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     override fun refreshPadding() {
         super.refreshPadding()
         val value = appliedPadding
-        native.paddingTopCurrentPx = value.top.canvasUnits
-        native.paddingLeftCurrentPx = value.left.canvasUnits
-        native.paddingRightCurrentPx = value.right.canvasUnits
-        native.paddingBottomCurrentPx = value.bottom.canvasUnits
+        native.paddingTopCurrentPx = value.top.viewUnits
+        native.paddingLeftCurrentPx = value.left.viewUnits
+        native.paddingRightCurrentPx = value.right.viewUnits
+        native.paddingBottomCurrentPx = value.bottom.viewUnits
     }
 
     override var gap: Dimension?
         get() = super.gap
         set(value) {
             super.gap = value
-            native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
+            native.spacingCurrentPx = gap?.viewUnits ?: theme.gap.viewUnits
         }
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -54,7 +54,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
-        native.spacingCurrentPx = gap?.canvasUnits ?: theme.gap.canvasUnits
+        native.spacingCurrentPx = gap?.viewUnits ?: theme.gap.viewUnits
     }
 }
 
@@ -85,7 +85,6 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
             return child.native.sizeThatFits2(CGSizeMake(sizeConstraint.width, sizeConstraint.height), sizeConstraints = null).useContents { Size(width, height) }.also {
                 child.debugPrint { "Child ${child} measured within $sizeConstraint to be $it" }
             }
-            return result
         }
 
         override fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double) {

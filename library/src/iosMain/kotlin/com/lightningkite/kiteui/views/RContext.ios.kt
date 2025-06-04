@@ -7,7 +7,7 @@ import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
 actual class RContext(val controller: UIViewController) : RContextHelper() {
-    actual fun split(): RContext = RContext(controller).apply { _safeInsets = this@RContext._safeInsets; addons.putAll(this@RContext.addons) }
+    actual fun split(): RContext = RContext(controller).apply { addons.putAll(this@RContext.addons) }
 
     actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
@@ -27,7 +27,4 @@ actual class RContext(val controller: UIViewController) : RContextHelper() {
                 controller.setNeedsStatusBarAppearanceUpdate()
             }
         }
-    private var _safeInsets = Property(Edges.ZERO)
-    actual val safeInsets: Readable<Edges> get() = _safeInsets
-    fun setSafeInsets(edge: Edges) { _safeInsets.value = edge }
 }

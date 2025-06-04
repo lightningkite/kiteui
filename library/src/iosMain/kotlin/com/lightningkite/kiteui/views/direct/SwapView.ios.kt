@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.withoutAnimation
 
 
 actual class SwapView actual constructor(context: RContext): RView(context) {
-    init { cannotBeCovered = false }
+    
     override val native = FrameLayout()
     private var currentView: RView? = null
 

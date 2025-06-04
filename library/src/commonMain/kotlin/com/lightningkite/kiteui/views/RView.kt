@@ -53,21 +53,6 @@ abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(con
     }
 }
 
-interface ViewModifiable: CoroutineScope {
-    val rView: RView
-}
-
-expect abstract class RView constructor(context: RContext) : RViewHelper {
-    override var showOnPrint: Boolean
-    override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
-    override fun requestFocus()
-    override fun screenRectangle(): Rect?
-    override fun applyTheme(theme: ThemeAndBack)
-    override fun internalAddChild(index: Int, view: RView)
-    override fun internalRemoveChild(index: Int)
-    override fun internalClearChildren()
-}
-
 fun RView.rectangleRelativeTo(other: RView): Rect? {
     val myRect = screenRectangle() ?: return null
     val otherRect = other.screenRectangle() ?: return null

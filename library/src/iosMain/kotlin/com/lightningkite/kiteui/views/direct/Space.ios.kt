@@ -12,7 +12,7 @@ import platform.UIKit.UIView
 
 
 actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
-    init { cannotBeCovered = false }
+    
     override val native = NSpace()
     override fun applyTheme(theme: ThemeAndBack) {
         native.natSize = CGSizeMake(theme.theme.gap.value * multiplier, theme.theme.gap.value * multiplier)

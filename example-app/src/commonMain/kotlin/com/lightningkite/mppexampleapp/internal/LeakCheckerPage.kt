@@ -80,6 +80,7 @@ object LeakCheckerPage : Page {
     val stringProp = Property("X")
     val doubleProp = Property<Double?>(0.0)
     val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+        "scrolling" to { frame { scrolling - col { text("A") } } },
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
@@ -93,7 +94,6 @@ object LeakCheckerPage : Page {
         "col" to { frame { col { col { } } } },
         "separator" to { frame { col { separator() } } },
         "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
-        "scrolling" to { frame { scrolling - col { text("A") } } },
         "activityIndicator" to { frame { activityIndicator {} } },
         "checkbox" to { frame { checkbox {} } },
         "dismissBackground" to { frame { dismissBackground {} } },

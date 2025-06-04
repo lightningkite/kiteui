@@ -10,7 +10,7 @@ import platform.UIKit.UIView
 
 actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     override val native = LinearLayout()
-    init { cannotBeCovered = false }
+    
 
     actual var vertical: Boolean
         get() = native.horizontal.not()
@@ -62,7 +62,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
 
 actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) :
     RView(context) {
-    init { cannotBeCovered = false }
+    
     override val native = LinearLayout()
 
     init {
@@ -117,6 +117,6 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
 }
 
 actual class Frame actual constructor(context: RContext) : RView(context) {
-    init { cannotBeCovered = false }
+    
     override val native = FrameLayout()
 }

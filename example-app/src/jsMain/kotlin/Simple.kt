@@ -2,6 +2,7 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.Edges
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.dp
@@ -12,7 +13,6 @@ import com.lightningkite.readable.Property
 import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.KeyCodes
 import com.lightningkite.kiteui.views.direct.swapView
 import com.lightningkite.kiteui.views.direct.swapping
 import com.lightningkite.kiteui.views.direct.text
@@ -39,18 +39,6 @@ fun main() {
     root(appTheme) {
         app(PageNavigator { AutoRoutes }, PageNavigator { AutoRoutes })
 
-        var times = 0
-        println("Context safe insets: ${context.safeInsets.identityHashCode()}")
-        reactive {
-            println("Edges are " + context.safeInsets())
-        }
-        onRemove(AppState.onUniversalKeyboard {
-            if(it.alt && it.code == KeyCodes.letter('e')) {
-                println("Setting edges")
-                context.testSafeInsets(if(times++ % 2 == 0) Edges(100.dp) else Edges.ZERO)
-                true
-            } else false
-        })
         document.addEventListener("keydown", { e ->
             e as KeyboardEvent
             if(e.ctrlKey && e.code == KeyCodes.letter('E')) {

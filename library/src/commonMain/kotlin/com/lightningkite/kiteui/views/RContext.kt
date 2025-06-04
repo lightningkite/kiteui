@@ -7,7 +7,6 @@ expect class RContext: RContextHelper {
     fun split(): RContext
     override val darkMode: Boolean?
     var immersiveMode: Boolean
-    val safeInsets: Readable<Edges>
 }
 abstract class RContextHelper {
     val addons = HashMap<String, Any?>()  // TODO: Use record
