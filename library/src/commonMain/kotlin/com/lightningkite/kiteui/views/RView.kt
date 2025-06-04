@@ -41,6 +41,8 @@ abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(con
 }
 
 interface ViewModifiable: CoroutineScope {
+    override val coroutineContext: CoroutineContext
+        get() = rView.coroutineContext
     val rView: RView
 }
 
