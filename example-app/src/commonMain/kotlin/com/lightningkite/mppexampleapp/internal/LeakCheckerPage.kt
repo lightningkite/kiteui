@@ -2,14 +2,11 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
@@ -83,6 +80,7 @@ object LeakCheckerPage : Page {
     val stringProp = Property("X")
     val doubleProp = Property<Double?>(0.0)
     val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+        "scrolling" to { frame { scrolling - col { text("A") } } },
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
@@ -96,7 +94,6 @@ object LeakCheckerPage : Page {
         "col" to { frame { col { col { } } } },
         "separator" to { frame { col { separator() } } },
         "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
-        "scrolling" to { frame { scrolling - col { text("A") } } },
         "activityIndicator" to { frame { activityIndicator {} } },
         "checkbox" to { frame { checkbox {} } },
         "dismissBackground" to { frame { dismissBackground {} } },

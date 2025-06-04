@@ -123,7 +123,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         )
         return when {
             hitResult != null -> {
-//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null (hitResult: $hitResult)")
                 hitResult
             }
             it.extensionIgnoreInteraction == true -> {

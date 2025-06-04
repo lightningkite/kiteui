@@ -31,7 +31,20 @@ fun UIView.sizeThatFits2(
     val measured = when (this) {
         is LinearLayout,
         is FrameLayout,
-        is FrameLayoutButton -> sizeThatFits(newSizeInput)
+        is FrameLayoutButton,
+            -> sizeThatFits(newSizeInput)
+
+        is CanvasView -> PerformanceInfo["CanvasView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NDismissBackground -> PerformanceInfo["NDismissBackground.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NIconView -> PerformanceInfo["NIconView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NProgrammaticLayout -> PerformanceInfo["NProgrammaticLayout.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is ResizeableProgressView -> PerformanceInfo["ResizeableProgressView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UIImageViewFixedSizing -> PerformanceInfo["UIImageViewFixedSizing.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is ScrollLayout -> PerformanceInfo["ScrollLayout.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NSpace -> PerformanceInfo["NSpace.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UILabelWithGradient -> PerformanceInfo["UILabelWithGradient.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UILabelWithLayerBackground -> PerformanceInfo["UILabelWithLayerBackground.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is WrapperView -> PerformanceInfo["WrapperView.sizeThatFits"] { sizeThatFits(newSizeInput) }
 
         else -> {
             // Uncomment this code if you believe some fool is using the default sizeThatFits.
