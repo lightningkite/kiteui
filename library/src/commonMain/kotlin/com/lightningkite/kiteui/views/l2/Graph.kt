@@ -14,6 +14,8 @@ import com.lightningkite.kiteui.views.canvas.strokePaint
 import com.lightningkite.kiteui.views.canvas.textAlign
 import com.lightningkite.kiteui.views.canvas.width
 import com.lightningkite.kiteui.views.direct.*
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
 import kotlin.math.*
 
 /**
@@ -386,6 +388,8 @@ fun ViewWriter.lineGraph(
  * Extension function to create a line graph from a list of y values.
  * X values will be the indices of the y values.
  */
+@JvmName("lineGraphFromYValues")
+@JsName("lineGraphFromYValues")
 fun ViewWriter.lineGraph(
     yValues: List<Double>,
     setup: GraphDelegate.() -> Unit = {}
@@ -397,6 +401,8 @@ fun ViewWriter.lineGraph(
 /**
  * Extension function to create a line graph from a list of x-y pairs.
  */
+@JvmName("lineGraphFromPairs")
+@JsName("lineGraphFromPairs")
 fun ViewWriter.lineGraph(
     points: List<Pair<Double, Double>>,
     setup: GraphDelegate.() -> Unit = {}
