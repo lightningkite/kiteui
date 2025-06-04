@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.navigation.PageNavigator
@@ -10,7 +11,6 @@ import com.lightningkite.readable.Property
 import com.lightningkite.readable.ReactiveContext
 import com.lightningkite.readable.invoke
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.direct.KeyCodes
 import com.lightningkite.kiteui.views.direct.swapView
 import com.lightningkite.kiteui.views.direct.swapping
 import com.lightningkite.kiteui.views.direct.text

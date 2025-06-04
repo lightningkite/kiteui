@@ -12,6 +12,8 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
+import androidx.core.view.ViewCompat
+import androidx.core.view.children
 import com.lightningkite.kiteui.Log
 
 import com.lightningkite.kiteui.ViewWrapper
@@ -117,6 +119,59 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
+actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
+    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+
+    if (vertical) {
+        val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
+        refreshLayout.setOnRefreshListener {
+            refreshAction.startAction(this)
+            reactiveScope {
+                refreshLayout.isRefreshing = refreshAction.state().handle(
+                    success = { false },
+                    exception = { false },
+                    notReady = { true }
+                )
+            }
+        }
+        wrapNextIn(object: RViewWrapper(context) {
+            override val native: View = refreshLayout
+
+            val myChildren: ArrayList<View> = ArrayList()
+            override fun internalAddChild(index: Int, view: RView) {
+                myChildren.add(index, view.native)
+                (native as ViewGroup).addView(view.native, index)
+            }
+
+            override fun internalRemoveChild(index: Int) {
+                (native as ViewGroup).let {
+                    it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
+                }
+            }
+
+            override fun internalClearChildren() {
+                (native as ViewGroup).let {
+                    for(child in myChildren) {
+                        it.removeViewAt(it.children.indexOf(child))
+                    }
+                    myChildren.clear()
+                }
+            }
+        })
+    } else {
+        // For horizontal scrolling, just use regular scrolling as SwipeRefreshLayout only supports vertical
+    }
+    wrapNextIn(scrollView)
+
     return ViewWrapper
 }
 

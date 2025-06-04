@@ -360,16 +360,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
         if (fullyStarted) ViewCompat.requestApplyInsets(view.native)
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalAddChild($index $view) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalRemoveChild($index) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeViewAt(index)
     }
 
     actual override fun internalClearChildren() {
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalClearChildren() failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeAllViews()
     }
 
