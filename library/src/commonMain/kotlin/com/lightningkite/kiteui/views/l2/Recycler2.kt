@@ -209,7 +209,7 @@ class Recycler2(
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
         val indexProp = Property(-1)
-        val data = LateInitProperty<T>()
+        val data = RawReadable<T>()
         override lateinit var type: RecyclerViewRenderer<*>
         lateinit var view: RView
         private var constraint: Size = Size.Zero
@@ -218,13 +218,13 @@ class Recycler2(
         fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
-            data: T?,
+            data: ReadableState<T>,
             index: Int,
             inProgress: ProgrammingLayoutInProgress
         ) {
             this.type = type
             cells.beforeNextElementSetup { view = this }
-            data?.let { this.data.value = it } ?: this.data.unset()
+            this.data.state = data
             this.indexProp.value = index
             log?.log("CELL CREATED: from $data at $index")
             type.render(cells, this.data, indexProp)
@@ -233,13 +233,13 @@ class Recycler2(
             this.inProgress = inProgress
         }
 
-        fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
+        fun onPullForPlacing(constrain: Size, data: ReadableState<T>, index: Int, inProgress: ProgrammingLayoutInProgress) {
 //            view.withoutAnimation {
             view.shown = true
             view.opacity = 1.0
 //            }
 //            if (data != this.data.value) log?.log("CELL RECYCLED: Change from ${this.data.value} to $data at $index, ${this.indexProp.value}")
-            data?.let { this.data.value = it } ?: this.data.unset()
+            this.data.state = data
             this.indexProp.value = index
             constraint = constrain
             _size = null
@@ -535,25 +535,25 @@ class Recycler2(
             log?.log("LAYOUT STARTING with size $within")
 
             @Suppress("UNCHECKED_CAST")
-            val data = data as? RecyclerViewData<Any, Any> ?: run {
+            val data = data as? RecyclerViewData<Any?, Any?> ?: run {
                 log?.log("measure stop: val data = data as? RecyclerViewData<Any, Any> ?: run {")
                 return default
             }
 
             @Suppress("UNCHECKED_CAST")
-            val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {
+            val rendererSet = rendererSet as? RecyclerViewRendererSet<Any?, Any?> ?: run {
                 log?.log("measure stop: val rendererSet = rendererSet as? RecyclerViewRendererSet<Any, Any> ?: run {")
                 return default
             }
 
             @Suppress("UNCHECKED_CAST")
-            val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {
+            val activeCells = activeCells as? MutableList<MyCell<Any?>> ?: run {
                 log?.log("measure stop: val activeCells = activeCells as? MutableList<MyCell<Any>> ?: run {")
                 return default
             }
 
             @Suppress("UNCHECKED_CAST")
-            val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {
+            val reuseableCells = reuseableCells as? MutableList<MyCell<Any?>> ?: run {
                 log?.log("measure stop: val reuseableCells = reuseableCells as? MutableList<MyCell<Any>> ?: run {")
                 return default
             }
@@ -612,17 +612,25 @@ class Recycler2(
                         val renderer = rendererSet.renderer(item)
                         val id = rendererSet.id(item)
                         //Pulling a cell should prefer (in order) same item ID, off-screen, create new
-                        (activeCells.find { it.item?.let(rendererSet::id) == id }?.also {
+                        (activeCells.find {
+                            it.data.state.handle(
+                                success = {
+                                    rendererSet.id(it) == id
+                                },
+                                exception = { false },
+                                notReady = { false }
+                            )
+                        }?.also {
                             // Same item ID: Data change should be animated here
-                            it.onPullForPlacing(size, item, index, inProgress)
+                            it.onPullForPlacing(size, ReadableState(item), index, inProgress)
                         } ?: reuseableCells.popOrNull {  it.type == renderer }?.also {
                             // If placing just offscreen, place without animation.
-                            it.view.withoutAnimation { it.onPullForPlacing(size, item, index, inProgress) }
+                            it.view.withoutAnimation { it.onPullForPlacing(size, ReadableState(item), index, inProgress) }
                             activeCells += it
-                        } ?: MyCell<Any>().also {
+                        } ?: MyCell<Any?>().also {
                             // If creating a new cell, make sure we don't animate.
                             cells.withoutAnimation {
-                                it.setup(rendererSet.renderer(item), size, item, index, inProgress)
+                                it.setup(rendererSet.renderer(item), size, ReadableState(item), index, inProgress)
                             }
                             activeCells += it
                         }).also { usedCells += it }
