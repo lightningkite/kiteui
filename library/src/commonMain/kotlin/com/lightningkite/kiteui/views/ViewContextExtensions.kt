@@ -55,6 +55,11 @@ fun ViewWriter.closePopovers() {
     popoverCloser = null
     popoverParent?.closePopovers()
 }
+fun ViewWriter.closeThisPopover() {
+    popoverCloser?.invoke()
+    popoverCloser = null
+    popoverParent?.closeSiblingPopovers()
+}
 fun ViewWriter.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null

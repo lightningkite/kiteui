@@ -20,6 +20,7 @@ import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
+import kotlin.math.max
 import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
@@ -98,21 +99,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.extensionIgnoreInteraction = value
         }
 
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            val gap = mySpacing.value
-            for (child in children) {
-                child.native.layoutLayers(gap)
-            }
-        }
-
     // Update padding based on safe insets
     override fun refreshPadding() {
         val value = appliedPadding
         native.extensionPadding = value
         native.informParentOfSizeChange()
+        val gap = max(mySpacing.value, padding?.value ?: 0.0)
+        for (child in children) {
+            child.native.layoutLayers(gap)
+        }
     }
 
     actual override fun screenRectangle(): Rect? {

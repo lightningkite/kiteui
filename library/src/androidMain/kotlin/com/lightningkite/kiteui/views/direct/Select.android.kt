@@ -37,6 +37,9 @@ actual class Select actual constructor(context: RContext): RView(context) {
         return super.applyState(t)
     }
 
+    override fun refreshPadding() {
+        native.setPaddingAll(0)
+    }
 
     override fun applyTheme(theme: ThemeAndBack) {
         native.setPaddingAll(0)
