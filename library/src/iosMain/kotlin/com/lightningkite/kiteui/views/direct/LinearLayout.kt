@@ -141,10 +141,12 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         @Suppress("SENSELESS_COMPARISON")
         if (this != null) {
             lastLaidOutSize = null
-            val index = arrangedSubviews.indexOf(subview).also { if (it == -1) throw Exception() }
-            arrangedSubviews.removeAt(index)
-            childSizeCache.removeAt(index)
-            informParentOfSizeChangeDueToChild()
+            val index = arrangedSubviews.indexOf(subview)
+            if(index != -1) {
+                arrangedSubviews.removeAt(index)
+                childSizeCache.removeAt(index)
+                informParentOfSizeChangeDueToChild()
+            }
         }
         super.willRemoveSubview(subview)
     }
