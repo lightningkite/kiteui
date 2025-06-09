@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.requestFile
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -60,7 +61,7 @@ object ImageElementPage: DocPage {
                         expanding - button {
                             text("Pick")
                             onClick {
-                                ExternalServices.requestFile(listOf("image/*"))
+                                context.requestFile(listOf("image/*"))
                                     ?.let(::ImageLocal)
                                     ?.let { currentImage.value = it }
                             }
