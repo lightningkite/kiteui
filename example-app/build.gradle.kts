@@ -1,4 +1,3 @@
-import com.lightningkite.deployhelpers.lk
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -31,10 +30,6 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-}
-
-val lk = lk {
-    version = gitBasedVersion()
 }
 
 vite {

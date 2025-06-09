@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.readable.AppScope
+import com.lightningkite.readable.BasicListenable
+import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.datetime.Clock
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.CloseEvent
@@ -169,12 +172,23 @@ actual fun FileReference.fileName(): String {
     return this.name
 }
 
+private val killAllSockets = BasicListenable().also {
+    window.asDynamic().killAllSockets = { ->
+        println("Killing all sockets")
+        it.invokeAll()
+    }
+}
 actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
+class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
+    private val opened = Clock.System.now()
+    private val stopListeningToDebugKill = killAllSockets.addListener {
+        println("Killing websocket to ${native.url} opened at $opened")
+        native.close(3008)
+    }
     override fun close(code: Short, reason: String) = native.close(code, reason)
     override fun send(data: String) = native.send(data)
     override fun send(data: Blob) = native.send(data)
@@ -192,6 +206,16 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
 
     override fun onClose(action: (Short) -> Unit) {
         native.addEventListener("close", { action((it as CloseEvent).code) })
+    }
+
+    init {
+        onClose { stopListeningToDebugKill() }
+        log?.let { log ->
+            onOpen { log.info("Opened.") }
+            onMessage { log.log("onMessage $it") }
+            onBinaryMessage { log.log("onBinaryMessage $it") }
+            onClose { log.info("Closed with code $it.") }
+        }
     }
 }
 
