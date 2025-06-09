@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.Event
+import com.lightningkite.kiteui.dom.MouseEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.Job
@@ -20,10 +21,12 @@ actual class Button actual constructor(context: RContext): RViewWithSecondaryAct
         Frame.internalAddChildStack(this, index, view)
     }
 
+    private var downPress: Pair<Double, Double> = Pair(0.0, 0.0)
     private var longPressDetect: Job? = null
-
     init {
-        val beginLongPressCountdown = { _: Event ->
+        val beginLongPressCountdown = { e: Event ->
+            val me = e as? MouseEvent
+            downPress = Pair(me?.pageX ?: 0.0, me?.pageY ?: 0.0)
             longPressDetect = longPressDetect ?: launch {
                 delay(500)
                 secondaryAction?.let {
@@ -34,11 +37,19 @@ actual class Button actual constructor(context: RContext): RViewWithSecondaryAct
                 }
             }
         }
-        val cancelOrClick = { event: Event ->
+        val cancelOrClick = { e: Event ->
+            val me = e as? MouseEvent
             longPressDetect?.cancel()
             if (longPressDetect != null) {
                 longPressDetect = null
-                action?.startAction(this)
+                if (me != null) {
+                    val dx = me.pageX - downPress.first
+                    val dy = me.pageY - downPress.second
+                    val dist = kotlin.math.sqrt(dx * dx + dy * dy)
+                    if (dist <= 5) {
+                        action?.startAction(this)
+                    }
+                }
             }
             Unit
         }
