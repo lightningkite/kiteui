@@ -36,7 +36,7 @@ object DialogSamplesPage : Page {
             button {
                 h6 { content = "Launch edit dialog" }
                 onClick {
-                    dialog {
+                    dialog { close ->
                         col {
                             text("INPUT TIME!")
                             field("Field") {
@@ -44,7 +44,7 @@ object DialogSamplesPage : Page {
                             }
                             button {
                                 text("OK")
-                                onClick { closePopovers() }
+                                onClick { close() }
                             }
                         }
                     }
