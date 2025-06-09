@@ -2,27 +2,47 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Build
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.WeakReference
+import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.leaks
+import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.requestFile
+import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.readable.Constant
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.Readable
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.animateIn
+import com.lightningkite.kiteui.views.animateOut
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.RowOrCol
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.dismissBackground
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
+import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.separator
+import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.overlayWriter
+import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
+import com.lightningkite.readable.onRemove
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
@@ -33,6 +53,91 @@ class HomePage: Page {
             centered - h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
+            space()
+            button {
+                text("open")
+                onClick {
+                    dialogGeneric { close ->
+                        println("Placing root")
+                        debugName = "root"
+                        onRemove { println("Removing root"); WeakReference(this).checkLeakAfterDelay(1000L, "root") }
+                        button {
+                            text("requestFile")
+                            onClick {
+                                println(context.requestFile())
+                            }
+                        }
+                        button {
+                            text("before")
+                            onClick {
+                                dialogGeneric { close ->
+                                    println("Placing before")
+                                    debugName = "before"
+                                    onRemove { println("Removing before"); WeakReference(this).checkLeakAfterDelay(1000L, "before") }
+                                    text("OK")
+                                    button {
+                                        text("close")
+                                        onClick { close() }
+                                    }
+                                }
+                                close()
+                            }
+                        }
+                        button {
+                            text("after")
+                            onClick {
+                                close()
+                                dialogGeneric { close ->
+                                    println("Placing after")
+                                    debugName = "after"
+                                    onRemove { println("Removing after"); WeakReference(this).checkLeakAfterDelay(1000L, "after") }
+                                    text("OK")
+                                    button {
+                                        text("close")
+                                        onClick { close() }
+                                    }
+                                }
+                            }
+                        }
+                        button {
+                            text("outer")
+                            onClick {
+//                                close()
+                                this@article.dialogGeneric { close ->
+                                    println("Placing outer")
+                                    debugName = "outer"
+                                    onRemove { println("Removing outer"); WeakReference(this).checkLeakAfterDelay(1000L, "outer") }
+                                    text("OK")
+                                    button {
+                                        text("close")
+                                        onClick { close() }
+                                    }
+                                }
+                            }
+                        }
+                        button {
+                            text("inner")
+                            onClick {
+//                                close()
+                                dialogGeneric { close ->
+                                    println("Placing inner")
+                                    debugName = "inner"
+                                    onRemove { println("Removing inner"); WeakReference(this).checkLeakAfterDelay(1000L, "inner") }
+                                    text("OK")
+                                    button {
+                                        text("close")
+                                        onClick { close() }
+                                    }
+                                }
+                            }
+                        }
+                        button {
+                            text("close")
+                            onClick { close() }
+                        }
+                    }
+                }
+            }
             space()
             centered - h2("Goals")
             separator()
@@ -98,3 +203,19 @@ class HomePage: Page {
         }
     }
 }
+
+
+fun ViewWriter.dialogGeneric(width: Dimension = 32.rem, content: RowOrCol.(close: () -> Unit) -> Unit) {
+    overlayWriter(modal = true) { close ->
+        dismissBackground {
+            padding = 1.rem
+            onClick { close() }
+            centered - DialogSemantic.onNext - sizeConstraints(width = width) - col {
+                gap = 1.rem
+                padding = 2.rem
+                content { close() }
+            }
+        }
+    }
+}
+

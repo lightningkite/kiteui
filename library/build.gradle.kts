@@ -15,10 +15,6 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
-val lk = project.lk {
-    kotlinTestManualPlugin()
-}
-
 kotlin {
     androidTarget {
         publishLibraryVariants("release", "debug")
@@ -80,7 +76,7 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(lk.readable(2))
+                api(libs.comLightningkiteReadable)
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
@@ -91,7 +87,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
-                implementation(lk.kotlinTestManualRuntime())
+                implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
             }
         }
         val androidMain by getting {
