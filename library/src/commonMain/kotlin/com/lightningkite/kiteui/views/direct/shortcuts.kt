@@ -111,7 +111,7 @@ fun ViewWriter.confirmDanger(
     actionName: String = "OK",
     action: suspend () -> Unit
 ) {
-    dialog {
+    dialog { closer ->
         col {
             h2(title)
             text(body)
@@ -119,14 +119,14 @@ fun ViewWriter.confirmDanger(
                 expanding - buttonTheme - button {
                     centered - text("Cancel")
                     onClick {
-                        closePopovers()
+                        closer()
                     }
                 }
                 expanding - danger - buttonTheme - button {
                     centered - text(actionName)
                     onClick {
                         action()
-                        closePopovers()
+                        closer()
                     }
                 }
             }
@@ -138,7 +138,7 @@ fun ViewWriter.alert(
     title: String,
     body: String,
 ) {
-    dialog {
+    dialog { closer ->
         col {
 //                    ignoreInteraction = false
             h2(title)
@@ -147,7 +147,7 @@ fun ViewWriter.alert(
                 expanding - danger - button {
                     centered - h6("OK")
                     onClick {
-                        closePopovers()
+                        closer()
                     }
                 }
             }

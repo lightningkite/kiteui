@@ -1,4 +1,6 @@
-
+import com.lightningkite.deployhelpers.publishing
+import com.lightningkite.deployhelpers.useGitBasedVersion
+import com.lightningkite.deployhelpers.useLocalDependencies
 group = "com.lightningkite.kiteui"
 version = "1.0-SNAPSHOT"
 
@@ -20,6 +22,9 @@ buildscript {
 }
 allprojects {
     group = "com.lightningkite.kiteui"
+    useLocalDependencies()
+    useGitBasedVersion()
+    publishing()
     repositories {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")

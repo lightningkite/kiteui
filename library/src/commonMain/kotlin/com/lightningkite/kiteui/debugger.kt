@@ -50,6 +50,27 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
+fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        get()?.let {
+            println("Leaked $name")
+            leaks.add(this)
+            recheckLeakAfterDelay(milliseconds, name)
+        }
+    }
+}
+fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        if (get() == null) {
+            println("Leak $name cleaned up")
+            leaks.remove(this)
+        } else {
+            recheckLeakAfterDelay(milliseconds, name)
+        }
+    }
+}
 expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Edges
+import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
@@ -96,4 +97,8 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
  */
-expect fun ViewWriter.overlayWriter(modal: Boolean = true, body: RView.() -> Unit)
+expect fun ViewWriter.overlayWriter(
+    modal: Boolean = true,
+    transition: ScreenTransitions = ScreenTransitions.Fade,
+    body: RView.(remove: () -> Unit) -> Unit
+)

@@ -2,13 +2,20 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.nsdata
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.readable.onRemove
 import platform.Foundation.*
 import platform.UIKit.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.WeakReference
 
+@OptIn(ExperimentalNativeApi::class)
 actual class TextView actual constructor(context: RContext) : RView(context) {
     override val native = UILabelWithLayerBackground()
+//    init {
+//        native.rContext = context
+//        onRemove { native.rContext = null }
+//    }
     val label get() = native.label
 
     init {

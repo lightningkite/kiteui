@@ -27,16 +27,16 @@ object ExternalServicesPage : Page {
             row {
                 button {
                     text { content = "openTab" }
-                    onClick { ExternalServices.openTab("https://google.com") }
+                    onClick { context.openTab("https://google.com") }
                 }
 
                 button {
                     text { content = "openTab (mail)" }
-                    onClick { ExternalServices.openTab("mailto:joseph@lightningkite.com") }
+                    onClick { context.openTab("mailto:joseph@lightningkite.com") }
                 }
                 button {
                     text { content = "openTab (phone)" }
-                    onClick { ExternalServices.openTab("tel:8013693729") }
+                    onClick { context.openTab("tel:8013693729") }
                 }
             }
             row {
@@ -58,11 +58,11 @@ object ExternalServicesPage : Page {
             scrollingHorizontally - row {
                 button {
                     text("Open Map")
-                    onClick { ExternalServices.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
+                    onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
                 }
                 button {
                     text("Open Event")
-                    onClick { ExternalServices.openEvent(
+                    onClick { context.openEvent(
                         title = "Test Event",
                         description = "This is a test event from the KiteUI Tester app.",
                         location = "255 S 300 W Logan, UT 84321",
@@ -74,7 +74,7 @@ object ExternalServicesPage : Page {
                 button {
                     text("Download")
                     onClick {
-                        ExternalServices.download(
+                        context.download(
                             "yes.png",
                             "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png"
                         )
@@ -83,14 +83,14 @@ object ExternalServicesPage : Page {
                 button {
                     text("Share")
                     onClick {
-                        ExternalServices.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
+                        context.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
                     }
                 }
                 button {
                     text("Share image")
                     onClick {
                         val blob = fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
-                        ExternalServices.share(listOf("Captain_Falcon.png" to blob))
+                        context.share(listOf("Captain_Falcon.png" to blob))
                     }
                 }
             }
@@ -100,14 +100,14 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile" }
                     onClick {
-                        println(ExternalServices.requestFile(listOf("*/*")))
+                        println(context.requestFile(listOf("*/*")))
                     }
                 }
 
                 button {
                     text { content = "requestFiles" }
                     onClick {
-                        println(ExternalServices.requestFiles(listOf("*/*")))
+                        println(context.requestFiles(listOf("*/*")))
                     }
                 }
             }
@@ -116,7 +116,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile image" }
                     onClick {
-                        image.value = ExternalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = context.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -124,7 +124,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestFiles image" }
                     onClick {
                         image.value =
-                            ExternalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
+                            context.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -133,7 +133,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestCaptureSelf" }
                     onClick {
-                        image.value = ExternalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = context.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -141,7 +141,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestCaptureEnvironment" }
                     onClick {
                         image.value =
-                            ExternalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
+                            context.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -163,7 +163,7 @@ object ExternalServicesPage : Page {
 //                    }
 //
 //
-//                    onClick{ExternalServices.setClipboardText(clip.await())}
+//                    onClick{context.setClipboardText(clip.await())}
 //                }
 //            }
         }

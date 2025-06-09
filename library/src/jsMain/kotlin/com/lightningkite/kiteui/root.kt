@@ -36,7 +36,9 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
 fun root(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
-        override val context: RContext = RContext(basePath)
+        override val context: RContext = RContext(basePath).also {
+            ExternalServices.baseContext = it
+        }
 
         override fun addChild(view: RView) {
             document.body?.append(view.native.create())

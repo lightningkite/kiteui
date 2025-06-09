@@ -24,7 +24,7 @@ class ExceptionHandlers {
                 open = true
                 view.closePopovers()
                 val message = view.exceptionToMessage(exception)!!
-                view.dialog {
+                view.dialog { closer ->
                     onRemove {
                         open = false
                     }
@@ -39,12 +39,12 @@ class ExceptionHandlers {
                             for(action in message.actions) {
                                 button {
                                     text(action.title)
-                                    onClick { closePopovers(); action.startAction(view) }
+                                    onClick { closer(); action.startAction(view) }
                                 }
                             }
                             buttonTheme - button {
                                 text("OK")
-                                onClick { closePopovers() }
+                                onClick { closer() }
                             }
                         }
                     }
