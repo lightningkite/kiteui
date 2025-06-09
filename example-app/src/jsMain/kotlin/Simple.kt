@@ -48,7 +48,7 @@ fun main() {
                 AppScope.launch {
                     val s = context.dynamicCss.emit()
                     println("Export ready, downloading")
-                    ExternalServices.download("static.css", Blob(arrayOf(s), BlobPropertyBag(
+                    context.download("static.css", Blob(arrayOf(s), BlobPropertyBag(
                         type = "text/html"
                     )
                     ))

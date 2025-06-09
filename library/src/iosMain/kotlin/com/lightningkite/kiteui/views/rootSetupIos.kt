@@ -70,6 +70,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
 }
 
 fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+    definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
         Readable.reportException(throwable)
@@ -182,7 +183,5 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
         }
         app()
     }
-    ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
-    ExternalServices.rootView = view
 
 }

@@ -64,7 +64,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
         popoverCloser?.invoke()
         popoverCloser = { control.close() }
-        viewController.kiteUi(context.split()) {
+        viewController.kiteUi(context.split(viewController)) {
             popoverCloser = null
 
             beforeNextElementSetup {
@@ -95,6 +95,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         val partialDetent = UISheetPresentationControllerDetent.Companion.customDetentWithIdentifier(null) {
             fullSize * partialRatio
         }
+        viewController.definesPresentationContext = true
         (viewController.presentationController as? UISheetPresentationController)?.apply {
             if(partialRatio < 0.99) {
                 detents = listOf(
@@ -117,8 +118,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
             prefersGrabberVisible = draggable
         }
-        ExternalServices.currentPresenter(viewController)
-        ExternalServices.currentlyPresented = viewController
+        context.present(viewController)
     }
 
     actual fun leftSlidingPanel(

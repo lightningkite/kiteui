@@ -1,5 +1,6 @@
 package com.lightningkite.mppexampleapp.widgets
 
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.FontAndStyle
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
@@ -8,6 +9,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.UILabelWithLayerBackground
 import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.toUIFontWeight
+import com.lightningkite.readable.onRemove
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSAttributedString
 import platform.Foundation.NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
