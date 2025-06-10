@@ -76,6 +76,10 @@ actual class TextView actual constructor(context: RContext) :
                 }
             }
         }
+    actual var lineClamp: Int? = null
+        set(value) {
+            // TODO
+        }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         debugPrint {
             "native.setTextColor: ${theme.id} ${theme.foreground}"

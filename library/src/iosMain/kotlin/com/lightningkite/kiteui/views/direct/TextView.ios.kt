@@ -119,6 +119,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
         }
+    actual var lineClamp: Int? = null
+        set(value) {
+            // TODO
+        }
 
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);

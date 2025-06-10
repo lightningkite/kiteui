@@ -46,6 +46,19 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         set(value) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
+    actual var lineClamp: Int?
+        get() = TODO("Not yet implemented")
+        set(value) {
+            value?.let {
+                native.setStyleProperty("background-color", "lightgreen")
+                native.setStyleProperty("display", "-webkit-box")
+                native.setStyleProperty("line-clamp", "$it")
+                native.setStyleProperty("-webkit-line-clamp", "$it")
+                native.setStyleProperty("-webkit-box-orient", "vertical")
+                native.setStyleProperty("overflow", "hidden")
+                native.setStyleProperty("text-overflow", "ellipsis")
+            }
+        }
     actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
