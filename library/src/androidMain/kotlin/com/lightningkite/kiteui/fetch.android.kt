@@ -362,3 +362,5 @@ actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) 
 actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }
+
+actual fun Blob.toByteArray(): ByteArray = data

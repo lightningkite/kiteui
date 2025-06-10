@@ -226,3 +226,4 @@ fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
 actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+actual fun Blob.toByteArray(): ByteArray = Int8Array(unsafeCast<ArrayBuffer>()).unsafeCast<ByteArray>()

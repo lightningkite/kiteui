@@ -352,6 +352,7 @@ fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt())
 }
 
 actual fun Blob.bytes(): Long = this.data.length.toLong()
+actual fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
 actual fun FileReference.bytes(): Long = -1L
 
 //actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
