@@ -59,7 +59,7 @@ expect class FileReference
 expect fun String.toBlob(contentType: String = "text/plain"): Blob
 expect fun Blob.mimeType(): String
 expect fun Blob.bytes(): Long
-expect fun Blob.toByteArray(): ByteArray
+expect suspend fun Blob.toByteArray(): ByteArray
 expect suspend fun Blob.text(): String
 expect fun FileReference.mimeType():String
 expect fun FileReference.bytes():Long

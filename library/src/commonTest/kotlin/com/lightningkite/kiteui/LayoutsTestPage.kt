@@ -19,7 +19,7 @@ class LayoutsTestPage : Page {
             card - frame {
                 above = this
                 checks += {
-                    assertEquals(start.parentRectangle().bottom + theme.gap.canvasUnits, parentRectangle().top, 1.0)
+                    assertEquals(start.parentRectangle().bottom + theme.gap.viewUnits, parentRectangle().top, 1.0)
                 }
             }
             h2("Sample").apply {
@@ -27,7 +27,7 @@ class LayoutsTestPage : Page {
                     assertEquals(true, parent?.themeAndBack?.drawBackground)
                     assertEquals(true, parent?.themeAndBack?.padding)
                     assertEquals(
-                        theme.gap.canvasUnits,
+                        theme.gap.viewUnits,
                         screenRectangle()?.top?.minus(above?.screenRectangle()?.bottom ?: 0.0) ?: 0.0,
                         1.0
                     )
@@ -37,7 +37,7 @@ class LayoutsTestPage : Page {
                 expanding - text("Left").apply {
                     checks += {
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.gap.canvasUnits / 2,
+                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) - theme.gap.viewUnits / 2,
                             (parentRectangle()?.right ?: 0.0),
                             1.0
                         )
@@ -46,7 +46,7 @@ class LayoutsTestPage : Page {
                 expanding - text("Right").apply {
                     checks += {
                         assertEquals(
-                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.gap.canvasUnits / 2,
+                            (this@row.parentRectangle()?.width?.div(2) ?: 0.0) + theme.gap.viewUnits / 2,
                             (parentRectangle()?.left ?: 0.0),
                             1.0
                         )
@@ -66,7 +66,7 @@ class LayoutsTestPage : Page {
                         checks += check@{
                             val below = textViews.getOrNull(index + 1) ?: return@check
                             assertEquals(
-                                customSpacing.canvasUnits,
+                                customSpacing.viewUnits,
                                 below.screenRectangle()?.top?.minus(screenRectangle()?.bottom ?: 0.0) ?: 0.0,
                                 1.0
                             )

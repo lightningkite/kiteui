@@ -313,4 +313,4 @@ actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }
 
-actual fun Blob.toByteArray(): ByteArray = data
+actual suspend fun Blob.toByteArray(): ByteArray = data

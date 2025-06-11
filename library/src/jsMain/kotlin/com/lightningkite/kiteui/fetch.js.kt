@@ -8,6 +8,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.Clock
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
+import org.khronos.webgl.get
+import org.khronos.webgl.set
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
@@ -226,4 +228,17 @@ fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
 actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
-actual fun Blob.toByteArray(): ByteArray = Int8Array(unsafeCast<ArrayBuffer>()).unsafeCast<ByteArray>()
+actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
+
+    /** Returns a new [ByteArray] containing all the elements of this [Int8Array]. */
+private fun Int8Array.toByteArray(): ByteArray =
+    ByteArray(this.length) { this[it] }
+
+/** Returns a new [Int8Array] containing all the elements of this [ByteArray]. */
+private fun ByteArray.toInt8Array(): Int8Array {
+    val result = Int8Array(this.size)
+    for (index in this.indices) {
+        result[index] = this[index]
+    }
+    return result
+}
