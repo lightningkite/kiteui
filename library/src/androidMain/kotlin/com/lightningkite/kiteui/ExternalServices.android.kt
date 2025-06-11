@@ -172,9 +172,6 @@ private fun downloadContinued(name: String, url: String) {
         )
     request.allowScanningByMediaScanner()
     (AndroidAppContext.applicationCtx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request) // 8.
-    Toast.makeText( // 9.
-        AndroidAppContext.activityCtx!!, "Download started", Toast.LENGTH_SHORT
-    ).show()
 }
 
 @SuppressLint("MissingPermission")
@@ -214,7 +211,6 @@ actual suspend fun RContext.download(name: String, blob: Blob, preferredDestinat
         contentValues.clear()
         contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
         resolver.update(uri, contentValues, null, null)
-        Toast.makeText(AndroidAppContext.activityCtx!!, "Download complete", Toast.LENGTH_SHORT).show()
     }
 }
 
