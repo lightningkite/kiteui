@@ -60,6 +60,15 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         spacingCurrentPx = gap?.px ?: theme.gap.px
     }
 
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val value = appliedPadding
+        paddingTopCurrentPx = value.top.viewUnits
+        paddingLeftCurrentPx = value.left.viewUnits
+        paddingRightCurrentPx = value.right.viewUnits
+        paddingBottomCurrentPx = value.bottom.viewUnits
+    }
+
     override fun internalClearChildren() {
         super.internalClearChildren()
         log?.log("children clear calls invalidateLayout()")

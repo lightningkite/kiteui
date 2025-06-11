@@ -58,6 +58,12 @@ object DocSearchPage : Page {
                     }
                 }
                 expanding - ListSemantic.onNext - recyclerView {
+                    paddingByEdge = Edges(
+                        left = 0.rem,
+                        top = 0.rem,
+                        right = 0.rem,
+                        bottom = 10.rem
+                    )
                     placer = RecyclerViewPlacerVerticalGrid(1).apply { log = LogRoot.tag("placer") }
                     children(shared {
                         docsPages().mapNotNull {
