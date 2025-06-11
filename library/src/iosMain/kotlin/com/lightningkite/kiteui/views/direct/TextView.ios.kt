@@ -122,7 +122,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
     actual var lineClamp: Int? = null
         set(value) {
             field = value
-            label.numberOfLines = value ?: 0
+            label.numberOfLines = value?.toLong() ?: 0L
             if (value != null && label.lineBreakMode != NSLineBreakByTruncatingTail) {
                 label.lineBreakMode = NSLineBreakByTruncatingTail
             }
