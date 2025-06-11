@@ -46,11 +46,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         set(value) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
-    actual var lineClamp: Int?
-        get() = TODO("Not yet implemented")
+    actual var lineClamp: Int? = null
         set(value) {
+            field = value
             value?.let {
-                native.setStyleProperty("background-color", "lightgreen")
                 native.setStyleProperty("display", "-webkit-box")
                 native.setStyleProperty("line-clamp", "$it")
                 native.setStyleProperty("-webkit-line-clamp", "$it")
