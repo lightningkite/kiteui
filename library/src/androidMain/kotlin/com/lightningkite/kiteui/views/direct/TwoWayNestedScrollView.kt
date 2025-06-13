@@ -884,7 +884,7 @@ class TwoWayNestedScrollView @JvmOverloads constructor(
                 val y = ev.getY(activePointerIndex).toInt()
                 var deltaX = mLastMotionX - x
                 var deltaY = mLastMotionY - y
-                if (!mIsBeingDragged && (abs(deltaY.toDouble()) > mTouchSlop || abs(deltaX.toDouble()) > mTouchSlop)) {
+                if (!mIsBeingDragged && (abs(deltaY.toDouble()) > mTouchSlop && !lockY || abs(deltaX.toDouble()) > mTouchSlop && !lockX)) {
                     val parent = parent
                     parent?.requestDisallowInterceptTouchEvent(true)
                     mIsBeingDragged = true
