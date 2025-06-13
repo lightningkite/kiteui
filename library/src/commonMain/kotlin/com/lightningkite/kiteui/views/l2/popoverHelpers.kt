@@ -74,7 +74,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
 fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
     overlayWriter(modal = true) { close ->
         dismissBackground {
-            onClick { if (dismissable) closePopovers() }
+            onClick { if (dismissable) close() }
             centered - DialogSemantic.onNext - frame {
                 content { close() }
             }

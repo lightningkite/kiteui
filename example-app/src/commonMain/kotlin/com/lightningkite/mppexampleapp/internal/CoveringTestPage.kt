@@ -1,0 +1,77 @@
+package com.lightningkite.mppexampleapp.internal
+
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.DialogSemantic
+import com.lightningkite.kiteui.models.Icon
+import com.lightningkite.kiteui.models.ListSemantic
+import com.lightningkite.kiteui.models.SelectedSemantic
+import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.readable.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.Recycler2
+import com.lightningkite.kiteui.views.l2.applySafeInsets
+import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.readable.invoke
+import kotlinx.coroutines.delay
+import kotlinx.datetime.LocalDate
+import kotlin.coroutines.CoroutineContext
+import kotlin.random.Random
+
+@Routable("covering-test")
+object CoveringTestPage : Page {
+    override val title: Readable<String>
+        get() = super.title
+
+    override fun ViewWriter.render(): ViewModifiable = run {
+        scrolling - col {
+            card - button {
+                text("dialog")
+                onClick {
+                    dialog { close ->
+                        sizeConstraints(width = 20.rem, height = 15.rem) - col {
+                            expanding - text("Heyo")
+                            card - button {
+                                text("Close")
+                                onClick { close() }
+                            }
+                        }
+                    }
+                }
+            }
+            card - button {
+                text("bottom sheet")
+                onClick {
+                    coordinatorFrame!!.bottomSheet(blockBehind = true) { control ->
+                        DialogSemantic.onNext - col {
+                            applySafeInsets()
+                            centered - coordinatorDragHandle()
+                            for (letter in 'A'..'C') {
+                                card - text(letter.toString())
+                            }
+                            card - button {
+                                text("Force close")
+                                onClick {
+                                    control.close()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (letter in 'A'..'Z') {
+                card - button {
+                    text(letter.toString())
+                    onClick {
+                        println("Click hit on ${letter}")
+                    }
+                }
+            }
+        }
+    }
+}

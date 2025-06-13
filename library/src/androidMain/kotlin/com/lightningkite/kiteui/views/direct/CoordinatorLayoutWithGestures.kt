@@ -33,10 +33,10 @@ class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(contex
     )
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
-        return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: false
+        return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: super.onTouchEvent(ev)
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: false
+        return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: super.onInterceptTouchEvent(ev)
     }
 }

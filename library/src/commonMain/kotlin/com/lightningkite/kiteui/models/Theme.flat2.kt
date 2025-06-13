@@ -116,7 +116,7 @@ fun Theme.Companion.flat2(
         MainContentSemantic to { it.withBack(cascading = false, cornerRadii = CornerRadii.Constant(0.px)) },
 
         DialogSemantic to {
-            it.copy(id="dlg", outlineWidth = 1.dp, gap = 2.rem, revert = true).withBack
+            it.copy(id="dlg", outlineWidth = 1.dp, padding = Edges(2.rem), revert = true).withBack
         },
     ),
 )
