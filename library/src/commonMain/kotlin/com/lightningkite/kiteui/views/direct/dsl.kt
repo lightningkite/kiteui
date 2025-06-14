@@ -275,6 +275,13 @@ inline fun ViewWriter.switch(setup: Switch.() -> Unit = {}): Switch {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Switch(context) , setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.slider(setup: Slider.() -> Unit = {}): Slider {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(Slider(context) , setup)
+}
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 inline fun ViewWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {

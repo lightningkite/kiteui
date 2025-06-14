@@ -14,6 +14,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
+import kotlinx.coroutines.delay
 
 @Routable("scroll-test")
 object SpecialScrollTest : Page {
@@ -21,7 +22,10 @@ object SpecialScrollTest : Page {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors
-            expanding - scrolling {
+            expanding - scrollingWithRefresh(Action("Test") {
+                delay(1000)
+                println("OK")
+            }) {
                 verticalScrollElement = this
             } - col {
                 repeat(10) {
