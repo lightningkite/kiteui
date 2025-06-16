@@ -604,6 +604,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
               /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
               display: grid;
               position: relative;
+              overflow-y: scroll;
             }
             .textarea-container::after {
               /* Note the weird space! Needed to preventy jumpy behavior */
