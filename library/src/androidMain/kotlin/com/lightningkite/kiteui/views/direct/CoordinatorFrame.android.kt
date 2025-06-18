@@ -8,6 +8,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
@@ -118,6 +119,10 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 }
                 (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
                 b.state = BottomSheetBehavior.STATE_HIDDEN
+                native.setOnClickListener {
+                    // TODO: Remove the need for this hack
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
 
             } - col { sub = content(control) }
         }
@@ -160,6 +165,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 })
                 //TODO: blocksBehind
+                native.setOnClickListener {
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.LEFT
             (lparams as? CoordinatorLayout.LayoutParams)?.width = ratio?.let {
@@ -207,6 +215,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 })
                 //TODO: blocksBehind
+                native.setOnClickListener {
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.RIGHT
             (lparams as? CoordinatorLayout.LayoutParams)?.width = ratio?.let {

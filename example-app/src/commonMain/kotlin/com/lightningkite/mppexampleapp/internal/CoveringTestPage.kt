@@ -29,7 +29,7 @@ object CoveringTestPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
+        col {
             card - button {
                 text("dialog")
                 onClick {
@@ -47,7 +47,7 @@ object CoveringTestPage : Page {
             card - button {
                 text("bottom sheet")
                 onClick {
-                    coordinatorFrame!!.bottomSheet(blockBehind = true) { control ->
+                    coordinatorFrame!!.bottomSheet(blockBehind = false) { control ->
                         DialogSemantic.onNext - col {
                             applySafeInsets()
                             centered - coordinatorDragHandle()
@@ -64,11 +64,13 @@ object CoveringTestPage : Page {
                     }
                 }
             }
-            for (letter in 'A'..'Z') {
-                card - button {
-                    text(letter.toString())
-                    onClick {
-                        println("Click hit on ${letter}")
+            recyclerView {
+                children(Constant(('A'..'Z').toList()), { it }) {
+                    card - button {
+                        text { ::content { it().toString() }}
+                        onClick {
+                            throw IllegalStateException("This should not be clickable.")
+                        }
                     }
                 }
             }
