@@ -24,76 +24,14 @@ object ExperimentPage : Page {
     override val title: Readable<String>
         get() = super.title
 
-    @QueryParameter
-    val elementCount = Property(7)
-
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
-            val selected = Property<DateOptions?>(DateOptions.Yesterday)
-            val display = Property("")
-            fun render(option: DateOptions?): String = option?.name ?: "Anytime"
-//            menuButton {
-//                row {
-//                    expanding - centered - text {
-//                        ::content { display() }
-//                    }
-//                }
-//                requireClick = true
-//                opensMenu {
-//                    stack{}
-////                    sizeConstraints(
-////                        width = 14.rem,
-////                        height = 14.rem
-////                    ) -
-//                }
-//            }
-            expanding - ListSemantic.onNext - recyclerView {
-                children(
-                    items = Constant(DateOptions.entries.toList() + listOf(null)),
-                    id = { it },
-                    render = { option ->
-                        card - button {
-                            dynamicTheme {
-                                if (selected() == option()) SelectedSemantic
-                                else null
-                            }
-                            atStart - text {
-                                ::content { render(option()) }
-                            }
-                            onClick {
-                                selected set option()
-                                closePopovers()
-                            }
-                        }
-                    }
-                )
-
-                reactive {
-                    display.value = render(selected())
-                }
-            }
+            text("Emoji test 😊")
+            text("Emoji test \uD83D\uDE0A")
+            text { setBasicHtmlContent("Emoji test 😊") }
+            text { setBasicHtmlContent("<strong>Emoji test 😊</strong>") }
+            text { setBasicHtmlContent("Emoji test \uD83D\uDE0A") }
+            text { setBasicHtmlContent("<strong>Emoji test \uD83D\uDE0A</strong>") }
         }
-    }
-}
-
-private data class Wrapper<T>(val value: T)
-
-data class FilterDate(
-    val type: DateOptions,
-    val customStart: LocalDate? = null,
-    val customEnd: LocalDate? = null,
-)
-
-enum class DateOptions(private val str: String) {
-    Today("Today"),
-    Yesterday("Yesterday"),
-    ThisWeek("This Week"),
-    Last7Days("Last 7 Days"),
-    ThisMonth("This Month"),
-    Last30Days("Last 30 Days"),
-    Custom("Custom");
-
-    override fun toString(): String {
-        return str
     }
 }

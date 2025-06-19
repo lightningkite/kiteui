@@ -145,7 +145,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
     actual fun setBasicHtmlContent(html: String) {
         val x = NSAttributedString.create(
             data = html.nsdata()!!,
-            options = mapOf(NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType),
+            options = mapOf(
+                NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType,
+                NSCharacterEncodingDocumentAttribute to NSUTF8StringEncoding
+            ),
             documentAttributes = null,
             error = null
         )

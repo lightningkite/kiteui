@@ -84,21 +84,6 @@ abstract class KiteUiActivity : AppCompatActivity() {
         )
         AndroidAppContext.applicationCtx = this.applicationContext
         AndroidAppContext.activityCtx = this
-//        window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-//        Timber.plant(Timber.DebugTree())
-//
-//        viewWriter.reactiveScope {
-//            val systemBarColor = theme()[SystemBarSemantic].theme.background.closestColor().toInt()
-//            window?.statusBarColor = systemBarColor
-//            window?.navigationBarColor = systemBarColor
-//
-//            val systemBarForegroundColor = theme()[SystemBarSemantic].theme.foreground.closestColor()
-//            val useLightAppearance = systemBarForegroundColor.perceivedBrightness < 0.5f
-//            WindowCompat.getInsetsController(window, window.decorView).apply {
-//                isAppearanceLightStatusBars = useLightAppearance
-//                isAppearanceLightNavigationBars = useLightAppearance
-//            }
-//        }
 
         savedInstanceState?.getStringArray("navStack")?.let {
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
