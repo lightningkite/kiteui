@@ -52,12 +52,13 @@ abstract class KiteUiActivity : AppCompatActivity() {
             setContentView(view.native)
             ViewGroupCompat.installCompatInsetsDispatch(view.native)
             val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
-                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
+                val insetsSystem = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
+                val insetsInput = insetsGetter.getInsets(WindowInsetsCompat.Type.ime())
                 val safeInsets = Edges(
-                    left = insets.left.px,
-                    top = insets.top.px,
-                    right = insets.right.px,
-                    bottom = insets.bottom.px
+                    left = insetsSystem.left.px + insetsInput.left.px,
+                    top = insetsSystem.top.px + insetsInput.top.px,
+                    right = insetsSystem.right.px + insetsInput.right.px,
+                    bottom = insetsSystem.bottom.px + insetsInput.bottom.px
                 )
                 println("OnApplyWindowInsetsListener: $safeInsets")
                 safeInsetsProperty.value = safeInsets
