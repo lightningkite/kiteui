@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
-    var native = FutureElement()
+    var native = FutureElement().also { it.classes.add("kui") }
 
     actual override var showOnPrint: Boolean = true
         set(value) {

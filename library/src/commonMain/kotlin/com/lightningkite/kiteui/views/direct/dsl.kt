@@ -336,6 +336,12 @@ inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
+inline fun ViewWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(RowWrapping(context) ) { setup() }
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
 inline fun ViewWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) ) { vertical = false; setup() }

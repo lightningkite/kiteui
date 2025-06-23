@@ -26,6 +26,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
             native.clearChildren()
             list.mapIndexed { index, it ->
                 native.appendChild(FutureElement().apply {
+                    classes.add("kui")
                     tag = "option"
                     classes.add("checkResponsive")
                     attributes.valueString = index.toString()

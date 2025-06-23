@@ -13,6 +13,7 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
         tag = "input"
         attributes.type = "checkbox"
         classes.add("checkResponsive")
+        classes.add("kui")
         attributes.hidden = true
         style.display = "none"
     }

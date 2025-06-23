@@ -16,6 +16,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
     val textarea = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
+        classes.add("kui")
         style.resize = "none"
         addEventListener("keydown") { ev ->
             ev as KeyboardEvent

@@ -57,6 +57,7 @@ object RootPage : Page {
                     }
                 } in card
 
+                linkPage { RowWrappingPage }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }
                 linkPage { SwapViewPage }
