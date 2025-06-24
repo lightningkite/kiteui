@@ -58,6 +58,10 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.toUiColor()
                 }
+                is ImagePaint -> {
+                    gradientLayer = null
+                    uiViewWithLabelMask.backgroundColor = f.closestColor().toUiColor()
+                }
                 is FadingColor -> {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.base.toUiColor()

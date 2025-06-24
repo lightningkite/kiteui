@@ -31,6 +31,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
             field = f
             label.textColor = when (f) {
                 is Color -> f.toUiColor()
+                is ImagePaint -> f.closestColor().toUiColor()
                 is FadingColor -> f.base.toUiColor()
                 is LinearGradient -> f.stops.first().color.toUiColor()
                 is RadialGradient -> f.stops.first().color.toUiColor()

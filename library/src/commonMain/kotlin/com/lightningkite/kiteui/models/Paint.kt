@@ -14,6 +14,19 @@ fun Paint.applyAlpha(alpha: Float): Paint = map { it.applyAlpha(alpha) }
 fun Paint.lighten(ratio: Float): Paint = map { it.lighten(ratio) }
 fun Paint.darken(ratio: Float): Paint = map { it.darken(ratio) }
 
+data class ImagePaint(
+    val source: ImageSource,
+    val overlayColor: Color = Color.transparent,
+    val mode: ImagePaintMode = ImagePaintMode.Crop,
+    val screenStatic: Boolean = false
+): Paint {
+    val scaleType = ImageScaleType.Fit  // Image paint is ALWAYS fit
+    override fun closestColor(): Color = overlayColor.withAlpha(1f)
+    override fun map(mapper: (Color) -> Color): Paint = this.copy(overlayColor = mapper(overlayColor))
+}
+enum class ImagePaintMode {
+    Repeating, Crop
+}
 data class FadingColor(val base: Color, val alternate: Color): Paint {
     override fun closestColor(): Color = base
     override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))

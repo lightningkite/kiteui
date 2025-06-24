@@ -6,18 +6,30 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.direct.ImageCache
 import com.lightningkite.kiteui.views.direct.WrapperView
+import com.lightningkite.kiteui.views.direct.inBackground
+import com.lightningkite.kiteui.views.direct.render
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
-import platform.Foundation.NSNumber
-import platform.Foundation.numberWithFloat
+import platform.Foundation.*
+import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import platform.QuartzCore.kCAGravityResize
+import platform.QuartzCore.kCAGravityResizeAspectFill
 import platform.UIKit.UIColor
+import platform.UIKit.UIImage
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.max
@@ -220,6 +232,91 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                                 this.colors = listOf(c, c).map { it.toObjcId() }
                                 this.startPoint = CGPointMake(0.0, 0.0)
                                 this.endPoint = CGPointMake(1.0, 1.0)
+                            }
+
+                            is ImagePaint -> {
+                                // Set initial background to overlay color
+                                val c = b.overlayColor.toUiColor().CGColor!!
+                                this.type = kCAGradientLayerAxial
+                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                this.colors = listOf(c, c).map { it.toObjcId() }
+                                this.startPoint = CGPointMake(0.0, 0.0)
+                                this.endPoint = CGPointMake(1.0, 1.0)
+
+                                // Create a new CALayer for the image
+                                val imageLayer = CALayer()
+                                imageLayer.frame = this.bounds
+                                imageLayer.zPosition = -1.0 // Place behind the gradient layer
+
+                                // Set content gravity based on mode
+                                if (b.mode == ImagePaintMode.Repeating) {
+                                    imageLayer.contentsGravity = kCAGravityResize
+                                } else { // Crop mode
+                                    imageLayer.contentsGravity = kCAGravityResizeAspectFill
+                                }
+
+                                // Add the image layer as a sublayer
+                                this.addSublayer(imageLayer)
+
+                                // Load the image based on source type
+                                when (val source = b.source) {
+                                    is ImageResource -> {
+                                        val image = UIImage.imageNamed(source.name)
+                                        imageLayer.contents = image?.CGImage
+                                    }
+                                    is ImageRemote -> {
+                                        launch {
+                                            try {
+                                                val image = inBackground {
+                                                    UIImage(
+                                                        data = NSData.dataWithContentsOfURL(
+                                                            NSURL.URLWithString(source.url)
+                                                                ?: throw IllegalStateException("Invalid URL ${source.url}")
+                                                        ) ?: throw IllegalStateException("No data found at URL ${source.url}")
+                                                    )
+                                                }
+                                                imageLayer.contents = image.CGImage
+                                            } catch (e: Exception) {
+                                                println("Failed to load image from URL ${source.url}: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                    is ImageLocal -> {
+                                        launch {
+                                            try {
+                                                val image = suspendCancellableCoroutine<UIImage> { cont ->
+                                                    loadImageFromProvider(source.file.provider) { data, err ->
+                                                        if (err != null) cont.resumeWithException(Exception(err.description))
+                                                        else if (data is UIImage) {
+                                                            dispatch_async(queue = dispatch_get_main_queue(), block = {
+                                                                cont.resume(data)
+                                                            })
+                                                        } else {
+                                                            cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
+                                                        }
+                                                    }
+                                                }
+                                                imageLayer.contents = image.CGImage
+                                            } catch (e: Exception) {
+                                                println("Failed to load image from local file: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                    is ImageVector -> {
+                                        launch {
+                                            try {
+                                                val image = ImageCache.get(source) { source.render() }
+                                                imageLayer.contents = image.CGImage
+                                            } catch (e: Exception) {
+                                                println("Failed to render vector image: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                    is ImageRaw -> {
+                                        val image = UIImage(data = source.data.data)
+                                        imageLayer.contents = image?.CGImage
+                                    }
+                                }
                             }
 
                             is FadingColor -> {

@@ -6,6 +6,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import com.lightningkite.kiteui.views.ImagePaintDrawable
 import android.os.Looper
 import android.view.Gravity
 import android.view.View
@@ -249,10 +250,27 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.elevation = 0f
         }
         if (theme.drawBackground) {
-            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
-            backgroundBlock = backgroundDrawable
-            updateCorners()
-            background = backgroundDrawable
+            // Check if the background is an ImagePaint
+            if (theme.theme.background is ImagePaint) {
+                val imagePaint = theme.theme.background as ImagePaint
+                // Create an ImagePaintDrawable with the context from the native view
+                val drawable = ImagePaintDrawable(
+                    context = native.context,
+                    imagePaint = imagePaint,
+                    strokeWidth = theme.theme.outlineWidth,
+                    stroke = theme.theme.outline
+                )
+                // Apply corner radii
+                backgroundBlock = drawable
+                updateCorners()
+                background = drawable
+            } else {
+                // Use the regular background drawable
+                val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+                backgroundBlock = backgroundDrawable
+                updateCorners()
+                background = backgroundDrawable
+            }
         } else {
             backgroundBlock = null
             background = null

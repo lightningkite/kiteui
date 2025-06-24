@@ -57,6 +57,7 @@ object RootPage : Page {
                     }
                 } in card
 
+                linkPage { SlideshowTestPage() }
                 linkPage { RowWrappingPage }
                 linkPage { CoveringTestPage }
                 linkPage { PopoverTestingPage }

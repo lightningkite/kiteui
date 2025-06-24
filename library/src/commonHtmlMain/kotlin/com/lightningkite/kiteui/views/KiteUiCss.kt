@@ -23,7 +23,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     height: unset;
                     max-width: 100vw;
                 }
-    
+
                 body {
                     height: unset;
                     max-height: unset;
@@ -49,11 +49,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 font: inherit;
                 vertical-align: baseline;
             }
-            
+
             p.kui, h1.kui, h2.kui, h3.kui, h4.kui, h5.kui, h6.kui, .subtext {
                 white-space: pre-wrap;
             }
-            
+
             p.kui li.kui {
                 margin-inline-start: 1em;
             }
@@ -64,29 +64,29 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             p.kui a.kui:visited {
                 color: revert;
             }
-    
+
             /* HTML5 display-role reset for older browsers */
             article.kui, aside.kui, details.kui, figcaption.kui, figure.kui, footer.kui, header.kui, hgroup.kui, menu.kui, nav.kui, section.kui {
                 display: block;
             }
-    
+
             body {
                 line-height: 1;
             }
-    
+
             ol.kui, ul.kui {
                 list-style: none;
             }
-    
+
             blockquote.kui, q.kui {
                 quotes: none;
             }
-    
+
             blockquote.kui:before, blockquote.kui:after, q.kui:before, q.kui:after {
                 content: '';
                 content: none;
             }
-    
+
             table.kui {
                 border-collapse: collapse;
                 border-spacing: 0;
@@ -132,14 +132,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px !important;
                 appearance: none;
             }
-            
-            
-            
+
+
+
            .kui.progress-ring {
               width: 100%;
               justify-content: space-around;
             }
-            
+
             .kui.progress-ring-svg {
                 display: block;
                 margin: 10px auto;
@@ -150,7 +150,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                           stroke: --background-color;
                           stroke-width: 3.8;
             }
-            
+
             .kui.circle-progress {
                 fill: none;
                 stroke-width:2.8;
@@ -158,13 +158,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 animation: progress 1s ease-out forwards;
                   stroke: currentcolor;
             }
-         
+
 
             .kui.progress-ring-content {
                 text-anchor: middle;
-                
+
             }
-            
+
             .kui.progress-ring-content {
               fill: #666;
               font-family: sans-serif;
@@ -178,7 +178,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     visibility: visible;
                 }
             }
-            
+
             * {
                 gap: var(--spacing, 0);
             }       
@@ -465,7 +465,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             img.kui {
                 overflow: hidden;
             }
-            
+
             .optimized > * {
                 display: block;
             }
@@ -599,7 +599,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
-            
+
             .textarea-container {
               /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
               display: grid;
@@ -615,7 +615,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
               /* Hidden from view, clicks, and screen readers */
               visibility: hidden;
-              
+
               padding: 2px;
             }
             .textarea-container > textarea {
@@ -753,6 +753,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         is BackdropFilter.Blur -> "blur(${amount.value})"
     }
 
+    private fun ImageSource?.toUrl(basePath: String = ""): String? = when(val value = this) {
+        null -> ""
+        is ImageRemote -> value.url
+        is ImageRaw -> createObjectURL(value.data)
+        is ImageResource -> basePath + value.relativeUrl
+        is ImageLocal -> createObjectURL(value.file)
+        is ImageVector -> value.vectorToSvgDataUrl()
+        else -> ""
+    }
+
+    private fun createObjectURL(blob: com.lightningkite.kiteui.Blob): String = ""
+    private fun createObjectURL(fileReference: com.lightningkite.kiteui.FileReference): String = ""
+
     private fun joinGradientStops(stops: List<GradientStop>): String {
         return stops.joinToString {
             "${it.color.toWeb()} ${it.ratio * 100}%"
@@ -889,6 +902,27 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     addToCss(backSel, "background-color", it.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
+                is ImagePaint -> {
+                    val url = it.source.toUrl(dynamicCss.basePath)
+                    if (url != null && url.isNotEmpty()) {
+                        val repeat = if (it.mode == ImagePaintMode.Repeating) "repeat" else "no-repeat"
+                        val size = if (it.mode == ImagePaintMode.Repeating) "auto" else "cover"
+                        val position = "center"
+                        val attachment = if (it.screenStatic) "fixed" else "scroll"
+                        // Apply overlay color using linear-gradient technique from StackOverflow
+                        // This creates a semi-transparent color layer over the background image
+                        val overlayColor = it.overlayColor.toWeb()
+                        addToCss(backSel, "background-image", "linear-gradient(${overlayColor}, ${overlayColor}), url('$url')")
+                        addToCss(backSel, "background-repeat", repeat)
+                        addToCss(backSel, "background-size", size)
+                        addToCss(backSel, "background-position", position)
+                        addToCss(backSel, "background-attachment", attachment)
+                    } else {
+                        // Fallback to overlay color if URL is empty
+                        addToCss(backSel, "background-color", it.overlayColor.withAlpha(1f).toWeb())
+                        addToCss(backSel, "background-image", "none")
+                    }
+                }
                 is FadingColor -> {
                     dynamicCss.rule("""
                         @keyframes ${theme.id}-flickerAnimation {
@@ -973,6 +1007,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             when (it) {
                 is Color -> addToCss(directSel, "color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "color", it.base.toWeb())
+                is ImagePaint -> addToCss(directSel, "color", it.closestColor().toWeb())
                 is LinearGradient -> {
                     addToCss(directSel, "color", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
                     addToCss(directSel, "background", "-webkit-linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
