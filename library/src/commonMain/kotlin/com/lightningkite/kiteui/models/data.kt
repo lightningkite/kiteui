@@ -490,9 +490,9 @@ data class ImageVector(
 }
 
 data class ImageRemote(val url: String) : ImageSource() {
-    private val before = url.substringBefore('?')
-    override fun hashCode(): Int = before.hashCode()
-    override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
+//    private val before = url.substringBefore('?')
+    override fun hashCode(): Int = url.hashCode()
+    override fun equals(other: Any?): Boolean = other is ImageRemote && other.url == this.url
     override fun toString(): String = "ImageRemote($url)"
 }
 

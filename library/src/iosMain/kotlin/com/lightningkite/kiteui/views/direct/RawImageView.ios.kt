@@ -51,7 +51,7 @@ actual abstract class RawImageViewLike constructor(
         null -> null
         is ImageRaw -> UIImage(data = value.data.data)
         is ImageResource -> UIImage.imageNamed(value.name)
-        is ImageVector -> ImageCache.get(value) { value.render() }
+        is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
         is ImageRemote -> {
             val loader = suspend {
                 inBackground {
@@ -65,12 +65,12 @@ actual abstract class RawImageViewLike constructor(
             }
             val image = size?.let {
                 ImageCache.get(
-                    value,
+                    value.url,
                     it.width.toInt(),
                     it.height.toInt(),
                     loader
                 )
-            } ?: ImageCache.get(value, load = { loader() })
+            } ?: ImageCache.get(value.url, load = { loader() })
             image
         }
         is ImageLocal -> {
@@ -91,12 +91,12 @@ actual abstract class RawImageViewLike constructor(
             }
             val image = size?.let {
                 ImageCache.get(
-                    value,
+                    value.hashCode().toString(),
                     it.width.toInt(),
                     it.height.toInt(),
                     loader
                 )
-            } ?: ImageCache.get(value, load = { loader() })
+            } ?: ImageCache.get(value.hashCode().toString(), load = { loader() })
             image
         }
         else -> null
@@ -270,23 +270,33 @@ actual data class ZoomState(val offset: CValue<CGPoint>, val zoom: Double)
 
 object ImageCache {
     val imageCache = NSCache()
-    fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
-    fun set(key: ImageSource, value: UIImage) {
+    fun get(key: String): UIImage? = imageCache.objectForKey(key) as? UIImage
+    fun set(key: String, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
     }
 
-    inline fun get(key: ImageSource, load: () -> UIImage): UIImage {
-        (imageCache.objectForKey(key) as? UIImage)?.let { return it }
+    inline fun get(key: String, load: () -> UIImage): UIImage {
+        (imageCache.objectForKey(key) as? UIImage)?.let {
+            println("Got from base cache $it from key $key")
+            return it
+        }
         val loaded = load()
         imageCache.setObject(loaded, key, loaded.size.useContents { width * height * 4 }.toULong())
         return loaded
     }
 
     val imageCacheSized = NSCache()
-    suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
-        val sizeKey = Triple(key, minWidth, minHeight)
-        (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let { return it }
-        val baseCached = get(key, { load() })
+    suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
+        val sizeKey = "$key//$minWidth//$minHeight"
+        println("Lookup $key $minWidth $minHeight")
+        (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let {
+            println("Got from presized cache! $it")
+            return it
+        }
+        val baseCached = get(key, {
+            println("Not in base cache.  Loading")
+            load()
+        })
         if (minWidth == 0 || minHeight == 0) return baseCached
         val scaling = max(
             minWidth.toFloat() / baseCached.size.useContents { width },
@@ -296,7 +306,7 @@ object ImageCache {
         return inBackground {
             val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
             val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
-//        println("Resized image will be ${ "$newWidth x $newHeight" }")
+            println("Resized image will be ${ "$newWidth x $newHeight" }")
             UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), true, 0.0)
             val image = try {
                 baseCached.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
@@ -305,7 +315,7 @@ object ImageCache {
                 UIGraphicsEndImageContext()
             }
             if (image == null) return@inBackground baseCached
-//        println("Resized image is be ${image.size.useContents { "$width x $height" }}")
+            println("Resized image is be ${image.size.useContents { "$width x $height" }}")
             imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
             image
         }

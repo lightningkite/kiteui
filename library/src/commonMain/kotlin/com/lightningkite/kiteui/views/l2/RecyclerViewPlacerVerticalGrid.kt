@@ -55,8 +55,8 @@ class RecyclerViewPlacerVerticalGrid(
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     val averageRowHeight = existingCells.sumOf { it.existingHeight(cellSize) } / existingCells.size
                     val focusRowIndex = it.index.coerceIn(dataRange.first.toDouble(), dataRange.last.toDouble()).div(columns).toInt().times(columns)
-                    val partialIndexOffset = it.index.rem(columns) / columns * averageRowHeight
-                    viewport.top + viewport.height * it.ratioOfFocus - partialIndexOffset to focusRowIndex
+                    val partialIndexOffset = it.index.rem(columns) / columns * (averageRowHeight)
+                    viewport.top + (viewport.height - paddingTop - paddingBottom) * it.ratioOfFocus - partialIndexOffset to focusRowIndex
                 }
                 is RecyclerViewAnchor.SpecificElement -> {
                     val currentIndex = it.index.coerceIn(dataRange).div(columns).times(columns)
