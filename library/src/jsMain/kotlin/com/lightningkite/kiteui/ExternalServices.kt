@@ -120,10 +120,10 @@ actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) {
         )
     }
 
-    window.navigator.asDynamic().share(
-        json("files" to files.toTypedArray())
-    )
-
+    val data = json("files" to files.toTypedArray())
+    if (window.navigator.asDynamic().canShare()) {
+        window.navigator.asDynamic().share(data)
+    } else throw IllegalArgumentException("Your browser won't let you share these files.")
 }
 
 actual fun RContext.share(title: String, message: String?, url: String?) {

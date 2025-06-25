@@ -55,6 +55,7 @@ object RecyclerViewTestPage : Page {
             recyclerView {
                 recyclerView = this
                 gap = 0.5.rem
+                paddingByEdge = Edges(left = 1.rem, right = 1.rem, top = 1.rem, bottom = 10.rem)
 //                columns = 2
                 reactive {
                     val index = expanded()

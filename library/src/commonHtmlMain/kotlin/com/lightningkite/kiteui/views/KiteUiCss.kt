@@ -599,7 +599,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
-
+            .icon > svg {
+                display: block;
+            }
+            
             .textarea-container {
               /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
               display: grid;
