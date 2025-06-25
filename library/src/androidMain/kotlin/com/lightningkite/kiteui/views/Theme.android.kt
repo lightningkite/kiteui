@@ -100,9 +100,9 @@ internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? 
  */
 class ImagePaintDrawable(
     private val context: Context,
-    private val imagePaint: ImagePaint,
-    private val strokeWidth: Dimension,
-    private val stroke: Paint
+    val imagePaint: ImagePaint,
+    val strokeWidth: Dimension,
+    val stroke: Paint
 ) : GradientDrawable() {
     private var imageDrawable: Drawable? = null
     private var isLoading = true

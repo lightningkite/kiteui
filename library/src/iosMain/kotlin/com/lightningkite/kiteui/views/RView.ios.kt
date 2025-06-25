@@ -9,11 +9,39 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.ImageCache
 import com.lightningkite.kiteui.views.direct.WrapperView
 import com.lightningkite.kiteui.views.direct.inBackground
+import com.lightningkite.kiteui.views.direct.load
 import com.lightningkite.kiteui.views.direct.render
+import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.NativePlacement
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.cValuesOf
+import kotlinx.cinterop.invoke
+import kotlinx.cinterop.nativeHeap
+import kotlinx.cinterop.nativeHeap.alloc
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.readValue
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.CoreGraphics.CGAffineTransformIdentity
+import platform.CoreGraphics.CGColorCreateWithPattern
+import platform.CoreGraphics.CGColorRelease
+import platform.CoreGraphics.CGColorSpaceCreatePattern
+import platform.CoreGraphics.CGColorSpaceRelease
+import platform.CoreGraphics.CGContextDrawImage
+import platform.CoreGraphics.CGImageGetHeight
+import platform.CoreGraphics.CGImageGetWidth
+import platform.CoreGraphics.CGImageRef
+import platform.CoreGraphics.CGImageRelease
+import platform.CoreGraphics.CGPatternCallbacks
+import platform.CoreGraphics.CGPatternCreate
+import platform.CoreGraphics.CGPatternDrawPatternCallback
+import platform.CoreGraphics.CGPatternRelease
+import platform.CoreGraphics.CGPatternTiling
 import platform.CoreGraphics.CGPointMake
+import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.*
 import platform.QuartzCore.CALayer
@@ -174,6 +202,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
     protected var backgroundLayer: CAGradientLayerResizing? = null
+    protected var subBackgroundLayer: CALayerResizing? = null
+    protected var subBackgroundLayerLoadedImage: ImagePaint? = null
 
     /**
      * No matter how we set the zPosition or the "at" argument of the insertSublayer call, layers always cover the
@@ -219,6 +249,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 native.layer.insertSublayer(newLayer, atIndex = 0.toUInt())
                 newLayer
             }
+            var shouldRemoveSublayer = true
             previousLoadAnimationHandle?.invoke()
             previousLoadAnimationHandle = null
             with(layer) {
@@ -235,86 +266,88 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                             }
 
                             is ImagePaint -> {
-                                // Set initial background to overlay color
-                                val c = b.overlayColor.toUiColor().CGColor!!
-                                this.type = kCAGradientLayerAxial
-                                this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                                this.colors = listOf(c, c).map { it.toObjcId() }
-                                this.startPoint = CGPointMake(0.0, 0.0)
-                                this.endPoint = CGPointMake(1.0, 1.0)
+                                if(subBackgroundLayerLoadedImage == b) return@with
+                                when(b.mode) {
+                                    ImagePaintMode.Crop -> {
+                                        // Set initial background to overlay color
+                                        val c = b.overlayColor.toUiColor().CGColor!!
+                                        this.type = kCAGradientLayerAxial
+                                        this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                        this.colors = listOf(c, c).map { it.toObjcId() }
+                                        this.startPoint = CGPointMake(0.0, 0.0)
+                                        this.endPoint = CGPointMake(1.0, 1.0)
 
-                                // Create a new CALayer for the image
-                                val imageLayer = CALayer()
-                                imageLayer.frame = this.bounds
-                                imageLayer.zPosition = -1.0 // Place behind the gradient layer
+                                        // Create a new CALayer for the image
+                                        val imageLayer = subBackgroundLayer ?: CALayerResizing().also {
+                                            it.frame = this.bounds
+                                            it.zPosition = -99999.0
+                                            it.contents = null
+                                            it.backgroundColor = null
+                                            it.setNeedsDisplay()
+                                            subBackgroundLayer = it
+                                            native.layer.insertSublayer(it, 0U)
+                                        }
+                                        subBackgroundLayerLoadedImage = b
+                                        imageLayer.contentsGravity = kCAGravityResizeAspectFill
+                                        shouldRemoveSublayer = false
 
-                                // Set content gravity based on mode
-                                if (b.mode == ImagePaintMode.Repeating) {
-                                    imageLayer.contentsGravity = kCAGravityResize
-                                } else { // Crop mode
-                                    imageLayer.contentsGravity = kCAGravityResizeAspectFill
-                                }
-
-                                // Add the image layer as a sublayer
-                                this.addSublayer(imageLayer)
-
-                                // Load the image based on source type
-                                when (val source = b.source) {
-                                    is ImageResource -> {
-                                        val image = UIImage.imageNamed(source.name)
-                                        imageLayer.contents = image?.CGImage
-                                    }
-                                    is ImageRemote -> {
+                                        // Load the image based on source type
+                                        // TODO: use a scope limited to this theme application
                                         launch {
-                                            try {
-                                                val image = inBackground {
-                                                    UIImage(
-                                                        data = NSData.dataWithContentsOfURL(
-                                                            NSURL.URLWithString(source.url)
-                                                                ?: throw IllegalStateException("Invalid URL ${source.url}")
-                                                        ) ?: throw IllegalStateException("No data found at URL ${source.url}")
-                                                    )
-                                                }
-                                                imageLayer.contents = image.CGImage
-                                            } catch (e: Exception) {
-                                                println("Failed to load image from URL ${source.url}: ${e.message}")
+                                            imageLayer.contents = b.source.load(null)?.CGImage.also {
+                                                println("Loaded image $it for layer")
                                             }
+                                            imageLayer.setNeedsDisplay()
                                         }
                                     }
-                                    is ImageLocal -> {
+
+                                    ImagePaintMode.Repeating -> {
+                                        // Set initial background to overlay color
+                                        val c = b.overlayColor.toUiColor().CGColor!!
+                                        this.type = kCAGradientLayerAxial
+                                        this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
+                                        this.colors = listOf(c, c).map { it.toObjcId() }
+                                        this.startPoint = CGPointMake(0.0, 0.0)
+                                        this.endPoint = CGPointMake(1.0, 1.0)
+
+                                        // Create a new CALayer for the image
+                                        val imageLayer = subBackgroundLayer ?: CALayerResizing().also {
+                                            it.frame = this.bounds
+                                            it.zPosition = -99999.0
+                                            it.contents = null
+                                            it.backgroundColor = null
+                                            it.setNeedsDisplay()
+                                            subBackgroundLayer = it
+                                            native.layer.insertSublayer(it, 0U)
+                                        }
+                                        subBackgroundLayerLoadedImage = b
+                                        shouldRemoveSublayer = false
+
+                                        // Load the image based on source type
+                                        // TODO: use a scope limited to this theme application
                                         launch {
-                                            try {
-                                                val image = suspendCancellableCoroutine<UIImage> { cont ->
-                                                    loadImageFromProvider(source.file.provider) { data, err ->
-                                                        if (err != null) cont.resumeWithException(Exception(err.description))
-                                                        else if (data is UIImage) {
-                                                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                                                cont.resume(data)
-                                                            })
-                                                        } else {
-                                                            cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                                                        }
-                                                    }
-                                                }
-                                                imageLayer.contents = image.CGImage
-                                            } catch (e: Exception) {
-                                                println("Failed to load image from local file: ${e.message}")
+                                            b.source.load(null)?.CGImage?.let {
+                                                val space = CGColorSpaceCreatePattern(null)
+                                                val width = CGImageGetWidth(it).toDouble()
+                                                val height = CGImageGetHeight(it).toDouble()
+                                                val pattern = CGPatternCreate(
+                                                    info = it,
+                                                    bounds = CGRectMake(0.0, 0.0, width, height),
+                                                    matrix = CGAffineTransformIdentity.readValue(),
+                                                    xStep = width,
+                                                    yStep = height,
+                                                    tiling = CGPatternTiling.kCGPatternTilingConstantSpacing,
+                                                    isColored = true,
+                                                    callbacks = patternCallbacks.ptr
+                                                )
+                                                val color = CGColorCreateWithPattern(space, pattern, cValuesOf(1.0))
+                                                imageLayer.backgroundColor = color
+                                                CGColorSpaceRelease(space)
+                                                CGPatternRelease(pattern)
+                                                imageLayer.setNeedsDisplay()
+                                                CGColorRelease(color)
                                             }
                                         }
-                                    }
-                                    is ImageVector -> {
-                                        launch {
-                                            try {
-                                                val image = ImageCache.get(source) { source.render() }
-                                                imageLayer.contents = image.CGImage
-                                            } catch (e: Exception) {
-                                                println("Failed to render vector image: ${e.message}")
-                                            }
-                                        }
-                                    }
-                                    is ImageRaw -> {
-                                        val image = UIImage(data = source.data.data)
-                                        imageLayer.contents = image?.CGImage
                                     }
                                 }
                             }
@@ -361,13 +394,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     borderColor = theme.theme.outline.closestColor().toUiColor().CGColor
                 }
 
-                zPosition = -99999.0
+                zPosition = -99998.0
                 parentSpacing = (parent?.mySpacingForChildren ?: 0.px).value
                 desiredCornerRadius = theme.theme.cornerRadii
+
+                if(shouldRemoveSublayer) {
+                    subBackgroundLayer?.removeFromSuperlayer()
+                    subBackgroundLayer = null
+                    subBackgroundLayerLoadedImage = null
+                }
 
                 val bounds = this@RView.native.layerSize()
 
                 frame = bounds
+                subBackgroundLayer?.frame = bounds
+                subBackgroundLayer?.refreshCorners()
                 refreshCorners()
             }
         }
@@ -411,9 +452,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 }
 
+private val patternCallbacks = nativeHeap.alloc<CGPatternCallbacks> {
+    version = 0U
+    drawPattern = staticCFunction { pointer, context ->
+        pointer as CGImageRef
+        CGContextDrawImage(context, CGRectMake(0.0, 0.0, CGImageGetWidth(pointer).toDouble(), CGImageGetHeight(pointer).toDouble()), pointer)
+    }
+    releaseInfo = staticCFunction { pointer ->
+        CGImageRelease(pointer as CGImageRef)
+    }
+}
+
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
-actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+actual val RView.areAnimationsEnabled: Boolean get() = animationsEnabled
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }

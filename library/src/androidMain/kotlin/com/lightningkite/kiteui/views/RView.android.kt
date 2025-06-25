@@ -251,20 +251,26 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         if (theme.drawBackground) {
             // Check if the background is an ImagePaint
-            if (theme.theme.background is ImagePaint) {
-                val imagePaint = theme.theme.background as ImagePaint
+            (theme.theme.background as? ImagePaint)?.let { imagePaint ->
+                val backgroundAlreadyCorrect = (background as? ImagePaintDrawable)?.let { existing ->
+                    existing.strokeWidth == theme.theme.outlineWidth &&
+                        existing.imagePaint == imagePaint &&
+                        existing.stroke == theme.theme.outline
+                } ?: false
                 // Create an ImagePaintDrawable with the context from the native view
-                val drawable = ImagePaintDrawable(
-                    context = native.context,
-                    imagePaint = imagePaint,
-                    strokeWidth = theme.theme.outlineWidth,
-                    stroke = theme.theme.outline
-                )
+                if(!backgroundAlreadyCorrect) {
+                    val drawable = ImagePaintDrawable(
+                        context = native.context,
+                        imagePaint = imagePaint,
+                        strokeWidth = theme.theme.outlineWidth,
+                        stroke = theme.theme.outline
+                    )
+                    backgroundBlock = drawable
+                }
                 // Apply corner radii
-                backgroundBlock = drawable
                 updateCorners()
-                background = drawable
-            } else {
+                background = backgroundBlock
+            } ?: run {
                 // Use the regular background drawable
                 val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
                 backgroundBlock = backgroundDrawable

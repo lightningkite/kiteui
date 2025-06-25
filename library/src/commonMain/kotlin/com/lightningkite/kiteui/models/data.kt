@@ -16,6 +16,23 @@ expect class Font
 expect val systemDefaultFont: Font
 expect val systemDefaultFixedWidthFont: Font
 
+object FontWeight {
+    const val THIN = 100
+    const val HAIRLINE = 100
+    const val EXTRALIGHT = 200
+    const val ULTRALIGHT = 200
+    const val LIGHT = 300
+    const val NORMAL = 400
+    const val MEDIUM = 500
+    const val SEMIBOLD = 600
+    const val DEMIBOLD = 600
+    const val BOLD = 700
+    const val EXTRABOLD = 800
+    const val ULTRABOLD = 800
+    const val BLACK = 900
+    const val HEAVY = 900
+}
+
 data class FontAndStyle(
     val font: Font = systemDefaultFont,
     val italic: Boolean = false,

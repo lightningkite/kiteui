@@ -61,6 +61,10 @@ internal fun UIView.layoutLayers() {
             it.frame = bounds
             it.refreshCorners()
         }
+        if (it is CALayerResizing) {
+            it.frame = bounds
+            it.refreshCorners()
+        }
     }
 }
 
@@ -172,21 +176,119 @@ class CAGradientLayerResizing : CAGradientLayer {
     }
 }
 
-//100 	Thin (Hairline)
-//200 	Extra Light (Ultra Light)
-//300 	Light
-//400 	Normal
-//500 	Medium
-//600 	Semi Bold (Demi Bold)
-//700 	Bold
-//800 	Extra Bold (Ultra Bold)
-//900 	Black (Heavy)
+class CALayerResizing : CALayer {
 
-//UIFontWeight light UIFontWeight(rawValue: -0.4000000059604645)
-//UIFontWeight medium UIFontWeight(rawValue: 0.23000000417232513)
-//UIFontWeight regular UIFontWeight(rawValue: 0.0)
-//UIFontWeight semibold UIFontWeight(rawValue: 0.30000001192092896)
-//UIFontWeight bold UIFontWeight(rawValue: 0.4000000059604645)
+    @OverrideInit
+    constructor() : super()
+
+    @OverrideInit
+    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+
+    @OverrideInit
+    constructor(layer: kotlin.Any) : super(layer)
+
+    private var backgroundMask: CALayer? = null
+
+    /**
+     * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
+     * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
+     */
+    fun getOrInitBackgroundMask(): CALayer {
+        if (backgroundMask == null) {
+            val whiteLayer = CALayer().apply {
+                backgroundColor = UIColor.whiteColor.CGColor
+                frame = this@CALayerResizing.frame
+            }
+            backgroundMask = whiteLayer
+            refreshCorners()
+        }
+        return backgroundMask!!
+    }
+
+    var desiredCornerRadius: CornerRadii = CornerRadii.ForceConstant(0.px)
+        set(value) {
+            if (this == null) return //stupid iOS issue prevention
+            field = value
+            refreshCorners()
+        }
+    var parentSpacing: CGFloat = 0.0
+        set(value) {
+            if (this == null) return //stupid iOS issue prevention
+            field = value
+            refreshCorners()
+        }
+
+    private fun applyPerCornerRadii(radii: CornerRadii.PerCorner, value: Double) {
+        val cornersList: MutableList<UIRectCorner> = mutableListOf()
+        if(radii.topLeft) cornersList.add(UIRectCornerTopLeft)
+        if(radii.topRight) cornersList.add(UIRectCornerTopRight)
+        if(radii.bottomLeft) cornersList.add(UIRectCornerBottomLeft)
+        if(radii.bottomRight) cornersList.add(UIRectCornerBottomRight)
+
+        val corners = cornersList.reduce { acc, current -> acc or current }
+        val path = UIBezierPath.Companion.bezierPathWithRoundedRect(rect = bounds,
+            byRoundingCorners = corners,
+            cornerRadii = CGSizeMake(value, value))
+        val mask = CAShapeLayer()
+        mask.path = path.CGPath
+        this.mask = mask
+        superlayer?.mask = mask
+    }
+
+    fun refreshCorners() {
+        if (this == null) return //stupid iOS issue prevention
+
+        fun valueOfRadii(d: CornerRadii): Double {
+            return when (d) {
+                is CornerRadii.Constant -> d.value.value.coerceAtMost(parentSpacing).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.ForceConstant -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.RatioOfSize -> d.ratio * bounds.useContents { min(size.width, size.height) }
+                is CornerRadii.RatioOfSpacing -> parentSpacing.times(d.value).coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+                is CornerRadii.PerCorner -> d.value.value.coerceAtMost(bounds.useContents { min(size.width, size.height) / 2 })
+            }
+        }
+
+        val v = valueOfRadii(desiredCornerRadius)
+        println("setting radius $v")
+        if (desiredCornerRadius is CornerRadii.PerCorner) {
+           applyPerCornerRadii(desiredCornerRadius as CornerRadii.PerCorner, v)
+        } else {
+            superlayer?.modelLayer()?.cornerRadius = v
+
+            backgroundMask?.cornerRadius = v
+            cornerRadius = v
+        }
+    }
+
+    override fun layoutSublayers() {
+        if (this == null) return //stupid iOS issue prevention
+        super.layoutSublayers()
+        backgroundMask?.frame = frame
+        refreshCorners()
+    }
+
+    init {
+        needsDisplayOnBoundsChange = true
+    }
+}
+
 fun Int.toUIFontWeight(): Double {
+    // Formula looks weird, I know.  We translate between traditional font weights and iOS's weird one with this.
+    // Based on these reference values:
+    //100 	Thin (Hairline)
+    //200 	Extra Light (Ultra Light)
+    //300 	Light
+    //400 	Normal
+    //500 	Medium
+    //600 	Semi Bold (Demi Bold)
+    //700 	Bold
+    //800 	Extra Bold (Ultra Bold)
+    //900 	Black (Heavy)
+
+    //UIFontWeight light UIFontWeight(rawValue: -0.4000000059604645)
+    //UIFontWeight medium UIFontWeight(rawValue: 0.23000000417232513)
+    //UIFontWeight regular UIFontWeight(rawValue: 0.0)
+    //UIFontWeight semibold UIFontWeight(rawValue: 0.30000001192092896)
+    //UIFontWeight bold UIFontWeight(rawValue: 0.4000000059604645)
     return (this - 400) * (0.4 / 300)
 }

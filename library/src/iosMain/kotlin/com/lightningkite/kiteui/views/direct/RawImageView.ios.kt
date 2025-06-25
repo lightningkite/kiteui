@@ -76,7 +76,7 @@ suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
                 it.height.toInt(),
                 loader
             )
-        } ?: ImageCache.get(value, load = { loader() })
+        } ?: ImageCache.get(value.url, load = { loader() })
         image
     }
     is ImageLocal -> {
@@ -102,7 +102,7 @@ suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
                 it.height.toInt(),
                 loader
             )
-        } ?: ImageCache.get(value, load = { loader() })
+        } ?: ImageCache.get(value.file.hashCode().toString(), load = { loader() })
         image
     }
     else -> null
