@@ -47,62 +47,65 @@ actual abstract class RawImageViewLike constructor(
 ) : RView(context){
     actual abstract val state: Readable<Unit>
 
-    protected suspend fun load(value: ImageSource?, size: Size?) = when (value) {
-        null -> null
-        is ImageRaw -> UIImage(data = value.data.data)
-        is ImageResource -> UIImage.imageNamed(value.name)
-        is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
-        is ImageRemote -> {
-            val loader = suspend {
-                inBackground {
-                    UIImage(
-                        data = NSData.dataWithContentsOfURL(
-                            NSURL.URLWithString(value.url)
-                                ?: throw IllegalStateException("Invalid URL ${value.url}")
-                        ) ?: throw IllegalStateException("No data found at URL ${value.url}")
-                    )
-                }
-            }
-            val image = size?.let {
-                ImageCache.get(
-                    value.url,
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
+    protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
+
+    override val disableBackground = true
+}
+
+
+suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
+    null -> null
+    is ImageRaw -> UIImage(data = value.data.data)
+    is ImageResource -> UIImage.imageNamed(value.name)
+    is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
+    is ImageRemote -> {
+        val loader = suspend {
+            inBackground {
+                UIImage(
+                    data = NSData.dataWithContentsOfURL(
+                        NSURL.URLWithString(value.url)
+                            ?: throw IllegalStateException("Invalid URL ${value.url}")
+                    ) ?: throw IllegalStateException("No data found at URL ${value.url}")
                 )
-            } ?: ImageCache.get(value.url, load = { loader() })
-            image
+            }
         }
-        is ImageLocal -> {
-            val loader = suspend {
-                suspendCancellableCoroutine { cont ->
-                    loadImageFromProvider(value.file.provider) { data, err ->
-                        if (err != null) cont.resumeWithException(Exception(err.description))
-                        else if (data is UIImage) {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                val image = data
-                                cont.resume(image)
-                            })
-                        } else {
-                            cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                        }
+        val image = size?.let {
+            ImageCache.get(
+                value.url,
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.url, load = { loader() })
+        image
+    }
+    is ImageLocal -> {
+        val loader = suspend {
+            suspendCancellableCoroutine { cont ->
+                loadImageFromProvider(value.file.provider) { data, err ->
+                    if (err != null) cont.resumeWithException(Exception(err.description))
+                    else if (data is UIImage) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            val image = data
+                            cont.resume(image)
+                        })
+                    } else {
+                        cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
                     }
                 }
             }
-            val image = size?.let {
-                ImageCache.get(
-                    value.hashCode().toString(),
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
-                )
-            } ?: ImageCache.get(value.hashCode().toString(), load = { loader() })
-            image
         }
-        else -> null
+        val image = size?.let {
+            ImageCache.get(
+                value.hashCode().toString(),
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.file.hashCode().toString(), load = { loader() })
+        image
     }
-
-    override val disableBackground = true
+    else -> null
 }
 
 actual class RawImageView actual constructor(
