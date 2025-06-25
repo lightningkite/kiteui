@@ -21,6 +21,7 @@ expect class RawImageView(
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
     override val state: Readable<Unit>
+    var ignoreNaturalSize: Boolean
 }
 
 expect class RawImageViewZoomable(

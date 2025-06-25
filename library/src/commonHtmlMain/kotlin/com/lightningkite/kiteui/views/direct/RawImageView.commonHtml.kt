@@ -12,11 +12,14 @@ import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.position
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.RawReadable
 import com.lightningkite.readable.Readable
+import kotlin.getValue
 import kotlin.js.JsName
+import kotlin.setValue
 
 actual abstract class RawImageViewLike(
     context: RContext,
@@ -53,6 +56,14 @@ actual class RawImageView actual constructor(
         native.tag = "img"
         native.classes.add("viewDraws")
     }
+    actual var ignoreNaturalSize: Boolean = false
+        set(value) {
+            field = value
+            if(value) {
+                native.classes.add("cannotAffectSize")
+                parent?.native?.style?.position = "relative"
+            } else native.classes.remove("cannotAffectSize")
+        }
     actual override val state: Readable<Unit> = _state
     init { nativeLoad(source.toUrl()) }
 }

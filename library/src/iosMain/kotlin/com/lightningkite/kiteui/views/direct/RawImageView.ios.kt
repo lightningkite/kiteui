@@ -38,6 +38,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import platform.darwin.NSObject
 import kotlin.compareTo
+import kotlin.getValue
+import kotlin.setValue
 
 actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -116,6 +118,7 @@ actual class RawImageView actual constructor(
 
     
     override val native = UIImageViewFixedSizing()
+    actual var ignoreNaturalSize: Boolean by native::ignoreNaturalSize
 
     init {
         native.clipsToBounds = true
@@ -143,8 +146,14 @@ actual class RawImageView actual constructor(
 }
 
 class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+    var ignoreNaturalSize: Boolean = false
+        set(value) {
+            field = value
+            informParentOfSizeChange()
+        }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        if(ignoreNaturalSize) return CGSizeMake(0.0, 0.0)
         return this.image?.size?.useContents {
             val original = this
             size.useContents {

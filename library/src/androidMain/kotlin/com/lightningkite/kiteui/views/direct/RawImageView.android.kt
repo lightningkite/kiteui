@@ -49,6 +49,7 @@ actual class RawImageView actual constructor(
     private val _state = RawReadable<Unit>()
     actual override val state: Readable<Unit> = _state
     override val native: GlideImageView = GlideImageView(context.activity)
+    actual var ignoreNaturalSize: Boolean by native::ignoreNaturalSize
     init {
         native.scaleType = when (scaleType) {
             ImageScaleType.Fit -> AImageView.ScaleType.FIT_CENTER
@@ -112,6 +113,11 @@ actual class RawImageView actual constructor(
 
 
     class GlideImageView(context: Context) : AppCompatImageView(context) {
+        var ignoreNaturalSize: Boolean = false
+            set(value) {
+                field = value
+                requestLayout()
+            }
         init {
             this.adjustViewBounds = true
             this.clipToOutline = true
@@ -135,6 +141,7 @@ actual class RawImageView actual constructor(
                 }
             }
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
         val callbacks = ArrayList<SizeReadyCallback>()
