@@ -122,6 +122,7 @@ internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dim
             is RadialGradient -> {
                 animateColorsTo(useFill.stops.map { it.color.toInt() }.toIntArray(), useFill.stops.map { it.ratio }.toFloatArray(), 300.milliseconds)
                 gradientType = GradientDrawable.RADIAL_GRADIENT
+                gradientRadius = 200f
             }
         }
     }

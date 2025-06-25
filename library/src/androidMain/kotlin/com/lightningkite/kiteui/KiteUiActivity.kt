@@ -55,10 +55,10 @@ abstract class KiteUiActivity : AppCompatActivity() {
                 val insetsSystem = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
                 val insetsInput = insetsGetter.getInsets(WindowInsetsCompat.Type.ime())
                 val safeInsets = Edges(
-                    left = insetsSystem.left.px + insetsInput.left.px,
-                    top = insetsSystem.top.px + insetsInput.top.px,
-                    right = insetsSystem.right.px + insetsInput.right.px,
-                    bottom = insetsSystem.bottom.px + insetsInput.bottom.px
+                    left = maxOf(insetsSystem.left.px, insetsInput.left.px),
+                    top = maxOf(insetsSystem.top.px, insetsInput.top.px),
+                    right = maxOf(insetsSystem.right.px, insetsInput.right.px),
+                    bottom = maxOf(insetsSystem.bottom.px, insetsInput.bottom.px),
                 )
                 println("OnApplyWindowInsetsListener: $safeInsets")
                 safeInsetsProperty.value = safeInsets
