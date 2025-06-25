@@ -58,10 +58,6 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.toUiColor()
                 }
-                is ImagePaint -> {
-                    gradientLayer = null
-                    uiViewWithLabelMask.backgroundColor = f.closestColor().toUiColor()
-                }
                 is FadingColor -> {
                     gradientLayer = null
                     uiViewWithLabelMask.backgroundColor = f.base.toUiColor()
@@ -83,6 +79,10 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
                     this.colors = f.stops.map { it.color.toUiColor().CGColor!!.toObjcId() }
                     this.startPoint = CGPointMake(0.5, 0.5)
                     this.endPoint = CGPointMake(0.0, 0.0)
+                }
+                else -> {
+                    gradientLayer = null
+                    uiViewWithLabelMask.backgroundColor = f.closestColor().toUiColor()
                 }
             }
         }

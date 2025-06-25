@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ImagePaint
 import com.lightningkite.kiteui.models.ImagePaintMode
+import com.lightningkite.kiteui.models.LayeredPaint
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.SelectedSemantic
 import com.lightningkite.kiteui.models.ThemeDerivation
@@ -42,20 +43,18 @@ object ExperimentPage : Page {
             text { setBasicHtmlContent("<strong>Emoji test \uD83D\uDE0A</strong>") }
 
             sizeConstraints(height = 5.rem) - ThemeDerivation {
-                it.copy("weird", background = ImagePaint(
+                it.copy("weird", background = LayeredPaint(listOf(ImagePaint(
                     source = Resources.imagesNoiseTexture,
-                    overlayColor = Color.white.withAlpha(0.8f),
                     mode = ImagePaintMode.Repeating,
-                ), foreground = Color.gray(0.2f)).withBack
+                ), Color.white.withAlpha(0.8f))), foreground = Color.gray(0.2f)).withBack
             }.onNext - frame {
                 text("Look at my fancy background text")
             }
             sizeConstraints(height = 5.rem) - ThemeDerivation {
-                it.copy("weird2", background = ImagePaint(
+                it.copy("weird2", background = LayeredPaint(listOf(ImagePaint(
                     source = Resources.imagesSolera,
-                    overlayColor = Color.black.withAlpha(0.5f),
                     mode = ImagePaintMode.Crop,
-                ), foreground = Color.white).withBack
+                ), Color.black.withAlpha(0.5f))), foreground = Color.white).withBack
             }.onNext - frame {
                 text("Look at my fancy background text 2")
             }

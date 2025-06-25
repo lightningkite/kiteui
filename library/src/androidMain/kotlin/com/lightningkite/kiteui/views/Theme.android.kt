@@ -297,12 +297,6 @@ class ImagePaintDrawable(
 }
 
 internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null): GradientDrawable {
-    // For ImagePaint, we'll need a context to load the image
-    // This will be handled by RView.android.kt which has access to a context
-    if (fill is ImagePaint) {
-        // We'll return a regular GradientDrawable here
-        // The actual image loading will be done in RView.applyTheme
-    }
 
     // Otherwise, use the default implementation
     return (existing as? MyGradientDrawable ?: MyGradientDrawable()).apply {
@@ -345,7 +339,7 @@ internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dim
                 gradientType = GradientDrawable.RADIAL_GRADIENT
             }
 
-            is ImagePaint -> {
+            else -> {
                 // Use the closest color as a fallback
                 animateColorsTo(intArrayOf(useFill.closestColor().toInt(), useFill.closestColor().toInt()), floatArrayOf(0f, 1f), 300.milliseconds)
             }

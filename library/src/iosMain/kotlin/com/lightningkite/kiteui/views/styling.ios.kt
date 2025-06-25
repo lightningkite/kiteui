@@ -77,6 +77,11 @@ internal fun UIView.layoutLayers(parentSpacing: Double) {
             it.frame = bounds
             it.refreshCorners()
         }
+        if (it is CALayerResizing) {
+            it.parentSpacing = parentSpacing
+            it.frame = bounds
+            it.refreshCorners()
+        }
     }
 }
 

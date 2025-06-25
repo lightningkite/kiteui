@@ -900,31 +900,33 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
         theme.diff(diff) { background }?.let {
             if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
+            fun Paint.toBackgroundImage(): String = when(this) {
+                is Color -> "linear-gradient(${toWeb()}, ${toWeb()})"
+                is FadingColor -> "linear-gradient(${base.toWeb()}, ${base.toWeb()})"
+                is ImagePaint -> {
+                    val url = source.toUrl(dynamicCss.basePath)
+                    "url('$url')"
+                }
+                is LayeredPaint -> {
+                    layers.joinToString(", ") { it.toBackgroundImage()  }
+                }
+                is LinearGradient -> "linear-gradient(${angle.plus(Angle.quarterTurn).turns}turn, ${
+                    joinGradientStops(stops)
+                })"
+                is RadialGradient -> "radial-gradient(circle at center, ${
+                    joinGradientStops(stops)
+                })"
+            }
+            fun Paint.screenStatic(): Boolean = when(this) {
+                is LinearGradient -> screenStatic
+                is RadialGradient -> screenStatic
+                is LayeredPaint -> layers.any { it.screenStatic() }
+                else -> false
+            }
             when (it) {
                 is Color -> {
                     addToCss(backSel, "background-color", it.toWeb())
                     addToCss(backSel, "background-image", "none")
-                }
-                is ImagePaint -> {
-                    val url = it.source.toUrl(dynamicCss.basePath)
-                    if (url != null && url.isNotEmpty()) {
-                        val repeat = if (it.mode == ImagePaintMode.Repeating) "repeat" else "no-repeat"
-                        val size = if (it.mode == ImagePaintMode.Repeating) "auto" else "cover"
-                        val position = "center"
-                        val attachment = if (it.screenStatic) "fixed" else "scroll"
-                        // Apply overlay color using linear-gradient technique from StackOverflow
-                        // This creates a semi-transparent color layer over the background image
-                        val overlayColor = it.overlayColor.toWeb()
-                        addToCss(backSel, "background-image", "linear-gradient(${overlayColor}, ${overlayColor}), url('$url')")
-                        addToCss(backSel, "background-repeat", repeat)
-                        addToCss(backSel, "background-size", size)
-                        addToCss(backSel, "background-position", position)
-                        addToCss(backSel, "background-attachment", attachment)
-                    } else {
-                        // Fallback to overlay color if URL is empty
-                        addToCss(backSel, "background-color", it.overlayColor.withAlpha(1f).toWeb())
-                        addToCss(backSel, "background-image", "none")
-                    }
                 }
                 is FadingColor -> {
                     dynamicCss.rule("""
@@ -944,25 +946,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     addToCss(backSel, "background-color", it.base.toWeb())
                     addToCss(backSel, "background-image", "none")
                 }
-
-                is LinearGradient -> {
+                else -> {
                     addToCss(backSel, "background-color", it.closestColor().toWeb())
                     addToCss(
-                        backSel, "background-image", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${
-                            joinGradientStops(it.stops)
-                        })"
+                        backSel, "background-image", it.toBackgroundImage()
                     )
-                    addToCss(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
-                }
-
-                is RadialGradient -> {
-                    addToCss(backSel, "background-color", it.closestColor().toWeb())
-                    addToCss(
-                        backSel, "background-image", "radial-gradient(circle at center, ${
-                            joinGradientStops(it.stops)
-                        })"
-                    )
-                    addToCss(backSel, "background-attachment", (if (it.screenStatic) "fixed" else "unset"))
+                    addToCss(backSel, "background-attachment", (if (it.screenStatic()) "fixed" else "unset"))
                 }
             }
         }
@@ -1011,6 +1000,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 is Color -> addToCss(directSel, "color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "color", it.base.toWeb())
                 is ImagePaint -> addToCss(directSel, "color", it.closestColor().toWeb())
+                is LayeredPaint -> addToCss(directSel, "color", it.closestColor().toWeb())
                 is LinearGradient -> {
                     addToCss(directSel, "color", "linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")
                     addToCss(directSel, "background", "-webkit-linear-gradient(${it.angle.plus(Angle.quarterTurn).turns}turn, ${joinGradientStops(it.stops)})")

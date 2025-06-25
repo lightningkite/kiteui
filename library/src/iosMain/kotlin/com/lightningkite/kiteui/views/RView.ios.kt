@@ -264,19 +264,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                                 this.startPoint = CGPointMake(0.0, 0.0)
                                 this.endPoint = CGPointMake(1.0, 1.0)
                             }
+                            is LayeredPaint -> {}
 
                             is ImagePaint -> {
                                 if(subBackgroundLayerLoadedImage == b) return@with
                                 when(b.mode) {
                                     ImagePaintMode.Crop -> {
-                                        // Set initial background to overlay color
-                                        val c = b.overlayColor.toUiColor().CGColor!!
-                                        this.type = kCAGradientLayerAxial
-                                        this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                                        this.colors = listOf(c, c).map { it.toObjcId() }
-                                        this.startPoint = CGPointMake(0.0, 0.0)
-                                        this.endPoint = CGPointMake(1.0, 1.0)
-
                                         // Create a new CALayer for the image
                                         val imageLayer = subBackgroundLayer ?: CALayerResizing().also {
                                             it.frame = this.bounds
@@ -302,14 +295,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                                     }
 
                                     ImagePaintMode.Repeating -> {
-                                        // Set initial background to overlay color
-                                        val c = b.overlayColor.toUiColor().CGColor!!
-                                        this.type = kCAGradientLayerAxial
-                                        this.locations = listOf(NSNumber.numberWithFloat(0f), NSNumber.numberWithFloat(1f))
-                                        this.colors = listOf(c, c).map { it.toObjcId() }
-                                        this.startPoint = CGPointMake(0.0, 0.0)
-                                        this.endPoint = CGPointMake(1.0, 1.0)
-
                                         // Create a new CALayer for the image
                                         val imageLayer = subBackgroundLayer ?: CALayerResizing().also {
                                             it.frame = this.bounds
