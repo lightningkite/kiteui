@@ -4,12 +4,14 @@ import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.roundToInt
+import kotlin.ranges.coerceAtMost
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -80,10 +82,10 @@ private class MyGradientDrawable(): GradientDrawable() {
     }
 }
 
-internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null): GradientDrawable
-    = drawableWithoutCorners(background, outline, outlineWidth, existing)
+internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null, getNative: ((View) -> Unit) -> Unit): GradientDrawable
+    = drawableWithoutCorners(background, outline, outlineWidth, existing, getNative)
 
-internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null): GradientDrawable {
+internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null, getNative: ((View) -> Unit) -> Unit?): GradientDrawable {
     return (existing as? MyGradientDrawable ?: MyGradientDrawable()).apply {
         shape = GradientDrawable.RECTANGLE
         setStroke(strokeWidth.value.toInt(), stroke.colorInt())
@@ -122,7 +124,11 @@ internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dim
             is RadialGradient -> {
                 animateColorsTo(useFill.stops.map { it.color.toInt() }.toIntArray(), useFill.stops.map { it.ratio }.toFloatArray(), 300.milliseconds)
                 gradientType = GradientDrawable.RADIAL_GRADIENT
-                gradientRadius = 200f
+                getNative {
+                    it.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                        this@apply.gradientRadius = it.width.coerceAtMost(it.height).toFloat() / 2
+                    }
+                }
             }
         }
     }
