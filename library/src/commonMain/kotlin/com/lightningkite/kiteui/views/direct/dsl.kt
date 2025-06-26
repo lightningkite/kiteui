@@ -95,6 +95,12 @@ inline fun ViewWriter.rawImage(source: ImageSource, description: String, scaleTy
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
+inline fun ViewWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(SizelessRawImageView(context, source, description, scaleType) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
 inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageViewZoomable(context, source, description, scaleType) , setup)

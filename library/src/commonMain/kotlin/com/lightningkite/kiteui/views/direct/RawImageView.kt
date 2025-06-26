@@ -23,6 +23,15 @@ expect class RawImageView(
     override val state: Readable<Unit>
 }
 
+expect class SizelessRawImageView(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike {
+    override val state: Readable<Unit>
+}
+
 expect class RawImageViewZoomable(
     context: RContext,
     source: ImageSource,

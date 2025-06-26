@@ -40,6 +40,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         native.paddingLeftCurrentPx = value.left.viewUnits
         native.paddingRightCurrentPx = value.right.viewUnits
         native.paddingBottomCurrentPx = value.bottom.viewUnits
+        native.setNeedsLayout()
     }
 
     override var gap: Dimension?

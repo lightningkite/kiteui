@@ -38,6 +38,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import platform.darwin.NSObject
 import kotlin.compareTo
+import kotlin.getValue
+import kotlin.setValue
 
 actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -145,9 +147,51 @@ actual class RawImageView actual constructor(
     }
 }
 
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+    private val _state = RawReadable<Unit>()
+    actual override val state: Readable<Unit> = _state
+
+    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
+
+    init {
+        native.clipsToBounds = true
+        native.contentMode = when (scaleType) {
+            ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
+            ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
+            ImageScaleType.Stretch -> UIViewContentMode.UIViewContentModeScaleToFill
+            ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
+        }
+        native.accessibilityLabel = description
+        launch {
+            delay(10)
+            try {
+                val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
+                _state.state = ReadableState(Unit)
+                native.image = img
+                native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
+            } catch(e: Exception) {
+                _state.state = ReadableState.exception(e)
+            }
+        }
+    }
+}
+
 class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+    var ignoreNaturalSize: Boolean = false
+        set(value) {
+            field = value
+            informParentOfSizeChange()
+        }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        if(ignoreNaturalSize) return CGSizeMake(0.0, 0.0)
         return this.image?.size?.useContents {
             val original = this
             size.useContents {
