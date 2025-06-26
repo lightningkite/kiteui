@@ -82,10 +82,10 @@ private class MyGradientDrawable(): GradientDrawable() {
     }
 }
 
-internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null, getNative: ((View) -> Unit) -> Unit): GradientDrawable
-    = drawableWithoutCorners(background, outline, outlineWidth, existing, getNative)
+internal fun Theme.backgroundDrawableWithoutCorners(existing: GradientDrawable? = null): GradientDrawable
+    = drawableWithoutCorners(background, outline, outlineWidth, existing)
 
-internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null, getNative: ((View) -> Unit) -> Unit?): GradientDrawable {
+internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dimension, existing: GradientDrawable? = null): GradientDrawable {
     return (existing as? MyGradientDrawable ?: MyGradientDrawable()).apply {
         shape = GradientDrawable.RECTANGLE
         setStroke(strokeWidth.value.toInt(), stroke.colorInt())
@@ -124,11 +124,16 @@ internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dim
             is RadialGradient -> {
                 animateColorsTo(useFill.stops.map { it.color.toInt() }.toIntArray(), useFill.stops.map { it.ratio }.toFloatArray(), 300.milliseconds)
                 gradientType = GradientDrawable.RADIAL_GRADIENT
-                getNative {
-                    it.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                        this@apply.gradientRadius = it.width.coerceAtMost(it.height).toFloat() / 2
-                    }
-                }
+            }
+        }
+    }
+}
+
+fun GradientDrawable.applyGradientRadiusListener(native: View): GradientDrawable {
+    return this.apply {
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.Q && gradientType == GradientDrawable.RADIAL_GRADIENT) {
+            native.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                gradientRadius = native.width.coerceAtMost(native.height).toFloat() / 2
             }
         }
     }

@@ -105,7 +105,10 @@ actual class RawImageView actual constructor(
             is ImageRaw -> Glide.with(native).load(value.data.data).finish()
             is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
-            is ImageVector -> native.setImageDrawable(PathDrawable(value))
+            is ImageVector -> {
+                native.setImageDrawable(PathDrawable(value))
+                _state.state = ReadableState(Unit)
+            }
             else -> TODO()
         }
     }
@@ -227,7 +230,10 @@ actual class RawImageViewZoomable actual constructor(
             is ImageRaw -> Glide.with(native).load(value.data.data).finish()
             is ImageRemote -> Glide.with(native).load(value.url).finish()
             is ImageResource -> Glide.with(native).load(value.resource).finish()
-            is ImageVector -> native.setImageDrawable(PathDrawable(value))
+            is ImageVector -> {
+                native.setImageDrawable(PathDrawable(value))
+                _state.state = ReadableState(Unit)
+            }
             else -> TODO()
         }
     }
