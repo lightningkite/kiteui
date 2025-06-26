@@ -100,6 +100,9 @@ kotlin {
                 implementation(libs.ktorClientWebsockets)
             }
         }
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
 
         val jvmMain by getting {
             dependsOn(commonHtmlMain)

@@ -57,6 +57,10 @@ kotlin {
         val commonHtmlMain by creating {
             dependsOn(commonMain)
         }
+        val iosMain by creating
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
         val jvmMain by getting {
             dependsOn(commonHtmlMain)
         }

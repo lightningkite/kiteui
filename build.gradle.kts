@@ -20,7 +20,7 @@ buildscript {
 allprojects {
     group = "com.lightningkite.kiteui"
     useLocalDependencies()
-//    useGitBasedVersion()
+    useGitBasedVersion()
     publishing()
     repositories {
         mavenLocal()
