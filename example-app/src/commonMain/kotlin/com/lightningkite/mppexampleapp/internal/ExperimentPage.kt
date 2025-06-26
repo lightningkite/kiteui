@@ -13,6 +13,7 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.icon
+import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.readable.invoke
 import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
@@ -32,6 +33,10 @@ object ExperimentPage : Page {
             text { setBasicHtmlContent("<strong>Emoji test 😊</strong>") }
             text { setBasicHtmlContent("Emoji test \uD83D\uDE0A") }
             text { setBasicHtmlContent("<strong>Emoji test \uD83D\uDE0A</strong>") }
+            centered - frame {
+                rawImageUnsized(Resources.imagesSolera, "desc")
+                sizeConstraints(width = 5.rem, height = 5.rem) - text("Block")
+            }
         }
     }
 }

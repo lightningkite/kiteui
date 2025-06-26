@@ -33,6 +33,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         native.paddingLeftCurrentPx = value.left.canvasUnits
         native.paddingRightCurrentPx = value.right.canvasUnits
         native.paddingBottomCurrentPx = value.bottom.canvasUnits
+        native.silentRequestLayout()
     }
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme

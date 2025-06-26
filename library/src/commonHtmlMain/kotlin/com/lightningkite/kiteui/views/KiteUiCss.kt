@@ -572,6 +572,14 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .swapImage {
               position: relative;
             }
+            
+            .cannotAffectSize {
+                position: absolute;
+                left: 0px;
+                right: 0px;
+                top: 0px;
+                bottom: 0px;
+            }
 
             .swapImage.loading.useLoading::before {
                 display: block;
