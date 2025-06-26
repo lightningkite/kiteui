@@ -16,6 +16,8 @@ plugins {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     jvm()
     androidTarget {
         publishLibraryVariants("release")
@@ -94,15 +96,12 @@ kotlin {
             dependsOn(commonMain)
         }
 
-        val iosMain by creating {
+        val iosMain by getting {
             dependencies {
                 implementation(libs.ktorClientDarwin)
                 implementation(libs.ktorClientWebsockets)
             }
         }
-        val iosX64Main by getting { dependsOn(iosMain) }
-        val iosArm64Main by getting { dependsOn(iosMain) }
-        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
 
         val jvmMain by getting {
             dependsOn(commonHtmlMain)
@@ -115,6 +114,13 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
+        }
+    }
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
+        compilations.getByName("main") {
+            val objcAddition by cinterops.creating {
+                defFile(project.file("src/iosMain/def/objcAddition.def"))
+            }
         }
     }
 }

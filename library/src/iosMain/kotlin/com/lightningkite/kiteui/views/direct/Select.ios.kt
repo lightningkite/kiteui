@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
@@ -39,9 +40,9 @@ actual class Select actual constructor(context: RContext): RView(context) {
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, numberOfRowsInComponent: NSInteger): NSInteger = list.size.toLong()
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, titleForRow: NSInteger, forComponent: NSInteger): String? {
                 return render(list[titleForRow.toInt()])
             }
@@ -50,7 +51,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 val item = list[index]
                 edits set item
             }
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, didSelectRow: NSInteger, inComponent: NSInteger) {
                 index = didSelectRow.toInt()
                 set.startAction(this@Select)
