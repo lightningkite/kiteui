@@ -5,7 +5,6 @@ group = "com.lightningkite.kiteui"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    val kotlinVersion:String by extra
     repositories {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
@@ -15,9 +14,7 @@ buildscript {
     }
     dependencies {
         classpath(libs.lkGradleHelpers)
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath(libs.gradle)
+//        classpath(libs.androidGradle)
     }
 }
 allprojects {
@@ -32,4 +29,14 @@ allprojects {
         google()
         mavenCentral()
     }
+}
+plugins {
+
+    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinCocoapods) apply false
+    alias(libs.plugins.kotlinPluginSerialization) apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.comLightningkiteTestingManual) apply false
+    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.vanniktech.mavenPublish) apply false
 }

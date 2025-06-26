@@ -38,6 +38,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import platform.darwin.NSObject
 import kotlin.compareTo
+import kotlin.getValue
+import kotlin.setValue
 
 actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -47,62 +49,65 @@ actual abstract class RawImageViewLike constructor(
 ) : RView(context){
     actual abstract val state: Readable<Unit>
 
-    protected suspend fun load(value: ImageSource?, size: Size?) = when (value) {
-        null -> null
-        is ImageRaw -> UIImage(data = value.data.data)
-        is ImageResource -> UIImage.imageNamed(value.name)
-        is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
-        is ImageRemote -> {
-            val loader = suspend {
-                inBackground {
-                    UIImage(
-                        data = NSData.dataWithContentsOfURL(
-                            NSURL.URLWithString(value.url)
-                                ?: throw IllegalStateException("Invalid URL ${value.url}")
-                        ) ?: throw IllegalStateException("No data found at URL ${value.url}")
-                    )
-                }
-            }
-            val image = size?.let {
-                ImageCache.get(
-                    value.url,
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
+    protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
+
+    override val disableBackground = true
+}
+
+
+suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
+    null -> null
+    is ImageRaw -> UIImage(data = value.data.data)
+    is ImageResource -> UIImage.imageNamed(value.name)
+    is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
+    is ImageRemote -> {
+        val loader = suspend {
+            inBackground {
+                UIImage(
+                    data = NSData.dataWithContentsOfURL(
+                        NSURL.URLWithString(value.url)
+                            ?: throw IllegalStateException("Invalid URL ${value.url}")
+                    ) ?: throw IllegalStateException("No data found at URL ${value.url}")
                 )
-            } ?: ImageCache.get(value.url, load = { loader() })
-            image
+            }
         }
-        is ImageLocal -> {
-            val loader = suspend {
-                suspendCancellableCoroutine { cont ->
-                    loadImageFromProvider(value.file.provider) { data, err ->
-                        if (err != null) cont.resumeWithException(Exception(err.description))
-                        else if (data is UIImage) {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                val image = data
-                                cont.resume(image)
-                            })
-                        } else {
-                            cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                        }
+        val image = size?.let {
+            ImageCache.get(
+                value.url,
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.url, load = { loader() })
+        image
+    }
+    is ImageLocal -> {
+        val loader = suspend {
+            suspendCancellableCoroutine { cont ->
+                loadImageFromProvider(value.file.provider) { data, err ->
+                    if (err != null) cont.resumeWithException(Exception(err.description))
+                    else if (data is UIImage) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            val image = data
+                            cont.resume(image)
+                        })
+                    } else {
+                        cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
                     }
                 }
             }
-            val image = size?.let {
-                ImageCache.get(
-                    value.hashCode().toString(),
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
-                )
-            } ?: ImageCache.get(value.hashCode().toString(), load = { loader() })
-            image
         }
-        else -> null
+        val image = size?.let {
+            ImageCache.get(
+                value.hashCode().toString(),
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.file.hashCode().toString(), load = { loader() })
+        image
     }
-
-    override val disableBackground = true
+    else -> null
 }
 
 actual class RawImageView actual constructor(
@@ -142,9 +147,51 @@ actual class RawImageView actual constructor(
     }
 }
 
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+    private val _state = RawReadable<Unit>()
+    actual override val state: Readable<Unit> = _state
+
+    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
+
+    init {
+        native.clipsToBounds = true
+        native.contentMode = when (scaleType) {
+            ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
+            ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
+            ImageScaleType.Stretch -> UIViewContentMode.UIViewContentModeScaleToFill
+            ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
+        }
+        native.accessibilityLabel = description
+        launch {
+            delay(10)
+            try {
+                val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
+                _state.state = ReadableState(Unit)
+                native.image = img
+                native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
+            } catch(e: Exception) {
+                _state.state = ReadableState.exception(e)
+            }
+        }
+    }
+}
+
 class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+    var ignoreNaturalSize: Boolean = false
+        set(value) {
+            field = value
+            informParentOfSizeChange()
+        }
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        if(ignoreNaturalSize) return CGSizeMake(0.0, 0.0)
         return this.image?.size?.useContents {
             val original = this
             size.useContents {

@@ -31,6 +31,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import timber.log.Timber
+import kotlin.math.max
 
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
@@ -55,10 +56,10 @@ abstract class KiteUiActivity : AppCompatActivity() {
                 val insetsSystem = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
                 val insetsInput = insetsGetter.getInsets(WindowInsetsCompat.Type.ime())
                 val safeInsets = Edges(
-                    left = maxOf(insetsSystem.left.px, insetsInput.left.px),
-                    top = maxOf(insetsSystem.top.px, insetsInput.top.px),
-                    right = maxOf(insetsSystem.right.px, insetsInput.right.px),
-                    bottom = maxOf(insetsSystem.bottom.px, insetsInput.bottom.px),
+                    left = max(insetsSystem.left, insetsInput.left).px,
+                    top = max(insetsSystem.top, insetsInput.top).px,
+                    right = max(insetsSystem.right, insetsInput.right).px,
+                    bottom = max(insetsSystem.bottom, insetsInput.bottom).px,
                 )
                 println("OnApplyWindowInsetsListener: $safeInsets")
                 safeInsetsProperty.value = safeInsets
