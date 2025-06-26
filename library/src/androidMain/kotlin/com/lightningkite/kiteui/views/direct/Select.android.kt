@@ -43,7 +43,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
     override fun applyTheme(theme: ThemeAndBack) {
         native.setPaddingAll(0)
-        native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply { cornerRadius = 8.dp.value })
+        native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).applyGradientRadiusListener(native).apply { cornerRadius = 8.dp.value })
 
         val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf())
 

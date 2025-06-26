@@ -4,12 +4,14 @@ import android.animation.ValueAnimator
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.colorInt
 import kotlin.math.roundToInt
+import kotlin.ranges.coerceAtMost
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -122,6 +124,16 @@ internal fun drawableWithoutCorners(fill: Paint, stroke: Paint, strokeWidth: Dim
             is RadialGradient -> {
                 animateColorsTo(useFill.stops.map { it.color.toInt() }.toIntArray(), useFill.stops.map { it.ratio }.toFloatArray(), 300.milliseconds)
                 gradientType = GradientDrawable.RADIAL_GRADIENT
+            }
+        }
+    }
+}
+
+fun GradientDrawable.applyGradientRadiusListener(native: View): GradientDrawable {
+    return this.apply {
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.Q && gradientType == GradientDrawable.RADIAL_GRADIENT) {
+            native.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                gradientRadius = native.width.coerceAtMost(native.height).toFloat() / 2
             }
         }
     }
