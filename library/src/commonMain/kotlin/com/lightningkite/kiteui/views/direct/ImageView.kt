@@ -44,7 +44,6 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
         set(value) {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
-    var ignoreNaturalSize: Boolean = false
     var refreshOnParamChange: Boolean = false
     var naturalSize: Boolean = false
 
@@ -96,7 +95,6 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                             ThemeDerivation { if(rView.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext
                             add(rawImage(imageSource, it.description ?: "", it.scaleType) {
                                 themeTakeNonCascadingFromParent = true
-                                this@rawImage.ignoreNaturalSize = this@ImageView.ignoreNaturalSize
                                 themeChoice
                                 opacity = 0.0
                                 reactive {

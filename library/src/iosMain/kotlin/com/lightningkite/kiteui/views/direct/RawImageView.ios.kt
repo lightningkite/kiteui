@@ -118,7 +118,42 @@ actual class RawImageView actual constructor(
 
     
     override val native = UIImageViewFixedSizing()
-    actual var ignoreNaturalSize: Boolean by native::ignoreNaturalSize
+
+    init {
+        native.clipsToBounds = true
+        native.contentMode = when (scaleType) {
+            ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
+            ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
+            ImageScaleType.Stretch -> UIViewContentMode.UIViewContentModeScaleToFill
+            ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
+        }
+        native.accessibilityLabel = description
+        launch {
+            delay(10)
+            try {
+                val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
+                _state.state = ReadableState(Unit)
+                native.image = img
+                native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
+            } catch(e: Exception) {
+                _state.state = ReadableState.exception(e)
+            }
+        }
+    }
+}
+
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+    private val _state = RawReadable<Unit>()
+    actual override val state: Readable<Unit> = _state
+
+    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
 
     init {
         native.clipsToBounds = true

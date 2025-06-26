@@ -12,11 +12,18 @@ import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.backgroundImage
+import com.lightningkite.kiteui.views.backgroundPosition
+import com.lightningkite.kiteui.views.backgroundRepeat
+import com.lightningkite.kiteui.views.backgroundSize
 import com.lightningkite.kiteui.views.position
 import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.readable.Property
 import com.lightningkite.readable.RawReadable
 import com.lightningkite.readable.Readable
+import com.lightningkite.readable.ReadableState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.getValue
 import kotlin.js.JsName
 import kotlin.setValue
@@ -56,16 +63,37 @@ actual class RawImageView actual constructor(
         native.tag = "img"
         native.classes.add("viewDraws")
     }
-    actual var ignoreNaturalSize: Boolean = false
-        set(value) {
-            field = value
-            if(value) {
-                native.classes.add("cannotAffectSize")
-                parent?.native?.style?.position = "relative"
-            } else native.classes.remove("cannotAffectSize")
-        }
     actual override val state: Readable<Unit> = _state
     init { nativeLoad(source.toUrl()) }
+}
+
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+
+    init {
+        native.tag = "div"
+        native.classes.add("viewDraws")
+    }
+    actual override val state: Readable<Unit> = _state
+    init {
+        native.style.backgroundImage = "url('${source.toUrl()}')"
+        native.style.backgroundPosition = "center"
+        native.style.backgroundRepeat = "no-repeat"
+        native.style.backgroundSize = when(scaleType) {
+            ImageScaleType.Fit -> "contain"
+            ImageScaleType.Crop -> "cover"
+            ImageScaleType.Stretch -> TODO("Not supported yet")
+            ImageScaleType.NoScale -> "auto"
+        }
+        launch {
+            delay(100L)
+            _state.state = ReadableState(Unit)
+        }
+    }
 }
 
 actual class RawImageViewZoomable actual constructor(
