@@ -41,10 +41,10 @@ actual class FutureElement actual constructor() {
         objectAssign(e, attributesBack)
         (e as? HTMLElement)?.style?.let {
             objectAssign(it, styleBack)
-            forEach(futureStyles) { k, v -> it.setProperty(k, v) }
+            forEach(futureStyles) { k, v -> println("Apply future style $k = $v"); it.setProperty(k, v) }
         } ?: (e as? SVGElement)?.style?.let {
             objectAssign(it, styleBack)
-            forEach(futureStyles) { k, v -> it.setProperty(k, v) }
+            forEach(futureStyles) { k, v -> println("Apply future style $k = $v"); it.setProperty(k, v) }
         }
         forEach(futureAttributes) { k, v ->
             e.setAttribute(k, v)

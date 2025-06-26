@@ -25,6 +25,7 @@ object DocSearchPage : Page {
         { ResourcesPage },
         { DataPage },
         { ReactiveToolsPage },
+        { GlassFramePage },
         { ThemingPage },
         { TextElementPage },
         { NavigationPage },

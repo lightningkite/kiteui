@@ -2,7 +2,6 @@ import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import java.util.*
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
@@ -10,13 +9,17 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    kotlin("native.cocoapods")
-    id("com.android.application")
-    id("dev.opensavvy.vite.kotlin") version "0.4.0"
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.androidApplication)
+    id("dev.opensavvy.vite.kotlin") version "DEV"
 }
 apply<KiteUiPlugin>()
+configure<KiteUiPluginExtension> {
+    this.packageName = "com.lightningkite.mppexampleapp"
+    this.iosProjectRoot = project.file("../example-app-ios/KiteUI Example App")
+}
 
 rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
     rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
@@ -28,75 +31,21 @@ rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlu
 group = "com.lightningkite"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
-vite {
-    plugin(
-        packageName = "vite-bundle-analyzer",
-        "analyzer",
-        "0.17.1",
-        configuration = """
-        {
-        "analyzerMode": "static"
-        }
-        """.trimIndent(),
-        isNamedExport = true
-    )
-}
-
-@OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
-    applyDefaultHierarchyTemplate()
-
     jvm()
     androidTarget {
-        this.compilerOptions {
-            this.jvmTarget.set(JvmTarget.JVM_1_8)
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
-//    ios()
-//    listOf(
-//        iosX64(),
-//        iosArm64(),
-//        iosSimulatorArm64()
-//    ).forEach {
-//        it.binaries.framework {
-//            baseName = "library"
-//        }
-//    }
-    js {
+    js(IR) {
         binaries.executable()
         browser()
-//        useEsModules()
     }
-//    wasmJs {
-//        binaries.executable()
-//        browser {
-//            commonWebpackConfig {
-//                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-//                    // Uncomment and configure this if you want to open a browser different from the system default
-//                    // open = mapOf(
-//                    //     "app" to mapOf(
-//                    //         "name" to "google chrome"
-//                    //     )
-//                    // )
-//
-//                    static = (static ?: mutableListOf()).apply {
-//                        // Serve sources to debug inside browser
-//                        add(project.rootDir.path)
-//                    }
-//                }
-//            }
-//
-//            // Uncomment the next line to apply Binaryen and get optimized wasm binaries
-//             applyBinaryen()
-//        }
-//    }
 
     sourceSets {
         val commonMain by getting {
@@ -134,7 +83,6 @@ kotlin {
         framework {
             baseName = "shared"
             export(project(":library"))
-            embedBitcode(BitcodeEmbeddingMode.BITCODE)
 //            embedBitcode(BitcodeEmbeddingMode.DISABLE)
 //            podfile = project.file("../example-app-ios/Podfile")
         }
@@ -147,11 +95,6 @@ kotlin {
         xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
     }
-}
-
-configure<KiteUiPluginExtension> {
-    this.packageName = "com.lightningkite.mppexampleapp"
-    this.iosProjectRoot = project.file("../example-app-ios/KiteUI Example App")
 }
 
 android {
@@ -175,23 +118,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+        coreLibraryDesugaring(libs.desugar.jdk.libs)
     }
-}
-
-kotlin {
-    targets
-        .matching { it is org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget }
-        .configureEach {
-            this as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-
-            compilations.getByName("main") {
-                this.kotlinOptions {
-//                    this.freeCompilerArgs += "-Xruntime-logs=gc=info"
-//                    this.freeCompilerArgs += "-Xallocator=mimalloc"
-                }
-            }
-        }
 }
 
 fun env(name: String, profile: String) {
@@ -219,6 +147,3 @@ fun env(name: String, profile: String) {
     }
 }
 env("lk", "lk")
-//tasks.getByName<KotlinWebpack>("jsBrowserProductionWebpack") {
-//    this.args
-//}

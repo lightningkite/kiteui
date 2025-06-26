@@ -5,7 +5,7 @@ plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     signing
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    alias(libs.plugins.vanniktech.mavenPublish)
     // alias(libs.plugins.dokka)
 }
 
@@ -22,9 +22,9 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:${libs.versions.kotlin.get()}")
-    implementation("org.apache.pdfbox:fontbox:2.0.27")
-    testImplementation("junit:junit:4.13.2")
+    implementation(libs.kotlinGradlePluginApi)
+    implementation(libs.fontbox)
+    testImplementation(libs.junit)
 }
 tasks.validatePlugins {
     enableStricterValidation.set(true)
