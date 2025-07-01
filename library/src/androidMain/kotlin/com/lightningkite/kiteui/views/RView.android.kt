@@ -25,14 +25,20 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
+import com.lightningkite.readable.onRemove
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
+    val listenersToRemove = mutableListOf<(() -> Unit)>()
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
+
+        onRemove {
+            listenersToRemove.forEach { it() }
+        }
     }
 
     actual override var showOnPrint: Boolean = true
@@ -245,8 +251,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.elevation = 0f
         }
         if (theme.drawBackground) {
-            val backgroundDrawable =
-                theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).applyGradientRadiusListener(native)
+            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).also {
+                    it.applyGradientRadiusListener(native)?.let { listenersToRemove.add(it) }
+            }
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable
@@ -306,7 +313,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     ): RippleDrawable {
         val rippleColor = ColorStateList.valueOf(theme[HoverSemantic].theme.background.colorInt())
         val backgroundDrawable = if (fullyApply) {
-            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable).applyGradientRadiusListener(native)
+            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable).also {
+                it.applyGradientRadiusListener(native)?.let { listenersToRemove.add(it) }
+            }
         } else {
             GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
