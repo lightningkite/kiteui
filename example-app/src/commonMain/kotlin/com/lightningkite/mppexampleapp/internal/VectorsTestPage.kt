@@ -258,6 +258,31 @@ object VectorsTestPage : Page {
                     )
                 } - frame { space() }
             }
+
+            listOf(1, 2, 4, 8).forEachIndexed { idx, size ->
+                sizeConstraints(width = size.rem, height = size.rem) - frame {
+                    themeChoice += ThemeDerivation {
+                        it.copy(
+                            background = Color.red,
+                            cornerRadii = CornerRadii.ForceConstant(2.rem)
+                        ).withBack
+                    }
+                    image {
+                        themeChoice += ThemeDerivation {
+                            it.copy(
+                                background = RadialGradient(
+                                    stops = listOfNotNull(
+                                        GradientStop(0f, Color.blue),
+                                        if (idx.mod(2) == 0) GradientStop(0.5f, Color.green) else null,
+                                        GradientStop(1f, Color.red),
+                                    ),
+                                ),
+                                cornerRadii = CornerRadii.ForceConstant(2.rem)
+                            ).withBack
+                        }
+                    }
+                }
+            }
         }
     }
 }

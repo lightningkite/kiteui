@@ -7,16 +7,13 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Looper
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.afterTimeout
@@ -28,7 +25,6 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
-import com.lightningkite.readable.onRemove
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -249,7 +245,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.elevation = 0f
         }
         if (theme.drawBackground) {
-            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+            val backgroundDrawable =
+                theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).applyGradientRadiusListener(native)
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable
@@ -309,7 +306,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     ): RippleDrawable {
         val rippleColor = ColorStateList.valueOf(theme[HoverSemantic].theme.background.colorInt())
         val backgroundDrawable = if (fullyApply) {
-            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable)
+            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable).applyGradientRadiusListener(native)
         } else {
             GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
