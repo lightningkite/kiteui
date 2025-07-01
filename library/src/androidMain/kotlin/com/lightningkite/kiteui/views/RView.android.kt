@@ -31,13 +31,13 @@ import kotlin.math.min
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
 
-    val listenersToRemove = mutableListOf<(() -> Unit)>()
+    var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
 
         onRemove {
-            listenersToRemove.forEach { it() }
+            removeListener?.invoke()
         }
     }
 
@@ -252,7 +252,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         if (theme.drawBackground) {
             val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).also {
-                    it.applyGradientRadiusListener(native)?.let { listenersToRemove.add(it) }
+                removeListener?.invoke()
+                removeListener = it.applyGradientRadiusListener(native)
             }
             backgroundBlock = backgroundDrawable
             updateCorners()
@@ -314,7 +315,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         val rippleColor = ColorStateList.valueOf(theme[HoverSemantic].theme.background.colorInt())
         val backgroundDrawable = if (fullyApply) {
             theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable).also {
-                it.applyGradientRadiusListener(native)?.let { listenersToRemove.add(it) }
+                removeListener?.invoke()
+                removeListener = it.applyGradientRadiusListener(native)
             }
         } else {
             GradientDrawable().apply {

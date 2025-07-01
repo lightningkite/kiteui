@@ -24,13 +24,6 @@ actual class Select actual constructor(context: RContext): RView(context) {
         isClickable = true
     }
 
-    var removeListener: (() ->  Unit)? = null
-    init {
-        onRemove {
-            removeListener?.invoke()
-        }
-    }
-
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
