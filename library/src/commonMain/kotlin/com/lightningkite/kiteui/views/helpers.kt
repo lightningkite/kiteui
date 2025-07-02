@@ -57,60 +57,60 @@ fun <T> RView.forEachUpdating(
     placeholdersWhileLoading: Int = 5,
     render: ViewWriter.(Readable<T>) -> Unit
 ) {
-        val currentViews = ArrayList<LateInitProperty<T>>()
-        val currentView = this
-        reactiveScope(onLoad = {
-            currentView.withoutAnimation {
-                if (placeholdersWhileLoading <= 0) return@reactiveScope
-                if (currentViews.size < placeholdersWhileLoading) {
-                    repeat(placeholdersWhileLoading - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
+    val currentViews = ArrayList<LateInitProperty<T>>()
+    val currentView = this
+    reactiveScope(onLoad = {
+        currentView.withoutAnimation {
+            if (placeholdersWhileLoading <= 0) return@reactiveScope
+            if (currentViews.size < placeholdersWhileLoading) {
+                repeat(placeholdersWhileLoading - currentViews.size) {
+                    val newProp = LateInitProperty<T>()
+                    render(newProp)
+                    currentViews.add(newProp)
                 }
-            }*/
-                val children = currentView.children
-                for (index in 0 until placeholdersWhileLoading) {
-                    children[index].shown = true
-                    currentViews[index].unset()
-                }
-                for (index in placeholdersWhileLoading..<currentViews.size) {
-                    children[index].shown = false
-                }
+            }/* else if(currentViews.size > itemList.size) {
+            currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
+                currentView.removeNView(it)
+                currentViews.removeLast()
             }
-        }) {
-            val itemList = items()
-            currentView.withoutAnimation {
-                val oldCurrentViewsSize = currentViews.size
-                if (currentViews.size < itemList.size) {
-                    repeat(itemList.size - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        newProp.value = itemList[currentViews.size]
-                        render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
+        }*/
+            val children = currentView.children
+            for (index in 0 until placeholdersWhileLoading) {
+                children[index].shown = true
+                currentViews[index].unset()
+            }
+            for (index in placeholdersWhileLoading..<currentViews.size) {
+                children[index].shown = false
+            }
+        }
+    }) {
+        val itemList = items()
+        currentView.withoutAnimation {
+            val oldCurrentViewsSize = currentViews.size
+            if (currentViews.size < itemList.size) {
+                repeat(itemList.size - currentViews.size) {
+                    val newProp = LateInitProperty<T>()
+                    newProp.value = itemList[currentViews.size]
+                    render(newProp)
+                    currentViews.add(newProp)
                 }
-            }*/
-                val children = currentView.children
-                for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
-                    children[index].shown = true
-                    currentViews[index].value = itemList[index]
-                }
-                for (index in itemList.size..<currentViews.size) {
-                    children[index].shown = false
-                }
+            }/* else if(currentViews.size > itemList.size) {
+            currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
+                currentView.removeNView(it)
+                currentViews.removeLast()
+            }
+        }*/
+            val children = currentView.children
+            for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
+                children[index].shown = true
+                currentViews[index].value = itemList[index]
+            }
+            for (index in itemList.size..<currentViews.size) {
+                children[index].shown = false
             }
         }
     }
+}
 
 fun <T, ID> RowOrCol.forEachById(
     items: Readable<List<T>>,
