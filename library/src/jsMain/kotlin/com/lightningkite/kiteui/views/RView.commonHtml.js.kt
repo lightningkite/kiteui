@@ -342,7 +342,7 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
         if (listener != null) {
             it as HTMLElement
             it.ondragover = { e ->
-                if (listener.enter(e.toDragEvent())) {
+                if (listener.over(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
