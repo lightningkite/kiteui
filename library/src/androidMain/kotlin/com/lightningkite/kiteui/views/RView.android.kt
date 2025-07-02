@@ -155,9 +155,13 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                         yInView = event.y.toDouble(),
                     )
                 when (event.action) {
-                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(
-                        ev
-                    )
+                    android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(ev)
+
+                    android.view.DragEvent.ACTION_DRAG_ENTERED -> value.enter(ev)
+                    android.view.DragEvent.ACTION_DRAG_EXITED -> value.exit(ev)
+
+                    android.view.DragEvent.ACTION_DRAG_STARTED -> value.start(ev)
+                    android.view.DragEvent.ACTION_DRAG_ENDED -> value.end(ev)
 
                     android.view.DragEvent.ACTION_DROP -> value.drop(ev)
                     else -> true

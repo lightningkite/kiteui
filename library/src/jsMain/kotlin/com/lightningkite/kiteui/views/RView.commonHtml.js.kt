@@ -330,38 +330,58 @@ actual fun RView.nativeSetDragData(data: DragData?) {
     }
 }
 
+
 actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
+    fun DragEvent.toDragEvent() = com.lightningkite.kiteui.models.DragEvent(
+        data = DragData("", typeToData = dataTransfer!!.types.associate { it to dataTransfer!!.getData(it) }),
+        xInView = x,
+        yInView = y
+    )
+
     native.onElement {
         if (listener != null) {
-            (it as HTMLElement).ondragover = { e ->
-                if (listener.over(
-                        com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
-                            xInView = e.x,
-                            yInView = e.y
-                        )
-                    )
-                ) {
+            it as HTMLElement
+            it.ondragover = { e ->
+                if (listener.enter(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
             }
-            (it as HTMLElement).ondrop = { e ->
-                if (listener.drop(
-                        com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
-                            xInView = e.x,
-                            yInView = e.y
-                        )
-                    )
-                ) {
+            it.ondragenter = { e ->
+                if (listener.enter(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondragleave = { e ->
+                if (listener.exit(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondragstart = { e ->
+                if (listener.start(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondragend = { e ->
+                if (listener.end(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondrop = { e ->
+                if (listener.drop(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
             }
         } else {
             (it as HTMLElement).ondragover = null
-            (it as HTMLElement).ondrop = null
+            it.ondragleave = null
+            it.ondragexit = null
+            it.ondrop = null
         }
     }
 }
