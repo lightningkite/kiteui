@@ -17,6 +17,7 @@ gradlePlugin {
         }
     }
 }
+version = gitBasedVersion()
 
 repositories {
     mavenCentral()
