@@ -691,13 +691,16 @@ data class KeyboardHints(
     val autocomplete: AutoComplete? = null,
     val includePasskeys: Boolean = false,
     val autocorrect: Boolean = true,
+    val allowDecimal: Boolean = true,
 ) {
     companion object {
         val paragraph = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
         val title = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
         val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
-        val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
+        val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer, allowDecimal = false)
+        val integerWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative, allowDecimal = false)
         val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
+        val decimalWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.DecimalWithNegative)
         val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
         val email =
             KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
@@ -709,7 +712,7 @@ data class KeyboardHints(
 
 enum class AutoComplete { Email, Password, NewPassword, Phone, OneTimeCode }
 enum class KeyboardCase { None, Letters, Words, Sentences }
-enum class KeyboardType { Text, Integer, Phone, Decimal, Email }
+enum class KeyboardType { Text, Integer, Phone, Decimal, Email, IntegerWithNegative, DecimalWithNegative }
 
 sealed interface NavElement {
     val title: ReactiveContext.() -> String
