@@ -66,7 +66,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     dirty = textField.text ?: "",
                     selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
                     selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    allowDecimal = keyboardHints != KeyboardHints.integer,
+                    allowDecimal = keyboardHints.allowDecimal,
                     setResult = {
                         textField.text = it
                     },
@@ -131,9 +131,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
             textField.keyboardType = when (value.type) {
                 KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer -> UIKeyboardTypeNumberPad
+                KeyboardType.Integer, KeyboardType.IntegerWithNegative -> UIKeyboardTypeNumberPad
                 KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
+                KeyboardType.Decimal, KeyboardType.DecimalWithNegative -> UIKeyboardTypeNumbersAndPunctuation
                 KeyboardType.Email -> UIKeyboardTypeEmailAddress
             }
             textField.textContentType = when (value.autocomplete) {
