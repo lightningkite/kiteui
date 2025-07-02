@@ -10,6 +10,7 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.builtins.ListSerializer
 import kotlin.time.Duration.Companion.hours
 
 @Routable("external-services")
@@ -91,6 +92,36 @@ object ExternalServicesPage : Page {
                     onClick {
                         val blob = fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
                         context.share(listOf("Captain_Falcon.png" to blob))
+                    }
+                }
+            }
+
+            scrollingHorizontally - row {
+                button {
+                    text { content = "download image" }
+                    onClick {
+                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Downloads)
+                    }
+                }
+                button {
+                    text { content = "download gallery image" }
+                    onClick {
+                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Pictures)
+                    }
+                }
+
+                button {
+                    text { content = "download csv" }
+                    onClick {
+                        ExternalServices.download(
+                            "file.csv",
+                            """
+                                name,phone
+                                Joseph Ivie,8013693729
+                                Dan Ostler,9876543210,
+                                Brady Svedin,4632180951
+                            """.trimIndent().toBlob("text/csv; charset=utf-8; header=present")
+                        )
                     }
                 }
             }

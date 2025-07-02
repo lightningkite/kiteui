@@ -13,6 +13,7 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
         native.setStyleProperty("flex-direction", "row")
         native.setStyleProperty("flex-wrap", "wrap")
         native.classes += "kiteui-flex"
+        native.classes += "dudewtf"
         native.classes += "kiteui-row-wrap"
     }
 
@@ -55,21 +56,6 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
             }
         }
 
-        // Apply spacing
-        applySpacingToChild(view)
-    }
-
-    private fun applySpacingToChild(view: RView) {
-        val amnt = gap ?: theme.gap
-        view.native.setStyleProperty("margin-right", amnt.value.toString())
-        view.native.setStyleProperty("margin-bottom", amnt.value.toString())
-    }
-
-    override fun applyTheme(theme: ThemeAndBack) { 
-        super.applyTheme(theme)
-        // Update spacing when theme changes
-        for (child in children) {
-            applySpacingToChild(child)
-        }
+        println("NO SPACE")
     }
 }
