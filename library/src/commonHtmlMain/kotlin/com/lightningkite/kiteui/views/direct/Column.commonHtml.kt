@@ -13,7 +13,6 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
         native.setStyleProperty("flex-direction", "row")
         native.setStyleProperty("flex-wrap", "wrap")
         native.classes += "kiteui-flex"
-        native.classes += "dudewtf"
         native.classes += "kiteui-row-wrap"
     }
 
@@ -55,7 +54,5 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
                 view.native.setStyleProperty("align-self", "stretch")
             }
         }
-
-        println("NO SPACE")
     }
 }
