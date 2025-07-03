@@ -146,11 +146,11 @@ private val showHideWorker = label@{
 
         log?.info("//////////////////////////////////////////")
         log?.info("Queued: ${showHideQueue.size}")
-        val pastRatios = showHideAnimating.entries.toList().mapNotNull {
-            if (it.key in showHideQueue.keys) {
-                log?.info("Cancelling animation on ${it.key.children.singleOrNull()?.debugName}")
-                val r = it.key to it.value.animRatio()
-                it.value.cancel()
+        val pastRatios = showHideAnimating.entries.map { it.key to it.value }.mapNotNull {
+            if (it.first in showHideQueue.keys) {
+                log?.info("Cancelling animation on ${it.first.children.singleOrNull()?.debugName}")
+                val r = it.first to it.second.animRatio()
+                it.second.cancel()
                 r
             } else null
         }.associate { it }
