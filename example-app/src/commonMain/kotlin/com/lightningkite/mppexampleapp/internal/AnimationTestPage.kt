@@ -93,6 +93,15 @@ object AnimationTestPage : Page {
                     }
                 }
             }
+            expanding - card - col {
+                h2("Vertical (flex)")
+                expanding - col {
+                    for((key, prop) in map) {
+                        shownWhen { prop() } - card - text { content = key; debugName = content }
+                    }
+                    expanding - space()
+                }
+            }
         }
         card - col {
             h2("forEachAnimated Weighted Horizontal")

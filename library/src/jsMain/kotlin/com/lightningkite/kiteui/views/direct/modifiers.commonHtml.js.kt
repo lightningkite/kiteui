@@ -8,6 +8,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
+import org.w3c.dom.get
+import kotlin.collections.find
 import kotlin.js.Json
 import kotlin.js.json
 import kotlin.time.Duration
@@ -55,6 +57,7 @@ private data class OngoingAnimation(
     private var heightChildResume: String = ""
     private var maxHeightChildResume: String = ""
     fun animRatio() = animation!!.currentTime.toFloat() / totalTime
+
     init {
         log?.info(
             "QueuedAnimation: ${on.children.singleOrNull()?.debugName} / $goal: ${JSON.stringify(from)} -> ${
@@ -91,8 +94,9 @@ private data class OngoingAnimation(
         animation!!.finish()
         done()
     }
+
     val done = label@{
-        if(closed) return@label
+        if (closed) return@label
         closed = true
         showHideAnimating.remove(on)
         log?.log("showHideAnimating: ${showHideAnimating.keys.joinToString { it.children.singleOrNull()?.debugName ?: "?" }}")
@@ -131,7 +135,7 @@ private data class OngoingAnimation(
     }
 }
 
-private val log: Log? = null// ConsoleRoot.tag("showHide")
+private val log: Log? = null // Log.tag("showHide")
 private val showHideWorker = label@{
 
     val showHideQueue = run {
@@ -170,6 +174,9 @@ private val showHideWorker = label@{
             child.style.height = myElement.clientHeight.toString() + "px"
             child.style.maxHeight = "unset"
         }
+        val displayValuesPreHide = showHideQueue.asSequence()
+            .filter { !(it.key.native.element as HTMLElement).hidden }
+            .associate { it.key to window.getComputedStyle(it.key.native.element as HTMLElement).display }
         delayLevel?.let { delay(it) }
 
         // Get the whole layout into the goal state for measurement.
@@ -210,12 +217,17 @@ private val showHideWorker = label@{
             val parentStyle = window.getComputedStyle(parent)
 
             val x =
-                parentStyle.display == "flex" && parentStyle.flexDirection.contains("row") ||
-                        parentStyle.display != "flex" && childStyle.display.contains("inline")
+                parentStyle.display == "grid" ||
+                        parentStyle.display == "flex" && parentStyle.flexDirection.contains("row") ||
+                        parentStyle.display != "flex" && (displayValuesPreHide[on]
+                    ?: myStyle.display).contains("inline")
             val y =
-                parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
-                        parentStyle.display != "flex" && childStyle.display.let { it.contains("block") && !it.contains("inline") }
+                parentStyle.display == "grid" ||
+                        parentStyle.display == "flex" && parentStyle.flexDirection.contains("column") ||
+                        parentStyle.display != "flex" && (displayValuesPreHide[on]
+                    ?: myStyle.display).let { it.contains("block") && !it.contains("inline") }
             val weighted = myStyle.flexGrow.takeIf { it.isNotBlank() && it != "0" }
+            val usingFlexGap = parentStyle.display == "flex"
 
             val before = js("{}")
             val after = js("{}")
@@ -224,74 +236,80 @@ private val showHideWorker = label@{
             val gone = if (goal) before else after
             val goneTransform = ArrayList<String>()
 
-            when {
-                x -> {
-                    log?.info("Anim x")
-                    val gap = when {
-                        parentStyle.display == "flex" -> parentStyle.columnGap
-                        parentStyle.display.contains("block") -> childStyle.marginBottom
-                        parentStyle.display.contains("inline") -> childStyle.marginRight
-                        else -> "0px"
-                    }
-                    goneTransform.add("scaleX(0)")
-                    fullTransform.add("scaleX(1)")
-                    gone.marginLeft = "calc($gap / -2.0)"
+            if (x) {
+                goneTransform.add("scaleX(0)")
+                fullTransform.add("scaleX(1)")
+                if (usingFlexGap) {
+                    val gapX = parentStyle.columnGap
+                    gone.marginLeft = "calc($gapX / -2.0)"
                     gone.paddingLeft = "0px"
-                    gone.marginRight = "calc($gap / -2.0)"
+                    gone.marginRight = "calc($gapX / -2.0)"
                     gone.paddingRight = "0px"
-
-                    weighted?.let {
-                        full.flexGrow = weighted
-                        full.flexShrink = weighted
-                        gone.flexGrow = "0"
-                        gone.flexShrink = "0"
-                    } ?: run {
-                        val fullWidth = childStyle.width
-                        gone.width = "0px"
-                        gone.minWidth = "0px"
-                        gone.maxWidth = "0px"
-                        full.width = fullWidth
-                        full.minWidth = fullWidth
-                        full.maxWidth = fullWidth
+                } else {
+                    val gap = parentStyle.columnGap
+                    val doPrevMargin =
+                            parent.classList.contains("optimized") &&
+                            (0..<parent.children.length).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } != myElement &&
+                            (parent.children.length.minus(1) downTo 0).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } == myElement
+                    if(doPrevMargin) {
+                        full.marginLeft = gap
+                        gone.marginLeft = "0px"
                     }
+                    gone.marginRight = "0px"
+                    gone.paddingRight = "0px"
                 }
-
-                y -> {
-                    val gap = when {
-                        parentStyle.display == "flex" -> parentStyle.columnGap
-                        parentStyle.display.contains("block") -> childStyle.marginBottom
-                        parentStyle.display.contains("inline") -> childStyle.marginRight
-                        else -> "0px"
-                    }
-                    log?.info("Anim y")
-                    goneTransform.add("scaleY(0)")
-                    fullTransform.add("scaleY(1)")
-                    gone.marginTop = "calc($gap / -2.0)"
-                    gone.paddingTop = "0px"
-                    gone.marginBottom = "calc($gap / -2.0)"
-                    gone.paddingBottom = "0px"
-
-                    weighted?.let {
-                        full.flexGrow = weighted
-                        full.flexShrink = weighted
-                        gone.flexGrow = "0"
-                        gone.flexShrink = "0"
-                    } ?: run {
-                        val fullHeight = childStyle.height
-                        gone.height = "0px"
-                        gone.minHeight = "0px"
-                        gone.maxHeight = "0px"
-                        full.height = fullHeight
-                        full.minHeight = fullHeight
-                        full.maxHeight = fullHeight
-                    }
-                }
-
-                else -> {
-                    full.opacity = "1"
-                    gone.opacity = "0"
+                if (weighted == null) {
+                    val fullWidth = childStyle.width
+                    gone.width = "0px"
+                    gone.minWidth = "0px"
+                    gone.maxWidth = "0px"
+                    full.width = fullWidth
+                    full.minWidth = fullWidth
+                    full.maxWidth = fullWidth
                 }
             }
+            if (y) {
+                goneTransform.add("scaleY(0)")
+                fullTransform.add("scaleY(1)")
+                if (usingFlexGap) {
+                    val gapY = parentStyle.columnGap
+                    gone.marginTop = "calc($gapY / -2.0)"
+                    gone.paddingTop = "0px"
+                    gone.marginBottom = "calc($gapY / -2.0)"
+                    gone.paddingBottom = "0px"
+                } else {
+                    val gap = parentStyle.columnGap
+                    val doPrevMargin =
+                            parent.classList.contains("optimized") &&
+                            (0..<parent.children.length).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } != myElement &&
+                            (parent.children.length.minus(1) downTo 0).asSequence().mapNotNull { parent.children[it] as? HTMLElement }.find { !it.hidden } == myElement
+                    if(doPrevMargin) {
+                        full.marginTop = gap
+                        gone.marginTop = "0px"
+                    }
+                    gone.marginBottom = "0px"
+                    gone.paddingBottom = "0px"
+                }
+                if (weighted == null) {
+                    val fullHeight = childStyle.height
+                    gone.height = "0px"
+                    gone.minHeight = "0px"
+                    gone.maxHeight = "0px"
+                    full.height = fullHeight
+                    full.minHeight = fullHeight
+                    full.maxHeight = fullHeight
+                }
+            }
+            weighted?.let {
+                full.flexGrow = weighted
+                full.flexShrink = weighted
+                gone.flexGrow = "0"
+                gone.flexShrink = "0"
+            }
+
+//            full.opacity = "1"
+//            gone.opacity = "0"
+
             goneTransform.takeUnless { it.isEmpty() }?.let {
 //                gone.transform = it.joinToString(" ")
 //                gone.transformOrigin = "top left"
@@ -307,7 +325,8 @@ private val showHideWorker = label@{
                 from = before as Json,
                 to = after as Json,
                 goal = goal,
-                startRatio = 1.0 - pastRatios.getOrElse(on) { 1.0 } .also { log?.info("Past for ${on.children.singleOrNull()?.debugName} is $it") },
+                startRatio = 1.0 - pastRatios.getOrElse(on) { 1.0 }
+                    .also { log?.info("Past for ${on.children.singleOrNull()?.debugName} is $it") },
             )
         }
         delayLevel?.let { delay(it) }

@@ -12,6 +12,7 @@ import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
     "defaulter",
