@@ -235,11 +235,15 @@ private suspend fun RContext.requestSingleImageOrVideo(
                         (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
                             val suggestedType = result.itemProvider.registeredContentTypes
                                 .filterIsInstance<UTType>()
-                                .first { type ->
+                                .firstOrNull { type ->
                                     mimeTypes.any { mimeType ->
                                         type.matchesMimeType(mimeType)
                                     }
                                 }
+                            if(suggestedType == null) {
+                                println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes
+                                    .filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
+                            }
                             cont.resume(FileReference(result.itemProvider, suggestedType))
                         } ?: cont.resume(null)
                     })
@@ -343,11 +347,15 @@ private suspend fun RContext.requestMultipleImagesOrVideos(
                             .map { result ->
                                 val suggestedType = result.itemProvider.registeredContentTypes
                                     .filterIsInstance<UTType>()
-                                    .first { type ->
+                                    .firstOrNull { type ->
                                         mimeTypes.any { mimeType ->
                                             type.matchesMimeType(mimeType)
                                         }
                                     }
+                                if(suggestedType == null) {
+                                    println("WARNING: Could not find UTType for any of ${mimeTypes.joinToString()} VS ${result.itemProvider.registeredContentTypes
+                                        .filterIsInstance<UTType>().joinToString { it.preferredMIMEType ?: "???" }}")
+                                }
                                 FileReference(result.itemProvider, suggestedType)
                             }
                             .let { cont.resume(it) }

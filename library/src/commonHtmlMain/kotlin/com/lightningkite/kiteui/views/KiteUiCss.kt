@@ -284,16 +284,22 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 overflow: auto hidden;
             }
 
-            .kui.scroll-horizontal > * {
+            .kui.scroll-horizontal  * {
                 max-width: unset;
+            }
+            .kui.scroll-horizontal * {
+                max-width: 100;
             }
 
             .kui.scroll-vertical {
                 overflow: hidden auto;
             }
 
-            .kui.scroll-vertical > * {
+            .kui.scroll-vertical  * {
                 max-height: unset;
+            }
+            .kui.has-set-height * {
+                max-height: 100%;
             }
 
             iframe#webpack-dev-server-client-overlay {
@@ -942,7 +948,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
             // hack!  this makes button bars possible, though it does change where the outline goes.
             // TODO: please please figure out a better way
-            addToCss(backSel, "outline-offset", it.times(-1).coerceAtMost(theme.padding.top).toString())
+            addToCss(backSel, "outline-offset", it.times(-1).coerceAtMost(theme.padding.top).value.toString())
 //            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
         theme.diff(diff) { elevation }?.let {
