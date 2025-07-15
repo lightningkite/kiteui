@@ -237,6 +237,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition-delay: 0s;
                 transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
             }
+            
+            .kui.transition {
+                overflow: hidden;
+            }
 
             .kui[hidden] {
                 display: none !important;
@@ -936,7 +940,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { outlineWidth }?.let {
             addToCss(backSel, "outline-width", it.value.toString())
             addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
-            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
+            // hack!  this makes button bars possible, though it does change where the outline goes.
+            // TODO: please please figure out a better way
+            addToCss(backSel, "outline-offset", it.times(-1).coerceAtMost(theme.padding.top).toString())
+//            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
         theme.diff(diff) { elevation }?.let {
             addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
