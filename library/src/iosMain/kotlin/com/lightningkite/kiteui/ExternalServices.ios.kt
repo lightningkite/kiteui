@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import platform.CoreGraphics.CGRectMake
 import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.CoreServices.kUTTypeMovie
 import platform.EventKit.EKEntityType
 import platform.EventKit.EKEvent
 import platform.EventKit.EKEventStore
@@ -302,15 +303,6 @@ private suspend fun RContext.requestMultipleDocuments(
                         .map { FileReference(NSItemProvider(contentsOfURL = it)) })
                 controller.dismissViewControllerAnimated(true, {})
             }
-//                    override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
-//                        picker.dismissViewControllerAnimated(true) {
-//                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-//                                (didFinishPicking.firstOrNull() as? PHPickerResult)?.let { result ->
-//                                    cont.resume(FileReference(result.itemProvider))
-//                                } ?: cont.resume(null)
-//                            })
-//                        }
-//                    }
         }
     controller.delegate = delegate
     controller.extensionStrongRef = delegate
@@ -424,73 +416,82 @@ actual suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String>): 
 suspend fun RContext.requestCapture(
     camera: UIImagePickerControllerCameraDevice,
     mode: UIImagePickerControllerCameraCaptureMode,
-): FileReference? = suspendCancellableCoroutine { cont ->
+): FileReference? {
     val controller = UIImagePickerController()
-    controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-    controller.cameraDevice = camera
-    controller.cameraCaptureMode = mode
-    val delegate =
-        object : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
-            override fun imagePickerController(
-                picker: UIImagePickerController,
-                didFinishPickingMediaWithInfo: Map<Any?, *>
-            ) {
-                val url = didFinishPickingMediaWithInfo[UIImagePickerControllerMediaURL] as? NSURL
-                    ?: didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
+    val result = suspendCancellableCoroutine { cont ->
+        controller.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+        controller.cameraDevice = camera
+//    controller.cameraCaptureMode = mode
+        println("OK, here we go")
+        if (mode == UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModeVideo) {
+            println("Setting up movie")
+            controller.mediaTypes = listOf("public.movie")
+        }
+        val delegate =
+            object : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
+                override fun imagePickerController(
+                    picker: UIImagePickerController,
+                    didFinishPickingMediaWithInfo: Map<Any?, *>
+                ) {
+                    val url = didFinishPickingMediaWithInfo[UIImagePickerControllerMediaURL] as? NSURL
+                        ?: didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
 
-                url?.let {
-                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                        cont.resume(FileReference(NSItemProvider(contentsOfURL = it)))
-                    })
-                    return
-                }
-
-                val image = didFinishPickingMediaWithInfo[UIImagePickerControllerEditedImage] as? UIImage
-                    ?: didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
-
-                val asFile = image?.let {
-                    val p = NSURL(fileURLWithPath = NSTemporaryDirectory())
-                    val u = NSURL(string = "${NSUUID()}.jpg", relativeToURL = p)
-                    NSFileManager.defaultManager.createDirectoryAtPath(
-                        path = p.path!!,
-                        withIntermediateDirectories = true,
-                        attributes = null,
-                        error = null
-                    )
-                    if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
-                        FileReference(NSItemProvider(contentsOfURL = u), UTTypeJPEG)
-                    } else {
+                    url?.let {
                         dispatch_async(queue = dispatch_get_main_queue(), block = {
-                            cont.resumeWithException(Exception("Failed to write image file to $u"))
+                            cont.resume(FileReference(NSItemProvider(contentsOfURL = it)))
                         })
                         return
                     }
+
+                    val image = didFinishPickingMediaWithInfo[UIImagePickerControllerEditedImage] as? UIImage
+                        ?: didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
+
+                    val asFile = image?.let {
+                        val p = NSURL(fileURLWithPath = NSTemporaryDirectory())
+                        val u = NSURL(string = "${NSUUID()}.jpg", relativeToURL = p)
+                        NSFileManager.defaultManager.createDirectoryAtPath(
+                            path = p.path!!,
+                            withIntermediateDirectories = true,
+                            attributes = null,
+                            error = null
+                        )
+                        if (UIImageJPEGRepresentation(it, 0.98)!!.writeToURL(url = u, atomically = true)) {
+                            FileReference(NSItemProvider(contentsOfURL = u), UTTypeJPEG)
+                        } else {
+                            dispatch_async(queue = dispatch_get_main_queue(), block = {
+                                cont.resumeWithException(Exception("Failed to write image file to $u"))
+                            })
+                            return
+                        }
+                    }
+
+                    picker.dismissViewControllerAnimated(true) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            cont.resume(asFile)
+                        })
+                    }
                 }
 
-                picker.dismissViewControllerAnimated(true) {
-                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                        cont.resume(asFile)
-                    })
+                override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
+                    picker.dismissViewControllerAnimated(true) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            cont.resume(null)
+                        })
+                    }
                 }
             }
-
-            override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
-                picker.dismissViewControllerAnimated(true) {
-                    dispatch_async(queue = dispatch_get_main_queue(), block = {
-                        cont.resume(null)
-                    })
-                }
+        controller.delegate = delegate
+        controller.extensionStrongRef = delegate
+        present(controller)
+        cont.invokeOnCancellation {
+            try {
+                controller.dismissViewControllerAnimated(true, null)
+            } catch (e: Exception) { /*squish*/
             }
-        }
-    controller.delegate = delegate
-    controller.extensionStrongRef = delegate
-    present(controller)
-    cont.invokeOnCancellation {
-        try {
-            controller.dismissViewControllerAnimated(true, null)
-        } catch (e: Exception) { /*squish*/
         }
     }
+    controller.dismissViewControllerAnimated(true, null)
+    return result
 }
 
 actual fun RContext.setClipboardText(value: String) {
