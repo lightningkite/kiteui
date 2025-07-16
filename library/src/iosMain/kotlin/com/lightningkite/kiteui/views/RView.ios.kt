@@ -192,6 +192,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
         val fullyApply = theme.drawBackground
+        native.clipsToBounds = fullyApply
         animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.gap)

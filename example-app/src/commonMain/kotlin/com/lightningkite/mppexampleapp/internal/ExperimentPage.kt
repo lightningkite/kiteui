@@ -27,15 +27,12 @@ object ExperimentPage : Page {
 
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
-            text("Emoji test 😊")
-            text("Emoji test \uD83D\uDE0A")
-            text { setBasicHtmlContent("Emoji test 😊") }
-            text { setBasicHtmlContent("<strong>Emoji test 😊</strong>") }
-            text { setBasicHtmlContent("Emoji test \uD83D\uDE0A") }
-            text { setBasicHtmlContent("<strong>Emoji test \uD83D\uDE0A</strong>") }
-            centered - frame {
-                rawImageUnsized(Resources.imagesSolera, "desc")
-                sizeConstraints(width = 5.rem, height = 5.rem) - text("Block")
+            val prop = Property(true)
+            shownWhen { prop() } - text("A")
+            shownWhen { !prop() } - text("B")
+            button {
+                text("Toggle")
+                onClick { prop.value = !prop.value }
             }
         }
     }

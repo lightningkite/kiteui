@@ -19,6 +19,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         @ObjCAction
         fun done() {
             action?.let {
+                textField.endEditing(true)
                 textField.resignFirstResponder()
                 it.startAction(this@TextArea)
             }

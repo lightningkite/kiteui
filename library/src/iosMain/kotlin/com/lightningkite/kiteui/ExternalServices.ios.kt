@@ -220,8 +220,8 @@ private suspend fun RContext.requestSingleImageOrVideo(
     val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
         filter = PHPickerFilter.anyFilterMatchingSubfilters(
             listOfNotNull(
-                PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
-                PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
+                PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
+                PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
             )
         )
         preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
@@ -330,8 +330,8 @@ private suspend fun RContext.requestMultipleImagesOrVideos(
         PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
             filter = PHPickerFilter.anyFilterMatchingSubfilters(
                 listOfNotNull(
-                    PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } },
-                    PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } },
+                    PHPickerFilter.imagesFilter.takeIf { mimeTypes.any { it.startsWith("image/") } || mimeTypes.any { it.startsWith("*/") } },
+                    PHPickerFilter.videosFilter.takeIf { mimeTypes.any { it.startsWith("video/") } || mimeTypes.any { it.startsWith("*/") } },
                 )
             )
             preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible

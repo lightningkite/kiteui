@@ -1,4 +1,3 @@
-
 @file:Suppress("OPT_IN_USAGE")
 
 package com.lightningkite.kiteui.views.direct
@@ -123,7 +122,11 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+actual inline fun ViewWriter.__scrollsUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
@@ -192,17 +195,23 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
         reactiveScope {
             val value = condition()
             val myRun = ++runNumber
-            if(animationsEnabled) {
+            println("$native Starting run $myRun")
+            if (animationsEnabled) {
                 if (native.hidden) {
                     native.alpha = 0.0
                     native.hidden = false
+                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
                     native.extensionCollapsed = true
                 }
                 animateIfAllowed(onComplete = {
-                    if(myRun < lastCommitted) {
+                    if (myRun > lastCommitted) {
                         native.hidden = !value
+                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
                         native.extensionCollapsed = false
                         lastCommitted = myRun
+                        println("$native Committed $lastCommitted")
+                    } else {
+                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
                     }
                 }) {
                     if (!value) native.alpha = 0.0
@@ -216,6 +225,8 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                 native.alpha = opacity
                 native.hidden = !value
                 native.informParentOfSizeChange()
+                lastCommitted = myRun
+                println("$native Committed $lastCommitted")
             }
         }
     }

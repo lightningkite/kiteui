@@ -10,8 +10,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
         //language=CSS
-        @Suppress("CssUnresolvedCustomProperty")
-        dynamicCss.rule("""
+        try {
+            @Suppress("CssUnresolvedCustomProperty")
+            dynamicCss.rule(
+                """
             @media print {
                 .do-not-print{
                     display: none !important;
@@ -36,7 +38,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     flex-basis: unset !important;
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+            )
+        } catch(e: Exception) {
+            Exception("Failed to add print ruleset", e).printStackTrace()
+        }
         @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
@@ -948,7 +954,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
             // hack!  this makes button bars possible, though it does change where the outline goes.
             // TODO: please please figure out a better way
-            addToCss(backSel, "outline-offset", it.times(-1).coerceAtMost(theme.padding.top).value.toString())
+            addToCss(backSel, "outline-offset", it.times(-1).coerceAtLeast(theme.padding.top.times(-1)).value.toString())
 //            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
         theme.diff(diff) { elevation }?.let {
