@@ -195,23 +195,24 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
         reactiveScope {
             val value = condition()
             val myRun = ++runNumber
-            println("$native Starting run $myRun")
+//            println("$native Starting run $myRun")
             if (animationsEnabled) {
                 if (native.hidden) {
                     native.alpha = 0.0
                     native.hidden = false
-                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
+//                    println("Set ${this@beforeNextElementSetup.native} .hidden = FALSE forced")
                     native.extensionCollapsed = true
                 }
                 animateIfAllowed(onComplete = {
                     if (myRun > lastCommitted) {
                         native.hidden = !value
-                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
+//                        println("Set ${this@beforeNextElementSetup.native} .hidden = ${!value}")
                         native.extensionCollapsed = false
+                        native.informParentOfSizeChange()
                         lastCommitted = myRun
-                        println("$native Committed $lastCommitted")
+//                        println("$native Committed $lastCommitted")
                     } else {
-                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
+//                        println("Couldn't set ${this@beforeNextElementSetup.native} .hidden = ${!value}  -  $myRun > $lastCommitted")
                     }
                 }) {
                     if (!value) native.alpha = 0.0
@@ -226,7 +227,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
                 native.hidden = !value
                 native.informParentOfSizeChange()
                 lastCommitted = myRun
-                println("$native Committed $lastCommitted")
+//                println("$native Committed $lastCommitted")
             }
         }
     }
