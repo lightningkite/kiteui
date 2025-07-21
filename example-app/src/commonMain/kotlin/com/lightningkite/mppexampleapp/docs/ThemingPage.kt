@@ -3,14 +3,29 @@ package com.lightningkite.mppexampleapp.docs
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.ViewWrapper
+import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.models.DownSemantic
+import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.ShaderEffect
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeBuilder
+import com.lightningkite.kiteui.models.Transformation
+import com.lightningkite.kiteui.models.dp
+import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
+import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.mppexampleapp.appTheme
 import com.lightningkite.mppexampleapp.defaultTheme
+import com.lightningkite.readable.sharedProcess
+import kotlinx.coroutines.delay
+import kotlin.collections.mapOf
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 
 @Routable("docs/theming")
@@ -165,6 +180,36 @@ object ThemingPage : DocPage {
             }
         }
     }
+}
+
+data object GlassSemantic : Semantic("glass") {
+    override fun default(theme: Theme): ThemeAndBack {
+        return theme.withBack(
+            background = Color.gray.withAlpha(0.25f),
+            blurBackground = 1.rem,
+            derivations = mapOf(
+                HoverSemantic to {
+                    it.withBack(transform = Transformation(scaleX = 1.2, scaleY = 1.2))
+                },
+                DownSemantic to {
+                    it.withBack(transform = Transformation(scaleX = 0.9, scaleY = 0.9))
+                },
+            )
+        )
+    }
+}
+
+data object AnimatedEmphasis1Semantic : Semantic("ae1s") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        cascading = false,
+        transform = Transformation(scaleX = 1.1, scaleY = 1.1)
+    )
+}
+data object AnimatedEmphasis2Semantic : Semantic("ae2s") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        cascading = false,
+        transform = Transformation(scaleX = 0.9, scaleY = 0.9)
+    )
 }
 
 data object InvertedSemantic : Semantic("invert") {

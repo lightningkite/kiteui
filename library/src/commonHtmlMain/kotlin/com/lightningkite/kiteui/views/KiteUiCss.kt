@@ -241,7 +241,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 padding: 0px;
                 transition-timing-function: linear;
                 transition-delay: 0s;
-                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
+                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter, transform;
             }
             
             .kui.transition {
@@ -990,6 +990,22 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { background }
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
         theme.diff(diff) { cornerRadii }?.let { addToCss(backSel, "border-radius", it.toRawCornerRadius()) }
+        theme.diff(diff) { blurBackground }?.let {
+
+            if(it.value != DimensionRaw.zero) {
+                val filterValue = "blur(${it.value})"
+                if (filterValue.isNotEmpty()) {
+                    addToCss(backSel, "backdrop-filter", filterValue)
+                    addToCss(backSel, "-webkit-backdrop-filter", filterValue)
+                } else {
+                    addToCss(backSel, "backdrop-filter", "none")
+                    addToCss(backSel, "-webkit-backdrop-filter", "none")
+                }
+            } else {
+                addToCss(backSel, "backdrop-filter", "none")
+                addToCss(backSel, "-webkit-backdrop-filter", "none")
+            }
+        }
         theme.diff(diff) { foreground }?.let {
             addToCss(directSel, "color-scheme", if(it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
             when (it) {
@@ -1021,6 +1037,44 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 is Color -> addToCss(directSel, "--separator-color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "--separator-color", "")
                 else -> addToCss(directSel, "--separator-color", it.closestColor().toWeb())
+            }
+        }
+        
+        theme.diff(diff) { transform }?.let {
+            if (it != null) {
+                val transformParts = mutableListOf<String>()
+                
+                // Add translation transforms
+                if (it.translationX != 0.0 || it.translationY != 0.0 || it.translationZ != 0.0) {
+                    val translateParts = mutableListOf<String>()
+                    if (it.translationX != 0.0) translateParts.add("${it.translationX}px")
+                    if (it.translationY != 0.0) translateParts.add("${it.translationY}px")
+                    if (it.translationZ != 0.0) translateParts.add("${it.translationZ}px")
+                    
+                    transformParts.add("translate3d(${translateParts.joinToString(", ")})")
+                }
+                
+                // Add rotation transforms
+                if (it.rotation != 0.0) {
+                    transformParts.add("rotate(${it.rotation}deg)")
+                }
+                if (it.rotationX != 0.0) {
+                    transformParts.add("rotateX(${it.rotationX}deg)")
+                }
+                if (it.rotationY != 0.0) {
+                    transformParts.add("rotateY(${it.rotationY}deg)")
+                }
+                
+                // Add scale transforms
+                if (it.scaleX != 1.0 || it.scaleY != 1.0) {
+                    transformParts.add("scale(${it.scaleX}, ${it.scaleY})")
+                }
+                
+                if (transformParts.isNotEmpty()) {
+                    addToCss(backSel, "transform", transformParts.joinToString(" "))
+                }
+            } else {
+                addToCss(backSel, "transform", "none")
             }
         }
 

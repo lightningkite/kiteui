@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.WrapperView
+import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
@@ -15,9 +16,13 @@ import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
+import platform.UIKit.UIBlurEffect
+import platform.UIKit.UIBlurEffectStyle
 import platform.UIKit.UIColor
+import platform.UIKit.UIVibrancyEffect
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
+import platform.UIKit.UIVisualEffectView
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.max
@@ -171,6 +176,9 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
      */
     protected open val disableBackground = false
 
+    class BlurBackgroundView: UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    var effectBackground: BlurBackgroundView? = null
+
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
@@ -184,6 +192,21 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             shadowOpacity = 0f
             shadowOffset = CGSizeMake(0.0, 0.0)
             shadowRadius = 0.0
+        }
+
+        if(theme.theme.blurBackground.value == 0.0) effectBackground?.let {
+            it.removeFromSuperview()
+            effectBackground = null
+        } else {
+            val effect = (effectBackground ?: BlurBackgroundView().apply {
+                addChildTarget.insertSubview(this, 0)
+                effectBackground = this
+            })
+            effect.effect = when(theme.theme.blurBackground.value) {
+                in 0.0..<5.0 -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleExtraLight)
+                in 5.0..<10.0 -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleLight)
+                else -> UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular)
+            }
         }
 
         native.extensionPadding = paddingByEdge ?: when {
@@ -274,6 +297,36 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 frame = bounds
                 refreshCorners()
             }
+
+            // Apply transformation if present
+            theme.theme.transform?.let { transform ->
+                // Apply transformations to the native view's layer
+                if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
+                    // Apply translation
+                    native.layer.transform = platform.QuartzCore.CATransform3DMakeTranslation(
+                        transform.translationX,
+                        transform.translationY,
+                        transform.translationZ
+                    )
+                } else if (transform.rotation != 0.0) {
+                    // Apply rotation (convert degrees to radians)
+                    val radians = transform.rotation * (kotlin.math.PI / 180.0)
+                    native.layer.transform = platform.QuartzCore.CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
+                } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
+                    // Apply scale
+                    native.layer.transform = platform.QuartzCore.CATransform3DMakeScale(
+                        transform.scaleX,
+                        transform.scaleY,
+                        1.0
+                    )
+                } else {
+                    // Default identity transform
+                    native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                }
+            } ?: run {
+                // Reset transform if no transformation is specified
+                native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+            }
         }
     }
 
@@ -291,23 +344,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     protected open val addChildTarget: UIView get() = native
     actual override fun internalAddChild(index: Int, view: RView) {
-        if (index == addChildTarget.subviews.size)
+        val existingView = children.getOrNull(index)
+        val existingIndex = addChildTarget.subviews.indexOfFirst { it == existingView?.native }
+        if (existingIndex == -1)
             addChildTarget.addSubview(view.native)
         else
-            addChildTarget.insertSubview(view.native, index.toLong())
-        if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
+            addChildTarget.insertSubview(view.native, existingIndex.toLong())
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
-        if (index >= addChildTarget.subviews.size || index < 0) {
+        if (index >= children.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${addChildTarget.subviews.size}")
         }
-        (addChildTarget.subviews[index] as UIView).removeFromSuperview()
+        children[index].native.removeFromSuperview()
     }
 
     actual override fun internalClearChildren() {
-        addChildTarget.subviews.toList().forEach {
+        children.toList().forEach {
             (it as UIView).let {
                 it.removeFromSuperview()
             }

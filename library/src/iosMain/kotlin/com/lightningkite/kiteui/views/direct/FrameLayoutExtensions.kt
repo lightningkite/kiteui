@@ -26,6 +26,10 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
+        if(view is RView.BlurBackgroundView) {
+            view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
+            return@zip
+        }
         val h = view.extensionHorizontalAlign ?: Align.Stretch
         val v = view.extensionVerticalAlign ?: Align.Stretch
         val offsetH = when (h) {
@@ -62,10 +66,15 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+    val mySize = bounds.useContents { size.local }
     val frameLayout = this
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
+        if(view is RView.BlurBackgroundView) {
+            view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
+            return@zip
+        }
         val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
         val (offsetH, offsetV) = anchor.first.calculatePopoverOffset(
             anchorPositionInFrameLayout,
@@ -97,6 +106,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
     if (!pointInside(point, withEvent)) return null
     for (it in subviews.asReversed()) {
         it as UIView
+        if(it is RView.BlurBackgroundView) continue
 //        println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()}")
         if (it.hidden) {
 //            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.hidden")
@@ -177,6 +187,9 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
         if (it.hidden || it.extensionCollapsed == true) return@mapIndexed Size()
+        if(it is RView.BlurBackgroundView) {
+            return@mapIndexed Size()
+        }
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
         t.pause()
         val required = childSizeCache[index].getOrPut(measureInput) {

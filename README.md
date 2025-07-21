@@ -11,6 +11,20 @@ A Kotlin Multiplatform UI Framework inspired by Solid.js.
 - Easy to extend into native components on the platform
 - Make loading and issue handling pretty without manual work
 
+## Why Choose KiteUI over Compose Multiplatform?
+
+Update with table for https://blog.jetbrains.com/kotlin/2025/05/present-and-future-kotlin-for-web/
+
+KiteUI offers several advantages over Compose Multiplatform for certain use cases:
+
+- **Smaller JS Bundle Size**: KiteUI is designed with web performance in mind, resulting in significantly smaller JavaScript bundle sizes compared to Compose Multiplatform.
+- **Fine-Grained Reactivity**: Inspired by Solid.js, KiteUI uses a fine-grained reactivity system that only updates what needs to be updated, leading to better performance than Compose's recomposition model.
+- **Semantic Theming System**: KiteUI's theming system is built around semantic concepts rather than direct styling, making it easier to maintain consistent UI across your application.
+- **Web-First Approach**: With URL-based navigation and server-side rendering capabilities, KiteUI is designed to work seamlessly in web environments while still supporting native platforms.
+- **Simpler Learning Curve**: KiteUI's API is designed to be intuitive and straightforward, making it easier to learn for developers coming from web development backgrounds.
+- **Native Component Integration**: KiteUI makes it easy to extend and integrate with native components on each platform, giving you the flexibility to use platform-specific features when needed.
+- **Lightweight Network Client**: Instead of relying on heavy KMP network clients, KiteUI includes a simpler, more limited implementation that's sufficient for most use cases while keeping the bundle size small.
+
 ## Interesting design decisions
 
 - Base navigation around URLs to be very compatible with web

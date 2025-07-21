@@ -33,9 +33,6 @@ val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
 val UrlProperties: Properties get() = UrlPropertiesCurrent
 
-@Serializable
-private data class Wrapper<T>(val value: T)
-
 fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
     value: T,

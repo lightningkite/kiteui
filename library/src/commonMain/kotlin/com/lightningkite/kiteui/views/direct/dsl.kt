@@ -259,12 +259,6 @@ inline fun ViewWriter.frame(setup: Frame.() -> Unit = {}): Frame {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.glassFrame(setup: GlassFrame.() -> Unit = {}): GlassFrame {
-    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(GlassFrame(context) , setup)
-}
-@OptIn(ExperimentalContracts::class)
-@ViewDsl
 inline fun ViewWriter.coordinatorFrame(setup: CoordinatorFrame.() -> Unit = {}): CoordinatorFrame {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(CoordinatorFrame(context) , setup)

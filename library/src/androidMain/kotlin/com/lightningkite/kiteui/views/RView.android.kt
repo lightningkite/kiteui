@@ -3,9 +3,12 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +16,7 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
+import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.Log
@@ -248,6 +252,37 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         )
     }
 
+    // Map to track active animators for each view property
+    companion object {
+        private val activeAnimators = mutableMapOf<String, ValueAnimator>()
+    }
+
+    private fun animateProperty(targetValue: Float, existingAnimator: ValueAnimator?, getter: ()->Float, setter: (Float)->Unit): ValueAnimator? {
+        existingAnimator?.cancel()
+        if(getter() == targetValue) return null
+        
+        if (animationsEnabled) {
+            return ValueAnimator.ofFloat(getter(), targetValue).apply {
+                duration = theme.transitionDuration.inWholeMilliseconds
+                addUpdateListener {
+                    setter(it.animatedValue as Float)
+                }
+                start()
+            }
+        } else {
+            setter(targetValue)
+            return null
+        }
+    }
+    private var animatorTranslationX: ValueAnimator? = null
+    private var animatorTranslationY: ValueAnimator? = null
+    private var animatorTranslationZ: ValueAnimator? = null
+    private var animatorRotationX: ValueAnimator? = null
+    private var animatorRotationY: ValueAnimator? = null
+    private var animatorRotation: ValueAnimator? = null
+    private var animatorScaleX: ValueAnimator? = null
+    private var animatorScaleY: ValueAnimator? = null
+    
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
@@ -265,6 +300,30 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         } else {
             backgroundBlock = null
             background = null
+        }
+        updateTransform(theme.theme)
+    }
+
+    private fun updateTransform(theme: Theme) {
+        theme.transform?.let { transform ->
+            animatorTranslationX = animateProperty(transform.translationX.toFloat(), animatorTranslationX, { native.translationX }, { native.translationX = it })
+            animatorTranslationY = animateProperty(transform.translationY.toFloat(), animatorTranslationY, { native.translationY }, { native.translationY = it })
+            animatorTranslationZ = animateProperty(transform.translationZ.toFloat(), animatorTranslationZ, { native.translationZ }, { native.translationZ = it })
+            animatorRotationX = animateProperty(transform.rotationX.toFloat(), animatorRotationX, { native.rotationX }, { native.rotationX = it })
+            animatorRotationY = animateProperty(transform.rotationY.toFloat(), animatorRotationY, { native.rotationY }, { native.rotationY = it })
+            animatorRotation = animateProperty(transform.rotation.toFloat(), animatorRotation, { native.rotation }, { native.rotation = it })
+            animatorScaleX = animateProperty(transform.scaleX.toFloat(), animatorScaleX, { native.scaleX }, { native.scaleX = it })
+            animatorScaleY = animateProperty(transform.scaleY.toFloat(), animatorScaleY, { native.scaleY }, { native.scaleY = it })
+        } ?: run {
+            // Reset transformations if no transform is specified
+            animatorTranslationX = animateProperty(0f, animatorTranslationX, { native.translationX }, { native.translationX = it })
+            animatorTranslationY = animateProperty(0f, animatorTranslationY, { native.translationY }, { native.translationY = it })
+            animatorTranslationZ = animateProperty(0f, animatorTranslationZ, { native.translationZ }, { native.translationZ = it })
+            animatorRotationX = animateProperty(0f, animatorRotationX, { native.rotationX }, { native.rotationX = it })
+            animatorRotationY = animateProperty(0f, animatorRotationY, { native.rotationY }, { native.rotationY = it })
+            animatorRotation = animateProperty(0f, animatorRotation, { native.rotation }, { native.rotation = it })
+            animatorScaleX = animateProperty(1f, animatorScaleX, { native.scaleX }, { native.scaleX = it })
+            animatorScaleY = animateProperty(1f, animatorScaleY, { native.scaleY }, { native.scaleY = it })
         }
     }
 
@@ -356,6 +415,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
         updateCorners()
+        updateTransform(theme.theme)
     }
 }
 
