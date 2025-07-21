@@ -323,7 +323,12 @@ inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(ta
 actual fun RView.nativeSetDragData(data: DragData?) {
     native.onElement {
         if (data != null) {
-            (it as HTMLElement).ondragstart = { it.dataTransfer!!.setData(data.mimeType, data.data) }
+            (it as HTMLElement).ondragstart = {
+                it.stopPropagation()
+                for((type, value) in data.typeToData) {
+                    it.dataTransfer!!.setData(type, value)
+                }
+            }
         } else {
             (it as HTMLElement).ondragstart = null
         }
@@ -355,12 +360,6 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
             }
             it.ondragleave = { e ->
                 if (listener.exit(e.toDragEvent())) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                }
-            }
-            it.ondragstart = { e ->
-                if (listener.start(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
