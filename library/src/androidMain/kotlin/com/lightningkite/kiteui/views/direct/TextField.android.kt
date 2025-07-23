@@ -196,8 +196,8 @@ var EditText.keyboardHints: KeyboardHints
     set(value) {
         val n = this
         val inputType = when (value.type) {
-            KeyboardType.Integer -> InputType.TYPE_CLASS_NUMBER
-            KeyboardType.Decimal -> InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            KeyboardType.Integer, KeyboardType.IntegerWithNegative -> InputType.TYPE_CLASS_NUMBER
+            KeyboardType.Decimal, KeyboardType.DecimalWithNegative -> InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             KeyboardType.Text -> {
                 when (value.case) {
                     KeyboardCase.Words -> InputType.TYPE_TEXT_FLAG_CAP_WORDS

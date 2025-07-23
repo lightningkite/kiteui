@@ -20,7 +20,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
                     selectionEnd = selectionEnd,
-                    allowDecimal = keyboardHints != KeyboardHints.integer,
+                    allowDecimal = keyboardHints.allowDecimal,
                     setResult = {
                         native.attributes.valueString = it
                     },
@@ -37,6 +37,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     native.attributes.valueString = value?.commaString()
             }
     }
+
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
@@ -46,6 +47,8 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 KeyboardType.Integer -> "text"
                 KeyboardType.Phone -> "tel"
                 KeyboardType.Email -> "text"
+                KeyboardType.IntegerWithNegative -> "text"
+                KeyboardType.DecimalWithNegative -> "text"
             }
             native.attributes.inputMode = when (value.type) {
                 KeyboardType.Text -> "text"
@@ -53,6 +56,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 KeyboardType.Integer -> "numeric"
                 KeyboardType.Phone -> "tel"
                 KeyboardType.Email -> "email"
+                // Number inputs are not guaranteed to include the '-' sign as an option, fall back to regular text input to ensure negative sign is accessible.
+                KeyboardType.IntegerWithNegative -> if (usingWebOnMobile()) "text" else "numeric"
+                KeyboardType.DecimalWithNegative -> if (usingWebOnMobile()) "text" else "decimal"
             }
 
             when (value.autocomplete) {
@@ -124,3 +130,5 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
 expect val NumberInput.selectionStart: Int?
 expect val NumberInput.selectionEnd: Int?
 expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+
+expect fun usingWebOnMobile(): Boolean
