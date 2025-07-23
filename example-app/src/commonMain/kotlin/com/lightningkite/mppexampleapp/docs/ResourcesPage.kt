@@ -29,11 +29,11 @@ object ResourcesPage: DocPage {
             example("""
                 // Using a resource from your project
                 image {
-                    source = Resources.imagesSolera
+                    source = Resources.imagesSnowyBackground
                 }
             """.trimIndent()) {
                 sizeConstraints(height = 10.rem) - image {
-                    source = Resources.imagesSolera
+                    source = Resources.imagesSnowyBackground
                 }
             }
 
@@ -148,7 +148,7 @@ object ResourcesPage: DocPage {
                     import com.lightningkite.mppexampleapp.Resources
 
                     // Access image resources
-                    val image = Resources.imagesSolera
+                    val image = Resources.imagesSnowyBackground
 
                     // Access audio resources
                     val audio = Resources.audioTaunt
@@ -169,7 +169,7 @@ object ResourcesPage: DocPage {
             h2("Resource Naming")
             text("Resource properties are named based on the file path and name. For example:")
             text("""
-                • images/solera.png becomes Resources.imagesSolera
+                • images/solera.png becomes Resources.imagesSnowyBackground
                 • audio/taunt.mp3 becomes Resources.audioTaunt
                 • video/back.mp4 becomes Resources.videoBack
             """.trimIndent())

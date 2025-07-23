@@ -60,7 +60,7 @@ object LoadAnimationTestPage : Page {
 //                textField { content bind loading.withWrite {  } }
 //                textArea { content bind loading.withWrite {  } }
 //                sizedBox(SizeConstraints(height = 5.rem)) - image {
-//                    ::source { loading(); Resources.imagesSolera }
+//                    ::source { loading(); Resources.imagesSnowyBackground }
 //                    scaleType = ImageScaleType.Fit
 //                }
             }

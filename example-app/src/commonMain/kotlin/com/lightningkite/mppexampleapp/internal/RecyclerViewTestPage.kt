@@ -54,6 +54,7 @@ object RecyclerViewTestPage : Page {
             }
             recyclerView {
                 recyclerView = this
+                log = Log.tag("R2")
                 gap = 0.5.rem
                 paddingByEdge = Edges(left = 1.rem, right = 1.rem, top = 1.rem, bottom = 10.rem)
 //                columns = 2

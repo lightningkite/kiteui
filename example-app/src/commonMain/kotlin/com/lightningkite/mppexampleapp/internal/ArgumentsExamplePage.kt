@@ -62,8 +62,8 @@ class ArgumentsExamplePage(val id: String): Page {
         }
         sizeConstraints(height = 10.rem) - image {
             source = when(id.hashCode() % 2) {
-                0 -> Resources.imagesSolera
-                else -> Resources.imagesMammoth
+                0 -> Resources.imagesSnowyBackground
+                else -> Resources.imagesLightningBackground
             }
             scaleType = ImageScaleType.Crop
             transitionId = "Sample"

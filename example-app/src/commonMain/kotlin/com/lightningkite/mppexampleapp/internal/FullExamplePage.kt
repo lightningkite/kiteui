@@ -22,7 +22,7 @@ class FullScreenPage: Page, UseFullPage {
 //            frame {
 //                image {
 //                    cannotBeCovered = false
-//                    source = Resources.imagesSolera
+//                    source = Resources.imagesSnowyBackground
 //                    scaleType = ImageScaleType.Crop
 //                }
 //                col {
@@ -41,7 +41,7 @@ class FullScreenPage: Page, UseFullPage {
                 frame {
                     image {
                         cannotBeCovered = false
-                        source = Resources.imagesSolera
+                        source = Resources.imagesSnowyBackground
                         scaleType = ImageScaleType.Crop
                     }
                     col {
@@ -59,7 +59,7 @@ class FullScreenPage: Page, UseFullPage {
 //            cannotBeCovered = false
 //            image {
 //                cannotBeCovered = false
-//                source = Resources.imagesSolera
+//                source = Resources.imagesSnowyBackground
 //                scaleType = ImageScaleType.Crop
 //            }
 //            col {

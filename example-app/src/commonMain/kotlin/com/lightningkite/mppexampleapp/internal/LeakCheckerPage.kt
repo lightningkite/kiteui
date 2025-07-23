@@ -98,7 +98,7 @@ object LeakCheckerPage : Page {
         "checkbox" to { frame { checkbox {} } },
         "dismissBackground" to { frame { dismissBackground {} } },
         "icon" to { frame { icon { source = Icon.send } } },
-        "image" to { frame { image { source = Resources.imagesGraph126 } } },
+        "image" to { frame { image { source = Resources.imagesLightningBackground } } },
         "phoneNumberInput" to { frame { phoneNumberInput {} } },
         "localDateField" to { frame { localDateField {} } },
         "localDateTimeField" to { frame { localDateTimeField {} } },

@@ -44,8 +44,8 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifia
         ::navItems {
             listOf(
                 NavLink(title = { "Home" }, icon = { Icon.home }) { { HomePage() } },
-                NavLink(title = { "Internal" }, icon = { Icon.home }) { { RootPage } },
                 NavLink(title = { "Documentation" }, icon = { Icon.list }) { { DocSearchPage } },
+                NavLink(title = { "Test Pages" }, icon = { Icon.home }) { { RootPage } },
             )
         }
 

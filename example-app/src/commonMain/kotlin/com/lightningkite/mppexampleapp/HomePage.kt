@@ -58,33 +58,6 @@ class HomePage: Page {
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
             space()
-            coordinatorFrame!!.onLeftSwipe {
-                println("LEFT")
-            }
-            coordinatorFrame!!.onRightSwipe {
-                println("Right")
-            }
-            button {
-                text("open")
-                onClick {
-                    coordinatorFrame!!.bottomSheet { control ->
-                        DialogSemantic.onNext - col {
-                            applySafeInsets()
-                            centered - coordinatorDragHandle()
-                            for (letter in 'A'..'C') {
-                                card - text(letter.toString())
-                            }
-                            card - button {
-                                text("Force close")
-                                onClick {
-                                    control.close()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            space()
             centered - h2("Goals")
             separator()
             text("- Web first - the web version should be comparable or better than React in performance, and generate reasonably small binaries.")
@@ -94,7 +67,7 @@ class HomePage: Page {
             text("- Extendable - using native per-platform components and code should be easy.")
             text("- Kotlin-first - we use Kotlin conventions everywhere possible.")
             text("- Declarative - encode meaning into the system front-to-back, not the 'how'.")
-            text("- Semantic themeing - style and content should be separated and bridged via meaning, not result.  It's not a 'red' button, it's a button that performs a dangerous action.")
+            text("- Semantic theming - style and content should be separated and bridged via meaning, not result.  It's not a 'red' button, it's a button that performs a dangerous action.")
             space()
             h2("Quick Sample")
             example("""

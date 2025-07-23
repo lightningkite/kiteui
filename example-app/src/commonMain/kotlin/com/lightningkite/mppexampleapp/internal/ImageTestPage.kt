@@ -23,7 +23,7 @@ object ImageTestPage : Page {
                     text("Show")
                 }
                 image {
-                    ::source { if(value()) Resources.imagesSolera else null }
+                    ::source { if(value()) Resources.imagesSnowyBackground else null }
                 }
             }
         }

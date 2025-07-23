@@ -24,25 +24,18 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 import com.lightningkite.mppexampleapp.internal.SliderExamplePage
+import com.lightningkite.readable.Constant
+import com.lightningkite.readable.Readable
 
 @Routable("/internal")
 object RootPage : Page {
+    override val title: Readable<String> = Constant("Test Pages")
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
-                h1 { content = "Beautiful by default." }
+                h1 { content = "Test Pages" }
                 separator()
-                text {
-                    content =
-                        "In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be."
-                }
-                text {
-                    content = "Take a look below at some examples."
-                }
-                text {
-                    content =
-                        "Note the magnifying glass in the top right corner - clicking it will open the source of the current screen on GitHub!"
-                }
+                text("These test pages aren't necessarily meant to be examples of what you can do with KiteUI.  They are meant to be a way to test out new features and find bugs.  They are also meant to be a way to test out different layouts and components.  However, you may find them interesting.")
             }
             ListSemantic.onNext - col {
 

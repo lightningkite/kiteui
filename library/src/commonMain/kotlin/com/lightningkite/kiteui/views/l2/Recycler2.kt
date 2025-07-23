@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
@@ -54,6 +55,8 @@ class Recycler2(
         set(value) {
             outerFrame.shown = value
         }
+
+    var recycling: Boolean = false
 
     private val _centerIndex = Property(0)
     private val _displayedRangeFirst = Property(0)
@@ -125,7 +128,7 @@ class Recycler2(
         }
     }
 
-    var overdraw = 20.0
+    var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
@@ -223,11 +226,37 @@ class Recycler2(
             inProgress: ProgrammingLayoutInProgress
         ) {
             this.type = type
-            cells.beforeNextElementSetup { view = this }
             this.data.state = data
             this.indexProp.value = index
             log?.log("CELL CREATED: from $data at $index")
-            type.render(cells, this.data, indexProp)
+            val writer = object: ViewWriter() {
+                override val context: RContext
+                    get() = cells.context
+
+                override fun willAddChild(view: RView) {
+                    return cells.willAddChild(view)
+                }
+
+                override fun addChild(view: RView) {
+                    // Accessibility: we're going to ensure this is inserted in the correct order.
+                    this@MyCell.view = view
+                    if(recycling) {
+                        cells.addChild(view)
+                    } else {
+                        val index = if(activeCells.isEmpty()) -1
+                        else if (index > activeCells.last().index) -1
+                        else if (index < activeCells.first().index) 0
+                        else activeCells.binarySearchBy(index) { it.index }
+                        if (index == -1) cells.addChild(view)
+                        else cells.addChild(index, view)
+                    }
+                }
+
+                override val coroutineContext: CoroutineContext
+                    get() = cells.coroutineContext
+
+            }
+            type.render(writer, this.data, indexProp)
             constraint = constrain
             _size = null
             this.inProgress = inProgress
@@ -252,14 +281,22 @@ class Recycler2(
             activeCells.remove(this)
             afterTimeout(view.theme.transitionDuration.inWholeMilliseconds) {
                 view.shown = false
-                reuse.add(this@MyCell)
+                if(recycling) {
+                    reuse.add(this@MyCell)
+                } else {
+                    cells.removeChild(view)
+                }
             }
         }
 
         fun instantDismiss() {
             view.shown = false
             activeCells.remove(this)
-            reuseableCells.add(this@MyCell)
+            if(recycling) {
+                reuseableCells.add(this@MyCell)
+            } else {
+                cells.removeChild(view)
+            }
         }
 
         override val index: Int get() = indexProp.value
@@ -593,7 +630,11 @@ class Recycler2(
                     ) {
                         it.view.shown = false
                         activeCells.remove(it)
-                        reuseableCells.add(it)
+                        if(recycling) {
+                            reuseableCells.add(it)
+                        } else {
+                            cells.removeChild(it.view)
+                        }
                         true
                     } else false
                 }
@@ -623,7 +664,7 @@ class Recycler2(
                         }?.also {
                             // Same item ID: Data change should be animated here
                             it.onPullForPlacing(size, ReadableState(item), index, inProgress)
-                        } ?: reuseableCells.popOrNull {  it.type == renderer }?.also {
+                        } ?: reuseableCells.takeIf { recycling }?.popOrNull {  it.type == renderer }?.also {
                             // If placing just offscreen, place without animation.
                             it.view.withoutAnimation { it.onPullForPlacing(size, ReadableState(item), index, inProgress) }
                             activeCells += it

@@ -11,7 +11,7 @@ actual fun ViewWriter.platformSpecific(): ViewModifiable {
         val visible = Property(false)
         switch { checked bind visible }
         expanding - zoomableImage {
-            source = Resources.imagesSolera
+            source = Resources.imagesSnowyBackground
         }
     }
 }

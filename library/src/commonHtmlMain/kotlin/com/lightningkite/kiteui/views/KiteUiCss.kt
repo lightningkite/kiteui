@@ -477,6 +477,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition: 0.3s;
                 animation: 2s linear infinite spin !important;
             }
+            
+            .popover {
+                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
+            }
 
             img.kui {
                 overflow: hidden;

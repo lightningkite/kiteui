@@ -25,7 +25,7 @@ object TestingGroundPage: Page {
 
         scrolling - col {
             h1("Experiments test")
-            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
+            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSnowyBackground }
 
             launch {
                 while (true) {

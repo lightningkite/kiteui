@@ -20,10 +20,9 @@ object SampleLogInPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         val email = Property("")
         val password = Property("")
-        frame {
-            gap = 0.rem
+        unpadded - frame {
             image {
-                source = Resources.imagesSolera
+                source = Resources.imagesSnowyBackground
                 scaleType = ImageScaleType.Crop
                 opacity = 0.5
             }

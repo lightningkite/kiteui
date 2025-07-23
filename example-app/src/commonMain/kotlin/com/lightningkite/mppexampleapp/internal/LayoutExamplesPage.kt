@@ -40,7 +40,7 @@ object LayoutExamplesPage : Page {
                 card - row {
                     expanding - centered - rowCollapsingToColumn(30.rem) {
                         centered - sizeConstraints(width = 5.rem, height = 5.rem) - image {
-                            source = Resources.imagesSolera
+                            source = Resources.imagesSnowyBackground
                             this.description = ""
                             scaleType = ImageScaleType.Crop
                         }
@@ -85,7 +85,7 @@ object LayoutExamplesPage : Page {
                                 gap = 0.25.rem
                                 centered - sizeConstraints(width = 2.rem, height = 2.rem) - image {
                                     description = ""
-                                    source = Resources.imagesSolera
+                                    source = Resources.imagesSnowyBackground
                                 }
                                 subtext {
                                     ::shown { false }

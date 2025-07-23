@@ -1,6 +1,25 @@
 # KiteUI
 
-A Kotlin Multiplatform UI Framework inspired by Solid.js.
+A Kotlin Multiplatform UI Framework inspired by Solid.js that uses the native view components of each platform.
+
+## Why make this library instead of using Compose Multiplatform?
+
+1. **Web targets:** Compose is built on its own rendering stack, and thus it must render its entire UI on web in a canvas.  This makes accessibility and good performance extremely difficult and server-side rendering impossible.
+2. **Smaller Binary Sizes:** Compose generates fairly large binaries, since it must recreate the entire UI set of the target platform - i.e. text fields, checkboxes, and more.
+3. **URL-based navigation:** Deep linking is difficult in Compose, so creating links to pages requires extra effort.
+
+For these reasons, we think Compose isn't sufficient nor can be made sufficient for any multiplatform development that includes a web target.  That's why we created this library.
+
+## Features
+
+- **Smaller Binary Size**: KiteUI makes fairly small bundle sizes.  
+  - For a practical comparison: The [sample project for Kite UI](https://kiteui.cs.lightningkite.com) has a JS bundle of less than 2 megabytes, and the [image viewer example for Compose Web](https://zal.im/wasm/iv/), which is a far smaller scope, has a WASM bundle of 8 megabytes
+- **Fine-Grained Reactivity**: Inspired by Solid.js, KiteUI uses a fine-grained reactivity system that only updates what needs to be updated while avoiding compiler magic.
+- **Semantic Theming System**: KiteUI's theming system is built around semantic concepts rather than direct styling, making it easier to maintain consistent UI across your application.
+- **Web-First Approach**: With URL-based navigation and (upcoming) server-side rendering capabilities, KiteUI is designed to work seamlessly in web environments while still supporting native platforms.
+- **True Native Component Integration**: Because KiteUI uses the underlying platform's view system, integrating a native view not accounted for in the library is extremely easy.
+- **Automatic Load State**: The reactivity mechanism tracks loading in progress, so your elements will automatically go into a visual loading state if they're waiting for data.
+- **Annotation URL-based routing**: A simple annotation binds pages and their URLs together.
 
 ## Goals
 
@@ -11,36 +30,24 @@ A Kotlin Multiplatform UI Framework inspired by Solid.js.
 - Easy to extend into native components on the platform
 - Make loading and issue handling pretty without manual work
 
-## Why Choose KiteUI over Compose Multiplatform?
-
-Update with table for https://blog.jetbrains.com/kotlin/2025/05/present-and-future-kotlin-for-web/
-
-KiteUI offers several advantages over Compose Multiplatform for certain use cases:
-
-- **Smaller JS Bundle Size**: KiteUI is designed with web performance in mind, resulting in significantly smaller JavaScript bundle sizes compared to Compose Multiplatform.
-- **Fine-Grained Reactivity**: Inspired by Solid.js, KiteUI uses a fine-grained reactivity system that only updates what needs to be updated, leading to better performance than Compose's recomposition model.
-- **Semantic Theming System**: KiteUI's theming system is built around semantic concepts rather than direct styling, making it easier to maintain consistent UI across your application.
-- **Web-First Approach**: With URL-based navigation and server-side rendering capabilities, KiteUI is designed to work seamlessly in web environments while still supporting native platforms.
-- **Simpler Learning Curve**: KiteUI's API is designed to be intuitive and straightforward, making it easier to learn for developers coming from web development backgrounds.
-- **Native Component Integration**: KiteUI makes it easy to extend and integrate with native components on each platform, giving you the flexibility to use platform-specific features when needed.
-- **Lightweight Network Client**: Instead of relying on heavy KMP network clients, KiteUI includes a simpler, more limited implementation that's sufficient for most use cases while keeping the bundle size small.
-
 ## Interesting design decisions
 
 - Base navigation around URLs to be very compatible with web
-- Use fine-grained reactivity
+- Use fine-grained reactivity based on SolidJS
 - Use themes for styling; avoid direct styling.
-- Derive theme variants from existing themes.  Make theme variants semantically based.
+- Derive theme variants from existing themes programmatically.  Make theme variants semantically based.
 - Don't use a KMP network client, they're all too big - include a custom, simpler, and more limited implementation
 
 ## Project Status
 
-Early in development.  Web is basically usable at this point, but everything is subject to change.
+We are using this in production, but I will not declare the API as totally finalized.  However, with the sheer number of projects we have written in it, we at least have to keep some level of compatibility.  We'll document how to adjust to new changes as they come.
 
-### TO DO:
+## Road Map
 
-- [ ] Some kind of simple validation system
-- [ ] Server-side rendering
+- [ ] Server-side rendering - We have a lot of stuff prepared for this, but there's work that must be completed to finish it.
+- [ ] Desktop Target - We're still not sure what underlying UI framework we wish to target.  Compose Desktop, Swing, and JavaFX are all possibilities, though we'll likely go with Compose.
+- [ ] Form validation - I feel like there could be some tools that would make form validation easier.  Still haven't found the right API though.
+- [ ] Performance Improvements - while it's already running fairly fast, I always would like more time to improve it.
 
 ## Take a look!
 
