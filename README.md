@@ -45,9 +45,15 @@ We are using this in production, but I will not declare the API as totally final
 ## Road Map
 
 - [ ] Server-side rendering - We have a lot of stuff prepared for this, but there's work that must be completed to finish it.
+- [ ] WASM target - should be fairly easy to implement, since at one time we had it implemented but it was slower and bigger.  From what I hear performance has improved enough to make restoring this target sensible.
 - [ ] Desktop Target - We're still not sure what underlying UI framework we wish to target.  Compose Desktop, Swing, and JavaFX are all possibilities, though we'll likely go with Compose.
 - [ ] Form validation - I feel like there could be some tools that would make form validation easier.  Still haven't found the right API though.
 - [ ] Performance Improvements - while it's already running fairly fast, I always would like more time to improve it.
+
+## Importing
+
+Maven repository: `maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")`
+Dependency: `api("com.lightningkite.kiteui:library:<current tag>")`
 
 ## Take a look!
 
