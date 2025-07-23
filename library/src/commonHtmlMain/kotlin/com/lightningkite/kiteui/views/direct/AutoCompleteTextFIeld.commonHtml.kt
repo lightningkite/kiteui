@@ -16,44 +16,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            native.attributes.type = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "text"
-                KeyboardType.Integer -> "text"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "text"
-            }
-            native.attributes.inputMode = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "decimal"
-                KeyboardType.Integer -> "numeric"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "email"
-            }
-
-            when (value.autocomplete) {
-                AutoComplete.Email -> {
-                    native.attributes.type = "email"
-                    native.attributes.autocomplete = "email"
-                }
-
-                AutoComplete.Password -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "current-password"
-                }
-
-                AutoComplete.NewPassword -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "new-password"
-                }
-
-                AutoComplete.Phone -> {
-                    native.attributes.autocomplete = "tel"
-                }
-                AutoComplete.OneTimeCode, null -> {
-                    native.attributes.autocomplete = "off"
-                }
-            }
+            native.applyKeyboardHints(value)
         }
     init {
         native.addEventListener("keyup") { ev ->

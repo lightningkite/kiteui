@@ -36,7 +36,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                         dirty = str,
                         selectionStart = selectionStart,
                         selectionEnd = selectionEnd,
-                        allowDecimal = keyboardHints.allowDecimal,
+                        allowDecimal = keyboardHints.type.allowDecimal,
                         setResult = {
                             setText(it)
                         },

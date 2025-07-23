@@ -490,7 +490,7 @@ data class ImageVector(
 }
 
 data class ImageRemote(val url: String) : ImageSource() {
-//    private val before = url.substringBefore('?')
+    //    private val before = url.substringBefore('?')
     override fun hashCode(): Int = url.hashCode()
     override fun equals(other: Any?): Boolean = other is ImageRemote && other.url == this.url
     override fun toString(): String = "ImageRemote($url)"
@@ -691,14 +691,13 @@ data class KeyboardHints(
     val autocomplete: AutoComplete? = null,
     val includePasskeys: Boolean = false,
     val autocorrect: Boolean = true,
-    val allowDecimal: Boolean = true,
 ) {
     companion object {
         val paragraph = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
         val title = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
         val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
-        val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer, allowDecimal = false)
-        val integerWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative, allowDecimal = false)
+        val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
+        val integerWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative)
         val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
         val decimalWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.DecimalWithNegative)
         val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
@@ -706,13 +705,26 @@ data class KeyboardHints(
             KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
         val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
         val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
-        val oneTimeCode = KeyboardHints(KeyboardCase.Letters,KeyboardType.Text,autocomplete = AutoComplete.OneTimeCode,autocorrect = false)
+        val oneTimeCode = KeyboardHints(
+            KeyboardCase.Letters,
+            KeyboardType.Text,
+            autocomplete = AutoComplete.OneTimeCode,
+            autocorrect = false
+        )
     }
 }
 
 enum class AutoComplete { Email, Password, NewPassword, Phone, OneTimeCode }
 enum class KeyboardCase { None, Letters, Words, Sentences }
-enum class KeyboardType { Text, Integer, Phone, Decimal, Email, IntegerWithNegative, DecimalWithNegative }
+enum class KeyboardType(val allowDecimal: Boolean = true) {
+    Text,
+    Integer(allowDecimal = false),
+    Phone,
+    Decimal(allowDecimal = true),
+    Email,
+    IntegerWithNegative,
+    DecimalWithNegative
+}
 
 sealed interface NavElement {
     val title: ReactiveContext.() -> String

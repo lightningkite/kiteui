@@ -70,25 +70,9 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            textField.autocapitalizationType = when (value.case) {
-                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-            }
-            textField.keyboardType = when (value.type) {
-                KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer -> UIKeyboardTypeNumberPad
-                KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
-                KeyboardType.Email -> UIKeyboardTypeEmailAddress
-            }
-            textField.textContentType = when (value.autocomplete) {
-                AutoComplete.Email -> UITextContentTypeUsername
-                AutoComplete.Password -> UITextContentTypePassword
-                AutoComplete.NewPassword -> UITextContentTypeNewPassword
-                else -> null
-            }
+            textField.autocapitalizationType = value.case.ios
+            textField.keyboardType = value.type.ios
+            textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
     override fun actionSet(value: Action?) {

@@ -2,28 +2,18 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.CalculationContext
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
 import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.views.direct.TextInput
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
-import kotlinx.coroutines.*
 import platform.CoreGraphics.CGRectMake
-import platform.darwin.dispatch_async
-import platform.darwin.dispatch_get_main_queue
 
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
@@ -71,7 +61,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     dirty = textField.text ?: "",
                     selectionStart = textField.selectedTextRange?.start?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
                     selectionEnd = textField.selectedTextRange?.end?.let { textField.offsetFromPosition(textField.beginningOfDocument, it) }?.toInt(),
-                    allowDecimal = keyboardHints.allowDecimal,
+                    allowDecimal = keyboardHints.type.allowDecimal,
                     setResult = {
                         textField.text = it
                     },
@@ -128,25 +118,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            textField.autocapitalizationType = when (value.case) {
-                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-            }
-            textField.keyboardType = when (value.type) {
-                KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer, KeyboardType.IntegerWithNegative -> UIKeyboardTypeNumberPad
-                KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal, KeyboardType.DecimalWithNegative -> UIKeyboardTypeNumbersAndPunctuation
-                KeyboardType.Email -> UIKeyboardTypeEmailAddress
-            }
-            textField.textContentType = when (value.autocomplete) {
-                AutoComplete.Email -> UITextContentTypeUsername
-                AutoComplete.Password -> UITextContentTypePassword
-                AutoComplete.NewPassword -> UITextContentTypeNewPassword
-                else -> null
-            }
+            textField.autocapitalizationType = value.case.ios
+            textField.keyboardType = value.type.ios
+            textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
