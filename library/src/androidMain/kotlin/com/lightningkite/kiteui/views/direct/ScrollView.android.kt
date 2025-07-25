@@ -36,6 +36,7 @@ class ScrollView constructor(
     override val native = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
+        isFillViewport = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setOnScrollChangeListener { _, _, _, _, _ ->
                 scrollChanged.invokeAll()
