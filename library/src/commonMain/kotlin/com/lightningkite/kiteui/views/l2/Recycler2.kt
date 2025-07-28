@@ -56,7 +56,7 @@ class Recycler2(
             outerFrame.shown = value
         }
 
-    var recycling: Boolean = false
+    var recycling: Boolean = true
 
     private val _centerIndex = Property(0)
     private val _displayedRangeFirst = Property(0)
