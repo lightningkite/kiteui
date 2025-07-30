@@ -126,6 +126,7 @@ class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSiz
     fun invalidateLayout() {
         if(inLayout) return
         myInvalidated = true
+        informParentOfSizeChangeDueToChild()
         setNeedsLayout()
     }
 

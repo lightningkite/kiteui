@@ -20,6 +20,7 @@ import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.direct.weight
+import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
@@ -42,16 +43,15 @@ object RootPage : Page {
             }
             ListSemantic.onNext - col {
 
-                fun ViewWriter.linkPage(screen: () -> Page) = link {
+                fun ViewWriter.linkPage(screen: () -> Page) = card - link {
                     to = screen
                     row {
-                        text {
+                        expanding - text {
                             ::content{ screen().title() }
-//                            content  = screen.toString()
-                        } in weight(1f)
+                        }
                         icon(Icon.Companion.chevronRight, "Open")
                     }
-                } in card
+                }
 
                 linkPage { RowWrappingPage }
                 linkPage { CoveringTestPage }
@@ -69,9 +69,10 @@ object RootPage : Page {
                 linkPage { LeakCheckerPage }
                 linkPage { ExperimentPage }
                 linkPage { Recycler2TestPage }
-                linkPage { AudioPage }
+                linkPage { RecyclerFilterTestPage }
                 linkPage { HorizontalRecyclerViewPage }
                 linkPage { InfiniteImagesPage }
+                linkPage { AudioPage }
                 linkPage { PlatformSpecificPage }
                 linkPage { VideoElementPage }
                 linkPage { ViewPagerElementPage }
