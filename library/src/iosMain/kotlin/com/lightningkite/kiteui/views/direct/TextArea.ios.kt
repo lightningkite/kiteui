@@ -2,8 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
@@ -88,7 +93,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text
             set(value) {

@@ -2,9 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.Listenable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver

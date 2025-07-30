@@ -3,8 +3,13 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 expect class ScrollingBehaviorImpl constructor(
     on: RView,
@@ -18,11 +23,11 @@ expect class ScrollingBehaviorImpl constructor(
      override var showScrollBars: Boolean
 
 
-     override val viewport: Readable<Rect>
+     override val viewport: Reactive<Rect>
 
-     override val content: Readable<Rect>
+     override val content: Reactive<Rect>
 
-     override val directlyInteractingWithScroller: Readable<Boolean>
+     override val directlyInteractingWithScroller: Reactive<Boolean>
 
      override var snapToElements: Pair<Align?, Align?>
 

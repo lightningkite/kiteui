@@ -1,11 +1,15 @@
 package com.lightningkite.kiteui.navigation
 
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.space
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 @Deprecated("Renamed to PageNavigator", ReplaceWith("PageNavigator")) typealias ScreenNavigator = PageNavigator
@@ -31,7 +35,7 @@ interface Screen: Page {
 
         @Deprecated("Use render2", ReplaceWith("render2()"))
         override fun ViewWriter.renderOld(): ViewModifiable = this@Direct.render(this)
-        override val title: Readable<String> = Constant(title)
+        override val title: Reactive<String> = Constant(title)
     }
 }
 @Deprecated("Renamed to pageNavigator", ReplaceWith("pageNavigator")) var ViewWriter.screenNavigator by ViewWriter::pageNavigator

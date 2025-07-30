@@ -2,8 +2,12 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.models.Edges
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 

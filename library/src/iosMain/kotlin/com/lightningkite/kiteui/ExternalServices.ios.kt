@@ -1,8 +1,16 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.extensionStrongRef
-import com.lightningkite.readable.AppScope
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.*
@@ -29,9 +37,6 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.posix.int64_t
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 actual fun RContext.openTab(url: String) {
     UIApplication.sharedApplication.openURL(
@@ -594,7 +599,7 @@ private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
                 if (success) {
                     it.resume(Unit)
                 } else {
-                    it.resumeWithException(Exception("Unable to make changes to shared photo library"))
+                    it.resumeWithException(Exception("Unable to make changes to remember photo library"))
                 }
             }
         }

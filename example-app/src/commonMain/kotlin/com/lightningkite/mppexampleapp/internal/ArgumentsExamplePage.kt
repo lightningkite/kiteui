@@ -5,24 +5,26 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
-import com.lightningkite.readable.bind
-import com.lightningkite.readable.invoke
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.kiteui.views.minus
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("arguments-example/{id}")
 class ArgumentsExamplePage(val id: String): Page {
 
     @QueryParameter
-    val toAdd = Property("")
+    val toAdd = Signal("")
 
     @QueryParameter
-    val list = Property(listOf("sample"))
+    val list = Signal(listOf("sample"))
 
     override fun ViewWriter.render() = col {
         transitionId = id

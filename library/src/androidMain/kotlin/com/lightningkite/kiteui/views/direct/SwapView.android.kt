@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.views.direct
 import android.animation.Animator
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import com.lightningkite.kiteui.views.ViewWriter
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -12,8 +11,14 @@ import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.readable.CalculationContext
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 actual class SwapView actual constructor(context: RContext) : RView(context) {
@@ -73,15 +78,15 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
                     val old = oldView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
                     val intersecting = new.keys.intersect(old.keys)
                     if(intersecting.isNotEmpty()) {
-                        val shared = CustomTransition(native)
-                        shared.setDuration(theme.transitionDuration.inWholeMilliseconds)
+                        val remember = CustomTransition(native)
+                        remember.setDuration(theme.transitionDuration.inWholeMilliseconds)
                         intersecting.forEach {
                             val o = old[it]!!.native
                             val n = new[it]!!.native
-                            shared.addTarget(o)
-                            shared.addTarget(n)
+                            remember.addTarget(o)
+                            remember.addTarget(n)
                         }
-                        addTransition(shared)
+                        addTransition(remember)
                     }
                 }
 //                val start = Scene(native)

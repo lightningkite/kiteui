@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.div
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.DropTargetDelegate
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -10,12 +11,11 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.forEachUpdating
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.lens
-import com.lightningkite.readable.reactive
-import com.lightningkite.readable.shared
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -37,9 +37,9 @@ class DragDropReordering(
                 .toList()
     }
 
-    val willMove = Property<Move?>(null)
+    val willMove = Signal<Move?>(null)
 
-    inner class Delegate(val index: Readable<Int>) : DropTargetDelegate {
+    inner class Delegate(val index: Reactive<Int>) : DropTargetDelegate {
         override fun enter(event: DragEvent): Boolean =
             decode(event.data)
                 ?.let { source ->
@@ -70,15 +70,15 @@ class DragDropReordering(
 }
 
 fun <T> RView.forEachReorderable(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Readable<T>) -> RView = { separator() },
-    render: ViewWriter.(Readable<T>) -> ViewModifiable
+    separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     val handler = DragDropReordering(this, reorder = reorder)
 
     forEachUpdating(
-        shared { items().mapIndexed { idx, it -> IndexedValue(idx, it) } }
+        remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } }
     ) { indexed ->
         val item = indexed.lens { it.value }
         val idx = indexed.lens { it.index }
@@ -112,7 +112,7 @@ fun <T> RView.forEachReorderable(
 class RecyclerReorderable<T, ID>(
     val wraps: RecyclerViewRendererSet<T, ID>,
     val view: Recycler2,
-    val separator: ViewWriter.(Readable<T>) -> RView = { separator() },
+    val separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
     val handler = DragDropReordering(view, reorder = reorder)
@@ -122,7 +122,7 @@ class RecyclerReorderable<T, ID>(
     inner class ReorderWrapper(
         val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
-        override fun render(viewWriter: ViewWriter, data: Readable<T>, index: Readable<Int>): ViewModifiable = with(viewWriter) {
+        override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable = with(viewWriter) {
             col {
                 themeTakeNonCascadingFromParent = true
 
@@ -154,11 +154,11 @@ class RecyclerReorderable<T, ID>(
 }
 
 fun <T, ID> Recycler2.childrenReorderable(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Readable<T>) -> RView = { separator() },
-    render: ViewWriter.(Readable<T>) -> ViewModifiable
+    separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     rendererSet = RecyclerReorderable(
         RecyclerViewRendererSet.single(id, render),

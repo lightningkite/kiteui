@@ -2,16 +2,20 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Readable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 expect abstract class RawImageViewLike: RView {
     val source: ImageSource
     val description: String
     val scaleType: ImageScaleType
-    abstract val state: Readable<Unit>
+    abstract val state: Reactive<Unit>
 }
 
 expect class RawImageView(
@@ -20,7 +24,7 @@ expect class RawImageView(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Readable<Unit>
+    override val state: Reactive<Unit>
 }
 
 expect class SizelessRawImageView(
@@ -29,7 +33,7 @@ expect class SizelessRawImageView(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Readable<Unit>
+    override val state: Reactive<Unit>
 }
 
 expect class RawImageViewZoomable(
@@ -38,7 +42,7 @@ expect class RawImageViewZoomable(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Readable<Unit>
-    val zoomState: ImmediateWritable<ZoomState>
+    override val state: Reactive<Unit>
+    val zoomState: MutableReactiveValue<ZoomState>
 }
 expect class ZoomState

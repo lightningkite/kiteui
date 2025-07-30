@@ -2,19 +2,24 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.swapView
 import com.lightningkite.kiteui.views.direct.swapping
-import com.lightningkite.readable.sharedProcess
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("swapview")
 object SwapViewPage : Page {
     override fun ViewWriter.render() = col {
-        val clock = sharedProcess {
+        val clock = reactiveProcess {
             var tick = 0
             while (true) {
                 emit(tick++)

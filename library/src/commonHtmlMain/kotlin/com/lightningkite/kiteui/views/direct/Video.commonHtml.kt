@@ -1,8 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class Video actual constructor(context: RContext) : RView(context) {
     init {
@@ -20,9 +25,9 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                 else -> {}
             }
         }
-    actual val time: Writable<Double> = nativeTime
-    actual val playing: Writable<Boolean> = nativePlaying
-    actual val volume: Writable<Float> = nativeVolume
+    actual val time: MutableReactive<Double> = nativeTime
+    actual val playing: MutableReactive<Boolean> = nativePlaying
+    actual val volume: MutableReactive<Float> = nativeVolume
     actual var showControls: Boolean
         get() = native.attributes.controls != null
         set(value) {
@@ -39,6 +44,6 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             native.classes.add("scaleType-$value")
         }
 }
-expect val Video.nativeTime: Writable<Double>
-expect val Video.nativePlaying: Writable<Boolean>
-expect val Video.nativeVolume: Writable<Float>
+expect val Video.nativeTime: MutableReactive<Double>
+expect val Video.nativePlaying: MutableReactive<Boolean>
+expect val Video.nativeVolume: MutableReactive<Float>

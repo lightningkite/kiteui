@@ -2,9 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
@@ -12,7 +16,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value

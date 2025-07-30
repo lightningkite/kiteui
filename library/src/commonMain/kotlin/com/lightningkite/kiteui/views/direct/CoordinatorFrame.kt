@@ -1,11 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.readable.Writable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 expect class CoordinatorFrame(context: RContext) : RView {
@@ -39,7 +44,7 @@ enum class BottomSheetState {
 }
 
 interface BottomSheetControl {
-    val state: Writable<BottomSheetState>
+    val state: MutableReactive<BottomSheetState>
     fun close()
 }
 

@@ -1,10 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class RadioButton actual constructor(context: RContext) : RView(context) {
     init {
@@ -16,7 +19,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         native.classes.add("clickable")
     }
 
-    actual val checked: ImmediateWritable<Boolean> = native.vprop(
+    actual val checked: MutableReactiveValue<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

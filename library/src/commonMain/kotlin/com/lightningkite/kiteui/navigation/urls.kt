@@ -5,7 +5,12 @@ package com.lightningkite.kiteui.navigation
 import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.readable.ImmediateWriteOnly
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -62,9 +67,9 @@ fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: String, 
 inline fun <reified T> Properties.decodeFromStringMap(
     key: String,
     source: Map<String, String>,
-    into: ImmediateWriteOnly<T>
+    into: MutableValue<T>
 ) {
-    decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.setImmediate(it) }
+    decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.valueSet(it) }
 }
 
 inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) =

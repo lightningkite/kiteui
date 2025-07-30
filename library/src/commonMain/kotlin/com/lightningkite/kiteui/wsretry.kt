@@ -1,6 +1,14 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -10,9 +18,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCancellableCoroutine<Unit> {
@@ -57,7 +62,7 @@ fun retryWebsocket(
     val baseDelay = 1000L
     var currentDelay = baseDelay
     var lastConnect = 0.0
-    val connected = Property(false).also {
+    val connected = Signal(false).also {
         it.addListener {
             log?.log("connected: ${it.value}")
         }
@@ -123,10 +128,10 @@ fun retryWebsocket(
 
     return object : RetryWebsocket, CalculationContext {
 
-        override val connected: Readable<Boolean>
+        override val connected: Reactive<Boolean>
             get() = connected
         var listenerCounter = 0
-        val shouldBeOn = Property(false)
+        val shouldBeOn = Signal(false)
 
         override fun beginUse(): () -> Unit {
             if (listenerCounter++ == 0) shouldBeOn.value = true
@@ -206,7 +211,7 @@ fun <SEND, RECEIVE> RetryWebsocket.typed(
     send: KSerializer<SEND>,
     receive: KSerializer<RECEIVE>,
 ): TypedWebSocket<SEND, RECEIVE> = object : TypedWebSocket<SEND, RECEIVE> {
-    override val connected: Readable<Boolean>
+    override val connected: Reactive<Boolean>
         get() = this@typed.connected
 
     override fun beginUse(): () -> Unit = this@typed.beginUse()
@@ -242,7 +247,7 @@ interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
 
 
 interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
-    val connected: Readable<Boolean>
+    val connected: Reactive<Boolean>
 
     fun close(code: Short, reason: String)
     fun send(data: SEND)
@@ -252,8 +257,8 @@ interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
 }
 
 
-val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
-    get() = object : Readable<RECEIVE?> {
+val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
+    get() = object : Reactive<RECEIVE?> {
         var value: RECEIVE? = null
             private set
 
@@ -266,7 +271,7 @@ val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
             }
         }
 
-        override val state: ReadableState<RECEIVE?> get() = ReadableState(value)
+        override val state: ReactiveState<RECEIVE?> get() = ReactiveState(value)
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             listeners.add(listener)

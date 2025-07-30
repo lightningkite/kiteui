@@ -2,18 +2,23 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
+    actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(

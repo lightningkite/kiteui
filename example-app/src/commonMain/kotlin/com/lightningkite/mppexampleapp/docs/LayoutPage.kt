@@ -1,14 +1,19 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.emphasized
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.titledSection
-import com.lightningkite.readable.Property
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("docs/layout")
 object LayoutPage : DocPage {
@@ -349,14 +354,14 @@ object LayoutPage : DocPage {
                 titledSection("Simple List of Elements") {
                     text("Sometimes you have a fairly small list of data that you want to display.")
                     example("""
-                        val strings = Property(listOf("First", "Second", "Third", "Fourth"))
+                        val strings = Signal(listOf("First", "Second", "Third", "Fourth"))
                         col {
                             forEach(strings) {
                                 text { content = it }
                             }
                         }
                     """.trimIndent()) {
-                        val strings = Property(listOf("First", "Second", "Third", "Fourth"))
+                        val strings = Signal(listOf("First", "Second", "Third", "Fourth"))
                         col {
                             forEach(strings) {
                                 text { content = it }
@@ -366,13 +371,13 @@ object LayoutPage : DocPage {
                     text("Have a small dataset that needs to scroll add the scrolling\nor scrollingHorizontally view modifiers.")
                     example("""
                         sizeConstraints(height = 10.rem) - scrolling - col {
-                            val strings = Property((0..20).toList().map { "String ${'$'}it" })
+                            val strings = Signal((0..20).toList().map { "String ${'$'}it" })
                             forEach(strings) { string ->
                                 text { content = string }
                             }
                         }""".trimIndent()) {
                         sizeConstraints(height = 10.rem) - scrolling - col {
-                            val strings = Property((0..20).toList().map { "String $it" })
+                            val strings = Signal((0..20).toList().map { "String $it" })
                             forEach(strings) { string ->
                                 text { content = string }
                             }

@@ -2,8 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.UnsupportedOperationException
 
 actual class ScrollingBehaviorImpl actual constructor(
@@ -35,9 +40,9 @@ actual class ScrollingBehaviorImpl actual constructor(
             else native.classes += "hideScrollbar"
         }
 
-    actual override val viewport: Readable<Rect> = Readable.Never
-    actual override val content: Readable<Rect> = Readable.Never
-    actual override val directlyInteractingWithScroller: Readable<Boolean> get() = Constant(false)
+    actual override val viewport: Reactive<Rect> = Reactive.Never
+    actual override val content: Reactive<Rect> = Reactive.Never
+    actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = Constant(false)
     actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
             field = value

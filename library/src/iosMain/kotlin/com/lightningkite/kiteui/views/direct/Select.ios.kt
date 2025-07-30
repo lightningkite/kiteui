@@ -2,9 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.launch
@@ -23,8 +28,8 @@ actual class Select actual constructor(context: RContext): RView(context) {
     }
 
     actual fun <T> bind(
-        edits: Writable<T>,
-        data: Readable<List<T>>,
+        edits: MutableReactive<T>,
+        data: Reactive<List<T>>,
         render: (T) -> String
     ) {
         val picker = (textField.inputView as UIPickerView)

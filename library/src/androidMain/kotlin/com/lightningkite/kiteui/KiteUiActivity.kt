@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,21 +16,27 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewGroupCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import io.ktor.http.*
+import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import timber.log.Timber
-import kotlin.math.max
 
 abstract class KiteUiActivity : AppCompatActivity() {
     open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
@@ -40,7 +45,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
     abstract val mainNavigator : PageNavigator
 
     lateinit var root: RView
-    private val safeInsetsProperty = Property<Edges>(Edges.ZERO)
+    private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val context: RContext = RContext(this@KiteUiActivity).also {
             ExternalServices.baseContext = it

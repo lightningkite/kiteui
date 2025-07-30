@@ -1,16 +1,21 @@
 package com.lightningkite.mppexampleapp
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.docs.DocSearchPage
 import com.lightningkite.mppexampleapp.internal.RootPage
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -27,7 +32,7 @@ val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
             ).withoutBack
         }
     ))
-val appTheme = Property<Theme>(defaultTheme)
+val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true

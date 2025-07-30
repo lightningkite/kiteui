@@ -7,39 +7,44 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.plus
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.cg
 import com.lightningkite.kiteui.utils.div
 import com.lightningkite.kiteui.utils.local
 import com.lightningkite.kiteui.utils.minus
 import com.lightningkite.kiteui.utils.plus
 import com.lightningkite.kiteui.utils.times
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.compareTo
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.getValue
+import kotlin.math.max
+import kotlin.math.roundToInt
+import kotlin.setValue
 import kotlinx.cinterop.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.yield
 import platform.CoreGraphics.*
 import platform.Foundation.*
 import platform.UIKit.*
+import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import platform.posix.QOS_CLASS_DEFAULT
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.max
-import kotlin.math.roundToInt
-import com.lightningkite.readable.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
-import platform.darwin.NSObject
-import kotlin.compareTo
-import kotlin.getValue
-import kotlin.setValue
 
 actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -47,7 +52,7 @@ actual abstract class RawImageViewLike constructor(
     actual val description: String,
     actual val scaleType: ImageScaleType,
 ) : RView(context){
-    actual abstract val state: Readable<Unit>
+    actual abstract val state: Reactive<Unit>
 
     protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
 
@@ -116,8 +121,8 @@ actual class RawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
 
     
     override val native = UIImageViewFixedSizing()
@@ -135,13 +140,13 @@ actual class RawImageView actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
                 native.image = img
                 native.informParentOfSizeChange()
             } catch (e: CancellationException) {
                 throw e
             } catch(e: Exception) {
-                _state.state = ReadableState.exception(e)
+                _state.state = ReactiveState.exception(e)
             }
         }
     }
@@ -153,8 +158,8 @@ actual class SizelessRawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
 
     override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
 
@@ -171,13 +176,13 @@ actual class SizelessRawImageView actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
                 native.image = img
                 native.informParentOfSizeChange()
             } catch (e: CancellationException) {
                 throw e
             } catch(e: Exception) {
-                _state.state = ReadableState.exception(e)
+                _state.state = ReactiveState.exception(e)
             }
         }
     }
@@ -288,12 +293,12 @@ actual class RawImageViewZoomable actual constructor(
             )
         )
     }
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
     private val UIScrollView.zs get() = ZoomState(this.contentOffset, this.zoomScale)
 
-    private val _zoomState = Property<ZoomState>(native.zs)
-    actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
+    private val _zoomState = Signal<ZoomState>(native.zs)
+    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
 
 
     init {
@@ -303,10 +308,10 @@ actual class RawImageViewZoomable actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
                 imageView.image = img
             } catch(e: Exception) {
-                _state.state = ReadableState.exception(e)
+                _state.state = ReactiveState.exception(e)
             }
         }
     }

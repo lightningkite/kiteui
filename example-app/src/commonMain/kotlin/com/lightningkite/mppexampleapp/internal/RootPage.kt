@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.gc
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.onRemove
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.button
@@ -24,12 +24,15 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 import com.lightningkite.mppexampleapp.internal.SliderExamplePage
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("/internal")
 object RootPage : Page {
-    override val title: Readable<String> = Constant("Test Pages")
+    override val title: Reactive<String> = Constant("Test Pages")
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {

@@ -4,9 +4,16 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.WeakReference
 import kotlinx.cinterop.*
 import platform.AVFoundation.*
 import platform.AVKit.AVPlayerViewController
@@ -27,8 +34,6 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.sel_registerName
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.WeakReference
 
 
 actual class Video actual constructor(context: RContext) : RView(context) {
@@ -51,9 +56,9 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     }
     override val native = controller.view
 
-    private val _playing = Property(false)
-    private val _volume = Property(0f)
-    private val _time = Property(0.0)
+    private val _playing = Signal(false)
+    private val _volume = Signal(0f)
+    private val _time = Signal(0.0)
     private var animationFrameRateClose: (() -> Unit)? = null
     private var playerRateObservationClose: (() -> Unit)? = null
     private var volumeObservationClose: (() -> Unit)? = null
@@ -174,14 +179,14 @@ actual class Video actual constructor(context: RContext) : RView(context) {
         }
 
     
-    actual val time: Writable<Double>
+    actual val time: MutableReactive<Double>
         get() = _time
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
     
-    actual val playing: Writable<Boolean>
+    actual val playing: MutableReactive<Boolean>
         get() = _playing
             .withWrite {
                 shouldPlay = it
@@ -191,7 +196,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                     controller.player?.pause()
             }
 
-    actual val volume: Writable<Float>
+    actual val volume: MutableReactive<Float>
         get() = _volume
             .withWrite {
                 controller.player?.volume = it

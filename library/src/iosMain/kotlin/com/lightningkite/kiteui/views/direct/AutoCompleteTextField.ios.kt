@@ -2,10 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
 import platform.UIKit.*
@@ -59,7 +62,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
             set(value) { textField.text = value }

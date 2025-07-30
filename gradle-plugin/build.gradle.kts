@@ -16,10 +16,6 @@ gradlePlugin {
         }
     }
 }
-useGitBasedVersion()
-useLocalDependencies()
-publishing()
-setupDokka("lightningkite", "kiteui")
 
 repositories {
     mavenCentral()
@@ -33,40 +29,11 @@ tasks.validatePlugins {
     enableStricterValidation.set(true)
 }
 
-mavenPublishing {
-    publishToMavenCentral(automaticRelease = true)
-    signAllPublications()
-    coordinates(group.toString(), name, version.toString())
-    pom {
-        name.set("KiteUI-Gradle-Plugin")
-        description.set("Automatically create your routers")
-        github("lightningkite", "kiteui")
-        url.set(dokkaPublicHostingIndex)
-
-        licenses {
-            mit()
-        }
-
-        developers {
-            joseph()
-            brady()
-        }
-    }
-}
-
 tasks.create("publishLocally", Copy::class.java) {
     from(file("src/main/kotlin/KiteUiPlugin.kt"))
     into(rootProject.file("buildSrc/src/main/kotlin"))
 }
 
-afterEvaluate {
-    tasks.findByName("signPluginMavenPublication")?.let { signingTask ->
-        tasks.filter { it.name.startsWith("publish") && it.name.contains("PluginMarkerMavenPublication") }.forEach {
-            it.dependsOn(signingTask)
-        }
-    }
-    tasks.findByName("signLightningkite-kiteuiPluginMarkerMavenPublication")?.let { signingTask ->
-        tasks.findByName("publishPluginMavenPublicationToMavenLocal")?.dependsOn(signingTask)
-        tasks.findByName("publishPluginMavenPublicationToSonatypeRepository")?.dependsOn(signingTask)
-    }
+lkLibrary("lightningkite", "kiteui") {
+    description.set("Automatically create your routers")
 }

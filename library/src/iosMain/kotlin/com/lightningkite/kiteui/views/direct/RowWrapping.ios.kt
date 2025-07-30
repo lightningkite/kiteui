@@ -1,20 +1,25 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.views.*
-import platform.UIKit.*
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
 import com.lightningkite.kiteui.models.Align
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.readable.Property
-import platform.darwin.NSInteger
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.math.max
+import kotlinx.cinterop.*
+import platform.CoreGraphics.*
+import platform.UIKit.*
+import platform.darwin.NSInteger
 
 /**
  * A layout that arranges its children in rows and wraps to the next row when there's not enough space.
@@ -35,7 +40,7 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
             informParentOfSizeChange()
         }
 
-    val spacingOverride = Property<Dimension?>(null).also {
+    val spacingOverride = Signal<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
 

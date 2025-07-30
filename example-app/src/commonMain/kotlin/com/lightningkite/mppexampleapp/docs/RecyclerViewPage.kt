@@ -1,12 +1,17 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("docs/recyclerView")
@@ -24,7 +29,7 @@ object RecyclerViewPage : DocPage {
                 // Always use expanding or size constraints with recyclerView
                 expanding - recyclerView {
                     children(
-                        items = shared { (1..100).toList() },
+                        items = remember { (1..100).toList() },
                         id = { it } // Use the item itself as the ID
                     ) { value ->
                         card - text("Item")
@@ -33,7 +38,7 @@ object RecyclerViewPage : DocPage {
             """.trimIndent()) {
                 expanding - recyclerView {
                     children(
-                        items = shared { (1..20).toList() },
+                        items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
                         card - text("Item")
@@ -47,7 +52,7 @@ object RecyclerViewPage : DocPage {
                 // Horizontal recyclerView also needs size constraints
                 expanding - horizontalRecyclerView {
                     children(
-                        items = shared { (1..100).toList() },
+                        items = remember { (1..100).toList() },
                         id = { it }
                     ) { value ->
                         card - sizedBox(SizeConstraints(width = 10.rem)) - centered - text("Item")
@@ -56,7 +61,7 @@ object RecyclerViewPage : DocPage {
             """.trimIndent()) {
                 expanding - horizontalRecyclerView {
                     children(
-                        items = shared { (1..20).toList() },
+                        items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
                         card - sizedBox(SizeConstraints(width = 10.rem)) - centered - text("Item")
@@ -71,7 +76,7 @@ object RecyclerViewPage : DocPage {
                 expanding - recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2) // 2 columns
                     children(
-                        items = shared { (1..100).toList() },
+                        items = remember { (1..100).toList() },
                         id = { it }
                     ) { value ->
                         card - text("Item")
@@ -81,7 +86,7 @@ object RecyclerViewPage : DocPage {
                 expanding - recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2)
                     children(
-                        items = shared { (1..20).toList() },
+                        items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
                         card - text("Item")
@@ -101,7 +106,7 @@ object RecyclerViewPage : DocPage {
                     expanding - recyclerView {
                         recyclerView = this
                         children(
-                            items = shared { (1..100).toList() },
+                            items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
                             card - text("Item")
@@ -118,7 +123,7 @@ object RecyclerViewPage : DocPage {
                     expanding - recyclerView {
                         recyclerView = this
                         children(
-                            items = shared { (1..20).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
                             card - text("Item")
@@ -138,7 +143,7 @@ object RecyclerViewPage : DocPage {
 
                 expanding - recyclerView {
                     childrenMultipleTypes(
-                        items = shared { 
+                        items = remember { 
                             listOf(
                                 ListItem.Text("Text Item 1"),
                                 ListItem.Image("image1.jpg"),
@@ -159,7 +164,7 @@ object RecyclerViewPage : DocPage {
                 // Simple example with a single type for demonstration
                 expanding - recyclerView {
                     children(
-                        items = shared { 
+                        items = remember { 
                             listOf(
                                 "Text Item 1",
                                 "Image Item",
@@ -179,7 +184,7 @@ object RecyclerViewPage : DocPage {
                 // Use a data class with a unique ID to prevent duplicate items
                 data class ListItem(val id: Int, val text: String)
 
-                val itemsList = Property(listOf(
+                val itemsList = Signal(listOf(
                     ListItem(1, "Item 1"),
                     ListItem(2, "Item 2"),
                     ListItem(3, "Item 3")
@@ -208,7 +213,7 @@ object RecyclerViewPage : DocPage {
                 // Use a data class with a unique ID to prevent duplicate items
                 data class ListItem(val id: Int, val text: String)
 
-                val itemsList = Property(listOf(
+                val itemsList = Signal(listOf(
                     ListItem(1, "Item 1"),
                     ListItem(2, "Item 2"),
                     ListItem(3, "Item 3")
@@ -242,7 +247,7 @@ object RecyclerViewPage : DocPage {
                     // Using expanding modifier
                     expanding - recyclerView {
                         children(
-                            items = shared { (1..100).toList() },
+                            items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
                             card - text("Item")
@@ -252,7 +257,7 @@ object RecyclerViewPage : DocPage {
                     // Using size constraints
                     sizedBox(SizeConstraints(height = 20.rem)) - recyclerView {
                         children(
-                            items = shared { (1..100).toList() },
+                            items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
                             card - text("Item")
@@ -264,7 +269,7 @@ object RecyclerViewPage : DocPage {
                     // Using expanding modifier
                     expanding - recyclerView {
                         children(
-                            items = shared { (1..20).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
                             card - text("Item")
@@ -274,7 +279,7 @@ object RecyclerViewPage : DocPage {
                     // Using size constraints
                     sizedBox(SizeConstraints(height = 10.rem)) - recyclerView {
                         children(
-                            items = shared { (1..20).toList() },
+                            items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
                             card - text("Item")

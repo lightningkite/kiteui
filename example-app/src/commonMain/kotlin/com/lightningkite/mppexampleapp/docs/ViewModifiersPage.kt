@@ -2,11 +2,15 @@ package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.reactiveScope
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("docs/view-modifiers")
 object ViewModifiersPage : DocPage {
@@ -265,7 +269,7 @@ object ViewModifiersPage : DocPage {
 
             h2("Only When")
             text("The onlyWhen modifier is used to show a view only when a condition is met.")
-            val condition: Property<Boolean> = Property(true)
+            val condition: Signal<Boolean> = Signal(true)
 
             example(
                 """

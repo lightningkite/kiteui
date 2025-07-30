@@ -1,6 +1,5 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
@@ -11,14 +10,20 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.lighten
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
 import com.lightningkite.kiteui.views.l2.childrenReorderable
 import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.forEachReorderable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 
@@ -27,7 +32,7 @@ import kotlinx.coroutines.launch
 @Routable("drag")
 object DragPage : Page {
 
-    val numbers = Property(List(9) { it + 1 })
+    val numbers = Signal(List(9) { it + 1 })
 
     private data class Highlight(val amount: Int) : Semantic("highlight-$amount") {
         override fun default(theme: Theme): ThemeAndBack = theme.withBack(
@@ -93,8 +98,8 @@ object DragPage : Page {
             }
         }
         sizeConstraints(height = 10.rem) - row {
-            val left = Property<List<String>>(listOf())
-            val right = Property<List<String>>(listOf())
+            val left = Signal<List<String>>(listOf())
+            val right = Signal<List<String>>(listOf())
             expanding - card - scrolling - col {
                 dropTargetDelegate = object: DropTargetDelegate {
                     override fun drop(event: DragEvent): Boolean {
@@ -130,7 +135,7 @@ object DragPage : Page {
         }
         text("Janky reorderable test")
         sizeConstraints(height = 30.rem) - card - recyclerView {
-            val data = Property<List<String>>(listOf("A", "B", "C", "D", "E"))
+            val data = Signal<List<String>>(listOf("A", "B", "C", "D", "E"))
             children(data, { it }) {
                 card - text {
                     ::content { it() }

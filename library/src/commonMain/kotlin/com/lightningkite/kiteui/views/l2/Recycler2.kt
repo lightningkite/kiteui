@@ -2,19 +2,24 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class Recycler2(
     viewWriter: ViewWriter,
@@ -58,18 +63,18 @@ class Recycler2(
 
     var recycling: Boolean = true
 
-    private val _centerIndex = Property(0)
-    private val _displayedRangeFirst = Property(0)
-    val firstIndex: Readable<Int> = _displayedRangeFirst.withWrite {
+    private val _centerIndex = Signal(0)
+    private val _displayedRangeFirst = Signal(0)
+    val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
         if (it != _displayedRangeFirst.value)
             scrollToIndex(it, Align.Start)
     }
-    private val _displayedRangeLast = Property(0)
-    val lastIndex: Readable<Int> = _displayedRangeLast.withWrite {
+    private val _displayedRangeLast = Signal(0)
+    val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
         if (it != _displayedRangeLast.value)
             scrollToIndex(it, Align.End)
     }
-    val centerIndex: Writable<Int> = _centerIndex.withWrite {
+    val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
         if (it != _centerIndex.value)
             scrollToIndex(it, Align.Center)
     }
@@ -211,8 +216,8 @@ class Recycler2(
     }
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
-        val indexProp = Property(-1)
-        val data = RawReadable<T>()
+        val indexProp = Signal(-1)
+        val data = RawReactive<T>()
         override lateinit var type: RecyclerViewRenderer<*>
         lateinit var view: RView
         private var constraint: Size = Size.Zero
@@ -221,7 +226,7 @@ class Recycler2(
         fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
-            data: ReadableState<T>,
+            data: ReactiveState<T>,
             index: Int,
             inProgress: ProgrammingLayoutInProgress
         ) {
@@ -262,7 +267,7 @@ class Recycler2(
             this.inProgress = inProgress
         }
 
-        fun onPullForPlacing(constrain: Size, data: ReadableState<T>, index: Int, inProgress: ProgrammingLayoutInProgress) {
+        fun onPullForPlacing(constrain: Size, data: ReactiveState<T>, index: Int, inProgress: ProgrammingLayoutInProgress) {
 //            view.withoutAnimation {
             view.shown = true
             view.opacity = 1.0
@@ -464,7 +469,7 @@ class Recycler2(
             }
         }
     }
-    private val isMoving = Property(false)
+    private val isMoving = Signal(false)
 
     init {
         fakeScrollContent.delegate = fakeScrollLayoutDelegate
@@ -663,15 +668,15 @@ class Recycler2(
                             )
                         }?.also {
                             // Same item ID: Data change should be animated here
-                            it.onPullForPlacing(size, ReadableState(item), index, inProgress)
+                            it.onPullForPlacing(size, ReactiveState(item), index, inProgress)
                         } ?: reuseableCells.takeIf { recycling }?.popOrNull {  it.type == renderer }?.also {
                             // If placing just offscreen, place without animation.
-                            it.view.withoutAnimation { it.onPullForPlacing(size, ReadableState(item), index, inProgress) }
+                            it.view.withoutAnimation { it.onPullForPlacing(size, ReactiveState(item), index, inProgress) }
                             activeCells += it
                         } ?: MyCell<Any?>().also {
                             // If creating a new cell, make sure we don't animate.
                             cells.withoutAnimation {
-                                it.setup(rendererSet.renderer(item), size, ReadableState(item), index, inProgress)
+                                it.setup(rendererSet.renderer(item), size, ReactiveState(item), index, inProgress)
                             }
                             activeCells += it
                         }).also { usedCells += it }
@@ -949,12 +954,12 @@ class Recycler2(
 
 
     @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> ViewModifiable): Unit {
+    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
         var currentData: List<T> = listOf()
         rendererSet = object : RecyclerViewRendererSet<T, Int> {
             override fun id(item: T): Int = currentData.indexOf(item)
             val r = object : RecyclerViewRenderer<T> {
-                override fun render(viewWriter: ViewWriter, data: Readable<T>, index: Readable<Int>): ViewModifiable {
+                override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable {
                     return viewWriter.render(data)
                 }
             }
@@ -984,9 +989,9 @@ class Recycler2(
                 RecyclerViewPlacerHorizontalGrid(columns)
         }
 
-    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Readable<Int> get() = firstIndex
-    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Readable<Int> get() = lastIndex
-    @Deprecated("Renamed to 'centerIndex'") val index: Writable<Int> get() = centerIndex
+    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Reactive<Int> get() = firstIndex
+    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Reactive<Int> get() = lastIndex
+    @Deprecated("Renamed to 'centerIndex'") val index: MutableReactive<Int> get() = centerIndex
     @Deprecated("Just use directly") val new get() = this
 }
 

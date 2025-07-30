@@ -1,11 +1,14 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
@@ -19,9 +22,9 @@ actual class Switch actual constructor(context: RContext) : RView(context) {
         set(value) {
             native.enabled = value
         }
-    actual val checked: ImmediateWritable<Boolean>
+    actual val checked: MutableReactiveValue<Boolean>
         get() {
-            return object : ImmediateWritable<Boolean> {
+            return object : MutableReactiveValue<Boolean> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
                     return native.onEvent(this@Switch, UIControlEventValueChanged, listener)
                 }

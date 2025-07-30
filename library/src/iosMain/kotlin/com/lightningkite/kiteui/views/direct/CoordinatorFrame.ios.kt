@@ -10,25 +10,27 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.objc.presentationController
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.onRemove
-import kotlinx.coroutines.launch
-import platform.UIKit.UISheetPresentationController
-import platform.UIKit.UIViewController
-import com.lightningkite.kiteui.objc.presentationController
 import com.lightningkite.kiteui.views.popoverWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.UIKit.*
+import platform.UIKit.UISheetPresentationController
+import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
     
@@ -57,7 +59,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
         viewController.modalPresentationStyle = UIModalPresentationPageSheet
         val control = object : BottomSheetControl {
-            override val state: Writable<BottomSheetState> = Property(startState)
+            override val state: MutableReactive<BottomSheetState> = Signal(startState)
             override fun close() {
                 viewController.dismissViewControllerAnimated(true) {}
             }

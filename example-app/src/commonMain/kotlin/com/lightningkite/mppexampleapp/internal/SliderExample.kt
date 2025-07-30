@@ -1,18 +1,23 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.readable.Property
-import com.lightningkite.kiteui.Routable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("slider-example")
 object SliderExamplePage : Page {
     override fun ViewWriter.render(): ViewModifiable {
-        val sliderValue = Property(50f)
-        val sliderValueText = Property("50")
+        val sliderValue = Signal(50f)
+        val sliderValueText = Signal("50")
 
         return scrolling - col {
             h1 { content = "Slider Example" }
@@ -31,7 +36,7 @@ object SliderExamplePage : Page {
             card - col {
                 h2 { content = "Slider with Step (0-10, step 0.5)" }
 
-                val stepSliderValue = Property(5f)
+                val stepSliderValue = Signal(5f)
                 text { ::content { "Value: ${stepSliderValue()}" } }
 
                 slider {
@@ -43,7 +48,7 @@ object SliderExamplePage : Page {
             card - col {
                 h2 { content = "Themed Sliders" }
 
-                val themedSliderValue = Property(50f)
+                val themedSliderValue = Signal(50f)
                 text { ::content { "Value: ${themedSliderValue().toInt()}" } }
 
                 slider {

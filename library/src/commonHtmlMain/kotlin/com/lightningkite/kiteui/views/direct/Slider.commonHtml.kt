@@ -1,9 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class Slider actual constructor(context: RContext) : RView(context) {
     init {
@@ -16,8 +20,8 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         native.style.width = "100%"
     }
 
-    private val valueProp = Property(0.5f)
-    actual val value: ImmediateWritable<Float> = native.vprop(
+    private val valueProp = Signal(0.5f)
+    actual val value: MutableReactiveValue<Float> = native.vprop(
         "input",
         { attributes.valueString?.toFloatOrNull() ?: 0.5f },
         { newValue -> 

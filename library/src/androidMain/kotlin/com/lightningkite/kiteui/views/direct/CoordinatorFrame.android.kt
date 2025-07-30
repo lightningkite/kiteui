@@ -15,6 +15,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -22,9 +23,11 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
 import com.lightningkite.kiteui.views.withoutAnimation
-import com.lightningkite.readable.AppState
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -57,9 +60,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         lateinit var b: BottomSheetBehavior<View>
         var sub: ViewModifiable? = null
         var backToRemove: RView? = null
-        val state = Property(startState)
+        val state = Signal(startState)
         val control = object : BottomSheetControl {
-            override val state: Writable<BottomSheetState> = state
+            override val state: MutableReactive<BottomSheetState> = state
             override fun close() {
                 b.state = BottomSheetBehavior.STATE_HIDDEN
             }

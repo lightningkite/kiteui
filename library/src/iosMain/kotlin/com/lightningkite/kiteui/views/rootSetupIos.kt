@@ -8,9 +8,15 @@ import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.cgRectValue
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -25,14 +31,12 @@ import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.experimental.ExperimentalNativeApi
 
 fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
     setup({ themeReadable.invoke() }, app)
 }
 
@@ -73,9 +77,9 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
-        Readable.reportException(throwable)
+        Reactive.reportException(throwable)
     } + Dispatchers.Main.immediate
-    val safeInsetProperty = Property(Edges.ZERO)
+    val safeInsetProperty = Signal(Edges.ZERO)
 
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext {

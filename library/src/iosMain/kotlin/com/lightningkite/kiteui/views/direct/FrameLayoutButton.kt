@@ -2,10 +2,15 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.readable.Property
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
@@ -22,7 +27,7 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
     private val tapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("onclick"))
     private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress"))
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()

@@ -1,28 +1,33 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.time.Duration.Companion.hours
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.builtins.ListSerializer
-import kotlin.time.Duration.Companion.hours
 
 @Routable("external-services")
 object ExternalServicesPage : Page {
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = super.title
-    val image = Property<ImageSource?>(null)
+    val image = Signal<ImageSource?>(null)
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }
-//                text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }
+//                text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
             } in padded
 
             row {

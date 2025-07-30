@@ -1,24 +1,29 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.LogRoot
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("docs")
 object DocSearchPage : Page {
 
     @QueryParameter
-    val query = Property<String>("")
+    val query = Signal<String>("")
 
-    val docsPages = Property(listOf(
+    val docsPages = Signal(listOf(
         // TODO: Gradle tasks
         // TODO: Platform-specific views
         // TODO: Custom widgets
@@ -65,7 +70,7 @@ object DocSearchPage : Page {
                         bottom = 10.rem
                     )
                     placer = RecyclerViewPlacerVerticalGrid(1).apply { log = LogRoot.tag("placer") }
-                    children(shared {
+                    children(remember {
                         docsPages().mapNotNull {
                             val q = query()
                             if (q.isBlank()) return@mapNotNull it to it().covers

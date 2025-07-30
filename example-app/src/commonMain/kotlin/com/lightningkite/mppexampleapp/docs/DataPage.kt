@@ -1,8 +1,8 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.card
@@ -12,19 +12,24 @@ import com.lightningkite.kiteui.views.fieldTheme
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 
 @Routable("docs/data")
 object DataPage : DocPage {
 
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = Constant("Data: How to do Reactivity in KiteUI")
 
     override val covers: List<String> = listOf(
         "data",
-        "Property",
+        "Signal",
         "PersistentProperty",
-        "shared",
+        "remember",
         "reactiveScope",
         "reactivity",
         "::prop { }",
@@ -33,7 +38,7 @@ object DataPage : DocPage {
 
     override fun ViewWriter.render(): ViewModifiable = run {
         article {
-            val secondsElapsed = sharedProcess<Int> {
+            val secondsElapsed = reactiveProcess<Int> {
                 // Starts out as 'loading'
                 var n = 0
                 while (true) {
@@ -43,13 +48,13 @@ object DataPage : DocPage {
             }
 
             titledSection("Data: How to do Reactivity in KiteUI") {
-                titledSection("Readable") {
-                    text("Readable is the root of reactivity in KiteUI.  A readable is something you can read and be notified when it changes.")
-                    text("The simplest example of a readable is 'Property', which directly contains a value we can change.")
-                    titledSection("Property") {
+                titledSection("Reactive") {
+                    text("Reactive is the root of reactivity in KiteUI.  A readable is something you can read and be notified when it changes.")
+                    text("The simplest example of a readable is 'Signal', which directly contains a value we can change.")
+                    titledSection("Signal") {
                         code {
                             content = """
-                                val counter = Property<Int>(0)
+                                val counter = Signal<Int>(0)
                                 val callToStopListening = counter.addListener { 
                                     println("Value has changed to ${'$'}{counter.value}")
                                 }
@@ -57,7 +62,7 @@ object DataPage : DocPage {
                                 callToStopListening()
                             """.trimIndent()
                         }
-                        val counter = Property<Int>(0)
+                        val counter = Signal<Int>(0)
                         val callToStopListening = counter.addListener {
                             println("Value has changed to ${counter.value}")
                         }
@@ -69,13 +74,13 @@ object DataPage : DocPage {
                         text("Because we called the function returned from addListener, further changes won't print.")
                     }
 
-                    titledSection("sharedProcess") {
+                    titledSection("reactiveProcess") {
                         text("Other kinds of readables can also contain loading and error states, which can be displayed in your UI with no modifications.")
-                        text("Another example is 'sharedProcess', which runs a Kotlin Coroutine that emits values.  For example, let's create a counter for seconds since opening the screen:")
+                        text("Another example is 'reactiveProcess', which runs a Kotlin Coroutine that emits values.  For example, let's create a counter for seconds since opening the screen:")
                         atStart - card - externalLink { subtext("What is a coroutine?"); to = "https://kotlinlang.org/docs/coroutines-overview.html"; newTab = true }
                         code {
                             content = """
-                                val secondsElapsed = sharedProcess<Int> {
+                                val secondsElapsed = reactiveProcess<Int> {
                                     // Starts out as 'loading'
                                     var n = 0
                                     while(true) {
@@ -144,7 +149,7 @@ object DataPage : DocPage {
                         text("- Error states are automatically handled")
                         space()
 
-                        h3("Property Reactive Scopes")
+                        h3("Signal Reactive Scopes")
                         text("We can do better than that.  There's a syntactic shorthand for the above that enforces good practice:")
                         example(
                             """
@@ -194,20 +199,20 @@ object DataPage : DocPage {
                         text("If for some reason you truly need to dynamically create a new, you can use a swapView.")
                     }
 
-                    titledSection("shared") {
-                        text("You can create a readable out of a reactive scope using 'shared', like this:")
-                        val counter = Property(0)
-                        val secondsElapsedPlusCounter = shared { secondsElapsed() + counter() }
+                    titledSection("remember") {
+                        text("You can create a readable out of a reactive scope using 'remember', like this:")
+                        val counter = Signal(0)
+                        val secondsElapsedPlusCounter = remember { secondsElapsed() + counter() }
                         code {
                             content = """
-                                val counter = Property(0)
-                                val secondsElapsedPlusCounter = shared { secondsElapsed() + counter() }
+                                val counter = Signal(0)
+                                val secondsElapsedPlusCounter = remember { secondsElapsed() + counter() }
                             """.trimIndent()
                         }
                         text("This is particularly useful for creating a readable whose value is calculated from other readables.")
-                        text("'shared' is short for 'shared calculation'.  If multiple people listen to this property, they share the calculated result.")
-                        text("'shared' is also lazy - it won't begin calculating until someone is listing.  It's safe to use 'shared' at the top level for this reason!")
-                        danger - text("You should not use a Property to hold a view of another Property.  Use 'shared' instead.")
+                        text("'remember' is short for 'remember calculation'.  If multiple people listen to this property, they share the calculated result.")
+                        text("'remember' is also lazy - it won't begin calculating until someone is listing.  It's safe to use 'remember' at the top level for this reason!")
+                        danger - text("You should not use a Signal to hold a view of another Signal.  Use 'remember' instead.")
                         text("Now, we can access this calculation like this:")
                         example(
                             """
@@ -236,25 +241,25 @@ object DataPage : DocPage {
                     }
                 }
 
-                titledSection("Writable") {
-                    text("A Writable is a Readable that also has a suspending 'set' function.")
-                    text("A Property is also a Writable.")
-                    text("The purpose of Writable is to create bidirectional data flow, for example with a text input.")
+                titledSection("MutableReactive") {
+                    text("A MutableReactive is a Reactive that also has a suspending 'set' function.")
+                    text("A Signal is also a MutableReactive.")
+                    text("The purpose of MutableReactive is to create bidirectional data flow, for example with a text input.")
                     text("For this section, let's define a counter property:")
                     code {
                         content = """
-                            val counter = Property(0)
+                            val counter = Signal(0)
                         """.trimIndent()
                     }
-                    val counter = Property(0)
+                    val counter = Signal(0)
 
                     titledSection("bind") {
                         text("The 'bind' function connects Writables together such that the one on the right always serves the one on the left.")
-                        text("For a practical example, let's look at connecting a text input to a Property.  TextInput's 'content' field is a Writable<String>.")
-                        val emailAddress = Property("test@test.com")
+                        text("For a practical example, let's look at connecting a text input to a Signal.  TextInput's 'content' field is a MutableReactive<String>.")
+                        val emailAddress = Signal("test@test.com")
                         example(
                             """
-                                val emailAddress = Property("test@test.com")
+                                val emailAddress = Signal("test@test.com")
                                 col { 
                                     textInput { content bind emailAddress }
                                     text { ::content { emailAddress() } }
@@ -270,16 +275,16 @@ object DataPage : DocPage {
                     }
 
                     titledSection("withWrite") {
-                        text("Sometimes we want a field to edit a view on some other data.  The two tools for doing this: combining 'shared' and 'withWrite', and 'lens'.  Let's start with 'withWrite'.")
-                        text("'withWrite' turns any Readable into a Writable with the set command being implemented with whatever action you pass in.")
+                        text("Sometimes we want a field to edit a view on some other data.  The two tools for doing this: combining 'remember' and 'withWrite', and 'lens'.  Let's start with 'withWrite'.")
+                        text("'withWrite' turns any Reactive into a MutableReactive with the set command being implemented with whatever action you pass in.")
                         text("As an example, let's take create a counter and edit it in a text field.")
-                        val counterAsString = shared { counter().toString() }.withWrite {
+                        val counterAsString = remember { counter().toString() }.withWrite {
                             val toSet = it.toIntOrNull()
                             if (toSet != null) counter.value = toSet
                         }
                         example(
                             """
-                                val counterAsString = shared { counter().toString() }.withWrite {
+                                val counterAsString = remember { counter().toString() }.withWrite {
                                     val toSet = it.toIntOrNull()
                                     if(toSet != null) counter.value = toSet
                                 }
@@ -300,7 +305,7 @@ object DataPage : DocPage {
                     }
 
                     titledSection("lens") {
-                        text("Lens allows you to create a view on other data too, assuming the calculation doesn't depend on any other data.  It has a slight performance advantage over the shared/withWrite combination above.")
+                        text("Lens allows you to create a view on other data too, assuming the calculation doesn't depend on any other data.  It has a slight performance advantage over the remember/withWrite combination above.")
                         val counterAsString2 = counter.lens(get = { it.toString() }, set = { it.toIntOrNull() ?: 0 })
                         example(
                             """

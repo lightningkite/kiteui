@@ -1,15 +1,20 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("layout-examples")
 object LayoutExamplesPage : Page {
@@ -29,7 +34,7 @@ object LayoutExamplesPage : Page {
                 } in sizedBox(SizeConstraints(minHeight = 200.px))
             }
 
-            val showIcons = Property(false)
+            val showIcons = Signal(false)
             row {
                 expanding - text("Show icons")
                 switch { checked bind showIcons }
@@ -155,10 +160,10 @@ object LayoutExamplesPage : Page {
 
             card - col {
                 h2 { content = "Dynamic List" }
-                val countString = Property("5")
+                val countString = Signal("5")
                 scrollsHorizontally - row {
                     forEachUpdating(
-                        shared {
+                        remember {
                             (1..(countString().toIntOrNull()
                                 ?: 1).coerceAtMost(100)).map { "Item $it" }
                         }
@@ -174,7 +179,7 @@ object LayoutExamplesPage : Page {
 
             card - col {
                 h2 { content = "Max Size" }
-                val text = Property(true)
+                val text = Signal(true)
                 important - button {
                     text("Toggle text size")
                     onClick {
@@ -230,7 +235,7 @@ object LayoutExamplesPage : Page {
 
             card - col {
                 h2("Custom gap test")
-                val showExtra = Property(false)
+                val showExtra = Signal(false)
                 row {
                     checkbox { checked bind showExtra }
                     text("Show extra view")

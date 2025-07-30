@@ -14,10 +14,6 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
-useGitBasedVersion()
-useLocalDependencies()
-publishing()
-setupDokka("lightningkite", "kiteui")
 dokka {
     // Dokka generates a new process managed by Gradle
     dokkaGeneratorIsolation = ProcessIsolation {
@@ -28,6 +24,7 @@ dokka {
 
 kotlin {
     applyDefaultHierarchyTemplate()
+//    explicitApi()
 
     jvm()
     androidTarget {
@@ -161,28 +158,6 @@ dependencies {
     implementation(libs.ktor.client.okhttp.jvm)
 }
 
-mavenPublishing {
-    publishToMavenCentral(automaticRelease = true)
-    signAllPublications()
-    coordinates(group.toString(), name, version.toString())
-    pom {
-        name.set("KiteUI")
-        description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
-        github("lightningkite", "kiteui")
-        url.set(dokkaPublicHostingIndex)
-        licenses {
-            mit()
-        }
-
-        developers {
-            joseph()
-            brady()
-            developer{
-                id.set("shanelk")
-                name.set("Shane Thompson")
-                email.set("shane@lightningkite.com")
-            }
-        }
-    }
-
+lkLibrary("lightningkite", "kiteui") {
+    description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }

@@ -1,14 +1,19 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 data class UserInfo(
     val name: String,
@@ -25,24 +30,24 @@ interface AppNav {
     var exists: Boolean
 
     class ByProperty : AppNav {
-        val appNameProperty = Property("My App")
+        val appNameProperty = Signal("My App")
         override var appName: String by appNameProperty
-        val appIconProperty = Property<Icon>(Icon.home)
+        val appIconProperty = Signal<Icon>(Icon.home)
         override var appIcon: Icon by appIconProperty
-        val appLogoProperty = Property<ImageSource>(Icon.home.toImageSource(Color.white))
+        val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
         override var appLogo: ImageSource by appLogoProperty
-        val navItemsProperty = Property(listOf<NavElement>())
+        val navItemsProperty = Signal(listOf<NavElement>())
         override var navItems: List<NavElement> by navItemsProperty
-        val actionsProperty = Property<List<NavElement>>(listOf())
+        val actionsProperty = Signal<List<NavElement>>(listOf())
         override var actions: List<NavElement> by actionsProperty
-        val existsProperty = Property(true)
+        val existsProperty = Signal(true)
         override var exists: Boolean by existsProperty
     }
 }
 
 
-val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
-    Property(
+val ViewWriter.appNavFactory by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
+    Signal(
         ViewWriter::appNavBottomTabs
     )
 )
@@ -61,7 +66,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
 
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    val showMenu = Property(false)
+    val showMenu = Signal(false)
     return OuterSemantic.onNext - col {
         debugName = "outer nav"
         bar - row {

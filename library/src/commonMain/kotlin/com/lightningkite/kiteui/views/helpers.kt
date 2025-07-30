@@ -3,8 +3,13 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
@@ -43,7 +48,7 @@ fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String, setup
 val Icon.Companion.empty get() = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf())
 
 fun <T> RView.forEach(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     render: ViewWriter.(T) -> Unit
 ) {
     reactiveScope {
@@ -53,18 +58,18 @@ fun <T> RView.forEach(
 }
 
 fun <T> RView.forEachUpdating(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
-    render: ViewWriter.(Readable<T>) -> Unit
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) {
-    val currentViews = ArrayList<LateInitProperty<T>>()
+    val currentViews = ArrayList<LateInitSignal<T>>()
     val currentView = this
     reactiveScope(onLoad = {
         currentView.withoutAnimation {
             if (placeholdersWhileLoading <= 0) return@reactiveScope
             if (currentViews.size < placeholdersWhileLoading) {
                 repeat(placeholdersWhileLoading - currentViews.size) {
-                    val newProp = LateInitProperty<T>()
+                    val newProp = LateInitSignal<T>()
                     render(newProp)
                     currentViews.add(newProp)
                 }
@@ -89,7 +94,7 @@ fun <T> RView.forEachUpdating(
             val oldCurrentViewsSize = currentViews.size
             if (currentViews.size < itemList.size) {
                 repeat(itemList.size - currentViews.size) {
-                    val newProp = LateInitProperty<T>()
+                    val newProp = LateInitSignal<T>()
                     newProp.value = itemList[currentViews.size]
                     render(newProp)
                     currentViews.add(newProp)
@@ -113,18 +118,18 @@ fun <T> RView.forEachUpdating(
 }
 
 fun <T, ID> RowOrCol.forEachById(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWrapper = { ViewWrapper },
-    render: ViewWriter.(Readable<T>) -> ViewModifiable
+    render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
         var oldIndex: Int,
         val oldId: ID,
-        val data: Property<T>,
+        val data: Signal<T>,
         val view: RView,
-        val shown: Property<Boolean>
+        val shown: Signal<Boolean>
     ) {
         var livenessIter = 0
         fun show() {
@@ -164,8 +169,8 @@ fun <T, ID> RowOrCol.forEachById(
                     it.show()
                 }
             } else {
-                val shown = Property(false)
-                val data = Property(toRender)
+                val shown = Signal(false)
+                val data = Signal(toRender)
                 val indexWriter = object: ViewWriter() {
                     override val context: RContext get() = this@forEachById.context
                     override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
@@ -193,7 +198,7 @@ fun <T, ID> RowOrCol.forEachById(
     }
 }
 fun <T> RowOrCol.forEachAnimated(
-    items: Readable<List<T>>,
+    items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { ViewWrapper },
     render: ViewWriter.(T) -> ViewModifiable
 ) {
@@ -202,7 +207,7 @@ fun <T> RowOrCol.forEachAnimated(
         var oldIndex: Int,
         val data: T,
         val view: RView,
-        val shown: Property<Boolean>
+        val shown: Signal<Boolean>
     ) {
         var livenessIter = 0
         fun show() {
@@ -239,7 +244,7 @@ fun <T> RowOrCol.forEachAnimated(
                 }
                 oldPos = matchIndex + 1
             } else {
-                val shown = Property(false)
+                val shown = Signal(false)
                 val indexWriter = object: ViewWriter() {
                     override val context: RContext get() = this@forEachAnimated.context
                     override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext

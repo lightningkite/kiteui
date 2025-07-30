@@ -16,12 +16,17 @@ import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
 import com.lightningkite.kiteui.views.debugPrint
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import java.lang.reflect.Modifier
 import kotlin.math.*
 
@@ -223,11 +228,11 @@ class ScrollView constructor(
             native.isHorizontalScrollBarEnabled = value
             native.isVerticalScrollBarEnabled = value
         }
-    override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
-        override val state: ReadableState<Rect>
+    override val viewport: Reactive<Rect> = object : Reactive<Rect>, Listenable by scrollChanged {
+        override val state: ReactiveState<Rect>
             get() {
                 debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
-                return ReadableState(
+                return ReactiveState(
                     Rect.fromSize(
                         (native.scrollX ?: 0).toDouble(),
                         (native.scrollY ?: 0).toDouble(),
@@ -237,9 +242,9 @@ class ScrollView constructor(
                 )
             }
     }
-    override val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
-        override val state: ReadableState<Rect>
-            get() = ReadableState(
+    override val content: Reactive<Rect> = object : Reactive<Rect>, BaseListenable() {
+        override val state: ReactiveState<Rect>
+            get() = ReactiveState(
                 Rect.fromSize(
                     0.0,
                     0.0,
@@ -261,8 +266,8 @@ class ScrollView constructor(
 
     override var snapToElements: Pair<Align?, Align?> = null to null
     override var scrollSnapStop: Boolean = false
-    private val _directlyInteractingWithScroller = Property(false)
-    override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    private val _directlyInteractingWithScroller = Signal(false)
+    override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {

@@ -1,14 +1,19 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
-import kotlinx.coroutines.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
+import kotlinx.coroutines.*
 
-interface Action: Readable<Boolean> {
+interface Action: Reactive<Boolean> {
     val title: String
     val icon: Icon
     fun startAction(scope: CoroutineScope)
@@ -66,9 +71,9 @@ class RetryableAction(
     override val icon: Icon,
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
+    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
     var action: suspend () -> Unit,
-) : Action, Readable<Boolean> by reportTo {
+) : Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -83,7 +88,7 @@ class RetryableAction(
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = readableState {
+                val result = reactiveState {
                     action()
                     true
                 }
@@ -95,7 +100,7 @@ class RetryableAction(
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReactiveState.notReady
                 return@let job
             }
         }
@@ -114,17 +119,17 @@ class DependentAction(
     override val icon: Icon,
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
+    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
     var action: suspend () -> Unit,
-) : DependencyChangeListener(), Action, Readable<Boolean> by reportTo {
+) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
     override fun onDependencyNotReady() {
-        reportTo.state = ReadableState.notReady
+        reportTo.state = ReactiveState.notReady
     }
 
     override fun onDependencyChange() {
-        reportTo.state = ReadableState(false)
+        reportTo.state = ReactiveState(false)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -140,7 +145,7 @@ class DependentAction(
                     ) == false
                 ) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT
             ) {
-                val result = readableState {
+                val result = reactiveState {
                     action()
                     true
                 }
@@ -153,7 +158,7 @@ class DependentAction(
                 return@let null
             } else {
                 // start load
-                reportTo.state = ReadableState.notReady
+                reportTo.state = ReactiveState.notReady
                 return@let job
             }
         }

@@ -1,13 +1,17 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 interface Page {
-    val title: Readable<String>
+    val title: Reactive<String>
         get() = Constant(
             this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen").removeSuffix(" Page")
         )
@@ -17,7 +21,7 @@ interface Page {
     }
     open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Page {
         override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
-        override val title: Readable<String> = Constant(title)
+        override val title: Reactive<String> = Constant(title)
     }
 }
 

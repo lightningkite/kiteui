@@ -4,12 +4,16 @@ import android.content.Context
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
-
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.math.roundToInt
 
 

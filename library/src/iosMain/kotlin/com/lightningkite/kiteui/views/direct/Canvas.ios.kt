@@ -4,13 +4,17 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.readable.onRemove
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import com.lightningkite.kiteui.views.canvas.fillPaint
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CATransaction

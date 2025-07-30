@@ -3,10 +3,14 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.identityHashCode
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.safeInsets
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.reactive
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 fun RView.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Boolean = true, bottom: Boolean = true) {
     val s = safeInsets

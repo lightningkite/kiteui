@@ -3,10 +3,15 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlinx.coroutines.CoroutineScope
 
 @Suppress("UNCHECKED_CAST")
 fun <T> rContextAddon(init: T): ReadWriteProperty<ViewWriter, T> = object : ReadWriteProperty<ViewWriter, T> {
@@ -45,7 +50,7 @@ fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : ReadWri
 )
 val ViewWriter.navigator by ViewWriter::pageNavigator
 
-var ViewWriter.safeInsets by rContextAddonGenerate<Readable<Edges>> { Constant(Edges.ZERO) }
+var ViewWriter.safeInsets by rContextAddonGenerate<Reactive<Edges>> { Constant(Edges.ZERO) }
 
 var ViewWriter.popoverParent by rContextAddonGenerate<ViewWriter?> { null }
 var ViewWriter.popoverCloser by rContextAddonGenerate<(() -> Unit)?> { null }

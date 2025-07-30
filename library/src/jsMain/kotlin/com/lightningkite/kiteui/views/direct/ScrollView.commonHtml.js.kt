@@ -5,9 +5,14 @@ import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.browser.window
 import kotlinx.dom.addClass
 import org.w3c.dom.*
@@ -65,7 +70,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     private val scrollEvent = native.vevent("scroll")
     private val lockScrollEnd = BasicListenable()
     private var lockScrollReportAt: Rect? = null
-    actual override val viewport: Readable<Rect> by lazy {
+    actual override val viewport: Reactive<Rect> by lazy {
         on.reactive {
             rerunOn(scrollEvent)
             rerunOn(lockScrollEnd)
@@ -77,7 +82,7 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    actual override val content: Readable<Rect> by lazy {
+    actual override val content: Reactive<Rect> by lazy {
         on.reactive {
             Rect.fromSize(
                 left = 0.0,
@@ -87,8 +92,8 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    val _directlyInteractingWithScroller = Property(false)
-    actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    val _directlyInteractingWithScroller = Signal(false)
+    actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {
 //        var lastTimeout: () -> Unit = {}

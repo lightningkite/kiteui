@@ -12,13 +12,11 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.requestFile
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
@@ -46,12 +44,16 @@ import com.lightningkite.kiteui.views.overlayWriter
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.mppexampleapp.docs.article
 import com.lightningkite.mppexampleapp.docs.example
-import com.lightningkite.readable.onRemove
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
 class HomePage: Page {
-    override val title: Readable<String> get() = Constant("KiteUI")
+    override val title: Reactive<String> get() = Constant("KiteUI")
     override fun ViewWriter.render(): ViewModifiable = run {
         return article {
             centered - h1("KiteUI - Beautiful by Default")
@@ -61,7 +63,7 @@ class HomePage: Page {
             centered - h2("Goals")
             separator()
             text("- Web first - the web version should be comparable or better than React in performance, and generate reasonably small binaries.")
-            text("- Readable - the code should be extremely easy to read and have the minimal amount of syntactical cruft.")
+            text("- Reactive - the code should be extremely easy to read and have the minimal amount of syntactical cruft.")
             text("- Multiplatform - the apps should compile to Android and iOS without issue.")
             text("- Native - the apps should use the native UI system of their given platform.")
             text("- Extendable - using native per-platform components and code should be easy.")
@@ -71,7 +73,7 @@ class HomePage: Page {
             space()
             h2("Quick Sample")
             example("""
-                val number = Property(0)
+                val number = Signal(0)
                 col {
                     text("Here is a basic counter:")
                     row {
@@ -93,7 +95,7 @@ class HomePage: Page {
                     }
                 }
             """.trimIndent()) {
-                val number = Property(0)
+                val number = Signal(0)
                 col {
                     text("Here is a basic counter:")
                     row {

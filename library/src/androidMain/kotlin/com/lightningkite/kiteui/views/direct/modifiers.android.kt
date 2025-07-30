@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -16,15 +15,18 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import com.lightningkite.kiteui.Log
-
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
-import com.lightningkite.readable.CalculationContext
-import com.lightningkite.readable.ReactiveContext
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {

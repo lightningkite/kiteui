@@ -1,18 +1,19 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.onMainThread
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.StatusListener
-import com.lightningkite.readable.addAndRunListener
-import com.lightningkite.readable.onRemove
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 
 class WorkAndLoadTracker(
     val scope: CoroutineScope,
     val onException: (Exception, working: Boolean) -> (() -> Unit)?
 ) {
-    val loading = Property(false)
+    val loading = Signal(false)
     private var loadCount = 0
         set(value) {
             field = value
@@ -22,7 +23,7 @@ class WorkAndLoadTracker(
                 loading.value = true
             }
         }
-    val working = Property(false)
+    val working = Signal(false)
     private var workCount = 0
         set(value) {
             field = value
@@ -34,7 +35,7 @@ class WorkAndLoadTracker(
         }
 
 
-    internal fun listenForWorking(readable: Readable<*>): () -> Unit {
+    internal fun listenForWorking(readable: Reactive<*>): () -> Unit {
         var loading = false
         var excEnder: (() -> Unit)? = null
         val r = readable.addAndRunListener {
@@ -56,7 +57,7 @@ class WorkAndLoadTracker(
         return r
     }
 
-    internal fun listenForStatus(readable: Readable<*>): () -> Unit {
+    internal fun listenForStatus(readable: Reactive<*>): () -> Unit {
         var loading = false
         var excEnder: (() -> Unit)? = null
         val r = readable.addAndRunListener {
@@ -80,11 +81,11 @@ class WorkAndLoadTracker(
 
 
     val statusListener = object : StatusListener {
-        override fun working(readable: Readable<*>) {
+        override fun working(readable: Reactive<*>) {
             listenForWorking(readable)
         }
 
-        override fun loading(readable: Readable<*>) {
+        override fun loading(readable: Reactive<*>) {
             listenForStatus(readable)
         }
     }

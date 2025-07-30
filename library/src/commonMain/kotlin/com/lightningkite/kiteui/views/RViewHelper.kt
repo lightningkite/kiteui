@@ -19,21 +19,22 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.onMainThread
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Readable
-import com.lightningkite.readable.StatusListener
-import com.lightningkite.readable.addAndRunListener
-import com.lightningkite.readable.onRemove
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.js.JsName
+import kotlin.random.Random
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlin.coroutines.CoroutineContext
-import kotlin.js.JsName
-import kotlin.random.Random
 
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     override val rView: RView get() = this as RView
@@ -232,7 +233,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
     }
 
-    val loading = Property(false)
+    val loading = Signal(false)
     private var loadCount = 0
         set(value) {
             field = value
@@ -244,7 +245,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
                 refreshTheming()
             }
         }
-    val working = Property(false)
+    val working = Signal(false)
     private var workCount = 0
         set(value) {
             field = value
@@ -267,11 +268,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             }
         })
         add(object : StatusListener {
-            override fun working(readable: Readable<*>) {
+            override fun working(readable: Reactive<*>) {
                 listenForWorking(readable)
             }
 
-            override fun loading(readable: Readable<*>) {
+            override fun loading(readable: Reactive<*>) {
                 listenForStatus(readable)
             }
         })
@@ -279,7 +280,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
     override val coroutineContext: CoroutineContext = contextSetup()
 
-    internal fun listenForWorking(readable: Readable<*>): () -> Unit {
+    internal fun listenForWorking(readable: Reactive<*>): () -> Unit {
         var loading = false
         var excEnder: (() -> Unit)? = null
         val r = readable.addAndRunListener {
@@ -307,7 +308,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         return r
     }
 
-    internal fun listenForStatus(readable: Readable<*>): () -> Unit {
+    internal fun listenForStatus(readable: Reactive<*>): () -> Unit {
         var loading = false
         var excEnder: (() -> Unit)? = null
         val r = readable.addAndRunListener {

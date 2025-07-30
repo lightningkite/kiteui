@@ -2,10 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
@@ -32,7 +36,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         this.isRawData = isRawData
     }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 repairFormatAndPosition(

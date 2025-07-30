@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.View.MeasureSpec
 import android.widget.ImageView
+import android.widget.ImageView as AImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
@@ -28,11 +29,15 @@ import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.Path.PathDrawable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import android.widget.ImageView as AImageView
 
 actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -40,7 +45,7 @@ actual abstract class RawImageViewLike constructor(
     actual val description: String,
     actual val scaleType: ImageScaleType,
 ) : RView(context){
-    actual abstract val state: Readable<Unit>
+    actual abstract val state: Reactive<Unit>
 }
 
 
@@ -51,8 +56,8 @@ actual class RawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
     override val native: GlideImageView = GlideImageView(context.activity)
     init {
         native.scaleType = when (scaleType) {
@@ -89,7 +94,7 @@ actual class RawImageView actual constructor(
                     p2: Target<Drawable?>,
                     p3: Boolean
                 ): Boolean {
-                    _state.state = ReadableState.exception(p0 ?: Exception("Unknown error"))
+                    _state.state = ReactiveState.exception(p0 ?: Exception("Unknown error"))
                     return false
                 }
 
@@ -100,7 +105,7 @@ actual class RawImageView actual constructor(
                     p3: DataSource,
                     p4: Boolean
                 ): Boolean {
-                    _state.state = ReadableState(Unit)
+                    _state.state = ReactiveState(Unit)
                     return false
                 }
             }).into(native.target)
@@ -112,7 +117,7 @@ actual class RawImageView actual constructor(
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
                 native.setImageDrawable(PathDrawable(value))
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
             }
             else -> TODO()
         }
@@ -193,8 +198,8 @@ actual class SizelessRawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
     override val native: GlideImageView = GlideImageView(context.activity)
     init {
         native.scaleType = when (scaleType) {
@@ -231,7 +236,7 @@ actual class SizelessRawImageView actual constructor(
                     p2: Target<Drawable?>,
                     p3: Boolean
                 ): Boolean {
-                    _state.state = ReadableState.exception(p0 ?: Exception("Unknown error"))
+                    _state.state = ReactiveState.exception(p0 ?: Exception("Unknown error"))
                     return false
                 }
 
@@ -242,7 +247,7 @@ actual class SizelessRawImageView actual constructor(
                     p3: DataSource,
                     p4: Boolean
                 ): Boolean {
-                    _state.state = ReadableState(Unit)
+                    _state.state = ReactiveState(Unit)
                     return false
                 }
             }).into(native.target)
@@ -337,11 +342,11 @@ actual class RawImageViewZoomable actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
-    private val _zoomState = Property<ZoomState>(native.imageMatrix)
-    actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
+    private val _zoomState = Signal<ZoomState>(native.imageMatrix)
+    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
     init {
         native.setOnScaleChangeListener { _, _, _ -> zoomState.value = native.imageMatrix }
         native.setOnViewDragListener { _, _ -> zoomState.value = native.imageMatrix }
@@ -364,7 +369,7 @@ actual class RawImageViewZoomable actual constructor(
                     p2: Target<Drawable?>,
                     p3: Boolean
                 ): Boolean {
-                    _state.state = ReadableState.exception(p0 ?: Exception("Unknown error"))
+                    _state.state = ReactiveState.exception(p0 ?: Exception("Unknown error"))
                     return false
                 }
 
@@ -375,7 +380,7 @@ actual class RawImageViewZoomable actual constructor(
                     p3: DataSource,
                     p4: Boolean
                 ): Boolean {
-                    _state.state = ReadableState(Unit)
+                    _state.state = ReactiveState(Unit)
                     return false
                 }
             }).into(native)
@@ -387,7 +392,7 @@ actual class RawImageViewZoomable actual constructor(
             is ImageResource -> Glide.with(native).load(value.resource).finish()
             is ImageVector -> {
                 native.setImageDrawable(PathDrawable(value))
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
             }
             else -> TODO()
         }

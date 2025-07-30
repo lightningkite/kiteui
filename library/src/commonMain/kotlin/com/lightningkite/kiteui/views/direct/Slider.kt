@@ -1,8 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 /**
  * A slider component that allows users to select a value from a continuous range.
@@ -16,7 +21,7 @@ expect class Slider(context: RContext) : RView {
     /**
      * The current value of the slider, between 0.0 and 1.0.
      */
-    val value: ImmediateWritable<Float>
+    val value: MutableReactiveValue<Float>
     
     /**
      * The minimum value of the slider.

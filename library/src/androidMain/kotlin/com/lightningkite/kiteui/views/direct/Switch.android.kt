@@ -7,9 +7,13 @@ import android.graphics.drawable.StateListDrawable
 import android.widget.CheckBox
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class Switch actual constructor(context: RContext): RView(context) {
     override val native = android.widget.Switch(context.activity)
@@ -85,6 +89,6 @@ actual class Switch actual constructor(context: RContext): RView(context) {
         return super.applyState(t)
     }
 
-    actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
+    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
 }

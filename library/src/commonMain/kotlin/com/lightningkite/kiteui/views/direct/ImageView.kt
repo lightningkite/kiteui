@@ -4,13 +4,16 @@ import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ThemeDerivation
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.readable.RawReadable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.reactive
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 
 
@@ -67,7 +70,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
         }
     }
 
-    val shownInfo = RawReadable<Info?>(ReadableState(null))
+    val shownInfo = RawReactive<Info?>(ReactiveState(null))
     val shown by rView::shown
     var cannotBeCovered = false
 
@@ -85,7 +88,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                     rView.removeChild(it)
                 }
             }
-            shownInfo.state = ReadableState.notReady
+            shownInfo.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
             lastRender = info?.let {
@@ -103,13 +106,13 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                                             opacity = 1.0
                                             if(lastRendered == info) {
                                                 activityIndicator.opacity = 0.0
-                                                this@ImageView.shownInfo.state = ReadableState(info)
+                                                this@ImageView.shownInfo.state = ReactiveState(info)
                                             }
                                           },
                                         exception = {
                                             if(lastRendered == info) {
                                                 activityIndicator.opacity = 0.0
-                                                this@ImageView.shownInfo.state = ReadableState.exception(it)
+                                                this@ImageView.shownInfo.state = ReactiveState.exception(it)
                                                 lastRendered = null
                                                 if(this@ImageView.info !== info) {
                                                     refresh()
@@ -124,7 +127,7 @@ class ImageView(viewWriter: ViewWriter) : ViewModifiable {
                     }
                 }
             } ?: run{
-                this@ImageView.shownInfo.state = ReadableState(null)
+                this@ImageView.shownInfo.state = ReactiveState(null)
                 activityIndicator.opacity = 0.0
                 null
             }

@@ -25,11 +25,16 @@ import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
-import com.lightningkite.readable.onRemove
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
