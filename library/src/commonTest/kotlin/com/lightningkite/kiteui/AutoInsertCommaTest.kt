@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class AutoInsertCommaTest {
+    fun println(any: Any)  { /*suppress*/ }
     val testCases = listOf(
         "1234567",
         "12345678",
