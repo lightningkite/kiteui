@@ -1,12 +1,11 @@
 import com.lightningkite.deployhelpers.*
-import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     signing
-    alias(libs.plugins.vanniktech.mavenPublish)
-    // alias(libs.plugins.dokka)
+    alias(libs.plugins.vannitechPublishing)
+    alias(libs.plugins.dokka)
 }
 
 gradlePlugin {
@@ -17,7 +16,10 @@ gradlePlugin {
         }
     }
 }
-version = gitBasedVersion()
+useGitBasedVersion()
+useLocalDependencies()
+publishing()
+setupDokka("lightningkite", "kiteui")
 
 repositories {
     mavenCentral()
@@ -32,13 +34,14 @@ tasks.validatePlugins {
 }
 
 mavenPublishing {
-    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     coordinates(group.toString(), name, version.toString())
     pom {
         name.set("KiteUI-Gradle-Plugin")
         description.set("Automatically create your routers")
         github("lightningkite", "kiteui")
+        url.set(dokkaPublicHostingIndex)
 
         licenses {
             mit()

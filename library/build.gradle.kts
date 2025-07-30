@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -9,10 +8,22 @@ plugins {
 //    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.vanniktech.mavenPublish)
     alias(libs.plugins.comLightningkiteTestingManual)
-//    id("org.jetbrains.dokka")
     signing
+    alias(libs.plugins.vannitechPublishing)
+    alias(libs.plugins.dokka)
+}
+
+useGitBasedVersion()
+useLocalDependencies()
+publishing()
+setupDokka("lightningkite", "kiteui")
+dokka {
+    // Dokka generates a new process managed by Gradle
+    dokkaGeneratorIsolation = ProcessIsolation {
+        // Configures heap size
+        maxHeapSize = "4g"
+    }
 }
 
 kotlin {
@@ -151,14 +162,14 @@ dependencies {
 }
 
 mavenPublishing {
-    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     coordinates(group.toString(), name, version.toString())
     pom {
         name.set("KiteUI")
         description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
         github("lightningkite", "kiteui")
-
+        url.set(dokkaPublicHostingIndex)
         licenses {
             mit()
         }

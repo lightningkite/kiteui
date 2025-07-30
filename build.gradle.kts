@@ -20,10 +20,6 @@ buildscript {
 }
 allprojects {
     group = "com.lightningkite.kiteui"
-    useLocalDependencies()
-//    useGitBasedVersion()
-    version = gitBasedVersion().also { println("Setting version to $it")}
-    publishing()
     repositories {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
@@ -40,5 +36,6 @@ plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.comLightningkiteTestingManual) apply false
     alias(libs.plugins.androidLibrary) apply false
-    alias(libs.plugins.vanniktech.mavenPublish) apply false
+    alias(libs.plugins.vannitechPublishing) apply false
+    alias(libs.plugins.dokka) apply false
 }

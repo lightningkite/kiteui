@@ -13,6 +13,7 @@ annotation class QueryParameter(val name: String = "")
 @Target(AnnotationTarget.PROPERTY)
 annotation class Hash
 
+@Suppress
 @Target(AnnotationTarget.CLASS)
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,

@@ -9,7 +9,6 @@ android-compileSdk = "34"
 appcompat = "1.7.0"
 cardview = "1.0.0"
 commonsLang3 = "3.16.0"
-dokka = "2.0.0"
 glide = "5.0.0-rc01"
 androidGradle = "8.5.2"
 junit = "4.13.2"
@@ -18,7 +17,7 @@ kotlinxDatetime = "0.6.1"
 kotlinxSerializationJson = "1.7.3"
 ktorVersion = "3.0.0"
 ktx = "1.16.0-alpha02"
-lkGradleHelpers = "2.0.3"
+lkGradleHelpers = "3.0.7"
 material = "1.12.0"
 media3Exoplayer = "1.5.1"
 photoview = "2.3.0"
@@ -26,6 +25,9 @@ robolectric = "4.13"
 swiperefreshlayout = "1.1.0"
 timber = "5.0.1"
 transition = "1.5.1"
+vannitechPublishing = "0.34.0"
+dokka = "2.0.0"
+
 
 [libraries]
 fontbox = { module = "org.apache.pdfbox:fontbox", version.ref = "fontbox" }
@@ -71,6 +73,6 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
 comLightningkiteTestingManual = { id = "com.lightningkite.testing.manual", version = "0.0.9" }
+vannitechPublishing = { id = "com.vanniktech.maven.publish", version = { ref = "vannitechPublishing" } }
 dokka = { id = "org.jetbrains.dokka", version = { ref = "dokka" } }
