@@ -44,6 +44,15 @@ A Kotlin Multiplatform UI Framework inspired by Solid.js that uses the native vi
 
 For these reasons, we think Compose isn't sufficient nor can be made sufficient for any multiplatform development that includes a web target.  That's why we created this library.
 
+Here is a comparison of the same UI built with KiteUI and Compose Web:
+
+|                                           | Compose Web                                                                                                                                                          | KiteUI Web                                                                                                    |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Live site                                 | [https://zal.im/wasm/jetsnack](https://zal.im/wasm/jetsnack)                                                                                                         | [https://kiteui-jetsnack-demo.cs.lightningkite.com/](https://kiteui-jetsnack-demo.cs.lightningkite.com)       |
+| Source Code                               | [https://github.com/JetBrains/compose-multiplatform/tree/master/examples/jetsnack](https://github.com/JetBrains/compose-multiplatform/tree/master/examples/jetsnack) | [https://github.com/lightningkite/kiteui-jetsnack-demo](https://github.com/lightningkite/kiteui-jetsnack-demo) |
+| Web Binary Size (including fonts and css) | 12.17389 MB (July 30, 2025)                                                                                                                                          | 0.77092 MB (July 30, 2025)                                                                                    |
+Performance in KiteUI is faster or equivalent to the performance of Compose multiplatform Web from internal testing.
+
 ## Features
 
 - **Smaller Binary Size**: KiteUI makes fairly small bundle sizes.  

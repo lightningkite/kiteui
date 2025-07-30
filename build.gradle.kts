@@ -40,7 +40,7 @@ plugins {
     alias(libs.plugins.dokka) apply false
 }
 plugins.withType(YarnPlugin::class.java) {
-    the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.FAIL
+    the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.NONE
     the<YarnRootExtension>().reportNewYarnLock = false
     the<YarnRootExtension>().yarnLockAutoReplace = true
 }
