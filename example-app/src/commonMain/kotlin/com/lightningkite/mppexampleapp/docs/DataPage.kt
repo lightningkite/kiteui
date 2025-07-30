@@ -49,8 +49,8 @@ object DataPage : DocPage {
 
             titledSection("Data: How to do Reactivity in KiteUI") {
                 titledSection("Reactive") {
-                    text("Reactive is the root of reactivity in KiteUI.  A readable is something you can read and be notified when it changes.")
-                    text("The simplest example of a readable is 'Signal', which directly contains a value we can change.")
+                    text("Reactive is the root of reactivity in KiteUI. Reactive data is data you can observe and be notified when its state changes.")
+                    text("The simplest example of a Reactive is 'Signal', which directly contains a value we can change.")
                     titledSection("Signal") {
                         code {
                             content = """
@@ -75,7 +75,7 @@ object DataPage : DocPage {
                     }
 
                     titledSection("reactiveProcess") {
-                        text("Other kinds of readables can also contain loading and error states, which can be displayed in your UI with no modifications.")
+                        text("Other kinds of Reactives can also contain loading and error states, which can be displayed in your UI with no modifications.")
                         text("Another example is 'reactiveProcess', which runs a Kotlin Coroutine that emits values.  For example, let's create a counter for seconds since opening the screen:")
                         atStart - card - externalLink { subtext("What is a coroutine?"); to = "https://kotlinlang.org/docs/coroutines-overview.html"; newTab = true }
                         code {
@@ -130,7 +130,7 @@ object DataPage : DocPage {
                     }
 
                     titledSection("Plain Reactive Scope") {
-                        text("A reactive scope is a block of code that reruns whenever one of its dependencies change.  Inside a reactive scope, one may 'call' a readable by using parentheses afterwards.  An example:")
+                        text("A reactive scope, or reactive context, is a block of code that reruns whenever one of its dependencies change. Inside a reactive scope, one may 'call' a Reactive by using parentheses afterwards.  An example:")
                         example(
                             """
                                 text {
@@ -149,7 +149,7 @@ object DataPage : DocPage {
                         text("- Error states are automatically handled")
                         space()
 
-                        h3("Signal Reactive Scopes")
+                        h3("Property Reactive Scopes")
                         text("We can do better than that.  There's a syntactic shorthand for the above that enforces good practice:")
                         example(
                             """
@@ -200,7 +200,7 @@ object DataPage : DocPage {
                     }
 
                     titledSection("remember") {
-                        text("You can create a readable out of a reactive scope using 'remember', like this:")
+                        text("You can create a Reactive out of a reactive scope using 'remember', like this:")
                         val counter = Signal(0)
                         val secondsElapsedPlusCounter = remember { secondsElapsed() + counter() }
                         code {
@@ -209,7 +209,7 @@ object DataPage : DocPage {
                                 val secondsElapsedPlusCounter = remember { secondsElapsed() + counter() }
                             """.trimIndent()
                         }
-                        text("This is particularly useful for creating a readable whose value is calculated from other readables.")
+                        text("This is particularly useful for creating a Reactive whose value is calculated from other Reactives.")
                         text("'remember' is short for 'remember calculation'.  If multiple people listen to this property, they share the calculated result.")
                         text("'remember' is also lazy - it won't begin calculating until someone is listing.  It's safe to use 'remember' at the top level for this reason!")
                         danger - text("You should not use a Signal to hold a view of another Signal.  Use 'remember' instead.")
@@ -254,7 +254,7 @@ object DataPage : DocPage {
                     val counter = Signal(0)
 
                     titledSection("bind") {
-                        text("The 'bind' function connects Writables together such that the one on the right always serves the one on the left.")
+                        text("The 'bind' function connects MutableReactives together such that the one on the right always serves the one on the left.")
                         text("For a practical example, let's look at connecting a text input to a Signal.  TextInput's 'content' field is a MutableReactive<String>.")
                         val emailAddress = Signal("test@test.com")
                         example(
@@ -301,7 +301,7 @@ object DataPage : DocPage {
                                 card - button { text("Increment"); onClick { counter.value++ } }
                             }
                         }
-                        text("It should have started out as '10', but we can increment it with the button and directly edit the value using the field.")
+                        text("It should have started out as '0', but we can increment it with the button and directly edit the value using the field.")
                     }
 
                     titledSection("lens") {
@@ -356,6 +356,8 @@ object DataPage : DocPage {
                 // TODO: Interaction with coroutines
                 // TODO: Incomplete calculation state
                 // TODO: Error states
+
+                space(5.0)
             }
         }
     }

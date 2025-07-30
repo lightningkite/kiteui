@@ -148,7 +148,7 @@ object ReactiveToolsPage : Page, DocPage {
                     }
 
                     titledSection("bind") {
-                        text("This function is used to bind Writables together, so that they always have the same value. This function is especially useful for input fields, binding the input data to whatever MutableReactive you wish to use throughout your app.")
+                        text("This function is used to bind MutableReactives together, so that they always have the same value. This function is especially useful for input fields, binding the input data to whatever MutableReactive you wish to use throughout your app.")
 
                         example("""
                             val textInput = Signal("")
@@ -182,17 +182,17 @@ object ReactiveToolsPage : Page, DocPage {
                     }
 
                     titledSection("remember") {
-                        text("Shared is essentially a dependency tracking calculation. If any of its dependencies change, then remember will recalculate and notify its listeners of the new result. These dependencies, are, of course, Readables. It's called remember because it \"shares\" its calculation with all of its listeners, which is obviously much more efficient than redoing the same calculation in multiple places.")
+                        text("Remember is essentially a ReactiveContext that returns a result. If any of its dependencies change, then remember will recalculate and notify its listeners of the new result. These dependencies, are, of course, Reactives. It's called remember because it \"remembers\" the result of the calculation, and shares that result among it's listeners, which is obviously much more efficient than redoing the same calculation in multiple places.")
 
                         example("""
-                        val calculation = remember { timer() * counter() + (inputNumber() ?: 0.0) }
-                        text { 
-                            ::content { "Calculation = ${'$'}{calculation()}" } 
-                        }
-                        text { 
-                            ::content { "Reusing the same calculation in another location: ${'$'}{calculation() % 3}" }
-                        }
-                    """.trimIndent()) {
+                            val calculation = remember { timer() * counter() + (inputNumber() ?: 0.0) }
+                            text { 
+                                ::content { "Calculation = ${'$'}{calculation()}" } 
+                            }
+                            text { 
+                                ::content { "Reusing the same calculation in another location: ${'$'}{calculation() % 3}" }
+                            }
+                        """.trimIndent()) {
                             col {
                                 text {
                                     ::content { "Calculation = ${calculation()}" }
@@ -209,7 +209,7 @@ object ReactiveToolsPage : Page, DocPage {
                     text("Interacting with Reactive and MutableReactive outside of reactive scopes is easy - use these:")
 
                     titledSection("Get the current value of a Reactive") {
-                        text("Readables don't necessarily have a value all of the time - they might be currently loading, or perhaps have even errored out while loading or calculating.")
+                        text("Reactives don't necessarily have a value all of the time - they might be currently loading, or perhaps have even errored out while loading or calculating.")
                         text("As such, you must either wait for a value or be prepared for there to be no value.")
                         titledSection("Wait for a value") {
                             example("""
@@ -245,40 +245,39 @@ object ReactiveToolsPage : Page, DocPage {
                 titledSection("Less-Basic Tools") {
                     text("These tools aren't used as often as the basics, but are extremely helpful in the right situations, and can make your life much easier.")
 
-                    titledSection("MutableRemember") {
-                        text("Imagine a situation where you need to calculate an initial value, but later on you will want to override that initial value for something else manually. This is where MutableRemember comes in.")
-                        text("MutableRemember is basically the same thing as remember, but you can set values to override the calculation, and then reset it back to the calculation if needed.")
-                        text("To demonstrate, let's use the same arbitrary calculation shown in the remember demonstration, but using MutableRemember instead.")
+                    titledSection("mutableRemember") {
+                        text("mutableRemember is basically the same thing as remember, but you can set values to override the calculation, and then reset it back to the calculation if needed.")
+                        text("To demonstrate, let's use the same arbitrary calculation shown in the remember demonstration, but using mutableRemember instead.")
 
-                        val calculationProperty = MutableRemember(stopListeningWhenOverridden = false) { timer() * counter() + (inputNumber() ?: 0.0) }
+                        val mutableCalculation = MutableRemember(stopListeningWhenOverridden = false) { timer() * counter() + (inputNumber() ?: 0.0) }
                         example("""
-                            val calculationProperty = MutableRemember { timer() * counter() + (inputNumber() ?: 0.0) }
+                            val mutableCalculation = mutableRemember { timer() * counter() + (inputNumber() ?: 0.0) }
                             text { 
-                                ::content { "calculationProperty = ${'$'}{calculationProperty()}" } 
+                                ::content { "mutableCalculation = ${'$'}{mutableCalculation()}" } 
                             }
                         """.trimIndent()) {
                             text {
-                                ::content { "calculationProperty = ${calculationProperty()}" }
+                                ::content { "mutableCalculation = ${mutableCalculation()}" }
                             }
                         }
 
-                        text("We can see this has the exact same result as remember, but with MutableRemember we now have the ability to override the calculation. Below are controls to set and reset 'calculationProperty'. Try them out and see the effects.")
+                        text("We can see this has the exact same result as remember, but with MutableRemember we now have the ability to override the calculation. Below are controls to set and reset 'mutableCalculation'. Try them out and see the effects.")
 
                         row {
-                            expanding - bufferedNumberInput(calculationProperty)
+                            expanding - bufferedNumberInput(mutableCalculation)
                             expanding - card - button {
                                 centered - row {
                                     icon(Icon.sync, "Reset")
                                     text("Reset Value")
                                 }
-                                onClick { calculationProperty.reset() }
+                                onClick { mutableCalculation.reset() }
                             }
                         }
                     }
 
                     titledSection("LateInitSignal") {
-                        text("LateInitSignal functions very similarly to a regular Signal, but with one key difference, it doesn't always have a value inside it. If you recall, Readables are capable of conveying loading and error states. LateInitSignal makes use of this, telling its listeners when it does and doesn't have a value ready.")
-                        text("LateInitProperties don't have an initial value, and thus start out being 'NotReady'. Anything that depends on a LateInitSignal will be put into a loading state until you set a value into the LateInitSignal. This makes LateInitProperties very useful for dealing with information that may have long calculation times, or information that is unavailable at the time of declaration.")
+                        text("LateInitSignal functions very similarly to a regular Signal, but with one key difference, it doesn't always have a value inside it. If you recall, Reactives are capable of conveying loading and error states. LateInitSignal makes use of this, telling its listeners when it does and doesn't have a value ready.")
+                        text("LateInitProperties don't have an initial value, and thus start out being 'NotReady'. Anything that depends on a LateInitSignal will be put into a loading state until you set a value into the LateInitSignal. This makes LateInitSignals very useful for dealing with information that may have long calculation times, or information that is unavailable at the time of declaration.")
                         text("These properties also have an unset() method, which removes any held value and puts the LateInitSignal back into a NotReady state.")
 
                         example("""
@@ -354,11 +353,6 @@ object ReactiveToolsPage : Page, DocPage {
                             }
                         }
                     }
-                }
-
-
-                titledSection("Lensing") {
-
                 }
 
                 space(4.0)
