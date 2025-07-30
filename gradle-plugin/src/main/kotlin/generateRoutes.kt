@@ -12,7 +12,7 @@ private fun String.indexOf(startIndex: Int, vararg chars: Char): Int {
 
 private val blockComment = Regex("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/")
 
-fun generateAutoroutes(sources: File, out: File) {
+internal fun generateAutoroutes(sources: File, out: File) {
 
     val allRoutables = sources.walkTopDown()
         .filter { it.extension == "kt" }
@@ -213,7 +213,7 @@ fun generateAutoroutes(sources: File, out: File) {
 }
 
 
-data class ScreenData(
+internal data class ScreenData(
     val packageName: String,
     val name: String,
     val params: List<String>,
@@ -222,7 +222,7 @@ data class ScreenData(
     val queryParams: Map<String, String>,
 )
 
-sealed class Segment {
+internal sealed class Segment {
     data class Constant(val value: String) : Segment()
     data class Variable(val name: String) : Segment()
 }

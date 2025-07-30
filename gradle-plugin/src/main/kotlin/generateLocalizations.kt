@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import java.io.File
 
 
-fun generateLocalizations(toRead: List<File>, outKt: File, ext: KiteUiPluginExtension) {
+internal fun generateLocalizations(toRead: List<File>, outKt: File, ext: KiteUiPluginExtension) {
     val localizations = HashSet<NeededStringTemplate>()
     toRead.filterNotNull().asSequence()
         .flatMap { it.walkTopDown() }

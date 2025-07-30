@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 group = "com.lightningkite.kiteui"
 version = "1.0-SNAPSHOT"
 
@@ -34,4 +38,9 @@ plugins {
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.vannitechPublishing) apply false
     alias(libs.plugins.dokka) apply false
+}
+plugins.withType(YarnPlugin::class.java) {
+    the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.FAIL
+    the<YarnRootExtension>().reportNewYarnLock = false
+    the<YarnRootExtension>().yarnLockAutoReplace = true
 }
