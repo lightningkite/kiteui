@@ -13,6 +13,8 @@
 ![JS](https://img.shields.io/badge/platform-js-blue)
 ![iOS](https://img.shields.io/badge/platform-ios-blue)
 
+[![Donate](https://img.shields.io/badge/donate-stripe-white)](https://donate.stripe.com/6oUfZh2HndqKbny4mr4ow00)
+
 A Kotlin Multiplatform UI Framework inspired by Solid.js that uses the native view components of each platform.
 
 ## Why make this library instead of using Compose Multiplatform?
