@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWithAction
 
 typealias TextField = TextInput
-expect class TextInput(context: RContext) : RViewWithAction {
+public expect class TextInput(context: RContext) : RViewWithAction {
 
     var enabled: Boolean
     val content: ImmediateWritable<String>

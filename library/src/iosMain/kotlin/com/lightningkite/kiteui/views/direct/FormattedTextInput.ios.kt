@@ -12,7 +12,7 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class FormattedTextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -81,12 +81,12 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
 
     private var isRawData: (Char) -> Boolean = { true }
     private var formatter: (clean: String) -> String = { it }
-    actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
+    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
         this.isRawData = isRawData
         this.formatter = formatter
     }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = (textField.text ?: "").filter(isRawData)
             set(value) {
@@ -101,7 +101,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
     }
 
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = when (value.case) {
@@ -155,12 +155,12 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         }
     }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
-    actual inline var align: Align
+    public actual inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center
@@ -183,7 +183,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
         }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value

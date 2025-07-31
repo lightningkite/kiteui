@@ -34,7 +34,7 @@ import platform.UIKit.UIFontWeightTrait
 import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class)
-actual class Code actual constructor(context: RContext) : RView(context) {
+public actual class Code public actual constructor(context: RContext) : RView(context) {
     val actualNative = UILabelWithLayerBackground()
     override val native: UIView = actualNative
     val label get() = actualNative.label
@@ -43,7 +43,7 @@ actual class Code actual constructor(context: RContext) : RView(context) {
         label.numberOfLines = 0
     }
 
-    actual var content: String = ""
+    public actual var content: String = ""
         set(value) {
             field = value
             updateFont()

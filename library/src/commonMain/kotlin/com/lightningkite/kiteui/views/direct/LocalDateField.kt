@@ -15,7 +15,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class LocalDateField(context: RContext) : RViewWithAction {
+public expect class LocalDateField(context: RContext) : RViewWithAction {
     val content: ImmediateWritable<LocalDate?>
     var range: ClosedRange<LocalDate>?
 }

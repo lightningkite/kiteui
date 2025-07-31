@@ -18,13 +18,13 @@ import com.lightningkite.signal.RawReadable
 import com.lightningkite.signal.Readable
 import kotlin.js.JsName
 
-actual abstract class RawImageViewLike(
+public actual abstract class RawImageViewLike(
     context: RContext,
-    actual val source: ImageSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
+    public actual val source: ImageSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
 ) : RView(context) {
-    actual abstract val state: Readable<Unit>
+    public actual abstract val state: Readable<Unit>
     val _state = RawReadable<Unit>()
 
     init {
@@ -42,7 +42,7 @@ actual abstract class RawImageViewLike(
     }
 }
 
-actual class RawImageView actual constructor(
+public actual class RawImageView public actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -54,11 +54,11 @@ actual class RawImageView actual constructor(
         native.tag = "img"
         native.classes.add("viewDraws")
     }
-    actual override val state: Readable<Unit> = _state
+    public actual override val state: Readable<Unit> = _state
     init { nativeLoad(source.toUrl()) }
 }
 
-actual class RawImageViewZoomable actual constructor(
+public actual class RawImageViewZoomable public actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -68,17 +68,17 @@ actual class RawImageViewZoomable actual constructor(
         native.tag = "img"
         native.classes.add("viewDraws")
     }
-    actual override val state: Readable<Unit> = _state
+    public actual override val state: Readable<Unit> = _state
     init { nativeLoad(source.toUrl()) }
-    actual val zoomState: ImmediateWritable<ZoomState> = Property(Unit)
+    public actual val zoomState: ImmediateWritable<ZoomState> = Property(Unit)
 }
 
 @JsName("createObjectURLBlob")
-expect fun createObjectURL(blob: Blob): String
+public expect fun createObjectURL(blob: Blob): String
 
 @JsName("createObjectURLFileReference")
-expect fun createObjectURL(fileReference: FileReference): String
+public expect fun createObjectURL(fileReference: FileReference): String
 
-expect fun RawImageViewLike.nativeLoad(url: String?)
+public expect fun RawImageViewLike.nativeLoad(url: String?)
 
-actual typealias ZoomState = Unit
+public actual typealias ZoomState = Unit

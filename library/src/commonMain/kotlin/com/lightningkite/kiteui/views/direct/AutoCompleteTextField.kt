@@ -13,7 +13,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class AutoCompleteTextField(context: RContext) : RViewWithAction {
+public expect class AutoCompleteTextField(context: RContext) : RViewWithAction {
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints
     var suggestions: List<String>

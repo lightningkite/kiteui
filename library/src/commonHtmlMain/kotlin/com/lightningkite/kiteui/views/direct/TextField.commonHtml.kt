@@ -7,13 +7,13 @@ import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -70,12 +70,12 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             }
         }
     }
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    actual var align: Align = Align.Start
+    public actual var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -85,7 +85,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 Align.Stretch -> "justify"
             }
         }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 

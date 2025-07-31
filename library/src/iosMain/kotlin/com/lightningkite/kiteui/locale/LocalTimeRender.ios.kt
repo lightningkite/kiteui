@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.locale
 import kotlinx.datetime.*
 import platform.Foundation.*
 
-actual fun LocalDate.renderToString(
+public actual fun LocalDate.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -45,7 +45,7 @@ actual fun LocalDate.renderToString(
     }.stringFromDate(this.atTime(12, 0, 0).toInstant(TimeZone.currentSystemDefault()).toNSDate())
 }
 
-actual fun LocalTime.renderToString(size: RenderSize): String {
+public actual fun LocalTime.renderToString(size: RenderSize): String {
     return NSDateFormatter().apply {
         locale = NSLocale.currentLocale
         NSDateFormatter.dateFormatFromTemplate(
@@ -62,7 +62,7 @@ actual fun LocalTime.renderToString(size: RenderSize): String {
         }
     }.stringFromDate(this.atDate(Clock.System.todayIn(TimeZone.currentSystemDefault())).toInstant(TimeZone.currentSystemDefault()).toNSDate())
 }
-actual fun LocalDateTime.renderToString(
+public actual fun LocalDateTime.renderToString(
     size: RenderSize,
     includeWeekday: Boolean,
     includeYear: Boolean,
@@ -108,8 +108,8 @@ actual fun LocalDateTime.renderToString(
     }.stringFromDate(this.toInstant(TimeZone.currentSystemDefault()).toNSDate())
 }
 
-actual fun TimeZone.renderToString(size: RenderSize): String = this.id
-actual fun DayOfWeek.renderToString(size: RenderSize): String = NSDateFormatter().apply {
+public actual fun TimeZone.renderToString(size: RenderSize): String = this.id
+public actual fun DayOfWeek.renderToString(size: RenderSize): String = NSDateFormatter().apply {
     locale = NSLocale.currentLocale
 }.let {
     when(size) {

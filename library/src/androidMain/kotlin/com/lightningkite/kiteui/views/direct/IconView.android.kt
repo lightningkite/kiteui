@@ -23,7 +23,7 @@ import android.widget.ProgressBar
 import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(context: Context) : ImageView(context) {
+public actual class NIconView(context: Context) : ImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }
@@ -42,14 +42,14 @@ actual class NIconView(context: Context) : ImageView(context) {
     }
 }
 
-actual class IconView actual constructor(context: RContext): RView(context) {
+public actual class IconView public actual constructor(context: RContext): RView(context) {
     override val native = NIconView(context.activity)
-    actual var source: Icon?
+    public actual var source: Icon?
         get() = native.icon
         set(value) {
             native.icon = value
         }
-    actual var description: String?
+    public actual var description: String?
         get() {
             return native.contentDescription.toString()
         }

@@ -7,13 +7,13 @@ import com.lightningkite.signal.Readable
 import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.style.position = "relative"
     }
-    actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+    public actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) { field = value; invalidateLayout() }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
@@ -33,7 +33,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     }
 
 
-    actual fun invalidateLayout() {
+    public actual fun invalidateLayout() {
 
     }
 }

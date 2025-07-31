@@ -12,7 +12,7 @@ import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
 import org.w3c.dom.get
 
-actual fun HtmlElementLike.resizeObserver(): Listenable {
+public actual fun HtmlElementLike.resizeObserver(): Listenable {
     return object: BaseListenable() {
         var observer: ResizeObserver? = null
         override fun activate() {
@@ -116,7 +116,7 @@ fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     return out
 }
 
-actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
+public actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
     return object: BaseListenable() {
         var observer: MutationObserver? = null
         override fun activate() {

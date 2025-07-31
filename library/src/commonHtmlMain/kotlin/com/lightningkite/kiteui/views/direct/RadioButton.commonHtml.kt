@@ -6,7 +6,7 @@ import com.lightningkite.signal.ReadableState
 import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
-actual class RadioButton actual constructor(context: RContext) : RView(context) {
+public actual class RadioButton public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"
@@ -16,12 +16,12 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         native.classes.add("clickable")
     }
 
-    actual val checked: ImmediateWritable<Boolean> = native.vprop(
+    public actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value

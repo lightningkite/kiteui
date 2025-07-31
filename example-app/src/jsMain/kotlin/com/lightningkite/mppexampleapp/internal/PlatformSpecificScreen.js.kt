@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.direct.*
 
 val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
 
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
+public actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //    val current = Property(0)
 //    col {
 //        val showExtra = Property(true)

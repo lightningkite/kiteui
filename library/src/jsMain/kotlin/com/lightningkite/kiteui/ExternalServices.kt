@@ -16,8 +16,8 @@ import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.js.json
 
-actual object ExternalServices {
-    actual fun openTab(url: String) {
+public actual object ExternalServices {
+    public actual fun openTab(url: String) {
         window.open(url, "_blank")
     }
 
@@ -49,20 +49,20 @@ actual object ExternalServices {
             }.click()
         }
 
-    actual suspend fun requestFile(mimeTypes: List<String>) = requestFileInput(mimeTypes, {}).firstOrNull()
-    actual suspend fun requestFiles(mimeTypes: List<String>) = requestFileInput(mimeTypes, { multiple = true })
-    actual suspend fun requestCaptureSelf(mimeTypes: List<String>) =
+    public actual suspend fun requestFile(mimeTypes: List<String>) = requestFileInput(mimeTypes, {}).firstOrNull()
+    public actual suspend fun requestFiles(mimeTypes: List<String>) = requestFileInput(mimeTypes, { multiple = true })
+    public actual suspend fun requestCaptureSelf(mimeTypes: List<String>) =
         requestFileInput(mimeTypes, { setAttribute("capture", "user") }).firstOrNull()
 
-    actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>) =
+    public actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>) =
         requestFileInput(mimeTypes, { setAttribute("capture", "environment") }).firstOrNull()
 
-    actual fun setClipboardText(value: String) {
+    public actual fun setClipboardText(value: String) {
         window.navigator.clipboard.writeText(value)
     }
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
-    actual suspend fun download(
+    public actual suspend fun download(
         name: String,
         url: String,
         preferredDestination: DownloadLocation,
@@ -88,7 +88,7 @@ actual object ExternalServices {
     }
 
     @JsName("downloadBlob")
-    actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
+    public actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
         if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
         val url = URL.Companion.createObjectURL(blob)
@@ -102,7 +102,7 @@ actual object ExternalServices {
     }
 
     @JsName("shareBlob")
-    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
+    public actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
         val files = namesToBlobs.map {
             val name = it.first
             val blob = it.second
@@ -123,7 +123,7 @@ actual object ExternalServices {
 
     }
 
-    actual fun share(title: String, message: String?, url: String?) {
+    public actual fun share(title: String, message: String?, url: String?) {
         val navigator = window.navigator.asDynamic()
         if (navigator.canShare == undefined || navigator.share == undefined) {
             val s = document.createElement("script") as HTMLScriptElement
@@ -146,7 +146,7 @@ actual object ExternalServices {
         )
     }
 
-    actual fun openEvent(
+    public actual fun openEvent(
         title: String,
         description: String,
         location: String,
@@ -185,7 +185,7 @@ actual object ExternalServices {
         a.click();
     }
 
-    actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
+    public actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
         TODO()
     }
 }

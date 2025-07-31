@@ -8,7 +8,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class WebView(context: RContext) : RView {
+public expect class WebView(context: RContext) : RView {
 
     var url: String
     var permitJs: Boolean

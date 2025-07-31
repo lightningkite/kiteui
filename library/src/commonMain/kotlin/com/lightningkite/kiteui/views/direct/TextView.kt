@@ -12,7 +12,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class TextView(context: RContext) : RView {
+public expect class TextView(context: RContext) : RView {
 
     var content: String
     var align: Align

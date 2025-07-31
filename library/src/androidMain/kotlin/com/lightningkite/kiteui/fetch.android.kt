@@ -37,7 +37,7 @@ val client: HttpClient
 
 private val fetchLog = ConsoleRoot.tag("fetch")
 
-actual suspend fun fetch(
+public actual suspend fun fetch(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -109,36 +109,36 @@ actual suspend fun fetch(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
-    actual fun append(name: String, value: String): Unit {
+public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
+    public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    actual fun delete(name: String): Unit {
+    public actual fun delete(name: String): Unit {
         map.remove(name.lowercase())
     }
 
-    actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
-    actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
-    actual fun set(name: String, value: String): Unit {
+    public actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
+    public actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
+    public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
 }
 
-actual class RequestResponse(val wraps: HttpResponse) {
-    actual val status: Short get() = wraps.status.value.toShort()
-    actual val ok: Boolean get() = wraps.status.isSuccess()
-    actual suspend fun text(): String {
+public actual class RequestResponse(val wraps: HttpResponse) {
+    public actual val status: Short get() = wraps.status.value.toShort()
+    public actual val ok: Boolean get() = wraps.status.isSuccess()
+    public actual suspend fun text(): String {
         try {
             val result = wraps.bodyAsText()
             return result
@@ -147,7 +147,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         try {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
@@ -157,12 +157,12 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders
+    public actual val headers: HttpHeaders
         get() = HttpHeaders(
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-actual fun websocket(url: String): WebSocket {
+public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
@@ -292,11 +292,11 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
-actual class FileReference(val uri: Uri)
+public actual class FileReference(val uri: Uri)
 
 
-actual fun Blob.mimeType() = type
-actual fun FileReference.mimeType() = when (uri.scheme) {
+public actual fun Blob.mimeType() = type
+public actual fun FileReference.mimeType() = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
     ContentResolver.SCHEME_FILE ->
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
@@ -305,7 +305,7 @@ actual fun FileReference.mimeType() = when (uri.scheme) {
     else -> null
 } ?: "*/*"
 
-actual fun FileReference.fileName(): String {
+public actual fun FileReference.fileName(): String {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
         ?.use { cursor ->
@@ -316,7 +316,7 @@ actual fun FileReference.fileName(): String {
         ?: return "Unknown File Name"
 }
 
-actual class Blob(val data: ByteArray, val type: String)
+public actual class Blob(val data: ByteArray, val type: String)
 
 val webSocketClient: HttpClient by lazy {
     HttpClient(CIO) {
@@ -326,8 +326,8 @@ val webSocketClient: HttpClient by lazy {
     }
 }
 
-actual fun Blob.bytes(): Long = data.size.toLong()
-actual fun FileReference.bytes(): Long {
+public actual fun Blob.bytes(): Long = data.size.toLong()
+public actual fun FileReference.bytes(): Long {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
         ?.use { cursor ->
@@ -338,20 +338,20 @@ actual fun FileReference.bytes(): Long {
         ?: return -1L
 }
 
-//actual suspend fun Blob.byteArray(): ByteArray = data
-//actual suspend fun FileReference.byteArray(): ByteArray = withContext(Dispatchers.Main) {
+//public actual suspend fun Blob.byteArray(): ByteArray = data
+//public actual suspend fun FileReference.byteArray(): ByteArray = withContext(Dispatchers.Main) {
 //    withContext(Dispatchers.IO) {
 //        AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.readBytes()
 //    }
 //}
 
-actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
-actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
+public actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+public actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
     withContext(Dispatchers.IO) {
         AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
     }
 }
 
-actual fun String.toBlob(contentType: String): Blob {
+public actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }

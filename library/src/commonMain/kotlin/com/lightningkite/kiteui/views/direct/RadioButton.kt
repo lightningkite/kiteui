@@ -10,7 +10,7 @@ import kotlin.contracts.*
 import kotlin.jvm.JvmInline
 
 
-expect class RadioButton(context: RContext) : RView {
+public expect class RadioButton(context: RContext) : RView {
     var enabled: Boolean
     val checked: ImmediateWritable<Boolean>
 }

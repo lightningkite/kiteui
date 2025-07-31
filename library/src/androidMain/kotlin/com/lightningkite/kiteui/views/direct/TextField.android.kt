@@ -23,7 +23,7 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
-actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual open class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
@@ -45,8 +45,8 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual val content: ImmediateWritable<String> = native.contentProperty()
-    actual var enabled: Boolean
+    public actual val content: ImmediateWritable<String> = native.contentProperty()
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -80,7 +80,7 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -98,14 +98,14 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
         set(value) {
             native.hint = value
         }
-    actual var align: Align
+    public actual var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start

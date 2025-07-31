@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
 
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+public actual class Button public actual constructor(context: RContext): RViewWithAction(context) {
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
@@ -42,7 +42,7 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         }
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value

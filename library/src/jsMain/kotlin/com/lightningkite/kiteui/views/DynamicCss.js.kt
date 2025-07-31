@@ -20,7 +20,7 @@ external interface BaseUrlScript {
     val baseUrl: String
 }
 
-actual class DynamicCss actual constructor(actual val basePath: String) {
+public actual class DynamicCss public actual constructor(public actual val basePath: String) {
     val customStyleSheetElement: HTMLStyleElement by lazy {
         val sheet = document.createElement("style") as HTMLStyleElement
         sheet.title = "generated-css"
@@ -39,7 +39,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     }
 
     private val fontHandled = HashSet<String>()
-    actual fun font(font: Font): String {
+    public actual fun font(font: Font): String {
         if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName
         if (font.url != null) {
             document.head!!.appendChild((document.createElement("link") as HTMLLinkElement).apply {
@@ -59,7 +59,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
         return font.cssFontFamilyName
     }
 
-    actual fun rule(rule: String, index: Int): Int {
+    public actual fun rule(rule: String, index: Int): Int {
         try {
             return customStyleSheet.insertRule(rule, index)
         } catch (e: Throwable) {
@@ -78,10 +78,10 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     private fun jsonForEach(obj: Json, action: (key: String, value: Any?) -> Unit) =
         js("for (var key in obj) { action(key, obj[key]) }")
 
-    actual fun add(selector: String, key: String, value: String, media: String) {
+    public actual fun add(selector: String, key: String, value: String, media: String) {
         queue.subObj(media).subObj(selector).set(key, value)
     }
-    actual fun emit(): String {
+    public actual fun emit(): String {
         return customStyleSheet.cssRules.let {
             (0..<it.length).asSequence().mapNotNull { i -> it.get(i) }.joinToString("\n") { it.cssText }
         }
@@ -90,7 +90,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     var flushTotal: Duration = 0.seconds
     var ruleTotal = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    actual fun flush() {
+    public actual fun flush() {
         measureTime {
 //            val map = HashMap<String, HashMap<String, HashMap<String, String>>>()
 //            jsonForEach(queue) { media, it ->
@@ -148,7 +148,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
     }
 }
 
-//actual class DynamicCss actual constructor(actual val basePath: String) {
+//public actual class DynamicCss public actual constructor(public actual val basePath: String) {
 //    val customStyleSheetElement: HTMLStyleElement by lazy {
 //        val sheet = document.createElement("style") as HTMLStyleElement
 //        sheet.title = "generated-css"
@@ -173,7 +173,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //    )
 //
 //    private val fontHandled = HashSet<String>()
-//    actual fun font(font: Font): String {
+//    public actual fun font(font: Font): String {
 //        if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName
 //        if (font.url != null) {
 //            document.head!!.appendChild((document.createElement("link") as HTMLLinkElement).apply {
@@ -193,7 +193,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //        return font.cssFontFamilyName
 //    }
 //
-//    actual fun rule(rule: String, index: Int): Int {
+//    public actual fun rule(rule: String, index: Int): Int {
 //        try {
 //            return customStyleSheet.insertRule(rule, index)
 //        } catch(e: Throwable) {
@@ -201,7 +201,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //        }
 //    }
 //
-//    actual fun styles(mediaQuery: String?, styles: Map<String, Map<String, String>>) {
+//    public actual fun styles(mediaQuery: String?, styles: Map<String, Map<String, String>>) {
 //        if (mediaQuery == null) {
 //            styles.forEach { style(it.key, it.value) }
 //        } else {
@@ -216,7 +216,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //    }
 //
 //    private val styleOnces = HashSet<String>()
-//    actual fun styleIfMissing(selector: String, map: Map<String, String>) {
+//    public actual fun styleIfMissing(selector: String, map: Map<String, String>) {
 //        if(styleOnces.add(selector)) {
 //            val wrapSelector = selector//":not(.unkiteui) $selector"
 //            rule(
@@ -226,7 +226,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //        }
 //    }
 //
-//    actual fun style(selector: String, map: Map<String, String>) {
+//    public actual fun style(selector: String, map: Map<String, String>) {
 //        val wrapSelector = selector//":not(.unkiteui) $selector"
 //        rule(
 //            """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }""",
@@ -234,7 +234,7 @@ actual class DynamicCss actual constructor(actual val basePath: String) {
 //        )
 //    }
 //
-//    actual fun tempStyle(selector: String, map: Map<String, String>): () -> Unit {
+//    public actual fun tempStyle(selector: String, map: Map<String, String>): () -> Unit {
 //        val wrapSelector = selector//":not(.unkiteui) $selector"
 //        val content = """$wrapSelector { ${map.entries.joinToString("; ") { "${it.key}: ${it.value}" }} }"""
 //        rule(

@@ -11,7 +11,7 @@ import platform.UIKit.UIProgressView
 import platform.UIKit.UIView
 
 
-actual class CircularProgress actual constructor(context: RContext) : RView(context) {
+public actual class CircularProgress public actual constructor(context: RContext) : RView(context) {
     override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
-    actual var ratio: Float = 0f
+    public actual var ratio: Float = 0f
 }

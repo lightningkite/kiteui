@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.RView
 import kotlin.contracts.*
 
 
-//expect class ImageCrop(context: RContext) : RView {
+//public expect class ImageCrop(context: RContext) : RView {
 //    var source: ImageLocal?
 //    var aspectRatio: Pair<Int, Int>?
 //    suspend fun crop(): ImageRaw?

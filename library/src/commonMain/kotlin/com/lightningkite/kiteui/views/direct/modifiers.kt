@@ -14,14 +14,14 @@ import com.lightningkite.kiteui.views.ViewWriter
 
 
 @ViewModifierDsl3
-expect fun ViewWriter.hintPopover(
+public expect fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
     setup: ViewWriter.() -> Unit
 ): ViewWrapper
 
 @Deprecated("Use hintPopover or opensMenu depending on your situation.")
 @ViewModifierDsl3
-expect fun ViewWriter.hasPopover(
+public expect fun ViewWriter.hasPopover(
     requiresClick: Boolean = false,
     preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
@@ -33,16 +33,16 @@ interface PopoverContext {
 }
 
 @ViewModifierDsl3
-expect fun ViewWriter.textPopover(message: String): ViewWrapper
+public expect fun ViewWriter.textPopover(message: String): ViewWrapper
 
 @ViewModifierDsl3
-expect fun ViewWriter.weight(amount: Float): ViewWrapper
+public expect fun ViewWriter.weight(amount: Float): ViewWrapper
 
 @ViewModifierDsl3
-expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper
+public expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper
 
 @ViewModifierDsl3
-expect fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper
+public expect fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper
 
 @ViewModifierDsl3
 @Deprecated("use align instead", ReplaceWith("align"))
@@ -114,14 +114,14 @@ inline fun ViewWriter.scrolling(
     return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
 }
 
-expect inline fun ViewWriter.__scrollsUncontracted(
+public expect inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ViewWrapper
 
 @ViewModifierDsl3
-expect fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
+public expect fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
 
 @ViewModifierDsl3
 fun ViewWriter.sizeConstraints(
@@ -166,7 +166,7 @@ fun ViewWriter.sizeConstraints(
 )
 
 @ViewModifierDsl3
-expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper
+public expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper
 
 @ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.")
@@ -191,7 +191,7 @@ val ViewWriter.unpadded: ViewWrapper
 val ViewWriter.withDefaultPadding: ViewWrapper get() = padded
 
 @ViewModifierDsl3
-expect fun ViewWriter.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper
+public expect fun ViewWriter.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))

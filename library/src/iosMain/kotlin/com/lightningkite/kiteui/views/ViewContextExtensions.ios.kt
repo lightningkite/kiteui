@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
-actual fun ViewWriter.overlayWriter(body: RView.() -> Unit) {
+public actual fun ViewWriter.overlayWriter(body: RView.() -> Unit) {
     val viewController = object : UIViewController(null, null) {
         override fun viewDidDisappear(animated: Boolean) {
             super.viewDidDisappear(animated)

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
-actual class Separator actual constructor(context: RContext) : RView(context) {
+public actual class Separator public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.classes.add("kiteui-separator")

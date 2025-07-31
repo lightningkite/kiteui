@@ -14,7 +14,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class TextArea(context: RContext) : RViewWithAction {
+public expect class TextArea(context: RContext) : RViewWithAction {
     var enabled: Boolean
     val content: ImmediateWritable<String>
     var keyboardHints: KeyboardHints

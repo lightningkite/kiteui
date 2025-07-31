@@ -26,7 +26,7 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 
 
-actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class NumberInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val trigger: NSObject = object: NSObject() {
         @ObjCAction
@@ -114,7 +114,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?> {
+    public actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?> {
         override var value: Double?
             get() = (textField.text ?: "").filter { it.isDigit() || it == '.' }.toDoubleOrNull()
             set(value) {
@@ -125,7 +125,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             return textField.onEvent(this@NumberInput, UIControlEventEditingChanged, listener)
         }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = when (value.case) {
@@ -178,12 +178,12 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 else -> UIReturnKeyType.UIReturnKeyDone
             }
         }
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
-    actual inline var align: Align
+    public actual inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center
@@ -205,9 +205,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
-    actual var range: ClosedRange<Double>? = null
+    public actual var range: ClosedRange<Double>? = null
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value

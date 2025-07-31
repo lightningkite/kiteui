@@ -15,8 +15,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
 import kotlin.js.Promise
 
-actual object AppState {
-    actual val animationFrame: Listenable
+public actual object AppState {
+    public actual val animationFrame: Listenable
         get() = _AnimationFrame
     internal val _windowInfo = Property(
         WindowStatistics(
@@ -37,17 +37,17 @@ actual object AppState {
             }
         })
     }
-    actual val windowInfo: ImmediateReadable<WindowStatistics>
+    public actual val windowInfo: ImmediateReadable<WindowStatistics>
         get() = _windowInfo
-    actual val inForeground: ImmediateReadable<Boolean>
+    public actual val inForeground: ImmediateReadable<Boolean>
         get() = _InForeground
     internal val _softInputOpen = Property(false)
-    actual val softInputOpen: ImmediateReadable<Boolean>
+    public actual val softInputOpen: ImmediateReadable<Boolean>
         get() = _softInputOpen
 
     private var currentLock: WakeLockSentinel? = null
     private var currentLockCount = 0
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         if (currentLockCount++ == 0) {
             AppScope.launch {
                 try {
@@ -86,7 +86,7 @@ actual object AppState {
             window.removeEventListener("keydown", l)
         }
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): () -> Unit {
         val l = { ev: Event ->
             ev as KeyboardEvent
             if (handler(

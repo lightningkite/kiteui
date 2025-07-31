@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
-actual class CircularProgress actual constructor(context: RContext) : RView(context) {
+public actual class CircularProgress public actual constructor(context: RContext) : RView(context) {
 
     override val native = NCircularProgress(context.activity).apply {
 
@@ -30,7 +30,7 @@ actual class CircularProgress actual constructor(context: RContext) : RView(cont
         native.setPaddingAll(0)
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() = native.progress /100f
         set(value) { native.setProgress((value * 100)) }
 }

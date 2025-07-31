@@ -11,12 +11,12 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: RContext): RView(context) {
+public actual class Link public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual var to: (() -> Page)? = null
+    public actual var to: (() -> Page)? = null
         set(value) {
             field = value
             native.setOnClickListener { view ->
@@ -33,26 +33,26 @@ actual class Link actual constructor(context: RContext): RView(context) {
                 }
             }
         }
-    actual var newTab: Boolean = false
+    public actual var newTab: Boolean = false
     private var onNavigate: (suspend () -> Unit)? = null
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
     private var onClick: (suspend () -> Unit)? = null
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    public actual fun onClick(action: suspend () -> Unit): Unit {
         onClick = action
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
             refreshTheming()
         }
 
-    actual var onNavigator: PageNavigator = mainPageNavigator
-    actual var resetsStack: Boolean = false
+    public actual var onNavigator: PageNavigator = mainPageNavigator
+    public actual var resetsStack: Boolean = false
 
     override fun applyState(theme: ThemeAndBack): ThemeAndBack {
         var t = theme[ClickableSemantic]

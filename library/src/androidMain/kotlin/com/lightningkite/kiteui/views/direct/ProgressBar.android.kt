@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
-actual class ProgressBar actual constructor(context: RContext): RView(context) {
+public actual class ProgressBar public actual constructor(context: RContext): RView(context) {
     override val native = android.widget.ProgressBar(context.activity, null, android.R.attr.progressBarStyleHorizontal).apply {
 //        min = 0
         max = 10000
@@ -30,7 +30,7 @@ actual class ProgressBar actual constructor(context: RContext): RView(context) {
         native.setPaddingAll(0)
     }
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() = native.progress / 10000f
         set(value) { native.progress = (value * 10000).roundToInt() }
 }

@@ -13,12 +13,12 @@ import com.lightningkite.signal.ReadableState
 import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
-actual class Video actual constructor(context: RContext): RView(context) {
+public actual class Video public actual constructor(context: RContext): RView(context) {
     override val native = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
     }
 
-    actual var source: VideoSource?
+    public actual var source: VideoSource?
         get() = TODO()
         set(value) {
             when (value) {
@@ -49,7 +49,7 @@ actual class Video actual constructor(context: RContext): RView(context) {
                 else -> {}
             }
         }
-    actual val time: Writable<Double>
+    public actual val time: Writable<Double>
         get() = object : Writable<Double> {
             override suspend fun set(value: Double) {
                 native.player!!.seekTo((value * 1000.0).toLong())
@@ -72,7 +72,7 @@ actual class Video actual constructor(context: RContext): RView(context) {
                 return { native.player!!.removeListener(l) }
             }
         }
-    actual val playing: Writable<Boolean>
+    public actual val playing: Writable<Boolean>
         get() = object : Writable<Boolean> {
             override suspend fun set(value: Boolean) {
                 if (value) {
@@ -94,7 +94,7 @@ actual class Video actual constructor(context: RContext): RView(context) {
                 return { native.player!!.removeListener(l) }
             }
         }
-    actual val volume: Writable<Float>
+    public actual val volume: Writable<Float>
         get() = object : Writable<Float> {
             override suspend fun set(value: Float) {
                 native.player!!.volume = value
@@ -112,19 +112,19 @@ actual class Video actual constructor(context: RContext): RView(context) {
                 return { native.player!!.removeListener(l) }
             }
         }
-    actual var showControls: Boolean
+    public actual var showControls: Boolean
         get() = native.useController
         set(value) {
             native.useController = value
         }
-    actual var loop: Boolean
+    public actual var loop: Boolean
         get() = native.player!!.repeatMode == Player.REPEAT_MODE_ONE
         set(value) {
             native.player!!.repeatMode = Player.REPEAT_MODE_ONE
         }
     @get:OptIn(UnstableApi::class)
     @set:OptIn(UnstableApi::class)
-    actual var scaleType: ImageScaleType
+    public actual var scaleType: ImageScaleType
         get() = when (native.resizeMode) {
             AspectRatioFrameLayout.RESIZE_MODE_FIT -> ImageScaleType.Fit
             AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> ImageScaleType.Crop
@@ -139,7 +139,7 @@ actual class Video actual constructor(context: RContext): RView(context) {
         }
 }
 
-//actual fun Video.onComplete(action: () -> Unit) {
+//public actual fun Video.onComplete(action: () -> Unit) {
 //    val l = object: Player.Listener {
 //        override fun onIsPlayingChanged(isPlaying: Boolean) {
 //            action()

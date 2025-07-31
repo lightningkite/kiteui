@@ -18,15 +18,15 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 import kotlin.experimental.ExperimentalNativeApi
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)
         onRemove { delegate = ProgrammaticLayoutDelegate.AllFull }
     }
-    actual var delegate: ProgrammaticLayoutDelegate by native::delegate
-    actual fun invalidateLayout() {
+    public actual var delegate: ProgrammaticLayoutDelegate by native::delegate
+    public actual fun invalidateLayout() {
         native.invalidateLayout()
     }
     override var paddingByEdge: Edges?

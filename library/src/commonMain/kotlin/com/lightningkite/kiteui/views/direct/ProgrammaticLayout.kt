@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
 
-expect class ProgrammaticLayout(context: RContext): RView {
+public expect class ProgrammaticLayout(context: RContext): RView {
     var delegate: ProgrammaticLayoutDelegate
     fun invalidateLayout()
 }

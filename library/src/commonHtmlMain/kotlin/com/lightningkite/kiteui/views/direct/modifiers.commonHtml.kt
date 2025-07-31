@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.CoroutineScope
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
 ): ViewWrapper {
@@ -30,7 +30,7 @@ actual fun ViewWriter.hintPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
@@ -66,14 +66,14 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
+public actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
     card - text {
         content = message
     }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
         native.style.flexGrow = "$amount"
         native.style.flexShrink = "$amount"
@@ -84,7 +84,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
@@ -104,7 +104,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         native.classes.add("h${horizontal}")
         native.desiredHorizontalGravity = horizontal
@@ -115,7 +115,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
@@ -123,7 +123,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
         if (constraints.minHeight == null) native.style.minHeight = null
@@ -154,7 +154,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
         reactiveScope {
@@ -190,7 +190,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
 //    // TODO: include old animation code
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
@@ -238,5 +238,5 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
     }
 }
 
-internal expect fun RView.nativeAnimateShow()
-internal expect fun RView.nativeAnimateHide()
+internal public expect fun RView.nativeAnimateShow()
+internal public expect fun RView.nativeAnimateHide()

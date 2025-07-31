@@ -30,7 +30,7 @@ import platform.objc.sel_registerName
 
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
-actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
     override fun childTouches(side: Side, child: RView): Boolean {
@@ -49,7 +49,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     private var rightSwipeTarget: NSObject? = null
     private var rightSwipeRecognizer: UISwipeGestureRecognizer? = null
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -129,7 +129,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         ExternalServices.currentlyPresented = viewController
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -170,7 +170,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -211,7 +211,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         willRemove?.animateIn(transition.forward)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         leftSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleLeftSwipe(sender: UISwipeGestureRecognizer) {
@@ -225,7 +225,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         native.userInteractionEnabled = true
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         rightSwipeTarget = object : NSObject() {
             @ObjCAction
             fun handleRightSwipe(sender: UISwipeGestureRecognizer) {
@@ -241,7 +241,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayoutButton()
 
     override fun postSetup() {

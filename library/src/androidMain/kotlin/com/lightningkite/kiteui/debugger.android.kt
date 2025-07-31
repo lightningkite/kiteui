@@ -3,37 +3,37 @@ package com.lightningkite.kiteui
 import android.util.Log
 import java.lang.ref.WeakReference
 
-actual fun debugger() {
+public actual fun debugger() {
 
 }
 
-actual fun gc(): GCInfo {
+public actual fun gc(): GCInfo {
     return Runtime.getRuntime().run {
         gc()
         GCInfo(totalMemory() - freeMemory())
     }
 }
-actual fun cleanImageCache() {
+public actual fun cleanImageCache() {
     // TODO
 }
 
-actual fun gcReport() {}
+public actual fun gcReport() {}
 
-actual typealias WeakReference<T> = WeakReference<T>
+public actual typealias WeakReference<T> = WeakReference<T>
 
-actual fun assertMainThread() {
+public actual fun assertMainThread() {
 }
 
-actual fun Throwable.printStackTrace2() = printStackTrace()
+public actual fun Throwable.printStackTrace2() = printStackTrace()
 
 
-actual object ConsoleRoot: Console {
+public actual object ConsoleRoot: Console {
     private val platform = PlatformConsole("MyApp")
-    actual override fun tag(tag: String): Console = platform.tag(tag)
-    actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    public actual override fun tag(tag: String): Console = platform.tag(tag)
+    public actual override fun log(vararg entries: Any?) = platform.log(*entries)
+    public actual override fun error(vararg entries: Any?) = platform.error(*entries)
+    public actual override fun info(vararg entries: Any?) = platform.info(*entries)
+    public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
 private class PlatformConsole(val tag: String): Console {
     override fun tag(tag: String): Console = PlatformConsole(tag)
@@ -54,4 +54,4 @@ private class PlatformConsole(val tag: String): Console {
     }
 }
 
-actual fun Any?.identityHashCode(): Int = System.identityHashCode(this)
+public actual fun Any?.identityHashCode(): Int = System.identityHashCode(this)

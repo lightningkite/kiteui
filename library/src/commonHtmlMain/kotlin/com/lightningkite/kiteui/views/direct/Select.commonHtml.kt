@@ -8,13 +8,13 @@ import com.lightningkite.kiteui.views.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-actual class Select actual constructor(context: RContext) : RView(context) {
+public actual class Select public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "select"
         native.classes.add("editable")
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: Writable<T>,
         data: Readable<List<T>>,
         render: (T) -> String
@@ -55,7 +55,7 @@ actual class Select actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 

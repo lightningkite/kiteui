@@ -16,10 +16,10 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
 
-actual class Canvas actual constructor(context: RContext) : RView(context) {
+public actual class Canvas public actual constructor(context: RContext) : RView(context) {
     override val native = CanvasView()
 
-    actual var delegate: CanvasDelegate?
+    public actual var delegate: CanvasDelegate?
         get() = native.delegate
         set(value) {
             native.delegate = value
@@ -30,34 +30,34 @@ actual class Canvas actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual typealias KeyCode = String
+public actual typealias KeyCode = String
 
-actual object KeyCodes {
-    actual val left: KeyCode get() = UIKeyInputLeftArrow
-    actual val right: KeyCode get() = UIKeyInputRightArrow
-    actual val up: KeyCode get() = UIKeyInputUpArrow
-    actual val down: KeyCode get() = UIKeyInputDownArrow
-    actual fun letter(char: Char): KeyCode = char.lowercase()
-    actual fun num(digit: Int): KeyCode = digit.toString()
-    actual fun numpad(digit: Int): KeyCode = digit.toString()
-    actual val space: KeyCode get() = " "
-    actual val enter: KeyCode get() = "\n"
-    actual val tab: KeyCode get() = "\t"
-    actual val escape: KeyCode get() = UIKeyInputEscape
-    actual val leftCtrl: KeyCode get() = ""
-    actual val rightCtrl: KeyCode get() = ""
-    actual val leftShift: KeyCode get() = ""
-    actual val rightShift: KeyCode get() = ""
-    actual val leftAlt: KeyCode get() = ""
-    actual val rightAlt: KeyCode get() = ""
-    actual val equals: KeyCode get() = "="
-    actual val dash: KeyCode get() = "-"
-    actual val backslash: KeyCode get() = "\\"
-    actual val leftBrace: KeyCode get() = "["
-    actual val rightBrace: KeyCode get() = "]"
-    actual val semicolon: KeyCode get() = ";"
-    actual val comma: KeyCode get() = ","
-    actual val period: KeyCode get() = "."
+public actual object KeyCodes {
+    public actual val left: KeyCode get() = UIKeyInputLeftArrow
+    public actual val right: KeyCode get() = UIKeyInputRightArrow
+    public actual val up: KeyCode get() = UIKeyInputUpArrow
+    public actual val down: KeyCode get() = UIKeyInputDownArrow
+    public actual fun letter(char: Char): KeyCode = char.lowercase()
+    public actual fun num(digit: Int): KeyCode = digit.toString()
+    public actual fun numpad(digit: Int): KeyCode = digit.toString()
+    public actual val space: KeyCode get() = " "
+    public actual val enter: KeyCode get() = "\n"
+    public actual val tab: KeyCode get() = "\t"
+    public actual val escape: KeyCode get() = UIKeyInputEscape
+    public actual val leftCtrl: KeyCode get() = ""
+    public actual val rightCtrl: KeyCode get() = ""
+    public actual val leftShift: KeyCode get() = ""
+    public actual val rightShift: KeyCode get() = ""
+    public actual val leftAlt: KeyCode get() = ""
+    public actual val rightAlt: KeyCode get() = ""
+    public actual val equals: KeyCode get() = "="
+    public actual val dash: KeyCode get() = "-"
+    public actual val backslash: KeyCode get() = "\\"
+    public actual val leftBrace: KeyCode get() = "["
+    public actual val rightBrace: KeyCode get() = "]"
+    public actual val semicolon: KeyCode get() = ";"
+    public actual val comma: KeyCode get() = ","
+    public actual val period: KeyCode get() = "."
 }
 
 

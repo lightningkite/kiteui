@@ -18,13 +18,13 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
-actual class Select actual constructor(context: RContext): RView(context) {
+public actual class Select public actual constructor(context: RContext): RView(context) {
     override val native = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -61,7 +61,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         background = layerDrawable
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: Writable<T>,
         data: Readable<List<T>>,
         render: (T) -> String
@@ -148,11 +148,11 @@ actual class Select actual constructor(context: RContext): RView(context) {
 
 
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual class NSelect(context: Context): AppCompatSpinner(context) {
+//public actual class NSelect(context: Context): AppCompatSpinner(context) {
 //    lateinit var viewWriter: ViewWriter
 //}
 //
-//actual fun <T> Select.bind(
+//public actual fun <T> Select.bind(
 //    edits: Writable<T>,
 //    data: Readable<List<T>>,
 //    render: (T) -> String
@@ -221,7 +221,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
 //}
 //
 //@ViewDsl
-//actual fun ViewWriter.selectActual(setup: Select.() -> Unit) {
+//public actual fun ViewWriter.selectActual(setup: Select.() -> Unit) {
 //    return viewElement(factory = ::NSelect, wrapper = ::Select, setup = {
 //        native.viewWriter = newViews()
 //        native.minimumHeight = 0

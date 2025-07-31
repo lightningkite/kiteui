@@ -19,7 +19,7 @@ import kotlin.js.json
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-internal actual fun RView.nativeAnimateShow() {
+internal public actual fun RView.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
     (
             showHideQueue ?: run {
@@ -31,7 +31,7 @@ internal actual fun RView.nativeAnimateShow() {
             ).put(this, true)
 }
 
-internal actual fun RView.nativeAnimateHide() {
+internal public actual fun RView.nativeAnimateHide() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
     (
             showHideQueue ?: run {

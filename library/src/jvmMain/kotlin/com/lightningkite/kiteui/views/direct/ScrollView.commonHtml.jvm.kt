@@ -6,10 +6,10 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
-actual class ScrollingBehaviorImpl actual constructor(
+public actual class ScrollingBehaviorImpl public actual constructor(
     val on: RView,
-    actual override val horizontal: Boolean,
-    actual override val vertical: Boolean
+    public actual override val horizontal: Boolean,
+    public actual override val vertical: Boolean
 ) : ScrollingBehaviors {
     val native = on.native
     init {
@@ -28,17 +28,17 @@ actual class ScrollingBehaviorImpl actual constructor(
             native.style.overflowY = "none"
         }
     }
-    actual override var showScrollBars: Boolean = true
+    public actual override var showScrollBars: Boolean = true
         set(value) {
             field = value
             if(value) native.classes -= "hideScrollbar"
             else native.classes += "hideScrollbar"
         }
 
-    actual override val viewport: Readable<Rect> = Readable.Never
-    actual override val content: Readable<Rect> = Readable.Never
-    actual override val directlyInteractingWithScroller: Readable<Boolean> get() = Constant(false)
-    actual override var snapToElements: Pair<Align?, Align?> = null to null
+    public actual override val viewport: Readable<Rect> = Readable.Never
+    public actual override val content: Readable<Rect> = Readable.Never
+    public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = Constant(false)
+    public actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
             field = value
             native.classes.removeAll { it.startsWith("snapTo-") }
@@ -50,17 +50,17 @@ actual class ScrollingBehaviorImpl actual constructor(
                 else -> "none"
             })
         }
-    actual override var scrollSnapStop: Boolean = false
+    public actual override var scrollSnapStop: Boolean = false
         set(value) {
             field = value
             native.setStyleProperty("scroll-snap-stop", if(value) "always" else "normal")
         }
-    actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    public actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
-    actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    public actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
     }
 
-    actual override fun scrollToKeepAnimations(x: Double, y: Double) {
+    public actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         TODO("Not yet implemented")
     }
 }

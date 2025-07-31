@@ -4,24 +4,24 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import android.webkit.WebView as AndroidWebView
 
-actual class WebView actual constructor(context: RContext): RView(context) {
+public actual class WebView public actual constructor(context: RContext): RView(context) {
     override val native = AndroidWebView(context.activity).apply {
     }
-    actual var url: String
+    public actual var url: String
         get() {
             return native.url ?: ""
         }
         set(value) {
             native.loadUrl(value)
         }
-    actual var permitJs: Boolean
+    public actual var permitJs: Boolean
         get() {
             return native.settings.javaScriptEnabled
         }
         set(value) {
             native.settings.javaScriptEnabled = value
         }
-    actual var content: String
+    public actual var content: String
         get() {
             return native.tag as? String ?: ""
         }

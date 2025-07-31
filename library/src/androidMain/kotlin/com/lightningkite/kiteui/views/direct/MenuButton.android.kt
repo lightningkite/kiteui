@@ -6,12 +6,12 @@ import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
-actual class MenuButton actual constructor(context: RContext): RView(context) {
+public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
             this.overlayFrame!!.popoverWriter {
@@ -63,10 +63,10 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         }
     }
 
-    actual var requireClick: Boolean = true
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
+    public actual var requireClick: Boolean = true
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value

@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = CoordinatorLayoutWithGestures(context.activity)
     override fun childTouches(child: RView): Int {
@@ -56,7 +56,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -136,7 +136,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -183,7 +183,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         } - content(control)
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -230,16 +230,16 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         } - content(control)
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
         native.onLeftSwipeAction = { launch { action() } }
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
         native.onRightSwipeAction = { launch { action() } }
     }
 }
 
-actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
     override val native: BottomSheetDragHandleView = BottomSheetDragHandleView(context.activity).apply {
         minimumWidth = 5.rem.value.toInt()
         minimumHeight = 1.rem.value.toInt()

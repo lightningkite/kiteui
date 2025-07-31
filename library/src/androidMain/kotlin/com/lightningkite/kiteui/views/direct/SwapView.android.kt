@@ -21,7 +21,7 @@ import com.lightningkite.signal.CalculationContext
 import com.lightningkite.kiteui.views.*
 
 
-actual class SwapView actual constructor(context: RContext) : RView(context) {
+public actual class SwapView public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout(context.activity)
 
@@ -30,7 +30,7 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
     }
 
-    actual fun swap(
+    public actual fun swap(
         transition: ScreenTransition,
         createNewView: ViewWriter.() -> ViewModifiable?,
     ) {

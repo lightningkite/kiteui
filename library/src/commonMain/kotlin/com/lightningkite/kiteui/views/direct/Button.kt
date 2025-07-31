@@ -11,7 +11,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class Button(context: RContext) : RViewWithAction {
+public expect class Button(context: RContext) : RViewWithAction {
     var enabled: Boolean
 }
 

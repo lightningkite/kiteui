@@ -4,7 +4,7 @@ package com.lightningkite.kiteui.models
 
 import com.lightningkite.kiteui.encodeURIComponent
 
-actual data class DimensionRaw(
+public actual data class DimensionRaw(
     val px: Double = 0.0,
     val rem: Double = 0.0,
 ): Comparable<DimensionRaw> {
@@ -23,39 +23,39 @@ fun Dimension(
     rem: Double = 0.0,
 ) = Dimension(DimensionRaw(px, rem))
 
-actual val Int.px: Dimension
+public actual val Int.px: Dimension
     get() = Dimension(px = this.toDouble())
 
-actual val Int.rem: Dimension
+public actual val Int.rem: Dimension
     get() = Dimension(rem = this.toDouble())
 
-actual val Double.rem: Dimension
+public actual val Double.rem: Dimension
     get() = Dimension(rem = this)
 
-actual val Int.dp: Dimension
+public actual val Int.dp: Dimension
     get() = Dimension(px = this.toDouble())
 
-actual val Double.dp: Dimension
+public actual val Double.dp: Dimension
     get() = Dimension(px = this)
 
-actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
+public actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
     px = this.value.px + other.value.px,
     rem = this.value.rem + other.value.rem,
 )
-actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
+public actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
     px = this.value.px - other.value.px,
     rem = this.value.rem - other.value.rem,
 )
-actual operator fun Dimension.times(other: Float): Dimension = Dimension(
+public actual operator fun Dimension.times(other: Float): Dimension = Dimension(
     px = this.value.px * other,
     rem = this.value.rem * other,
 )
-actual operator fun Dimension.div(other: Float): Dimension = Dimension(
+public actual operator fun Dimension.div(other: Float): Dimension = Dimension(
     px = this.value.px / other,
     rem = this.value.rem / other,
 )
-actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
-actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
+public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
+public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
 fun CornerRadii.toRawCornerRadius(): String = when (this) {
     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
@@ -67,7 +67,7 @@ fun CornerRadii.toRawCornerRadius(): String = when (this) {
     }
 }
 
-actual data class Font(
+public actual data class Font(
     val cssFontFamilyName: String,
     val url: String? = null,
     val fallback: String = "Helvetica",
@@ -79,17 +79,17 @@ data class FontDirect(
     val italics: Map<Int, String>,
 )
 
-actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
-actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
+public actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
+public actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-actual sealed class ImageSource actual constructor()
-actual data class ImageResource(val relativeUrl: String) : ImageSource()
+public actual sealed class ImageSource public actual constructor()
+public actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
-actual sealed class VideoSource actual constructor()
-actual data class VideoResource(val relativeUrl: String) : VideoSource()
+public actual sealed class VideoSource public actual constructor()
+public actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
-actual sealed class AudioSource actual constructor()
-actual data class AudioResource(val relativeUrl: String) : AudioSource()
+public actual sealed class AudioSource public actual constructor()
+public actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
 fun Dimension.toBoxShadow(): String {
     if (value.roughPx == 0.0)
@@ -108,14 +108,14 @@ class ScreenTransitionPart(
     operator fun plus(other: ScreenTransitionPart) = ScreenTransitionPart(from = from + other.from, to = to + other.to)
 }
 
-actual class ScreenTransition(
+public actual class ScreenTransition(
     val name: String,
     val enter: ScreenTransitionPart,
     val exit: ScreenTransitionPart,
 ) {
     operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = enter + other.enter, exit = exit + other.exit)
-    actual companion object {
-        actual val None: ScreenTransition = ScreenTransition(
+    public actual companion object {
+        public actual val None: ScreenTransition = ScreenTransition(
             name = "None",
             enter = ScreenTransitionPart(
                 from = mapOf(),
@@ -130,27 +130,27 @@ actual class ScreenTransition(
             from = mapOf("transform" to "translate$dir(${from}%)"),
             to = mapOf("transform" to "translate$dir(${to}%)"),
         )
-        actual val Push: ScreenTransition = ScreenTransition(
+        public actual val Push: ScreenTransition = ScreenTransition(
             name = "Push",
             enter = translate("X", 100, 0),
             exit = translate("X", 0, -100),
         )
-        actual val Pop: ScreenTransition = ScreenTransition(
+        public actual val Pop: ScreenTransition = ScreenTransition(
             name = "Pop",
             enter = translate("X", -100, 0),
             exit = translate("X", 0, 100),
         )
-        actual val PullUp: ScreenTransition = ScreenTransition(
+        public actual val PullUp: ScreenTransition = ScreenTransition(
             name = "PullUp",
             enter = translate("Y", 100, 0),
             exit = translate("Y", 0, -100),
         )
-        actual val PullDown: ScreenTransition = ScreenTransition(
+        public actual val PullDown: ScreenTransition = ScreenTransition(
             name = "PullDown",
             enter = translate("Y", -100, 0),
             exit = translate("Y", 0, 100),
         )
-        actual val Fade: ScreenTransition = ScreenTransition(
+        public actual val Fade: ScreenTransition = ScreenTransition(
             name = "Fade",
             enter = ScreenTransitionPart(
                 from = mapOf("opacity" to "0"),
@@ -161,7 +161,7 @@ actual class ScreenTransition(
                 to = mapOf("opacity" to "0"),
             ),
         )
-        actual val GrowFade: ScreenTransition = ScreenTransition(
+        public actual val GrowFade: ScreenTransition = ScreenTransition(
             name = "Grow",
             enter = ScreenTransitionPart(
                 from = mapOf("transform" to "scale(0.75) translateY(7vh)"),
@@ -172,7 +172,7 @@ actual class ScreenTransition(
                 to = mapOf("transform" to "scale(1.33) translateY(-7vh)"),
             ),
         ) + Fade
-        actual val ShrinkFade: ScreenTransition = ScreenTransition(
+        public actual val ShrinkFade: ScreenTransition = ScreenTransition(
             name = "Shrink",
             enter = ScreenTransitionPart(
                 from = mapOf("transform" to "scale(1.33) translateY(-7vh)"),

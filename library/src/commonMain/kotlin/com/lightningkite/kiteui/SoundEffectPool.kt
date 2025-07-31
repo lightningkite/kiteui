@@ -10,7 +10,7 @@ import kotlinx.coroutines.delay
 
 //import com.lightningkite.kiteui.views.reactiveScope
 
-expect class SoundEffectPool(concurrency: Int = 4) {
+public expect class SoundEffectPool(concurrency: Int = 4) {
     suspend fun preload(sound: AudioSource)
     suspend fun play(sound: AudioSource): PlayingSoundEffect
     fun unload(sound: AudioSource)
@@ -22,7 +22,7 @@ interface PlayingSoundEffect {
     fun stop()
 }
 
-expect suspend fun AudioSource.load(): PlayableAudio
+public expect suspend fun AudioSource.load(): PlayableAudio
 
 interface PlayableAudio {
     var volume: Float

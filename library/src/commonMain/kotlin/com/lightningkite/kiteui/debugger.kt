@@ -3,12 +3,12 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.views.RView
 
 var debugMode: Boolean = false
-expect fun debugger(): Unit
+public expect fun debugger(): Unit
 data class GCInfo(val usage: Long)
-expect fun gc(): GCInfo
-expect fun cleanImageCache()
-expect fun gcReport()
-expect class WeakReference<T: Any>(referred: T) {
+public expect fun gc(): GCInfo
+public expect fun cleanImageCache()
+public expect fun gcReport()
+public expect class WeakReference<T: Any>(referred: T) {
     fun get(): T?
 }
 val leaks = ArrayList<WeakReference<*>>()
@@ -49,13 +49,13 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
-expect fun assertMainThread()
+public expect fun assertMainThread()
 
-expect fun Throwable.printStackTrace2()
+public expect fun Throwable.printStackTrace2()
 var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
 fun Throwable.report(context: String = "") = Throwable_report(this, context)
 
-expect fun Any?.identityHashCode(): Int
+public expect fun Any?.identityHashCode(): Int
 
 var viewDebugTarget: RView? = null
 
@@ -73,7 +73,7 @@ fun Console.warnOrAbove(): Console = object : Console by this {
     override fun log(vararg entries: Any?) {}
     override fun info(vararg entries: Any?) {}
 }
-expect object ConsoleRoot: Console {
+public expect object ConsoleRoot: Console {
     override fun tag(tag: String): Console
     override fun log(vararg entries: Any?)
     override fun error(vararg entries: Any?)

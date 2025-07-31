@@ -6,6 +6,6 @@ import com.lightningkite.kiteui.views.FutureElement
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.src
 
-actual fun createObjectURL(blob: Blob): String = ""
+public actual fun createObjectURL(blob: Blob): String = ""
 
-actual fun createObjectURL(fileReference: FileReference): String = ""
+public actual fun createObjectURL(fileReference: FileReference): String = ""

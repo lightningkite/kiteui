@@ -65,7 +65,7 @@ class PageNavigator(private val routesGetter: ()->Routes) {
     val dialog: PageNavigator get() = TODO()
 }
 
-expect fun PageNavigator.bindToPlatform(context: RContext)
+public expect fun PageNavigator.bindToPlatform(context: RContext)
 
 var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
 var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()

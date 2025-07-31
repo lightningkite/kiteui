@@ -11,7 +11,7 @@
 //
 //external interface BaseUrlScript { val baseUrl: String }
 //
-//actual object PlatformNavigator : KiteUiNavigator {
+//public actual object PlatformNavigator : KiteUiNavigator {
 //    var basePath = (document.getElementById("baseUrlLocation") as? HTMLScriptElement)?.innerText?.let {
 //        JSON.parse<BaseUrlScript>(it).baseUrl
 //    } ?: "/"
@@ -21,7 +21,7 @@
 //    override fun isStackEmpty(): Boolean = false
 //
 //    private lateinit var _routes: Routes
-//    actual override var routes: Routes
+//    public actual override var routes: Routes
 //        get() = _routes
 //        set(value) {
 //            _routes = value

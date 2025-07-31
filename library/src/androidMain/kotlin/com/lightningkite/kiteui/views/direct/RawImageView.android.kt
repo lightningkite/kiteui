@@ -29,25 +29,25 @@ import com.lightningkite.kiteui.views.Path.PathDrawable
 import com.lightningkite.signal.*
 import android.widget.ImageView as AImageView
 
-actual abstract class RawImageViewLike constructor(
+public actual abstract class RawImageViewLike constructor(
     context: RContext,
-    actual val source: ImageSource,
-    actual val description: String,
-    actual val scaleType: ImageScaleType,
+    public actual val source: ImageSource,
+    public actual val description: String,
+    public actual val scaleType: ImageScaleType,
 ) : RView(context){
-    actual abstract val state: Readable<Unit>
+    public actual abstract val state: Readable<Unit>
 }
 
 
 
-actual class RawImageView actual constructor(
+public actual class RawImageView public actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    public actual override val state: Readable<Unit> = _state
     override val native: GlideImageView = GlideImageView(context.activity)
     override val cannotBeCovered: Boolean get() = false
     init {
@@ -174,18 +174,18 @@ actual class RawImageView actual constructor(
 }
 
 
-actual class RawImageViewZoomable actual constructor(
+public actual class RawImageViewZoomable public actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
     private val _state = RawReadable<Unit>()
-    actual override val state: Readable<Unit> = _state
+    public actual override val state: Readable<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
     override val cannotBeCovered: Boolean get() = false
     private val _zoomState = Property<ZoomState>(native.imageMatrix)
-    actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
+    public actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
     init {
         native.setOnScaleChangeListener { _, _, _ -> zoomState.value = native.imageMatrix }
         native.setOnViewDragListener { _, _ -> zoomState.value = native.imageMatrix }
@@ -235,4 +235,4 @@ actual class RawImageViewZoomable actual constructor(
     }
 }
 
-actual typealias ZoomState = Matrix
+public actual typealias ZoomState = Matrix

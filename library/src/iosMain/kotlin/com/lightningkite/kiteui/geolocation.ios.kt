@@ -1,5 +1,5 @@
 package com.lightningkite.kiteui
 
-actual object Geolocation {
-    actual suspend fun getCurrentPosition(): GeolocationResult = TODO()
+public actual object Geolocation {
+    public actual suspend fun getCurrentPosition(): GeolocationResult = TODO()
 }

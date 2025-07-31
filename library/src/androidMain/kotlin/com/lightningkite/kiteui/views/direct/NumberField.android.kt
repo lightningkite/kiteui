@@ -22,7 +22,7 @@ import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class NumberInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -51,7 +51,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -81,8 +81,8 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
     }
-    actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -99,7 +99,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
@@ -108,7 +108,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
         }
 
     @Suppress("UNCHECKED_CAST")
-    actual var range: ClosedRange<Double>?
+    public actual var range: ClosedRange<Double>?
         get() {
             return native.tag as? ClosedRange<Double>
         }
@@ -132,7 +132,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 }
             }
         }
-    actual var align: Align
+    public actual var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start

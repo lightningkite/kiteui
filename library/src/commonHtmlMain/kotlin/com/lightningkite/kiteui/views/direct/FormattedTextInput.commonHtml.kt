@@ -7,7 +7,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class FormattedTextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
@@ -24,7 +24,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
 
     private var formatter: (String) -> String = { it }
     private var isRawData: (Char) -> Boolean = { true }
-    actual fun format(
+    public actual fun format(
         isRawData: (Char) -> Boolean,
         formatter: (clean: String) -> String,
     ) {
@@ -32,7 +32,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         this.isRawData = isRawData
     }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
+    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 repairFormatAndPosition(
@@ -60,7 +60,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
                     invokeAllListeners()
             }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -104,12 +104,12 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
         }
 
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    actual var align: Align = Align.Start
+    public actual var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -120,11 +120,11 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             }
         }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val FormattedTextInput.selectionStart: Int?
-expect val FormattedTextInput.selectionEnd: Int?
-expect fun FormattedTextInput.setSelectionRange(start: Int, end: Int)
+public expect val FormattedTextInput.selectionStart: Int?
+public expect val FormattedTextInput.selectionEnd: Int?
+public expect fun FormattedTextInput.setSelectionRange(start: Int, end: Int)

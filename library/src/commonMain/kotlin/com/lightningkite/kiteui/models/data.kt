@@ -11,10 +11,10 @@ import kotlin.jvm.JvmInline
 
 class AnimationId
 
-expect class Font
+public expect class Font
 
-expect val systemDefaultFont: Font
-expect val systemDefaultFixedWidthFont: Font
+public expect val systemDefaultFont: Font
+public expect val systemDefaultFixedWidthFont: Font
 
 data class FontAndStyle(
     val font: Font = systemDefaultFont,
@@ -471,7 +471,7 @@ data class Icon(
 }
 
 
-expect sealed class ImageSource()
+public expect sealed class ImageSource()
 data class ImageVector(
     val width: Dimension, val height: Dimension,
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
@@ -498,19 +498,19 @@ data class ImageRemote(val url: String) : ImageSource() {
 
 data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
-expect class ImageResource : ImageSource
+public expect class ImageResource : ImageSource
 
-expect sealed class VideoSource()
+public expect sealed class VideoSource()
 data class VideoRemote(val url: String) : VideoSource()
 data class VideoRaw(val data: Blob) : VideoSource()
 data class VideoLocal(val file: FileReference) : VideoSource()
-expect class VideoResource : VideoSource
+public expect class VideoResource : VideoSource
 
-expect sealed class AudioSource()
+public expect sealed class AudioSource()
 data class AudioRemote(val url: String) : AudioSource()
 data class AudioRaw(val data: Blob) : AudioSource()
 data class AudioLocal(val file: FileReference) : AudioSource()
-expect class AudioResource : AudioSource
+public expect class AudioResource : AudioSource
 
 data class SizeConstraints(
     val minWidth: Dimension? = null,
@@ -808,28 +808,28 @@ typealias Action = Action
 enum class ImageScaleType { Fit, Crop, Stretch, NoScale }
 enum class UrlCacheStrategy { None, Full, PathOnly }
 
-expect class DimensionRaw
+public expect class DimensionRaw
 
 @JvmInline
 value class Dimension(val value: DimensionRaw) : Comparable<Dimension> {
     override fun compareTo(other: Dimension): Int = this.px.compareTo(other.px)
 }
 
-expect val Int.px: Dimension
-expect val Int.rem: Dimension
-expect val Int.dp: Dimension
-expect val Double.rem: Dimension
-expect val Double.dp: Dimension
-expect val Dimension.px: Double
-expect val Dimension.canvasUnits: Double
+public expect val Int.px: Dimension
+public expect val Int.rem: Dimension
+public expect val Int.dp: Dimension
+public expect val Double.rem: Dimension
+public expect val Double.dp: Dimension
+public expect val Dimension.px: Double
+public expect val Dimension.canvasUnits: Double
 
-expect operator fun Dimension.plus(other: Dimension): Dimension
-expect operator fun Dimension.minus(other: Dimension): Dimension
-expect operator fun Dimension.times(other: Float): Dimension
+public expect operator fun Dimension.plus(other: Dimension): Dimension
+public expect operator fun Dimension.minus(other: Dimension): Dimension
+public expect operator fun Dimension.times(other: Float): Dimension
 operator fun Dimension.times(other: Int): Dimension = this * other.toFloat()
 operator fun Dimension.times(other: Double): Dimension = this * other.toFloat()
-expect operator fun Dimension.div(other: Float): Dimension
+public expect operator fun Dimension.div(other: Float): Dimension
 operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
 operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
-expect fun Dimension.coerceAtMost(other: Dimension): Dimension
-expect fun Dimension.coerceAtLeast(other: Dimension): Dimension
+public expect fun Dimension.coerceAtMost(other: Dimension): Dimension
+public expect fun Dimension.coerceAtLeast(other: Dimension): Dimension

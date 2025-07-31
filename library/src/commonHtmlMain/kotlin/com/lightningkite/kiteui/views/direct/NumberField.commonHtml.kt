@@ -8,12 +8,12 @@ import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
-actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class NumberInput public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
+    public actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(
@@ -37,7 +37,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     native.attributes.valueString = value?.commaString()
             }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -88,12 +88,12 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
         }
     }
-    actual inline var hint: String
+    public actual inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    actual var align: Align = Align.Start
+    public actual var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -104,7 +104,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
         }
 
-    actual var range: ClosedRange<Double>? = null
+    public actual var range: ClosedRange<Double>? = null
         set(value) {
             field = value
             value?.let {
@@ -116,11 +116,11 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
             }
         }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val NumberInput.selectionStart: Int?
-expect val NumberInput.selectionEnd: Int?
-expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+public expect val NumberInput.selectionStart: Int?
+public expect val NumberInput.selectionEnd: Int?
+public expect fun NumberInput.setSelectionRange(start: Int, end: Int)

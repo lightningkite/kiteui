@@ -6,7 +6,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 
-actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+public actual class RadioToggleButton public actual constructor(context: RContext) : RView(context) {
     val input = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
@@ -42,7 +42,7 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual val checked: ImmediateWritable<Boolean> = input.vprop(
+    public actual val checked: ImmediateWritable<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })
@@ -55,7 +55,7 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
         }
     }
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = input.attributes.disabled != true
         set(value) {
             input.attributes.disabled = !value

@@ -7,17 +7,17 @@ import com.lightningkite.kiteui.views.*
 
 
 
-actual class TextView actual constructor(context: RContext) : RView(context) {
+public actual class TextView public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "p"
         native.content = Typography.nbsp.toString()
     }
-    actual inline var content: String
+    public actual inline var content: String
         get() = native.content ?: ""
         set(value) {
             native.content = if(value.isEmpty()) Typography.nbsp.toString() else value
         }
-    actual var align: Align = Align.Start
+    public actual var align: Align = Align.Start
         set(value) {
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
@@ -26,7 +26,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 Align.Stretch -> "justify"
             }
         }
-    actual var ellipsis: Boolean = true
+    public actual var ellipsis: Boolean = true
         set(value) {
             field = value
             native.style.textOverflow = if(value) "ellipsis" else "clip"
@@ -35,18 +35,18 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             else
                 native.setStyleProperty("overflow", null)
         }
-    actual var wraps: Boolean = true
+    public actual var wraps: Boolean = true
         set(value) {
             field = value
             native.setStyleProperty("text-wrap", if(value) "wrap" else "nowrap")
             native.setStyleProperty("text-wrap-mode", if(value) "wrap" else "nowrap")
         }
-    actual var wordBreak: WordBreak
+    public actual var wordBreak: WordBreak
         get() = TODO("Not yet implemented")
         set(value) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
     }

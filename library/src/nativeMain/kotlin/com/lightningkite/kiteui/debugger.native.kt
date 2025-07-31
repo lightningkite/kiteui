@@ -3,14 +3,14 @@ package com.lightningkite.kiteui
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.identityHashCode as idhc
 
-actual fun Throwable.printStackTrace2() = printStackTrace()
-actual object ConsoleRoot: Console {
+public actual fun Throwable.printStackTrace2() = printStackTrace()
+public actual object ConsoleRoot: Console {
     private val platform = PlatformConsole("MyApp")
-    actual override fun tag(tag: String): Console = platform.tag(tag)
-    actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    public actual override fun tag(tag: String): Console = platform.tag(tag)
+    public actual override fun log(vararg entries: Any?) = platform.log(*entries)
+    public actual override fun error(vararg entries: Any?) = platform.error(*entries)
+    public actual override fun info(vararg entries: Any?) = platform.info(*entries)
+    public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
 private class PlatformConsole(val tag: String): Console {
     override fun tag(tag: String): Console = PlatformConsole(tag)
@@ -32,7 +32,7 @@ private class PlatformConsole(val tag: String): Console {
 }
 
 @OptIn(ExperimentalNativeApi::class)
-actual typealias WeakReference<T> = kotlin.native.ref.WeakReference<T>
+public actual typealias WeakReference<T> = kotlin.native.ref.WeakReference<T>
 
 @OptIn(ExperimentalNativeApi::class)
-actual fun Any?.identityHashCode(): Int = idhc()
+public actual fun Any?.identityHashCode(): Int = idhc()

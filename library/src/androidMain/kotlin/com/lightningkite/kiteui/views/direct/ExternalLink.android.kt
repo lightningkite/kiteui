@@ -9,12 +9,12 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
-actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+public actual class ExternalLink public actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
-    actual var to: String? = null
+    public actual var to: String? = null
         set(value) {
             field = value
             native.setOnClickListener { view ->
@@ -26,13 +26,13 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
                 }
             }
         }
-    actual var newTab: Boolean = false
+    public actual var newTab: Boolean = false
     private var onNavigate: suspend () -> Unit = {}
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value

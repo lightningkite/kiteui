@@ -12,11 +12,11 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URL
 
 @JsName("createObjectURLBlob")
-actual fun createObjectURL(blob: Blob): String {
+public actual fun createObjectURL(blob: Blob): String {
     return URL.Companion.createObjectURL(blob)
 }
 
 @JsName("createObjectURLFileReference")
-actual fun createObjectURL(fileReference: FileReference): String {
+public actual fun createObjectURL(fileReference: FileReference): String {
     return URL.createObjectURL(fileReference)
 }

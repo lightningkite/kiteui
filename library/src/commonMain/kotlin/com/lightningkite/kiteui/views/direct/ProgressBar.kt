@@ -11,6 +11,6 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class ProgressBar(context: RContext) : RView {
+public expect class ProgressBar(context: RContext) : RView {
     var ratio: Float
 }

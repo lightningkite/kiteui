@@ -6,7 +6,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 
-actual class Checkbox actual constructor(context: RContext) : RView(context) {
+public actual class Checkbox public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "input"
@@ -16,13 +16,13 @@ actual class Checkbox actual constructor(context: RContext) : RView(context) {
         native.classes.add("clickable")
     }
 
-    actual val checked: ImmediateWritable<Boolean> = native.vprop(
+    public actual val checked: ImmediateWritable<Boolean> = native.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value }
     )
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value

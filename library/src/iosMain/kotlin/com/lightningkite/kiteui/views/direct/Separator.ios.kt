@@ -12,7 +12,7 @@ import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
 
-actual class Separator actual constructor(context: RContext): RView(context) {
+public actual class Separator public actual constructor(context: RContext): RView(context) {
     override val native = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
     init {
         sizeConstraints = SizeConstraints(minWidth = 1.px, minHeight = 1.px)

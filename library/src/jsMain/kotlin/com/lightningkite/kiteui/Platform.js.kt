@@ -3,19 +3,19 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.Color
 import kotlinx.browser.window
 
-actual val Platform.Companion.current: Platform
+public actual val Platform.Companion.current: Platform
     get() = Platform.Web
-actual val Platform.Companion.probablyAppleUser: Boolean
+public actual val Platform.Companion.probablyAppleUser: Boolean
     get() = window.navigator.platform.let {
         it.contains("Mac")
                 || it.contains("iPhone")
                 || it.contains("iPod")
                 || it.contains("iPad")
     }
-actual val Platform.Companion.usesTouchscreen: Boolean
+public actual val Platform.Companion.usesTouchscreen: Boolean
     get() = window.matchMedia("(pointer: coarse)").matches
-actual val Platform.Companion.userAgent: String
+public actual val Platform.Companion.userAgent: String
     get() = "Browser ${window.navigator.userAgent}"
 
-actual fun setStatusBarColor(color: Color) {
+public actual fun setStatusBarColor(color: Color) {
 }

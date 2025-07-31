@@ -8,7 +8,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class ExternalLink(context: RContext) : RView {
+public expect class ExternalLink(context: RContext) : RView {
     var enabled: Boolean
     var to: String?
     var newTab: Boolean

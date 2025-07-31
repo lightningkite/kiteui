@@ -20,17 +20,17 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
-actual class TextView actual constructor(context: RContext) :
+public actual class TextView public actual constructor(context: RContext) :
     RView(context) {
     override val native: android.widget.TextView = android.widget.TextView(context.activity)
-    actual var content: String
+    public actual var content: String
         get() {
             return native.text.toString()
         }
         set(value) {
             native.text = value
         }
-    actual var align: Align
+    public actual var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -55,17 +55,17 @@ actual class TextView actual constructor(context: RContext) :
             }
         }
 
-    actual var ellipsis: Boolean = true
+    public actual var ellipsis: Boolean = true
         set(value) {
             field = value
             native.ellipsize = if (value) TextUtils.TruncateAt.END else TextUtils.TruncateAt.MARQUEE
         }
-    actual var wraps: Boolean = true
+    public actual var wraps: Boolean = true
         set(value) {
             field = value
             native.maxLines = if (value) Integer.MAX_VALUE else 1
         }
-    actual var wordBreak: WordBreak = WordBreak.Normal
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
             field = value
             if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
@@ -87,7 +87,7 @@ actual class TextView actual constructor(context: RContext) :
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value)
     }
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         if(html.contains("<a")) {
             native.movementMethod = LinkMovementMethod.getInstance()
         } else {

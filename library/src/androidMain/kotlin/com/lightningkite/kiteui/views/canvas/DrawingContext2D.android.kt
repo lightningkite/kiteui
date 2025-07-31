@@ -19,7 +19,7 @@ abstract class DrawingView : View {
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual abstract class DrawingContext2D(val canvas: Canvas) {
+public actual abstract class DrawingContext2D(val canvas: Canvas) {
     val currentPath = Path()
     val clearPaint = android.graphics.Paint().apply {
         color = android.graphics.Color.TRANSPARENT
@@ -28,12 +28,12 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
     var fillPaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
     var strokePaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
     val drawingResource = DrawingResources()
-    actual abstract fun save()
-    actual abstract fun restore()
-    actual abstract fun scale(x: Double, y: Double)
-    actual abstract fun rotate(angle: Double)
-    actual abstract fun translate(x: Double, y: Double)
-    actual abstract fun transform(
+    public actual abstract fun save()
+    public actual abstract fun restore()
+    public actual abstract fun scale(x: Double, y: Double)
+    public actual abstract fun rotate(angle: Double)
+    public actual abstract fun translate(x: Double, y: Double)
+    public actual abstract fun transform(
         a: Double,
         b: Double,
         c: Double,
@@ -42,23 +42,23 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
         f: Double
     )
 
-    actual abstract var globalCompositeOperation: String
-    actual abstract var imageSmoothingEnabled: Boolean
-    actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun beginPath()
-    actual abstract fun stroke()
-    actual abstract var lineWidth: Double
-    actual abstract var miterLimit: Double
-    actual abstract var lineDashOffset: Double
+    public actual abstract var globalCompositeOperation: String
+    public actual abstract var imageSmoothingEnabled: Boolean
+    public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun beginPath()
+    public actual abstract fun stroke()
+    public actual abstract var lineWidth: Double
+    public actual abstract var miterLimit: Double
+    public actual abstract var lineDashOffset: Double
     abstract fun setLineDash(segments: Array<Double>)
     abstract fun getLineDash(): Array<Double>
-    actual abstract fun closePath()
-    actual abstract fun moveTo(x: Double, y: Double)
-    actual abstract fun lineTo(x: Double, y: Double)
-    actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
-    actual abstract fun bezierCurveTo(
+    public actual abstract fun closePath()
+    public actual abstract fun moveTo(x: Double, y: Double)
+    public actual abstract fun lineTo(x: Double, y: Double)
+    public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    public actual abstract fun bezierCurveTo(
         cp1x: Double,
         cp1y: Double,
         cp2x: Double,
@@ -67,7 +67,7 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
         y: Double
     )
 
-//    actual abstract fun arcTo(
+//    public actual abstract fun arcTo(
 //        x1: Double,
 //        y1: Double,
 //        x2: Double,
@@ -75,7 +75,7 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
 //        radius: Double
 //    )
 //
-//    actual abstract fun arcTo(
+//    public actual abstract fun arcTo(
 //        x1: Double,
 //        y1: Double,
 //        x2: Double,
@@ -85,7 +85,7 @@ actual abstract class DrawingContext2D(val canvas: Canvas) {
 //        rotation: Double
 //    )
 
-    actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 
 }
 
@@ -204,30 +204,30 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
 //    }
 }
 
-actual fun DrawingContext2D.fill() {
+public actual fun DrawingContext2D.fill() {
     currentPath.fillType = Path.FillType.WINDING
     canvas.drawPath(currentPath, fillPaintObj)
 }
-actual fun DrawingContext2D.fillEvenOdd()  {
+public actual fun DrawingContext2D.fillEvenOdd()  {
     currentPath.fillType = Path.FillType.EVEN_ODD
     canvas.drawPath(currentPath, fillPaintObj)
 }
-actual var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         strokePaintObj.color = value.colorInt()
     }
-actual var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         fillPaintObj.color = value.colorInt()
     }
-actual val DrawingContext2D.width: Double
+public actual val DrawingContext2D.width: Double
     get() = canvas.width.toDouble()
-actual val DrawingContext2D.height: Double
+public actual val DrawingContext2D.height: Double
     get() = canvas.height.toDouble()
 
-actual fun DrawingContext2D.appendArc(
+public actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
     radius: Double,
@@ -283,7 +283,7 @@ actual fun DrawingContext2D.appendArc(
     }
 }
 
-actual fun DrawingContext2D.drawText(
+public actual fun DrawingContext2D.drawText(
     text: String,
     x: Double,
     y: Double
@@ -296,7 +296,7 @@ actual fun DrawingContext2D.drawText(
     )
 }
 
-actual fun DrawingContext2D.drawOutlinedText(
+public actual fun DrawingContext2D.drawOutlinedText(
     text: String,
     x: Double,
     y: Double
@@ -309,7 +309,7 @@ actual fun DrawingContext2D.drawOutlinedText(
     )
 }
 
-actual fun DrawingContext2D.font(
+public actual fun DrawingContext2D.font(
     size: Double,
     value: FontAndStyle
 ) {
@@ -317,7 +317,7 @@ actual fun DrawingContext2D.font(
     fillPaintObj.textSize = size.toFloat()
 }
 
-actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
+public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
     fillPaintObj.textAlign = when(alignment) {
         TextAlign.start -> android.graphics.Paint.Align.LEFT  // TODO: locales
         TextAlign.end -> android.graphics.Paint.Align.RIGHT  // TODO: locales
@@ -327,6 +327,6 @@ actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
     }
 }
 
-actual fun DrawingContext2D.clear() {
+public actual fun DrawingContext2D.clear() {
     canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.DST_OUT)
 }

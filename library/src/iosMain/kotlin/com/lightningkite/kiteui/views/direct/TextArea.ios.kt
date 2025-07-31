@@ -11,7 +11,7 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     private val delegate = TextAreaDelegate()
 
@@ -87,7 +87,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = textField.text
             set(value) {
@@ -102,7 +102,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
             }
         }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = when (value.case) {
@@ -126,7 +126,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
             }
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
@@ -153,7 +153,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = textField.editable
         set(value) {
             textField.setEditable(value)

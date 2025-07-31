@@ -8,7 +8,7 @@ import com.lightningkite.signal.ReactiveContext
 import com.lightningkite.signal.reactiveScope
 
 
-expect class SwapView(context: RContext) : RView {
+public expect class SwapView(context: RContext) : RView {
     fun swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ViewWriter.() -> ViewModifiable?): Unit
 }
 

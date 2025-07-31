@@ -8,6 +8,6 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class Space(context: RContext, multiplier: Double = 1.0) : RView {
+public expect class Space(context: RContext, multiplier: Double = 1.0) : RView {
 
 }

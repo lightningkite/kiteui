@@ -30,8 +30,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-actual object ExternalServices {
-    actual fun openTab(url: String) {
+public actual object ExternalServices {
+    public actual fun openTab(url: String) {
         UIApplication.sharedApplication.openURL(
             url = NSURL(string = url),
             options = mapOf<Any?, Any?>(),
@@ -58,7 +58,7 @@ actual object ExternalServices {
     }
 
     lateinit var rootView: UIView
-    actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
+    public actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
         if (imagePickerCompat) {
             val controller = PHPickerViewController(PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary()).apply {
@@ -160,7 +160,7 @@ actual object ExternalServices {
         }
     }
 
-    actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
+    public actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> =
         suspendCancellableCoroutine { cont ->
             val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
             if (imagePickerCompat) {
@@ -275,7 +275,7 @@ actual object ExternalServices {
         return true
     }
 
-    actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
+    public actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront,
@@ -294,7 +294,7 @@ actual object ExternalServices {
         }
     }
 
-    actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
+    public actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) {
             requestCapture(
                 UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceRear,
@@ -386,11 +386,11 @@ actual object ExternalServices {
         }
     }
 
-    actual fun setClipboardText(value: String) {
+    public actual fun setClipboardText(value: String) {
         UIPasteboard.generalPasteboard.string = value
     }
 
-    actual suspend fun download(
+    public actual suspend fun download(
         name: String,
         url: String,
         preferredDestination: DownloadLocation,
@@ -489,7 +489,7 @@ actual object ExternalServices {
         }
     }
 
-    actual suspend fun download(
+    public actual suspend fun download(
         name: String,
         blob: Blob,
         preferredDestination: DownloadLocation
@@ -507,10 +507,10 @@ actual object ExternalServices {
         }
     }
 
-    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
+    public actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) =
         showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
 
-    actual fun share(title: String, message: String?, url: String?) =
+    public actual fun share(title: String, message: String?, url: String?) =
         showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
 
 
@@ -580,7 +580,7 @@ actual object ExternalServices {
         }
     }
 
-    actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
+    public actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
         val store = EKEventStore()
         store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
             if (hasPermission) {
@@ -611,7 +611,7 @@ actual object ExternalServices {
     }
 
 
-    actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
+    public actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
 
         val options = arrayListOf(
             "Apple Maps" to {

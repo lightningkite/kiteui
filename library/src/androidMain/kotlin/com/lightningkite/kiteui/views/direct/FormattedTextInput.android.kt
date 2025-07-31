@@ -19,7 +19,7 @@ import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
-actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class FormattedTextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
         doAfterTextChanged { _ ->
@@ -70,15 +70,15 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
 
     private var isRawData: (Char) -> Boolean = { true }
     private var formatter: (clean: String) -> String = { it }
-    actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
+    public actual fun format(isRawData: (Char) -> Boolean, formatter: (clean: String) -> String) {
         this.isRawData = isRawData
         this.formatter = formatter
     }
-    actual val content: ImmediateWritable<String> = native.contentProperty().lens(
+    public actual val content: ImmediateWritable<String> = native.contentProperty().lens(
         get = { it.filter(isRawData) },
         set = { formatter(it.filter(isRawData)) }
     )
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -112,7 +112,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         }
     }
 
-    actual var keyboardHints: KeyboardHints
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -130,14 +130,14 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         }
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }
         set(value) {
             native.hint = value
         }
-    actual var align: Align
+    public actual var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start

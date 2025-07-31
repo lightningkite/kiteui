@@ -2,23 +2,23 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Font
 
-actual class DynamicCss actual constructor(basePath: String) {
-    actual val basePath: String = basePath
-    actual fun font(font: Font): String {
+public actual class DynamicCss public actual constructor(basePath: String) {
+    public actual val basePath: String = basePath
+    public actual fun font(font: Font): String {
         TODO("Not yet implemented")
     }
 
-    actual fun rule(rule: String, index: Int): Int {
+    public actual fun rule(rule: String, index: Int): Int {
         TODO("Not yet implemented")
     }
 
-    actual fun emit(): String {
+    public actual fun emit(): String {
         TODO("Not yet implemented")
     }
 
-    actual fun add(selector: String, key: String, value: String, media: String) {
+    public actual fun add(selector: String, key: String, value: String, media: String) {
     }
 
-    actual fun flush() {
+    public actual fun flush() {
     }
 }

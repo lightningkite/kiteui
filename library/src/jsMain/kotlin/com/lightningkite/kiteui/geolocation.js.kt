@@ -5,8 +5,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resumeWithException
 import kotlin.js.json
 
-actual object Geolocation {
-    actual suspend fun getCurrentPosition(): GeolocationResult {
+public actual object Geolocation {
+    public actual suspend fun getCurrentPosition(): GeolocationResult {
         return suspendCancellableCoroutine<GeolocationResult> { cont ->
             window.navigator.asDynamic().geolocation.getCurrentPosition(
                 { result: dynamic ->

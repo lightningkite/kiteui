@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Font
 
-expect class DynamicCss(basePath: String) {
+public expect class DynamicCss(basePath: String) {
     val basePath: String
     fun font(font: Font): String
     fun rule(rule: String, index: Int = 0): Int

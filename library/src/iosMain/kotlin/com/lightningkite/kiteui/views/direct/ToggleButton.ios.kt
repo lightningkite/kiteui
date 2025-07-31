@@ -8,7 +8,7 @@ import platform.UIKit.UIView
 
 
 
-actual class ToggleButton actual constructor(context: RContext) : RView(context) {
+public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -18,13 +18,13 @@ actual class ToggleButton actual constructor(context: RContext) : RView(context)
             Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
     private val _checked = Property(false)
-    actual val checked: ImmediateWritable<Boolean> get() = _checked
+    public actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
         onRemove(native.observe("highlighted", { refreshTheming() }))

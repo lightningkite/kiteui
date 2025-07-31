@@ -14,7 +14,7 @@ import platform.UIKit.UIControlEventTouchUpInside
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
-actual class ExternalLink actual constructor(context: RContext): RView(context) {
+public actual class ExternalLink public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -36,14 +36,14 @@ actual class ExternalLink actual constructor(context: RContext): RView(context) 
     }
 
 
-    actual var to: String? = null
-    actual var newTab: Boolean = false
+    public actual var to: String? = null
+    public actual var newTab: Boolean = false
     private var onNavigate: suspend () -> Unit = {}
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

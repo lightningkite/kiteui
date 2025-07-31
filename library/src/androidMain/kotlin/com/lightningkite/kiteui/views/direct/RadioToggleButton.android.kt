@@ -6,19 +6,19 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.signal.Property
 import com.lightningkite.kiteui.views.*
 
-actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+public actual class RadioToggleButton public actual constructor(context: RContext) : RView(context) {
     override val native = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = true }
     }
     private val checkedProp = Property(false)
-    actual val checked: ImmediateWritable<Boolean> get() = checkedProp
+    public actual val checked: ImmediateWritable<Boolean> get() = checkedProp
 
     init {
         checked.addListener { refreshTheming() }
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value

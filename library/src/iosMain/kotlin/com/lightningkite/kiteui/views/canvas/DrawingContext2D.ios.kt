@@ -14,88 +14,88 @@ import platform.Foundation.NSString
 import platform.UIKit.*
 import kotlin.math.*
 
-actual abstract class DrawingContext2D {
-    actual abstract fun save()
-    actual abstract fun restore()
-    actual abstract fun scale(x: Double, y: Double)
-    actual abstract fun rotate(angle: Double)
-    actual abstract fun translate(x: Double, y: Double)
-    actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
+public actual abstract class DrawingContext2D {
+    public actual abstract fun save()
+    public actual abstract fun restore()
+    public actual abstract fun scale(x: Double, y: Double)
+    public actual abstract fun rotate(angle: Double)
+    public actual abstract fun translate(x: Double, y: Double)
+    public actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 
-    actual abstract var globalCompositeOperation: String
-    actual abstract var imageSmoothingEnabled: Boolean
+    public actual abstract var globalCompositeOperation: String
+    public actual abstract var imageSmoothingEnabled: Boolean
 
-    //  actual abstract   var imageSmoothingQuality: ImageSmoothingQuality
-//  actual abstract   var strokeStyle: dynamic
-//  actual abstract       get()
-//  actual abstract       set(value)
-//  actual abstract   var fillStyle: dynamic  // String | CanvasGradient | CanvasPattern
-//  actual abstract       get()
-//  actual abstract       set(value)
-//  actual abstract   fun createLinearGradient(x0: Double, y0: Double, x1: Double, y1: Double): CanvasGradient
-//  actual abstract   fun createRadialGradient(x0: Double, y0: Double, r0: Double, x1: Double, y1: Double, r1: Double): CanvasGradient
-//  actual abstract   fun createPattern(image: CanvasImageSource, repetition: String): CanvasPattern?
-    actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
-    actual abstract fun beginPath()
+    //  public actual abstract   var imageSmoothingQuality: ImageSmoothingQuality
+//  public actual abstract   var strokeStyle: dynamic
+//  public actual abstract       get()
+//  public actual abstract       set(value)
+//  public actual abstract   var fillStyle: dynamic  // String | CanvasGradient | CanvasPattern
+//  public actual abstract       get()
+//  public actual abstract       set(value)
+//  public actual abstract   fun createLinearGradient(x0: Double, y0: Double, x1: Double, y1: Double): CanvasGradient
+//  public actual abstract   fun createRadialGradient(x0: Double, y0: Double, r0: Double, x1: Double, y1: Double, r1: Double): CanvasGradient
+//  public actual abstract   fun createPattern(image: CanvasImageSource, repetition: String): CanvasPattern?
+    public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    public actual abstract fun beginPath()
 
-    //  actual abstract   fun fill(path: Path2D, fillRule: CanvasFillRule)
-    actual abstract fun stroke()
-//  actual abstract   fun stroke(path: Path2D)
+    //  public actual abstract   fun fill(path: Path2D, fillRule: CanvasFillRule)
+    public actual abstract fun stroke()
+//  public actual abstract   fun stroke(path: Path2D)
 
-//  actual abstract   fun clip(fillRule: CanvasFillRule)
-//  actual abstract   fun clip(path: Path2D, fillRule: CanvasFillRule)
-//    actual abstract fun resetClip()
+//  public actual abstract   fun clip(fillRule: CanvasFillRule)
+//  public actual abstract   fun clip(path: Path2D, fillRule: CanvasFillRule)
+//    public actual abstract fun resetClip()
 
-//  actual abstract   fun isPointInPath(x: Double, y: Double, fillRule: CanvasFillRule): Boolean
-//  actual abstract   fun isPointInPath(path: Path2D, x: Double, y: Double, fillRule: CanvasFillRule): Boolean
-//    actual abstract fun isPointInStroke(x: Double, y: Double): Boolean
-//  actual abstract   fun isPointInStroke(path: Path2D, x: Double, y: Double): Boolean
+//  public actual abstract   fun isPointInPath(x: Double, y: Double, fillRule: CanvasFillRule): Boolean
+//  public actual abstract   fun isPointInPath(path: Path2D, x: Double, y: Double, fillRule: CanvasFillRule): Boolean
+//    public actual abstract fun isPointInStroke(x: Double, y: Double): Boolean
+//  public actual abstract   fun isPointInStroke(path: Path2D, x: Double, y: Double): Boolean
 
-//  actual abstract   fun drawFocusIfNeeded(element: Element)
-//  actual abstract   fun drawFocusIfNeeded(path: Path2D, element: Element)
+//  public actual abstract   fun drawFocusIfNeeded(element: Element)
+//  public actual abstract   fun drawFocusIfNeeded(path: Path2D, element: Element)
 
-//    actual abstract fun scrollPathIntoView()
-//  actual abstract   fun scrollPathIntoView(path: Path2D)
+//    public actual abstract fun scrollPathIntoView()
+//  public actual abstract   fun scrollPathIntoView(path: Path2D)
 
-//    actual abstract fun fillText(text: String, x: Double, y: Double, maxWidth: Double)
-//    actual abstract fun strokeText(text: String, x: Double, y: Double, maxWidth: Double)
+//    public actual abstract fun fillText(text: String, x: Double, y: Double, maxWidth: Double)
+//    public actual abstract fun strokeText(text: String, x: Double, y: Double, maxWidth: Double)
 
-//  actual abstract   fun measureText(text: String): TextMetrics
-//    actual abstract var font: String
-//  actual abstract   var textAlign: CanvasTextAlign
-//  actual abstract   var textBaseline: CanvasTextBaseline
-//  actual abstract   var direction: CanvasDirection
+//  public actual abstract   fun measureText(text: String): TextMetrics
+//    public actual abstract var font: String
+//  public actual abstract   var textAlign: CanvasTextAlign
+//  public actual abstract   var textBaseline: CanvasTextBaseline
+//  public actual abstract   var direction: CanvasDirection
 
-//  actual abstract   fun drawImage(image: CanvasImageSource, dx: Double, dy: Double)
-//  actual abstract   fun drawImage(image: CanvasImageSource, dx: Double, dy: Double, dw: Double, dh: Double)
-//  actual abstract   fun drawImage(image: CanvasImageSource, sx: Double, sy: Double, sw: Double, sh: Double, dx: Double, dy: Double, dw: Double, dh: Double)
-//  actual abstract   fun createImageData(sw: Double, sh: Double): ImageData
-//  actual abstract   fun createImageData(imagedata: ImageData): ImageData
-//  actual abstract   fun getImageData(sx: Double, sy: Double, sw: Double, sh: Double): ImageData
-//  actual abstract   fun putImageData(imagedata: ImageData, dx: Double, dy: Double)
-//  actual abstract   fun putImageData(imagedata: ImageData, dx: Double, dy: Double, dirtyX: Double, dirtyY: Double, dirtyWidth: Double, dirtyHeight: Double)
+//  public actual abstract   fun drawImage(image: CanvasImageSource, dx: Double, dy: Double)
+//  public actual abstract   fun drawImage(image: CanvasImageSource, dx: Double, dy: Double, dw: Double, dh: Double)
+//  public actual abstract   fun drawImage(image: CanvasImageSource, sx: Double, sy: Double, sw: Double, sh: Double, dx: Double, dy: Double, dw: Double, dh: Double)
+//  public actual abstract   fun createImageData(sw: Double, sh: Double): ImageData
+//  public actual abstract   fun createImageData(imagedata: ImageData): ImageData
+//  public actual abstract   fun getImageData(sx: Double, sy: Double, sw: Double, sh: Double): ImageData
+//  public actual abstract   fun putImageData(imagedata: ImageData, dx: Double, dy: Double)
+//  public actual abstract   fun putImageData(imagedata: ImageData, dx: Double, dy: Double, dirtyX: Double, dirtyY: Double, dirtyWidth: Double, dirtyHeight: Double)
 
-//  actual abstract   fun addHitRegion(options: HitRegionOptions)
-//    actual abstract fun removeHitRegion(id: String)
-//    actual abstract fun clearHitRegions()
+//  public actual abstract   fun addHitRegion(options: HitRegionOptions)
+//    public actual abstract fun removeHitRegion(id: String)
+//    public actual abstract fun clearHitRegions()
 
-    actual abstract var lineWidth: Double
+    public actual abstract var lineWidth: Double
 
-    //  actual abstract   var lineCap: CanvasLineCap
-//  actual abstract   var lineJoin: CanvasLineJoin
-    actual abstract var miterLimit: Double
-    actual abstract var lineDashOffset: Double
+    //  public actual abstract   var lineCap: CanvasLineCap
+//  public actual abstract   var lineJoin: CanvasLineJoin
+    public actual abstract var miterLimit: Double
+    public actual abstract var lineDashOffset: Double
     abstract fun setLineDash(segments: Array<Double>)
     abstract fun getLineDash(): Array<Double>
-    actual abstract fun closePath()
-    actual abstract fun moveTo(x: Double, y: Double)
-    actual abstract fun lineTo(x: Double, y: Double)
-    actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
-    actual abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
-//    actual abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double)
-//    actual abstract fun arcTo(
+    public actual abstract fun closePath()
+    public actual abstract fun moveTo(x: Double, y: Double)
+    public actual abstract fun lineTo(x: Double, y: Double)
+    public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    public actual abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
+//    public actual abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double)
+//    public actual abstract fun arcTo(
 //        x1: Double,
 //        y1: Double,
 //        x2: Double,
@@ -105,9 +105,9 @@ actual abstract class DrawingContext2D {
 //        rotation: Double
 //    )
 
-    actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
-//    actual abstract fun arc(x: Double, y: Double, radius: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
-//    actual abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
+    public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+//    public actual abstract fun arc(x: Double, y: Double, radius: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
+//    public actual abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }
 
 
@@ -189,7 +189,7 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
 }
 
 
-actual fun DrawingContext2D.appendArc(
+public actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
     radius: Double,
@@ -209,7 +209,7 @@ actual fun DrawingContext2D.appendArc(
 }
 
 
-actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
+public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSForegroundColorAttributeName to this.fill.closestColor().toUiColor(),
@@ -247,7 +247,7 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
 }
 
 
-actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
+public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
     val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSStrokeColorAttributeName to this.stroke.closestColor().toUiColor(),
@@ -285,21 +285,21 @@ actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
     )
 }
 
-actual fun DrawingContext2D.font(size: Double, value: FontAndStyle): Unit {
+public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle): Unit {
     (this as DrawingContext2DImpl).font =
         value.font.get(size, value.weight.toUIFontWeight(), value.italic)
 }
 
-actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {
+public actual fun DrawingContext2D.textAlign(alignment: TextAlign): Unit {
     (this as DrawingContext2DImpl).textAlign = alignment
 }
 
 
-actual fun DrawingContext2D.fill(): Unit = CGContextFillPath((this as DrawingContext2DImpl).wraps)
+public actual fun DrawingContext2D.fill(): Unit = CGContextFillPath((this as DrawingContext2DImpl).wraps)
 
-actual fun DrawingContext2D.fillEvenOdd(): Unit = CGContextEOFillPath((this as DrawingContext2DImpl).wraps)
+public actual fun DrawingContext2D.fillEvenOdd(): Unit = CGContextEOFillPath((this as DrawingContext2DImpl).wraps)
 
-actual var DrawingContext2D.strokePaint: Paint
+public actual var DrawingContext2D.strokePaint: Paint
     get() = (this as DrawingContext2DImpl).stroke
     set(value) {
         (this as DrawingContext2DImpl).stroke = value
@@ -313,7 +313,7 @@ actual var DrawingContext2D.strokePaint: Paint
         )
     }
 
-actual var DrawingContext2D.fillPaint: Paint
+public actual var DrawingContext2D.fillPaint: Paint
     get() = (this as DrawingContext2DImpl).fill
     set(value) {
         (this as DrawingContext2DImpl).fill = value
@@ -327,12 +327,12 @@ actual var DrawingContext2D.fillPaint: Paint
         )
     }
 
-actual val DrawingContext2D.width: Double get() = (this as DrawingContext2DImpl).width
+public actual val DrawingContext2D.width: Double get() = (this as DrawingContext2DImpl).width
 
-actual val DrawingContext2D.height: Double get() = (this as DrawingContext2DImpl).height
+public actual val DrawingContext2D.height: Double get() = (this as DrawingContext2DImpl).height
 
 
-actual fun DrawingContext2D.clear() {
+public actual fun DrawingContext2D.clear() {
     (this as DrawingContext2DImpl).wraps.let {
         CGContextClearRect(it, CGRectMake(0.0, 0.0, width, height))
     }

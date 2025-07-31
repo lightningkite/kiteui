@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
 
-actual class ActivityIndicator actual constructor(context: RContext): RView(context) {
+public actual class ActivityIndicator public actual constructor(context: RContext): RView(context) {
     override val native = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()

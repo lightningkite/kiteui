@@ -38,7 +38,7 @@ var PageNavigatorUseExperimentalBehavior: Boolean
         PageNavigatorBehavior.current = if (value) PageNavigatorBehavior.Link else PageNavigatorBehavior.Deprecated
     }
 
-actual fun PageNavigator.bindToPlatform(context: RContext) {
+public actual fun PageNavigator.bindToPlatform(context: RContext) {
     when (PageNavigatorBehavior.current) {
         PageNavigatorBehavior.Separate -> {
             val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
@@ -163,7 +163,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
                 }
             })
             AppScope.reactiveScope {
-                // After boot, we want to make storage ALWAYS match the actual stack.
+                // After boot, we want to make storage ALWAYS match the public actual stack.
                 currentStack.value = stack().mapNotNull { routes.render(it)?.urlLikePath }
             }
             var lastStack = stack.value
@@ -285,7 +285,7 @@ actual fun PageNavigator.bindToPlatform(context: RContext) {
                 }
             })
             AppScope.reactiveScope {
-                // After boot, we want to make storage ALWAYS match the actual stack.
+                // After boot, we want to make storage ALWAYS match the public actual stack.
                 storedStack.value = stack().mapNotNull { routes.render(it)?.urlLikePath?.render() }
             }
             var lastStack = stack.value

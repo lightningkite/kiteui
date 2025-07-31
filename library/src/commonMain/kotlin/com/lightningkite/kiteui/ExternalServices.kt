@@ -7,7 +7,7 @@ import kotlinx.datetime.TimeZone
 import kotlin.js.JsName
 
 enum class DownloadLocation { Downloads, Pictures }
-expect object ExternalServices {
+public expect object ExternalServices {
     fun openTab(url: String)
     suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
     suspend fun requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference>

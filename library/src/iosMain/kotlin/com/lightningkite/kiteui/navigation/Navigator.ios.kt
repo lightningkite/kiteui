@@ -6,7 +6,7 @@ import platform.Foundation.NSUserActivity
 private var postedLandingUrl: UrlLikePath? = null
 private var lastBoundPageNavigator: PageNavigator? = null
 
-actual fun PageNavigator.bindToPlatform(context: RContext) {
+public actual fun PageNavigator.bindToPlatform(context: RContext) {
     lastBoundPageNavigator = this
     val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)

@@ -22,11 +22,11 @@ import com.lightningkite.kiteui.views.direct.TextView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.kiteui.views.direct.typeface
 
-actual class Code actual constructor(context: RContext) :
+public actual class Code public actual constructor(context: RContext) :
     RView(context) {
     val actualNative = android.widget.TextView(context.activity)
     override val native: View = actualNative
-    actual var content: String
+    public actual var content: String
         get() {
             return actualNative.text.toString()
         }

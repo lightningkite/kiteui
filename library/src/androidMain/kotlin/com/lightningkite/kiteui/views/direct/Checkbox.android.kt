@@ -19,7 +19,7 @@ import com.lightningkite.signal.await
 import com.lightningkite.kiteui.views.*
 
 
-actual class Checkbox actual constructor(context: RContext): RView(context) {
+public actual class Checkbox public actual constructor(context: RContext): RView(context) {
     override val native = AndroidCheckBox(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme
@@ -32,7 +32,7 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
             )
         )
     }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -45,5 +45,5 @@ actual class Checkbox actual constructor(context: RContext): RView(context) {
         return super.applyState(t)
     }
 
-    actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
+    public actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
 }

@@ -7,13 +7,13 @@ import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class AutoCompleteTextField public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -83,7 +83,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.style.fontSize = value.value.toString()
         }
 
-    actual var suggestions: List<String> = listOf()
+    public actual var suggestions: List<String> = listOf()
         set(value) {
             field = value
             // TODO

@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-actual val RView.areAnimationsEnabled: Boolean get() = false
-actual inline fun RView.withoutAnimation(action: () -> Unit) {
+public actual val RView.areAnimationsEnabled: Boolean get() = false
+public actual inline fun RView.withoutAnimation(action: () -> Unit) {
     action()
 }

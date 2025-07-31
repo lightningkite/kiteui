@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 
 
-actual class MenuButton actual constructor(context: RContext): RView(context) {
+public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     val floating = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic
@@ -27,14 +27,14 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value
         }
-    actual var requireClick: Boolean = false
-    actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual var requireClick: Boolean = false
+    public actual var preferredDirection: PopoverPreferredDirection by floating::preferredDirection
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         floating.menuGenerator = createMenu
     }
 }

@@ -11,7 +11,7 @@ import platform.UIKit.UIView
 
 
 
-actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
+public actual class Space public actual constructor(context: RContext, private val multiplier: Double): RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = NSpace()
     override fun applyTheme(theme: ThemeAndBack) {
@@ -23,12 +23,12 @@ actual class Space actual constructor(context: RContext, private val multiplier:
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+public actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = natSize
 }
 
 //@ViewDsl
-//actual inline fun ViewWriter.spaceActual(crossinline setup: Space.() -> Unit): Unit = element(NSpace()) {
+//public actual inline fun ViewWriter.spaceActual(crossinline setup: Space.() -> Unit): Unit = element(NSpace()) {
 //    handleTheme(
 //        this,
 //        foreground = {
@@ -42,7 +42,7 @@ actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(
 //    }
 //}
 //
-//actual fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit): Unit = element(NSpace()) {
+//public actual fun ViewWriter.space(multiplier: Double, setup: Space.() -> Unit): Unit = element(NSpace()) {
 //    handleTheme(
 //        this,
 //        foreground = {

@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
-expect class ScrollingBehaviorImpl constructor(
+public expect class ScrollingBehaviorImpl constructor(
     on: RView,
     horizontal: Boolean,
     vertical: Boolean

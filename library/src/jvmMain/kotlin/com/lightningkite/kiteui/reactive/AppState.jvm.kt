@@ -7,22 +7,22 @@ import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import com.lightningkite.signal.*
 import kotlinx.coroutines.CoroutineScope
 
-actual object AppState {
+public actual object AppState {
     internal val _animationFrame = BasicListenable()
-    actual val animationFrame: Listenable
+    public actual val animationFrame: Listenable
         get() = _animationFrame
     internal val _windowInfo = Property(WindowStatistics(1920.px, 1080.px, 1f))
-    actual val windowInfo: ImmediateReadable<WindowStatistics>
+    public actual val windowInfo: ImmediateReadable<WindowStatistics>
         get() = _windowInfo
     internal val _inForeground = Property(true)
-    actual val inForeground: ImmediateReadable<Boolean>
+    public actual val inForeground: ImmediateReadable<Boolean>
         get() = _inForeground
     internal val _softInputOpen = Property(false)
-    actual val softInputOpen: ImmediateReadable<Boolean>
+    public actual val softInputOpen: ImmediateReadable<Boolean>
         get() = _softInputOpen
 
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         // Nothing to do; we're server-side
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
 }

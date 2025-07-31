@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class ExternalLink actual constructor(context: RContext) : RView(context) {
+public actual class ExternalLink public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "a"
@@ -17,22 +17,22 @@ actual class ExternalLink actual constructor(context: RContext) : RView(context)
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual inline var to: String?
+    public actual inline var to: String?
         get() = native.attributes.href
         set(value) {
             native.attributes.href = value
         }
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value
         }
-    actual inline var newTab: Boolean
+    public actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"
         set(value) {
             native.attributes.target = if (value) "_blank" else "_self"
         }
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         native.addEventListener("click") {
             launch { action() }
         }

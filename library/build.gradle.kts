@@ -20,6 +20,7 @@ val lk = project.lk {
 }
 
 kotlin {
+    explicitApi()
     androidTarget {
         publishLibraryVariants("release", "debug")
         dependencies {

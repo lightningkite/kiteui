@@ -10,7 +10,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class Checkbox(context: RContext) : RView {
+public expect class Checkbox(context: RContext) : RView {
 
     var enabled: Boolean
     val checked: ImmediateWritable<Boolean>

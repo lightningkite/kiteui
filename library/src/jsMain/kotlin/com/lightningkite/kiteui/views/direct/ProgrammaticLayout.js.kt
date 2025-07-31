@@ -8,14 +8,14 @@ import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.style.position = "relative"
     }
 
-    actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+    public actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value; invalidateLayout()
         }
@@ -198,7 +198,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var lastFillWidth: Boolean = true
     private var lastFillHeight: Boolean = true
     private var timeoutSet = false
-    actual fun invalidateLayout() {
+    public actual fun invalidateLayout() {
         log?.log("invalidateLayout()")
         if (timeoutSet) return
         window.setTimeout({

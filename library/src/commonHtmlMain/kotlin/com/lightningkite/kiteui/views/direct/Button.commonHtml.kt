@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+public actual class Button public actual constructor(context: RContext): RViewWithAction(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"
@@ -22,7 +22,7 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         }
     }
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value

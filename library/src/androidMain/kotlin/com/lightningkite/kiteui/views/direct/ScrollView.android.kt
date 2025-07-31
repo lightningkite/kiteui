@@ -222,7 +222,7 @@ class ScrollView constructor(
         override val state: ReadableState<Rect>
             get() {
                 if (viewDebugTarget == children.firstOrNull())
-                    println("Reading actual viewport, got ${native.scrollX}, ${native.scrollY}")
+                    println("Reading public actual viewport, got ${native.scrollX}, ${native.scrollY}")
                 return ReadableState(
                     Rect.fromSize(
                         (native.scrollX ?: 0).toDouble(),

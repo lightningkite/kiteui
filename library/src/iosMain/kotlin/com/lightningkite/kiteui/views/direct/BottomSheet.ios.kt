@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.l2.dialog
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.rawPopover
 
-actual fun ViewWriter.openBottomSheet(
+public actual fun ViewWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ViewWriter.() -> ViewModifiable

@@ -9,7 +9,7 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.UIView
 import kotlin.time.DurationUnit
 
-actual fun RView.animateIn(
+public actual fun RView.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {
@@ -39,7 +39,7 @@ actual fun RView.animateIn(
         )
     }
 }
-actual fun RView.animateOut(
+public actual fun RView.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?
 ) {

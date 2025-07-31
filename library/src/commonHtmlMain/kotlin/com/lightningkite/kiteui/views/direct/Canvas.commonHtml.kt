@@ -5,8 +5,8 @@ import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
 
-actual class Canvas actual constructor(context: RContext): RView(context) {
-    actual var delegate: CanvasDelegate? = null
+public actual class Canvas public actual constructor(context: RContext): RView(context) {
+    public actual var delegate: CanvasDelegate? = null
         set(value) {
             field = value
             onDelegateSet(value)
@@ -89,11 +89,11 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
     }
 }
 
-expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
+public expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
 
-expect fun Canvas.setupResizeListener()
+public expect fun Canvas.setupResizeListener()
 
-//actual var Canvas.delegate: CanvasDelegate?
+//public actual var Canvas.delegate: CanvasDelegate?
 //    get() = this.native.asDynamic().__ROCK_delegate__ as? CanvasDelegate
 //    set(value) {
 //        this.native.asDynamic().__ROCK_delegate__ = value
@@ -110,31 +110,31 @@ expect fun Canvas.setupResizeListener()
 //        }
 //    }
 
-actual typealias KeyCode = String
-actual object KeyCodes {
-    actual val left: KeyCode get() = "ArrowLeft"
-    actual val right: KeyCode get() = "ArrowRight"
-    actual val up: KeyCode get() = "ArrowUp"
-    actual val down: KeyCode get() = "ArrowDown"
-    actual fun letter(char: Char): KeyCode = "Key" + char.uppercase()
-    actual fun num(digit: Int): KeyCode = "Digit$digit"
-    actual fun numpad(digit: Int): KeyCode = "Numpad$digit"
-    actual val space: KeyCode get() = "Space"
-    actual val enter: KeyCode get() = "Enter"
-    actual val tab: KeyCode get() = "Tab"
-    actual val escape: KeyCode get() = "Escape"
-    actual val leftCtrl: KeyCode get() = "ControlLeft"
-    actual val rightCtrl: KeyCode get() = "ControlRight"
-    actual val leftShift: KeyCode get() = "ShiftLeft"
-    actual val rightShift: KeyCode get() = "ShiftRight"
-    actual val leftAlt: KeyCode get() = "AltLeft"
-    actual val rightAlt: KeyCode get() = "AltRight"
-    actual val equals: KeyCode get() = "Equal"
-    actual val dash: KeyCode get() = "Minus"
-    actual val backslash: KeyCode get() = "Backslash"
-    actual val leftBrace: KeyCode get() = "BracketLeft"
-    actual val rightBrace: KeyCode get() = "BracketRight"
-    actual val semicolon: KeyCode get() = "Semicolon"
-    actual val comma: KeyCode get() = "Comma"
-    actual val period: KeyCode get() = "Period"
+public actual typealias KeyCode = String
+public actual object KeyCodes {
+    public actual val left: KeyCode get() = "ArrowLeft"
+    public actual val right: KeyCode get() = "ArrowRight"
+    public actual val up: KeyCode get() = "ArrowUp"
+    public actual val down: KeyCode get() = "ArrowDown"
+    public actual fun letter(char: Char): KeyCode = "Key" + char.uppercase()
+    public actual fun num(digit: Int): KeyCode = "Digit$digit"
+    public actual fun numpad(digit: Int): KeyCode = "Numpad$digit"
+    public actual val space: KeyCode get() = "Space"
+    public actual val enter: KeyCode get() = "Enter"
+    public actual val tab: KeyCode get() = "Tab"
+    public actual val escape: KeyCode get() = "Escape"
+    public actual val leftCtrl: KeyCode get() = "ControlLeft"
+    public actual val rightCtrl: KeyCode get() = "ControlRight"
+    public actual val leftShift: KeyCode get() = "ShiftLeft"
+    public actual val rightShift: KeyCode get() = "ShiftRight"
+    public actual val leftAlt: KeyCode get() = "AltLeft"
+    public actual val rightAlt: KeyCode get() = "AltRight"
+    public actual val equals: KeyCode get() = "Equal"
+    public actual val dash: KeyCode get() = "Minus"
+    public actual val backslash: KeyCode get() = "Backslash"
+    public actual val leftBrace: KeyCode get() = "BracketLeft"
+    public actual val rightBrace: KeyCode get() = "BracketRight"
+    public actual val semicolon: KeyCode get() = "Semicolon"
+    public actual val comma: KeyCode get() = "Comma"
+    public actual val period: KeyCode get() = "Period"
 }

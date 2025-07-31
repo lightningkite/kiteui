@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 
 
-actual class RadioButton actual constructor(context: RContext) : RView(context) {
+public actual class RadioButton public actual constructor(context: RContext) : RView(context) {
     override val native: WrapperView = WrapperView()
     val button = FrameLayoutButton()
     override val addChildTarget get() = button
@@ -17,13 +17,13 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
         native.addSubview(button)
     }
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = button.enabled
         set(value) {
             button.enabled = value
         }
     private val _checked = Property(false)
-    actual val checked: ImmediateWritable<Boolean> get() = _checked
+    public actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
         themeChoice = ThemeDerivation {

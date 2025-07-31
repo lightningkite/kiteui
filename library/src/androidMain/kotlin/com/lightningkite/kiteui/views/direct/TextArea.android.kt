@@ -21,7 +21,7 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 
 
-actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
@@ -55,14 +55,14 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
             refreshTheming()
         }
-    actual val content: ImmediateWritable<String> = native.contentProperty()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: ImmediateWritable<String> = native.contentProperty()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }
@@ -76,7 +76,7 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         return super.applyState(t)
     }
 
-    actual var hint: String
+    public actual var hint: String
         get() {
             return native.hint.toString()
         }

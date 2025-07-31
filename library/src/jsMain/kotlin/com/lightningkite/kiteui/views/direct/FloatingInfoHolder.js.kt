@@ -20,16 +20,16 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-actual class FloatingInfoHolder actual constructor(val source: RView) {
+public actual class FloatingInfoHolder public actual constructor(val source: RView) {
     val theme get() = source.theme
     val maxDist = 32
     var blockView: RView? = null
     var closeView: RView? = null
     var existingView: RView? = null
 
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
     var currentDirection: PopoverPreferredDirection = preferredDirection
-    actual var menuGenerator: Frame.() -> Unit = { space() }
+    public actual var menuGenerator: Frame.() -> Unit = { space() }
 
     fun closeButton() {
         if (closeView != null) return
@@ -45,7 +45,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         }
     }
 
-    actual fun block() {
+    public actual fun block() {
         if (blockView != null) return
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
@@ -71,7 +71,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         )
     }
 
-    actual fun open() {
+    public actual fun open() {
         if (existingView != null) return
         var removeElementFromOverlay = {}
         val popoverWriter = source.popoverWriter(source.overlayFrame!!) {
@@ -292,7 +292,7 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
         }
     }
 
-    actual fun close() {
+    public actual fun close() {
         source.closeSiblingPopovers()
     }
 }

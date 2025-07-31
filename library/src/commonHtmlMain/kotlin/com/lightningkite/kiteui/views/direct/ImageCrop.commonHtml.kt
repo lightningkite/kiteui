@@ -21,10 +21,10 @@
 //import kotlin.math.*
 //
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NImageCrop = HTMLCanvasElement
+//public actual typealias NImageCrop = HTMLCanvasElement
 //
-//actual class ImageCrop actual constructor(actual override val native: NImageCrop) : RView<NImageCrop> {
-//    actual var source: ImageLocal? = null
+//public actual class ImageCrop public actual constructor(public actual override val native: NImageCrop) : RView<NImageCrop> {
+//    public actual var source: ImageLocal? = null
 //        set(value) {
 //            field = value
 //            launch {
@@ -33,7 +33,7 @@
 //            }
 //        }
 //
-//    actual var aspectRatio: Pair<Int, Int>? = null
+//    public actual var aspectRatio: Pair<Int, Int>? = null
 //        set(value) {
 //            field = value
 //
@@ -264,7 +264,7 @@
 //        }
 //    }
 //
-//    actual suspend fun crop(): ImageRaw? {
+//    public actual suspend fun crop(): ImageRaw? {
 //        val bitmap = bitmap ?: return null
 //        val scale: Double = if (fitHorizontal) {
 //            native.width.toDouble() / bitmap.width
@@ -317,7 +317,7 @@
 //}
 //
 //@ViewDsl
-//actual inline fun ViewWriter.imageCropActual(crossinline setup: ImageCrop.() -> Unit): Unit =
+//public actual inline fun ViewWriter.imageCropActual(crossinline setup: ImageCrop.() -> Unit): Unit =
 //    element<HTMLCanvasElement>("canvas") {
 //        setup(ImageCrop(this))
 //    }

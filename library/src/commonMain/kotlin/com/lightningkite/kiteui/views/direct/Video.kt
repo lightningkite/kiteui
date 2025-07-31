@@ -11,7 +11,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class Video(context: RContext) : RView {
+public expect class Video(context: RContext) : RView {
 
     var source: VideoSource?
     val time: Writable<Double>

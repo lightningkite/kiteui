@@ -4,11 +4,11 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
-actual class Video actual constructor(context: RContext) : RView(context) {
+public actual class Video public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "video"
     }
-    actual var source: VideoSource? = null
+    public actual var source: VideoSource? = null
         set(value) {
             field = value
             when(value) {
@@ -20,22 +20,22 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                 else -> {}
             }
         }
-    actual val time: Writable<Double> = nativeTime
-    actual val playing: Writable<Boolean> = nativePlaying
-    actual val volume: Writable<Float> = nativeVolume
-    actual var showControls: Boolean
+    public actual val time: Writable<Double> = nativeTime
+    public actual val playing: Writable<Boolean> = nativePlaying
+    public actual val volume: Writable<Float> = nativeVolume
+    public actual var showControls: Boolean
         get() = native.attributes.controls != null
         set(value) { native.attributes.controls = value }
-    actual var loop: Boolean
+    public actual var loop: Boolean
         get() = native.attributes.loopBoolean != null
         set(value) { native.attributes.loopBoolean = value }
-    actual var scaleType: ImageScaleType = ImageScaleType.Fit
+    public actual var scaleType: ImageScaleType = ImageScaleType.Fit
         set(value) {
             field = value
             native.classes.removeAll { it.startsWith("scaleType-") }
             native.classes.add("scaleType-$value")
         }
 }
-expect val Video.nativeTime: Writable<Double>
-expect val Video.nativePlaying: Writable<Boolean>
-expect val Video.nativeVolume: Writable<Float>
+public expect val Video.nativeTime: Writable<Double>
+public expect val Video.nativePlaying: Writable<Boolean>
+public expect val Video.nativeVolume: Writable<Float>

@@ -24,7 +24,7 @@ import com.lightningkite.kiteui.views.popoverWriter
 import com.lightningkite.kiteui.views.withoutAnimation
 import kotlin.coroutines.CoroutineContext
 
-actual fun ViewWriter.openBottomSheet(
+public actual fun ViewWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
     view: ViewWriter.() -> ViewModifiable

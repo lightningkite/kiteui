@@ -25,11 +25,11 @@ import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: UIView
     var tag: Any? = null
 
-    actual override var showOnPrint: Boolean = true
+    public actual override var showOnPrint: Boolean = true
 
     var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
@@ -177,7 +177,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    actual override fun screenRectangle(): Rect? {
+    public actual override fun screenRectangle(): Rect? {
         val windowView = native.window?.rootViewController?.view ?: return null
         val parent = native.superview ?: return null
         return windowView.convertRect(native.frame, fromView = parent).useContents {
@@ -190,7 +190,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    actual override fun scrollIntoView(
+    public actual override fun scrollIntoView(
         horizontal: Align?,
         vertical: Align?,
         animate: Boolean
@@ -200,7 +200,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    actual override fun requestFocus() {
+    public actual override fun requestFocus() {
         afterTimeout(16) {
             val n = native
             if (n is WrapperView) {
@@ -238,7 +238,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
      */
     protected open val disableBackground = false
 
-    actual override fun applyTheme(theme: ThemeAndBack) {
+    public actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
             shadowColor = UIColor.grayColor.CGColor
@@ -356,7 +356,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected open val addChildTarget: UIView get() = native
-    actual override fun internalAddChild(index: Int, view: RView) {
+    public actual override fun internalAddChild(index: Int, view: RView) {
         if (index == addChildTarget.subviews.size)
             addChildTarget.addSubview(view.native)
         else
@@ -365,7 +365,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
     }
 
-    actual override fun internalRemoveChild(index: Int) {
+    public actual override fun internalRemoveChild(index: Int) {
         if (children[index].native != addChildTarget.subviews.get(index)) throw IllegalStateException("Children mismatch! ${children.map { it.native }} vs ${addChildTarget.subviews}")
         if (index >= addChildTarget.subviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${addChildTarget.subviews.size}")
@@ -373,7 +373,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         (addChildTarget.subviews[index] as UIView).removeFromSuperview()
     }
 
-    actual override fun internalClearChildren() {
+    public actual override fun internalClearChildren() {
         addChildTarget.subviews.toList().forEach {
             (it as UIView).let {
                 it.removeFromSuperview()
@@ -384,8 +384,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
-actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
-actual inline fun RView.withoutAnimation(action: () -> Unit) {
+public actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+public actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
 

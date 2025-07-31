@@ -708,9 +708,9 @@ val html = listOf(
 )
 
 css.forEach {  (js, css) ->
-    println("expect var CSSStyleDeclarationHandle.$js: String")
+    println("public expect var CSSStyleDeclarationHandle.$js: String")
 }
 html.forEach {  (jsAndType, css) ->
     val (js, type) = jsAndType
-    println("expect var CSSStyleDeclarationHandle.$js: $type")
+    println("public expect var CSSStyleDeclarationHandle.$js: $type")
 }

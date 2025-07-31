@@ -25,16 +25,16 @@ import kotlinx.datetime.toInstant
 import java.io.File
 import kotlin.coroutines.resume
 
-actual object ExternalServices {
-    actual fun openTab(url: String) {
+public actual object ExternalServices {
+    public actual fun openTab(url: String) {
         AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
-    actual suspend fun requestFile(
+    public actual suspend fun requestFile(
         mimeTypes: List<String>,
     ) = requestFiles(mimeTypes, false).firstOrNull()
 
-    actual suspend fun requestFiles(
+    public actual suspend fun requestFiles(
         mimeTypes: List<String>,
     ) = requestFiles(mimeTypes, true)
 
@@ -68,7 +68,7 @@ actual object ExternalServices {
         }
     }
 
-    actual suspend fun requestCaptureSelf(
+    public actual suspend fun requestCaptureSelf(
         mimeTypes: List<String>
     ): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
@@ -82,7 +82,7 @@ actual object ExternalServices {
         else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
     }
 
-    actual suspend fun requestCaptureEnvironment(
+    public actual suspend fun requestCaptureEnvironment(
         mimeTypes: List<String>
     ): FileReference? {
         return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
@@ -124,7 +124,7 @@ actual object ExternalServices {
         }
     }
 
-    actual fun setClipboardText(value: String) {
+    public actual fun setClipboardText(value: String) {
         (AndroidAppContext.activityCtx?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
             .setPrimaryClip(ClipData.newPlainText(value, value))
     }
@@ -136,7 +136,7 @@ actual object ExternalServices {
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 
     @SuppressLint("MissingPermission")
-    actual suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) {
+    public actual suspend fun download(name: String, url: String, preferredDestination: DownloadLocation, onDownloadProgress: ((progress: Float) -> Unit)?) {
         // TODO: Implement photo library storage for both overloads of download
         // TODO: Add progress update callbacks
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
@@ -164,7 +164,7 @@ actual object ExternalServices {
     }
 
     @SuppressLint("MissingPermission")
-    actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
+    public actual suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
         if(!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         if(VERSION.SDK_INT < VERSION_CODES.Q) {
             AndroidAppContext.requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
@@ -206,7 +206,7 @@ actual object ExternalServices {
 
     private fun <T> List<T>.identity(): T? = first().takeIf { all { it == first() } }
 
-    actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
+    public actual suspend fun share(namesToBlobs: List<Pair<String, Blob>>) {
         val files = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) }
             .map { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, AndroidAppContext.fileProviderAuthority, it) }
         val commonMimeType = namesToBlobs.map { it.second.type }.identity() ?: "*/*"
@@ -224,7 +224,7 @@ actual object ExternalServices {
         AndroidAppContext.activityCtx?.startActivity(shareIntent)
     }
 
-    actual fun share(title: String, message: String?, url: String?) {
+    public actual fun share(title: String, message: String?, url: String?) {
         val i = Intent(Intent.ACTION_SEND)
         i.type = "text/plain"
         i.putExtra(Intent.EXTRA_TITLE, title)
@@ -232,7 +232,7 @@ actual object ExternalServices {
         AndroidAppContext.startActivityForResult(Intent.createChooser(i, title)) { _, _ -> }
     }
 
-    actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
+    public actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
         AndroidAppContext.startActivityForResult(
             intent = Intent(Intent.ACTION_VIEW).apply {
                 if (label == null) {
@@ -253,7 +253,7 @@ actual object ExternalServices {
         ) { _, _ -> }
     }
 
-    actual fun openEvent(
+    public actual fun openEvent(
         title: String,
         description: String,
         location: String,

@@ -6,16 +6,16 @@ import androidx.core.view.WindowCompat
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-actual val Platform.Companion.current: Platform
+public actual val Platform.Companion.current: Platform
     get() = Platform.Android
-actual val Platform.Companion.probablyAppleUser: Boolean
+public actual val Platform.Companion.probablyAppleUser: Boolean
     get() = false
-actual val Platform.Companion.usesTouchscreen: Boolean
+public actual val Platform.Companion.usesTouchscreen: Boolean
     get() = true
-actual val Platform.Companion.userAgent: String
+public actual val Platform.Companion.userAgent: String
     get() = "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
 
-actual fun setStatusBarColor(color: Color) {
+public actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window
 
     // Check if we're on Android 11 (API 30) or higher for WindowInsetsController

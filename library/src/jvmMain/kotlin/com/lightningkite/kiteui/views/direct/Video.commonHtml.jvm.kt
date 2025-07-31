@@ -4,10 +4,10 @@ import com.lightningkite.signal.Property
 import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.autoplay
 
-actual val Video.nativeTime: Writable<Double> get() = Property(0.0)
-actual val Video.nativePlaying: Writable<Boolean> get() = Property(false).also {
+public actual val Video.nativeTime: Writable<Double> get() = Property(0.0)
+public actual val Video.nativePlaying: Writable<Boolean> get() = Property(false).also {
     it.addListener {
         native.attributes.autoplay = it.value
     }
 }
-actual val Video.nativeVolume: Writable<Float> get() = Property(1.0f)
+public actual val Video.nativeVolume: Writable<Float> get() = Property(1.0f)

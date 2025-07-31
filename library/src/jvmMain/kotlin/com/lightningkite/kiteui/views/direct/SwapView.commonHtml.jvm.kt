@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 
-actual fun SwapView.nativeSwap(
+public actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
     createNewView: ViewWriter.() -> ViewModifiable?
 ) {

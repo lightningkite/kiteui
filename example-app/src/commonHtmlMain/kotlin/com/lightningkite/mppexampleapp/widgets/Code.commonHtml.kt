@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.FutureElement
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
-actual class Code actual constructor(context: RContext): RView(context) {
+public actual class Code public actual constructor(context: RContext): RView(context) {
     init {
         native.tag = "pre"
     }
@@ -13,7 +13,7 @@ actual class Code actual constructor(context: RContext): RView(context) {
         classes.add("language-kotlin")
         content = Typography.nbsp.toString()
     }.also { native.appendChild(it) }
-    actual var content: String
+    public actual var content: String
         get() = inner.innerHtmlUnsafe ?: ""
         set(value) {
             inner.innerHtmlUnsafe = if(value.isEmpty()) Typography.nbsp.toString() else value
@@ -21,4 +21,4 @@ actual class Code actual constructor(context: RContext): RView(context) {
         }
 }
 
-internal expect fun FutureElement.runHighlighter()
+internal public expect fun FutureElement.runHighlighter()

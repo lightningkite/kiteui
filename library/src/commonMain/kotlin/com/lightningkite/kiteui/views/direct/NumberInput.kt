@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWithAction
 
 typealias NumberField = NumberInput
-expect class NumberInput(context: RContext) : RViewWithAction {
+public expect class NumberInput(context: RContext) : RViewWithAction {
 
     var enabled: Boolean
     val content: ImmediateWritable<Double?>

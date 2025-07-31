@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.views.*
 
 
-expect class RowOrCol(context: RContext) : RView {
+public expect class RowOrCol(context: RContext) : RView {
     var vertical: Boolean
     fun spacingOverrideBeforeNext(amount: Dimension)
 }

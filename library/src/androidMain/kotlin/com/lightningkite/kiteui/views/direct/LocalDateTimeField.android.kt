@@ -12,12 +12,12 @@ import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
-actual class LocalDateTimeField actual constructor(context: RContext) :
+public actual class LocalDateTimeField public actual constructor(context: RContext) :
     RViewWithAction(context) {
     private val property: Property<LocalDateTime?> = Property(null)
-    actual val content: ImmediateWritable<LocalDateTime?> = property
+    public actual val content: ImmediateWritable<LocalDateTime?> = property
     
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
 
     override val native = FrameLayout(context.activity).apply {
         isClickable = true

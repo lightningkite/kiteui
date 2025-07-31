@@ -9,7 +9,7 @@ import kotlin.native.runtime.GC
 import kotlin.native.runtime.NativeRuntimeApi
 import kotlin.reflect.KClass
 
-actual fun debugger() {
+public actual fun debugger() {
 }
 
 @OptIn(ExperimentalNativeApi::class)
@@ -28,7 +28,7 @@ object ObjCountTrackers {
 }
 
 @OptIn(NativeRuntimeApi::class, ExperimentalStdlibApi::class)
-actual fun gc(): GCInfo {
+public actual fun gc(): GCInfo {
     repeat(3) {
         GC.collect()
         NSRunLoop.currentRunLoop()
@@ -37,18 +37,18 @@ actual fun gc(): GCInfo {
     return GCInfo(GC.lastGCInfo!!.memoryUsageAfter["heap"]?.totalObjectsSizeBytes ?: -1L)
 }
 
-actual fun cleanImageCache() {
+public actual fun cleanImageCache() {
     ImageCache.imageCache.removeAllObjects()
     ImageCache.imageCacheSized.removeAllObjects()
 }
 
-actual fun gcReport() {
+public actual fun gcReport() {
     ObjCountTrackers.alive.entries.forEach {
         println("${it.key.qualifiedName}.alive = ${it.value}")
     }
     ExtensionProperty.debug()
 }
 
-actual fun assertMainThread() {
+public actual fun assertMainThread() {
     if(!NSThread.isMainThread) throw Error("NOT MAIN THREAD!!!")
 }

@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
-actual class RadioToggleButton actual constructor(context: RContext) : RView(context) {
+public actual class RadioToggleButton public actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -14,13 +14,13 @@ actual class RadioToggleButton actual constructor(context: RContext) : RView(con
             Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
     private val _checked = Property(false)
-    actual val checked: ImmediateWritable<Boolean> get() = _checked
+    public actual val checked: ImmediateWritable<Boolean> get() = _checked
 
     init {
         onRemove(native.observe("highlighted", { refreshTheming() }))

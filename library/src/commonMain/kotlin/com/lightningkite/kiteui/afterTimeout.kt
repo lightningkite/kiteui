@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Deprecated("Safer alternative available that prevents memory leaks by respecting RView lifecycle", ReplaceWith("CoroutineScope.afterTimeout"))
-expect fun afterTimeout(milliseconds: Long, action: ()->Unit): ()->Unit
+public expect fun afterTimeout(milliseconds: Long, action: ()->Unit): ()->Unit
 
 fun CoroutineScope.afterTimeout(milliseconds: Long, action: ()->Unit) = launch {
     delay(milliseconds)

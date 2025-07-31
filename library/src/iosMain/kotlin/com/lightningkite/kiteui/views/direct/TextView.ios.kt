@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import platform.Foundation.*
 import platform.UIKit.*
 
-actual class TextView actual constructor(context: RContext) : RView(context) {
+public actual class TextView public actual constructor(context: RContext) : RView(context) {
     override val native = UILabelWithLayerBackground()
     val label get() = native.label
 
@@ -15,13 +15,13 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         label.numberOfLines = 0
     }
 
-    actual var content: String = ""
+    public actual var content: String = ""
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
-    actual inline var align: Align
+    public actual inline var align: Align
         get() = when (label.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center
@@ -44,12 +44,12 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    actual var ellipsis: Boolean
+    public actual var ellipsis: Boolean
         get() = label.lineBreakMode == NSLineBreakByTruncatingTail
         set(value) {
             label.lineBreakMode = if (value) NSLineBreakByTruncatingTail else NSLineBreakByClipping
         }
-    actual var wraps: Boolean
+    public actual var wraps: Boolean
         get() = label.numberOfLines == 0L
         set(value) {
             label.numberOfLines = if (value) 0 else 1
@@ -105,7 +105,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    actual var wordBreak: WordBreak = WordBreak.Normal
+    public actual var wordBreak: WordBreak = WordBreak.Normal
         set(value) {
             label.lineBreakMode = when (value) {
                 WordBreak.Normal -> NSLineBreakByWordWrapping
@@ -127,7 +127,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
     }
 
     private var originalHtml: NSAttributedString? = null
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         val x = NSAttributedString.create(
             data = html.nsdata()!!,
             options = mapOf(NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType),

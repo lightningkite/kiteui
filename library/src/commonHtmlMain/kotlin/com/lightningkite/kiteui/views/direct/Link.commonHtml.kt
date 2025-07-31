@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: RContext) : RView(context) {
+public actual class Link public actual constructor(context: RContext) : RView(context) {
 
     init {
         themeChoice += ClickableSemantic
@@ -36,8 +36,8 @@ actual class Link actual constructor(context: RContext) : RView(context) {
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual var onNavigator: PageNavigator = (this as RView).pageNavigator
-    actual var to: (() -> Page)? = null
+    public actual var onNavigator: PageNavigator = (this as RView).pageNavigator
+    public actual var to: (() -> Page)? = null
         set(value) {
             field = value
             value?.invoke()?.let {
@@ -46,24 +46,24 @@ actual class Link actual constructor(context: RContext) : RView(context) {
                 }
             } ?: run { native.attributes.href = "" }
         }
-    actual inline var newTab: Boolean
+    public actual inline var newTab: Boolean
         get() = native.attributes.target == "_blank"
         set(value) {
             native.attributes.target = if (value) "_blank" else "_self"
         }
-    actual var resetsStack: Boolean = false
+    public actual var resetsStack: Boolean = false
 
     private var onNavigate: (suspend () -> Unit)? = null
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
     private var onClick: (suspend () -> Unit)? = null
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    public actual fun onClick(action: suspend () -> Unit): Unit {
         onClick = action
     }
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.attributes.disabled != true
         set(value) {
             native.attributes.disabled = !value

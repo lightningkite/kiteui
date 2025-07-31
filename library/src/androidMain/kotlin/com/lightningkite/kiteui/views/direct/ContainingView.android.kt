@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.views.*
 import kotlin.math.roundToInt
 
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+public actual class Frame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout(context.activity)
     override fun childTouches(child: RView): Int {
@@ -31,7 +31,7 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
@@ -58,13 +58,13 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
         return total
     }
-    actual var vertical: Boolean
+    public actual var vertical: Boolean
         get() = native.orientation == SimplifiedLinearLayout.VERTICAL
         set(value) {
             native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
             native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
         }
-    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+    public actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
         beforeNextElementSetup {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -85,7 +85,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
+public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =

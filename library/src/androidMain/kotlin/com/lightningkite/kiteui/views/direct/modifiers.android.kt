@@ -23,7 +23,7 @@ import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
         try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -43,7 +43,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -76,7 +76,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         val params = lparams
         val horizontalGravity = when (horizontal) {
@@ -114,13 +114,13 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
         wrapNextIn(object : RViewWrapper(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
@@ -145,7 +145,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     wrapNextIn(object : RViewWrapper(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
@@ -290,7 +290,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ViewWrapper {
@@ -305,7 +305,7 @@ actual fun ViewWriter.hintPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
@@ -334,7 +334,7 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper {
+public actual fun ViewWriter.textPopover(message: String): ViewWrapper {
     beforeNextElementSetup {
         native.tooltipText = message
     }
@@ -343,7 +343,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)

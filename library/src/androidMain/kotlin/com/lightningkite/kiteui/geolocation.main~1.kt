@@ -6,7 +6,7 @@ import android.location.Location
 import android.location.LocationManager
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-actual object Geolocation {
+public actual object Geolocation {
 
     private val locationService: LocationManager by lazy {
         AndroidAppContext.applicationCtx.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -16,7 +16,7 @@ actual object Geolocation {
     }
 
     @SuppressLint("MissingPermission")
-    actual suspend fun getCurrentPosition(): GeolocationResult {
+    public actual suspend fun getCurrentPosition(): GeolocationResult {
         if(!AndroidAppContext.requestPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION).accepted) throw Exception("Permission not granted")
         val location = try {
             locationService.getLastKnownLocation(LocationManager.GPS_PROVIDER)

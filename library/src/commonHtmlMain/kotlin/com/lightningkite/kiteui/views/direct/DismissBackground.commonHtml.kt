@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class DismissBackground actual constructor(context: RContext) : RView(context) {
+public actual class DismissBackground public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
@@ -24,7 +24,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
         view.native.addEventListener("click") { ev -> ev.stopImmediatePropagation() }
     }
 
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    public actual fun onClick(action: suspend () -> Unit): Unit {
         native.replaceEventListener("click") { launch { action() } }
     }
 

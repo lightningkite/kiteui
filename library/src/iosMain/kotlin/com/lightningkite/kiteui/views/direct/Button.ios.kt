@@ -7,7 +7,7 @@ import com.lightningkite.signal.onRemove
 import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
-actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class Button public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -33,7 +33,7 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
         })
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

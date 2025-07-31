@@ -33,7 +33,7 @@ internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginE
     
     $imports
     
-    expect object Resources {
+    public expect object Resources {
         $lines
     }
             """.trimIndent()
@@ -51,23 +51,23 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
                 is Resource.Font -> {
                     val normal = r.normal.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
                     val italics = r.italics.entries.joinToString { "${it.key} to \"common/${it.value.relativeFile.toString().replace(File.separatorChar, '/')}\"" }
-                    "actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = mapOf($normal), italics = mapOf($italics)))"
+                    "public actual val ${r.name}: Font = Font(cssFontFamilyName = \"${r.name}\", direct = FontDirect(normal = mapOf($normal), italics = mapOf($italics)))"
                 }
 
-                is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"common/${
+                is Resource.Image -> "public actual val ${r.name}: ImageResource = ImageResource(\"common/${
                     r.relativeFile.toString().replace(File.separatorChar, '/')
                 }\")"
 
-                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"common/${
+                is Resource.Video -> "public actual val ${r.name}: VideoResource = VideoResource(\"common/${
                     r.relativeFile.toString().replace(File.separatorChar, '/')
                 }\")"
 
-                is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"common/${
+                is Resource.Audio -> "public actual val ${r.name}: AudioResource = AudioResource(\"common/${
                     r.relativeFile.toString().replace(File.separatorChar, '/')
                 }\")"
 
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = fetch(\"common/${
+                    usesBlob = true; "public actual suspend fun ${r.name}(): Blob = fetch(\"common/${
                         r.relativeFile.toString().replace(File.separatorChar, '/')
                     }\").blob()"
                 }
@@ -91,7 +91,7 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
     
     $imports
     
-    actual object Resources {
+    public actual object Resources {
         $lines
     }
             """.trimIndent()
@@ -212,14 +212,14 @@ internal fun resourcesIos(
                 is Resource.Font -> {
                     val normal = r.normal.entries.joinToString { "${it.key} to ${it.value.postScriptName.str()}" }
                     val italics = r.italics.entries.joinToString { "${it.key} to ${it.value.postScriptName.str()}" }
-                    "actual val ${r.name}: Font = fontFromFamilyInfo(normal = mapOf($normal), italics = mapOf($italics))  // ${r}"
+                    "public actual val ${r.name}: Font = fontFromFamilyInfo(normal = mapOf($normal), italics = mapOf($italics))  // ${r}"
                 }
 
-                is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(\"${it.key}\")"
-                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
-                is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(\"${it.key}\", \"${r.source.extension}\")"
+                is Resource.Image -> "public actual val ${r.name}: ImageResource = ImageResource(\"${it.key}\")"
+                is Resource.Video -> "public actual val ${r.name}: VideoResource = VideoResource(\"${it.key}\", \"${r.source.extension}\")"
+                is Resource.Audio -> "public actual val ${r.name}: AudioResource = AudioResource(\"${it.key}\", \"${r.source.extension}\")"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
+                    usesBlob = true; "public actual suspend fun ${r.name}(): Blob = TODO()"
                 }
 
                 else -> ""
@@ -236,7 +236,7 @@ internal fun resourcesIos(
     
     $imports
     
-    actual object Resources {
+    public actual object Resources {
         $lines
     }
             """.trimIndent()
@@ -307,12 +307,12 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
     val lines = resources
         .joinToString("\n    ") {
             when (val r = it.value) {
-                is Resource.Font -> "actual val ${r.name}: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()})"
-                is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
-                is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
-                is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
+                is Resource.Font -> "public actual val ${r.name}: Font = AndroidAppContext.applicationCtx.resources.getFont(R.font.${it.key.snakeCase()})"
+                is Resource.Image -> "public actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
+                is Resource.Video -> "public actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
+                is Resource.Audio -> "public actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
                 is Resource.Binary -> {
-                    usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
+                    usesBlob = true; "public actual suspend fun ${r.name}(): Blob = TODO()"
                 }
 
                 else -> ""
@@ -331,7 +331,7 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
     
     $imports
     
-    actual object Resources {
+    public actual object Resources {
         $lines
     }
             """.trimIndent()

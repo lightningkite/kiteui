@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
-actual class Link actual constructor(context: RContext): RView(context) {
+public actual class Link public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -35,22 +35,22 @@ actual class Link actual constructor(context: RContext): RView(context) {
         })
     }
 
-    actual var to: (() -> Page)? = null
-    actual var onNavigator: PageNavigator = mainPageNavigator
-    actual var newTab: Boolean = false
-    actual var resetsStack: Boolean = false
+    public actual var to: (() -> Page)? = null
+    public actual var onNavigator: PageNavigator = mainPageNavigator
+    public actual var newTab: Boolean = false
+    public actual var resetsStack: Boolean = false
 
     private var onNavigate: (suspend () -> Unit)? = null
-    actual fun onNavigate(action: suspend () -> Unit): Unit {
+    public actual fun onNavigate(action: suspend () -> Unit): Unit {
         onNavigate = action
     }
 
     private var onClick: (suspend () -> Unit)? = null
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    public actual fun onClick(action: suspend () -> Unit): Unit {
         onClick = action
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

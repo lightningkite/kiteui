@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.models
 
-expect class ScreenTransition {
+public expect class ScreenTransition {
     companion object {
         val None: ScreenTransition
         val Push: ScreenTransition

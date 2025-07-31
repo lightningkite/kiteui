@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
+public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     return col {
         text("Lookie here at this icon:")
         val visible = Property(false)

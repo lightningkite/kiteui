@@ -9,7 +9,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-actual class Space actual constructor(context: RContext, val multiplier: Double): RView(context) {
+public actual class Space public actual constructor(context: RContext, val multiplier: Double): RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = NSpace(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {

@@ -29,7 +29,7 @@ interface ViewModifiable: CoroutineScope {
     val rView: RView
 }
 
-expect abstract class RView constructor(context: RContext) : RViewHelper {
+public expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
     override fun requestFocus()
@@ -51,8 +51,8 @@ fun RView.rectangleRelativeTo(other: RView): Rect? {
     )
 }
 
-expect val RView.areAnimationsEnabled: Boolean
-expect inline fun RView.withoutAnimation(action: () -> Unit)
+public expect val RView.areAnimationsEnabled: Boolean
+public expect inline fun RView.withoutAnimation(action: () -> Unit)
 abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
     override val rView: RView get() = this as RView
     var additionalTestingData: Any? = null

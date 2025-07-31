@@ -12,4 +12,4 @@ object PlatformSpecificPage : Page {
     }
 }
 
-expect fun ViewWriter.platformSpecific(): ViewModifiable
+public expect fun ViewWriter.platformSpecific(): ViewModifiable

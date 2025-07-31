@@ -12,10 +12,10 @@ import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 
-actual class ScrollingBehaviorImpl actual constructor(
+public actual class ScrollingBehaviorImpl public actual constructor(
     val on: RView,
-    actual override val horizontal: Boolean,
-    actual override val vertical: Boolean
+    public actual override val horizontal: Boolean,
+    public actual override val vertical: Boolean
 ) : ScrollingBehaviors {
     val native = on.native
 
@@ -35,7 +35,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     }
 
-    actual override var showScrollBars: Boolean = true
+    public actual override var showScrollBars: Boolean = true
         set(value) {
             field = value
             if (value) native.classes -= "hideScrollbar"
@@ -64,7 +64,7 @@ actual class ScrollingBehaviorImpl actual constructor(
     private val scrollEvent = native.vevent("scroll")
     private val lockScrollEnd = BasicListenable()
     private var lockScrollReportAt: Rect? = null
-    actual override val viewport: Readable<Rect> by lazy {
+    public actual override val viewport: Readable<Rect> by lazy {
         on.reactive {
             rerunOn(scrollEvent)
             rerunOn(lockScrollEnd)
@@ -76,7 +76,7 @@ actual class ScrollingBehaviorImpl actual constructor(
             )
         }
     }
-    actual override val content: Readable<Rect> by lazy {
+    public actual override val content: Readable<Rect> by lazy {
         on.reactive {
             Rect.fromSize(
                 left = 0.0,
@@ -87,7 +87,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     }
     val _directlyInteractingWithScroller = Property(false)
-    actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
     init {
 //        var lastTimeout: () -> Unit = {}
@@ -115,7 +115,7 @@ actual class ScrollingBehaviorImpl actual constructor(
 //        }
     }
 
-    actual override var snapToElements: Pair<Align?, Align?> = null to null
+    public actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
             if (viewDebugTarget == on) println("ScrollView.snapToElements set")
             field = value
@@ -130,14 +130,14 @@ actual class ScrollingBehaviorImpl actual constructor(
                 }
             )
         }
-    actual override var scrollSnapStop: Boolean = false
+    public actual override var scrollSnapStop: Boolean = false
         set(value) {
             if (viewDebugTarget == on) println("ScrollView.scrollSnapStop set")
             field = value
             native.setStyleProperty("scroll-snap-stop", if (value) "always" else "normal")
         }
 
-    actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    public actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
         disableSnapTemporarily()
         native.onElement {
@@ -151,7 +151,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         }
     }
 
-    actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    public actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
         if (viewDebugTarget == on) println("ScrollView.scrollTo($element, $horizontal, $vertical, $animated)")
         disableSnapTemporarily()
         element.native.element?.scrollIntoView(
@@ -167,7 +167,7 @@ actual class ScrollingBehaviorImpl actual constructor(
         native.setStyleProperty("scroll-snap-type", "unset")
     }
 
-    actual override fun scrollToKeepAnimations(x: Double, y: Double) {
+    public actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         val myInstance = ++scrollToInstance
         if (viewDebugTarget == on) println("ScrollView.scrollToKeepAnimations($x, $y)")
         disableSnapTemporarily()

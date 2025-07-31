@@ -1,4 +1,4 @@
 package com.lightningkite.kiteui
 
-actual val Platform.Companion.current: Platform
+public actual val Platform.Companion.current: Platform
     get() = Platform.iOS

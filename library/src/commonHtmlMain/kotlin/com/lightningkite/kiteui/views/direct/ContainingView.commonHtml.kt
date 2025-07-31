@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+public actual class Frame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
@@ -80,7 +80,7 @@ actual class Frame actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
@@ -89,7 +89,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         native.classes += "kiteui-col"
     }
     private var complex = false
-    actual var vertical: Boolean = true
+    public actual var vertical: Boolean = true
         set(value) {
             field = value
             native.style.flexDirection = if(value) "column" else "row"
@@ -164,7 +164,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
     }
 
-    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+    public actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
         beforeNextElementSetup {
             // TODO: Make this work when vertical changes
             if(vertical) native.style.marginTop = "calc(${amount.value} - var(--parentSpacing))"
@@ -186,7 +186,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
+public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"

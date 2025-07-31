@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
 
-actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
 
     init {
@@ -29,7 +29,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual fun bottomSheet(
+    public actual fun bottomSheet(
         peekSize: Dimension?,
         partialRatio: Float,
         draggable: Boolean,
@@ -69,7 +69,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
     }
 
-    actual fun leftSlidingPanel(
+    public actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -105,7 +105,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
     }
 
-    actual fun rightSlidingPanel(
+    public actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
@@ -141,17 +141,17 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
     }
 
-    actual fun onLeftSwipe(action: suspend () -> Unit) {
+    public actual fun onLeftSwipe(action: suspend () -> Unit) {
 
     }
 
-    actual fun onRightSwipe(action: suspend () -> Unit) {
+    public actual fun onRightSwipe(action: suspend () -> Unit) {
 
     }
 }
 
 
-actual class CoordinatorDragHandle actual constructor(context: RContext) : RView(context) {
+public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"

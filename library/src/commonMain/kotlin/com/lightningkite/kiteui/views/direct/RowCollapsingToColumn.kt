@@ -7,6 +7,6 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class RowCollapsingToColumn(context: RContext, breakpoints: List<Dimension>) : RView {
+public expect class RowCollapsingToColumn(context: RContext, breakpoints: List<Dimension>) : RView {
 
 }

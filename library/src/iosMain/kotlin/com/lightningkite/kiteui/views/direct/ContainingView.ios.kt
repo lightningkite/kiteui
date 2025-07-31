@@ -7,7 +7,7 @@ import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
 
-actual class RowOrCol actual constructor(context: RContext) : RView(context) {
+public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
     override val native = LinearLayout()
     override val cannotBeCovered: Boolean get() = false
 
@@ -19,13 +19,13 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             Side.Bottom -> if(vertical) child == children.lastOrNull() else child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
-    actual var vertical: Boolean
+    public actual var vertical: Boolean
         get() = native.horizontal.not()
         set(value) {
             native.horizontal = !value
         }
 
-    actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+    public actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
         beforeNextElementSetup {
             native.extensionSpacingBeforeOverride = amount
         }
@@ -44,7 +44,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
     }
 }
 
-actual class RowCollapsingToColumn actual constructor(context: RContext, breakpoints: List<Dimension>) :
+public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) :
     RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = LinearLayout()
@@ -84,7 +84,7 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
     }
 }
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
+public actual class Frame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
     override fun childTouches(side: Side, child: RView): Boolean {

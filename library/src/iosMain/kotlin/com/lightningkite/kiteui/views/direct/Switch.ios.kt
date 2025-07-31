@@ -11,15 +11,15 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 
 
-actual class Switch actual constructor(context: RContext) : RView(context) {
+public actual class Switch public actual constructor(context: RContext) : RView(context) {
     override val native = UISwitch()
 
-    actual inline var enabled: Boolean
+    public actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
-    actual val checked: ImmediateWritable<Boolean>
+    public actual val checked: ImmediateWritable<Boolean>
         get() {
             return object : ImmediateWritable<Boolean> {
                 override fun addListener(listener: () -> Unit): () -> Unit {

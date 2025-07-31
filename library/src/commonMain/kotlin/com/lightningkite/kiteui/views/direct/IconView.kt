@@ -11,7 +11,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class IconView(context: RContext) : RView {
+public expect class IconView(context: RContext) : RView {
 
     var source: Icon?
     var description: String?

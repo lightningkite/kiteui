@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
 
-actual class SwapView actual constructor(context: RContext) : RView(context) {
+public actual class SwapView public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
@@ -17,12 +17,12 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         Frame.internalAddChildStack(this, index, view)
     }
     var previousLast: RView? = null
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
+    public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
         nativeSwap(transition, createNewView)
     }
 }
 
-expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit
+public expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit
 //{
 //    val keyframeName = KiteUiCss.transition(transition)
 //

@@ -8,6 +8,6 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class DismissBackground(context: RContext) : RView {
+public expect class DismissBackground(context: RContext) : RView {
     fun onClick(action: suspend () -> Unit)
 }

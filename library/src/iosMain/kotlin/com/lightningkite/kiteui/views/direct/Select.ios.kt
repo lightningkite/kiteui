@@ -13,7 +13,7 @@ import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 
-actual class Select actual constructor(context: RContext): RView(context) {
+public actual class Select public actual constructor(context: RContext): RView(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init {
@@ -21,7 +21,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         textField.inputView = UIPickerView()
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: Writable<T>,
         data: Readable<List<T>>,
         render: (T) -> String
@@ -84,7 +84,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
         textField.textAlignment = alignment
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value

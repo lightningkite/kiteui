@@ -91,7 +91,7 @@ class CAGradientLayerResizing : CAGradientLayer {
     private var backgroundMask: CALayer? = null
 
     /**
-     * In some cases, we need a separate layer to mask views. The actual CAGradientLayerResizing layer cannot be used
+     * In some cases, we need a separate layer to mask views. The public actual CAGradientLayerResizing layer cannot be used
      * because it has a superlayer and the CALayer mask property does not work with layers that have superlayers
      */
     fun getOrInitBackgroundMask(): CALayer {

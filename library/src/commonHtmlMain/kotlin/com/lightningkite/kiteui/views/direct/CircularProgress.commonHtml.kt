@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.views.*
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-actual class CircularProgress actual constructor(context: RContext): RView(context) {
+public actual class CircularProgress public actual constructor(context: RContext): RView(context) {
 
 
     init {
@@ -16,7 +16,7 @@ actual class CircularProgress actual constructor(context: RContext): RView(conte
 
 
 
-    actual var ratio: Float
+    public actual var ratio: Float
         get() =  native.innerHtmlUnsafe?.let { getStrokeDashArrayValue(it) } ?: 0f
         set(value) {
             val updatedInnerHTML = native.innerHtmlUnsafe?.let { updateStrokeDashArray(it, roundTo(value*100, 2).toString()) }

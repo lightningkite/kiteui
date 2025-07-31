@@ -21,7 +21,7 @@ import platform.objc.sel_registerName
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.hintPopover(
+public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
 ): ViewWrapper {
@@ -43,7 +43,7 @@ actual fun ViewWriter.hintPopover(
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.hasPopover(
+public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
@@ -86,10 +86,10 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
+public actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     this.beforeNextElementSetup {
         native.extensionWeight = amount
     }
@@ -97,7 +97,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
         reactiveScope {
             native.extensionWeight = amount()
@@ -107,7 +107,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         native.extensionHorizontalAlign = horizontal
         native.extensionVerticalAlign = vertical
@@ -116,13 +116,13 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         native.extensionSizeConstraints = constraints
     }
@@ -130,7 +130,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
@@ -142,7 +142,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         native.hidden = !default
         var runNumber = 0

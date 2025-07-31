@@ -7,7 +7,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
-actual class TextArea actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "div"
         native.classes.add("textarea-container")
@@ -26,13 +26,13 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
         }
         native.appendChild(this)
     }
-    actual val content: ImmediateWritable<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual val content: ImmediateWritable<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     init {
         content.addListener {
             native.setAttribute("data-replicated-value", content.value)
         }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             when (value.autocomplete) {
@@ -57,12 +57,12 @@ actual class TextArea actual constructor(context: RContext) : RViewWithAction(co
                 }
             }
         }
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             textarea.attributes.placeholder = value
         }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(textarea.attributes.disabled ?: false)
         set(value) { textarea.attributes.disabled = !value }
 }

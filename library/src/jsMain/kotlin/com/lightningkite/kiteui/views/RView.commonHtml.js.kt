@@ -16,8 +16,8 @@ import kotlin.js.Json
 import kotlin.js.json
 import kotlin.random.Random
 
-actual class FutureElement actual constructor() {
-    actual val actualElementForLeakTracking: Any? get() = element
+public actual class FutureElement public actual constructor() {
+    public actual val actualElementForLeakTracking: Any? get() = element
     val elementToDo = ArrayList<(Element) -> Unit>()
     var element: Element? = null
         private set(value) {
@@ -67,19 +67,19 @@ actual class FutureElement actual constructor() {
         return e
     }
 
-    actual fun click() {
+    public actual fun click() {
         onElement { (it as HTMLElement).click() }
     }
 
-    actual fun focus() {
+    public actual fun focus() {
         onElement { (it as HTMLElement).focus() }
     }
 
-    actual fun blur() {
+    public actual fun blur() {
         onElement { (it as HTMLElement).blur() }
     }
 
-    actual fun screenRectangle(): Rect? {
+    public actual fun screenRectangle(): Rect? {
         return element?.getBoundingClientRect()?.let {
             Rect(
                 left = it.left,
@@ -90,16 +90,16 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    actual var xmlns: String? = null
-    actual var tag: String = "tag"
+    public actual var xmlns: String? = null
+    public actual var tag: String = "tag"
     val attributesBack = json()
-    actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
+    public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
     val styleBack = json()
-    actual val style: FutureElementStyle = FutureElementStyle(styleBack)
-    actual var desiredVerticalGravity: Align? = null
-    actual var desiredHorizontalGravity: Align? = null
+    public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
+    public actual var desiredVerticalGravity: Align? = null
+    public actual var desiredHorizontalGravity: Align? = null
     val eventsBack = json()
-    actual inline fun addEventListener(
+    public actual inline fun addEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
@@ -109,7 +109,7 @@ actual class FutureElement actual constructor() {
         }
     }
 
-    actual inline fun replaceEventListener(
+    public actual inline fun replaceEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
     ) {
@@ -119,7 +119,7 @@ actual class FutureElement actual constructor() {
     }
 
     val futureStyles = json()
-    actual fun setStyleProperty(key: String, value: String?) {
+    public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
             if (value == null) {
@@ -139,7 +139,7 @@ actual class FutureElement actual constructor() {
     }
 
     val futureAttributes = json()
-    actual fun setAttribute(key: String, value: String?) {
+    public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
             if (value == null) {
@@ -158,21 +158,21 @@ actual class FutureElement actual constructor() {
     }
 
 
-    actual var classes: MutableSet<String> = ClassSet()
-    actual inline fun flushClasses() {}
-    actual var id: String? = null
+    public actual var classes: MutableSet<String> = ClassSet()
+    public actual inline fun flushClasses() {}
+    public actual var id: String? = null
         set(value) {
             field = value
             element?.id = value ?: Random.nextInt().toString()
         }
-    actual var content: String? = null
+    public actual var content: String? = null
         set(value) {
             field = value
             value?.let {
                 (element as? HTMLElement)?.innerText = value
             }
         }
-    actual var innerHtmlUnsafe: String? = null
+    public actual var innerHtmlUnsafe: String? = null
         set(value) {
             field = value
             value?.let {
@@ -180,7 +180,7 @@ actual class FutureElement actual constructor() {
             }
         }
     private val lastChildren = ArrayList<FutureElement>()
-    actual val children: List<FutureElement>
+    public actual val children: List<FutureElement>
         get() {
             return element?.let {
                 it.children.let {
@@ -193,7 +193,7 @@ actual class FutureElement actual constructor() {
             } ?: lastChildren
         }
 
-    actual fun appendChild(element: FutureElement) {
+    public actual fun appendChild(element: FutureElement) {
         assertSizeMatch()
         lastChildren.add(element)
         this.element?.let {
@@ -202,7 +202,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun appendChild(index: Int, element: FutureElement) {
+    public actual fun appendChild(index: Int, element: FutureElement) {
         assertSizeMatch()
         if (index > lastChildren.size) throw IllegalStateException()
         lastChildren.add(index, element)
@@ -214,7 +214,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun removeChild(index: Int) {
+    public actual fun removeChild(index: Int) {
         assertSizeMatch()
         lastChildren.removeAt(index)
         element?.let {
@@ -223,7 +223,7 @@ actual class FutureElement actual constructor() {
         assertSizeMatch()
     }
 
-    actual fun clearChildren() {
+    public actual fun clearChildren() {
         assertSizeMatch()
         lastChildren.clear()
         this.element?.innerHTML = ""
@@ -294,8 +294,8 @@ private fun remove(receiver: Json, key: String) {
     js("delete receiver[key]")
 }
 
-actual class FutureElementStyle(var native: dynamic)
-actual class FutureElementAttributes(var native: dynamic)
+public actual class FutureElementStyle(var native: dynamic)
+public actual class FutureElementAttributes(var native: dynamic)
 
 fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.Start -> ScrollLogicalPosition.START
@@ -306,7 +306,7 @@ fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     null -> ScrollLogicalPosition.NEAREST
 }
 
-actual fun RView.nativeScrollIntoView(
+public actual fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
@@ -322,7 +322,7 @@ actual fun RView.nativeScrollIntoView(
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
-actual fun RView.nativeSetDragData(data: DragData?) {
+public actual fun RView.nativeSetDragData(data: DragData?) {
     native.onElement {
         if (data != null) {
             (it as HTMLElement).ondragstart = { it.dataTransfer!!.setData(data.mimeType, data.data) }
@@ -332,7 +332,7 @@ actual fun RView.nativeSetDragData(data: DragData?) {
     }
 }
 
-actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
+public actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
     native.onElement {
         if (listener != null) {
             (it as HTMLElement).ondragover = { e ->

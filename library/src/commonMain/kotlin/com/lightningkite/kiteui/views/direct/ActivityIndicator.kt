@@ -9,4 +9,4 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
-expect class ActivityIndicator(context: RContext) : RView
+public expect class ActivityIndicator(context: RContext) : RView

@@ -31,7 +31,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
 
-actual class Video actual constructor(context: RContext) : RView(context) {
+public actual class Video public actual constructor(context: RContext) : RView(context) {
 
     inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
 
@@ -123,7 +123,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     }
 
 
-    actual var source: VideoSource? = null
+    public actual var source: VideoSource? = null
         set(value) {
             field = value
             when (value) {
@@ -174,14 +174,14 @@ actual class Video actual constructor(context: RContext) : RView(context) {
         }
 
     
-    actual val time: Writable<Double>
+    public actual val time: Writable<Double>
         get() = _time
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
     
-    actual val playing: Writable<Boolean>
+    public actual val playing: Writable<Boolean>
         get() = _playing
             .withWrite {
                 shouldPlay = it
@@ -191,19 +191,19 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                     controller.player?.pause()
             }
 
-    actual val volume: Writable<Float>
+    public actual val volume: Writable<Float>
         get() = _volume
             .withWrite {
                 controller.player?.volume = it
             }
-    actual var showControls: Boolean
+    public actual var showControls: Boolean
         get() = controller.showsPlaybackControls
         set(value) {
             controller.showsPlaybackControls = value
             controller.updatesNowPlayingInfoCenter = value
         }
-    actual var loop: Boolean = false
-    actual var scaleType: ImageScaleType = ImageScaleType.Crop
+    public actual var loop: Boolean = false
+    public actual var scaleType: ImageScaleType = ImageScaleType.Crop
         set(value) {
             field = value
             controller.videoGravity = when (value) {

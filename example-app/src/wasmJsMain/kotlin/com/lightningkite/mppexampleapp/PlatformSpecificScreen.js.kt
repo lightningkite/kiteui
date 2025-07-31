@@ -14,5 +14,5 @@ import kotlin.math.roundToInt
 
 val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
 
-actual fun ViewWriter.platformSpecific() {
+public actual fun ViewWriter.platformSpecific() {
 }

@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.signal.Writable
 
 
-expect class CoordinatorFrame(context: RContext) : RView {
+public expect class CoordinatorFrame(context: RContext) : RView {
     fun bottomSheet(
         peekSize: Dimension? = null,
         partialRatio: Float = 0.5f,
@@ -47,5 +47,5 @@ interface SlidingPanelControl {
     fun close()
 }
 
-expect class CoordinatorDragHandle(context: RContext): RView
+public expect class CoordinatorDragHandle(context: RContext): RView
 

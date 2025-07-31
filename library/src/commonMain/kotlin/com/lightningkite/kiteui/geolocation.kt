@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-expect object Geolocation {
+public expect object Geolocation {
     suspend fun getCurrentPosition(
 
     ): GeolocationResult

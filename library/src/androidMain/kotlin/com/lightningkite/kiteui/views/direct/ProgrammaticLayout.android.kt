@@ -10,13 +10,13 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
-    actual var delegate: ProgrammaticLayoutDelegate by native::delegate
-    actual fun invalidateLayout() {
+    public actual var delegate: ProgrammaticLayoutDelegate by native::delegate
+    public actual fun invalidateLayout() {
         native.silentRequestLayout()
     }
 

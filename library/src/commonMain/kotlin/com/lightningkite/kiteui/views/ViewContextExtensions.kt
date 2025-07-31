@@ -74,4 +74,4 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     return writer
 }
 
-expect fun ViewWriter.overlayWriter(body: RView.() -> Unit)
+public expect fun ViewWriter.overlayWriter(body: RView.() -> Unit)

@@ -8,22 +8,22 @@
 //import platform.UIKit.UIView
 //
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NImageCrop = UIView
-//actual class ImageCrop actual constructor(native: NImageCrop) : RView<NImageCrop> {
-//    actual override val native: NImageCrop
+//public actual typealias NImageCrop = UIView
+//public actual class ImageCrop public actual constructor(native: NImageCrop) : RView<NImageCrop> {
+//    public actual override val native: NImageCrop
 //        get() = TODO("Not yet implemented")
-//    actual var source: ImageLocal?
+//    public actual var source: ImageLocal?
 //        get() = TODO("Not yet implemented")
 //        set(value) {}
-//    actual var aspectRatio: Pair<Int, Int>?
+//    public actual var aspectRatio: Pair<Int, Int>?
 //        get() = TODO("Not yet implemented")
 //        set(value) {}
 //
-//    actual suspend fun crop(): ImageRaw? {
+//    public actual suspend fun crop(): ImageRaw? {
 //        TODO("Not yet implemented")
 //    }
 //}
 //
 //@ViewDsl
-//actual fun ViewWriter.imageCropActual(setup: ImageCrop.() -> Unit) {
+//public actual fun ViewWriter.imageCropActual(setup: ImageCrop.() -> Unit) {
 //}

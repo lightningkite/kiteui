@@ -1,7 +1,7 @@
 import java.io.File
 import kotlin.math.min
 
-// Expect generator
+// public expect generator
 
 object Stuff {
     val outFile =
@@ -89,40 +89,40 @@ class Type(val typeName: String, val constructors: List<String> = listOf(typeNam
     init {
         common()
         impl()
-        common("expect class N$typeName : NView")
+        common("public expect class N$typeName : NView")
         common("value class $typeName(override val native: N$typeName) : RView<N$typeName>")
-        impl("@Suppress(\"ACTUAL_WITHOUT_EXPECT\") actual typealias N$typeName = ", "ToDoElement")
+        impl("@Suppress(\"ACTUAL_WITHOUT_EXPECT\") public actual typealias N$typeName = ", "ToDoElement")
         constructors.forEach {
-            common("@ViewDsl expect fun ViewWriter.$it(setup: $typeName.() -> Unit = {}): Unit")
-            impl("@ViewDsl actual fun ViewWriter.$it(setup: $typeName.() -> Unit): Unit", " = todo(\"$it\")")
+            common("@ViewDsl public expect fun ViewWriter.$it(setup: $typeName.() -> Unit = {}): Unit")
+            impl("@ViewDsl public actual fun ViewWriter.$it(setup: $typeName.() -> Unit): Unit", " = todo(\"$it\")")
         }
     }
 
     fun prop(name: String, type: String) {
-        common("expect var $typeName.$name: $type")
-        impl("actual inline var $typeName.$name: $type")
+        common("public expect var $typeName.$name: $type")
+        impl("public actual inline var $typeName.$name: $type")
         implFollow("    get()", " = TODO()")
         implFollow("    set(value)", " { }")
     }
 
     fun writable(name: String, type: String, default: String) {
-        common("expect val $typeName.$name: Writable<$type>")
-        impl("actual val $typeName.$name: Writable<$type> get()", " = Property($default)")
+        common("public expect val $typeName.$name: Writable<$type>")
+        impl("public actual val $typeName.$name: Writable<$type> get()", " = Property($default)")
     }
 
     fun readable(name: String, type: String, default: String) {
-        common("expect val $typeName.$name: Readable<$type>")
-        impl("actual val $typeName.$name: Readable<$type> get()", " = Property($default)")
+        common("public expect val $typeName.$name: Readable<$type>")
+        impl("public actual val $typeName.$name: Readable<$type> get()", " = Property($default)")
     }
 
     fun action(name: String) {
-        common("expect fun $typeName.$name(action: suspend () -> Unit)")
-        impl("actual fun $typeName.$name(action: suspend () -> Unit): Unit", " = TODO()")
+        common("public expect fun $typeName.$name(action: suspend () -> Unit)")
+        impl("public actual fun $typeName.$name(action: suspend () -> Unit): Unit", " = TODO()")
     }
 
     fun specialConstructor(name: String, vararg arguments: Argument) {
-        common("expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}, setup: $typeName.() -> Unit = {})")
-        impl("actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}, setup: $typeName.() -> Unit): Unit", " = TODO()")
+        common("public expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}, setup: $typeName.() -> Unit = {})")
+        impl("public actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}, setup: $typeName.() -> Unit): Unit", " = TODO()")
     }
 }
 
@@ -135,12 +135,12 @@ infix fun String.ofType(other: String) = Argument(this, other)
 infix fun Argument.default(other: String) = copy(default = other)
 
 fun modifier(name: String, vararg arguments: Argument) {
-    CodeEmitter.common("@ViewModifierDsl3 expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}): ViewWrapper")
-    CodeEmitter.impl("@ViewModifierDsl3 actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}): ViewWrapper", " = TODO()")
+    CodeEmitter.common("@ViewModifierDsl3 public expect fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" + (it.default?.let { " = $it" } ?: "") }}): ViewWrapper")
+    CodeEmitter.impl("@ViewModifierDsl3 public actual fun ViewWriter.$name(${arguments.joinToString() { "${it.name}: ${it.type}" }}): ViewWrapper", " = TODO()")
 }
 fun modifierVal(name: String) {
-    CodeEmitter.common("@ViewModifierDsl3 expect val ViewWriter.$name: ViewWrapper")
-    CodeEmitter.impl("@ViewModifierDsl3 actual val ViewWriter.$name: ViewWrapper", " = TODO()")
+    CodeEmitter.common("@ViewModifierDsl3 public expect val ViewWriter.$name: ViewWrapper")
+    CodeEmitter.impl("@ViewModifierDsl3 public actual val ViewWriter.$name: ViewWrapper", " = TODO()")
 }
 
 CodeEmitter.common(
@@ -242,8 +242,8 @@ listOf(
 }
 
 "SwapView"("swapView", "swapViewDialog") {
-    common("expect fun SwapView.swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ()->Unit): Unit")
-    impl("actual fun SwapView.swap(transition: ScreenTransition, createNewView: ()->Unit): Unit", " = TODO()")
+    common("public expect fun SwapView.swap(transition: ScreenTransition = ScreenTransition.Fade, createNewView: ()->Unit): Unit")
+    impl("public actual fun SwapView.swap(transition: ScreenTransition, createNewView: ()->Unit): Unit", " = TODO()")
 }
 
 "WebView" {
@@ -253,14 +253,14 @@ listOf(
 }
 
 "Canvas" {
-    common("expect fun Canvas.redraw(action: DrawingContext2D.() -> Unit): Unit")
-    impl("actual fun Canvas.redraw(action: DrawingContext2D.() -> Unit): Unit", " = TODO()")
+    common("public expect fun Canvas.redraw(action: DrawingContext2D.() -> Unit): Unit")
+    impl("public actual fun Canvas.redraw(action: DrawingContext2D.() -> Unit): Unit", " = TODO()")
     readable("width", "Double", "0.0")
     readable("height", "Double", "0.0")
 
     fun pointer(name: String) {
-        common("expect fun Canvas.onPointer${name.capitalize()}(action: (id: Int, x: Double, y: Double, width: Double, height: Double) -> Unit): Unit")
-        impl("actual fun Canvas.onPointer${name.capitalize()}(action: (id: Int, x: Double, y: Double, width: Double, height: Double) -> Unit): Unit", " = TODO()")
+        common("public expect fun Canvas.onPointer${name.capitalize()}(action: (id: Int, x: Double, y: Double, width: Double, height: Double) -> Unit): Unit")
+        impl("public actual fun Canvas.onPointer${name.capitalize()}(action: (id: Int, x: Double, y: Double, width: Double, height: Double) -> Unit): Unit", " = TODO()")
     }
     pointer("down")
     pointer("move")
@@ -273,8 +273,8 @@ listOf(
     "horizontalRecyclerView",
     "gridRecyclerView",
 ) {
-    common("expect fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit")
-    impl("actual fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit", " = TODO()")
+    common("public expect fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit")
+    impl("public actual fun <T> RecyclerView.children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>)->Unit): Unit", " = TODO()")
 }
 
 modifier("hasPopover", "requireClick" ofType "Boolean" default "false", "preferredDirection" ofType "PopoverPreferredDirection" default "PopoverPreferredDirection.belowRight", "setup" ofType "ViewWriter.()->Unit")

@@ -9,7 +9,7 @@ import kotlin.jvm.JvmInline
 import kotlin.contracts.*
 
 
-expect class Canvas(context: RContext) : RView {
+public expect class Canvas(context: RContext) : RView {
 
 
     var delegate: CanvasDelegate?
@@ -35,8 +35,8 @@ abstract class CanvasDelegate {
 
 class KeyCodeWithModifiers(val code: KeyCode, val alt: Boolean, val ctrl: Boolean, val shift: Boolean, val meta: Boolean)
 
-expect class KeyCode
-expect object KeyCodes {
+public expect class KeyCode
+public expect object KeyCodes {
     val left: KeyCode
     val right: KeyCode
     val up: KeyCode

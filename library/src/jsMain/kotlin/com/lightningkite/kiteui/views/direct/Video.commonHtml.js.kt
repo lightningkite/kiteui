@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.autoplay
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLVideoElement
 
-actual val Video.nativeTime: Writable<Double>
+public actual val Video.nativeTime: Writable<Double>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.currentTime ?: 0.0 },
@@ -16,7 +16,7 @@ actual val Video.nativeTime: Writable<Double>
             }
         }
     )
-actual val Video.nativePlaying: Writable<Boolean>
+public actual val Video.nativePlaying: Writable<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.paused?.not() ?: (native.attributes.autoplay != null) },
@@ -32,7 +32,7 @@ actual val Video.nativePlaying: Writable<Boolean>
             }
         }
     )
-actual val Video.nativeVolume: Writable<Float>
+public actual val Video.nativeVolume: Writable<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = { (this.element as? HTMLVideoElement)?.volume?.toFloat() ?: 1f },

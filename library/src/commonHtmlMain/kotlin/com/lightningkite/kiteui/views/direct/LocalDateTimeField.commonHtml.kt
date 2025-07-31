@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
-actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalDateTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "2024-06-01T08:30".length
     }
@@ -20,7 +20,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         native.attributes.type = "datetime-local"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<LocalDateTime?> = object : ImmediateWritable<LocalDateTime?>, BaseListenable() {
+    public actual val content: ImmediateWritable<LocalDateTime?> = object : ImmediateWritable<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -59,7 +59,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
         set(value) {
             field = value
             value?.let {
@@ -73,7 +73,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
 }
 
 
-actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalDateField public actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "2024-06-01".length
     }
@@ -82,7 +82,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
         native.attributes.type = "date"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<LocalDate?> = object : ImmediateWritable<LocalDate?>, BaseListenable() {
+    public actual val content: ImmediateWritable<LocalDate?> = object : ImmediateWritable<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -123,7 +123,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual var range: ClosedRange<LocalDate>? = null
         set(value) {
             field = value
             value?.let {
@@ -136,7 +136,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
         }
 }
 
-actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         val charCount = "08:30".length
     }
@@ -146,7 +146,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         native.classes.add("editable")
     }
 
-    actual val content: ImmediateWritable<LocalTime?> = object : ImmediateWritable<LocalTime?>, BaseListenable() {
+    public actual val content: ImmediateWritable<LocalTime?> = object : ImmediateWritable<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -186,7 +186,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
             field = value
             native.style.fontSize = value.value.toString()
         }
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
         set(value) {
             field = value
             value?.let {
@@ -200,16 +200,16 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 }
 
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NLocalDateField = HTMLInputElement
+//public actual typealias NLocalDateField = HTMLInputElement
 //
 //@ViewDsl
-//actual inline fun ViewWriter.localDateFieldActual(crossinline setup: LocalDateField.() -> Unit): Unit =
+//public actual inline fun ViewWriter.localDateFieldActual(crossinline setup: LocalDateField.() -> Unit): Unit =
 //    themedElementEditable<HTMLInputElement>("input") {
 //        type = "date"
 //        setup(LocalDateField(this))
 //    }
 //
-//actual val LocalDateField.content: Writable<LocalDate?>
+//public actual val LocalDateField.content: Writable<LocalDate?>
 //    get() = native.vprop(
 //        eventName = "input",
 //        get = {
@@ -222,7 +222,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //            native.valueAsDate = it?.let { LocalDateTime(it, LocalTime(12, 0, 0)).toInstant(TimeZone.UTC).toJSDate() }
 //        }
 //    )
-//actual var LocalDateField.action: Action?
+//public actual var LocalDateField.action: Action?
 //    get() = TODO()
 //    set(value) {
 //        native.onkeyup = if (value == null) null else { ev ->
@@ -233,7 +233,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //            }
 //        }
 //    }
-//actual inline var LocalDateField.range: ClosedRange<LocalDate>?
+//public actual inline var LocalDateField.range: ClosedRange<LocalDate>?
 //    get() = TODO()
 //    set(value) {
 //        value?.let {
@@ -245,16 +245,16 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //        }
 //    }
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NLocalTimeField = HTMLInputElement
+//public actual typealias NLocalTimeField = HTMLInputElement
 //
 //@ViewDsl
-//actual inline fun ViewWriter.localTimeFieldActual(crossinline setup: LocalTimeField.() -> Unit): Unit =
+//public actual inline fun ViewWriter.localTimeFieldActual(crossinline setup: LocalTimeField.() -> Unit): Unit =
 //    themedElementEditable<HTMLInputElement>("input") {
 //        type = "time"
 //        setup(LocalTimeField(this))
 //    }
 //
-//actual val LocalTimeField.content: Writable<LocalTime?>
+//public actual val LocalTimeField.content: Writable<LocalTime?>
 //    get() = native.vprop(
 //        "input",
 //        {
@@ -267,7 +267,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //                it?.let { LocalDateTime(LocalDate(1970, 1, 1), it).toInstant(TimeZone.UTC).toJSDate() }
 //        }
 //    )
-//actual var LocalTimeField.action: Action?
+//public actual var LocalTimeField.action: Action?
 //    get() = TODO()
 //    set(value) {
 //        native.onkeyup = if (value == null) null else { ev ->
@@ -278,7 +278,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //            }
 //        }
 //    }
-//actual inline var LocalTimeField.range: ClosedRange<LocalTime>?
+//public actual inline var LocalTimeField.range: ClosedRange<LocalTime>?
 //    get() = TODO()
 //    set(value) {
 //        value?.let {
@@ -290,16 +290,16 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //        }
 //    }
 //@Suppress("ACTUAL_WITHOUT_EXPECT")
-//actual typealias NLocalDateTimeField = HTMLInputElement
+//public actual typealias NLocalDateTimeField = HTMLInputElement
 //
 //@ViewDsl
-//actual inline fun ViewWriter.localDateTimeFieldActual(crossinline setup: LocalDateTimeField.() -> Unit): Unit =
+//public actual inline fun ViewWriter.localDateTimeFieldActual(crossinline setup: LocalDateTimeField.() -> Unit): Unit =
 //    themedElementEditable<HTMLInputElement>("input") {
 //        type = "datetime-local"
 //        setup(LocalDateTimeField(this))
 //    }
 //
-//actual val LocalDateTimeField.content: Writable<LocalDateTime?>
+//public actual val LocalDateTimeField.content: Writable<LocalDateTime?>
 //    get() = native.vprop(
 //        "input",
 //        {
@@ -311,7 +311,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //            valueAsDate = it?.let { it.toInstant(TimeZone.UTC).toJSDate() }
 //        }
 //    )
-//actual var LocalDateTimeField.action: Action?
+//public actual var LocalDateTimeField.action: Action?
 //    get() = TODO()
 //    set(value) {
 //        native.onkeyup = if (value == null) null else { ev ->
@@ -322,7 +322,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //            }
 //        }
 //    }
-//actual inline var LocalDateTimeField.range: ClosedRange<LocalDateTime>?
+//public actual inline var LocalDateTimeField.range: ClosedRange<LocalDateTime>?
 //    get() = TODO()
 //    set(value) {
 //        value?.let {

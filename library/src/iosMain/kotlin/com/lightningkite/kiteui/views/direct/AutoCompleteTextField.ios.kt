@@ -13,7 +13,7 @@ import platform.darwin.NSObject
 
 
 
-actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class AutoCompleteTextField public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
@@ -59,7 +59,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override var value: String
             get() = textField.text ?: ""
             set(value) { textField.text = value }
@@ -67,7 +67,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             return textField.onEvent(this@AutoCompleteTextField, UIControlEventEditingChanged, listener)
         }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = when (value.case) {
@@ -146,6 +146,6 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
-    actual var suggestions: List<String> = listOf()
+    public actual var suggestions: List<String> = listOf()
 }
 

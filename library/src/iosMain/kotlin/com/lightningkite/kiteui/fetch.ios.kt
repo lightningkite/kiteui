@@ -46,7 +46,7 @@ val client = HttpClient {
     }
 }
 
-actual suspend fun fetch(
+public actual suspend fun fetch(
     url: String,
     method: HttpMethod,
     headers: HttpHeaders,
@@ -119,36 +119,36 @@ actual suspend fun fetch(
     }
 }
 
-actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
+public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
-actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
-actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
+public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
-    actual fun append(name: String, value: String): Unit {
+public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
+    public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
 
-    actual fun delete(name: String): Unit {
+    public actual fun delete(name: String): Unit {
         map.remove(name.lowercase())
     }
 
-    actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
-    actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
-    actual fun set(name: String, value: String): Unit {
+    public actual fun get(name: String): String? = map[name.lowercase()]?.joinToString(",")
+    public actual fun has(name: String): Boolean = map.containsKey(name.lowercase())
+    public actual fun set(name: String, value: String): Unit {
         map[name.lowercase()] = listOf(value)
     }
 }
 
-actual class RequestResponse(val wraps: HttpResponse) {
-    actual val status: Short get() = wraps.status.value.toShort()
-    actual val ok: Boolean get() = wraps.status.isSuccess()
-    actual suspend fun text(): String {
+public actual class RequestResponse(val wraps: HttpResponse) {
+    public actual val status: Short get() = wraps.status.value.toShort()
+    public actual val ok: Boolean get() = wraps.status.isSuccess()
+    public actual suspend fun text(): String {
         try {
             val result = run {
                 run {
@@ -161,7 +161,7 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual suspend fun blob(): Blob {
+    public actual suspend fun blob(): Blob {
         try {
             val result = run {
                 run {
@@ -175,12 +175,12 @@ actual class RequestResponse(val wraps: HttpResponse) {
         }
     }
 
-    actual val headers: HttpHeaders
+    public actual val headers: HttpHeaders
         get() = HttpHeaders(
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
-actual fun websocket(url: String): WebSocket {
+public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
@@ -310,14 +310,14 @@ class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
-actual class Blob(val data: NSData, val type: String = "application/octet-stream")
-actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
+public actual class Blob(val data: NSData, val type: String = "application/octet-stream")
+public actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
 
-actual fun Blob.mimeType(): String = type
-actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
+public actual fun Blob.mimeType(): String = type
+public actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
 
-actual fun FileReference.fileName(): String {
+public actual fun FileReference.fileName(): String {
     val extension = suggestedType?.preferredFilenameExtension ?: ""
     return "${provider.suggestedName ?: ""}.$extension"
 }
@@ -343,11 +343,11 @@ fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt())
     }
 }
 
-actual fun Blob.bytes(): Long = this.data.length.toLong()
-actual fun FileReference.bytes(): Long = -1L
+public actual fun Blob.bytes(): Long = this.data.length.toLong()
+public actual fun FileReference.bytes(): Long = -1L
 
-//actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
-//actual suspend fun FileReference.byteArray(): ByteArray {
+//public actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
+//public actual suspend fun FileReference.byteArray(): ByteArray {
 //    val mime = suggestedType
 //        ?: (provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
 //    // Type is dyn.age8u (null)
@@ -360,8 +360,8 @@ actual fun FileReference.bytes(): Long = -1L
 //    }
 //}
 
-actual suspend fun Blob.text(): String = data.string()!!
-actual suspend fun FileReference.text(): String {
+public actual suspend fun Blob.text(): String = data.string()!!
+public actual suspend fun FileReference.text(): String {
     val mime = suggestedType
         ?: (provider.registeredContentTypes.firstOrNull() as? UTType ?: UTTypeData)
     // Type is dyn.age8u (null)
@@ -374,4 +374,4 @@ actual suspend fun FileReference.text(): String {
     }
 }
 
-actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)
+public actual fun String.toBlob(contentType: String): Blob = Blob(this.nsdata()!!, contentType)

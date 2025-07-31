@@ -18,7 +18,7 @@ import platform.darwin.*
 
 val subnav = PageNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
+public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     return col {
         repeat(10) {
             text("TEST")

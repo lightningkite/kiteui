@@ -7,7 +7,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
-expect class FormattedTextInput(context: RContext) : RViewWithAction {
+public expect class FormattedTextInput(context: RContext) : RViewWithAction {
     var enabled: Boolean
     val content: ImmediateWritable<String>
     var hint: String

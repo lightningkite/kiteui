@@ -11,7 +11,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-expect class Code constructor(context: RContext): RView {
+public expect class Code constructor(context: RContext): RView {
     var content: String
 }
 

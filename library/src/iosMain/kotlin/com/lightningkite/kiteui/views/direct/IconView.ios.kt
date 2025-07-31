@@ -14,14 +14,14 @@ import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 
-actual class IconView actual constructor(context: RContext): RView(context) {
+public actual class IconView public actual constructor(context: RContext): RView(context) {
     override val native = NIconView()
-    actual var source: Icon?
+    public actual var source: Icon?
         get() = native.icon
         set(value) {
             native.icon = value
         }
-    actual var description: String?
+    public actual var description: String?
         get() {
             return native.accessibilityLabel.toString()
         }
@@ -36,7 +36,7 @@ actual class IconView actual constructor(context: RContext): RView(context) {
 
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
+public actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         userInteractionEnabled = false
         if (ENABLE_DYNAMIC_TYPE) {

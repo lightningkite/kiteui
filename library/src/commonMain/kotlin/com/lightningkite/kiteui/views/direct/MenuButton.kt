@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
 
-expect class MenuButton(context: RContext) : RView {
+public expect class MenuButton(context: RContext) : RView {
 
     fun opensMenu(createMenu: Frame.() -> Unit)
     var enabled: Boolean

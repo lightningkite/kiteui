@@ -7,10 +7,10 @@ import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
     var native = FutureElement()
 
-    actual override var showOnPrint: Boolean = true
+    public actual override var showOnPrint: Boolean = true
         set(value) {
             if (value)
                 native.classes.remove("do-not-print")
@@ -81,20 +81,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
 
-    actual override fun scrollIntoView(
+    public actual override fun scrollIntoView(
         horizontal: Align?,
         vertical: Align?,
         animate: Boolean
     ) = nativeScrollIntoView(horizontal, vertical, animate)
 
-    actual override fun requestFocus() {
+    public actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
         afterTimeout(100) {
             native.focus()
         }
     }
 
-    actual override fun screenRectangle(): Rect? {
+    public actual override fun screenRectangle(): Rect? {
         return native.screenRectangle()
     }
 
@@ -106,7 +106,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     protected var prevThemeClass: String? = null
-    actual override fun applyTheme(theme: ThemeAndBack) {
+    public actual override fun applyTheme(theme: ThemeAndBack) {
         if(theme.drawBackground) {
             native.classes.add("transition")
         } else {
@@ -128,15 +128,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         native.flushClasses()
     }
 
-    actual override fun internalAddChild(index: Int, view: RView) {
+    public actual override fun internalAddChild(index: Int, view: RView) {
         native.appendChild(index, view.native)
     }
 
-    actual override fun internalRemoveChild(index: Int) {
+    public actual override fun internalRemoveChild(index: Int) {
         native.removeChild(index)
     }
 
-    actual override fun internalClearChildren() {
+    public actual override fun internalClearChildren() {
         native.clearChildren()
     }
 
@@ -155,10 +155,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 typealias HtmlElementLike = FutureElement
 
-expect class FutureElementStyle
-expect class FutureElementAttributes
+public expect class FutureElementStyle
+public expect class FutureElementAttributes
 
-expect class FutureElement {
+public expect class FutureElement {
     constructor()
 
     val actualElementForLeakTracking: Any?
@@ -188,11 +188,11 @@ expect class FutureElement {
     fun screenRectangle(): Rect?
 }
 
-expect fun RView.nativeScrollIntoView(
+public expect fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
 )
 
-expect fun RView.nativeSetDragData(data: DragData?)
-expect fun RView.nativeOnDrop(listener: DropTargetDelegate?)
+public expect fun RView.nativeSetDragData(data: DragData?)
+public expect fun RView.nativeOnDrop(listener: DropTargetDelegate?)

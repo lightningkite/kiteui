@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
 
-actual class IconView actual constructor(context: RContext) : RView(context) {
+public actual class IconView public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.setAttribute("role", "img")
@@ -16,7 +16,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual var source: Icon? = null
+    public actual var source: Icon? = null
         set(value) {
             field = value
             native.clearChildren()
@@ -51,7 +51,7 @@ actual class IconView actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    actual var description: String? = null
+    public actual var description: String? = null
         set(value) {
             field = value
             native.children.firstOrNull()?.let {

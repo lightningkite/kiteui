@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGAffineTransformMake
 
 
-actual class SwapView actual constructor(context: RContext): RView(context) {
+public actual class SwapView public actual constructor(context: RContext): RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = FrameLayout()
     override fun childTouches(side: Side, child: RView): Boolean {
@@ -39,7 +39,7 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         native.clipsToBounds = true
     }
 
-    actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
+    public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
         native.hidden = false
         currentView?.let { oldView ->
             oldView.animateOut(transition) {

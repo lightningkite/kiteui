@@ -15,7 +15,7 @@ import platform.objc.sel_registerName
 import platform.CoreGraphics.CGRectMake
 
 
-actual class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
         var alwaysToolbar = false
     }
@@ -93,7 +93,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
             var lastValue = value
             return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)
@@ -106,7 +106,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 textField.text = value
             }
     }
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             textField.autocapitalizationType = when (value.case) {
@@ -166,12 +166,12 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
         }
     }
 
-    actual var hint: String = ""
+    public actual var hint: String = ""
         set(value) {
             field = value
             updateHint()
         }
-    actual inline var align: Align
+    public actual inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center
@@ -193,7 +193,7 @@ actual class TextInput actual constructor(context: RContext) : RViewWithAction(c
                 Align.Stretch -> NSTextAlignmentJustified
             }
         }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value

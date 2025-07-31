@@ -16,7 +16,7 @@ import org.w3c.files.Blob
 import kotlin.coroutines.resume
 import kotlin.js.Promise
 
-actual class SoundEffectPool actual constructor(concurrency: Int) {
+public actual class SoundEffectPool public actual constructor(concurrency: Int) {
 
     private val numberOfStreams = concurrency
     private var mergerInputIndexCursor = 0
@@ -26,7 +26,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         connect(context.destination)
     }
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+    public actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
         val bufferSource = context.createBufferSource()
@@ -82,11 +82,11 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }.await()
     }
 
-    actual suspend fun preload(sound: AudioSource) {
+    public actual suspend fun preload(sound: AudioSource) {
         preloadInternal(sound)
     }
 
-    actual fun unload(sound: AudioSource) {
+    public actual fun unload(sound: AudioSource) {
         // Not necessary for JS implementation; UIAudioPool holds no references to UIAudioSegment so they are unloaded
         // when garbage collected
     }
@@ -118,7 +118,7 @@ external class AudioBuffer {
 
 external class AudioDestinationNode : AudioNode
 
-actual suspend fun AudioSource.load(): PlayableAudio {
+public actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true

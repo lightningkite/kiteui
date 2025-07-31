@@ -8,7 +8,7 @@ enum class TextAlign{
     start, end, left, right, center
 }
 
-expect abstract class DrawingContext2D {
+public expect abstract class DrawingContext2D {
     abstract fun save()
     abstract fun restore()
     abstract fun scale(x: Double, y: Double)
@@ -99,15 +99,15 @@ expect abstract class DrawingContext2D {
 //    abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }
 
-expect fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean)
-expect fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
-expect fun DrawingContext2D.drawText(text: String, x: Double, y: Double)
-expect fun DrawingContext2D.font(size: Double, value: FontAndStyle)
-expect fun DrawingContext2D.textAlign(alignment: TextAlign)
-expect fun DrawingContext2D.clear()
-expect fun DrawingContext2D.fill()
-expect fun DrawingContext2D.fillEvenOdd()
-expect var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
-expect var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
-expect val DrawingContext2D.width: Double
-expect val DrawingContext2D.height: Double
+public expect fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean)
+public expect fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double)
+public expect fun DrawingContext2D.drawText(text: String, x: Double, y: Double)
+public expect fun DrawingContext2D.font(size: Double, value: FontAndStyle)
+public expect fun DrawingContext2D.textAlign(alignment: TextAlign)
+public expect fun DrawingContext2D.clear()
+public expect fun DrawingContext2D.fill()
+public expect fun DrawingContext2D.fillEvenOdd()
+public expect var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
+public expect var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
+public expect val DrawingContext2D.width: Double
+public expect val DrawingContext2D.height: Double

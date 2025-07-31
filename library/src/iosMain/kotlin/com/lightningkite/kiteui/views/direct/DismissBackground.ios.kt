@@ -17,10 +17,10 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
-actual class DismissBackground actual constructor(context: RContext) : RView(context) {
+public actual class DismissBackground public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
     override val native = NDismissBackground()
-    actual fun onClick(action: suspend () -> Unit): Unit {
+    public actual fun onClick(action: suspend () -> Unit): Unit {
         native.onClick = {
             launch { action() }
         }
@@ -44,7 +44,7 @@ actual class DismissBackground actual constructor(context: RContext) : RView(con
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 
-actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
+public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
 

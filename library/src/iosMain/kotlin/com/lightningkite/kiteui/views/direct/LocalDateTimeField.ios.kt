@@ -14,15 +14,15 @@ import platform.UIKit.*
 
 
 
-actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalDateField public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDate?>(null)
-    actual val content: ImmediateWritable<LocalDate?> get() = _content
+    public actual val content: ImmediateWritable<LocalDate?> get() = _content
     // TODO
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual var range: ClosedRange<LocalDate>? = null
 
     init {
         textField.inputView = UIDatePicker().apply {
@@ -76,19 +76,19 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
     }
 }
 
-actual class LocalTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalTime?>(null)
-    actual val content: ImmediateWritable<LocalTime?> get() = _content
+    public actual val content: ImmediateWritable<LocalTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value
     }
     // TODO
-    actual var range: ClosedRange<LocalTime>? = null
+    public actual var range: ClosedRange<LocalTime>? = null
 
     init {
         textField.inputView = UIDatePicker().apply {
@@ -142,19 +142,19 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
     }
 }
 
-actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
+public actual class LocalDateTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = WrapperView()
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Property<LocalDateTime?>(null)
-    actual val content: ImmediateWritable<LocalDateTime?> get() = _content
+    public actual val content: ImmediateWritable<LocalDateTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value
     }
     // TODO
-    actual var range: ClosedRange<LocalDateTime>? = null
+    public actual var range: ClosedRange<LocalDateTime>? = null
 
     init {
         textField.inputView = UIDatePicker().apply {

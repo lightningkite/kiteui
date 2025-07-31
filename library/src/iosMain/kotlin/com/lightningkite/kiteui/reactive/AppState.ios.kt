@@ -23,9 +23,9 @@ import platform.darwin.sel_registerName
 
 
 
-actual object AppState {
+public actual object AppState {
     internal val _animationFrame = BasicListenable()
-    actual val animationFrame: Listenable
+    public actual val animationFrame: Listenable
         get() = _animationFrame
     private val handle = object: NSObject() {
         @ObjCAction
@@ -41,15 +41,15 @@ actual object AppState {
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),
         density = UIScreen.mainScreen.scale.toFloat()
     ))
-    actual val windowInfo: ImmediateReadable<WindowStatistics>
+    public actual val windowInfo: ImmediateReadable<WindowStatistics>
         get() = _windowInfo
     val _inForeground = Property(true)
-    actual val inForeground: ImmediateReadable<Boolean>
+    public actual val inForeground: ImmediateReadable<Boolean>
         get() = _inForeground
-    actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
+    public actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
 
     private var currentLockCount = 0
-    actual fun keepScreenOn(scope: CoroutineScope) {
+    public actual fun keepScreenOn(scope: CoroutineScope) {
         if(currentLockCount++ == 0) {
             UIApplication.sharedApplication.idleTimerDisabled = true
         }
@@ -59,7 +59,7 @@ actual object AppState {
             }
         }
     }
-    actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
+    public actual fun onUniversalKeyboard(handler: (KeyCodeWithModifiers) -> Boolean): ()->Unit = {}
 }
 
 

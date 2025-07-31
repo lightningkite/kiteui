@@ -2173,7 +2173,7 @@ val beeMovieScript = """
     BARRY:
     (To Ken)
     Quiet, please.
-    Actual work going on here.
+    public actual work going on here.
     KEN:
     (Pointing at Barry)
     - Is that that same bee?

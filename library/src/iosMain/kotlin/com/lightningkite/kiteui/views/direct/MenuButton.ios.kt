@@ -5,7 +5,7 @@ import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
-actual class MenuButton actual constructor(context: RContext): RView(context) {
+public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
     override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
@@ -16,7 +16,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
         }
     }
 
-    actual fun opensMenu(createMenu: Frame.() -> Unit) {
+    public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         onRemove(native.setOnClick {
             var willRemove: RView? = null
             val f= overlayFrame!!
@@ -52,13 +52,13 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
             }
         })
     }
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
-    actual var requireClick: Boolean = true
-    actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
+    public actual var requireClick: Boolean = true
+    public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowLeft
 
     init {
         onRemove(native.observe("highlighted", { refreshTheming() }))
