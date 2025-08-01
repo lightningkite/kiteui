@@ -88,9 +88,11 @@ data class RadialGradient(
 
 @Serializable
 data class Color(
-    val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
+    val alpha: Float = 0f,
+    val red: Float = 0f,
+    val green: Float = 0f,
+    val blue: Float = 0f
 ) : Paint {
-
     override fun map(mapper: (Color) -> Color): Paint = let(mapper)
     override fun closestColor(): Color = this
     fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
