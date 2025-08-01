@@ -12,12 +12,16 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
+import kotlin.coroutines.coroutineContext
 
 interface Action: Reactive<Boolean> {
     val title: String
     val icon: Icon
     fun startAction(scope: CoroutineScope)
+    operator fun plus(other: Action): Action
 }
+
+operator fun Action.invoke(scope: CoroutineScope) = startAction(scope)
 
 //data class ExternalLinkAction(
 //    override val name: String,
@@ -45,7 +49,7 @@ fun Action(
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
-    action: suspend () -> Unit
+    action: suspend CoroutineScope.() -> Unit
 ) = if (clearErrorOnDependencyChange) {
     DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
@@ -64,6 +68,8 @@ class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.mil
             wraps.startAction(scope)
         }
     }
+
+    override fun plus(other: Action): Action = FrequencyCapAction(wraps.plus(if (other is FrequencyCapAction) other.wraps else other), frequencyCap)
 }
 
 class RetryableAction(
@@ -72,7 +78,7 @@ class RetryableAction(
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    var action: suspend () -> Unit,
+    val action: suspend CoroutineScope.() -> Unit,
 ) : Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
@@ -112,6 +118,17 @@ class RetryableAction(
             it.cancel()
         }
     }
+
+    override fun plus(other: Action) = RetryableAction(
+        title,
+        icon,
+        keepRunningWhile,
+        ignoreRetryWhileRunning,
+        reportTo
+    ) plus@{
+        this@RetryableAction.startAction(this)
+        other.startAction(this)
+    }
 }
 
 class DependentAction(
@@ -120,7 +137,7 @@ class DependentAction(
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    var action: suspend () -> Unit,
+    val action: suspend CoroutineScope.() -> Unit,
 ) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
@@ -165,11 +182,21 @@ class DependentAction(
     }
 
     override fun cancel() {
-        action = {}
         super.cancel()
         lastJob?.let {
             lastJob = null
             it.cancel()
         }
+    }
+
+    override fun plus(other: Action): Action = DependentAction(
+        title,
+        icon,
+        keepRunningWhile,
+        ignoreRetryWhileRunning,
+        reportTo
+    ) plus@{
+        this@DependentAction.startAction(this)
+        other.startAction(this)
     }
 }
