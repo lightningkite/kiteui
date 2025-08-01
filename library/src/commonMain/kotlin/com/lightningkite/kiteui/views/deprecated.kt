@@ -3,10 +3,12 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.signal.CalculationContext
-import com.lightningkite.signal.ReactiveContext
-//import com.lightningkite.signal.ReactiveScopeData
-//import com.lightningkite.kiteui.launch as otherLaunch
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 //@Deprecated("")
 //fun RView.themeModifier(calculate: (()->Theme)->Theme): ViewWrapper {

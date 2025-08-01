@@ -7,30 +7,44 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.plus
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.utils.cg
+import com.lightningkite.kiteui.utils.div
+import com.lightningkite.kiteui.utils.local
+import com.lightningkite.kiteui.utils.minus
+import com.lightningkite.kiteui.utils.plus
+import com.lightningkite.kiteui.utils.times
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.compareTo
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.getValue
+import kotlin.math.max
+import kotlin.math.roundToInt
+import kotlin.setValue
 import kotlinx.cinterop.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.yield
 import platform.CoreGraphics.*
 import platform.Foundation.*
 import platform.UIKit.*
+import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import platform.posix.QOS_CLASS_DEFAULT
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.max
-import kotlin.math.roundToInt
-import com.lightningkite.signal.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
-import platform.darwin.NSObject
-import kotlin.compareTo
 
 public actual abstract class RawImageViewLike constructor(
     context: RContext,
@@ -38,76 +52,79 @@ public actual abstract class RawImageViewLike constructor(
     public actual val description: String,
     public actual val scaleType: ImageScaleType,
 ) : RView(context){
-    public actual abstract val state: Readable<Unit>
+    actual abstract val state: Reactive<Unit>
 
-    protected suspend fun load(value: ImageSource?, size: Size?) = when (value) {
-        null -> null
-        is ImageRaw -> UIImage(data = value.data.data)
-        is ImageResource -> UIImage.imageNamed(value.name)
-        is ImageVector -> ImageCache.get(value) { value.render() }
-        is ImageRemote -> {
-            val loader = suspend {
-                inBackground {
-                    UIImage(
-                        data = NSData.dataWithContentsOfURL(
-                            NSURL.URLWithString(value.url)
-                                ?: throw IllegalStateException("Invalid URL ${value.url}")
-                        ) ?: throw IllegalStateException("No data found at URL ${value.url}")
-                    )
-                }
-            }
-            val image = size?.let {
-                ImageCache.get(
-                    value,
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
-                )
-            } ?: ImageCache.get(value, load = { loader() })
-            image
-        }
-        is ImageLocal -> {
-            val loader = suspend {
-                suspendCancellableCoroutine { cont ->
-                    loadImageFromProvider(value.file.provider) { data, err ->
-                        if (err != null) cont.resumeWithException(Exception(err.description))
-                        else if (data is UIImage) {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                val image = data
-                                cont.resume(image)
-                            })
-                        } else {
-                            cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
-                        }
-                    }
-                }
-            }
-            val image = size?.let {
-                ImageCache.get(
-                    value,
-                    it.width.toInt(),
-                    it.height.toInt(),
-                    loader
-                )
-            } ?: ImageCache.get(value, load = { loader() })
-            image
-        }
-        else -> null
-    }
+    protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
 
     override val disableBackground = true
 }
 
-public actual class RawImageView public actual constructor(
+
+suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
+    null -> null
+    is ImageRaw -> UIImage(data = value.data.data)
+    is ImageResource -> UIImage.imageNamed(value.name)
+    is ImageVector -> ImageCache.get(value.hashCode().toString()) { value.render() }
+    is ImageRemote -> {
+        val loader = suspend {
+            inBackground {
+                UIImage(
+                    data = NSData.dataWithContentsOfURL(
+                        NSURL.URLWithString(value.url)
+                            ?: throw IllegalStateException("Invalid URL ${value.url}")
+                    ) ?: throw IllegalStateException("No data found at URL ${value.url}")
+                )
+            }
+        }
+        val image = size?.let {
+            ImageCache.get(
+                value.url,
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.url, load = { loader() })
+        image
+    }
+    is ImageLocal -> {
+        val loader = suspend {
+            suspendCancellableCoroutine { cont ->
+                loadImageFromProvider(value.file.provider) { data, err ->
+                    if (err != null) cont.resumeWithException(Exception(err.description))
+                    else if (data is UIImage) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            val image = data
+                            cont.resume(image)
+                        })
+                    } else {
+                        cont.resumeWithException(Exception("No data found for image?  Got $data instead"))
+                    }
+                }
+            }
+        }
+        val image = size?.let {
+            ImageCache.get(
+                value.hashCode().toString(),
+                it.width.toInt(),
+                it.height.toInt(),
+                loader
+            )
+        } ?: ImageCache.get(value.file.hashCode().toString(), load = { loader() })
+        image
+    }
+    else -> null
+}
+
+actual class RawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    private val _state = RawReadable<Unit>()
-    public actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
 
-    override val cannotBeCovered: Boolean get() = false
+
     override val native = UIImageViewFixedSizing()
 
     init {
@@ -123,19 +140,63 @@ public actual class RawImageView public actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
                 native.image = img
                 native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
-                _state.state = ReadableState.exception(e)
+                _state.state = ReactiveState.exception(e)
             }
         }
     }
 }
 
-public class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
 
-    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
+
+    init {
+        native.clipsToBounds = true
+        native.contentMode = when (scaleType) {
+            ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
+            ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
+            ImageScaleType.Stretch -> UIViewContentMode.UIViewContentModeScaleToFill
+            ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
+        }
+        native.accessibilityLabel = description
+        launch {
+            delay(10)
+            try {
+                val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
+                _state.state = ReactiveState(Unit)
+                native.image = img
+                native.informParentOfSizeChange()
+            } catch (e: CancellationException) {
+                throw e
+            } catch(e: Exception) {
+                _state.state = ReactiveState.exception(e)
+            }
+        }
+    }
+}
+
+class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+    var ignoreNaturalSize: Boolean = false
+        set(value) {
+            field = value
+            informParentOfSizeChange()
+        }
+
+    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+        if(ignoreNaturalSize) return CGSizeMake(0.0, 0.0)
         return this.image?.size?.useContents {
             val original = this
             size.useContents {
@@ -161,20 +222,33 @@ public actual class RawImageViewZoomable public actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    override val cannotBeCovered: Boolean get() = false
+
     val doubleTapTarget: NSObject = object: NSObject() {
         @ObjCAction
         fun handleDoubleTap(sender: UITapGestureRecognizer) {
-            println("Doubletap")
+            if (sender.state != UIGestureRecognizerStateEnded) return
+
             val midZoom = (native.maximumZoomScale - native.minimumZoomScale) / 2.0 + native.minimumZoomScale
             if (native.zoomScale < midZoom) {
-                native.setZoomScale(native.maximumZoomScale, true)
+                val touch = sender.locationInView(native).local
+                val origin = native.frame.useContents { size.width / 2 to size.height / 2 }
+
+                val offset = touch - origin
+                val scaledOffset = (native.frame.useContents { size.width to size.height } * (native.maximumZoomScale - 1)) / 2
+                val newContentOffset = scaledOffset + offset * native.maximumZoomScale
+
+                UIView.animateWithDuration(0.3) {
+                    native.setZoomScale(native.maximumZoomScale)
+                    native.setContentOffset(newContentOffset.cg)
+                }
             } else {
                 native.setZoomScale(native.minimumZoomScale, true)
             }
         }
     }
-    val doubleTapRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:"))
+    val doubleTapRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
+        numberOfTapsRequired = 2UL
+    }
     override val native = UIScrollView(CGRectZero.readValue()).apply {
         addGestureRecognizer(doubleTapRecognizer)
         showsHorizontalScrollIndicator = false
@@ -184,7 +258,6 @@ public actual class RawImageViewZoomable public actual constructor(
         maximumZoomScale = 4.0
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
-
     }
     val imageView = UIImageView(CGRectZero.readValue()).apply {
         contentMode = when (scaleType) {
@@ -208,8 +281,6 @@ public actual class RawImageViewZoomable public actual constructor(
         }
     }
     init {
-        val doubleTapRecognizer = UITapGestureRecognizer(this, sel_registerName("handleDoubleTap:"))
-        doubleTapRecognizer.numberOfTapsRequired = 2UL
         imageView.translatesAutoresizingMaskIntoConstraints = false
         native.delegate = dg
         native.addSubview(imageView)
@@ -222,12 +293,12 @@ public actual class RawImageViewZoomable public actual constructor(
             )
         )
     }
-    private val _state = RawReadable<Unit>()
-    public actual override val state: Readable<Unit> = _state
+    private val _state = RawReactive<Unit>()
+    actual override val state: Reactive<Unit> = _state
     private val UIScrollView.zs get() = ZoomState(this.contentOffset, this.zoomScale)
 
-    private val _zoomState = Property<ZoomState>(native.zs)
-    public actual val zoomState: ImmediateWritable<ZoomState> = _zoomState
+    private val _zoomState = Signal<ZoomState>(native.zs)
+    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
 
 
     init {
@@ -237,10 +308,10 @@ public actual class RawImageViewZoomable public actual constructor(
             delay(10)
             try {
                 val img = load(source, native.bounds.useContents { Size(size.width, size.height) })
-                _state.state = ReadableState(Unit)
+                _state.state = ReactiveState(Unit)
                 imageView.image = img
             } catch(e: Exception) {
-                _state.state = ReadableState.exception(e)
+                _state.state = ReactiveState.exception(e)
             }
         }
     }
@@ -249,25 +320,35 @@ public actual class RawImageViewZoomable public actual constructor(
 public actual data class ZoomState(val offset: CValue<CGPoint>, val zoom: Double)
 
 
-public object ImageCache {
-    public val imageCache = NSCache()
-    public fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
-    public fun set(key: ImageSource, value: UIImage) {
+object ImageCache {
+    val imageCache = NSCache()
+    fun get(key: String): UIImage? = imageCache.objectForKey(key) as? UIImage
+    fun set(key: String, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
     }
 
-    public inline fun get(key: ImageSource, load: () -> UIImage): UIImage {
-        (imageCache.objectForKey(key) as? UIImage)?.let { return it }
+    inline fun get(key: String, load: () -> UIImage): UIImage {
+        (imageCache.objectForKey(key) as? UIImage)?.let {
+            println("Got from base cache $it from key $key")
+            return it
+        }
         val loaded = load()
         imageCache.setObject(loaded, key, loaded.size.useContents { width * height * 4 }.toULong())
         return loaded
     }
 
-    public val imageCacheSized = NSCache()
-    public suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
-        val sizeKey = Triple(key, minWidth, minHeight)
-        (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let { return it }
-        val baseCached = get(key, { load() })
+    val imageCacheSized = NSCache()
+    suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
+        val sizeKey = "$key//$minWidth//$minHeight"
+        println("Lookup $key $minWidth $minHeight")
+        (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let {
+            println("Got from presized cache! $it")
+            return it
+        }
+        val baseCached = get(key, {
+            println("Not in base cache.  Loading")
+            load()
+        })
         if (minWidth == 0 || minHeight == 0) return baseCached
         val scaling = max(
             minWidth.toFloat() / baseCached.size.useContents { width },
@@ -277,7 +358,7 @@ public object ImageCache {
         return inBackground {
             val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
             val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
-//        println("Resized image will be ${ "$newWidth x $newHeight" }")
+            println("Resized image will be ${ "$newWidth x $newHeight" }")
             UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), true, 0.0)
             val image = try {
                 baseCached.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
@@ -286,7 +367,7 @@ public object ImageCache {
                 UIGraphicsEndImageContext()
             }
             if (image == null) return@inBackground baseCached
-//        println("Resized image is be ${image.size.useContents { "$width x $height" }}")
+            println("Resized image is be ${image.size.useContents { "$width x $height" }}")
             imageCacheSized.setObject(image, key, image.size.useContents { minWidth * minHeight * 4 }.toULong())
             image
         }

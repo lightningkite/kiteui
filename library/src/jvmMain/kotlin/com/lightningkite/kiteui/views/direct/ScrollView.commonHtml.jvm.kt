@@ -1,10 +1,15 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.UnsupportedOperationException
 
 public actual class ScrollingBehaviorImpl public actual constructor(
     public val on: RView,
@@ -35,10 +40,10 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             else native.classes += "hideScrollbar"
         }
 
-    public actual override val viewport: Signal<Rect> = Signal.Never
-    public actual override val content: Signal<Rect> = Signal.Never
-    public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = Constant(false)
-    public actual override var snapToElements: Pair<Align?, Align?> = null to null
+    actual override val viewport: Reactive<Rect> = Reactive.Never
+    actual override val content: Reactive<Rect> = Reactive.Never
+    actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = Constant(false)
+    actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
             field = value
             native.classes.removeAll { it.startsWith("snapTo-") }
@@ -55,7 +60,11 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             field = value
             native.setStyleProperty("scroll-snap-stop", if(value) "always" else "normal")
         }
-    public actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    actual override var ignoreInteraction: Boolean
+        get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
+        set(value) {}
+
+    actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
     }
     public actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
     }

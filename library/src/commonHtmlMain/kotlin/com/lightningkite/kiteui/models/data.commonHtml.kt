@@ -18,6 +18,9 @@ public actual data class DimensionRaw(
         }
     }
     public override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
+    public companion object {
+        val zero = DimensionRaw()
+    }
 }
 
 @InternalKiteUi

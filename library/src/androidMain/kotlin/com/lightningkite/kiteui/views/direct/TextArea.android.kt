@@ -12,13 +12,15 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.Writable
-import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
@@ -61,8 +63,8 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
             native.isEnabled = value
             refreshTheming()
         }
-    public actual val content: ImmediateWritable<String> = native.contentProperty()
-    public actual var keyboardHints: KeyboardHints
+    actual val content: MutableReactiveValue<String> = native.contentProperty()
+    actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }

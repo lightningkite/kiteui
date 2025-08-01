@@ -1,15 +1,15 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.views.ViewWriter
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-public class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
-    public var log: Console? = null
-    public override fun place(
+class RecyclerViewPagingPlacer() : RecyclerViewPlacer {
+    var log: Log? = null
+    override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
         previousViewport: Rect,

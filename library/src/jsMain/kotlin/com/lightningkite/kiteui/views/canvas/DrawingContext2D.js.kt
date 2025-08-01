@@ -26,11 +26,12 @@ public actual var DrawingContext2D.strokePaint: Paint
         else -> Color.black
     }
     set(value) {
-        when(value) {
-            is Color -> strokeStyle = value.toWeb()
-            is FadingColor -> TODO()
-            is LinearGradient -> TODO()
-            is RadialGradient -> TODO()
+        strokeStyle = when(value) {
+            is Color -> value.toWeb()
+    //            is FadingColor -> TODO()
+    //            is LinearGradient -> TODO()
+    //            is RadialGradient -> TODO()
+            else -> value.closestColor().toWeb()
         }
     }
 public actual var DrawingContext2D.fillPaint: Paint
@@ -39,11 +40,12 @@ public actual var DrawingContext2D.fillPaint: Paint
         else -> Color.black
     }
     set(value) {
-        when(value) {
-            is Color -> fillStyle = value.toWeb()
-            is FadingColor -> TODO()
-            is LinearGradient -> TODO()
-            is RadialGradient -> TODO()
+        fillStyle = when(value) {
+            is Color -> value.toWeb()
+    //            is FadingColor -> TODO()
+    //            is LinearGradient -> TODO()
+    //            is RadialGradient -> TODO()
+            else -> value.closestColor().toWeb()
         }
     }
 public actual val DrawingContext2D.width: Double get() = canvas.width.toDouble()

@@ -5,8 +5,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-public class GeneralFormatTest {
-    public val testCases = listOf(
+class GeneralFormatTest {
+    fun println(any: Any)  { /*suppress*/ }
+    val testCases = listOf(
         "1234567",
         "12345678",
         "123456789",

@@ -2,13 +2,15 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.signal.Constant
-import com.lightningkite.signal.Readable
-import com.lightningkite.signal.onRemove
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
-public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"

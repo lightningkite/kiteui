@@ -2,16 +2,21 @@ package com.lightningkite.kiteui
 
 import android.os.Bundle
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
+import com.lightningkite.kiteui.navigation.Routes
 import com.lightningkite.kiteui.navigation.render
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.frame
-import com.lightningkite.signal.ReactiveContext
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.test.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.Test
 
 @RunWith(RobolectricTestRunner::class)
 public class LayoutTest {

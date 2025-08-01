@@ -10,37 +10,31 @@ import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.objc.presentationController
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.Writable
-import com.lightningkite.signal.invoke
-import com.lightningkite.signal.onRemove
-import kotlinx.coroutines.launch
-import platform.UIKit.UISheetPresentationController
-import platform.UIKit.UIViewController
-import com.lightningkite.kiteui.objc.presentationController
 import com.lightningkite.kiteui.views.popoverWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.UIKit.*
+import platform.UIKit.UISheetPresentationController
+import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
 public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
     // lifetime of the view
@@ -65,14 +59,14 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
         }
         viewController.modalPresentationStyle = UIModalPresentationPageSheet
         val control = object : BottomSheetControl {
-            override val state: Writable<BottomSheetState> = Property(startState)
+            override val state: MutableReactive<BottomSheetState> = Signal(startState)
             override fun close() {
                 viewController.dismissViewControllerAnimated(true) {}
             }
         }
         popoverCloser?.invoke()
         popoverCloser = { control.close() }
-        viewController.kiteUi(context.split()) {
+        viewController.kiteUi(context.split(viewController)) {
             popoverCloser = null
 
             beforeNextElementSetup {
@@ -103,6 +97,7 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
         val partialDetent = UISheetPresentationControllerDetent.Companion.customDetentWithIdentifier(null) {
             fullSize * partialRatio
         }
+        viewController.definesPresentationContext = true
         (viewController.presentationController as? UISheetPresentationController)?.apply {
             if(partialRatio < 0.99) {
                 detents = listOf(
@@ -125,8 +120,7 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
             }
             prefersGrabberVisible = draggable
         }
-        ExternalServices.currentPresenter(viewController)
-        ExternalServices.currentlyPresented = viewController
+        context.present(viewController)
     }
 
     public actual fun leftSlidingPanel(

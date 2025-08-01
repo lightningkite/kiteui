@@ -14,6 +14,8 @@ public annotation class QueryParameter(val name: String = "")
 @Target(AnnotationTarget.PROPERTY)
 public annotation class Hash
 
+@Suppress
+@Target(AnnotationTarget.CLASS)
 @Target(AnnotationTarget.CLASS,AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.ANNOTATION_CLASS)
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,

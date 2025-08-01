@@ -1,14 +1,16 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
-public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
-    public var native: FutureElement = FutureElement()
+actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+    var native = FutureElement().also { it.classes.add("kui") }
 
     public actual override var showOnPrint: Boolean = true
         set(value) {
@@ -47,16 +49,6 @@ public actual abstract class RView public actual constructor(context: RContext) 
             native.setStyleProperty("--spacing", value?.value?.toString())
         }
 
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.style.paddingLeft = value?.left?.value?.toString() ?: "unset"
-            native.style.paddingTop = value?.top?.value?.toString() ?: "unset"
-            native.style.paddingRight = value?.right?.value?.toString() ?: "unset"
-            native.style.paddingBottom = value?.bottom?.value?.toString() ?: "unset"
-        }
-
     override var ignoreInteraction: Boolean
         get() = super.ignoreInteraction
         set(value) {
@@ -80,6 +72,21 @@ public actual abstract class RView public actual constructor(context: RContext) 
             nativeOnDrop(value)
         }
 
+    override fun refreshPadding() {
+        super.refreshPadding()
+        if(paddingByEdge != null || additionalPadding != null) {
+            val value = appliedPadding
+            native.style.paddingLeft = value.left.value.toString()
+            native.style.paddingTop = value.top.value.toString()
+            native.style.paddingRight = value.right.value.toString()
+            native.style.paddingBottom = value.bottom.value.toString()
+        } else {
+            native.style.paddingLeft = null
+            native.style.paddingTop = null
+            native.style.paddingRight = null
+            native.style.paddingBottom = null
+        }
+    }
 
     public actual override fun scrollIntoView(
         horizontal: Align?,
@@ -112,7 +119,6 @@ public actual abstract class RView public actual constructor(context: RContext) 
         } else {
             native.classes.remove("transition")
         }
-        if(parent == null) println("Root element: $theme because ${themeChoice}")
         if (theme.padding) {
             native.classes.add("padded")
         } else {

@@ -8,10 +8,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.signal.ReadableState
-import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class Video public actual constructor(context: RContext): RView(context) {
     override val native: PlayerView = PlayerView(context.activity).apply {
@@ -49,13 +53,13 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 else -> {}
             }
         }
-    public actual val time: Writable<Double>
-        get() = object : Writable<Double> {
+    actual val time: MutableReactive<Double>
+        get() = object : MutableReactive<Double> {
             override suspend fun set(value: Double) {
                 native.player!!.seekTo((value * 1000.0).toLong())
             }
 
-            override val state get() = ReadableState(native.player!!.currentPosition / 1000.0)
+            override val state get() = ReactiveState(native.player!!.currentPosition / 1000.0)
 
             override fun addListener(listener: () -> Unit): () -> Unit {
                 var remover: (() -> Unit)? = null
@@ -72,8 +76,8 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 return { native.player!!.removeListener(l) }
             }
         }
-    public actual val playing: Writable<Boolean>
-        get() = object : Writable<Boolean> {
+    actual val playing: MutableReactive<Boolean>
+        get() = object : MutableReactive<Boolean> {
             override suspend fun set(value: Boolean) {
                 if (value) {
                     native.player!!.play()
@@ -82,7 +86,7 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 }
             }
 
-            override val state: ReadableState<Boolean> get() = ReadableState(native.player!!.isPlaying)
+            override val state: ReactiveState<Boolean> get() = ReactiveState(native.player!!.isPlaying)
 
             override fun addListener(listener: () -> Unit): () -> Unit {
                 val l = object : Player.Listener {
@@ -94,13 +98,13 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 return { native.player!!.removeListener(l) }
             }
         }
-    public actual val volume: Writable<Float>
-        get() = object : Writable<Float> {
+    actual val volume: MutableReactive<Float>
+        get() = object : MutableReactive<Float> {
             override suspend fun set(value: Float) {
                 native.player!!.volume = value
             }
 
-            override val state: ReadableState<Float> get() = ReadableState(native.player!!.volume)
+            override val state: ReactiveState<Float> get() = ReactiveState(native.player!!.volume)
 
             override fun addListener(listener: () -> Unit): () -> Unit {
                 val l = object : Player.Listener {

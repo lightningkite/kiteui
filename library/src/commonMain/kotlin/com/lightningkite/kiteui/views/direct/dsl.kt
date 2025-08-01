@@ -7,16 +7,21 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RContext
-import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewDsl
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.kiteui.views.l2.icon
-import com.lightningkite.signal.invoke
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -89,13 +94,19 @@ public inline fun ViewWriter.zoomableImage(setup: ZoomableImageView.() -> Unit =
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-public inline fun ViewWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType, setup: RawImageView.() -> Unit = {}): RawImageView {
+public inline fun ViewWriter.rawImage(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageView.() -> Unit = {}): RawImageView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageView(context, source, description, scaleType) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-public inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
+public inline fun ViewWriter.rawImageUnsized(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: SizelessRawImageView.() -> Unit = {}): SizelessRawImageView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(SizelessRawImageView(context, source, description, scaleType) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+public inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawImageViewZoomable.() -> Unit = {}): RawImageViewZoomable {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RawImageViewZoomable(context, source, description, scaleType) , setup)
 }
@@ -275,6 +286,13 @@ public inline fun ViewWriter.switch(setup: Switch.() -> Unit = {}): Switch {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Switch(context) , setup)
 }
+
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.slider(setup: Slider.() -> Unit = {}): Slider {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(Slider(context) , setup)
+}
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
 public inline fun ViewWriter.textArea(setup: TextArea.() -> Unit = {}): TextArea {
@@ -329,6 +347,12 @@ public inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
+inline fun ViewWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(RowWrapping(context) ) { setup() }
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
 public inline fun ViewWriter.row(setup: RowOrCol.() -> Unit = {}): RowOrCol {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowOrCol(context) ) { vertical = false; setup() }
@@ -370,13 +394,17 @@ public inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycl
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                align(Align.Start, Align.Center) - button {
-                    icon(Icon.chevronLeft, "Previous")
-                    onClick { centerIndex set centerIndex() - 1 }
+                align(Align.Start, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronLeft, "Previous")
+                        onClick { centerIndex set centerIndex() - 1 }
+                    }
                 }
-                align(Align.End, Align.Center) - button {
-                    icon(Icon.chevronRight, "Next")
-                    onClick { centerIndex set centerIndex() + 1 }
+                align(Align.End, Align.Center) - frame {
+                    button {
+                        icon(Icon.chevronRight, "Next")
+                        onClick { centerIndex set centerIndex() + 1 }
+                    }
                 }
             }
         }

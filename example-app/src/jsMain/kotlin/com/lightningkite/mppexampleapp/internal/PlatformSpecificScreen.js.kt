@@ -1,16 +1,21 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
-public val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
+val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
 
-public actual fun ViewWriter.platformSpecific(): ViewModifiable {
-//    val current = Property(0)
+actual fun ViewWriter.platformSpecific(): ViewModifiable {
+//    val current = Signal(0)
 //    col {
-//        val showExtra = Property(true)
+//        val showExtra = Signal(true)
 //        button {
 //            onClick { showExtra.value = !showExtra.value }
 //            text("Toggle")

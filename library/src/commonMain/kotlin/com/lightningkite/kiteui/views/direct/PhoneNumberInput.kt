@@ -2,12 +2,16 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 
 public inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
@@ -67,10 +71,10 @@ public class PhoneNumberInput(container: ViewWriter): ViewModifiable {
             field = value
             input.format(value::isRawData, value::format)
         }
-    public var enabled: Boolean by input::enabled
-    public val content: ImmediateWritable<String> by input::content
-    public var hint: String by input::hint
-    public var align: Align by input::align
+    var enabled: Boolean by input::enabled
+    val content: MutableReactiveValue<String> by input::content
+    var hint: String by input::hint
+    var align: Align by input::align
 }
 
 public operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }

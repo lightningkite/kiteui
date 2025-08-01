@@ -2,10 +2,15 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.AutoComplete
+import com.lightningkite.kiteui.models.KeyCodes
 import com.lightningkite.kiteui.models.KeyboardHints
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
@@ -15,6 +20,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
     public val textarea: FutureElement = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
+        classes.add("kui")
         style.resize = "none"
         addEventListener("keydown") { ev ->
             ev as KeyboardEvent
@@ -26,7 +32,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         }
         native.appendChild(this)
     }
-    public actual val content: ImmediateWritable<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     init {
         content.addListener {
             native.setAttribute("data-replicated-value", content.value)

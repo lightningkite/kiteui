@@ -13,3 +13,6 @@ public actual val Platform.Companion.userAgent: String
 
 public actual fun setStatusBarColor(color: Color) {
 }
+
+actual val Platform.Companion.current: Platform
+    get() = Platform.iOS

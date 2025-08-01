@@ -1,8 +1,13 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.signal.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public interface RecyclerViewRendererSet<in T, out ID> {
     public fun id(item: T): ID
@@ -13,15 +18,15 @@ public interface RecyclerViewRendererSet<in T, out ID> {
         public override fun renderer(item: Any?): RecyclerViewRenderer<Any?> = RecyclerViewRenderer.Blank
     }
 
-    public companion object {
-        public fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Readable<T>) -> ViewModifiable): RecyclerViewRendererSet<T, ID> =
+    companion object {
+        fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> ViewModifiable) =
             object : RecyclerViewRendererSet<T, ID> {
                 override fun id(item: T): ID = id(item)
                 val r = object : RecyclerViewRenderer<T> {
                     override fun render(
                         viewWriter: ViewWriter,
-                        data: Readable<T>,
-                        index: Readable<Int>
+                        data: Reactive<T>,
+                        index: Reactive<Int>
                     ): ViewModifiable = viewWriter.render(data)
                 }
 
@@ -30,13 +35,13 @@ public interface RecyclerViewRendererSet<in T, out ID> {
 
         public class MultiBuilder<T, ID> internal constructor(public val id: (T)->ID) {
             internal val entries = ArrayList<Pair<(T)->Boolean, RecyclerViewRenderer<T>>>()
-            public fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
-            public infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Readable<T>) -> ViewModifiable) {
+            fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
+            infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> ViewModifiable) {
                 entries += this to object : RecyclerViewRenderer<T> {
                     override fun render(
                         viewWriter: ViewWriter,
-                        data: Readable<T>,
-                        index: Readable<Int>
+                        data: Reactive<T>,
+                        index: Reactive<Int>
                     ): ViewModifiable = viewWriter.renderer(data)
                 }
             }

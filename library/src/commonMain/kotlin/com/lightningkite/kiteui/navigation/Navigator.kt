@@ -1,9 +1,14 @@
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
 public typealias KiteUiNavigator = PageNavigator
@@ -15,11 +20,11 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
     public fun navigateUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
     public fun resetUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    public val stack: Property<List<Page>> = Property(listOf())
-    public fun wrap(screen: Page): Page = screen
+    val stack: Signal<List<Page>> = Signal(listOf())
+    fun wrap(screen: Page): Page = screen
     
-    public val currentPage: Readable<Page?> = shared { stack().lastOrNull() }
-    public val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
+    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
+    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
     
     public fun navigate(screen: Page): Unit = navigateRaw(wrap(screen))
     public fun replace(screen: Page): Unit = replaceRaw(wrap(screen))

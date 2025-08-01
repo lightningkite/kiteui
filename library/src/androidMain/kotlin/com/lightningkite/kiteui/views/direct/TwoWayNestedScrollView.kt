@@ -587,25 +587,23 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                     - lp.topMargin
                     - lp.bottomMargin)
 
-            if ((childWidth < parentSpaceX || lockX) || (childHeight < parentSpaceY || lockY)) {
-                val childWidthMeasureSpec = if(lockX) getChildMeasureSpec(
-                    widthMeasureSpec,
-                    getPaddingLeft() + getPaddingRight() + lp.leftMargin + lp.rightMargin,
-                    lp.width
-                ) else MeasureSpec.makeMeasureSpec(
-                    max(parentSpaceX.toDouble(), childWidth.toDouble()).toInt(),
-                    MeasureSpec.EXACTLY
-                )
-                val childHeightMeasureSpec = if(lockY) getChildMeasureSpec(
-                    heightMeasureSpec,
-                    getPaddingTop() + getPaddingBottom() + lp.topMargin + lp.bottomMargin,
-                    lp.height
-                ) else MeasureSpec.makeMeasureSpec(
-                    max(parentSpaceY.toDouble(), childHeight.toDouble()).toInt(),
-                    MeasureSpec.EXACTLY
-                )
-                child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
-            }
+            val childWidthMeasureSpec = if (lockX) getChildMeasureSpec(
+                widthMeasureSpec,
+                getPaddingLeft() + getPaddingRight() + lp.leftMargin + lp.rightMargin,
+                lp.width
+            ) else MeasureSpec.makeMeasureSpec(
+                max(parentSpaceX.toDouble(), childWidth.toDouble()).toInt(),
+                MeasureSpec.EXACTLY
+            )
+            val childHeightMeasureSpec = if (lockY) getChildMeasureSpec(
+                heightMeasureSpec,
+                getPaddingTop() + getPaddingBottom() + lp.topMargin + lp.bottomMargin,
+                lp.height
+            ) else MeasureSpec.makeMeasureSpec(
+                max(parentSpaceY.toDouble(), childHeight.toDouble()).toInt(),
+                MeasureSpec.EXACTLY
+            )
+            child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
         }
     }
 
@@ -884,7 +882,7 @@ public class TwoWayNestedScrollView @JvmOverloads constructor(
                 val y = ev.getY(activePointerIndex).toInt()
                 var deltaX = mLastMotionX - x
                 var deltaY = mLastMotionY - y
-                if (!mIsBeingDragged && (abs(deltaY.toDouble()) > mTouchSlop || abs(deltaX.toDouble()) > mTouchSlop)) {
+                if (!mIsBeingDragged && (abs(deltaY.toDouble()) > mTouchSlop && !lockY || abs(deltaX.toDouble()) > mTouchSlop && !lockX)) {
                     val parent = parent
                     parent?.requestDisallowInterceptTouchEvent(true)
                     mIsBeingDragged = true

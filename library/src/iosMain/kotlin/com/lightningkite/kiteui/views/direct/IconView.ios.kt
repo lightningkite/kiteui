@@ -2,17 +2,22 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.Property
+import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.min
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
-import kotlin.math.min
-import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import platform.Foundation.NSNotificationCenter
-import platform.Foundation.NSOperationQueue
 
 public actual class IconView public actual constructor(context: RContext): RView(context) {
     override val native = NIconView()
@@ -46,7 +51,7 @@ public actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithS
         }
     }
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
     override fun getSpacingOverrideProperty() = spacingOverride
 
     override fun drawLayer(layer: CALayer, inContext: CGContextRef?) {

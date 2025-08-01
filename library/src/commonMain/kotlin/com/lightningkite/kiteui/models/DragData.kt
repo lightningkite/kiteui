@@ -11,10 +11,14 @@ public data class DragData(
     ):this(label, mapOf(mimeType to data))
     public val mimeType: String get() = typeToData.keys.firstOrNull() ?: ""
     public val data: String get() = typeToData.values.firstOrNull() ?: ""
+
+    public operator fun get(mimeType: String) = typeToData[mimeType]
 }
 
-public data class DragEvent(
+data class DragEvent(
     public val data: DragData,
     public val xInView: Double,
     public val yInView: Double
-)
+) {
+    public val types get() = data.typeToData.keys
+}

@@ -78,21 +78,23 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
 
     public fun Theme.withBack(
         cascading: Boolean = true,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        gap: Dimension = this.gap,
-        padding: Edges = this.padding,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        separatorOverride: Paint? = this.separatorOverride,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+        font: FontAndStyle? = null,
+        elevation: Dimension? = null,
+        cornerRadii: CornerRadii? = null,
+        gap: Dimension? = null,
+        padding: Edges? = null,
+        foreground: Paint? = null,
+        iconOverride: Paint? = LinearGradient.INVALID,
+        outline: Paint? = null,
+        outlineWidth: Dimension? = null,
+        separatorOverride: Paint? = LinearGradient.INVALID,
+        background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
+        bodyTransitions: ScreenTransitions? = null,
+        dialogTransitions: ScreenTransitions? = null,
+        transitionDuration: Duration? = null,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
     ) = copy(
         id = key,
         cascading = cascading,
@@ -107,6 +109,8 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -114,21 +118,23 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
     ).withBack
     public fun Theme.withoutBack(
         cascading: Boolean = true,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        gap: Dimension = this.gap,
-        padding: Edges = this.padding,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        separatorOverride: Paint? = this.separatorOverride,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+        font: FontAndStyle? = null,
+        elevation: Dimension? = null,
+        cornerRadii: CornerRadii? = null,
+        gap: Dimension? = null,
+        padding: Edges? = null,
+        foreground: Paint? = null,
+        iconOverride: Paint? = LinearGradient.INVALID,
+        outline: Paint? = null,
+        outlineWidth: Dimension? = null,
+        separatorOverride: Paint? = LinearGradient.INVALID,
+        background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
+        bodyTransitions: ScreenTransitions? = null,
+        dialogTransitions: ScreenTransitions? = null,
+        transitionDuration: Duration? = null,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
     ) = copy(
         id = key,
         cascading = cascading,
@@ -143,6 +149,8 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -150,21 +158,23 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
     ).withoutBack
     public fun Theme.alter(
         cascading: Boolean = true,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        gap: Dimension = this.gap,
-        padding: Edges = this.padding,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        separatorOverride: Paint? = this.separatorOverride,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
-        derivations: Map<Semantic, Semantic.(Theme) -> ThemeAndBack> = mapOf(),
+        font: FontAndStyle? = null,
+        elevation: Dimension? = null,
+        cornerRadii: CornerRadii? = null,
+        gap: Dimension? = null,
+        padding: Edges? = null,
+        foreground: Paint? = null,
+        iconOverride: Paint? = LinearGradient.INVALID,
+        outline: Paint? = null,
+        outlineWidth: Dimension? = null,
+        separatorOverride: Paint? = LinearGradient.INVALID,
+        background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
+        bodyTransitions: ScreenTransitions? = null,
+        dialogTransitions: ScreenTransitions? = null,
+        transitionDuration: Duration? = null,
+        derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
     ) = copy(
         id = key,
         cascading = cascading,
@@ -179,6 +189,8 @@ public abstract class Semantic(public val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -270,24 +282,33 @@ public data object ClickableSemantic : Semantic("clk") {
     public override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
-public data object HoverSemantic : Semantic("hov") {
-    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+/**
+ * Supported on Web only.
+ */
+data object HoverSemantic : Semantic("hov") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.2f) },
         outline = theme.background.map { it.highlight(0.2f).highlight(0.1f) },
         elevation = theme.elevation * 2f,
     )
 }
 
-public data object DownSemantic : Semantic("dwn") {
-    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+/**
+ * Supported on Web and iOS.  Android will use the standard ripple effect instead.
+ */
+data object DownSemantic : Semantic("dwn") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.3f) },
         outline = theme.background.map { it.highlight(0.3f).highlight(0.1f) },
         elevation = theme.elevation / 2f,
     )
 }
 
-public data object FocusSemantic : Semantic("fcs") {
-    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+/**
+ * Supported on Web only.
+ */
+data object FocusSemantic : Semantic("fcs") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         outlineWidth = theme.outlineWidth + 2.dp,
         outline = theme.background.map { it.highlight(1f) },
     )
@@ -555,8 +576,23 @@ public class ThemeBuilder {
     }
 }
 
-public class Theme(
-    public val id: String,
+data class Transformation(
+    val translationX: Double = 0.0,
+    val translationY: Double = 0.0,
+    val translationZ: Double = 0.0,
+    val rotationX: Double = 0.0,
+    val rotationY: Double = 0.0,
+    val rotation: Double = 0.0,
+    val scaleX: Double = 1.0,
+    val scaleY: Double = 1.0,
+)
+
+sealed interface ShaderEffect {
+    data class Blur(val amount: Dimension) : ShaderEffect
+}
+
+class Theme(
+    val id: String,
 
     public val font: FontAndStyle = FontAndStyle(systemDefaultFont),
 
@@ -573,9 +609,15 @@ public class Theme(
     public val separatorOverride: Paint? = null,
     public val background: Paint = Color.white,
 
-    public val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
-    public val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
-    public val transitionDuration: Duration = 0.25.seconds,
+    /**
+     * Supported on Web and partially on iOS.
+     */
+    val blurBackground: Dimension = 0.px,
+    val transform: Transformation? = null,
+
+    val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
+    val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
+    val transitionDuration: Duration = 0.25.seconds,
 
     public val derivedFrom: Theme? = null,
     public val derivationId: String? = null,
@@ -628,6 +670,8 @@ public class Theme(
         outlineWidth: Dimension = this.outlineWidth,
         separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -645,6 +689,8 @@ public class Theme(
         outlineWidth = outlineWidth,
         separatorOverride = separatorOverride,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -654,41 +700,65 @@ public class Theme(
     public fun copy(
         id: String,
         cascading: Boolean = true,
-        font: FontAndStyle = this.font,
-        elevation: Dimension = this.elevation,
-        cornerRadii: CornerRadii = this.cornerRadii,
-        gap: Dimension = this.gap,
-        padding: Edges = this.padding,
-        foreground: Paint = this.foreground,
-        iconOverride: Paint? = this.iconOverride,
-        outline: Paint = this.outline,
-        outlineWidth: Dimension = this.outlineWidth,
-        separatorOverride: Paint? = this.separatorOverride,
-        background: Paint = this.background,
-        bodyTransitions: ScreenTransitions = this.bodyTransitions,
-        dialogTransitions: ScreenTransitions = this.dialogTransitions,
-        transitionDuration: Duration = this.transitionDuration,
+        font: FontAndStyle? = null,
+        elevation: Dimension? = null,
+        cornerRadii: CornerRadii? = null,
+        gap: Dimension? = null,
+        padding: Edges? = null,
+        foreground: Paint? = null,
+        iconOverride: Paint? = LinearGradient.INVALID,
+        outline: Paint? = null,
+        outlineWidth: Dimension? = null,
+        separatorOverride: Paint? = LinearGradient.INVALID,
+        background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
+        bodyTransitions: ScreenTransitions? = null,
+        dialogTransitions: ScreenTransitions? = null,
+        transitionDuration: Duration? = null,
         derivations: Map<Semantic, Semantic.(theme: Theme) -> ThemeAndBack> = mapOf(),
     ): Theme = Theme(
         id = "${this.id}-$id",
         derivedFrom = derivedFrom,
         derivationId = derivationId,
-        font = font,
-        elevation = elevation,
-        cornerRadii = cornerRadii,
-        gap = gap,
-        padding = padding,
-        foreground = foreground,
-        iconOverride = iconOverride,
-        outline = outline,
-        outlineWidth = outlineWidth,
-        separatorOverride = separatorOverride,
-        background = background,
-        bodyTransitions = bodyTransitions,
-        dialogTransitions = dialogTransitions,
-        transitionDuration = transitionDuration,
+        font = font ?: this.font,
+        elevation = elevation ?: this.elevation,
+        cornerRadii = cornerRadii ?: this.cornerRadii,
+        gap = gap ?: this.gap,
+        padding = padding ?: this.padding,
+        foreground = foreground ?: this.foreground,
+        iconOverride = if(iconOverride == LinearGradient.INVALID) this.iconOverride else iconOverride,
+        outline = outline ?: this.outline,
+        outlineWidth = outlineWidth ?: this.outlineWidth,
+        separatorOverride = if(separatorOverride == LinearGradient.INVALID) this.separatorOverride else separatorOverride,
+        background = background ?: this.background,
+        blurBackground = blurBackground ?: this.blurBackground,
+        transform = transform ?: this.transform,
+        bodyTransitions = bodyTransitions ?: this.bodyTransitions,
+        dialogTransitions = dialogTransitions ?: this.dialogTransitions,
+        transitionDuration = transitionDuration ?: this.transitionDuration,
         derivations = this.derivations + derivations,
-        revert = if (!cascading) this else null
+        revert = if (!cascading) this else this.revert?.copy(
+            id = id,
+            cascading = cascading,
+            font = font,
+            elevation = elevation,
+            cornerRadii = cornerRadii,
+            gap = gap,
+            padding = padding,
+            foreground = foreground,
+            iconOverride = iconOverride,
+            outline = outline,
+            outlineWidth = outlineWidth,
+            separatorOverride = separatorOverride,
+            background = background,
+            blurBackground = blurBackground,
+            transform = transform,
+            bodyTransitions = bodyTransitions,
+            dialogTransitions = dialogTransitions,
+            transitionDuration = transitionDuration,
+            derivations = derivations,
+        )
     )
 
     @Deprecated("Use the new copy with 'cascading' instead.")
@@ -704,6 +774,8 @@ public class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -723,6 +795,8 @@ public class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -745,6 +819,8 @@ public class Theme(
         outline: Paint = Color.black,
         outlineWidth: Dimension = 0.px,
         background: Paint = Color.white,
+        blurBackground: Dimension = 0.px,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
         dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
         transitionDuration: Duration = 0.15.seconds,
@@ -782,6 +858,8 @@ public class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -828,6 +906,8 @@ public class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -862,6 +942,8 @@ public class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -902,6 +984,8 @@ public class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -938,6 +1022,8 @@ public class Theme(
             outline = outline,
             outlineWidth = outlineWidth,
             background = background,
+            blurBackground = blurBackground,
+            transform = transform,
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,

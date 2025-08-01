@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter

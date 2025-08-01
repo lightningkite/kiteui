@@ -1,30 +1,28 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.ColorFilter
-import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import com.lightningkite.kiteui.views.ViewWriter
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageView
 import androidx.core.animation.addListener
 import androidx.transition.*
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.signal.CalculationContext
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
-public actual class SwapView public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
-    override val native: FrameLayout = FrameLayout(context.activity)
+actual class SwapView actual constructor(context: RContext) : RView(context) {
+    override val native = FrameLayout(context.activity)
 
     public companion object {
         public val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
@@ -80,15 +78,15 @@ public actual class SwapView public actual constructor(context: RContext) : RVie
                     val old = oldView.walkTopDown().mapNotNull { it.transitionId?.let { id -> id to it } }.associate { it }
                     val intersecting = new.keys.intersect(old.keys)
                     if(intersecting.isNotEmpty()) {
-                        val shared = CustomTransition(native)
-                        shared.setDuration(theme.transitionDuration.inWholeMilliseconds)
+                        val remember = CustomTransition(native)
+                        remember.setDuration(theme.transitionDuration.inWholeMilliseconds)
                         intersecting.forEach {
                             val o = old[it]!!.native
                             val n = new[it]!!.native
-                            shared.addTarget(o)
-                            shared.addTarget(n)
+                            remember.addTarget(o)
+                            remember.addTarget(n)
                         }
-                        addTransition(shared)
+                        addTransition(remember)
                     }
                 }
 //                val start = Scene(native)

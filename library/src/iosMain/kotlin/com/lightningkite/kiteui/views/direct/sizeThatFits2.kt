@@ -11,6 +11,7 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIView
 import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.debugPrint
 
 
 @InternalKiteUi
@@ -32,7 +33,20 @@ public fun UIView.sizeThatFits2(
     val measured = when (this) {
         is LinearLayout,
         is FrameLayout,
-        is FrameLayoutButton -> sizeThatFits(newSizeInput)
+        is FrameLayoutButton,
+            -> sizeThatFits(newSizeInput)
+
+        is CanvasView -> PerformanceInfo["CanvasView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NDismissBackground -> PerformanceInfo["NDismissBackground.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NIconView -> PerformanceInfo["NIconView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NProgrammaticLayout -> PerformanceInfo["NProgrammaticLayout.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is ResizeableProgressView -> PerformanceInfo["ResizeableProgressView.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UIImageViewFixedSizing -> PerformanceInfo["UIImageViewFixedSizing.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is ScrollLayout -> PerformanceInfo["ScrollLayout.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is NSpace -> PerformanceInfo["NSpace.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UILabelWithGradient -> PerformanceInfo["UILabelWithGradient.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is UILabelWithLayerBackground -> PerformanceInfo["UILabelWithLayerBackground.sizeThatFits"] { sizeThatFits(newSizeInput) }
+        is WrapperView -> PerformanceInfo["WrapperView.sizeThatFits"] { sizeThatFits(newSizeInput) }
 
         else -> {
             // Uncomment this code if you believe some fool is using the default sizeThatFits.
@@ -68,12 +82,14 @@ public fun UIView.sizeThatFits2(
         }
         CGSizeMake(w, h)
     } ?: measured
-    if(this === viewDebugTarget?.native) {
-        println("viewDebugTarget constraints: $sizeConstraints")
-        println("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
-        println("viewDebugTarget newSizeInput: ${newSizeInput.useContents { "$width, $height" }}")
-        println("viewDebugTarget measured: ${measured.useContents { "$width, $height" }}")
-        println("viewDebugTarget result: ${result.useContents { "$width, $height" }}")
+    debugPrint {
+        buildString {
+            appendLine("viewDebugTarget constraints: $sizeConstraints")
+            appendLine("viewDebugTarget size: ${size.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget newSizeInput: ${newSizeInput.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget measured: ${measured.useContents { "$width, $height" }}")
+            appendLine("viewDebugTarget result: ${result.useContents { "$width, $height" }}")
+        }
     }
     return result
 }

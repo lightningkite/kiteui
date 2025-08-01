@@ -13,45 +13,49 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.Animation
 import android.widget.*
 import android.widget.ImageView
+import android.widget.TextView as AndroidTextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.setMargins
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.models.Paint as KiteUiPaint
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
-import android.widget.TextView as AndroidTextView
-import com.lightningkite.kiteui.models.Paint as KiteUiPaint
 
-@InternalKiteUi
-public fun View.setPaddingAll(padding: Int) = setPadding(padding, padding, padding, padding)
-@InternalKiteUi
-public fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
-//val NView.selected: Writable<Boolean>
-//    get() = object : Writable<Boolean> {
+
+fun View.setPaddingAll(padding: Int) = setPadding(padding, padding, padding, padding)
+fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
+//val NView.selected: MutableReactive<Boolean>
+//    get() = object : MutableReactive<Boolean> {
 //        override fun addListener(listener: () -> Unit): () -> Unit {
 //            return addListener(View::setOnClickListener, { View.OnClickListener { it() } }, listener)
 //        }
 //
-//        override val state: ReadableState<Boolean>
-//            get() = ReadableState(this@selected.isSelected)
+//        override val state: ReactiveState<Boolean>
+//            get() = ReactiveState(this@selected.isSelected)
 //
 //        override suspend fun set(value: Boolean) {
 //            this@selected.isSelected = value
 //        }
 //    }
 //
-//val NView.hovered: Readable<Boolean>
-//    get() = object : Readable<Boolean> {
+//val NView.hovered: Reactive<Boolean>
+//    get() = object : Reactive<Boolean> {
 //        override fun addListener(listener: () -> Unit): () -> Unit {
 //            return addListener(View::setOnHoverListener, { View.OnHoverListener { _, _ -> it(); true } }, listener)
 //        }
 //
-//        override val state: ReadableState<Boolean>
-//            get() = ReadableState(this@hovered.isHovered)
+//        override val state: ReactiveState<Boolean>
+//            get() = ReactiveState(this@hovered.isHovered)
 //    }
 //
 //

@@ -1,10 +1,22 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.signal.AppScope
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.js.Promise
+import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.datetime.Clock
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
+import org.khronos.webgl.get
+import org.khronos.webgl.set
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
@@ -16,9 +28,6 @@ import org.w3c.xhr.BLOB
 import org.w3c.xhr.ProgressEvent
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.js.Promise
 
 @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE", "UnsafeCastFromDynamic")
 public actual suspend fun fetch(
@@ -171,16 +180,27 @@ public actual fun FileReference.fileName(): String {
     return this.name
 }
 
-public actual fun websocket(url: String): WebSocket {
+private val killAllSockets = BasicListenable().also {
+    window.asDynamic().killAllSockets = { ->
+        println("Killing all sockets")
+        it.invokeAll()
+    }
+}
+actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(org.w3c.dom.WebSocket(url))
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket) : WebSocket {
-    public override fun close(code: Short, reason: String): Unit = native.close(code, reason)
-    public override fun send(data: String): Unit = native.send(data)
-    public override fun send(data: Blob): Unit = native.send(data)
-    public override fun onOpen(action: () -> Unit) {
+class WebSocketWrapper(val native: org.w3c.dom.WebSocket, val log: Log? = Log.tag("WS to ${native.url}").infoOrAbove()) : WebSocket {
+    private val opened = Clock.System.now()
+    private val stopListeningToDebugKill = killAllSockets.addListener {
+        println("Killing websocket to ${native.url} opened at $opened")
+        native.close(3008)
+    }
+    override fun close(code: Short, reason: String) = native.close(code, reason)
+    override fun send(data: String) = native.send(data)
+    override fun send(data: Blob) = native.send(data)
+    override fun onOpen(action: () -> Unit) {
         native.addEventListener("open", { action() })
     }
 
@@ -195,13 +215,36 @@ public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket) : WebSoc
     public override fun onClose(action: (Short) -> Unit) {
         native.addEventListener("close", { action((it as CloseEvent).code) })
     }
+
+    init {
+        onClose { stopListeningToDebugKill() }
+        log?.let { log ->
+            onOpen { log.info("Opened.") }
+            onMessage { log.log("onMessage $it") }
+            onBinaryMessage { log.log("onBinaryMessage $it") }
+            onClose { log.info("Closed with code $it.") }
+        }
+    }
 }
 
 public actual fun Blob.bytes(): Long = size.toLong()
 public actual fun FileReference.bytes(): Long = size.toLong()
 
-@InternalKiteUi
-public fun jsTextBlob(blob: Blob): Promise<String> = js("blob.text()") as Promise<String>
-public actual suspend fun Blob.text(): String = jsTextBlob(this).await()
-public actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
-public actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+actual suspend fun Blob.text(): String = jsTextBlob(this).await()
+actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
+actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))
+actual suspend fun Blob.toByteArray(): ByteArray = Int8Array((asDynamic().arrayBuffer() as Promise<ArrayBuffer>).await()).toByteArray()
+
+    /** Returns a new [ByteArray] containing all the elements of this [Int8Array]. */
+private fun Int8Array.toByteArray(): ByteArray =
+    ByteArray(this.length) { this[it] }
+
+/** Returns a new [Int8Array] containing all the elements of this [ByteArray]. */
+private fun ByteArray.toInt8Array(): Int8Array {
+    val result = Int8Array(this.size)
+    for (index in this.indices) {
+        result[index] = this[index]
+    }
+    return result
+}

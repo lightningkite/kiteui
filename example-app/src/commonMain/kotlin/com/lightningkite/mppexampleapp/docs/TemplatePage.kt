@@ -1,16 +1,17 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
-import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import kotlin.random.Random
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
-public object TemplatePage: DocPage {
-    public override val title: Readable<String>
+object TemplatePage: DocPage {
+    override val title: Reactive<String>
         get() = Constant("Name of Topic")
     public override val covers: List<String> = listOf("topic")
 

@@ -1,12 +1,17 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.ConsoleRoot
-import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("docs/viewpager")
 public object ViewPagerElementPage: DocPage {
@@ -18,10 +23,10 @@ public object ViewPagerElementPage: DocPage {
             text("You can use a view pager to create an element that scrolling horizontally displaying pages.")
             text("This is frequently used for browsing photos or advertising features.")
             text("V2")
-            val currentPage = Property(9)
+            val currentPage = Signal(9)
             val items = Constant((1..30).toList())
             example("""
-                val currentPage = Property(9)
+                val currentPage = Signal(9)
                 val items = Constant((1..30).toList())
                 
                 sizeConstraints(height = 10.rem) - card - viewPager {
@@ -37,7 +42,7 @@ public object ViewPagerElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 sizeConstraints(height = 10.rem) - card - viewPager {
-                    new.log = ConsoleRoot.tag("Viewpager")
+                    new.log = LogRoot.tag("Viewpager")
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
 

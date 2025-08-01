@@ -1,16 +1,19 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.signal.invoke
-import com.lightningkite.signal.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public data class UserInfo(
     public val name: String,
@@ -26,25 +29,25 @@ public interface AppNav {
     public var actions: List<NavElement>
     public var exists: Boolean
 
-    public class ByProperty : AppNav {
-        public val appNameProperty: Property<String> = Property("My App")
-        public override var appName: String by appNameProperty
-        public val appIconProperty: Property<Icon> = Property<Icon>(Icon.home)
-        public override var appIcon: Icon by appIconProperty
-        public val appLogoProperty: Property<ImageSource> = Property<ImageSource>(Icon.home.toImageSource(Color.white))
-        public override var appLogo: ImageSource by appLogoProperty
-        public val navItemsProperty: Property<List<NavElement>> = Property(listOf<NavElement>())
-        public override var navItems: List<NavElement> by navItemsProperty
-        public val actionsProperty: Property<List<NavElement>> = Property<List<NavElement>>(listOf())
-        public override var actions: List<NavElement> by actionsProperty
-        public val existsProperty: Property<Boolean> = Property(true)
-        public override var exists: Boolean by existsProperty
+    class ByProperty : AppNav {
+        val appNameProperty = Signal("My App")
+        override var appName: String by appNameProperty
+        val appIconProperty = Signal<Icon>(Icon.home)
+        override var appIcon: Icon by appIconProperty
+        val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
+        override var appLogo: ImageSource by appLogoProperty
+        val navItemsProperty = Signal(listOf<NavElement>())
+        override var navItems: List<NavElement> by navItemsProperty
+        val actionsProperty = Signal<List<NavElement>>(listOf())
+        override var actions: List<NavElement> by actionsProperty
+        val existsProperty = Signal(true)
+        override var exists: Boolean by existsProperty
     }
 }
 
 
-public val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
-    Property(
+public val ViewWriter.appNavFactory by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
+    Signal(
         ViewWriter::appNavBottomTabs
     )
 )
@@ -63,10 +66,11 @@ public fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null,
 
 public fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    val showMenu = Property(false)
+    val showMenu = Signal(false)
     return OuterSemantic.onNext - col {
         debugName = "outer nav"
         bar - row {
+            applySafeInsets(bottom = false)
             debugName = "top bar"
             showOnPrint = false
             setup(appNav)
@@ -88,6 +92,7 @@ public fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable 
             ::shown { appNav.existsProperty() }
         }
         expanding - frame {
+            applySafeInsets(top = false)
             debugName = "menu and navigator container"
             navigatorView(pageNavigator)
             atStart - shownWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
@@ -103,6 +108,7 @@ public fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     // Nav 2 top, horizontal
     return OuterSemantic.onNext - col {
         bar - row {
+            applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
@@ -121,7 +127,9 @@ public fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
             centered - navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
-        expanding - navigatorView(pageNavigator)
+        beforeNextElementSetup {
+            applySafeInsets(top = false)
+        } - expanding - navigatorView(pageNavigator)
     }
 }
 
@@ -132,6 +140,7 @@ public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
             compact - bar - frame {
+                applySafeInsets(bottom = false)
                 debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
@@ -158,6 +167,7 @@ public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable
             }
         } else {
             bar - row {
+                applySafeInsets(bottom = false)
                 debugName = "normal app bar"
                 showOnPrint = false
                 setup(appNav)
@@ -175,9 +185,13 @@ public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable
                 ::shown { appNav.existsProperty() }
             }
         }
+        beforeNextElementSetup {
+            applySafeInsets(top = false, bottom = false)
+        }
         expanding - navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         navGroupTabs(appNav.navItemsProperty) {
+            applySafeInsets(top = false)
             debugName = "navGroupTabs"
             showOnPrint = false
             ::shown { appNav.existsProperty() && !AppState.softInputOpen() }
@@ -190,6 +204,7 @@ public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable
     return OuterSemantic.onNext - col {
 // Nav 4 left and top - add dropdown for user info
         bar - row {
+            applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
             if (Platform.current != Platform.Web) button {
@@ -208,9 +223,15 @@ public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable
             ::shown { appNav.existsProperty() }
         }
         expanding - OuterSemantic.onNext - row {
+            beforeNextElementSetup {
+                applySafeInsets(right = false)
+            }
             scrolling - navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
+            }
+            beforeNextElementSetup {
+                applySafeInsets(top = false)
             }
             expanding - navigatorView(pageNavigator)
         }

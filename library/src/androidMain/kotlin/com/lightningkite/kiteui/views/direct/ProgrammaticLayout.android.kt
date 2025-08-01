@@ -8,10 +8,10 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.debugPrint
 import kotlin.math.roundToInt
 
-public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
@@ -20,15 +20,6 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
         native.silentRequestLayout()
     }
 
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            native.paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-            native.paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-            native.paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-            native.paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
-        }
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -36,21 +27,27 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
             native.spacingCurrentPx = gap?.px ?: theme.gap.px
         }
 
+    override fun refreshPadding() {
+        val value = appliedPadding
+        native.paddingTopCurrentPx = value.top.canvasUnits
+        native.paddingLeftCurrentPx = value.left.canvasUnits
+        native.paddingRightCurrentPx = value.right.canvasUnits
+        native.paddingBottomCurrentPx = value.bottom.canvasUnits
+        native.silentRequestLayout()
+    }
+
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         native.spacingCurrentPx = gap?.px ?: theme.gap.px
-        native.paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-        native.paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-        native.paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-        native.paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
     }
 }
 
-public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
-    public var spacingCurrentPx: Double = 0.0
-    public var paddingTopCurrentPx: Double = 0.0
-    public var paddingLeftCurrentPx: Double = 0.0
-    public var paddingRightCurrentPx: Double = 0.0
-    public var paddingBottomCurrentPx: Double = 0.0
+class NProgrammaticLayout(context: Context) : ViewGroup(context) {
+    var spacingCurrentPx: Double = 0.0
+    var paddingTopCurrentPx: Double = 0.0
+    var paddingLeftCurrentPx: Double = 0.0
+    var paddingRightCurrentPx: Double = 0.0
+    var paddingBottomCurrentPx: Double = 0.0
+    private var currentSize: Size = Size.Zero
 
     public var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
@@ -59,6 +56,8 @@ public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
     public lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -91,11 +90,11 @@ public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         )
     }
 
-    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if(viewDebugTarget?.native == this) println("onMeasure on ProgrammaticLayout")
-        val newWidth = when (MeasureSpec.getMode(widthMeasureSpec)) {
-            MeasureSpec.AT_MOST -> MeasureSpec.getSize(widthMeasureSpec).toDouble()
-            MeasureSpec.EXACTLY -> MeasureSpec.getSize(widthMeasureSpec).toDouble()
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        debugPrint { "onMeasure on ProgrammaticLayout" }
+        val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
+            View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
+            View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
             else -> 100000.0
         }
         val newHeight = when (MeasureSpec.getMode(heightMeasureSpec)) {
@@ -103,16 +102,20 @@ public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
             MeasureSpec.EXACTLY -> MeasureSpec.getSize(heightMeasureSpec).toDouble()
             else -> 100000.0
         }
-        val r = delegate.measure(rview, inProgress, Size(newWidth, newHeight))
+        val s = Size(newWidth, newHeight)
+        currentSize = s
+        val r = delegate.measure(rview, inProgress, s)
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
     public val placed: HashSet<View> = HashSet<View>()
 
     public override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
-        if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
+        debugPrint { "onLayout on ProgrammaticLayout" }
         placed.clear()
-        delegate.layout(rview, inProgress, Size((r - l).toDouble(), (b - t).toDouble()))
+        val s = Size((r - l).toDouble(), (b - t).toDouble())
+        currentSize = s
+        delegate.layout(rview, inProgress, s)
         (children - placed).forEach {
             // Force layout missed cells to satisfy Android
             // If you don't do this, requestLayout won't work.
@@ -129,8 +132,8 @@ public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         super.requestLayout()
     }
 
-    public override fun requestLayout() {
-        if(viewDebugTarget?.native == this) println("requestLayout on ProgrammaticLayout")
+    override fun requestLayout() {
+        debugPrint { "requestLayout on ProgrammaticLayout" }
         if(isInLayout) {
             return
         }

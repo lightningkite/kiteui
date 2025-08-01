@@ -7,14 +7,19 @@ import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.signal.Property
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.max
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATextLayer
 import platform.UIKit.*
-import kotlin.math.max
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
 //val UIView.layoutParams: LayoutParams by UIViewLayoutParams
@@ -24,8 +29,8 @@ import kotlin.math.max
 
 public class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    public val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
-    public override fun getSpacingOverrideProperty() = spacingOverride
+    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    override fun getSpacingOverrideProperty() = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)

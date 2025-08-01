@@ -1,15 +1,19 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.Console
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.onRemove
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.roundToInt
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
-import kotlin.math.roundToInt
 
-public actual class ProgrammaticLayout public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
+actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -19,7 +23,7 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
         set(value) {
             field = value; invalidateLayout()
         }
-    public var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
+    var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     override fun postSetup() {
         super.postSetup()
@@ -50,16 +54,6 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
         invalidateLayout()
     }
 
-
-    override var paddingByEdge: Edges?
-        get() = super.paddingByEdge
-        set(value) {
-            super.paddingByEdge = value
-            paddingTopCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-            paddingLeftCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-            paddingRightCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-            paddingBottomCurrentPx = (value ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
-        }
     override var gap: Dimension?
         get() = super.gap
         set(value) {
@@ -69,10 +63,15 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
 
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
         spacingCurrentPx = gap?.px ?: theme.gap.px
-        paddingTopCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.top?.px ?: 0.0
-        paddingLeftCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.left?.px ?: 0.0
-        paddingRightCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.right?.px ?: 0.0
-        paddingBottomCurrentPx = (paddingByEdge ?: theme.padding.takeIf { themeAndBack.padding })?.bottom?.px ?: 0.0
+    }
+
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val value = appliedPadding
+        paddingTopCurrentPx = value.top.viewUnits
+        paddingLeftCurrentPx = value.left.viewUnits
+        paddingRightCurrentPx = value.right.viewUnits
+        paddingBottomCurrentPx = value.bottom.viewUnits
     }
 
     override fun internalClearChildren() {
@@ -87,6 +86,8 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
     private var paddingBottomCurrentPx: Double = 0.0
 
     private val inProgress = object : ProgrammingLayoutInProgress {
+        override val within: Size
+            get() = currentSize
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
         override val paddingTop: Double get() = paddingTopCurrentPx
@@ -198,7 +199,8 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
     private var lastFillWidth: Boolean = true
     private var lastFillHeight: Boolean = true
     private var timeoutSet = false
-    public actual fun invalidateLayout() {
+    private var currentSize: Size = Size.Zero
+    actual fun invalidateLayout() {
         log?.log("invalidateLayout()")
         if (timeoutSet) return
         window.setTimeout({
@@ -207,6 +209,7 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
             val parentElement = element.parentElement as? HTMLElement ?: return@setTimeout
 
             // run measure
+            currentSize = lastConstraintSize
             val natSize = delegate.measure(this, inProgress, lastConstraintSize)
 
             // set width and height to result IF layout rules say minimum, revert otherwise to continue taking space
@@ -220,10 +223,12 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
             }
 
             // run layout
-            delegate.layout(this, inProgress, Size(
+            val s = Size(
                 width = if(lastFillWidth) lastConstraintSize.width else natSize.width,
                 height = if(lastFillHeight) lastConstraintSize.height else natSize.height
-            ))
+            )
+            currentSize = s
+            delegate.layout(this, inProgress, s)
 
             window.setTimeout({
                 timeoutSet = false

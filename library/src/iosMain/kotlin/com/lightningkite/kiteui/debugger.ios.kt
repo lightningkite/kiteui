@@ -22,7 +22,7 @@ public object ObjCountTrackers {
     }
     public fun track(instance: Any) {
         allWeak.getOrPut(instance::class) {
-            println("Tracking type ${instance::class.qualifiedName}")
+            Log.log("Tracking type ${instance::class.qualifiedName}")
             ArrayList()
         }.add(WeakReference(instance))
     }
@@ -45,7 +45,7 @@ public actual fun cleanImageCache() {
 
 public actual fun gcReport() {
     ObjCountTrackers.alive.entries.forEach {
-        println("${it.key.qualifiedName}.alive = ${it.value}")
+        Log.log("${it.key.qualifiedName}.alive = ${it.value}")
     }
     ExtensionProperty.debug()
 }

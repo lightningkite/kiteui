@@ -1,25 +1,30 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.toast
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.roundToInt
+import kotlin.time.measureTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
-import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 @Routable("controls")
 public object ControlsPage : Page {
     public override fun ViewWriter.render(): ViewModifiable {
-        class PerfProperty<T>(startValue: T): ImmediateWritable<T> {
+        class PerfProperty<T>(startValue: T): MutableReactiveValue<T> {
             private val listeners = ArrayList<() -> Unit>()
             public override var value: T = startValue
             set(value) {
@@ -53,7 +58,7 @@ public object ControlsPage : Page {
 
             card - col {
                 h2 { content = "Progress Bars" }
-                val ratio = Property(0.5f)
+                val ratio = Signal(0.5f)
                 launch {
                     while (true) {
                         delay(100L)
@@ -313,7 +318,7 @@ public object ControlsPage : Page {
 
             col {
                 h2 { content = "Radio Buttons" }
-                val selected = Property(1)
+                val selected = Signal(1)
                 col {
                     frame {
                         row {
@@ -358,8 +363,8 @@ public object ControlsPage : Page {
 
             col {
                 h2 { content = "Drop Downs" }
-                val options = shared { listOf("Apple", "Banana", "Crepe") }
-                val value = Property("Banana")
+                val options = remember { listOf("Apple", "Banana", "Crepe") }
+                val value = Signal("Banana")
                 padded - fieldTheme - select { bind(value, data = options, render = { it }) }
                 card - fieldTheme - select { bind(value, data = options, render = { it }) }
                 important - fieldTheme - select { bind(value, data = options, render = { it }) }
@@ -369,7 +374,7 @@ public object ControlsPage : Page {
             } in card
 
             col {
-                val date = Property<LocalDate?>(null)
+                val date = Signal<LocalDate?>(null)
                 h2 { content = "Date Fields" }
                 text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
@@ -383,7 +388,7 @@ public object ControlsPage : Page {
             } in card
 
             col {
-                val date = Property<LocalTime?>(null)
+                val date = Signal<LocalTime?>(null)
                 h2 { content = "Time Fields" }
                 text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
@@ -397,7 +402,7 @@ public object ControlsPage : Page {
             } in card
 
             col {
-                val date = Property<LocalDateTime?>(null)
+                val date = Signal<LocalDateTime?>(null)
                 h2 { content = "Date Time Fields" }
                 text { ::content { date()?.renderToString() ?: "Not Selected" } }
                 button {
@@ -411,7 +416,7 @@ public object ControlsPage : Page {
             } in card
 
             col {
-                val number = Property<Double?>(1.0)
+                val number = Signal<Double?>(1.0)
                 h2 { content = "Number Fields" }
                 text { ::content { "Value: ${number()}" } }
                 fieldTheme - numberField { content bind number }
@@ -421,18 +426,18 @@ public object ControlsPage : Page {
             } in card
 
             col {
-                val number = Property(1)
-                val text = Property("text")
+                val number = Signal(1)
+                val text = Signal("text")
                 h2 { content = "Text Fields" }
                 text { ::content { "Text: ${text()}" } }
                 fieldTheme - textField { content bind text }
-                fieldTheme - textField { content bind text } in card
-                fieldTheme - textField { content bind text } in important
-                fieldTheme - textField { content bind text } in critical
+                card - fieldTheme - textField { content bind text }
+                important - fieldTheme - textField { content bind text }
+                critical - fieldTheme - textField { content bind text }
             } in card
 
             col {
-                val text = Property("Longer form text\n with newlines goes here")
+                val text = Signal("Longer form text\n with newlines goes here")
                 h2 { content = "Text Areas" }
                 fieldTheme - textArea { content bind text }
                 fieldTheme - textArea { content bind text } in card

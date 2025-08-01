@@ -1,8 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class Video public actual constructor(context: RContext) : RView(context) {
     init {
@@ -20,13 +25,16 @@ public actual class Video public actual constructor(context: RContext) : RView(c
                 else -> {}
             }
         }
-    public actual val time: Writable<Double> = nativeTime
-    public actual val playing: Writable<Boolean> = nativePlaying
-    public actual val volume: Writable<Float> = nativeVolume
-    public actual var showControls: Boolean
+    actual val time: MutableReactive<Double> = nativeTime
+    actual val playing: MutableReactive<Boolean> = nativePlaying
+    actual val volume: MutableReactive<Float> = nativeVolume
+    actual var showControls: Boolean
         get() = native.attributes.controls != null
-        set(value) { native.attributes.controls = value }
-    public actual var loop: Boolean
+        set(value) {
+            native.attributes.controls = value
+            native.attributes.playsInline = !value
+        }
+    actual var loop: Boolean
         get() = native.attributes.loopBoolean != null
         set(value) { native.attributes.loopBoolean = value }
     public actual var scaleType: ImageScaleType = ImageScaleType.Fit
@@ -36,6 +44,6 @@ public actual class Video public actual constructor(context: RContext) : RView(c
             native.classes.add("scaleType-$value")
         }
 }
-public expect val Video.nativeTime: Writable<Double>
-public expect val Video.nativePlaying: Writable<Boolean>
-public expect val Video.nativeVolume: Writable<Float>
+expect val Video.nativeTime: MutableReactive<Double>
+expect val Video.nativePlaying: MutableReactive<Boolean>
+expect val Video.nativeVolume: MutableReactive<Float>

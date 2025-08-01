@@ -38,7 +38,8 @@ public var remMultiplier: Double = 1.0
 @Suppress("NOTHING_TO_INLINE") public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension(this.value.coerceAtMost(other.value))
 @Suppress("NOTHING_TO_INLINE") public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 public actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
-public actual val Dimension.canvasUnits: Double get() = value
+public actual val Dimension.canvasUnits: Double get() = value * UIScreen.mainScreen.scale
+public actual val Dimension.viewUnits: Double get() = value
 
 public actual data class Font(val get: (size: CGFloat, weight: UIFontWeight, italic: Boolean)->UIFont)
 

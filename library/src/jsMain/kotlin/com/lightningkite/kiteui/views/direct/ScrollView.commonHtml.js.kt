@@ -1,12 +1,18 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.browser.window
 import kotlinx.dom.addClass
 import org.w3c.dom.*
@@ -64,7 +70,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
     private val scrollEvent = native.vevent("scroll")
     private val lockScrollEnd = BasicListenable()
     private var lockScrollReportAt: Rect? = null
-    public actual override val viewport: Readable<Rect> by lazy {
+    actual override val viewport: Reactive<Rect> by lazy {
         on.reactive {
             rerunOn(scrollEvent)
             rerunOn(lockScrollEnd)
@@ -76,7 +82,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             )
         }
     }
-    public actual override val content: Readable<Rect> by lazy {
+    actual override val content: Reactive<Rect> by lazy {
         on.reactive {
             Rect.fromSize(
                 left = 0.0,
@@ -86,8 +92,8 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             )
         }
     }
-    public val _directlyInteractingWithScroller: Property<Boolean> = Property(false)
-    public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    val _directlyInteractingWithScroller = Signal(false)
+    actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {
 //        var lastTimeout: () -> Unit = {}
@@ -117,7 +123,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
 
     public actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
-            if (viewDebugTarget == on) println("ScrollView.snapToElements set")
+            on.debugPrint { "ScrollView.snapToElements set" }
             field = value
             native.classes.removeAll { it.startsWith("snapTo-") }
             native.classes.add("snapTo-${value.first}-${value.second}")
@@ -132,13 +138,17 @@ public actual class ScrollingBehaviorImpl public actual constructor(
         }
     public actual override var scrollSnapStop: Boolean = false
         set(value) {
-            if (viewDebugTarget == on) println("ScrollView.scrollSnapStop set")
+            on.debugPrint { "ScrollView.scrollSnapStop set" }
             field = value
             native.setStyleProperty("scroll-snap-stop", if (value) "always" else "normal")
         }
 
-    public actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
-        if (viewDebugTarget == on) println("ScrollView.scrollTo($left, $top, $animated)")
+    actual override var ignoreInteraction: Boolean
+        get() = throw UnsupportedOperationException("Ignoring ScrollView interaction is not supported for web targets")
+        set(value) {}
+
+    actual override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+        on.debugPrint { ("ScrollView.scrollTo($left, $top, $animated)") }
         disableSnapTemporarily()
         native.onElement {
             (it as HTMLElement).scrollTo(
@@ -151,8 +161,8 @@ public actual class ScrollingBehaviorImpl public actual constructor(
         }
     }
 
-    public actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
-        if (viewDebugTarget == on) println("ScrollView.scrollTo($element, $horizontal, $vertical, $animated)")
+    actual override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+        on.debugPrint { ("ScrollView.scrollTo($element, $horizontal, $vertical, $animated)") }
         disableSnapTemporarily()
         element.native.element?.scrollIntoView(
             ScrollToOptions(
@@ -169,7 +179,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
 
     public actual override fun scrollToKeepAnimations(x: Double, y: Double) {
         val myInstance = ++scrollToInstance
-        if (viewDebugTarget == on) println("ScrollView.scrollToKeepAnimations($x, $y)")
+        on.debugPrint { ("ScrollView.scrollToKeepAnimations($x, $y)") }
         disableSnapTemporarily()
         native.onElement {
             (it as HTMLElement)

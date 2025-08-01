@@ -3,10 +3,15 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.ReactiveContext
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.jvm.JvmInline
 
 public class AnimationId
@@ -490,9 +495,9 @@ public data class ImageVector(
 }
 
 public data class ImageRemote(val url: String) : ImageSource() {
-    private val before = url.substringBefore('?')
-    public override fun hashCode(): Int = before.hashCode()
-    public override fun equals(other: Any?): Boolean = other is ImageRemote && other.before == this.before
+    //    private val before = url.substringBefore('?')
+    public override fun hashCode(): Int = url.hashCode()
+    public override fun equals(other: Any?): Boolean = other is ImageRemote && other.url == this.url
     public override fun toString(): String = "ImageRemote($url)"
 }
 
@@ -692,24 +697,39 @@ public data class KeyboardHints(
     public val includePasskeys: Boolean = false,
     public val autocorrect: Boolean = true,
 ) {
-    public companion object {
-        public val paragraph: KeyboardHints = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
-        public val title: KeyboardHints = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
-        public val id: KeyboardHints = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
-        public val integer: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
-        public val decimal: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
-        public val phone: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
-        public val email: KeyboardHints =
+    companion object {
+        public val paragraph = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
+        public val title = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
+        public val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
+        public val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
+        public val integerWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative)
+        public val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
+        public val decimalWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.DecimalWithNegative)
+        public val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
+        public val email =
             KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
-        public val password: KeyboardHints = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
-        public val newPassword: KeyboardHints = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
-        public val oneTimeCode: KeyboardHints = KeyboardHints(KeyboardCase.Letters,KeyboardType.Text,autocomplete = AutoComplete.OneTimeCode,autocorrect = false)
+        public val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
+        public val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
+        public val oneTimeCode = KeyboardHints(
+            KeyboardCase.Letters,
+            KeyboardType.Text,
+            autocomplete = AutoComplete.OneTimeCode,
+            autocorrect = false
+        )
     }
 }
 
 public enum class AutoComplete { Email, Password, NewPassword, Phone, OneTimeCode }
 public enum class KeyboardCase { None, Letters, Words, Sentences }
-public enum class KeyboardType { Text, Integer, Phone, Decimal, Email }
+public enum class KeyboardType(val allowDecimal: Boolean = true) {
+    Text,
+    Integer(allowDecimal = false),
+    Phone,
+    Decimal(allowDecimal = true),
+    Email,
+    IntegerWithNegative,
+    DecimalWithNegative
+}
 
 public sealed interface NavElement {
     public val title: ReactiveContext.() -> String
@@ -802,8 +822,6 @@ public fun ExpandingNavSpace(): NavCustom = NavCustom(
     square = { space() }
 )
 
-public typealias Action = Action
-
 
 public enum class ImageScaleType { Fit, Crop, Stretch, NoScale }
 public enum class UrlCacheStrategy { None, Full, PathOnly }
@@ -821,6 +839,7 @@ public expect val Int.dp: Dimension
 public expect val Double.rem: Dimension
 public expect val Double.dp: Dimension
 public expect val Dimension.px: Double
+public expect val Dimension.viewUnits: Double
 public expect val Dimension.canvasUnits: Double
 
 public expect operator fun Dimension.plus(other: Dimension): Dimension

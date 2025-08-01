@@ -1,5 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.models.KeyCode
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.RContext
 
 import com.lightningkite.kiteui.views.ViewDsl
@@ -10,8 +12,6 @@ import kotlin.contracts.*
 
 
 public expect class Canvas(context: RContext) : RView {
-
-
     public var delegate: CanvasDelegate?
 }
 
@@ -30,36 +30,6 @@ public abstract class CanvasDelegate {
     public open fun sizeThatFitsWidth(width: Double, height: Double): Double = width
     public open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
     public var invalidate: () -> Unit = {}
+    public var theme: Theme = Theme.placeholder
     public open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
-}
-
-public class KeyCodeWithModifiers(public val code: KeyCode, public val alt: Boolean, public val ctrl: Boolean, public val shift: Boolean, public val meta: Boolean)
-
-public expect class KeyCode
-public expect object KeyCodes {
-    public val left: KeyCode
-    public val right: KeyCode
-    public val up: KeyCode
-    public val down: KeyCode
-    public fun letter(char: Char): KeyCode
-    public fun num(digit: Int): KeyCode
-    public fun numpad(digit: Int): KeyCode
-    public val space: KeyCode
-    public val enter: KeyCode
-    public val tab: KeyCode
-    public val escape: KeyCode
-    public val leftCtrl: KeyCode
-    public val rightCtrl: KeyCode
-    public val leftShift: KeyCode
-    public val rightShift: KeyCode
-    public val leftAlt: KeyCode
-    public val rightAlt: KeyCode
-    public val equals: KeyCode
-    public val dash: KeyCode
-    public val backslash: KeyCode
-    public val leftBrace: KeyCode
-    public val rightBrace: KeyCode
-    public val semicolon: KeyCode
-    public val comma: KeyCode
-    public val period: KeyCode
 }

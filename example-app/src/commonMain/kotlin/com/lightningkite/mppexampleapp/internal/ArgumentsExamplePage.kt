@@ -5,24 +5,26 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.await
-import com.lightningkite.signal.bind
-import com.lightningkite.signal.invoke
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.kiteui.views.minus
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("arguments-example/{id}")
 public class ArgumentsExamplePage(val id: String): Page {
 
     @QueryParameter
-    public val toAdd = Property("")
+    public val toAdd = Signal("")
 
     @QueryParameter
-    public val list = Property(listOf("sample"))
+    public val list = Signal(listOf("sample"))
 
     public override fun ViewWriter.render() = col {
         transitionId = id
@@ -62,8 +64,8 @@ public class ArgumentsExamplePage(val id: String): Page {
         }
         sizeConstraints(height = 10.rem) - image {
             source = when(id.hashCode() % 2) {
-                0 -> Resources.imagesSolera
-                else -> Resources.imagesMammoth
+                0 -> Resources.imagesSnowyBackground
+                else -> Resources.imagesLightningBackground
             }
             scaleType = ImageScaleType.Crop
             transitionId = "Sample"

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -8,7 +9,6 @@ import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
 public actual class Frame public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -81,15 +81,20 @@ public actual class Frame public actual constructor(context: RContext) : RView(c
 }
 
 public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.style.flexDirection = "column"
         native.classes += "kiteui-flex"
         native.classes += "kiteui-col"
+        native.classes.add("optimized")
     }
     private var complex = false
-    public actual var vertical: Boolean = true
+        private set(value) {
+            field = value
+            if(!value) native.classes.add("optimized")
+            else native.classes.remove("optimized")
+        }
+    actual var vertical: Boolean = true
         set(value) {
             field = value
             native.style.flexDirection = if(value) "column" else "row"
@@ -121,7 +126,6 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
         }
         if (!complex) {
             // Optimized mode requires weird stuff
-            view.native.classes.add("optColChild")
             when(align) {
                 Align.Start -> {
                     view.native.style.marginLeft = "unset"
@@ -146,6 +150,16 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
                 }
             }
         }
+        rerunOptimizedBottomMarginCalc()
+    }
+
+    override fun internalClearChildren() {
+        super.internalClearChildren()
+        rerunOptimizedBottomMarginCalc()
+    }
+    override fun internalRemoveChild(index: Int) {
+        super.internalRemoveChild(index)
+        rerunOptimizedBottomMarginCalc()
     }
 
     override fun postSetup() {
@@ -158,8 +172,7 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
             val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
             val amnt = gap ?: theme.gap
             for (child in children) child.native.style.marginBottom = amnt.value.toString()
-            if(this == viewDebugTarget)
-                println("last shown index: ${children.indexOf(newLastShownElement)}")
+            debugPrint { "last shown index: ${children.indexOf(newLastShownElement)}" }
             newLastShownElement?.native?.style?.marginBottom = "0"
         }
     }
@@ -179,7 +192,6 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
             complex = true
             native.style.display = "flex"
             for (child in children) {
-                native.classes.remove("optColChild")
                 child.native.style.marginBottom = "0px"
             }
         }
@@ -187,7 +199,6 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
 }
 
 public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.classes.add(context.kiteUiCss.rowCollapsingToColumn(breakpoints))

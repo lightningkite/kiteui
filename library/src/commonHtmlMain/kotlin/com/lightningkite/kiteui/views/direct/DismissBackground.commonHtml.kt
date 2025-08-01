@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 
 
 public actual class DismissBackground public actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     init {
         native.tag = "div"
         native.classes.add("kiteui-stack")

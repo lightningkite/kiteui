@@ -29,7 +29,6 @@ public actual class CircularProgress public actual constructor(context: RContext
         val result = regex.replace(svg) { matchResult ->
             "stroke-dasharray=\"$newValue,${matchResult.groupValues[1]}\""
         }
-        println("result $result")
         return result
     }
     public fun getStrokeDashArrayValue(svg: String): Float? {

@@ -27,16 +27,16 @@ public actual fun assertMainThread() {
 public actual fun Throwable.printStackTrace2() = printStackTrace()
 
 
-public actual object ConsoleRoot: Console {
-    private val platform = PlatformConsole("MyApp")
-    public actual override fun tag(tag: String): Console = platform.tag(tag)
-    public actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
-    public actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
-    public actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
-    public actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
+public actual object LogRoot: com.lightningkite.kiteui.Log {
+    private val platform = PlatformLog("")
+    public actual override fun tag(tag: String): com.lightningkite.kiteui.Log = platform.tag(tag)
+    public actual override fun log(vararg entries: Any?) = platform.log(*entries)
+    public actual override fun error(vararg entries: Any?) = platform.error(*entries)
+    public actual override fun info(vararg entries: Any?) = platform.info(*entries)
+    public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
-private class PlatformConsole(val tag: String): Console {
-    public override fun tag(tag: String): Console = PlatformConsole(tag)
+public private class PlatformLog(val tag: String): com.lightningkite.kiteui.Log {
+    public override fun tag(tag: String): com.lightningkite.kiteui.Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
     public override fun log(vararg entries: Any?) {
         Log.d(tag, entries.joinToString(" "))
     }

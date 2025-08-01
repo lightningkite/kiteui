@@ -4,10 +4,14 @@ import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.signal.Listenable
-import com.lightningkite.signal.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 public expect class ProgrammaticLayout(context: RContext): RView {
@@ -28,14 +32,15 @@ public interface ProgrammaticLayoutDelegate {
     }
 }
 
-public interface ProgrammingLayoutInProgress {
-    public val gap: Double
-    public val padding: Double
-    public val paddingTop: Double
-    public val paddingLeft: Double
-    public val paddingRight: Double
-    public val paddingBottom: Double
-    public fun measure(child: RView, sizeConstraint: Size): Size
-    public fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
-    public fun existingPosition(child: RView): Rect
+interface ProgrammingLayoutInProgress {
+    val within: Size
+    val gap: Double
+    val padding: Double
+    val paddingTop: Double
+    val paddingLeft: Double
+    val paddingRight: Double
+    val paddingBottom: Double
+    fun measure(child: RView, sizeConstraint: Size): Size
+    fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
+    fun existingPosition(child: RView): Rect
 }

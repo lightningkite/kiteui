@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import android.R
 import android.content.res.ColorStateList
 import android.view.View
 import android.widget.FrameLayout
@@ -10,9 +9,8 @@ import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
-
-public actual class Button public actual constructor(context: RContext): RViewWithAction(context) {
-    public val progress: ProgressBar = ProgressBar(context.activity, null, R.attr.progressBarStyleSmall).apply {
+public actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
+    public val progress: ProgressBar = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
         visibility = View.GONE
@@ -39,6 +37,14 @@ public actual class Button public actual constructor(context: RContext): RViewWi
         native.setOnClickListener {
             if (enabled) {
                 action?.startAction(this)
+            }
+        }
+        native.setOnLongClickListener {
+            if (enabled) {
+                secondaryAction?.startAction(this)
+                secondaryAction != null
+            } else {
+                false
             }
         }
     }

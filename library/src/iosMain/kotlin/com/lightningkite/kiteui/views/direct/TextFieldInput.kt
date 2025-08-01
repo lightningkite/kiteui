@@ -3,15 +3,19 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.signal.CalculationContext
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
-import com.lightningkite.signal.Property
-import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)
 public class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {

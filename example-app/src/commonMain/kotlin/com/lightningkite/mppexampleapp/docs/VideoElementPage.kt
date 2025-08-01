@@ -1,14 +1,19 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.VideoRemote
 import com.lightningkite.kiteui.models.rem
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 @Routable("docs/video")
@@ -19,11 +24,11 @@ public object VideoElementPage: DocPage {
         article {
             h1("Video")
             text("You can use the video element to render video, streamed from a remote source or locally.")
-            val time = Property(0.0)
-            val playing = Property(false)
+            val time = Signal(0.0)
+            val playing = Signal(false)
             example("""
-                val time = Property(0.0)
-                val playing = Property(false)
+                val time = Signal(0.0)
+                val playing = Signal(false)
                 video {
                     source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                     this.time bind time

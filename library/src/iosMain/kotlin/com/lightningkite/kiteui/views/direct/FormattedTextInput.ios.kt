@@ -1,13 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
@@ -86,7 +90,7 @@ public actual class FormattedTextInput public actual constructor(context: RConte
         this.formatter = formatter
     }
 
-    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = (textField.text ?: "").filter(isRawData)
             set(value) {
@@ -104,25 +108,9 @@ public actual class FormattedTextInput public actual constructor(context: RConte
     public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            textField.autocapitalizationType = when (value.case) {
-                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-            }
-            textField.keyboardType = when (value.type) {
-                KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer -> UIKeyboardTypeNumberPad
-                KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
-                KeyboardType.Email -> UIKeyboardTypeEmailAddress
-            }
-            textField.textContentType = when (value.autocomplete) {
-                AutoComplete.Email -> UITextContentTypeUsername
-                AutoComplete.Password -> UITextContentTypePassword
-                AutoComplete.NewPassword -> UITextContentTypeNewPassword
-                else -> null
-            }
+            textField.autocapitalizationType = value.case.ios
+            textField.keyboardType = value.type.ios
+            textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 

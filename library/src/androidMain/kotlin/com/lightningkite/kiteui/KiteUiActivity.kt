@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,17 +13,27 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
 import androidx.core.view.ViewGroupCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.UrlLikePath
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import io.ktor.http.*
+import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import timber.log.Timber
@@ -35,13 +44,34 @@ public abstract class KiteUiActivity : AppCompatActivity() {
 
     public abstract val mainNavigator : PageNavigator
 
-    public lateinit var root: RView
-    public val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
-        override val context: RContext = RContext(this@KiteUiActivity)
+    lateinit var root: RView
+    private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
+    val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
+        override val context: RContext = RContext(this@KiteUiActivity).also {
+            ExternalServices.baseContext = it
+        }
+        init {
+            safeInsets = safeInsetsProperty
+        }
         override fun addChild(view: RView) {
             root = view
             setContentView(view.native)
             ViewGroupCompat.installCompatInsetsDispatch(view.native)
+            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
+                val insetsSystem = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
+                val insetsInput = insetsGetter.getInsets(WindowInsetsCompat.Type.ime())
+                val safeInsets = Edges(
+                    left = max(insetsSystem.left, insetsInput.left).px,
+                    top = max(insetsSystem.top, insetsInput.top).px,
+                    right = max(insetsSystem.right, insetsInput.right).px,
+                    bottom = max(insetsSystem.bottom, insetsInput.bottom).px,
+                )
+                println("OnApplyWindowInsetsListener: $safeInsets")
+                safeInsetsProperty.value = safeInsets
+                WindowInsetsCompat.CONSUMED
+            }
+            ViewCompat.setOnApplyWindowInsetsListener(view.native, l)
+            view.onRemove { ViewCompat.setOnApplyWindowInsetsListener(view.native, null) }
         }
         init {
             beforeNextElementSetup {
@@ -60,21 +90,6 @@ public abstract class KiteUiActivity : AppCompatActivity() {
         )
         AndroidAppContext.applicationCtx = this.applicationContext
         AndroidAppContext.activityCtx = this
-//        window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-//        Timber.plant(Timber.DebugTree())
-//
-//        viewWriter.reactiveScope {
-//            val systemBarColor = theme()[SystemBarSemantic].theme.background.closestColor().toInt()
-//            window?.statusBarColor = systemBarColor
-//            window?.navigationBarColor = systemBarColor
-//
-//            val systemBarForegroundColor = theme()[SystemBarSemantic].theme.foreground.closestColor()
-//            val useLightAppearance = systemBarForegroundColor.perceivedBrightness < 0.5f
-//            WindowCompat.getInsetsController(window, window.decorView).apply {
-//                isAppearanceLightStatusBars = useLightAppearance
-//                isAppearanceLightNavigationBars = useLightAppearance
-//            }
-//        }
 
         savedInstanceState?.getStringArray("navStack")?.let {
             mainNavigator.stack.value = it.mapNotNull { mainNavigator.routes.parse(UrlLikePath.fromUrlString(it)) }
@@ -82,6 +97,7 @@ public abstract class KiteUiActivity : AppCompatActivity() {
             mainNavigator.stack.value = (mainNavigator.routes.parse(UrlLikePath(listOf(), mapOf())) ?: mainNavigator.routes.fallback).let(::listOf)
         }
         this.savedInstanceState = savedInstanceState
+        onNewIntent(intent)
     }
 
     public override fun onSaveInstanceState(outState: Bundle) {

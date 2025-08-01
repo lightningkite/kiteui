@@ -1,26 +1,28 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.contains
-import com.lightningkite.kiteui.delay
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.signal.*
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Routable("ultra-basic")
-public object UltraBasicPage : Page {
-    public val count = Property(0)
+object UltraBasicPage : Page {
+    val count = Signal(0)
 
     public override fun ViewWriter.render(): ViewModifiable = run {
 //        frame {
@@ -46,8 +48,8 @@ public object UltraBasicPage : Page {
 }
 
 @Routable("counter")
-public object CounterPage : Page {
-    public val count = object : ImmediateWritable<Int> {
+object CounterPage : Page {
+    val count = object : MutableReactiveValue<Int> {
         val listeners = ArrayList<() -> Unit>()
         override var value: Int = 0
             set(value) {
@@ -79,29 +81,29 @@ public object CounterPage : Page {
 }
 
 @Routable("leak-checker")
-public object LeakCheckerPage : Page {
-    public val stringProp = Property("X")
-    public val doubleProp = Property<Double?>(0.0)
-    public val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+object LeakCheckerPage : Page {
+    val stringProp = Signal("X")
+    val doubleProp = Signal<Double?>(0.0)
+    val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+        "scrolling" to { frame { scrolling - col { text("A") } } },
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
         "textField" to { frame { textField { content bind stringProp } } },
         "numberField" to { frame { numberField { content bind doubleProp } } },
         "textArea" to { frame { textArea { content bind stringProp } } },
-        "select" to { frame { select { bind(Property(0), Constant(listOf(1, 2, 3)), { it.toString() }) } } },
+        "select" to { frame { select { bind(Signal(0), Constant(listOf(1, 2, 3)), { it.toString() }) } } },
         "space" to { frame { space() } },
         "text" to { frame { text { ::content { "My string prop: ${stringProp()}" } } } },
         "stack" to { frame { frame { frame { } } } },
         "col" to { frame { col { col { } } } },
         "separator" to { frame { col { separator() } } },
         "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
-        "scrolling" to { frame { scrolling - col { text("A") } } },
         "activityIndicator" to { frame { activityIndicator {} } },
         "checkbox" to { frame { checkbox {} } },
         "dismissBackground" to { frame { dismissBackground {} } },
         "icon" to { frame { icon { source = Icon.send } } },
-        "image" to { frame { image { source = Resources.imagesGraph126 } } },
+        "image" to { frame { image { source = Resources.imagesLightningBackground } } },
         "phoneNumberInput" to { frame { phoneNumberInput {} } },
         "localDateField" to { frame { localDateField {} } },
         "localDateTimeField" to { frame { localDateTimeField {} } },
@@ -119,8 +121,8 @@ public object LeakCheckerPage : Page {
         "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
-    public override fun ViewWriter.render(): ViewModifiable = run {
-        val index = Property(0)
+    override fun ViewWriter.render(): ViewModifiable = run {
+        val index = Signal(0)
         col {
 //            launch {
 //                while(true) {

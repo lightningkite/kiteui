@@ -1,9 +1,11 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 group = "com.lightningkite.kiteui"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    val kotlinVersion:String by extra
     repositories {
         mavenLocal()
         maven("https://lightningkite-maven.s3.us-west-2.amazonaws.com")
@@ -13,9 +15,7 @@ buildscript {
     }
     dependencies {
         classpath(libs.lkGradleHelpers)
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-        classpath(libs.gradle)
+//        classpath(libs.androidGradle)
     }
 }
 allprojects {
@@ -27,4 +27,20 @@ allprojects {
         google()
         mavenCentral()
     }
+}
+plugins {
+
+    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinCocoapods) apply false
+    alias(libs.plugins.kotlinPluginSerialization) apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.comLightningkiteTestingManual) apply false
+    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.vannitechPublishing) apply false
+    alias(libs.plugins.dokka) apply false
+}
+plugins.withType(YarnPlugin::class.java) {
+    the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.NONE
+    the<YarnRootExtension>().reportNewYarnLock = false
+    the<YarnRootExtension>().yarnLockAutoReplace = true
 }

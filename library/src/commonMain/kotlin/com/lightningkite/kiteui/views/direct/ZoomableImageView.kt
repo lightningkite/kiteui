@@ -3,19 +3,15 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
-import com.lightningkite.kiteui.models.UrlCacheStrategy
-import com.lightningkite.kiteui.views.RContext
-
-import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
-import com.lightningkite.signal.RawReadable
-import com.lightningkite.signal.ReadableState
-import com.lightningkite.signal.reactive
-import kotlin.jvm.JvmInline
-import kotlin.contracts.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 
 
@@ -71,8 +67,8 @@ public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
         }
     }
 
-    public val shown: RawReadable<Info?> = RawReadable<Info?>(ReadableState(null))
-    public fun refresh() {
+    val shown = RawReactive<Info?>(ReactiveState(null))
+    fun refresh() {
         if (!ready) return
         val info = info
         if (lastRendered != info) {
@@ -82,7 +78,7 @@ public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
                     rView.removeChild(it)
                 }
             }
-            shown.state = ReadableState.notReady
+            shown.state = ReactiveState.notReady
             lastRendered = info
             activityIndicator.opacity = 1.0
             lastRender = info?.let {
@@ -97,13 +93,13 @@ public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
                                             opacity = 1.0
                                             if(lastRendered == info) {
                                                 activityIndicator.opacity = 0.0
-                                                this@ZoomableImageView.shown.state = ReadableState(info)
+                                                this@ZoomableImageView.shown.state = ReactiveState(info)
                                             }
                                           },
                                         exception = {
                                             if(lastRendered == info) {
                                                 activityIndicator.opacity = 0.0
-                                                this@ZoomableImageView.shown.state = ReadableState.exception(it)
+                                                this@ZoomableImageView.shown.state = ReactiveState.exception(it)
                                             }
                                         },
                                         notReady = {}
@@ -114,7 +110,7 @@ public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
                     }
                 }
             } ?: run{
-                this@ZoomableImageView.shown.state = ReadableState(null)
+                this@ZoomableImageView.shown.state = ReactiveState(null)
                 activityIndicator.opacity = 0.0
                 null
             }

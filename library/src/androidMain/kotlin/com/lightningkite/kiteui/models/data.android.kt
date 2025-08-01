@@ -50,3 +50,4 @@ public actual class AudioResource(public val resource: Int) : AudioSource()
 
 public actual val Dimension.px: Double get() = value.toDouble()
 public actual val Dimension.canvasUnits: Double get() = value.toDouble()
+public actual val Dimension.viewUnits: Double get() = value.toDouble()

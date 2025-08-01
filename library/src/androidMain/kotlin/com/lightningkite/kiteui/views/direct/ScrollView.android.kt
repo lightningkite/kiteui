@@ -10,14 +10,23 @@ import android.widget.HorizontalScrollView
 import android.widget.OverScroller
 import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
+import com.lightningkite.kiteui.views.debugPrint
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import java.lang.reflect.Modifier
 import kotlin.math.*
 
@@ -32,6 +41,7 @@ public class ScrollView constructor(
     public override val native: TwoWayNestedScrollView = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
+        isFillViewport = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setOnScrollChangeListener { _, _, _, _, _ ->
                 scrollChanged.invokeAll()
@@ -105,18 +115,18 @@ public class ScrollView constructor(
         val mMaximumVelocity = configuration.scaledMaximumFlingVelocity
         vx.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
         vy.computeCurrentVelocity(1000, mMaximumVelocity.toFloat())
-        val cx = native.scrollX ?: 0
+        val cx = native.scrollX
         val fx = native.let {
             val vel = vx.xVelocity.roundToInt()
             it.scrollX + getSplineFlingDistance(vel).roundToInt() * -vel.sign
-        } ?: 0
-        val fw = native.width ?: 0
-        val cy = native.scrollY ?: 0
+        }
+        val fw = native.width
+        val cy = native.scrollY
         val fy = native.let {
             val vel = vy.yVelocity.roundToInt()
             it.scrollY + getSplineFlingDistance(vel).roundToInt() * -vel.sign
-        } ?: 0
-        val fh = native.height ?: 0
+        }
+        val fh = native.height
         val r = android.graphics.Rect(0, 0, 0, 0)
         var hOffset = Int.MAX_VALUE
         var vOffset = Int.MAX_VALUE
@@ -218,12 +228,11 @@ public class ScrollView constructor(
             native.isHorizontalScrollBarEnabled = value
             native.isVerticalScrollBarEnabled = value
         }
-    public override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
-        override val state: ReadableState<Rect>
+    override val viewport: Reactive<Rect> = object : Reactive<Rect>, Listenable by scrollChanged {
+        override val state: ReactiveState<Rect>
             get() {
-                if (viewDebugTarget == children.firstOrNull())
-                    println("Reading public actual viewport, got ${native.scrollX}, ${native.scrollY}")
-                return ReadableState(
+                debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
+                return ReactiveState(
                     Rect.fromSize(
                         (native.scrollX ?: 0).toDouble(),
                         (native.scrollY ?: 0).toDouble(),
@@ -233,9 +242,9 @@ public class ScrollView constructor(
                 )
             }
     }
-    public override val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
-        override val state: ReadableState<Rect>
-            get() = ReadableState(
+    override val content: Reactive<Rect> = object : Reactive<Rect>, BaseListenable() {
+        override val state: ReactiveState<Rect>
+            get() = ReactiveState(
                 Rect.fromSize(
                     0.0,
                     0.0,
@@ -255,10 +264,10 @@ public class ScrollView constructor(
         }
     }
 
-    public override var snapToElements: Pair<Align?, Align?> = null to null
-    public override var scrollSnapStop: Boolean = false
-    private val _directlyInteractingWithScroller = Property(false)
-    public override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    override var snapToElements: Pair<Align?, Align?> = null to null
+    override var scrollSnapStop: Boolean = false
+    private val _directlyInteractingWithScroller = Signal(false)
+    override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     public override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {
@@ -286,31 +295,17 @@ public class ScrollView constructor(
         )
     }
 
-    //    override fun scrollToKeepAnimations(x: Double, y: Double) {
-////        native.mScroller?.abortAnimation()
-//        println("Scroll before: ${native.scrollX}, ${native.scrollY}")
-//        native.scrollToIgnoringClamp(x.roundToInt(), y.roundToInt())
-//        println("Scroll after: ${native.scrollX}, ${native.scrollY}")
-//    }
     init {
+        // We use a weak reference because for some reason, the onremove cleanup doesn't get rid of the listener.
+        val weak = WeakReference(this)
         val l = OnPreDrawListener {
-            var x = queuedJumpX
-            var y = queuedJumpY
-            if (queuedJumpX == -1.0 && queuedJumpY == -1.0) return@OnPreDrawListener true
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling execution $queuedJumpX $queuedJumpY")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) {
-                val child: View = native.getChildAt(0)
-                println("Clamping ${native?.let { it.scrollX + x.roundToInt() }} between ${native.getWidth()} - ${native.paddingRight} - ${native.paddingLeft}, ${child.width})")
-                println("Clamping ${native?.let { it.scrollY + y.roundToInt() }} between ${native.getHeight()} - ${native.paddingBottom} - ${native.paddingTop}, ${child.height})")
-            }
-            queuedJumpX = -1.0
-            queuedJumpY = -1.0
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo($x.roundToInt(), 0)")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("$native.scrollTo(0, $y.roundToInt())")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset before: ${native.scrollX}, ${native.scrollY}")
-            native.scrollTo(x.roundToInt(), y.roundToInt())
-            if (viewDebugTarget?.native == native.children.firstOrNull()) println("offset after: ${native.scrollX}, ${native.scrollY}")
-            if (viewDebugTarget?.native == native.children.firstOrNull()) viewport.state.getOrNull()
+            val self = weak.get() ?: return@OnPreDrawListener true
+            var x = self.queuedJumpX
+            var y = self.queuedJumpY
+            if (self.queuedJumpX == -1.0 && self.queuedJumpY == -1.0) return@OnPreDrawListener true
+            self.queuedJumpX = -1.0
+            self.queuedJumpY = -1.0
+            self.native.scrollTo(x.roundToInt(), y.roundToInt())
             true
         }
         native.viewTreeObserver.addOnPreDrawListener(l)
@@ -325,6 +320,6 @@ public class ScrollView constructor(
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x
         queuedJumpY = y
-        if (viewDebugTarget?.native == native.children.firstOrNull()) println("Scrolling queued $queuedJumpX $queuedJumpY")
+        native.children.firstOrNull()?.debugPrint { "Scrolling queued $queuedJumpX $queuedJumpY" }
     }
 }

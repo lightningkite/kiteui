@@ -7,19 +7,20 @@ import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.cgRectValue
-import com.lightningkite.signal.Readable
-import com.lightningkite.signal.invoke
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.observe
-import com.lightningkite.kiteui.views.kiteUi
-import com.lightningkite.kiteui.views.setup
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSNotification
@@ -30,15 +31,12 @@ import platform.UIKit.*
 import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
-import kotlin.collections.get
-import kotlin.coroutines.CoroutineContext
-import kotlin.experimental.ExperimentalNativeApi
 
 public fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
     setup({ theme }, app)
 }
 
-public fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
     setup({ themeReadable.invoke() }, app)
 }
 
@@ -75,11 +73,14 @@ public class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val
     }
 }
 
-public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+    definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
-        Readable.reportException(throwable)
+        Reactive.reportException(throwable)
     } + Dispatchers.Main.immediate
+    val safeInsetProperty = Signal(Edges.ZERO)
+
     @OptIn(DelicateCoroutinesApi::class)
     val writer = object : ViewWriter(), CalculationContext {
         override val coroutineContext: CoroutineContext = scope
@@ -88,6 +89,7 @@ public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), ap
             this@kiteUi.view.addSubview(view.native)
         }
     }
+    writer.safeInsets = safeInsetProperty
     val created = writer.app()
 
     val subview = created.rView.native
@@ -119,22 +121,21 @@ public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), ap
     g.cancelsTouchesInView = false
     view.addGestureRecognizer(g)
 
-    val remover = subview.observe("bounds") {
-        subview.layoutLayers()
-    }
     val safeInsets = {
-        created.rView.handleSafeInsets(view.safeAreaInsets.useContents {
-            Edges(
+        view.safeAreaInsets.useContents {
+            safeInsetProperty.value = (Edges(
                 left = Dimension(left),
                 right = Dimension(right),
                 top = Dimension(top),
                 bottom = Dimension(this.bottom),
-            )
-        })
-        Unit
+            ))
+        }
+    }
+    val remover = subview.observe("bounds") {
+        safeInsets()
     }
     view.addSubview(RemoveView(onRemove = {
-        if(movingFromParentViewController || beingDismissed) {
+        if (movingFromParentViewController || beingDismissed) {
             view.removeGestureRecognizer(g)
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
@@ -148,14 +149,15 @@ public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), ap
     }
 }
 
-private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     init {
         this.hidden = true
     }
-    public override fun willMoveToWindow(newWindow: UIWindow?) {
+
+    override fun willMoveToWindow(newWindow: UIWindow?) {
         super.willMoveToWindow(newWindow)
         if (newWindow == null) {
-            if(onRemove?.invoke() == true) {
+            if (onRemove?.invoke() == true) {
                 onRemove = null
 //                onSafeInsetsChange = null
             }
@@ -185,7 +187,5 @@ public fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme,
         }
         app()
     }
-    ExternalServices.currentPresenter = { presentViewController(it, animated = true, completion = null) }
-    ExternalServices.rootView = view
 
 }

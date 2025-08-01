@@ -1,12 +1,18 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public fun ViewWriter.navLayout(
     appName: String = "My App",
@@ -19,10 +25,10 @@ public fun ViewWriter.navLayout(
 
 }
 
-public fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
+public fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
     row {
         ::shown { show() && !AppState.softInputOpen() }
-        navGroupTabs(shared { navElements() }) {}
+        navGroupTabs(remember { navElements() }) {}
     } 
 }
 

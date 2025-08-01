@@ -5,9 +5,15 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.KeyValueObserverProtocol
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -16,7 +22,6 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-import kotlin.experimental.ExperimentalNativeApi
 
 public class Ref<T>(var target: T?)
 
@@ -72,17 +77,14 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
         observer = null
     }
 }
-
 @InternalKiteUi
 public fun UIControl.findNextFocus(): UIView? {
-    println("findNextFocus $this")
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
     }
 }
 
 private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
-    println("findNextParentFocus $this $startingAtIndex")
     findNextChildFocus(startingAtIndex = startingAtIndex)?.let { return it }
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
@@ -90,11 +92,9 @@ private fun UIView.findNextParentFocus(startingAtIndex: Int): UIView? {
 }
 
 private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
-    println("findNextChildFocus $this $startingAtIndex")
     var index = startingAtIndex
     while(index < subviews.size) {
         val sub = subviews[index] as UIView
-        println("findNextChildFocus $this check $index $sub")
         if (sub.canBecomeFirstResponder) {
             return sub
         } else {
@@ -228,7 +228,7 @@ public class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
 //    val inlineSize: Double
 //}
 //
-//class SizeReader(val native: UIView, val key: String): Readable<Double> {
+//class SizeReader(val native: UIView, val key: String): Reactive<Double> {
 //    override suspend fun awaitRaw(): Double = native.asDynamic()[key].unsafeCast<Int>().toDouble()
 //    override fun addListener(listener: () -> Unit): () -> Unit {
 //        val o = ResizeObserver { _, _ ->

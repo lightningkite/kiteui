@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
@@ -14,9 +13,15 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class Select public actual constructor(context: RContext): RView(context) {
     override val native: Spinner = Spinner(context.activity).apply {
@@ -37,10 +42,18 @@ public actual class Select public actual constructor(context: RContext): RView(c
         return super.applyState(t)
     }
 
+    override fun refreshPadding() {
+        native.setPaddingAll(0)
+    }
 
     override fun applyTheme(theme: ThemeAndBack) {
         native.setPaddingAll(0)
-        native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply { cornerRadius = 8.dp.value })
+        native.setPopupBackgroundDrawable(theme.theme.backgroundDrawableWithoutCorners(null).apply {
+            cornerRadius = 8.dp.value
+            removeListener?.invoke()
+            removeListener = applyGradientRadiusListener(native)
+        })
+
 
         val layerDrawable = background as? LayerDrawable ?: LayerDrawable(arrayOf())
 
@@ -61,9 +74,9 @@ public actual class Select public actual constructor(context: RContext): RView(c
         background = layerDrawable
     }
 
-    public actual fun <T> bind(
-        edits: Writable<T>,
-        data: Readable<List<T>>,
+    actual fun <T> bind(
+        edits: MutableReactive<T>,
+        data: Reactive<List<T>>,
         render: (T) -> String
     ) {
         var suppressChange = false
@@ -152,9 +165,9 @@ public actual class Select public actual constructor(context: RContext): RView(c
 //    lateinit var viewWriter: ViewWriter
 //}
 //
-//public actual fun <T> Select.bind(
-//    edits: Writable<T>,
-//    data: Readable<List<T>>,
+//actual fun <T> Select.bind(
+//    edits: MutableReactive<T>,
+//    data: Reactive<List<T>>,
 //    render: (T) -> String
 //) {
 //    var suppressChange = false

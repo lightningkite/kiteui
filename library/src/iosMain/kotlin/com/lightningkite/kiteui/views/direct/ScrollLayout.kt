@@ -1,7 +1,6 @@
-
-
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
@@ -30,32 +29,33 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
         setNeedsLayout()
         informParentOfSizeChangeDueToChild()
     }
-    public override fun subviewDidChangeSizing(view: UIView?) {
+
+    override fun subviewDidChangeSizing(view: UIView?) {
         setNeedsLayout()
         informParentOfSizeChangeDueToChild()
     }
 
-    public var onSizeChange: ()->Unit = {}
+    var onSizeChange: () -> Unit = {}
 
     public data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
 
-    public val Size.objc get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
-    public val CGSize.local get() = Size(if (horizontal) width else height, if (horizontal) height else width)
-    public val CValue<CGSize>.local get() = useContents { local }
-    public val SizeConstraints.primaryMax get() = if (horizontal) maxWidth else maxHeight
-    public val SizeConstraints.secondaryMax get() = if (horizontal) maxHeight else maxWidth
-    public val SizeConstraints.primaryMin get() = if (horizontal) minWidth else minHeight
-    public val SizeConstraints.secondaryMin get() = if (horizontal) minHeight else minWidth
-    public val SizeConstraints.primary get() = if (horizontal) width else height
-    public val SizeConstraints.secondary get() = if (horizontal) height else width
-    public val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
-    public val Edges.primarySum get() = if(horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.secondarySum get() = if(!horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.primaryStart get() = if(horizontal) left.value else top.value
-    public val Edges.primaryEnd get() = if(horizontal) right.value else bottom.value
-    public val Edges.secondaryStart get() = if(!horizontal) left.value else top.value
-    public val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
+    val Size.objc get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
+    val CGSize.local get() = Size(if (horizontal) width else height, if (horizontal) height else width)
+    val CValue<CGSize>.local get() = useContents { local }
+    val SizeConstraints.primaryMax get() = if (horizontal) maxWidth else maxHeight
+    val SizeConstraints.secondaryMax get() = if (horizontal) maxHeight else maxWidth
+    val SizeConstraints.primaryMin get() = if (horizontal) minWidth else minHeight
+    val SizeConstraints.secondaryMin get() = if (horizontal) minHeight else minWidth
+    val SizeConstraints.primary get() = if (horizontal) width else height
+    val SizeConstraints.secondary get() = if (horizontal) height else width
+    val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    val Edges.primarySum get() = if (horizontal) horizontalSum.value else verticalSum.value
+    val Edges.secondarySum get() = if (!horizontal) horizontalSum.value else verticalSum.value
+    val Edges.primaryStart get() = if (horizontal) left.value else top.value
+    val Edges.primaryEnd get() = if (horizontal) right.value else bottom.value
+    val Edges.secondaryStart get() = if (!horizontal) left.value else top.value
+    val Edges.secondaryEnd get() = if (!horizontal) right.value else bottom.value
 
     public val mainSubview get() = subviews.filterIsInstance<UIView>().firstOrNull { !it.hidden }
 
@@ -67,7 +67,7 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
 
         val subsize = calcSizes(mySizeWithoutPadding, true)
 
-        if (viewDebugTarget?.native === this) println("Total sizeThatFits $subsize")
+        debugPrint { "Total sizeThatFits $subsize" }
 
         // subsize represents the size of the ScrollView content as returned by calcSizes(); the dimensions of the
         // ScrollView itself should never be bigger than the size passed to sizeThatFits() or the ScrollView will never
@@ -91,7 +91,7 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
 //                null,
                 it.extensionSizeConstraints,
             ).local
-            if (viewDebugTarget?.native === this) println("Scroll child measured with $sizeInput, got $required")
+            debugPrint { "Scroll child measured with $sizeInput, got $required" }
             it.extensionSizeConstraints?.let {
                 it.primaryMax?.let { required.primary = required.primary.coerceAtMost(it.value) }
                 it.secondaryMax?.let { required.secondary = required.secondary.coerceAtMost(it.value) }
@@ -104,7 +104,7 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
             required.secondary = required.secondary.coerceAtLeast(0.0)
 
             remaining.secondary = remaining.secondary.coerceAtLeast(required.secondary)
-            if (viewDebugTarget?.native === this) println("Scroll child result is $required")
+            debugPrint { "Scroll child result is $required" }
             required
         } ?: sizeWithoutPadding
     }
@@ -115,19 +115,19 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         mySizeWithoutPadding.primary -= padding.primarySum
         mySizeWithoutPadding.secondary -= padding.secondarySum
-        if (viewDebugTarget?.native === subviews.firstOrNull()) println("Parent ScrollLayout Laying out within $mySizeWithoutPadding")
-        if (viewDebugTarget?.native === this) println("Laying out within $mySizeWithoutPadding")
+        (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout Laying out within $mySizeWithoutPadding" }
+        debugPrint { "Laying out within $mySizeWithoutPadding" }
         var primary = padding.primaryStart
         val view = mainSubview ?: run {
-            println("ScrollLayout without children???")
+            Log.warn("ScrollLayout without children???")
             return
         }
         var size = calcSizes(mySizeWithoutPadding, true)
-        if (viewDebugTarget?.native === this) println("Initial scroll size calc: $size")
+        debugPrint { "Initial scroll size calc: $size" }
         if (size.primary >= 9999.0) {
             size = calcSizes(mySizeWithoutPadding, false)
             size.primary = size.primary.coerceAtLeast(mySizeWithoutPadding.primary)
-            if (viewDebugTarget?.native === this) println("Constrained scroll size calc: $size")
+            debugPrint { "Constrained scroll size calc: $size" }
         }
         val ps = primary
         val a = view.secondaryAlign ?: Align.Stretch
@@ -137,7 +137,9 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
             Align.End -> padding.secondaryStart + mySizeWithoutPadding.secondary - size.secondary
             Align.Center -> padding.secondaryStart + (mySizeWithoutPadding.secondary - size.secondary) / 2
         }
-        val secondarySize = (if (a == Align.Stretch) mySizeWithoutPadding.secondary else size.secondary.coerceAtMost(mySizeWithoutPadding.secondary - padding.secondarySum))
+        val secondarySize = (if (a == Align.Stretch) mySizeWithoutPadding.secondary else size.secondary.coerceAtMost(
+            mySizeWithoutPadding.secondary - padding.secondarySum
+        ))
         val widthSize = if (horizontal) size.primary else secondarySize
         val heightSize = if (horizontal) secondarySize else size.primary
         primary += size.primary
@@ -149,7 +151,7 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
                 if (!horizontal) primary else 0.0,
             )
         )
-        if (viewDebugTarget?.native === subviews.firstOrNull()) println("Parent ScrollLayout setting psuedoframe of child")
+        (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout setting psuedoframe of child" }
         view.setPsuedoframe(
             if (horizontal) ps else offset,
             if (horizontal) offset else ps,
@@ -158,13 +160,17 @@ public class ScrollLayout : UIScrollView(CGRectZero.readValue()), UIViewWithSize
         )
 //        val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 //        if (oldSize.first != widthSize || oldSize.second != heightSize || view.explicitlyNeedsLayout != false) {
-            view.explicitlyNeedsLayout = false
-        if (viewDebugTarget?.native === subviews.firstOrNull()) println("Parent ScrollLayout child layoutSubviewsAndLayers")
-            view.layoutSubviewsAndLayers()
+        view.explicitlyNeedsLayout = false
+        (subviews.firstOrNull() as? UIView)?.debugPrint { "Parent ScrollLayout child layoutSubviewsAndLayers" }
+        view.layoutSubviewsAndLayers()
 //        }
-        if(lastReportedSize != mySizeWithoutPadding) {
+        if (lastReportedSize != mySizeWithoutPadding) {
             onSizeChange()
             lastReportedSize = mySizeWithoutPadding
         }
+    }
+
+    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+        return frameLayoutHitTest(point, withEvent)
     }
 }

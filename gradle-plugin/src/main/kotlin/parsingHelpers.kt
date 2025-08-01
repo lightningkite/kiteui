@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-fun String.splitParens(
+internal fun String.splitParens(
     delimiter: Char = ',',
     start: Char = '(',
     end: Char = ')',
@@ -37,7 +37,7 @@ fun String.splitParens(
     }
     return result
 }
-fun String.afterParens(
+internal fun String.afterParens(
     start: Char = '(',
     end: Char = ')',
     startingAt: Int = 0,

@@ -1,26 +1,84 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.ListSemantic
+import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.lighten
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
+import com.lightningkite.kiteui.views.l2.childrenReorderable
 import com.lightningkite.kiteui.views.l2.field
-import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.kiteui.views.l2.forEachReorderable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
+
+
+
 
 @Routable("drag")
 public object DragPage : Page {
 
-    public override fun ViewWriter.render(): ViewModifiable = col {
+    val numbers = Signal(List(9) { it + 1 })
+
+    private data class Highlight(val amount: Int) : Semantic("highlight-$amount") {
+        override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+            background = theme.background.lighten(amount/50f)
+        )
+    }
+
+    public override fun ViewWriter.render(): ViewModifiable = scrolling - col {
         h2("Drag test")
+
+        h4("Reorderable List")
+        ListSemantic.onNext - col {
+            forEachReorderable(
+                numbers,
+                reorder = { move ->
+                    numbers.value = move.reorder(numbers.value)
+                }
+            ) { number ->
+                card - frame {
+                    dynamicTheme { Highlight(number()) }
+                    centered - text { ::content { number().toString() } }
+                }
+            }
+        }
+
+        space()
+
+        h4("Recycler Reorderable")
+        sizeConstraints(height = 20.rem) - ListSemantic.onNext - recyclerView {
+            placer = RecyclerViewPlacerVerticalGrid(3)
+            childrenReorderable(
+                numbers,
+                id = { it },
+                reorder = { move ->
+                    numbers.modify { move.reorder(it) }
+                }
+            ) { number ->
+                card - frame {
+                    dynamicTheme { Highlight(number()) }
+                    centered - text { ::content { number().toString() } }
+                }
+            }
+        }
+
+        space()
+
         text("Behold some dragging magic!")
         card - link {
             to = { this@DragPage }
@@ -40,8 +98,8 @@ public object DragPage : Page {
             }
         }
         sizeConstraints(height = 10.rem) - row {
-            val left = Property<List<String>>(listOf())
-            val right = Property<List<String>>(listOf())
+            val left = Signal<List<String>>(listOf())
+            val right = Signal<List<String>>(listOf())
             expanding - card - scrolling - col {
                 dropTargetDelegate = object: DropTargetDelegate {
                     override fun drop(event: DragEvent): Boolean {
@@ -77,7 +135,7 @@ public object DragPage : Page {
         }
         text("Janky reorderable test")
         sizeConstraints(height = 30.rem) - card - recyclerView {
-            val data = Property<List<String>>(listOf("A", "B", "C", "D", "E"))
+            val data = Signal<List<String>>(listOf("A", "B", "C", "D", "E"))
             children(data, { it }) {
                 card - text {
                     ::content { it() }

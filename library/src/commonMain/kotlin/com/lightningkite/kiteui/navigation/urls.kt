@@ -2,11 +2,15 @@
 
 package com.lightningkite.kiteui.navigation
 
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.ImmediateWriteOnly
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -34,10 +38,7 @@ public val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
 public val UrlProperties: Properties get() = UrlPropertiesCurrent
 
-@Serializable
-private data class Wrapper<T>(val value: T)
-
-public fun <T> Properties.encodeToStringMap(
+fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
     value: T,
     key: String,
@@ -58,7 +59,7 @@ public fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: S
         if (filtered.isEmpty()) return null
         return decodeFromStringMap(Wrapper.serializer(serializer), filtered).value
     } catch (e: Exception) {
-        ConsoleRoot.warn("Could not parse query parameter '$key': ${e.message}")
+        LogRoot.warn("Could not parse query parameter '$key': ${e.message}")
         return null
     }
 }
@@ -66,9 +67,9 @@ public fun <T> Properties.decodeFromStringMap(serializer: KSerializer<T>, key: S
 public inline fun <reified T> Properties.decodeFromStringMap(
     key: String,
     source: Map<String, String>,
-    into: ImmediateWriteOnly<T>
+    into: MutableValue<T>
 ) {
-    decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.setImmediate(it) }
+    decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.valueSet(it) }
 }
 
 public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) =

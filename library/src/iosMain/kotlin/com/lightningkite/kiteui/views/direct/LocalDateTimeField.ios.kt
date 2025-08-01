@@ -3,10 +3,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.datetime.*
 import platform.Foundation.NSDate
@@ -19,12 +23,13 @@ public actual class LocalDateField public actual constructor(context: RContext) 
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
-    private val _content = Property<LocalDate?>(null)
-    public actual val content: ImmediateWritable<LocalDate?> get() = _content
+    private val _content = Signal<LocalDate?>(null)
+    actual val content: MutableReactiveValue<LocalDate?> get() = _content
     // TODO
     public actual var range: ClosedRange<LocalDate>? = null
 
     init {
+        // TODO: need a way to CLEAR the field.
         textField.inputView = UIDatePicker().apply {
             setPreferredDatePickerStyle(UIDatePickerStyle.UIDatePickerStyleInline)
             datePickerMode = UIDatePickerMode.UIDatePickerModeDate
@@ -81,8 +86,8 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
-    private val _content = Property<LocalTime?>(null)
-    public actual val content: ImmediateWritable<LocalTime?> get() = _content
+    private val _content = Signal<LocalTime?>(null)
+    actual val content: MutableReactiveValue<LocalTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value
@@ -147,8 +152,8 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
     val textField = TextFieldInput(this)
     init { native.addSubview(textField) }
 
-    private val _content = Property<LocalDateTime?>(null)
-    public actual val content: ImmediateWritable<LocalDateTime?> get() = _content
+    private val _content = Signal<LocalDateTime?>(null)
+    actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value

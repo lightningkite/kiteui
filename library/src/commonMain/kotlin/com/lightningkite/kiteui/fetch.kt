@@ -56,14 +56,15 @@ public expect class RequestResponse {
 public expect class Blob
 public expect class FileReference
 
-public expect fun String.toBlob(contentType: String = "text/plain"): Blob
-public expect fun Blob.mimeType(): String
-public expect fun Blob.bytes(): Long
-public expect suspend fun Blob.text(): String
-public expect fun FileReference.mimeType():String
-public expect fun FileReference.bytes():Long
-public expect fun FileReference.fileName():String
-public expect suspend fun FileReference.text(): String
+expect fun String.toBlob(contentType: String = "text/plain"): Blob
+expect fun Blob.mimeType(): String
+expect fun Blob.bytes(): Long
+expect suspend fun Blob.toByteArray(): ByteArray
+expect suspend fun Blob.text(): String
+expect fun FileReference.mimeType():String
+expect fun FileReference.bytes():Long
+expect fun FileReference.fileName():String
+expect suspend fun FileReference.text(): String
 
 public sealed interface RequestBody {
     public val type: String

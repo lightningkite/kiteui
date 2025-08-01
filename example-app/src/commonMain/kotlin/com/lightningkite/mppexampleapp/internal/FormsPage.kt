@@ -1,13 +1,18 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 @Routable("forms")
@@ -16,9 +21,9 @@ public object FormsPage : Page {
 
 
 
-    public val externals = HashMap<String, Property<String>>()
-    public fun leafExample(propName: String): FormLeaf {
-        val prop = externals.getOrPut(propName) { Property("Test") }
+    val externals = HashMap<String, Signal<String>>()
+    fun leafExample(propName: String): FormLeaf {
+        val prop = externals.getOrPut(propName) { Signal("Test") }
         return FormLeaf(
             title = propName,
             editor = {
@@ -40,8 +45,8 @@ public object FormsPage : Page {
         )
     }
 
-    public val lp = Property(false)
-    public val form = FormSection(
+    val lp = Signal(false)
+    val form = FormSection(
         title = "Vehicle for Sale",
         subsections = {
             listOf(
@@ -106,12 +111,12 @@ public fun ViewWriter.renderForm(section: FormSection) {
         titleSetup = { content = section.title },
         content = {
             col {
-                forEach(shared(action = section.subsections)) {
+                forEach(remember(action = section.subsections)) {
                     renderForm(it)
                 }
             }
             col {
-                forEach(shared(action = section.leaves)) {
+                forEach(remember(action = section.leaves)) {
                     it.editor(this)
                 }
             }
@@ -124,12 +129,12 @@ public fun ViewWriter.renderFormReadOnly(section: FormSection) {
         titleSetup = { content = section.title },
         content = {
             col {
-                forEach(shared(action = section.subsections)) {
+                forEach(remember(action = section.subsections)) {
                     renderFormReadOnly(it)
                 }
             }
             col {
-                forEach(shared(action = section.leaves)) {
+                forEach(remember(action = section.leaves)) {
                     it.viewer(this)
                 }
             }

@@ -1,8 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.openTab
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.extensionSafeInsetPadding
 import com.lightningkite.kiteui.views.toUiColor
@@ -11,9 +14,10 @@ import platform.CoreGraphics.*
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
+import kotlin.experimental.ExperimentalNativeApi
 
-public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
-
+@OptIn(ExperimentalNativeApi::class)
+class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
     init {
         userInteractionEnabled = false
     }
@@ -42,8 +46,7 @@ public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
             )
         }
         return label.sizeThatFits(smallerSize).useContents {
-            if(viewDebugTarget?.native == this@UILabelWithLayerBackground)
-                println("Size that fits on text: $width, $height")
+            debugPrint { "Size that fits on text: $width, $height" }
             CGSizeMake(
                 width = width + padding.horizontalSum.value,
                 height = height.coerceAtLeast(label.font.lineHeight) + padding.verticalSum.value,

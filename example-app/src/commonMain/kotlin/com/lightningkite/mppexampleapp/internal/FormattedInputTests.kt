@@ -4,21 +4,23 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.bind
-import com.lightningkite.signal.invoke
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.bold
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.field
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("test/formatted-input")
-public class FormattedInputTests : Page {
-    public val phone = Property("")
-    public val general = Property("")
-    public override fun ViewWriter.render(): ViewModifiable = run {
+class FormattedInputTests : Page {
+    val phone = Signal("")
+    val general = Signal("")
+    override fun ViewWriter.render(): ViewModifiable = run {
         col {
             field("General Formatted Input") {
                 formattedTextInput {
@@ -56,14 +58,14 @@ public class FormattedInputTests : Page {
 
             field("Number Field") {
                 numberInput {
-                    content bind Property<Double?>(null)
+                    content bind Signal<Double?>(null)
                 }
             }
 
             field("Integer Field") {
                 numberInput {
                     keyboardHints = KeyboardHints.integer
-                    content bind Property(null)
+                    content bind Signal(null)
                 }
             }
         }

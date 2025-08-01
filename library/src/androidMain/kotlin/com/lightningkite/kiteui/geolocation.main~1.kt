@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import com.lightningkite.kiteui.views.AndroidAppContext
+import kotlinx.coroutines.CancellationException
 
 @InternalKiteUi
 public actual object Geolocation {
@@ -21,6 +22,8 @@ public actual object Geolocation {
         if(!AndroidAppContext.requestPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION).accepted) throw Exception("Permission not granted")
         val location = try {
             locationService.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        } catch (e: CancellationException) {
+            throw e
         } catch (ex: Exception) {
             throw RuntimeException("Location permission must be called before calling ViewWriter.goelocate")
         }

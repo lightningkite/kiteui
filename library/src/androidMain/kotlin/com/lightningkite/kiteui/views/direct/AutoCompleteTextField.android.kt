@@ -5,20 +5,23 @@ import android.content.res.ColorStateList
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.ArrayAdapter
-import android.widget.ProgressBar
 import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
-import com.lightningkite.kiteui.models.Action
+import android.widget.ProgressBar
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
-public actual class AutoCompleteTextField public actual constructor(context: RContext): RViewWithAction(context) {
-    override val native: AndroidAutocompleteTextView = AndroidAutocompleteTextView(context.activity)
-    public actual val content: ImmediateWritable<String> = native.contentProperty()
+public actual class AutoCompleteTextField actual constructor(context: RContext): RViewWithAction(context) {
+    override val native = AndroidAutocompleteTextView(context.activity)
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
     public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints

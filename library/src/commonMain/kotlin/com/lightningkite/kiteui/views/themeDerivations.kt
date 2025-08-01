@@ -2,8 +2,12 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.ReactiveContext
-import com.lightningkite.signal.reactiveScope
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 public operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
@@ -79,13 +83,13 @@ public inline val ViewWriter.down: ViewWrapper get() = DownSemantic.onNext
 public inline val ViewWriter.selected: ViewWrapper get() = SelectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("UnselectedSemantic.onNext", "com.lightningkite.kiteui.models.UnselectedSemantic"))
-public inline val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
+inline val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DisabledSemantic.onNext", "com.lightningkite.kiteui.models.DisabledSemantic"))
 public inline val ViewWriter.disabled: ViewWrapper get() = DisabledSemantic.onNext
 
 @ViewModifierDsl3
-public val ViewWriter.compact: ViewWrapper
+val ViewWriter.compact: ViewWrapper
     get() = CompactSemantic.onNext
 
 @ViewModifierDsl3

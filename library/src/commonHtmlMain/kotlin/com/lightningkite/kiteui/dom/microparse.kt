@@ -39,8 +39,9 @@ public sealed interface MPNode {
             "h6",
             "br",
         )
-        public val okAttrs: Set<String> = setOf(
-            "href"
+        val okAttrs = setOf(
+            "href",
+            "target",
         )
     }
 

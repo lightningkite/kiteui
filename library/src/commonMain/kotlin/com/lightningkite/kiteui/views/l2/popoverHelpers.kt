@@ -14,8 +14,8 @@ public fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-public fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
-    overlayFrame?.run {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
+    overlayWriter(false) {
         withoutAnimation {
 
             beforeNextElementSetup {
@@ -27,7 +27,7 @@ public fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.
                     delay(duration.inWholeMilliseconds)
                     opacity = 0.0
                     delay(t.transitionDuration)
-                    this@run.removeChild(this@beforeNextElementSetup)
+                    this@overlayWriter.removeChild(this@beforeNextElementSetup)
                 }
             }
             atBottomCenter - col {
@@ -39,16 +39,17 @@ public fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.
     }
 }
 
-public fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
+@Deprecated("Use dialog with explicit closer instead", ReplaceWith("dialog(dismissable, content)"))
+fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
-    this.overlayFrame!!.run {
+    overlayWriter {
         withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     launch {
                         it.opacity = 0.0
                         delay(it.theme.transitionDuration)
-                        overlayFrame!!.removeChild(it)
+                        this@overlayWriter.removeChild(it)
                     }
                 }
             }.run {
@@ -70,14 +71,25 @@ public fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.()
     }
 }
 
-public fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
+    overlayWriter(modal = true) { close ->
+        dismissBackground {
+            onClick { if (dismissable) close() }
+            centered - DialogSemantic.onNext - frame {
+                content { close() }
+            }
+        }
+    }
+}
+
+fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
     var willRemove: RView? = null
-    this.overlayFrame!!.run {
+    overlayWriter {
         withoutAnimation {
             popoverWriter {
                 willRemove?.let {
                     it.animateOut(transition.reverse) {
-                        overlayFrame!!.removeChild(it)
+                        this@overlayWriter.removeChild(it)
                     }
                 }
             }.run {

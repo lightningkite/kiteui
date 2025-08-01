@@ -8,9 +8,13 @@ import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class RadioButton public actual constructor(context: RContext): RView(context) {
     override val native: RadioButton = RadioButton(context.activity)
@@ -38,6 +42,6 @@ public actual class RadioButton public actual constructor(context: RContext): RV
         return super.applyState(t)
     }
 
-    public actual val checked: ImmediateWritable<Boolean> = native.contentProperty()
+    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
 }

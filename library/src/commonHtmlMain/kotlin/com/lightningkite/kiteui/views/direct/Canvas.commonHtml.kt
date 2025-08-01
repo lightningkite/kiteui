@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.*
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
@@ -11,7 +12,15 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
         set(value) {
             field = value
             onDelegateSet(value)
+            value?.theme = themeAndBack.theme
+            delegate?.invalidate?.invoke()
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        delegate?.theme = theme.theme
+        delegate?.invalidate?.invoke()
+    }
     init {
         native.tag = "canvas"
         native.attributes.tabIndex = 1
@@ -30,8 +39,9 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
             if(delegate?.onWheel(event.deltaX, event.deltaY, event.deltaZ) == true)
                 event.preventDefault()
         }
-        val dpr = AppState.windowInfo.value.density
+
         native.addEventListener("pointerdown") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerDown(
@@ -43,6 +53,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointermove") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerMove(
@@ -54,6 +65,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointerup") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerUp(
@@ -65,6 +77,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointercancel") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerCancel(
@@ -76,6 +89,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
             ) == true) event.preventDefault()
         }
         native.addEventListener("pointerleave") { event ->
+            val dpr = AppState.windowInfo.value.density
             event as PointerEvent
             val b = (event.target as Element).getBoundingClientRect()
             if(delegate?.onPointerCancel(
@@ -111,32 +125,3 @@ public expect fun Canvas.setupResizeListener()
 //            value.invalidate()
 //        }
 //    }
-
-public actual typealias KeyCode = String
-public actual object KeyCodes {
-    public actual val left: KeyCode get() = "ArrowLeft"
-    public actual val right: KeyCode get() = "ArrowRight"
-    public actual val up: KeyCode get() = "ArrowUp"
-    public actual val down: KeyCode get() = "ArrowDown"
-    public actual fun letter(char: Char): KeyCode = "Key" + char.uppercase()
-    public actual fun num(digit: Int): KeyCode = "Digit$digit"
-    public actual fun numpad(digit: Int): KeyCode = "Numpad$digit"
-    public actual val space: KeyCode get() = "Space"
-    public actual val enter: KeyCode get() = "Enter"
-    public actual val tab: KeyCode get() = "Tab"
-    public actual val escape: KeyCode get() = "Escape"
-    public actual val leftCtrl: KeyCode get() = "ControlLeft"
-    public actual val rightCtrl: KeyCode get() = "ControlRight"
-    public actual val leftShift: KeyCode get() = "ShiftLeft"
-    public actual val rightShift: KeyCode get() = "ShiftRight"
-    public actual val leftAlt: KeyCode get() = "AltLeft"
-    public actual val rightAlt: KeyCode get() = "AltRight"
-    public actual val equals: KeyCode get() = "Equal"
-    public actual val dash: KeyCode get() = "Minus"
-    public actual val backslash: KeyCode get() = "Backslash"
-    public actual val leftBrace: KeyCode get() = "BracketLeft"
-    public actual val rightBrace: KeyCode get() = "BracketRight"
-    public actual val semicolon: KeyCode get() = "Semicolon"
-    public actual val comma: KeyCode get() = "Comma"
-    public actual val period: KeyCode get() = "Period"
-}

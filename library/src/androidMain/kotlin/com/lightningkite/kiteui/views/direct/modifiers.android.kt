@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.views.ViewWriter
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -12,22 +12,28 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
-import com.lightningkite.kiteui.InternalKiteUi
-
+import androidx.core.view.ViewCompat
+import androidx.core.view.children
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
-import com.lightningkite.signal.CalculationContext
-import com.lightningkite.signal.ReactiveContext
-import com.lightningkite.signal.reactiveScope
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
         try {
+            lastSetWeight = amount
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
             lp.weight = amount
             if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
@@ -62,7 +68,9 @@ public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float)
         reactiveScope {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
-                lp.weight = amount()
+                val amount = amount()
+                lp.weight = amount
+                lastSetWeight = amount
                 if ((parent?.native as SimplifiedLinearLayout).orientation == SimplifiedLinearLayout.HORIZONTAL) {
                     lp.width = if (lp.weight != 0f) 0 else originalSize
                 } else {
@@ -80,6 +88,8 @@ public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float)
 @ViewModifierDsl3
 public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         val params = lparams
         val horizontalGravity = when (horizontal) {
             Align.Start -> Gravity.START
@@ -100,7 +110,7 @@ public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrap
         else if (params is CoordinatorLayout.LayoutParams)
             params.gravity = horizontalGravity or verticalGravity
         else
-            println("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
+            Log.warn("Unknown layout params kind ${params::class.qualifiedName}; I am ${this::class.qualifiedName}")
         if (horizontal == Align.Stretch && (parent?.native as? SimplifiedLinearLayout)?.orientation != SimplifiedLinearLayout.HORIZONTAL) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT
         } else if (params.width == ViewGroup.LayoutParams.MATCH_PARENT) {
@@ -121,8 +131,60 @@ public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, hor
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
-
 @InternalKiteUi
+@ViewModifierDsl3
+actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
+    val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+
+    if (vertical) {
+        val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
+        refreshLayout.setOnRefreshListener {
+            refreshAction.startAction(this)
+            reactiveScope {
+                refreshLayout.isRefreshing = refreshAction.state().handle(
+                    success = { false },
+                    exception = { false },
+                    notReady = { true }
+                )
+            }
+        }
+        wrapNextIn(object: RViewWrapper(context) {
+            override val native: View = refreshLayout
+
+            val myChildren: ArrayList<View> = ArrayList()
+            override fun internalAddChild(index: Int, view: RView) {
+                myChildren.add(index, view.native)
+                (native as ViewGroup).addView(view.native, index)
+            }
+
+            override fun internalRemoveChild(index: Int) {
+                (native as ViewGroup).let {
+                    it.removeViewAt(it.children.indexOf(myChildren.removeAt(index)))
+                }
+            }
+
+            override fun internalClearChildren() {
+                (native as ViewGroup).let {
+                    for(child in myChildren) {
+                        it.removeViewAt(it.children.indexOf(child))
+                    }
+                    myChildren.clear()
+                }
+            }
+        })
+    } else {
+        // For horizontal scrolling, just use regular scrolling as SwipeRefreshLayout only supports vertical
+    }
+    wrapNextIn(scrollView)
+
+    return ViewWrapper
+}
+
 @ViewModifierDsl3
 public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
@@ -343,7 +405,9 @@ public actual fun ViewWriter.hasPopover(
 @ViewModifierDsl3
 public actual fun ViewWriter.textPopover(message: String): ViewWrapper {
     beforeNextElementSetup {
-        native.tooltipText = message
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            native.tooltipText = message
+        }
     }
     return ViewWrapper
 }
@@ -451,8 +515,6 @@ private fun View.heightAnimator(toHeight: Int): TypedValueAnimator.IntAnimator {
         layoutParams.height = it
         if (!this@heightAnimator.isInLayout) {
             requestLayout()
-        } else {
-            println("Size animator blocked because we're in layout.")
         }
     }.apply {
         animatingSize.add(this@heightAnimator)
@@ -498,8 +560,6 @@ private fun View.widthAnimator(toWidth: Int): TypedValueAnimator.IntAnimator {
         layoutParams.width = it
         if (!this@widthAnimator.isInLayout) {
             requestLayout()
-        } else {
-            println("Size animator blocked because we're in layout.")
         }
         animatingSize.add(this@widthAnimator)
     }.apply {

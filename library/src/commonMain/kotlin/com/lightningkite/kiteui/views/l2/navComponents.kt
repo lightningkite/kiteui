@@ -2,13 +2,19 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.mainPageNavigator
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
-public fun ViewWriter.navGroupColumn(
-    elements: Readable<List<NavElement>>,
+fun ViewWriter.navGroupColumn(
+    elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
 ): ViewModifiable {
@@ -28,7 +34,7 @@ private fun RView.selectedIfRouteMatches(it: NavLink) {
     }
 }
 
-private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
+private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
     forEach(readable) {
         fun ViewWriter.display(navElement: NavElement) {
             row {
@@ -71,7 +77,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
                         space()
                         expanding - col {
                             gap = 0.px
-                            navGroupColumnInner(shared { it.children(this) }, onNavigate)
+                            navGroupColumnInner(remember { it.children(this) }, onNavigate)
                         }
                     }
                 }
@@ -99,14 +105,14 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
     }
 }
 
-public fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupActionsInner(elements)
         setup()
     }
 }
 
-private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
+private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     fun ViewWriter.navElementIconAndCount(navElement: NavElement) {
         padded - frame {
             centered - icon {
@@ -143,7 +149,7 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
             is NavGroup -> row {
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
-                navGroupActionsInner(shared { it.children() })
+                navGroupActionsInner(remember { it.children() })
             }
 
             is NavCustom -> frame {
@@ -164,14 +170,14 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-public fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupTopInner(readable)
         setup()
     }
 }
 
-private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
+private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     forEach(readable) {
         when (it) {
             is NavAction -> button {
@@ -201,7 +207,7 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
                 ::shown { it.hidden?.invoke() != true }
                 preferredDirection = PopoverPreferredDirection.belowRight
                 opensMenu {
-                    navGroupColumn(shared { it.children() }, { closePopovers() })
+                    navGroupColumn(remember { it.children() }, { closePopovers() })
                 }
                 text { ::content { it.title() } }
             }
@@ -256,7 +262,7 @@ public fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): 
     }
 }
 
-public fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
+fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
     return nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
@@ -287,7 +293,7 @@ public fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: 
                     display(it)
                     preferredDirection = PopoverPreferredDirection.aboveCenter
                     opensMenu {
-                        navGroupColumn(shared { it.children() }, { closePopovers() })
+                        navGroupColumn(remember { it.children() }, { closePopovers() })
                     }
                 }
 

@@ -8,10 +8,15 @@ import com.lightningkite.kiteui.models.ForcePaddingSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.signal.CalculationContext
-import com.lightningkite.signal.ReactiveContext
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.ViewModifierDsl3
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 @ViewModifierDsl3
@@ -120,6 +125,47 @@ public inline fun ViewWriter.scrolling(
 public expect inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingWithRefresh(
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper {
+    return __scrollsWithRefreshUncontracted(vertical = true, horizontal = false, refreshAction = refreshAction, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingHorizontallyWithRefresh(
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper {
+    return __scrollsWithRefreshUncontracted(vertical = false, horizontal = true, refreshAction = refreshAction, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingBothWithRefresh(
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper {
+    return __scrollsWithRefreshUncontracted(vertical = true, horizontal = true, refreshAction = refreshAction, setup)
+}
+
+@ViewModifierDsl3
+inline fun ViewWriter.scrollingWithRefresh(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit = {}
+): ViewWrapper {
+    return __scrollsWithRefreshUncontracted(vertical = vertical, horizontal = horizontal, refreshAction = refreshAction, setup)
+}
+
+expect inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ViewWrapper
 

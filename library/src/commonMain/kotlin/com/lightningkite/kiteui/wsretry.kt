@@ -1,6 +1,14 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -10,9 +18,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 public suspend fun WebSocket.waitUntilConnect(delay: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) }) {
     suspendCancellableCoroutine<Unit> {
@@ -39,7 +44,7 @@ public fun retryWebsocket(
     url: String,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null,
+    log: Log? = null,
 ): RetryWebsocket = retryWebsocket(
     underlyingSocket = { websocket(url) },
     pingTime = pingTime,
@@ -51,13 +56,13 @@ public fun retryWebsocket(
     underlyingSocket: suspend () -> WebSocket,
     pingTime: Long,
     gate: ConnectivityGate = Connectivity.fetchGate,
-    log: Console? = null,
+    log: Log? = null,
 ): RetryWebsocket {
     log?.log("Creating")
     val baseDelay = 1000L
     var currentDelay = baseDelay
     var lastConnect = 0.0
-    val connected = Property(false).also {
+    val connected = Signal(false).also {
         it.addListener {
             log?.log("connected: ${it.value}")
         }
@@ -123,10 +128,10 @@ public fun retryWebsocket(
 
     return object : RetryWebsocket, CalculationContext {
 
-        override val connected: Readable<Boolean>
+        override val connected: Reactive<Boolean>
             get() = connected
         var listenerCounter = 0
-        val shouldBeOn = Property(false)
+        val shouldBeOn = Signal(false)
 
         override fun beginUse(): () -> Unit {
             if (listenerCounter++ == 0) shouldBeOn.value = true
@@ -206,7 +211,7 @@ public fun <SEND, RECEIVE> RetryWebsocket.typed(
     send: KSerializer<SEND>,
     receive: KSerializer<RECEIVE>,
 ): TypedWebSocket<SEND, RECEIVE> = object : TypedWebSocket<SEND, RECEIVE> {
-    override val connected: Readable<Boolean>
+    override val connected: Reactive<Boolean>
         get() = this@typed.connected
 
     override fun beginUse(): () -> Unit = this@typed.beginUse()
@@ -217,6 +222,8 @@ public fun <SEND, RECEIVE> RetryWebsocket.typed(
         this@typed.onMessage {
             try {
                 action(json.decodeFromString(receive, it))
+            } catch (e: CancellationException) {
+                /*squish*/
             } catch (e: Exception) {
                 @OptIn(ExperimentalSerializationApi::class)
                 Exception(
@@ -239,8 +246,8 @@ public interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
 }
 
 
-public interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
-    public val connected: Readable<Boolean>
+interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
+    val connected: Reactive<Boolean>
 
     public fun close(code: Short, reason: String)
     public fun send(data: SEND)
@@ -250,8 +257,8 @@ public interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
 }
 
 
-public val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECEIVE?>
-    get() = object : Readable<RECEIVE?> {
+val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
+    get() = object : Reactive<RECEIVE?> {
         var value: RECEIVE? = null
             private set
 
@@ -264,7 +271,7 @@ public val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Readable<RECE
             }
         }
 
-        override val state: ReadableState<RECEIVE?> get() = ReadableState(value)
+        override val state: ReactiveState<RECEIVE?> get() = ReactiveState(value)
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             listeners.add(listener)

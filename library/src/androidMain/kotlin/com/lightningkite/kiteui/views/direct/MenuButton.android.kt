@@ -14,7 +14,7 @@ public actual class MenuButton public actual constructor(context: RContext): RVi
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         native.setOnClickListener { view ->
             var willRemove: RView? = null
-            this.overlayFrame!!.popoverWriter {
+            popoverWriter(this.overlayFrame!!) {
                 willRemove?.let { overlayFrame!!.removeChild(it) }
             }.run {
                 willRemove = dismissBackground {

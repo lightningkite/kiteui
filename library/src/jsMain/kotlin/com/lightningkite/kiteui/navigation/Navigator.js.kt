@@ -1,13 +1,18 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.PersistentProperty
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.min
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
-import kotlin.math.min
 
 public enum class PageNavigatorBehavior {
     /**
@@ -41,7 +46,7 @@ public var PageNavigatorUseExperimentalBehavior: Boolean
 public actual fun PageNavigator.bindToPlatform(context: RContext) {
     when (PageNavigatorBehavior.current) {
         PageNavigatorBehavior.Separate -> {
-            val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
+            val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
             val lastStackForPath = HashMap<UrlLikePath, List<Page>>()
 
             val initBar = window.location.urlLike()
@@ -113,7 +118,7 @@ public actual fun PageNavigator.bindToPlatform(context: RContext) {
         }
 
         PageNavigatorBehavior.Link -> {
-            val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
+            val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
 
             val initBar = window.location.urlLike()
             val nextStackId = PersistentProperty("last-stack-id", 'a')
@@ -242,7 +247,7 @@ public actual fun PageNavigator.bindToPlatform(context: RContext) {
         }
 
         PageNavigatorBehavior.Deprecated -> {
-            val log: Console? = ConsoleRoot.tag("ScreenStack.bindToPlatform")
+            val log: Log? = LogRoot.tag("ScreenStack.bindToPlatform")
             val storedStack = PersistentProperty<List<String>>("main-stack", listOf())
 
             fun guessAndImplementFromUrlBar() {
@@ -336,7 +341,7 @@ public var basePath: String = ((document.getElementById("baseUrlLocation") as? H
     ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
     ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }
     ?: "/")
-    .also { println("Base path is $it") }
+    .also { Log.info("Base path is $it") }
 
 private fun Location.urlLike() = UrlLikePath(
     segments = pathname.removePrefix("/" + basePath.substringAfter("://").substringAfter('/')).split('/')

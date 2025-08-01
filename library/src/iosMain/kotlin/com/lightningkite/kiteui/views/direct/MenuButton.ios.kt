@@ -1,20 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.onRemove
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     override val native = FrameLayoutButton()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
 
     public actual fun opensMenu(createMenu: Frame.() -> Unit) {
         onRemove(native.setOnClick {

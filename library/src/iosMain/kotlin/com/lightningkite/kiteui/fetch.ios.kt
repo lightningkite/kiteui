@@ -2,7 +2,12 @@
 
 package com.lightningkite.kiteui
 
-import com.lightningkite.signal.AppScope
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -14,6 +19,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
 import io.ktor.websocket.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -21,8 +28,6 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import platform.Foundation.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 public val client = HttpClient {
     install(WebSockets)
@@ -113,6 +118,8 @@ public actual suspend fun fetch(
             }
 
             RequestResponse(response)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Network request failed", e)
         }
@@ -157,6 +164,8 @@ public actual class RequestResponse(val wraps: HttpResponse) {
                 }
             }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw e
         }
@@ -171,6 +180,8 @@ public actual class RequestResponse(val wraps: HttpResponse) {
                 }
             }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw e
         }
@@ -273,6 +284,8 @@ public class WebSocketWrapper(val url: String) : WebSocket {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
@@ -348,8 +361,9 @@ public fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.t
     }
 }
 
-public actual fun Blob.bytes(): Long = this.data.length.toLong()
-public actual fun FileReference.bytes(): Long = -1L
+actual fun Blob.bytes(): Long = this.data.length.toLong()
+actual suspend fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
+actual fun FileReference.bytes(): Long = -1L
 
 //public actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
 //public actual suspend fun FileReference.byteArray(): ByteArray {

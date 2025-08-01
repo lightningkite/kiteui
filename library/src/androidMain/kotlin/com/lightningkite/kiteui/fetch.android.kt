@@ -6,8 +6,13 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.signal.AppScope
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -17,17 +22,16 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.websocket.*
+import java.net.UnknownHostException
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.net.UnknownHostException
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 
 public val client: HttpClient
@@ -35,7 +39,7 @@ public val client: HttpClient
         return AndroidAppContext.ktorClient
     }
 
-private val fetchLog = ConsoleRoot.tag("fetch")
+private val fetchLog = LogRoot.tag("fetch")
 
 public actual suspend fun fetch(
     url: String,
@@ -98,6 +102,8 @@ public actual suspend fun fetch(
                 }
             }
             return RequestResponse(response)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             fetchLog.log("Attempt $attempt: <X $method $url ${e::class} ${e.message}")
             if (attempt >= maxRetries || e !is UnknownHostException) {
@@ -143,6 +149,8 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
         try {
             val result = wraps.bodyAsText()
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -153,6 +161,8 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
             val result = wraps.body<ByteArray>()
                 .let { Blob(it, wraps.contentType()?.toString() ?: "application/octet-stream") }
             return result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ConnectionException("Reading body failed", e)
         }
@@ -255,6 +265,8 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
                         onClose.forEach { it(reason?.code ?: 0) }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch(e: Exception) {
                 withContext(Dispatchers.Main) {
                     onClose.forEach { it(0) }
@@ -358,3 +370,5 @@ public actual suspend fun FileReference.text(): String = withContext(Dispatchers
 public actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }
+
+actual suspend fun Blob.toByteArray(): ByteArray = data

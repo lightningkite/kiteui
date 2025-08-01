@@ -89,6 +89,7 @@ public actual class FloatingInfoHolder public actual constructor(public val sour
                 native.style.height = "auto"
                 native.style.width = "unset"
                 native.style.height = "unset"
+                native.classes.add("popover")
                 var tx = 0.0
                 var txm = 0
                 var ty = 0.0

@@ -2,17 +2,21 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.onRemove
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
-import platform.CoreGraphics.CGRectMake
 
 
 public actual class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
@@ -93,7 +97,7 @@ public actual class TextInput public actual constructor(context: RContext) : RVi
             native.informParentOfSizeChange()
         }
 
-    public actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
             var lastValue = value
             return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)
@@ -109,31 +113,14 @@ public actual class TextInput public actual constructor(context: RContext) : RVi
     public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            textField.autocapitalizationType = when (value.case) {
-                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-            }
-            textField.keyboardType = when (value.type) {
-                KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer -> UIKeyboardTypeNumberPad
-                KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
-                KeyboardType.Email -> UIKeyboardTypeEmailAddress
-            }
-            textField.textContentType = when (value.autocomplete) {
-                AutoComplete.Email -> UITextContentTypeUsername
-                AutoComplete.Password -> UITextContentTypePassword
-                AutoComplete.NewPassword -> UITextContentTypeNewPassword
-                AutoComplete.OneTimeCode -> UITextContentTypeOneTimeCode
-                else -> null
-            }
+            textField.autocapitalizationType = value.case.ios
+            textField.keyboardType = value.type.ios
+            textField.textContentType = value.autocomplete.iosTextContentType
+            textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
             textField.autocorrectionType = when {
                 value.autocorrect && value.type == KeyboardType.Text -> UITextAutocorrectionType.UITextAutocorrectionTypeDefault
                 else -> UITextAutocorrectionType.UITextAutocorrectionTypeNo
             }
-            textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
     override fun actionSet(value: Action?) {

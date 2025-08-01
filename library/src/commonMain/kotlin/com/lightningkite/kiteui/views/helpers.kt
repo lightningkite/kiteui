@@ -3,8 +3,13 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
@@ -60,8 +65,8 @@ public fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String
 
 public val Icon.Companion.empty get() = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf())
 
-public fun <T> RView.forEach(
-    items: Readable<List<T>>,
+fun <T> RView.forEach(
+    items: Reactive<List<T>>,
     render: ViewWriter.(T) -> Unit
 ) {
     reactiveScope {
@@ -70,79 +75,79 @@ public fun <T> RView.forEach(
     }
 }
 
-public fun <T> RView.forEachUpdating(
-    items: Readable<List<T>>,
+fun <T> RView.forEachUpdating(
+    items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
-    render: ViewWriter.(Readable<T>) -> Unit
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) {
-        val currentViews = ArrayList<LateInitProperty<T>>()
-        val currentView = this
-        reactiveScope(onLoad = {
-            currentView.withoutAnimation {
-                if (placeholdersWhileLoading <= 0) return@reactiveScope
-                if (currentViews.size < placeholdersWhileLoading) {
-                    repeat(placeholdersWhileLoading - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
+    val currentViews = ArrayList<LateInitSignal<T>>()
+    val currentView = this
+    reactiveScope(onLoad = {
+        currentView.withoutAnimation {
+            if (placeholdersWhileLoading <= 0) return@reactiveScope
+            if (currentViews.size < placeholdersWhileLoading) {
+                repeat(placeholdersWhileLoading - currentViews.size) {
+                    val newProp = LateInitSignal<T>()
+                    render(newProp)
+                    currentViews.add(newProp)
                 }
-            }*/
-                val children = currentView.children
-                for (index in 0 until placeholdersWhileLoading) {
-                    children[index].shown = true
-                    currentViews[index].unset()
-                }
-                for (index in placeholdersWhileLoading..<currentViews.size) {
-                    children[index].shown = false
-                }
+            }/* else if(currentViews.size > itemList.size) {
+            currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
+                currentView.removeNView(it)
+                currentViews.removeLast()
             }
-        }) {
-            val itemList = items()
-            currentView.withoutAnimation {
-                val oldCurrentViewsSize = currentViews.size
-                if (currentViews.size < itemList.size) {
-                    repeat(itemList.size - currentViews.size) {
-                        val newProp = LateInitProperty<T>()
-                        newProp.value = itemList[currentViews.size]
-                        render(newProp)
-                        currentViews.add(newProp)
-                    }
-                }/* else if(currentViews.size > itemList.size) {
-                currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
-                    currentView.removeNView(it)
-                    currentViews.removeLast()
+        }*/
+            val children = currentView.children
+            for (index in 0 until placeholdersWhileLoading) {
+                children[index].shown = true
+                currentViews[index].unset()
+            }
+            for (index in placeholdersWhileLoading..<currentViews.size) {
+                children[index].shown = false
+            }
+        }
+    }) {
+        val itemList = items()
+        currentView.withoutAnimation {
+            val oldCurrentViewsSize = currentViews.size
+            if (currentViews.size < itemList.size) {
+                repeat(itemList.size - currentViews.size) {
+                    val newProp = LateInitSignal<T>()
+                    newProp.value = itemList[currentViews.size]
+                    render(newProp)
+                    currentViews.add(newProp)
                 }
-            }*/
-                val children = currentView.children
-                for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
-                    children[index].shown = true
-                    currentViews[index].value = itemList[index]
-                }
-                for (index in itemList.size..<currentViews.size) {
-                    children[index].shown = false
-                }
+            }/* else if(currentViews.size > itemList.size) {
+            currentView.listNViews().takeLast(currentViews.size - itemList.size).forEach {
+                currentView.removeNView(it)
+                currentViews.removeLast()
+            }
+        }*/
+            val children = currentView.children
+            for (index in 0 ..< min(oldCurrentViewsSize, itemList.size)) {
+                children[index].shown = true
+                currentViews[index].value = itemList[index]
+            }
+            for (index in itemList.size..<currentViews.size) {
+                children[index].shown = false
             }
         }
     }
+}
 
-public fun <T, ID> RowOrCol.forEachById(
-    items: Readable<List<T>>,
+fun <T, ID> RowOrCol.forEachById(
+    items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWrapper = { ViewWrapper },
-    render: ViewWriter.(Readable<T>) -> ViewModifiable
+    render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
-        public var oldIndex: Int,
-        public val oldId: ID,
-        public val data: Property<T>,
-        public val view: RView,
-        public val shown: Property<Boolean>
+        var oldIndex: Int,
+        val oldId: ID,
+        val data: Signal<T>,
+        val view: RView,
+        val shown: Signal<Boolean>
     ) {
         public var livenessIter = 0
         public fun show() {
@@ -182,8 +187,8 @@ public fun <T, ID> RowOrCol.forEachById(
                     it.show()
                 }
             } else {
-                val shown = Property(false)
-                val data = Property(toRender)
+                val shown = Signal(false)
+                val data = Signal(toRender)
                 val indexWriter = object: ViewWriter() {
                     override val context: RContext get() = this@forEachById.context
                     override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
@@ -210,17 +215,17 @@ public fun <T, ID> RowOrCol.forEachById(
         old.subList(oldPos, old.size).forEach { it.hide() }
     }
 }
-public fun <T> RowOrCol.forEachAnimated(
-    items: Readable<List<T>>,
+fun <T> RowOrCol.forEachAnimated(
+    items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { ViewWrapper },
     render: ViewWriter.(T) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
-        public var oldIndex: Int,
-        public val data: T,
-        public val view: RView,
-        public val shown: Property<Boolean>
+        var oldIndex: Int,
+        val data: T,
+        val view: RView,
+        val shown: Signal<Boolean>
     ) {
         public var livenessIter = 0
         public fun show() {
@@ -257,7 +262,7 @@ public fun <T> RowOrCol.forEachAnimated(
                 }
                 oldPos = matchIndex + 1
             } else {
-                val shown = Property(false)
+                val shown = Signal(false)
                 val indexWriter = object: ViewWriter() {
                     override val context: RContext get() = this@forEachAnimated.context
                     override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext

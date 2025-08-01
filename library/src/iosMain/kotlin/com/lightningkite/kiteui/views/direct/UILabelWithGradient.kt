@@ -1,8 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
+import com.lightningkite.kiteui.openTab
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.debugPrint
 import com.lightningkite.kiteui.views.extensionPadding
 import com.lightningkite.kiteui.views.extensionSafeInsetPadding
 import com.lightningkite.kiteui.views.toUiColor
@@ -15,9 +19,11 @@ import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.*
 import platform.objc.sel_registerName
+import kotlin.experimental.ExperimentalNativeApi
 
 
-public class UILabelWithGradient : UIView(CGRectZero.readValue()) {
+@OptIn(ExperimentalNativeApi::class)
+class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
@@ -86,8 +92,7 @@ public class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             )
         }
         return label.sizeThatFits(smallerSize).useContents {
-            if(com.lightningkite.kiteui.viewDebugTarget?.native == this@UILabelWithGradient)
-                println("Size that fits on text: $width, $height")
+            debugPrint { "Size that fits on text: $width, $height" }
             CGSizeMake(
                 width = width + padding.horizontalSum.value,
                 height = height.coerceAtLeast(label.font.lineHeight) + padding.verticalSum.value,

@@ -2,17 +2,21 @@ package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.signal.ImmediateWritable
-import com.lightningkite.signal.Property
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }
     }
-    private val checkedProp = Property(false)
-    public actual val checked: ImmediateWritable<Boolean> get() = checkedProp
+    private val checkedProp = Signal(false)
+    actual val checked: MutableReactiveValue<Boolean> get() = checkedProp
 
     init {
         checked.addListener { refreshTheming() }

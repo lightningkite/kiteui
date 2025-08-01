@@ -2,8 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.signal.ImmediateWritable
+import com.lightningkite.kiteui.models.KeyCodes
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
@@ -12,6 +18,7 @@ public actual class ToggleButton public actual constructor(context: RContext) : 
         tag = "input"
         attributes.type = "checkbox"
         classes.add("checkResponsive")
+        classes.add("kui")
         attributes.hidden = true
         style.display = "none"
     }
@@ -42,7 +49,7 @@ public actual class ToggleButton public actual constructor(context: RContext) : 
         Frame.internalAddChildStack(this, index, view)
     }
 
-    public actual val checked: ImmediateWritable<Boolean> = input.vprop(
+    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

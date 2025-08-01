@@ -2,9 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -14,9 +19,9 @@ public actual class Select public actual constructor(context: RContext) : RView(
         native.classes.add("editable")
     }
 
-    public actual fun <T> bind(
-        edits: Writable<T>,
-        data: Readable<List<T>>,
+    actual fun <T> bind(
+        edits: MutableReactive<T>,
+        data: Reactive<List<T>>,
         render: (T) -> String
     ) {
         var list: List<T> = listOf()
@@ -26,6 +31,7 @@ public actual class Select public actual constructor(context: RContext) : RView(
             native.clearChildren()
             list.mapIndexed { index, it ->
                 native.appendChild(FutureElement().apply {
+                    classes.add("kui")
                     tag = "option"
                     classes.add("checkResponsive")
                     attributes.valueString = index.toString()
