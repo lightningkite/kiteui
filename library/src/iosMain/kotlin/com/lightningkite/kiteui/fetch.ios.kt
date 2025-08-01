@@ -129,6 +129,7 @@ public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(h
 public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
+@InternalKiteUi
 public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
@@ -310,7 +311,9 @@ public class WebSocketWrapper(val url: String) : WebSocket {
     }
 }
 
+@InternalKiteUi
 public actual class Blob(val data: NSData, val type: String = "application/octet-stream")
+@InternalKiteUi
 public actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
 
 

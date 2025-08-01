@@ -6,6 +6,7 @@ import android.location.Location
 import android.location.LocationManager
 import com.lightningkite.kiteui.views.AndroidAppContext
 
+@InternalKiteUi
 public actual object Geolocation {
 
     private val locationService: LocationManager by lazy {

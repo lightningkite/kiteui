@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -11,6 +12,7 @@ import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
 
 
+@InternalKiteUi
 public fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
     if(this is UIScrollView) {
         setFrame(CGRectMake(x, y, width, height))
@@ -27,7 +29,7 @@ public fun UIView.setPsuedoframe(x: CGFloat, y: CGFloat, width: CGFloat, height:
     }
 }
 
-
+@InternalKiteUi
 public fun UIView.setPsuedoframe(value: CValue<CGRect>) {
 //    setFrame(value)
     setBounds(

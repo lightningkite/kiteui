@@ -20,6 +20,7 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -42,6 +43,7 @@ public actual fun ViewWriter.hintPopover(
 }
 
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -85,9 +87,11 @@ public actual fun ViewWriter.hasPopover(
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     this.beforeNextElementSetup {
@@ -115,12 +119,14 @@ public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrap
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {

@@ -15,6 +15,7 @@ import android.widget.*
 import android.widget.ImageView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.setMargins
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.viewDebugTarget
@@ -25,8 +26,9 @@ import kotlin.math.roundToInt
 import android.widget.TextView as AndroidTextView
 import com.lightningkite.kiteui.models.Paint as KiteUiPaint
 
-
+@InternalKiteUi
 public fun View.setPaddingAll(padding: Int) = setPadding(padding, padding, padding, padding)
+@InternalKiteUi
 public fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //val NView.selected: Writable<Boolean>
 //    get() = object : Writable<Boolean> {

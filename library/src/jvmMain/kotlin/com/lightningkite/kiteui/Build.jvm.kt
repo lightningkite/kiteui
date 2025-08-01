@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui
 
+@InternalKiteUi
 public actual object Build {
     private var _version: String = ""
     public actual val version: String get() = _version

@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.HtmlElementLike
 
+@InternalKiteUi
 public fun <V> HtmlElementLike.vprop(
     eventName: String,
     get: HtmlElementLike.() -> V,
@@ -28,6 +30,7 @@ public fun <V> HtmlElementLike.vprop(
         }
     }
 }
+@InternalKiteUi
 public fun <V> HtmlElementLike.vread(
     eventName: String,
     get: HtmlElementLike.() -> V
@@ -44,6 +47,7 @@ public fun <V> HtmlElementLike.vread(
     }
 }
 
+@InternalKiteUi
 public fun HtmlElementLike.vevent(eventName: String): Listenable {
     return object: BaseListenable() {
         init {

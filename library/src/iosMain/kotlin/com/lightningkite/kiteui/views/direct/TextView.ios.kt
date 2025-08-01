@@ -152,6 +152,7 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
 public const val ENABLE_DYNAMIC_TYPE = false
+@InternalKiteUi
 public fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {

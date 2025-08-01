@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.core.content.getSystemService
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.signal.*
 
 public fun EditText.contentProperty(): ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable(), TextWatcher {
@@ -28,6 +29,7 @@ public fun CompoundButton.contentProperty(): ImmediateWritable<Boolean> = object
     override suspend fun set(value: Boolean) { isChecked = value }
     init { setOnCheckedChangeListener(this) }
 }
+@InternalKiteUi
 public fun EditText.focusIsKeyboard(): EditText {
     onFocusChangeListener = object: View.OnFocusChangeListener {
         override fun onFocusChange(v: View, hasFocus: Boolean) {

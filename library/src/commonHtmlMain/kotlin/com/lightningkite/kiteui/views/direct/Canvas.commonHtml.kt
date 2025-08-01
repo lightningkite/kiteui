@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
@@ -91,6 +92,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
 
 public expect fun Canvas.onDelegateSet(delegate: CanvasDelegate?)
 
+@InternalKiteUi
 public expect fun Canvas.setupResizeListener()
 
 //public actual var Canvas.delegate: CanvasDelegate?

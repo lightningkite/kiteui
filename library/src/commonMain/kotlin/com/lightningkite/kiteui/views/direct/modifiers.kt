@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
@@ -32,6 +33,7 @@ public interface PopoverContext {
     public fun close()
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public expect fun ViewWriter.textPopover(message: String): ViewWrapper
 
@@ -114,6 +116,7 @@ public inline fun ViewWriter.scrolling(
     return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
 }
 
+@InternalKiteUi
 public expect inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,

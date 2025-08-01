@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.signal.BaseListenable
@@ -32,11 +33,13 @@ public actual fun HtmlElementLike.resizeObserver(): Listenable {
     }
 }
 
+@InternalKiteUi
 public inline fun HtmlElementLike.suppressMutationObserverForStyle(change: ()->Unit) {
     (this.element as? HTMLElement)?.let {
         it.suppressMutationObserverForStyle { change() }
     } ?: change()
 }
+@InternalKiteUi
 public inline fun HTMLElement.suppressMutationObserverForStyle(change: ()->Unit) {
     val e = this.asDynamic().__suppressMutationObserverStyle as? ArrayList<String> ?: run {
         val n = ArrayList<String>()
@@ -46,6 +49,7 @@ public inline fun HTMLElement.suppressMutationObserverForStyle(change: ()->Unit)
     change()
     e.add(this.getAttribute("style") ?: "")
 }
+@InternalKiteUi
 public inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit) {
     val e = this.asDynamic().__suppressMutationObserverClass as? ArrayList<String> ?: run {
         val n = ArrayList<String>()
@@ -56,6 +60,7 @@ public inline fun HTMLElement.suppressMutationObserverForClass(change: ()->Unit)
     e.add(this.getAttribute("class") ?: "")
 }
 
+@InternalKiteUi
 public fun HTMLElement.measureByTempEdit(max: Size): Size {
     val tempchildwidth = this.style.width
     val tempchildheight = this.style.height
@@ -79,6 +84,7 @@ public fun HTMLElement.measureByTempEdit(max: Size): Size {
     return out
 }
 
+@InternalKiteUi
 public fun HTMLElement.measureByDuplicate(max: Size): Size {
     println("Measuring by duplicate...")
     // This is nasty, but this is the only cross-browser safe way to do this.
@@ -97,6 +103,7 @@ public fun HTMLElement.measureByDuplicate(max: Size): Size {
     return out
 }
 
+@InternalKiteUi
 public fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.

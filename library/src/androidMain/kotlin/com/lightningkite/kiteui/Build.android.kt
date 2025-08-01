@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo
 import com.lightningkite.kiteui.views.AndroidAppContext
 
 
+@InternalKiteUi
 public actual object Build {
     public actual val version: String get() {
         val pInfo: PackageInfo = AndroidAppContext.applicationCtx.getPackageManager().getPackageInfo(AndroidAppContext.applicationCtx.getPackageName(), 0)

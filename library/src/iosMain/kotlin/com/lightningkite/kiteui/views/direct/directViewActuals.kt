@@ -3,6 +3,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.objc.KeyValueObserverProtocol
@@ -19,7 +20,7 @@ import kotlin.experimental.ExperimentalNativeApi
 
 public class Ref<T>(var target: T?)
 
-
+@InternalKiteUi
 public inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
     val actionHolder = object: NSObject() {
         @ObjCAction
@@ -43,6 +44,7 @@ public inline fun UIControl.onEvent(calculationContext: CalculationContext, even
     }
 }
 
+@InternalKiteUi
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 public fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
     val observer = object: NSObject(), KeyValueObserverProtocol {
@@ -71,6 +73,7 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
     }
 }
 
+@InternalKiteUi
 public fun UIControl.findNextFocus(): UIView? {
     println("findNextFocus $this")
     return superview?.let {

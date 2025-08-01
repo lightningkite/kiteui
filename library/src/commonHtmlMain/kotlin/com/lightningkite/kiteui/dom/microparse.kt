@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.dom
 
 import com.lightningkite.kiteui.InternalKiteUi
 
+@InternalKiteUi
 public sealed interface MPNode {
     public fun secure()
 

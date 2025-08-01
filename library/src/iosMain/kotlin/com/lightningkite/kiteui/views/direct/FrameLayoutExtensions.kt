@@ -62,6 +62,7 @@ public fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Si
     }
 }
 
+@InternalKiteUi
 @OptIn(ExperimentalForeignApi::class)
 public fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
     val frameLayout = this
@@ -93,6 +94,7 @@ public fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<Ha
 }
 
 private fun UIView.toShortString() = this.toString().substringBefore(';').substringAfter('<')
+@InternalKiteUi
 public fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
     if (hidden) return null
     if (extensionCollapsed == true) return null
@@ -151,6 +153,7 @@ public fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?
 }
 
 
+@InternalKiteUi
 public fun UIView.frameLayoutSizeThatFits(
     size: CValue<CGSize>,
     childSizeCache: ArrayList<HashMap<Size, Size>>
@@ -206,6 +209,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
     }.also { t.cancel() }
 }
 
+@InternalKiteUi
 public fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val it = child ?: return
     val index = subviews.indexOf(child)
@@ -213,11 +217,13 @@ public fun UIView.frameLayoutSubviewDidChangeSizing(child: UIView?, childSizeCac
     informParentOfSizeChangeDueToChild()
 }
 
+@InternalKiteUi
 public fun UIView.frameLayoutDidAddSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
     childSizeCache.add(index, HashMap())
 }
 
+@InternalKiteUi
 public fun UIView.frameLayoutWillRemoveSubview(subview: UIView, childSizeCache: ArrayList<HashMap<Size, Size>>) {
     val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
     childSizeCache.removeAt(index)

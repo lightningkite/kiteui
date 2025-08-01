@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -104,6 +105,8 @@ public actual class TextView public actual constructor(context: RContext) :
 
 
 private val typefaceCache = HashMap<FontAndStyle, Typeface>()
+
+@InternalKiteUi
 public fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
     TypefaceCompat.create(
         context,

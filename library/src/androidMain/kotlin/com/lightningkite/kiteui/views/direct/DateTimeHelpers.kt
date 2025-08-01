@@ -3,8 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.view.View
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlinx.datetime.*
 
+@InternalKiteUi
 public fun View.showDatePicker(
     start: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     min: LocalDate? = null,
@@ -27,6 +29,7 @@ public fun View.showDatePicker(
     }
 }
 
+@InternalKiteUi
 public fun View.showTimePicker(
     start: LocalTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time,
     min: LocalTime? = null,

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Console
 import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.signal.ReactiveContext
 import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.RView
@@ -342,6 +343,7 @@ private val showHideWorker = label@{
 public inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     asDynamic().animate(keyframes, options) as Animation
 
+@InternalKiteUi
 @Suppress("NOTHING_TO_INLINE")
 public inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
 public external interface Animation {

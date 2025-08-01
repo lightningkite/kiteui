@@ -6,6 +6,7 @@ import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 
 
+@InternalKiteUi
 public actual object Build {
     public actual val version: String get() = window.asDynamic().version.toString()
     public actual val debug: Boolean get() = (window.asDynamic().debug as? Boolean) == true

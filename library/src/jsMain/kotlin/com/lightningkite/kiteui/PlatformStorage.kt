@@ -2,6 +2,7 @@ package com.lightningkite.kiteui
 
 import kotlinx.browser.window
 
+@InternalKiteUi
 public actual object PlatformStorage {
     public actual fun get(key: String): String? {
         return window.localStorage.getItem(key)

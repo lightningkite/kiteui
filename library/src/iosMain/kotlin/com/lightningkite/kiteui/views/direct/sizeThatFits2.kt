@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.SizeConstraints
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -12,6 +13,7 @@ import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.viewDebugTarget
 
 
+@InternalKiteUi
 public fun UIView.sizeThatFits2(
     size: CValue<CGSize>,
     sizeConstraints: SizeConstraints?

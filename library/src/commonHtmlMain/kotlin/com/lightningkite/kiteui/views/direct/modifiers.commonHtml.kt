@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.signal.*
@@ -7,6 +8,7 @@ import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.CoroutineScope
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -29,6 +31,7 @@ public actual fun ViewWriter.hintPopover(
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -65,6 +68,7 @@ public actual fun ViewWriter.hasPopover(
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
     card - text {
@@ -72,6 +76,7 @@ public actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopo
     }
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
@@ -114,6 +119,7 @@ public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrap
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     beforeNextElementSetup {
@@ -122,6 +128,7 @@ public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, hor
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {

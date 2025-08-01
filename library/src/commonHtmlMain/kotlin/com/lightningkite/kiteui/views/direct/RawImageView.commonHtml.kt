@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.FileReference
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ImageLocal
 import com.lightningkite.kiteui.models.ImageRaw
 import com.lightningkite.kiteui.models.ImageRemote
@@ -79,6 +80,7 @@ public expect fun createObjectURL(blob: Blob): String
 @JsName("createObjectURLFileReference")
 public expect fun createObjectURL(fileReference: FileReference): String
 
+@InternalKiteUi
 public expect fun RawImageViewLike.nativeLoad(url: String?)
 
 public actual typealias ZoomState = Unit

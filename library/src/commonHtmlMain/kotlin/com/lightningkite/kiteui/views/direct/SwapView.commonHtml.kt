@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.*
 
@@ -22,6 +23,7 @@ public actual class SwapView public actual constructor(context: RContext) : RVie
     }
 }
 
+@InternalKiteUi
 public expect fun SwapView.nativeSwap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit
 //{
 //    val keyframeName = KiteUiCss.transition(transition)

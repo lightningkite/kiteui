@@ -12,6 +12,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
+import com.lightningkite.kiteui.InternalKiteUi
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
@@ -22,6 +23,7 @@ import com.lightningkite.signal.ReactiveContext
 import com.lightningkite.signal.reactiveScope
 import com.lightningkite.kiteui.views.*
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
@@ -113,12 +115,14 @@ public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrap
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
     wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
@@ -289,6 +293,7 @@ public class DesiredSizeView(context: Context) : ViewGroup(context) {
     }
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
@@ -304,6 +309,7 @@ public actual fun ViewWriter.hintPopover(
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
@@ -333,6 +339,7 @@ public actual fun ViewWriter.hasPopover(
     return ViewWrapper
 }
 
+@InternalKiteUi
 @ViewModifierDsl3
 public actual fun ViewWriter.textPopover(message: String): ViewWrapper {
     beforeNextElementSetup {

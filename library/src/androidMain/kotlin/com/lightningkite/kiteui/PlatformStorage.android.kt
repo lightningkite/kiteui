@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.lightningkite.kiteui.views.AndroidAppContext
 
-
+@InternalKiteUi
 public actual object PlatformStorage {
 
     private val preferences: SharedPreferences by lazy {
