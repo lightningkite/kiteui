@@ -166,8 +166,7 @@ fun Button.onClickAssociatedField(
     val action = Action(
         title = title,
         icon = icon,
-        action = action
-    )
+    ) { action() }
     field.action = action
     this.action = action
 }
@@ -182,8 +181,7 @@ fun Button.onClickAssociatedField(
     val action = Action(
         title = title,
         icon = icon,
-        action = action
-    )
+    ) { action() }
     field.action = action
     this.action = action
 }

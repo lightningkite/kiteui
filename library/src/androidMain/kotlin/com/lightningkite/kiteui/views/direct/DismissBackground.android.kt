@@ -16,7 +16,7 @@ actual class DismissBackground actual constructor(context: RContext): RView(cont
         }
     }
     actual fun onClick(action: suspend () -> Unit) {
-        val action = Action("Dismiss", Icon.close, action = action)
+        val action = Action("Dismiss", Icon.close) { action() }
         native.setOnClickListener { _ ->
             action.startAction(this)
         }
