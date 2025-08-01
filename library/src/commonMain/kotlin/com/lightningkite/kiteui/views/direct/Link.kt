@@ -8,11 +8,11 @@ import com.lightningkite.kiteui.views.RView
 
 
 public expect class Link(context: RContext) : RView {
-    var enabled: Boolean
-    var to: (() -> Page)?
-    var onNavigator: PageNavigator
-    var newTab: Boolean
-    var resetsStack: Boolean
-    fun onClick(action: suspend () -> Unit)
-    fun onNavigate(action: suspend () -> Unit)
+    public var enabled: Boolean
+    public var to: (() -> Page)?
+    public var onNavigator: PageNavigator
+    public var newTab: Boolean
+    public var resetsStack: Boolean
+    public fun onClick(action: suspend () -> Unit)
+    public fun onNavigate(action: suspend () -> Unit)
 }

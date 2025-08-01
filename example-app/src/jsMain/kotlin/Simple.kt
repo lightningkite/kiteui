@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.BlobPropertyBag
 
-fun main() {
+public fun main() {
     var created: RView? = null
     window.onerror = { a, b, c, d, e ->
         println("ON ERROR HANDLER $a $b $c $d $e")

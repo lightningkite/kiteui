@@ -8,7 +8,7 @@ private var lastBoundPageNavigator: PageNavigator? = null
 
 public actual fun PageNavigator.bindToPlatform(context: RContext) {
     lastBoundPageNavigator = this
-    val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
+    public val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
 }
 
@@ -16,12 +16,12 @@ public actual fun PageNavigator.bindToPlatform(context: RContext) {
 // the lateinit ScreenStack.mainRoutes has been initialized, thus the need for postUserActivity() AND handleUserActivity()
 
 // To be called from scene(_:willConnectTo:options:)
-fun postUserActivity(activity: NSUserActivity) {
+public fun postUserActivity(activity: NSUserActivity) {
     postedLandingUrl = activity.webpageUrlLikePath()
 }
 
 // To be called from scene(_:continue:)
-fun handleUserActivity(activity: NSUserActivity) {
+public fun handleUserActivity(activity: NSUserActivity) {
     activity.webpageUrlLikePath()?.let { path ->
         lastBoundPageNavigator?.let { pageNavigator ->
             pageNavigator.navigate(pageNavigator.routes.parse(path) ?: return)

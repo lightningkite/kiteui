@@ -12,19 +12,19 @@ import java.nio.channels.FileChannel
 import java.nio.channels.OverlappingFileLockException
 import java.nio.file.Files
 
-abstract class CommonSymbolProcessor2(
+public abstract class CommonSymbolProcessor2(
     private val myCodeGenerator: CodeGenerator,
-    val myId: String,
-    val version: Int = 0
+    public val myId: String,
+    public val version: Int = 0
 ) : SymbolProcessor {
-    lateinit var log: Appendable
-    abstract fun process2(resolver: Resolver, files: Set<KSFile>)
-    abstract fun interestedIn(resolver: Resolver): Set<KSFile>
+    public lateinit var log: Appendable
+    public abstract fun process2(resolver: Resolver, files: Set<KSFile>)
+    public abstract fun interestedIn(resolver: Resolver): Set<KSFile>
 
     private lateinit var fileCreator: (dependencies: Dependencies, packageName: String, fileName: String, extensionName: String) -> Writer
 
     private var invoked = false
-    final override fun process(resolver: Resolver): List<KSAnnotated> {
+    public final override fun process(resolver: Resolver): List<KSAnnotated> {
         if (invoked) return listOf()
         invoked = true
 
@@ -122,7 +122,7 @@ abstract class CommonSymbolProcessor2(
         return listOf()
     }
 
-    fun createNewFile(
+    public fun createNewFile(
         dependencies: Dependencies,
         packageName: String,
         fileName: String,
@@ -133,12 +133,12 @@ abstract class CommonSymbolProcessor2(
 }
 
 
-fun Sequence<File>.checksum() = sumOf { it.readText().sumOf { it.code } }
-interface FileGenerator {
-    fun file(name: String): Writer
+public fun Sequence<File>.checksum() = sumOf { it.readText().sumOf { it.code } }
+public interface FileGenerator {
+    public fun file(name: String): Writer
 }
 
-fun processFiles(
+public fun processFiles(
     log: Appendable,
     version: Int,
     dependencies: Sequence<File>,

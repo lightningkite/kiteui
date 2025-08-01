@@ -4,7 +4,7 @@ import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.HtmlElementLike
 
-fun <V> HtmlElementLike.vprop(
+public fun <V> HtmlElementLike.vprop(
     eventName: String,
     get: HtmlElementLike.() -> V,
     set: HtmlElementLike.(V) -> Unit
@@ -16,19 +16,19 @@ fun <V> HtmlElementLike.vprop(
             }
         }
 
-        override var value: V
+        public override var value: V
             get() = get(this@vprop)
             set(value) {
                 set(this@vprop, value)
                 invokeAllListeners()
             }
-        override suspend fun set(value: V) {
+        public override suspend fun set(value: V) {
             set(this@vprop, value)
             invokeAllListeners()
         }
     }
 }
-fun <V> HtmlElementLike.vread(
+public fun <V> HtmlElementLike.vread(
     eventName: String,
     get: HtmlElementLike.() -> V
 ): Readable<V> {
@@ -39,12 +39,12 @@ fun <V> HtmlElementLike.vread(
             }
         }
 
-        override val value: V
+        public override val value: V
             get() = get(this@vread)
     }
 }
 
-fun HtmlElementLike.vevent(eventName: String): Listenable {
+public fun HtmlElementLike.vevent(eventName: String): Listenable {
     return object: BaseListenable() {
         init {
             addEventListener(eventName) {

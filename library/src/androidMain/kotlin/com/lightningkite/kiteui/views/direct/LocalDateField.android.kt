@@ -18,7 +18,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
     public actual val content: ImmediateWritable<LocalDate?> = property
     public actual var range: ClosedRange<LocalDate>? = null
 
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener {
             showDatePicker(
@@ -46,7 +46,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         }
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -59,5 +59,5 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = super.applyThemeWithRipple(theme)
 }

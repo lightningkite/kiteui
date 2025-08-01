@@ -25,8 +25,8 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Routable("animation-test")
-object AnimationTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = scrolling - col {
+public object AnimationTestPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = scrolling - col {
         val a = Property(true)
         val s = Property(true)
         val d = Property(true)

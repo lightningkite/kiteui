@@ -2,16 +2,16 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
 
-var debugMode: Boolean = false
+public var debugMode: Boolean = false
 public expect fun debugger(): Unit
-data class GCInfo(val usage: Long)
+public data class GCInfo(val usage: Long)
 public expect fun gc(): GCInfo
 public expect fun cleanImageCache()
 public expect fun gcReport()
 public expect class WeakReference<T: Any>(referred: T) {
-    fun get(): T?
+    public fun get(): T?
 }
-val leaks = ArrayList<WeakReference<*>>()
+public val leaks: ArrayList<WeakReference<*>> = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
 private val leakLog = ConsoleRoot.tag("RViewLeaks")
@@ -30,7 +30,7 @@ private fun gcIfNotVeryRecent() {
         }
     }
 }
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -39,7 +39,7 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -52,24 +52,24 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
 public expect fun assertMainThread()
 
 public expect fun Throwable.printStackTrace2()
-var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-fun Throwable.report(context: String = "") = Throwable_report(this, context)
+public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
+public fun Throwable.report(context: String = "") = Throwable_report(this, context)
 
 public expect fun Any?.identityHashCode(): Int
 
-var viewDebugTarget: RView? = null
+public var viewDebugTarget: RView? = null
 
-interface Console {
-    fun tag(tag: String): Console
-    fun log(vararg entries: Any?)
-    fun error(vararg entries: Any?)
-    fun info(vararg entries: Any?)
-    fun warn(vararg entries: Any?)
+public interface Console {
+    public fun tag(tag: String): Console
+    public fun log(vararg entries: Any?)
+    public fun error(vararg entries: Any?)
+    public fun info(vararg entries: Any?)
+    public fun warn(vararg entries: Any?)
 }
-fun Console.infoOrAbove(): Console = object : Console by this {
+public fun Console.infoOrAbove(): Console = object : Console by this {
     override fun log(vararg entries: Any?) {}
 }
-fun Console.warnOrAbove(): Console = object : Console by this {
+public fun Console.warnOrAbove(): Console = object : Console by this {
     override fun log(vararg entries: Any?) {}
     override fun info(vararg entries: Any?) {}
 }

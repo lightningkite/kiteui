@@ -13,12 +13,12 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.icon
 
 @Routable("docs/navigation")
-object NavigationPage: DocPage {
+public object NavigationPage: DocPage {
 
-    override val title: Readable<String>
+    public override val title: Readable<String>
         get() = Constant("Navigation: how to manage screens")
 
-    override val covers: List<String> = listOf(
+    public override val covers: List<String> = listOf(
         "Screen",
         "KiteUiScreen",
         "Navigator",
@@ -29,7 +29,7 @@ object NavigationPage: DocPage {
         "replace",
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("Navigation")
 

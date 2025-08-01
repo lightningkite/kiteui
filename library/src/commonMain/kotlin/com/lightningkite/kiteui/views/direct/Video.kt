@@ -13,11 +13,11 @@ import kotlin.contracts.*
 
 public expect class Video(context: RContext) : RView {
 
-    var source: VideoSource?
-    val time: Writable<Double>
-    val playing: Writable<Boolean>
-    val volume: Writable<Float>
-    var showControls: Boolean
-    var loop: Boolean
-    var scaleType: ImageScaleType
+    public var source: VideoSource?
+    public val time: Writable<Double>
+    public val playing: Writable<Boolean>
+    public val volume: Writable<Float>
+    public var showControls: Boolean
+    public var loop: Boolean
+    public var scaleType: ImageScaleType
 }

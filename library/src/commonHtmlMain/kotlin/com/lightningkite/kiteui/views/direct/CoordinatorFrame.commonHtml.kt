@@ -164,7 +164,7 @@ public actual class CoordinatorDragHandle public actual constructor(context: RCo
         Frame.internalAddChildStack(this, index, view)
     }
 
-    val iconView = icon {
+    public val iconView: IconView = icon {
         source = Icon.expand
     }
 

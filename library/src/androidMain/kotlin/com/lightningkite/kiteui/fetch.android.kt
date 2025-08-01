@@ -30,7 +30,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
-val client: HttpClient
+public val client: HttpClient
     get() {
         return AndroidAppContext.ktorClient
     }
@@ -119,7 +119,7 @@ public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(h
 public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
-public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
+public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
@@ -135,7 +135,7 @@ public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
     }
 }
 
-public actual class RequestResponse(val wraps: HttpResponse) {
+public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
     public actual suspend fun text(): String {
@@ -167,29 +167,29 @@ public actual fun websocket(url: String): WebSocket {
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val url: String) : WebSocket {
-    val closeReason = Channel<CloseReason>()
-    val sending = Channel<Frame>(10)
-    var stayOn = true
-    val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(public val url: String) : WebSocket {
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: ArrayList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: ArrayList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: ArrayList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: ArrayList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -262,37 +262,37 @@ class WebSocketWrapper(val url: String) : WebSocket {
         }
     }
 
-    override fun close(code: Short, reason: String) {
+    public override fun close(code: Short, reason: String) {
         stayOn = false
         closeReason.trySend(CloseReason(code, reason))
     }
 
-    override fun send(data: String) {
+    public override fun send(data: String) {
         sending.trySend(Frame.Text(data))
     }
 
-    override fun send(data: Blob) {
+    public override fun send(data: Blob) {
         sending.trySend(Frame.Binary(false, data.data))
     }
 
-    override fun onOpen(action: () -> Unit) {
+    public override fun onOpen(action: () -> Unit) {
         onOpen.add(action)
     }
 
-    override fun onMessage(action: (String) -> Unit) {
+    public override fun onMessage(action: (String) -> Unit) {
         onMessage.add(action)
     }
 
-    override fun onBinaryMessage(action: (Blob) -> Unit) {
+    public override fun onBinaryMessage(action: (Blob) -> Unit) {
         onBinaryMessage.add(action)
     }
 
-    override fun onClose(action: (Short) -> Unit) {
+    public override fun onClose(action: (Short) -> Unit) {
         onClose.add(action)
     }
 }
 
-public actual class FileReference(val uri: Uri)
+public actual class FileReference(public val uri: Uri)
 
 
 public actual fun Blob.mimeType() = type
@@ -316,9 +316,9 @@ public actual fun FileReference.fileName(): String {
         ?: return "Unknown File Name"
 }
 
-public actual class Blob(val data: ByteArray, val type: String)
+public actual class Blob(public val data: ByteArray, public val type: String)
 
-val webSocketClient: HttpClient by lazy {
+public val webSocketClient: HttpClient by lazy {
     HttpClient(CIO) {
         install(WebSockets) {
             pingInterval = 20_000.milliseconds

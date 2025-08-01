@@ -6,7 +6,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class MenuButton public actual constructor(context: RContext): RView(context) {
-    val floating = FloatingInfoHolder(this)
+    public val floating: FloatingInfoHolder = FloatingInfoHolder(this)
     init {
         themeChoice += ClickableSemantic
         native.tag = "button"

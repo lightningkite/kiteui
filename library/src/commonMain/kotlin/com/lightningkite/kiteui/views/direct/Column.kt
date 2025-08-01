@@ -5,6 +5,6 @@ import com.lightningkite.kiteui.views.*
 
 
 public expect class RowOrCol(context: RContext) : RView {
-    var vertical: Boolean
-    fun spacingOverrideBeforeNext(amount: Dimension)
+    public var vertical: Boolean
+    public fun spacingOverrideBeforeNext(amount: Dimension)
 }

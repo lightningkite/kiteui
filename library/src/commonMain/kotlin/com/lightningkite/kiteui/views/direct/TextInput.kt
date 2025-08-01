@@ -9,12 +9,12 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWithAction
 
-typealias TextField = TextInput
+public typealias TextField = TextInput
 public expect class TextInput(context: RContext) : RViewWithAction {
 
-    var enabled: Boolean
-    val content: ImmediateWritable<String>
-    var keyboardHints: KeyboardHints
-    var hint: String
-    var align: Align
+    public var enabled: Boolean
+    public val content: ImmediateWritable<String>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
+    public var align: Align
 }

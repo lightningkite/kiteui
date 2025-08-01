@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
+import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -18,25 +19,25 @@ import kotlin.random.Random
 
 public actual class FutureElement public actual constructor() {
     public actual val actualElementForLeakTracking: Any? get() = element
-    val elementToDo = ArrayList<(Element) -> Unit>()
-    var element: Element? = null
+    public val elementToDo: ArrayList<(Element) -> Unit> = ArrayList<(Element) -> Unit>()
+    public var element: Element? = null
         private set(value) {
             field = value
             style.native = (value as? HTMLElement)?.style ?: (value as? SVGElement)?.style
             attributes.native = value
         }
 
-    fun hydrate(value: Element) {
+    public fun hydrate(value: Element) {
         id = value.id
         content = value.innerHTML.takeUnless { it.isBlank() }
         this.element = value
     }
 
-    inline fun onElement(crossinline action: (Element) -> Unit) {
+    public inline fun onElement(crossinline action: (Element) -> Unit) {
         element?.let(action) ?: elementToDo.add { action(it) }
     }
 
-    fun create(): Element {
+    public fun create(): Element {
         element?.let { return it }
         val e = xmlns?.let { document.createElementNS(it, tag) } ?: document.createElement(tag)
         id?.let { e.id = it }
@@ -92,13 +93,13 @@ public actual class FutureElement public actual constructor() {
 
     public actual var xmlns: String? = null
     public actual var tag: String = "tag"
-    val attributesBack = json()
+    public val attributesBack: Json = json()
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
-    val styleBack = json()
+    public val styleBack: Json = json()
     public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
     public actual var desiredVerticalGravity: Align? = null
     public actual var desiredHorizontalGravity: Align? = null
-    val eventsBack = json()
+    public val eventsBack: Json = json()
     public actual inline fun addEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
@@ -118,7 +119,7 @@ public actual class FutureElement public actual constructor() {
         }
     }
 
-    val futureStyles = json()
+    public val futureStyles: Json = json()
     public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -138,7 +139,7 @@ public actual class FutureElement public actual constructor() {
         }
     }
 
-    val futureAttributes = json()
+    public val futureAttributes: Json = json()
     public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -243,20 +244,20 @@ public actual class FutureElement public actual constructor() {
         // assert order
     }
 
-    inner class ClassSet : MutableSet<String> {
-        val map = HashSet<String>()
-        override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
-        override fun addAll(elements: Collection<String>): Boolean =
+    public inner class ClassSet : MutableSet<String> {
+        public val map: HashSet<String> = HashSet<String>()
+        public override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
+        public override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
 
-        override val size: Int get() = this@FutureElement.element?.classList?.length ?: map.size
-        override fun clear() = element?.let { it.className = "" } ?: map.clear()
-        override fun isEmpty(): Boolean = element?.className?.isBlank() ?: map.isEmpty()
-        override fun containsAll(elements: Collection<String>): Boolean = elements.all { contains(it) }
-        override fun contains(element: String): Boolean =
+        public override val size: Int get() = this@FutureElement.element?.classList?.length ?: map.size
+        public override fun clear(): Unit = element?.let { it.className = "" } ?: map.clear()
+        public override fun isEmpty(): Boolean = element?.className?.isBlank() ?: map.isEmpty()
+        public override fun containsAll(elements: Collection<String>): Boolean = elements.all { contains(it) }
+        public override fun contains(element: String): Boolean =
             this@FutureElement.element?.let { it.hasClass(element) } ?: map.contains(element)
 
-        override fun iterator(): MutableIterator<String> = this@FutureElement.element?.let {
+        public override fun iterator(): MutableIterator<String> = this@FutureElement.element?.let {
             var index = 0
             val list = it.classList
             object : MutableIterator<String> {
@@ -275,11 +276,11 @@ public actual class FutureElement public actual constructor() {
             }
         } ?: map.iterator()
 
-        override fun retainAll(elements: Collection<String>): Boolean = throw NotImplementedError()
-        override fun remove(element: String): Boolean =
+        public override fun retainAll(elements: Collection<String>): Boolean = throw NotImplementedError()
+        public override fun remove(element: String): Boolean =
             this@FutureElement.element?.removeClass(element) ?: map.remove(element)
 
-        override fun removeAll(elements: Collection<String>): Boolean =
+        public override fun removeAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.removeClass(*elements.toTypedArray()) ?: map.removeAll(elements)
     }
 }
@@ -294,10 +295,10 @@ private fun remove(receiver: Json, key: String) {
     js("delete receiver[key]")
 }
 
-public actual class FutureElementStyle(var native: dynamic)
-public actual class FutureElementAttributes(var native: dynamic)
+public actual class FutureElementStyle(public var native: dynamic)
+public actual class FutureElementAttributes(public var native: dynamic)
 
-fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
+public fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
     Align.Start -> ScrollLogicalPosition.START
     Align.Center -> ScrollLogicalPosition.CENTER
     Align.End -> ScrollLogicalPosition.END
@@ -321,7 +322,7 @@ public actual fun RView.nativeScrollIntoView(
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
+public inline fun objectAssign(target: dynamic, source: dynamic): Any? = js("Object.assign(target, source)")
 public actual fun RView.nativeSetDragData(data: DragData?) {
     native.onElement {
         if (data != null) {
@@ -337,7 +338,7 @@ public actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
         if (listener != null) {
             (it as HTMLElement).ondragover = { e ->
                 if (listener.over(
-                        com.lightningkite.kiteui.models.DragEvent(
+                        DragEvent(
                             data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
                             xInView = e.x,
                             yInView = e.y
@@ -350,7 +351,7 @@ public actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
             }
             (it as HTMLElement).ondrop = { e ->
                 if (listener.drop(
-                        com.lightningkite.kiteui.models.DragEvent(
+                        DragEvent(
                             data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
                             xInView = e.x,
                             yInView = e.y

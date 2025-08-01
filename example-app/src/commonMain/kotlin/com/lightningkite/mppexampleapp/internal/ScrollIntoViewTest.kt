@@ -14,12 +14,12 @@ import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
 
 @Routable("internal/scroll-into-view-test")
-object ScrollIntoViewTest : Page {
+public object ScrollIntoViewTest : Page {
 
-    enum class Location { Top, Bottom }
-    val jumpTo = Property<Location?>(null)
+    public enum class Location { Top, Bottom }
+    public val jumpTo = Property<Location?>(null)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - frame {
             sizeConstraints(height = 500.rem) - col {
                 centered - important - button {

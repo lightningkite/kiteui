@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlin.coroutines.*
 
 @OptIn(ExperimentalStdlibApi::class)
-fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, action: suspend () -> Unit): Job {
+public fun CoroutineScope.load(context: CoroutineContext = EmptyCoroutineContext, action: suspend () -> Unit): Job {
     val state = RawReadable<Unit>()
     val result = launch(
         context,

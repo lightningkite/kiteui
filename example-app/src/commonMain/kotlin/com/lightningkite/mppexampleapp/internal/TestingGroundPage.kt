@@ -13,9 +13,9 @@ import com.lightningkite.mppexampleapp.Resources
 import kotlinx.coroutines.launch
 
 @Routable("testing")
-object TestingGroundPage: Page {
-    val progressRatio: Property<Float> = Property(0f)
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object TestingGroundPage: Page {
+    public val progressRatio: Property<Float> = Property(0f)
+    public override fun ViewWriter.render(): ViewModifiable = run {
 //        val ratioShared = sharedSuspending {
 //            kotlinx.coroutines.delay(1000)
 //            ratio.set(ratio.value + 0.1f)

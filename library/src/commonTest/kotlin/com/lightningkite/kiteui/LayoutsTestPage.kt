@@ -8,9 +8,9 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.*
 import kotlin.test.assertEquals
 
-class LayoutsTestPage : Page {
-    val checks = ArrayList<() -> Unit>()
-    override fun ViewWriter.render(): ViewModifiable {
+public class LayoutsTestPage : Page {
+    public val checks = ArrayList<() -> Unit>()
+    public override fun ViewWriter.render(): ViewModifiable {
         fun RView.parentRectangle() = parent!!.let { rectangleRelativeTo(it) }!!
         return card - col {
             checks += { println(parentRectangle()) }

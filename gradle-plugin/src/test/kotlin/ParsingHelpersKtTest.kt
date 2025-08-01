@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import org.junit.Test
 import org.junit.Assert.*
 
-class ParsingHelpersKtTest {
+public class ParsingHelpersKtTest {
     @Test fun test() {
         assertEquals(
             listOf("a", "b", "c"),

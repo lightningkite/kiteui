@@ -45,19 +45,19 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
     }
 }
 
-class NProgrammaticLayout(context: Context) : ViewGroup(context) {
-    var spacingCurrentPx: Double = 0.0
-    var paddingTopCurrentPx: Double = 0.0
-    var paddingLeftCurrentPx: Double = 0.0
-    var paddingRightCurrentPx: Double = 0.0
-    var paddingBottomCurrentPx: Double = 0.0
+public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
+    public var spacingCurrentPx: Double = 0.0
+    public var paddingTopCurrentPx: Double = 0.0
+    public var paddingLeftCurrentPx: Double = 0.0
+    public var paddingRightCurrentPx: Double = 0.0
+    public var paddingBottomCurrentPx: Double = 0.0
 
-    var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
+    public var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) {
             field = value
             silentRequestLayout()
         }
-    lateinit var rview: ProgrammaticLayout
+    public lateinit var rview: ProgrammaticLayout
     private val inProgress = object : ProgrammingLayoutInProgress {
         override val gap: Double get() = spacingCurrentPx
         override val padding: Double get() = paddingLeftCurrentPx
@@ -91,24 +91,24 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         )
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if(viewDebugTarget?.native == this) println("onMeasure on ProgrammaticLayout")
-        val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
-            View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
-            View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
+        val newWidth = when (MeasureSpec.getMode(widthMeasureSpec)) {
+            MeasureSpec.AT_MOST -> MeasureSpec.getSize(widthMeasureSpec).toDouble()
+            MeasureSpec.EXACTLY -> MeasureSpec.getSize(widthMeasureSpec).toDouble()
             else -> 100000.0
         }
-        val newHeight = when (View.MeasureSpec.getMode(heightMeasureSpec)) {
-            View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(heightMeasureSpec).toDouble()
-            View.MeasureSpec.EXACTLY -> View.MeasureSpec.getSize(heightMeasureSpec).toDouble()
+        val newHeight = when (MeasureSpec.getMode(heightMeasureSpec)) {
+            MeasureSpec.AT_MOST -> MeasureSpec.getSize(heightMeasureSpec).toDouble()
+            MeasureSpec.EXACTLY -> MeasureSpec.getSize(heightMeasureSpec).toDouble()
             else -> 100000.0
         }
         val r = delegate.measure(rview, inProgress, Size(newWidth, newHeight))
         setMeasuredDimension(r.width.roundToInt(), r.height.roundToInt())
     }
-    val placed = HashSet<View>()
+    public val placed: HashSet<View> = HashSet<View>()
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    public override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(r - l == 0 || b - t == 0) return
         if(viewDebugTarget?.native == this) println("onLayout on ProgrammaticLayout")
         placed.clear()
@@ -124,12 +124,12 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         }
     }
 
-    fun silentRequestLayout() {
+    public fun silentRequestLayout() {
         if(isInLayout) return
         super.requestLayout()
     }
 
-    override fun requestLayout() {
+    public override fun requestLayout() {
         if(viewDebugTarget?.native == this) println("requestLayout on ProgrammaticLayout")
         if(isInLayout) {
             return

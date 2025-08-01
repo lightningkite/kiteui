@@ -17,11 +17,11 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 @Routable("controls")
-object ControlsPage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+public object ControlsPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable {
         class PerfProperty<T>(startValue: T): ImmediateWritable<T> {
             private val listeners = ArrayList<() -> Unit>()
-            override var value: T = startValue
+            public override var value: T = startValue
             set(value) {
                 if(field != value) {
                     field = value
@@ -31,7 +31,7 @@ object ControlsPage : Page {
                 }
             }
 
-            override fun addListener(listener: () -> Unit): () -> Unit {
+            public override fun addListener(listener: () -> Unit): () -> Unit {
                 listeners.add(listener)
                 return {
                     val pos = listeners.indexOfFirst { it === listener }
@@ -40,7 +40,7 @@ object ControlsPage : Page {
                     }
                 }
             }
-            override suspend infix fun set(value: T) {
+            public override suspend infix fun set(value: T) {
                 this.value = value
             }
         }

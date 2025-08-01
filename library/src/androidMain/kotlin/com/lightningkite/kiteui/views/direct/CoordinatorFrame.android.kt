@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 
 public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = CoordinatorLayoutWithGestures(context.activity)
+    override val native: CoordinatorLayoutWithGestures = CoordinatorLayoutWithGestures(context.activity)
     override fun childTouches(child: RView): Int {
         val p = child.lparams as CoordinatorLayout.LayoutParams
         var total = 0

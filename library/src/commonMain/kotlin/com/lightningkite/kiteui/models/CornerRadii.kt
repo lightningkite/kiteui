@@ -1,15 +1,15 @@
 package com.lightningkite.kiteui.models
 
-sealed class CornerRadii {
-    data class Constant(val value: Dimension) : CornerRadii()
-    data class RatioOfSpacing(val value: Float) : CornerRadii()
-    data class ForceConstant(val value: Dimension) : CornerRadii()
-    data class RatioOfSize(val ratio: Float = 0.5f) : CornerRadii()
-    data class PerCorner(
-        val value: Dimension,
-        val topLeft: Boolean = false,
-        val topRight: Boolean = false,
-        val bottomLeft: Boolean = false,
-        val bottomRight: Boolean = false,
+public sealed class CornerRadii {
+    public data class Constant(val value: Dimension) : CornerRadii()
+    public data class RatioOfSpacing(val value: Float) : CornerRadii()
+    public data class ForceConstant(val value: Dimension) : CornerRadii()
+    public data class RatioOfSize(val ratio: Float = 0.5f) : CornerRadii()
+    public data class PerCorner(
+        public val value: Dimension,
+        public val topLeft: Boolean = false,
+        public val topRight: Boolean = false,
+        public val bottomLeft: Boolean = false,
+        public val bottomRight: Boolean = false,
     ) : CornerRadii()
 }

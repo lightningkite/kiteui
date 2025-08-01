@@ -63,12 +63,12 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             native.style.textAlign = when (value) {
                 Align.Start -> "start"
@@ -77,7 +77,7 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()

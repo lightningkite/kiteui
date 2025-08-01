@@ -14,10 +14,10 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Routable("load-animation-test")
-object LoadAnimationTestPage : Page {
+public object LoadAnimationTestPage : Page {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val loading = LateInitProperty<String>()
             val writable = Property<String>("")

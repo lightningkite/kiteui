@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
 
 
-class ExceptionHandlers {
-    companion object {
-        var clearErrorOnDependencyChange: Boolean = true
-        val root = object: ExceptionHandler {
+public class ExceptionHandlers {
+    public companion object {
+        public var clearErrorOnDependencyChange: Boolean = true
+        public val root: ExceptionHandler = object: ExceptionHandler {
             override val priority: Float get() = 0f
             var open = false
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
@@ -54,19 +54,19 @@ class ExceptionHandlers {
         }
     }
     private val handlers: ArrayList<ExceptionHandler> = arrayListOf()
-    fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
-    operator fun plusAssign(other: ExceptionHandler) {
+    public fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? = handlers.firstNotNullOfOrNull { it.handle(view, working, exception) }
+    public operator fun plusAssign(other: ExceptionHandler) {
         handlers.add(other)
         handlers.sortByDescending { it.priority }
     }
 }
-interface ExceptionHandler {
-    val priority: Float
-    fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)?
+public interface ExceptionHandler {
+    public val priority: Float
+    public fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)?
 }
-class ExceptionToMessages {
-    companion object {
-        val root = ExceptionToMessages().apply {
+public class ExceptionToMessages {
+    public companion object {
+        public val root: ExceptionToMessages = ExceptionToMessages().apply {
             this += object: ExceptionToMessage {
                 override val priority: Float
                     get() = 0f
@@ -83,18 +83,18 @@ class ExceptionToMessages {
         }
     }
     private val handlers: ArrayList<ExceptionToMessage> = arrayListOf()
-    fun handle(view: RView, exception: Exception): ExceptionMessage? = handlers.firstNotNullOfOrNull { it.handle(view, exception) }
-    operator fun plusAssign(other: ExceptionToMessage) {
+    public fun handle(view: RView, exception: Exception): ExceptionMessage? = handlers.firstNotNullOfOrNull { it.handle(view, exception) }
+    public operator fun plusAssign(other: ExceptionToMessage) {
         handlers.add(other)
         handlers.sortByDescending { it.priority }
     }
 }
-interface ExceptionToMessage {
-    val priority: Float
-    fun handle(view: RView, exception: Exception): ExceptionMessage?
+public interface ExceptionToMessage {
+    public val priority: Float
+    public fun handle(view: RView, exception: Exception): ExceptionMessage?
 
-    companion object {
-        inline operator fun <reified E: Exception> invoke(priority: Float = 2f, crossinline additionalCondition: (E)->Boolean = { true }, crossinline handler: RView.(E)->ExceptionMessage): ExceptionToMessage {
+    public companion object {
+        public inline operator fun <reified E: Exception> invoke(priority: Float = 2f, crossinline additionalCondition: (E)->Boolean = { true }, crossinline handler: RView.(E)->ExceptionMessage): ExceptionToMessage {
             return object: ExceptionToMessage {
                 override val priority: Float = priority
                 override fun handle(view: RView, exception: Exception): ExceptionMessage? {
@@ -104,7 +104,7 @@ interface ExceptionToMessage {
                 }
             }
         }
-        inline operator fun <reified E: Exception> invoke(priority: Float = 1f, crossinline handler: RView.(E)->ExceptionMessage): ExceptionToMessage {
+        public inline operator fun <reified E: Exception> invoke(priority: Float = 1f, crossinline handler: RView.(E)->ExceptionMessage): ExceptionToMessage {
             return object: ExceptionToMessage {
                 override val priority: Float = priority
                 override fun handle(view: RView, exception: Exception): ExceptionMessage? {
@@ -115,6 +115,6 @@ interface ExceptionToMessage {
         }
     }
 }
-data class ExceptionMessage(val title: String, val body: String, val actions: List<Action> = listOf())
+public data class ExceptionMessage(val title: String, val body: String, val actions: List<Action> = listOf())
 
-class PlainTextException(message: String, val title: String = "Error", val actions: List<Action> = listOf()): Exception(message)
+public class PlainTextException(message: String, public val title: String = "Error", public val actions: List<Action> = listOf()): Exception(message)

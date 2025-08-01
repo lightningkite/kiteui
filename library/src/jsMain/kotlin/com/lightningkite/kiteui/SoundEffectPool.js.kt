@@ -92,31 +92,37 @@ public actual class SoundEffectPool public actual constructor(concurrency: Int) 
     }
 }
 
-external class AudioContext() {
-    fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
-    fun createBufferSource(): AudioBufferSourceNode
-    fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
-    val destination: AudioDestinationNode
+@InternalKiteUi
+public external class AudioContext() {
+    public fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
+    public fun createBufferSource(): AudioBufferSourceNode
+    public fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
+    public val destination: AudioDestinationNode
 }
 
-open external class AudioNode {
-    fun connect(node: AudioNode)
-    fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
+@InternalKiteUi
+public open external class AudioNode {
+    public fun connect(node: AudioNode)
+    public fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
 }
 
-external class ChannelMergerNode : AudioNode
+@InternalKiteUi
+public external class ChannelMergerNode : AudioNode
 
-external class AudioBufferSourceNode : AudioNode {
-    var buffer: AudioBuffer
-    fun start()
-    fun stop()
+@InternalKiteUi
+public external class AudioBufferSourceNode : AudioNode {
+    public var buffer: AudioBuffer
+    public fun start()
+    public fun stop()
 }
 
-external class AudioBuffer {
-    val duration: Double
+@InternalKiteUi
+public external class AudioBuffer {
+    public val duration: Double
 }
 
-external class AudioDestinationNode : AudioNode
+@InternalKiteUi
+public external class AudioDestinationNode : AudioNode
 
 public actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->

@@ -9,5 +9,5 @@ import kotlin.contracts.*
 
 
 public expect class DismissBackground(context: RContext) : RView {
-    fun onClick(action: suspend () -> Unit)
+    public fun onClick(action: suspend () -> Unit)
 }

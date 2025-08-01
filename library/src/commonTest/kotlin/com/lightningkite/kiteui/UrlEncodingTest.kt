@@ -16,12 +16,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @Serializable
-data class SampleComplexType(val a: Int, val y: String? = null)
+public data class SampleComplexType(val a: Int, val y: String? = null)
 
-class UrlEncodingTest {
+public class UrlEncodingTest {
 
-    data class TestCase<T>(val name: String, val serializer: KSerializer<T>, val sample: T)
-    val testCases = listOf(
+    public data class TestCase<T>(val name: String, val serializer: KSerializer<T>, val sample: T)
+    public val testCases = listOf(
         TestCase("int", Int.serializer(), 18),
         TestCase("string_test", String.serializer(), "test"),
         TestCase("string_blank", String.serializer(), ""),
@@ -32,7 +32,7 @@ class UrlEncodingTest {
     )
 
     @Test
-    fun testMap() {
+    public fun testMap() {
         val out = HashMap<String, String>()
         val properties = Properties
         testCases.forEach {

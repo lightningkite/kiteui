@@ -5,13 +5,13 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.signal.ReactiveContext
 import platform.UIKit.UIApplicationOpenURLOptionsKey
 
-abstract class KiteUiAppDelegate {
-    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
-    abstract val mainNavigator : PageNavigator
-    fun openURL(url: String, options: Map<UIApplicationOpenURLOptionsKey, Any?>) {
+public abstract class KiteUiAppDelegate {
+    public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
+    public abstract val mainNavigator : PageNavigator
+    public fun openURL(url: String, options: Map<UIApplicationOpenURLOptionsKey, Any?>) {
         mainNavigator.navigateUrlLikePath(url.substringAfter("://").substringAfter("/"))
     }
-    fun applicationDidReceiveMemoryWarning() {
+    public fun applicationDidReceiveMemoryWarning() {
         repeat(3) { gc() }
     }
 }

@@ -61,7 +61,7 @@ public actual object KeyCodes {
 }
 
 
-class CanvasView : UIView(CGRectZero.readValue()) {
+public class CanvasView : UIView(CGRectZero.readValue()) {
     init {
         opaque = false
         setUserInteractionEnabled(true)
@@ -69,7 +69,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     }
 
     @ObjCAction
-    fun gestureSink() {
+    public fun gestureSink() {
     }
 
     private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
@@ -109,7 +109,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         }
     }
 
-    var delegate: CanvasDelegate? = null
+    public var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value
@@ -124,7 +124,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         addGestureRecognizer(gestureRecognizer!!)
     }
 
-    fun terminate() {
+    public fun terminate() {
         if(gestureRecognizer == null) return
         removeGestureRecognizer(gestureRecognizer!!)
         delegate = null
@@ -136,7 +136,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     private val touchIds = HashMap<UITouch, Int>()
     private var currentTouchId: Int = 0
 
-    override fun pressesBegan(presses: Set<*>, withEvent: UIPressesEvent?) {
+    public override fun pressesBegan(presses: Set<*>, withEvent: UIPressesEvent?) {
         var handled = false
         for (press in presses) {
             press as UIPress
@@ -146,7 +146,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         if (!handled) super.pressesBegan(presses, withEvent)
     }
 
-    override fun pressesEnded(presses: Set<*>, withEvent: UIPressesEvent?) {
+    public override fun pressesEnded(presses: Set<*>, withEvent: UIPressesEvent?) {
         var handled = false
         for (press in presses) {
             press as UIPress
@@ -291,7 +291,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
 //        startRefresh()
 //    }
 
-    override fun drawRect(rect: CValue<CGRect>) {
+    public override fun drawRect(rect: CValue<CGRect>) {
         with(DrawingContext2DImpl(UIGraphicsGetCurrentContext()!!, rect.useContents { this.size.width }, rect.useContents { this.size.height })) {
             try {
                 delegate?.draw(this)
@@ -301,7 +301,7 @@ class CanvasView : UIView(CGRectZero.readValue()) {
         }
     }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return delegate?.let { delegate ->
             val width = size.useContents { width }
             val height = size.useContents { height }

@@ -15,10 +15,10 @@ import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.field
 
 @Routable("test/formatted-input")
-class FormattedInputTests : Page {
-    val phone = Property("")
-    val general = Property("")
-    override fun ViewWriter.render(): ViewModifiable = run {
+public class FormattedInputTests : Page {
+    public val phone = Property("")
+    public val general = Property("")
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             field("General Formatted Input") {
                 formattedTextInput {

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.toUIFontWeight
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -15,7 +16,8 @@ public actual typealias DimensionRaw = Double
 @Suppress("NOTHING_TO_INLINE") public actual inline val Int.px: Dimension
     get() = Dimension(this.toDouble() / UIScreen.mainScreen.scale)
 
-var remMultiplier: Double = 1.0
+@InternalKiteUi
+public var remMultiplier: Double = 1.0
 
 @Suppress("NOTHING_TO_INLINE") public actual inline val Int.rem: Dimension
     get() = Dimension(this.toDouble() * UIFont.systemFontSize * remMultiplier)
@@ -39,7 +41,9 @@ public actual val Dimension.px: Double get() = value * UIScreen.mainScreen.scale
 public actual val Dimension.canvasUnits: Double get() = value
 
 public actual data class Font(val get: (size: CGFloat, weight: UIFontWeight, italic: Boolean)->UIFont)
-fun fontFromFamilyInfo(
+
+@InternalKiteUi
+public fun fontFromFamilyInfo(
     normal: String,
     italic: String?,
     bold: String?,
@@ -54,7 +58,8 @@ fun fontFromFamilyInfo(
     }
     UIFont.fontWithName(fn, size) ?: systemDefaultFont.get(size, weight, getItalic)
 }
-fun fontFromFamilyInfo(
+@InternalKiteUi
+public fun fontFromFamilyInfo(
     normal: Map<Int, String>,
     italics: Map<Int, String>,
 ) = Font { size, weight, getItalic ->

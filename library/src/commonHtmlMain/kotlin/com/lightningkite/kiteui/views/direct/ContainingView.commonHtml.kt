@@ -18,8 +18,8 @@ public actual class Frame public actual constructor(context: RContext) : RView(c
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)
     }
-    companion object {
-        fun internalAddChildStack(on: RView, index: Int, view: RView) {
+    public companion object {
+        public fun internalAddChildStack(on: RView, index: Int, view: RView) {
             if(index >= 1) {
                 if(on.native.style.display != "grid") {
                     on.native.style.display = "grid"
@@ -153,7 +153,7 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
         rerunOptimizedBottomMarginCalc()
     }
 
-    fun rerunOptimizedBottomMarginCalc() {
+    public fun rerunOptimizedBottomMarginCalc() {
         if(!complex) {
             val newLastShownElement = children.lastOrNull { it.native.attributes.hidden != true }
             val amnt = gap ?: theme.gap

@@ -13,8 +13,8 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlin.random.Random
 
 @Routable("themes")
-object ThemesPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object ThemesPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             h1 { content = "Theme Control" }
             card - col {

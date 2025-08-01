@@ -8,7 +8,7 @@ import com.lightningkite.mppexampleapp.app
 import com.lightningkite.mppexampleapp.internal.LeakCheckerPage
 import platform.UIKit.UIViewController
 
-fun root(viewController: UIViewController) {
+public fun root(viewController: UIViewController) {
     remMultiplier = 1.0
     RViewHelper.leakDetection = true
     viewController.setup(appTheme) {

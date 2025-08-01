@@ -16,7 +16,7 @@ import platform.UIKit.UIView
 import platform.UIKit.accessibilityValue
 import platform.darwin.*
 
-val subnav = PageNavigator { AutoRoutes }
+public val subnav = PageNavigator { AutoRoutes }
 @OptIn(ExperimentalForeignApi::class)
 public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     return col {
@@ -39,12 +39,12 @@ public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     }
 }
 
-class PlaceholderPage: Page {
-    override fun ViewWriter.render() = text("placeholder")
+public class PlaceholderPage: Page {
+    public override fun ViewWriter.render() = text("placeholder")
 }
 
-class MemoryPage: Page {
-    override fun ViewWriter.render(): ViewModifiable {
+public class MemoryPage: Page {
+    public override fun ViewWriter.render(): ViewModifiable {
 //        return write(MemoryView(context)) {}
 
         return write(WrapperView(context)) {
@@ -62,22 +62,22 @@ class MemoryPage: Page {
 //        }
     }
 }
-class WrapperView(context: RContext): RView(context) {
+public class WrapperView(context: RContext): RView(context) {
     @OptIn(ExperimentalForeignApi::class)
-    override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+    public override val native: UIView = UIView(CGRectMake(0.0, 0.0, 0.0, 0.0))
 }
 
-class MemoryView(context: RContext): RView(context) {
-    val disgustingAmountOfMemory = IntArray(9_000_000) { it }
+public class MemoryView(context: RContext): RView(context) {
+    public val disgustingAmountOfMemory = IntArray(9_000_000) { it }
     @OptIn(ExperimentalForeignApi::class)
-    override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
+    public override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
         it.text = "Native grossness " + disgustingAmountOfMemory[864_518]
     }
 }
 
-class MemoryView2(context: RContext): RView(context) {
+public class MemoryView2(context: RContext): RView(context) {
     @OptIn(ExperimentalForeignApi::class)
-    override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
+    public override val native: UIView = UILabel(CGRectMake(0.0, 0.0, 0.0, 0.0)).also {
         it.text = "Huge accessibility label"
         it.accessibilityValue = CharArray(9_000_000) { 'A' }.concatToString()
     }

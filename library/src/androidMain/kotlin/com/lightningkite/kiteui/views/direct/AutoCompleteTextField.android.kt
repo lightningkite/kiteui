@@ -17,7 +17,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class AutoCompleteTextField public actual constructor(context: RContext): RViewWithAction(context) {
-    override val native = AndroidAutocompleteTextView(context.activity)
+    override val native: AndroidAutocompleteTextView = AndroidAutocompleteTextView(context.activity)
     public actual val content: ImmediateWritable<String> = native.contentProperty()
     public actual var keyboardHints: KeyboardHints
         get() {
@@ -29,7 +29,7 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
 
     private class KiteUiStringAdapter(context: Context, resource: Int, objects: List<String>) :
         ArrayAdapter<String>(context, resource, objects) {
-        val items: List<String> = objects
+        public val items: List<String> = objects
     }
 
     public actual var suggestions: List<String>

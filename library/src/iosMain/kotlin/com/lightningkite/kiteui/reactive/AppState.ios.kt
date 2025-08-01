@@ -43,7 +43,7 @@ public actual object AppState {
     ))
     public actual val windowInfo: ImmediateReadable<WindowStatistics>
         get() = _windowInfo
-    val _inForeground = Property(true)
+    public val _inForeground = Property(true)
     public actual val inForeground: ImmediateReadable<Boolean>
         get() = _inForeground
     public actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
@@ -65,7 +65,7 @@ public actual object AppState {
 
 private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
     private val listeners = ArrayList<() -> Unit>()
-    override var value: Boolean = false
+    public override var value: Boolean = false
         set(value) {
             if(field != value) {
                 field = value
@@ -73,7 +73,7 @@ private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
             }
         }
 
-    override fun addListener(listener: () -> Unit): () -> Unit {
+    public override fun addListener(listener: () -> Unit): () -> Unit {
         listeners.add(listener)
         return {
             val pos = listeners.indexOfFirst { it === listener }
@@ -84,7 +84,7 @@ private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
     }
 
 
-    val observer: NSObject = object: NSObject() {
+    public val observer: NSObject = object: NSObject() {
         @ObjCAction fun keyboardWillShowNotification() {
             value = true
         }
@@ -106,7 +106,7 @@ private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
             `object` = null
         )
     }
-    override suspend infix fun set(value: Boolean) {
+    public override suspend infix fun set(value: Boolean) {
         this.value = value
     }
 }

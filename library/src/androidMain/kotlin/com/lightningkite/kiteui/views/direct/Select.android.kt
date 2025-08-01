@@ -19,7 +19,7 @@ import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
 public actual class Select public actual constructor(context: RContext): RView(context) {
-    override val native = Spinner(context.activity).apply {
+    override val native: Spinner = Spinner(context.activity).apply {
         minimumHeight = 0
         isClickable = true
     }

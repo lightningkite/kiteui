@@ -3,10 +3,10 @@ package com.lightningkite.kiteui.dom
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MicroparseTest {
+public class MicroparseTest {
 
     @Test fun secure() {
-        val base = """
+        public val base = """
             <script> TEE HEE HEE </script>
             <button onclick="DIE">HEEE HEE</button>
             <p> Test <br> Content </p>
@@ -17,7 +17,7 @@ class MicroparseTest {
     }
 
     @Test fun malformed() {
-        val base = """
+        public val base = """
             Something <
         """.trimIndent().parseMPNodes()
         base.let { println(it) }
@@ -26,7 +26,7 @@ class MicroparseTest {
     }
 
     @Test fun malformed2() {
-        val base = """
+        public val base = """
             Yeah, it's a special <p> Hello World! </
         """.trimIndent().parseMPNodes()
         base.let { println(it) }
@@ -47,7 +47,7 @@ class MicroparseTest {
     }
 
     @Test
-    fun testPrinting() {
+    public fun testPrinting() {
         """
                         <p>Test</p>
         """.trimIndent().starts(
@@ -61,7 +61,7 @@ class MicroparseTest {
     }
 
     @Test
-    fun testTagAnalysis() {
+    public fun testTagAnalysis() {
         "div".analyzeTagInside { tagName, start, end, kvs ->
             assertEquals("div", tagName)
             assertEquals(true, start)

@@ -17,18 +17,18 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 
-class UILabelWithGradient : UIView(CGRectZero.readValue()) {
+public class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
     }
 
-    val uiViewWithLabelMask = UIView(bounds).apply {
+    public val uiViewWithLabelMask = UIView(bounds).apply {
         backgroundColor = UIColor.grayColor
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    val label = UILabel().also {
+    public val label = UILabel().also {
         userInteractionEnabled = false
         uiViewWithLabelMask.addSubview(it)
         uiViewWithLabelMask.maskView = it
@@ -44,7 +44,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             }
             field = value
         }
-    var foreground: Paint = Color.black
+    public var foreground: Paint = Color.black
         set(f) {
             field = f
             when (f) {
@@ -77,7 +77,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
             }
         }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val smallerSize = size.useContents {
             CGSizeMake(
@@ -95,7 +95,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
         }
     }
 
-    override fun layoutSubviews() {
+    public override fun layoutSubviews() {
         super.layoutSubviews()
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         gradientLayer?.frame = bounds
@@ -120,7 +120,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
 
     @ObjCAction
-    fun handleLink() {
+    public fun handleLink() {
         val text = label.attributedText ?: return
         val locationOfTouchInLabel = recognizer.locationInView(uiViewWithLabelMask)
         val layoutManager = NSLayoutManager()
@@ -157,7 +157,7 @@ class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     }
 
-    val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    public val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         uiViewWithLabelMask.userInteractionEnabled = active

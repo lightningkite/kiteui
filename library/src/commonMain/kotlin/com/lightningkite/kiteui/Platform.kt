@@ -2,10 +2,10 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.Color
 
-enum class Platform {
+public enum class Platform {
     iOS, Android, Web, Desktop
     ;
-    companion object
+    public companion object
 }
 public expect val Platform.Companion.current: Platform
 public expect val Platform.Companion.probablyAppleUser: Boolean

@@ -12,8 +12,8 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("layout-examples")
-object LayoutExamplesPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object LayoutExamplesPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             h1 { content = "Sampling" }
 

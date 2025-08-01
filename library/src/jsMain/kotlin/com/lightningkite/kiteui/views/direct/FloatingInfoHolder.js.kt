@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.kiteui.views.l2.overlayFrame
@@ -20,18 +21,18 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-public actual class FloatingInfoHolder public actual constructor(val source: RView) {
-    val theme get() = source.theme
-    val maxDist = 32
-    var blockView: RView? = null
-    var closeView: RView? = null
-    var existingView: RView? = null
+public actual class FloatingInfoHolder public actual constructor(public val source: RView) {
+    public val theme: Theme get() = source.theme
+    public val maxDist: Int = 32
+    public var blockView: RView? = null
+    public var closeView: RView? = null
+    public var existingView: RView? = null
 
     public actual var preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowCenter
-    var currentDirection: PopoverPreferredDirection = preferredDirection
+    public var currentDirection: PopoverPreferredDirection = preferredDirection
     public actual var menuGenerator: Frame.() -> Unit = { space() }
 
-    fun closeButton() {
+    public fun closeButton() {
         if (closeView != null) return
         val o = source.overlayFrame ?: return
         val v = existingView ?: return
@@ -297,5 +298,5 @@ public actual class FloatingInfoHolder public actual constructor(val source: RVi
     }
 }
 
-val DOMRect.centerY get() =  (top + bottom) / 2
-val DOMRect.centerX get() =  (left + right) / 2
+public val DOMRect.centerY get() =  (top + bottom) / 2
+public val DOMRect.centerX get() =  (left + right) / 2

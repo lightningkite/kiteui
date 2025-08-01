@@ -15,10 +15,10 @@ import com.lightningkite.mppexampleapp.defaultTheme
 
 
 @Routable("docs/theming")
-object ThemingPage : DocPage {
-    override val covers: List<String> = listOf("theming", "Semantic", "theme", "Theme", "style", "css")
+public object ThemingPage : DocPage {
+    public override val covers: List<String> = listOf("theming", "Semantic", "theme", "Theme", "style", "css")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             titledSection("Theming") {
 
@@ -128,7 +128,7 @@ object ThemingPage : DocPage {
                     example(
                         """
                         data object InvertedSemantic : Semantic("invert") {
-                            override fun ThemeBuilder.apply() {
+                            public override fun ThemeBuilder.apply() {
                                 background = background.map { it.invert() }
                                 outline = outline.map { it.invert() }
                                 foreground = foreground.map { it.invert() }
@@ -168,8 +168,8 @@ object ThemingPage : DocPage {
     }
 }
 
-data object InvertedSemantic : Semantic("invert") {
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+public data object InvertedSemantic : Semantic("invert") {
+    public override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
         background = theme.background.map { it.invert() },
         outline = theme.outline.map { it.invert() },
@@ -178,4 +178,4 @@ data object InvertedSemantic : Semantic("invert") {
 }
 
 @ViewModifierDsl3
-inline val ViewWriter.inverted: ViewWrapper get() = InvertedSemantic.onNext
+public inline val ViewWriter.inverted: ViewWrapper get() = InvertedSemantic.onNext

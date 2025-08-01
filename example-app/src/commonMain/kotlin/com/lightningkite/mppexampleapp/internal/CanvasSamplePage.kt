@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.mppexampleapp.internal.CanvasSamplePage.Point
 
 @Routable("sample/canvas")
-object CanvasSamplePage : Page {
-    data class Point(val x: Double, val y: Double)
+public object CanvasSamplePage : Page {
+    public data class Point(val x: Double, val y: Double)
 
-    override fun ViewWriter.render() = frame {
+    public override fun ViewWriter.render() = frame {
         canvas {
             delegate = DrawDelegate()
         }
@@ -25,12 +25,12 @@ object CanvasSamplePage : Page {
 //    }
 }
 
-class DrawDelegate(): CanvasDelegate() {
-    val lines = ArrayList<ArrayList<Point>>()
-    var line: ArrayList<Point>? = (null)
-    val pointersDown = mutableSetOf<Int>()
+public class DrawDelegate(): CanvasDelegate() {
+    public val lines = ArrayList<ArrayList<Point>>()
+    public var line: ArrayList<Point>? = (null)
+    public val pointersDown = mutableSetOf<Int>()
 
-    override fun draw(context: DrawingContext2D) {
+    public override fun draw(context: DrawingContext2D) {
         with(context) {
             clear()
             fillPaint = Color.red
@@ -48,14 +48,14 @@ class DrawDelegate(): CanvasDelegate() {
         }
     }
 
-    override fun onPointerCancel(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerCancel(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         pointersDown.remove(id)
         line = null
         invalidate()
         return true
     }
 
-    override fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         if (id in pointersDown) {
             line?.add(Point(x, y))
         }
@@ -63,7 +63,7 @@ class DrawDelegate(): CanvasDelegate() {
         return true
     }
 
-    override fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         pointersDown.add(id)
         val new = ArrayList<Point>()
         line = new
@@ -72,7 +72,7 @@ class DrawDelegate(): CanvasDelegate() {
         return true
     }
 
-    override fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         pointersDown.remove(id)
         line = null
         invalidate()

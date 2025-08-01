@@ -26,8 +26,8 @@ import android.widget.TextView as AndroidTextView
 import com.lightningkite.kiteui.models.Paint as KiteUiPaint
 
 
-fun View.setPaddingAll(padding: Int) = setPadding(padding, padding, padding, padding)
-fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
+public fun View.setPaddingAll(padding: Int) = setPadding(padding, padding, padding, padding)
+public fun KiteUiPaint.colorInt(): Int = closestColor().toInt()
 //val NView.selected: Writable<Boolean>
 //    get() = object : Writable<Boolean> {
 //        override fun addListener(listener: () -> Unit): () -> Unit {

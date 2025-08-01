@@ -11,10 +11,10 @@ import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.signal.Property
 
 @Routable("docs/layout")
-object LayoutPage : DocPage {
-    override val covers: List<String> = listOf("layout", "row", "column", "rowCollapsingToColumn", "frame", "sizeConstraints", "size", "gap", "padding")
+public object LayoutPage : DocPage {
+    public override val covers: List<String> = listOf("layout", "row", "column", "rowCollapsingToColumn", "frame", "sizeConstraints", "size", "gap", "padding")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             titledSection("Layout") {
                 titledSection("Column and Row") {

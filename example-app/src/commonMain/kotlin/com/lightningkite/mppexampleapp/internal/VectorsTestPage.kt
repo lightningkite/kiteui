@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("test/vectors")
-object VectorsTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object VectorsTestPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             row {
                 image {

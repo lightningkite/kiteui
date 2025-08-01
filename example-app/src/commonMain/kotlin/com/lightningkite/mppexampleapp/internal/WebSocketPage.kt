@@ -9,8 +9,8 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.reactiveScope
 
 @Routable("sample/websockets")
-object WebSocketPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object WebSocketPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val socket = shared {
             retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/", 30_000L).also { use(it) }
         }

@@ -15,13 +15,13 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import kotlin.math.abs
 
-class ScrollView(
+public class ScrollView(
     context: RContext,
-    override val horizontal: Boolean,
-    override val vertical: Boolean
+    public override val horizontal: Boolean,
+    public override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
-    override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
+    public override val native = FrameLayout()
+    public override fun childTouches(side: Side, child: RView): Boolean {
         return when(side) {
             Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
             Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
@@ -29,14 +29,14 @@ class ScrollView(
             Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
         }
     }
-    val scroller = ScrollLayout()
+    public val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-    override val addChildTarget get() = scroller
+    public override val addChildTarget get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {
@@ -154,13 +154,13 @@ class ScrollView(
         }
     }
 
-    override var showScrollBars: Boolean = true
+    public override var showScrollBars: Boolean = true
         set(value) {
             field = value
             scroller.showsHorizontalScrollIndicator = value
             scroller.showsVerticalScrollIndicator = value
         }
-    override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
+    public override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = scroller.contentOffset.useContents { x to y }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -172,7 +172,7 @@ class ScrollView(
             )
         }
     }
-    override val content: Readable<Rect> = (sizeChange).lensListenable {
+    public override val content: Readable<Rect> = (sizeChange).lensListenable {
         val (sw, sh) = scroller.contentSize.useContents { width to height }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -183,9 +183,9 @@ class ScrollView(
         }
     }
     private val _directlyInteractingWithScroller = Property(false)
-    override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    public override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
-    override var snapToElements: Pair<Align?, Align?> = null to null
+    public override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {
             field = value
             // scroll to nearest?
@@ -196,9 +196,9 @@ class ScrollView(
             }
 //            scroller.content
         }
-    override var scrollSnapStop: Boolean = false
+    public override var scrollSnapStop: Boolean = false
 
-    override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    public override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         val (existingX, existingY) = scroller.contentOffset.useContents { x to y }
         val (maxX, maxY) = scroller.contentSize.useContents { width to height }
         val (sizeX, sizeY) = scroller.bounds.useContents { size.width to size.height }
@@ -211,7 +211,7 @@ class ScrollView(
             animated = animated
         )
     }
-    override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    public override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
         scrollTo(
             left = when(horizontal) {
                 Align.Start -> element.native.bounds.useContents { origin.x }
@@ -229,7 +229,7 @@ class ScrollView(
         )
     }
 
-    override fun scrollToKeepAnimations(x: Double, y: Double) {
+    public override fun scrollToKeepAnimations(x: Double, y: Double) {
         val (existingX, existingY) = scroller.contentOffset.useContents { this.x to this.y }
         // Don't apply boundary locks here - caller knows what they're doing.
         scroller.contentOffset = CGPointMake(

@@ -2,9 +2,9 @@ package com.lightningkite.kiteui
 
 import kotlin.test.Test
 
-class MicroHtmlTests {
+public class MicroHtmlTests {
     @Test fun testParsing() {
-        val test = """
+        public val test = """
             <h1>Header</h1>
             <p>
                 Paragraph

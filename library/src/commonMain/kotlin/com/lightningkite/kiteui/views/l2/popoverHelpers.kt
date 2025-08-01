@@ -10,11 +10,11 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
+public fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
+public fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
     overlayFrame?.run {
         withoutAnimation {
 
@@ -39,7 +39,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
     }
 }
 
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
+public fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
     this.overlayFrame!!.run {
         withoutAnimation {
@@ -70,7 +70,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+public fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
     var willRemove: RView? = null
     this.overlayFrame!!.run {
         withoutAnimation {

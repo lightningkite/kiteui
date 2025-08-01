@@ -20,7 +20,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
     
     public actual var range: ClosedRange<LocalTime>? = null
 
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener {
             showTimePicker(
@@ -40,7 +40,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         }
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -53,5 +53,5 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = super.applyThemeWithRipple(theme)
 }

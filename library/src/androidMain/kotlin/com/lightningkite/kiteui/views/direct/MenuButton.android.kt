@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
 public actual class MenuButton public actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
@@ -79,5 +79,5 @@ public actual class MenuButton public actual constructor(context: RContext): RVi
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

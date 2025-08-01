@@ -7,7 +7,7 @@ import com.lightningkite.signal.Property
 import com.lightningkite.kiteui.views.*
 
 public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener { checkedProp.value = !checkedProp.value }
     }
@@ -33,5 +33,5 @@ public actual class ToggleButton public actual constructor(context: RContext) : 
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }

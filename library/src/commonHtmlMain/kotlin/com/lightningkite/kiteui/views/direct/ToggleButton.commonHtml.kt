@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
-    val input = FutureElement().apply {
+    public val input: FutureElement = FutureElement().apply {
         themeChoice += ClickableSemantic
         tag = "input"
         attributes.type = "checkbox"

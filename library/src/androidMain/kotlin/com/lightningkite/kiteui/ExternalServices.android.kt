@@ -32,13 +32,13 @@ public actual object ExternalServices {
 
     public actual suspend fun requestFile(
         mimeTypes: List<String>,
-    ) = requestFiles(mimeTypes, false).firstOrNull()
+    ): FileReference? = requestFiles(mimeTypes, false).firstOrNull()
 
     public actual suspend fun requestFiles(
         mimeTypes: List<String>,
-    ) = requestFiles(mimeTypes, true)
+    ): List<FileReference> = requestFiles(mimeTypes, true)
 
-    suspend fun requestFiles(
+    public suspend fun requestFiles(
         mimeTypes: List<String>,
         allowMultiple: Boolean = true
     ): List<FileReference> = suspendCancellableCoroutine {
@@ -104,7 +104,7 @@ public actual object ExternalServices {
             .let { File.createTempFile("image", ".jpg", it) }
             .let { FileProvider.getUriForFile(AndroidAppContext.applicationCtx, AndroidAppContext.fileProviderAuthority, it) }
 
-        AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
+        AndroidAppContext.requestPermissions(Manifest.permission.CAMERA) {
             if (!it.accepted) return@requestPermissions cont.resume(null)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
@@ -131,7 +131,8 @@ public actual object ExternalServices {
 
     private val DownloadNotificationId: String = "downloads"
 
-    val logger = ConsoleRoot.tag("ExternalServices")
+    @InternalKiteUi
+    public val logger: Console = ConsoleRoot.tag("ExternalServices")
 
     private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
 

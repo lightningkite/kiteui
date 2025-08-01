@@ -87,8 +87,8 @@ public actual abstract class DrawingContext2D {
 //  public actual abstract   var lineJoin: CanvasLineJoin
     public actual abstract var miterLimit: Double
     public actual abstract var lineDashOffset: Double
-    abstract fun setLineDash(segments: Array<Double>)
-    abstract fun getLineDash(): Array<Double>
+    public abstract fun setLineDash(segments: Array<Double>)
+    public abstract fun getLineDash(): Array<Double>
     public actual abstract fun closePath()
     public actual abstract fun moveTo(x: Double, y: Double)
     public actual abstract fun lineTo(x: Double, y: Double)
@@ -111,59 +111,59 @@ public actual abstract class DrawingContext2D {
 }
 
 
-class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val height: Double) : DrawingContext2D() {
-    override fun save() = CGContextSaveGState(wraps)
-    override fun restore() = CGContextRestoreGState(wraps)
-    override fun scale(x: Double, y: Double) = CGContextScaleCTM(wraps, x, y)
-    override fun rotate(angle: Double) = CGContextRotateCTM(wraps, angle)
-    override fun translate(x: Double, y: Double) = CGContextTranslateCTM(wraps, x, y)
-    override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) = CGContextConcatCTM(
+public class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val height: Double) : DrawingContext2D() {
+    public override fun save() = CGContextSaveGState(wraps)
+    public override fun restore() = CGContextRestoreGState(wraps)
+    public override fun scale(x: Double, y: Double) = CGContextScaleCTM(wraps, x, y)
+    public override fun rotate(angle: Double) = CGContextRotateCTM(wraps, angle)
+    public override fun translate(x: Double, y: Double) = CGContextTranslateCTM(wraps, x, y)
+    public override fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) = CGContextConcatCTM(
         wraps, CGAffineTransformMake(
             a, b, c, d, e, f
         )
     )
 
-    override var globalCompositeOperation: String
+    public override var globalCompositeOperation: String
         get() = TODO("Not yet implemented")
         set(value) {}
-    override var imageSmoothingEnabled: Boolean
+    public override var imageSmoothingEnabled: Boolean
         get() = TODO("Not yet implemented")
         set(value) {}
 
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double) =
+    public override fun clearRect(x: Double, y: Double, w: Double, h: Double) =
         CGContextClearRect(wraps, CGRectMake(x, y, w, h))
 
-    override fun fillRect(x: Double, y: Double, w: Double, h: Double) = CGContextFillRect(wraps, CGRectMake(x, y, w, h))
-    override fun strokeRect(x: Double, y: Double, w: Double, h: Double) =
+    public override fun fillRect(x: Double, y: Double, w: Double, h: Double) = CGContextFillRect(wraps, CGRectMake(x, y, w, h))
+    public override fun strokeRect(x: Double, y: Double, w: Double, h: Double) =
         CGContextStrokeRect(wraps, CGRectMake(x, y, w, h))
 
-    override fun beginPath() = CGContextBeginPath(wraps)
-    override fun stroke() = CGContextStrokePath(wraps)
+    public override fun beginPath() = CGContextBeginPath(wraps)
+    public override fun stroke() = CGContextStrokePath(wraps)
     private var lastLineWidth = 0.0
-    override var lineWidth: Double
+    public override var lineWidth: Double
         get() = lastLineWidth
         set(value) {
             lastLineWidth = value
             CGContextSetLineWidth(wraps, value)
         }
-    override var miterLimit: Double
+    public override var miterLimit: Double
         get() = TODO("Not yet implemented")
         set(value) {
             CGContextSetMiterLimit(wraps, value)
         }
-    override var lineDashOffset: Double
+    public override var lineDashOffset: Double
         get() = TODO("Not yet implemented")
         set(value) {}
 
-    override fun setLineDash(segments: Array<Double>) = TODO()
-    override fun getLineDash(): Array<Double> = TODO()
-    override fun closePath() = CGContextClosePath(wraps)
-    override fun moveTo(x: Double, y: Double) = CGContextMoveToPoint(wraps, x, y)
-    override fun lineTo(x: Double, y: Double) = CGContextAddLineToPoint(wraps, x, y)
-    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) =
+    public override fun setLineDash(segments: Array<Double>) = TODO()
+    public override fun getLineDash(): Array<Double> = TODO()
+    public override fun closePath() = CGContextClosePath(wraps)
+    public override fun moveTo(x: Double, y: Double) = CGContextMoveToPoint(wraps, x, y)
+    public override fun lineTo(x: Double, y: Double) = CGContextAddLineToPoint(wraps, x, y)
+    public override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) =
         CGContextAddQuadCurveToPoint(wraps, cpx, cpy, x, y)
 
-    override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double) =
+    public override fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double) =
         CGContextAddCurveToPoint(wraps, cp1x, cp1y, cp2x, cp2y, x, y)
 
 //    override fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double) = arcTo(
@@ -180,7 +180,7 @@ class DrawingContext2DImpl(val wraps: CGContextRef, val width: Double, val heigh
 //        rotation: Double
 //    ) = TODO()
 
-    override fun rect(x: Double, y: Double, w: Double, h: Double) = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
+    public override fun rect(x: Double, y: Double, w: Double, h: Double) = CGContextAddRect(wraps, CGRectMake(x, y, w, h))
 
     internal var textAlign: TextAlign = TextAlign.start
     internal var font: UIFont = UIFont.systemFontOfSize(12.0)
@@ -210,7 +210,7 @@ public actual fun DrawingContext2D.appendArc(
 
 
 public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double): Unit {
-    val attrs = mapOf<Any?, Any?>(
+    public val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSForegroundColorAttributeName to this.fill.closestColor().toUiColor(),
         NSParagraphStyleAttributeName to NSMutableParagraphStyle().apply {
@@ -225,11 +225,11 @@ public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):
             )
         }
     )
-    val ns = (text as NSString)
-    val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
-    var dx = x
-    var dy = y
+    public val ns = (text as NSString)
+    public val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
+    public val height = font.lineHeight
+    public var dx = x
+    public var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
         TextAlign.start, TextAlign.left -> {}
         TextAlign.end, TextAlign.right -> {
@@ -248,7 +248,7 @@ public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):
 
 
 public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double): Unit {
-    val attrs = mapOf<Any?, Any?>(
+    public val attrs = mapOf<Any?, Any?>(
         NSFontAttributeName to (this as DrawingContext2DImpl).font,
         NSStrokeColorAttributeName to this.stroke.closestColor().toUiColor(),
         NSStrokeWidthAttributeName to lineWidth as NSNumber,
@@ -264,11 +264,11 @@ public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: 
             )
         }
     )
-    val ns = (text as NSString)
-    val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
-    val height = font.lineHeight
-    var dx = x
-    var dy = y
+    public val ns = (text as NSString)
+    public val sizeTaken = ns.sizeWithAttributes(attrs).useContents { width }
+    public val height = font.lineHeight
+    public var dx = x
+    public var dy = y
     when((this as DrawingContext2DImpl).textAlign) {
         TextAlign.start, TextAlign.left -> {}
         TextAlign.end, TextAlign.right -> {

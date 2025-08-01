@@ -1,7 +1,10 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.InternalKiteUi
 
-fun ImageVector.toWeb(): String {
+
+@InternalKiteUi
+public fun ImageVector.toWeb(): String {
     return buildString {
         append("data:image/svg+xml;utf8,<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.value}\" height=\"${height.value}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")

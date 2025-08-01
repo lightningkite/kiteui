@@ -29,14 +29,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import timber.log.Timber
 
-abstract class KiteUiActivity : AppCompatActivity() {
-    open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
-    var savedInstanceState: Bundle? = null
+public abstract class KiteUiActivity : AppCompatActivity() {
+    public open val theme: ReactiveContext.() -> Theme get() = { Theme.placeholder }
+    public var savedInstanceState: Bundle? = null
 
-    abstract val mainNavigator : PageNavigator
+    public abstract val mainNavigator : PageNavigator
 
-    lateinit var root: RView
-    val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
+    public lateinit var root: RView
+    public val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val context: RContext = RContext(this@KiteUiActivity)
         override fun addChild(view: RView) {
             root = view
@@ -50,7 +50,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         AppState._windowInfo.value = WindowStatistics(
@@ -84,36 +84,36 @@ abstract class KiteUiActivity : AppCompatActivity() {
         this.savedInstanceState = savedInstanceState
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
+    public override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putStringArray("navStack", mainNavigator.stack.value.mapNotNull { mainNavigator.routes.render(it)?.urlLikePath?.render() }.toTypedArray())
     }
 
     private var currentNum = 0
     private val onResults = HashMap<Int, (Int, Intent?)->Unit>()
-    fun cancelOnResult(requestCode: Int) {
+    public fun cancelOnResult(requestCode: Int) {
         onResults.remove(requestCode)
     }
-    fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
+    public fun startActivityForResult(intent: Intent, options: Bundle? = null, onResult: (Int, Intent?)->Unit): Int {
         val requestCode = currentNum++
         onResults[requestCode] = onResult
         ActivityCompat.startActivityForResult(this, intent, requestCode, options)
         return requestCode
     }
     @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         onResults[requestCode]?.invoke(resultCode, data)
         onResults.remove(requestCode)
         super.onActivityResult(requestCode, resultCode, data)
     }
     private val onPermissions = HashMap<Int, (PermissionResult)->Unit>()
-    fun cancelOnPermissions(requestCode: Int) {
+    public fun cancelOnPermissions(requestCode: Int) {
         onPermissions.remove(requestCode)
     }
-    data class PermissionResult(val map: Map<String, Int>) {
-        val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
+    public data class PermissionResult(val map: Map<String, Int>) {
+        public val accepted: Boolean get() = map.values.all { it == PackageManager.PERMISSION_GRANTED }
     }
-    fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
+    public fun requestPermissions(vararg permissions: String, onResult: (PermissionResult)->Unit): Int {
         val ungranted = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
@@ -127,7 +127,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         return requestCode
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    public override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onPermissions[requestCode]?.invoke(PermissionResult(permissions.indices.associate { permissions[it] to grantResults[it] }))
         onPermissions.remove(requestCode)
@@ -153,7 +153,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    public override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.data?.let {
             val path = UrlLikePath(
@@ -168,7 +168,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
+    public override fun onResume() {
         super.onResume()
         AppState._inForeground.value = true
         animator = ValueAnimator().apply {
@@ -203,7 +203,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
 //        }
     }
 
-    override fun onPause() {
+    public override fun onPause() {
         this.findViewById<View>(android.R.id.content).viewTreeObserver.removeOnGlobalLayoutListener(keyboardTreeObs)
 //        keyboardSubscriber?.dispose()
 //        keyboardSubscriber = null
@@ -213,7 +213,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
         AppState._inForeground.value = false
     }
 
-    override fun onBackPressed() {
+    public override fun onBackPressed() {
         if(!mainNavigator.goBack()) {
             super.onBackPressed()
         }

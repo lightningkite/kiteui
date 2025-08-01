@@ -22,25 +22,25 @@ public actual class ProgressBar public actual constructor(context: RContext) : R
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
+public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    val progressLayer = ProgressCALayer().also {
+    public val progressLayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    var progress by progressLayer::progress
+    public var progress by progressLayer::progress
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }
     }
 
-    override fun layoutSubviews() {
+    public override fun layoutSubviews() {
         super.layoutSubviews()
         progressLayer.frame = bounds
     }
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ProgressCALayer : CALayer {
+public class ProgressCALayer : CALayer {
     @OverrideInit
     constructor() : super()
 
@@ -50,15 +50,15 @@ class ProgressCALayer : CALayer {
     @OverrideInit
     constructor(layer: kotlin.Any) : super(layer)
 
-    var tintColor: UIColor = UIColor.whiteColor
-    var progress: Float = 0f
+    public var tintColor: UIColor = UIColor.whiteColor
+    public var progress: Float = 0f
         set(value) {
             field = value
             setNeedsDisplay()
         }
 
     @ExperimentalForeignApi
-    override fun drawInContext(ctx: CGContextRef?) {
+    public override fun drawInContext(ctx: CGContextRef?) {
         val progressRect = bounds.useContents {
             CGRectMake(origin.x, origin.y, size.width * progress, size.height)
         }

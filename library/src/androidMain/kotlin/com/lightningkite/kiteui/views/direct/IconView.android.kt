@@ -20,19 +20,20 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.ProgressBar
+import androidx.appcompat.widget.AppCompatImageView
 import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual class NIconView(context: Context) : ImageView(context) {
+public actual class NIconView(context: Context) : AppCompatImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
     }
-    var icon: Icon? = null
+    public var icon: Icon? = null
         set(value) {
             field = value
             updateIcon()
         }
-    var iconPaint: Paint = Color.black
+    public var iconPaint: Paint = Color.black
         set(value) {
             field = value
             updateIcon()
@@ -43,7 +44,7 @@ public actual class NIconView(context: Context) : ImageView(context) {
 }
 
 public actual class IconView public actual constructor(context: RContext): RView(context) {
-    override val native = NIconView(context.activity)
+    override val native: NIconView = NIconView(context.activity)
     public actual var source: Icon?
         get() = native.icon
         set(value) {

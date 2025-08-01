@@ -13,8 +13,8 @@ import com.lightningkite.kiteui.views.important
 import kotlin.math.absoluteValue
 
 @Routable("programmatic-layout-test")
-object ProgrammaticLayoutTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object ProgrammaticLayoutTestPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Programmatic Layout Test" }
             val pl: ProgrammaticLayout

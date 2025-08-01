@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RotateDrawable
 import android.view.View
+import android.widget.ProgressBar
 import androidx.annotation.FloatRange
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -17,7 +18,7 @@ import kotlin.math.roundToInt
 
 public actual class CircularProgress public actual constructor(context: RContext) : RView(context) {
 
-    override val native = NCircularProgress(context.activity).apply {
+    override val native: NCircularProgress = NCircularProgress(context.activity).apply {
 
     }
 
@@ -36,7 +37,7 @@ public actual class CircularProgress public actual constructor(context: RContext
 }
 
 
-class NCircularProgress(context: Context) : android.widget.ProgressBar (context) {
+public class NCircularProgress(context: Context) : ProgressBar (context) {
 
     private val progressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -54,12 +55,12 @@ class NCircularProgress(context: Context) : android.widget.ProgressBar (context)
     private var diameter = 0f
     private var angle = 0f
 
-    override fun onDraw(canvas: android.graphics.Canvas) {
+    public override fun onDraw(canvas: Canvas) {
         drawCircle(maxAngle, canvas, backgroundPaint)
         drawCircle(angle, canvas, progressPaint)
     }
 
-    override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
+    public override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
         diameter = Math.min(width, height).toFloat()
         updateRect()
     }
@@ -75,30 +76,30 @@ class NCircularProgress(context: Context) : android.widget.ProgressBar (context)
 
     private fun calculateAngle(progress: Float) = maxAngle / maxProgress * progress
 
-    fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
+    public fun setProgress(@FloatRange(from = 0.0, to = 100.0) progress: Float) {
         this.progress = progress.toInt()
         angle = calculateAngle(progress)
         invalidate()
     }
 
-    fun setProgressColor(color: Int) {
+    public fun setProgressColor(color: Int) {
         progressPaint.color = color
         invalidate()
     }
 
-    fun setProgressBackgroundColor(color: Int) {
+    public fun setProgressBackgroundColor(color: Int) {
         backgroundPaint.color = color
         invalidate()
     }
 
-    fun setProgressWidth(width: Float) {
+    public fun setProgressWidth(width: Float) {
         progressPaint.strokeWidth = width
         backgroundPaint.strokeWidth = width
         updateRect()
         invalidate()
     }
 
-    fun setRounded(rounded: Boolean) {
+    public fun setRounded(rounded: Boolean) {
         progressPaint.strokeCap = if (rounded) Paint.Cap.ROUND else Paint.Cap.BUTT
         invalidate()
     }

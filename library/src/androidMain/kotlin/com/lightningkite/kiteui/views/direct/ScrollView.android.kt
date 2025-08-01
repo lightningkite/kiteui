@@ -21,15 +21,15 @@ import com.lightningkite.kiteui.views.RViewWrapper
 import java.lang.reflect.Modifier
 import kotlin.math.*
 
-class ScrollView constructor(
+public class ScrollView constructor(
     context: RContext,
-    override val horizontal: Boolean,
-    override val vertical: Boolean
+    public override val horizontal: Boolean,
+    public override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
     private val scrollChanged = BasicListenable()
     private var vx = VelocityTracker.obtain()
     private var vy = VelocityTracker.obtain()
-    override val native = TwoWayNestedScrollView(context.activity).apply {
+    public override val native: TwoWayNestedScrollView = TwoWayNestedScrollView(context.activity).apply {
         lockX = !horizontal
         lockY = !vertical
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -209,16 +209,16 @@ class ScrollView constructor(
             native.smoothScrollBy(0, vOffset)
     }
 
-    override fun defaultLayoutParams(): ViewGroup.LayoutParams =
+    public override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-    override var showScrollBars: Boolean = true
+    public override var showScrollBars: Boolean = true
         set(value) {
             field = value
             native.isHorizontalScrollBarEnabled = value
             native.isVerticalScrollBarEnabled = value
         }
-    override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
+    public override val viewport: Readable<Rect> = object : Readable<Rect>, Listenable by scrollChanged {
         override val state: ReadableState<Rect>
             get() {
                 if (viewDebugTarget == children.firstOrNull())
@@ -233,7 +233,7 @@ class ScrollView constructor(
                 )
             }
     }
-    override val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
+    public override val content: Readable<Rect> = object : Readable<Rect>, BaseListenable() {
         override val state: ReadableState<Rect>
             get() = ReadableState(
                 Rect.fromSize(
@@ -255,12 +255,12 @@ class ScrollView constructor(
         }
     }
 
-    override var snapToElements: Pair<Align?, Align?> = null to null
-    override var scrollSnapStop: Boolean = false
+    public override var snapToElements: Pair<Align?, Align?> = null to null
+    public override var scrollSnapStop: Boolean = false
     private val _directlyInteractingWithScroller = Property(false)
-    override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    public override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
-    override fun scrollTo(left: Double, top: Double, animated: Boolean) {
+    public override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {
             native.smoothScrollTo(left.roundToInt(), top.roundToInt())
         } else {
@@ -268,7 +268,7 @@ class ScrollView constructor(
         }
     }
 
-    override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
+    public override fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean) {
         scrollTo(
             left = when (horizontal) {
                 Align.Start -> element.native.left
@@ -319,9 +319,9 @@ class ScrollView constructor(
         }
     }
 
-    var queuedJumpX = -1.0
-    var queuedJumpY = -1.0
-    override fun scrollToKeepAnimations(x: Double, y: Double) {
+    public var queuedJumpX: Double = -1.0
+    public var queuedJumpY: Double = -1.0
+    public override fun scrollToKeepAnimations(x: Double, y: Double) {
 //        native.mScroller?.abortAnimation()
         queuedJumpX = x
         queuedJumpY = y

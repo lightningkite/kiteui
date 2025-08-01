@@ -11,13 +11,13 @@ import com.lightningkite.kiteui.views.l2.titledSection
 
 
 @Routable("forms")
-object FormsPage : Page {
+public object FormsPage : Page {
 
 
 
 
-    val externals = HashMap<String, Property<String>>()
-    fun leafExample(propName: String): FormLeaf {
+    public val externals = HashMap<String, Property<String>>()
+    public fun leafExample(propName: String): FormLeaf {
         val prop = externals.getOrPut(propName) { Property("Test") }
         return FormLeaf(
             title = propName,
@@ -40,8 +40,8 @@ object FormsPage : Page {
         )
     }
 
-    val lp = Property(false)
-    val form = FormSection(
+    public val lp = Property(false)
+    public val form = FormSection(
         title = "Vehicle for Sale",
         subsections = {
             listOf(
@@ -93,7 +93,7 @@ object FormsPage : Page {
         }
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - titledSection("Form Testing") {
             renderForm(form)
             renderFormReadOnly(form)
@@ -101,7 +101,7 @@ object FormsPage : Page {
     }
 }
 
-fun ViewWriter.renderForm(section: FormSection) {
+public fun ViewWriter.renderForm(section: FormSection) {
     titledSection(
         titleSetup = { content = section.title },
         content = {
@@ -119,7 +119,7 @@ fun ViewWriter.renderForm(section: FormSection) {
     )
 }
 
-fun ViewWriter.renderFormReadOnly(section: FormSection) {
+public fun ViewWriter.renderFormReadOnly(section: FormSection) {
     titledSection(
         titleSetup = { content = section.title },
         content = {
@@ -137,36 +137,36 @@ fun ViewWriter.renderFormReadOnly(section: FormSection) {
     )
 }
 
-data class FormIssue(
-    val field: String,
-    val summary: String,
-    val description: String,
-    val importance: Importance
+public data class FormIssue(
+    public val field: String,
+    public val summary: String,
+    public val description: String,
+    public val importance: Importance
 ) {
-    enum class Importance {
+    public enum class Importance {
         WARNING, ERROR
     }
 }
 
-data class FormSection(
-    val title: String,
-    val icon: Icon? = null,
-    val helperText: String? = null,
-    val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
-    val leaves: ReactiveContext.() -> List<FormLeaf> = { listOf() },
-    val subsections: ReactiveContext.() -> List<FormSection> = { listOf() },
+public data class FormSection(
+    public val title: String,
+    public val icon: Icon? = null,
+    public val helperText: String? = null,
+    public val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
+    public val leaves: ReactiveContext.() -> List<FormLeaf> = { listOf() },
+    public val subsections: ReactiveContext.() -> List<FormSection> = { listOf() },
 ) {
-    override fun toString(): String = title
+    public override fun toString(): String = title
 }
 
-data class FormLeaf(
-    val title: String,
-    val icon: Icon? = null,
-    val helperText: String? = null,
-    val directWorkSize: Int = 1,
-    val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
-    val editor: ViewWriter.() -> Unit,
-    val viewer: ViewWriter.() -> Unit,
+public data class FormLeaf(
+    public val title: String,
+    public val icon: Icon? = null,
+    public val helperText: String? = null,
+    public val directWorkSize: Int = 1,
+    public val directIssues: ReactiveContext.() -> List<FormIssue> = { listOf() },
+    public val editor: ViewWriter.() -> Unit,
+    public val viewer: ViewWriter.() -> Unit,
 ) {
-    override fun toString(): String = title
+    public override fun toString(): String = title
 }

@@ -7,9 +7,9 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
 
-class TextViewWithGradient(context: Context): android.widget.TextView(context) {
+public class TextViewWithGradient(context: Context): android.widget.TextView(context) {
 
-    var kuiPaintForeground: Paint = Color.black
+    public var kuiPaintForeground: Paint = Color.black
         set(f) {
             field = f
             when (f) {
@@ -25,12 +25,12 @@ class TextViewWithGradient(context: Context): android.widget.TextView(context) {
             }
         }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    public override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         (kuiPaintForeground as? LinearGradient)?.let(::createAndSetBoundedGradientShader)
     }
 
-    override fun setTextColor(color: Int) {
+    public override fun setTextColor(color: Int) {
         super.setTextColor(color)
         paint.shader = null
     }

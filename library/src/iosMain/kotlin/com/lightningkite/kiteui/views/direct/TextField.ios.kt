@@ -17,7 +17,7 @@ import platform.CoreGraphics.CGRectMake
 
 public actual class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     companion object {
-        var alwaysToolbar = false
+        public var alwaysToolbar = false
     }
 
     val trigger: NSObject = object : NSObject() {

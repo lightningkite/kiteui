@@ -15,11 +15,11 @@ import com.lightningkite.kiteui.views.l2.icon
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("image-test")
-object ImageTestPage : Page {
-    override val title: Readable<String>
+public object ImageTestPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         frame {
             centered - sizeConstraints(width = 40.rem) - col {
                 val value = Property(false)

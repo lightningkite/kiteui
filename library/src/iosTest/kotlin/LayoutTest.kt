@@ -16,11 +16,11 @@ import platform.UIKit.UIWindow
 import kotlin.test.Ignore
 import kotlin.test.Test
 
-class LayoutTest {
+public class LayoutTest {
 
     @Ignore
     @Test
-    fun test() {
+    public fun test() {
         val s = LayoutsTestPage()
         lateinit var root: RView
         val vc = object: UIViewController(null, null) {

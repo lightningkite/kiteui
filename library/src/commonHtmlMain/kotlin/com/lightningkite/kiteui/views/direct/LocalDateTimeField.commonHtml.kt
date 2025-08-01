@@ -12,8 +12,8 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.datetime.*
 
 public actual class LocalDateTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
-    companion object {
-        val charCount = "2024-06-01T08:30".length
+    public companion object {
+        public val charCount: Int = "2024-06-01T08:30".length
     }
     init {
         native.tag = "input"
@@ -39,12 +39,12 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -54,7 +54,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
@@ -74,8 +74,8 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
 
 
 public actual class LocalDateField public actual constructor(context: RContext) : RViewWithAction(context) {
-    companion object {
-        val charCount = "2024-06-01".length
+    public companion object {
+        public val charCount: Int = "2024-06-01".length
     }
     init {
         native.tag = "input"
@@ -103,12 +103,12 @@ public actual class LocalDateField public actual constructor(context: RContext) 
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -118,7 +118,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()
@@ -137,8 +137,8 @@ public actual class LocalDateField public actual constructor(context: RContext) 
 }
 
 public actual class LocalTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
-    companion object {
-        val charCount = "08:30".length
+    public companion object {
+        public val charCount: Int = "08:30".length
     }
     init {
         native.tag = "input"
@@ -166,12 +166,12 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
             }
         }
     }
-    inline var hint: String
+    public inline var hint: String
         get() = native.attributes.placeholder ?: ""
         set(value) {
             native.attributes.placeholder = value
         }
-    var align: Align = Align.Start
+    public var align: Align = Align.Start
         set(value) {
             field = value
             native.style.textAlign = when (value) {
@@ -181,7 +181,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
                 Align.Stretch -> "justify"
             }
         }
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             native.style.fontSize = value.value.toString()

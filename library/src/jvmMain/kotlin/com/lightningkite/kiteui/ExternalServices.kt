@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 
 public actual object ExternalServices {
-    public actual fun openTab(url: String) = Unit
+    public actual fun openTab(url: String): Unit = Unit
     public actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = TODO()
     public actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = TODO()
     public actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? = TODO()

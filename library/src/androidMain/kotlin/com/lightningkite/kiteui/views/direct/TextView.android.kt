@@ -104,7 +104,7 @@ public actual class TextView public actual constructor(context: RContext) :
 
 
 private val typefaceCache = HashMap<FontAndStyle, Typeface>()
-fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
+public fun FontAndStyle.typeface(context: Context) = typefaceCache.getOrPut(this) {
     TypefaceCompat.create(
         context,
         this.font,

@@ -24,7 +24,7 @@ public actual class CircularProgress public actual constructor(context: RContext
         }
 
 
-    fun updateStrokeDashArray(svg: String, newValue: String): String {
+    public fun updateStrokeDashArray(svg: String, newValue: String): String {
         val regex = """stroke-dasharray="\d+,(\d+)"""".toRegex()
         val result = regex.replace(svg) { matchResult ->
             "stroke-dasharray=\"$newValue,${matchResult.groupValues[1]}\""
@@ -32,13 +32,13 @@ public actual class CircularProgress public actual constructor(context: RContext
         println("result $result")
         return result
     }
-    fun getStrokeDashArrayValue(svg: String): Float? {
+    public fun getStrokeDashArrayValue(svg: String): Float? {
         val regex = """stroke-dasharray="(\d+),\d+"""".toRegex()
         val matchResult = regex.find(svg)
         val floatValue = matchResult?.groupValues?.get(1)?.toFloat()
         return floatValue // The first group contains the 30 (or whatever number is there)
     }
-    fun roundTo(value: Float, decimals: Int): Float {
+    public fun roundTo(value: Float, decimals: Int): Float {
         return ((value * 10.0.pow(decimals)).roundToInt() / 10.0.pow(decimals)).toFloat()
     }
 }

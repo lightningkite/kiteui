@@ -6,32 +6,32 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlin.js.JsName
 
-enum class DownloadLocation { Downloads, Pictures }
+public enum class DownloadLocation { Downloads, Pictures }
 public expect object ExternalServices {
-    fun openTab(url: String)
-    suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
-    suspend fun requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference>
-    suspend fun requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference?
-    suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
-    fun setClipboardText(value: String)
+    public fun openTab(url: String)
+    public suspend fun requestFile(mimeTypes: List<String> = listOf("*/*")): FileReference?
+    public suspend fun requestFiles(mimeTypes: List<String> = listOf("*/*")): List<FileReference>
+    public suspend fun requestCaptureSelf(mimeTypes: List<String> = listOf("image/*")): FileReference?
+    public suspend fun requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*")): FileReference?
+    public fun setClipboardText(value: String)
     @JsName("downloadBlob")
-    suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads)
-    suspend fun download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null)
+    public suspend fun download(name: String, blob: Blob, preferredDestination: DownloadLocation = DownloadLocation.Downloads)
+    public suspend fun download(name: String, url: String, preferredDestination: DownloadLocation = DownloadLocation.Downloads, onDownloadProgress: ((progress: Float) -> Unit)? = null)
 
     @JsName("shareBlob")
-    suspend fun share(namesToBlobs: List<Pair<String, Blob>>)
-    fun share(title: String, message: String? = null, url: String? = null)
-    fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
-    fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)
+    public suspend fun share(namesToBlobs: List<Pair<String, Blob>>)
+    public fun share(title: String, message: String? = null, url: String? = null)
+    public fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone)
+    public fun openMap(latitude: Double, longitude: Double, label: String? = null, zoom: Float? = null)
 //    fun download(blob: Blob)
 //    fun download(url: String)
 }
 
-fun ExternalServices.requestFile(mimeTypes: List<String> = listOf("*/*"), onResult: (FileReference?) -> Unit) =
+public fun ExternalServices.requestFile(mimeTypes: List<String> = listOf("*/*"), onResult: (FileReference?) -> Unit) =
     AppScope.launch { onResult(try { requestFile(mimeTypes) } catch(e: Exception) { e.printStackTrace2(); null }) }
-fun ExternalServices.requestFiles(mimeTypes: List<String> = listOf("*/*"), onResult: (List<FileReference>) -> Unit) =
+public fun ExternalServices.requestFiles(mimeTypes: List<String> = listOf("*/*"), onResult: (List<FileReference>) -> Unit) =
     AppScope.launch { onResult(try { requestFiles(mimeTypes) } catch(e: Exception) { e.printStackTrace2(); listOf() }) }
-fun ExternalServices.requestCaptureSelf(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?) -> Unit) =
+public fun ExternalServices.requestCaptureSelf(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?) -> Unit) =
     AppScope.launch { onResult(try { requestCaptureSelf(mimeTypes) } catch(e: Exception) { e.printStackTrace2(); null }) }
-fun ExternalServices.requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?) -> Unit) =
+public fun ExternalServices.requestCaptureEnvironment(mimeTypes: List<String> = listOf("image/*"), onResult: (FileReference?) -> Unit) =
     AppScope.launch { onResult(try { requestCaptureEnvironment(mimeTypes) } catch(e: Exception) { e.printStackTrace2(); null }) }

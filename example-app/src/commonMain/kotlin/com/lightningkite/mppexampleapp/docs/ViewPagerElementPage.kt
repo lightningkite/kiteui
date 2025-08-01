@@ -9,10 +9,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("docs/viewpager")
-object ViewPagerElementPage: DocPage {
-    override val covers: List<String> = listOf("viewPager", "ViewPager")
+public object ViewPagerElementPage: DocPage {
+    public override val covers: List<String> = listOf("viewPager", "ViewPager")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("View Pager")
             text("You can use a view pager to create an element that scrolling horizontally displaying pages.")

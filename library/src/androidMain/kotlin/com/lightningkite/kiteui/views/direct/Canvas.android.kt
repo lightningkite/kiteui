@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
@@ -12,7 +13,7 @@ import kotlin.math.min
 
 
 public actual class Canvas public actual constructor(context: RContext): RView(context) {
-    override val native = NCanvas(context.activity)
+    override val native: NCanvas = NCanvas(context.activity)
 
     public actual var delegate: CanvasDelegate?
         get() = native.delegate
@@ -26,7 +27,7 @@ public actual class NCanvas @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    var delegate: CanvasDelegate? = null
+    public var delegate: CanvasDelegate? = null
         set(value) {
             field?.invalidate = {}
             field = value
@@ -42,9 +43,9 @@ public actual class NCanvas @JvmOverloads constructor(
 //    var accessibilityView: View? = null
 
     private data class Touch(
-        var x: Float,
-        var y: Float,
-        var id: Int
+        public var x: Float,
+        public var y: Float,
+        public var id: Int
     )
 
     @SuppressLint("UseSparseArrays")
@@ -115,7 +116,7 @@ public actual class NCanvas @JvmOverloads constructor(
     }
 
     private val metrics = context.resources.displayMetrics
-    override fun onDraw(canvas: android.graphics.Canvas) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         delegate?.draw(DrawingContext2DImpl(canvas))
     }

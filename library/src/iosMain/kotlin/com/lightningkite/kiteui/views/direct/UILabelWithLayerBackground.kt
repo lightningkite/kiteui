@@ -12,17 +12,17 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
 
-class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
+public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
     }
 
-    val label = UILabel().also {
+    public val label = UILabel().also {
         userInteractionEnabled = false
     }.also(::addSubview)
 
-    var foreground: Paint = Color.black
+    public var foreground: Paint = Color.black
         set(f) {
             field = f
             label.textColor = when (f) {
@@ -33,7 +33,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
             }
         }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val smallerSize = size.useContents {
             CGSizeMake(
@@ -51,7 +51,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
         }
     }
 
-    override fun layoutSubviews() {
+    public override fun layoutSubviews() {
         super.layoutSubviews()
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         bounds.useContents {
@@ -69,7 +69,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
 
 
     @ObjCAction
-    fun handleLink() {
+    public fun handleLink() {
         val text = label.attributedText ?: return
         val locationOfTouchInLabel = recognizer.locationInView(this)
         val layoutManager = NSLayoutManager()
@@ -106,7 +106,7 @@ class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
 
     }
 
-    val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    public val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         label.userInteractionEnabled = active

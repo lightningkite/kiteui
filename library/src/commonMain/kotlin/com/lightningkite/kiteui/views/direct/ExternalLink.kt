@@ -9,8 +9,8 @@ import kotlin.contracts.*
 
 
 public expect class ExternalLink(context: RContext) : RView {
-    var enabled: Boolean
-    var to: String?
-    var newTab: Boolean
-    fun onNavigate(action: suspend () -> Unit)
+    public var enabled: Boolean
+    public var to: String?
+    public var newTab: Boolean
+    public fun onNavigate(action: suspend () -> Unit)
 }

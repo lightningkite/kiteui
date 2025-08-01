@@ -156,13 +156,13 @@ public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContex
     return ViewWrapper
 }
 
-interface MaxSizeLayoutParams {
-    var maxWidth: Int
-    var maxHeight: Int
+public interface MaxSizeLayoutParams {
+    public var maxWidth: Int
+    public var maxHeight: Int
 }
 
-class DesiredSizeView(context: Context) : ViewGroup(context) {
-    var constraints: SizeConstraints = SizeConstraints()
+public class DesiredSizeView(context: Context) : ViewGroup(context) {
+    public var constraints: SizeConstraints = SizeConstraints()
         set(value) {
             field = value
             requestLayout()
@@ -174,7 +174,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 //        getChildAt(0)?.setOnClickListener(l)
 //    }
 
-    override fun onViewAdded(child: View?) {
+    public override fun onViewAdded(child: View?) {
         super.onViewAdded(child)
 
 //        if (child != null && clickListenerForChild != null) {
@@ -182,7 +182,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 //        }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    public override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if(childCount == 0) return
         getChildAt(0).measure(
             MeasureSpec.makeMeasureSpec(r - l - paddingLeft - paddingRight, MeasureSpec.EXACTLY),
@@ -191,9 +191,9 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
-    val Int.measureSpecMode get() = MeasureSpec.getMode(this)
-    val Int.measureSpecSize get() = MeasureSpec.getSize(this)
-    fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public val Int.measureSpecMode get() = MeasureSpec.getMode(this)
+    public val Int.measureSpecSize get() = MeasureSpec.getSize(this)
+    public fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
         when (measureSpecMode) {
             MeasureSpec.UNSPECIFIED -> MeasureSpec.AT_MOST
@@ -203,33 +203,33 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
         }
     )
 
-    fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public fun Int.measureSpecConstrainSet(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode == MeasureSpec.UNSPECIFIED) value
         else value.coerceAtMost(this.measureSpecSize),
 //        value,
         MeasureSpec.EXACTLY
     )
 
-    fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
+    public fun Int.measureSpecConstrain(min: Int?, max: Int?, set: Int?): Int {
         var out = this
         set?.let { out = out.measureSpecConstrainSet(it) }
         max?.let { out = out.measureSpecConstrainMax(it) }
         return out
     }
 
-    infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
+    public infix fun Int.measureSpecPlus(value: Int): Int = MeasureSpec.makeMeasureSpec(
         MeasureSpec.getSize(this) + value,
         MeasureSpec.getMode(this)
     )
 
-    val Int.measureSpecString: String get() = when(measureSpecMode) {
+    public val Int.measureSpecString: String get() = when(measureSpecMode) {
         MeasureSpec.UNSPECIFIED -> "UNSPECIFIED $measureSpecSize"
         MeasureSpec.EXACTLY -> "EXACTLY $measureSpecSize"
         MeasureSpec.AT_MOST -> "AT_MOST $measureSpecSize"
         else -> "??? $measureSpecSize"
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if(childCount == 0) return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val f = getChildAt(0)
         f.minimumWidth = constraints.minWidth?.value?.toInt() ?: 0
@@ -515,12 +515,12 @@ internal object TypedValueAnimator {
     /**
      * A value animator that animates between [Int] values.
      */
-    class IntAnimator(vararg values: Int) : ValueAnimator() {
+    public class IntAnimator(vararg values: Int) : ValueAnimator() {
         init {
             setIntValues(*values)
         }
 
-        fun onUpdate(lambda: IntAnimator.(Int) -> Unit): IntAnimator {
+        public fun onUpdate(lambda: IntAnimator.(Int) -> Unit): IntAnimator {
             addUpdateListener {
                 lambda(animatedValue as Int)
             }
@@ -531,12 +531,12 @@ internal object TypedValueAnimator {
     /**
      * A value animator that animates between [Float] values.
      */
-    class FloatAnimator(vararg values: Float) : ValueAnimator() {
+    public class FloatAnimator(vararg values: Float) : ValueAnimator() {
         init {
             setFloatValues(*values)
         }
 
-        fun onUpdate(lambda: FloatAnimator.(Float) -> Unit): FloatAnimator {
+        public fun onUpdate(lambda: FloatAnimator.(Float) -> Unit): FloatAnimator {
             addUpdateListener {
                 lambda(animatedValue as Float)
             }

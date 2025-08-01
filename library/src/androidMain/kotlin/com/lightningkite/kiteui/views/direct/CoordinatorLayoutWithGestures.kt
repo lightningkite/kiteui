@@ -7,10 +7,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import kotlin.math.absoluteValue
 import kotlin.math.atan
 
-class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
+public class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
 
-    var onLeftSwipeAction: (() -> Unit)? = null
-    var onRightSwipeAction: (() -> Unit)? = null
+    public var onLeftSwipeAction: (() -> Unit)? = null
+    public var onRightSwipeAction: (() -> Unit)? = null
 
     private val gesturesEnabled: Boolean
         get() = onLeftSwipeAction != null || onRightSwipeAction != null
@@ -32,11 +32,11 @@ class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(contex
         }
     )
 
-    override fun onTouchEvent(ev: MotionEvent): Boolean {
+    public override fun onTouchEvent(ev: MotionEvent): Boolean {
         return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: false
     }
 
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+    public override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         return gestureDetector.onTouchEvent(ev).takeIf { gesturesEnabled } ?: false
     }
 }

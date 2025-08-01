@@ -12,8 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("swapview")
-object SwapViewPage : Page {
-    override fun ViewWriter.render() = col {
+public object SwapViewPage : Page {
+    public override fun ViewWriter.render() = col {
         val clock = sharedProcess {
             var tick = 0
             while (true) {

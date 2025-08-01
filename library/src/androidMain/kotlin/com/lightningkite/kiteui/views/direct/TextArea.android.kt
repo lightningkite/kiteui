@@ -22,7 +22,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
     }
@@ -48,8 +48,8 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
                 theme.font.italic
             )
         )
-        native.paintFlags = native.paintFlags and (android.graphics.Paint.UNDERLINE_TEXT_FLAG or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG).inv() or
-                (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
+        native.paintFlags = native.paintFlags and (Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
@@ -83,7 +83,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         set(value) {
             native.hint = value
         }
-    var align: Align
+    public var align: Align
         get() {
             return when (native.gravity) {
                 Gravity.START -> Align.Start
@@ -107,7 +107,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
                 }
             }
         }
-    var textSize: Dimension
+    public var textSize: Dimension
         get() {
             return Dimension(native.textSize)
         }

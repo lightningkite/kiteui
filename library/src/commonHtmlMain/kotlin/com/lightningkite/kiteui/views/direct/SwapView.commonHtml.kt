@@ -16,7 +16,7 @@ public actual class SwapView public actual constructor(context: RContext) : RVie
         super.internalAddChild(index, view)
         Frame.internalAddChildStack(this, index, view)
     }
-    var previousLast: RView? = null
+    public var previousLast: RView? = null
     public actual fun swap(transition: ScreenTransition, createNewView: ViewWriter.() -> ViewModifiable?): Unit {
         nativeSwap(transition, createNewView)
     }

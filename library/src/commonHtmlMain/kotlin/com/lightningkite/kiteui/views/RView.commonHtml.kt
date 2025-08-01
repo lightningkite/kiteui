@@ -8,7 +8,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
-    var native = FutureElement()
+    public var native: FutureElement = FutureElement()
 
     public actual override var showOnPrint: Boolean = true
         set(value) {
@@ -85,7 +85,7 @@ public actual abstract class RView public actual constructor(context: RContext) 
         horizontal: Align?,
         vertical: Align?,
         animate: Boolean
-    ) = nativeScrollIntoView(horizontal, vertical, animate)
+    ): Unit = nativeScrollIntoView(horizontal, vertical, animate)
 
     public actual override fun requestFocus() {
         native.setAttribute("autofocus", "true")
@@ -148,44 +148,44 @@ public actual abstract class RView public actual constructor(context: RContext) 
         }
     }
 
-    companion object {
+    public companion object {
         private var idCounter: Int = 0
     }
 }
 
-typealias HtmlElementLike = FutureElement
+public typealias HtmlElementLike = FutureElement
 
 public expect class FutureElementStyle
 public expect class FutureElementAttributes
 
 public expect class FutureElement {
-    constructor()
+    public constructor()
 
-    val actualElementForLeakTracking: Any?
-    var xmlns: String?
-    var tag: String
-    val attributes: FutureElementAttributes
-    val style: FutureElementStyle
-    var desiredVerticalGravity: Align?
-    var desiredHorizontalGravity: Align?
-    fun setAttribute(key: String, value: String?)
-    fun setStyleProperty(key: String, value: String?)
-    inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
-    inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
-    var classes: MutableSet<String>
-    inline fun flushClasses()
-    var id: String?
-    var content: String?
-    var innerHtmlUnsafe: String?
-    val children: List<FutureElement>
-    fun appendChild(element: FutureElement)
-    fun appendChild(index: Int, element: FutureElement)
-    fun removeChild(index: Int)
-    fun clearChildren()
-    fun click()
-    fun focus()
-    fun blur()
-    fun screenRectangle(): Rect?
+    public val actualElementForLeakTracking: Any?
+    public var xmlns: String?
+    public var tag: String
+    public val attributes: FutureElementAttributes
+    public val style: FutureElementStyle
+    public var desiredVerticalGravity: Align?
+    public var desiredHorizontalGravity: Align?
+    public fun setAttribute(key: String, value: String?)
+    public fun setStyleProperty(key: String, value: String?)
+    public inline fun addEventListener(name: String, crossinline listener: (Event) -> Unit)
+    public inline fun replaceEventListener(name: String, crossinline listener: (Event) -> Unit)
+    public var classes: MutableSet<String>
+    public inline fun flushClasses()
+    public var id: String?
+    public var content: String?
+    public var innerHtmlUnsafe: String?
+    public val children: List<FutureElement>
+    public fun appendChild(element: FutureElement)
+    public fun appendChild(index: Int, element: FutureElement)
+    public fun removeChild(index: Int)
+    public fun clearChildren()
+    public fun click()
+    public fun focus()
+    public fun blur()
+    public fun screenRectangle(): Rect?
 }
 
 public expect fun RView.nativeScrollIntoView(

@@ -14,9 +14,9 @@ import kotlin.math.abs
 import kotlin.math.min
 
 @Routable("sample/pong")
-object PongSamplePage : Page {
+public object PongSamplePage : Page {
 
-    override fun ViewWriter.render() = canvas {
+    public override fun ViewWriter.render() = canvas {
         val dg = PongDelegate()
         delegate = dg
         var last = clockMillis()
@@ -32,40 +32,40 @@ object PongSamplePage : Page {
 }
 
 
-class PongDelegate : CanvasDelegate() {
-    var ballX: Double = 0.0
-    var ballY: Double = 0.0
-    var ballRadius: Double = 5.0
-    var ballVX: Double = 100.0
-    var ballVY: Double = 100.0
-    var stageHalfLength: Double = 100.0
-    var stageHalfWidth: Double = 50.0
-    var paddleOffset: Double = 20.0
-    var paddleHalfThickness: Double = 5.0
-    var paddleHalfWidth: Double = 10.0
-    var paddleLeftY: Double = 0.0
-    var paddleRightY: Double = 0.0
-    var font: FontAndStyle = FontAndStyle()
+public class PongDelegate : CanvasDelegate() {
+    public var ballX: Double = 0.0
+    public var ballY: Double = 0.0
+    public var ballRadius: Double = 5.0
+    public var ballVX: Double = 100.0
+    public var ballVY: Double = 100.0
+    public var stageHalfLength: Double = 100.0
+    public var stageHalfWidth: Double = 50.0
+    public var paddleOffset: Double = 20.0
+    public var paddleHalfThickness: Double = 5.0
+    public var paddleHalfWidth: Double = 10.0
+    public var paddleLeftY: Double = 0.0
+    public var paddleRightY: Double = 0.0
+    public var font: FontAndStyle = FontAndStyle()
 
-    var scoreLeft: Int = 0
-    var scoreRight: Int = 0
+    public var scoreLeft: Int = 0
+    public var scoreRight: Int = 0
 
-    var eventText: String = "Event text here"
+    public var eventText: String = "Event text here"
 
-    override fun onKeyDown(key: KeyCode): Boolean {
+    public override fun onKeyDown(key: KeyCode): Boolean {
         eventText = "onKeyDown $key"
         return true
     }
-    override fun onKeyUp(key: KeyCode): Boolean {
+    public override fun onKeyUp(key: KeyCode): Boolean {
         eventText = "onKeyUp $key"
         return true
     }
-    override fun onWheel(x: Double, y: Double, z: Double): Boolean {
+    public override fun onWheel(x: Double, y: Double, z: Double): Boolean {
         eventText = "onWheel $x $y $z"
         return true
     }
 
-    fun frame(time: Double) {
+    public fun frame(time: Double) {
         ballX += ballVX * time
         ballY += ballVY * time
         if (ballY > stageHalfWidth - ballRadius) {
@@ -99,7 +99,7 @@ class PongDelegate : CanvasDelegate() {
         }
     }
 
-    override fun draw(context: DrawingContext2D) {
+    public override fun draw(context: DrawingContext2D) {
         this.width = context.width
         this.height = context.height
         val canvas = context
@@ -169,16 +169,16 @@ class PongDelegate : CanvasDelegate() {
         canvas.fill()
     }
 
-    override fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerDown(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         eventText = "$x / $width, $y / $height"
         return onPointerUp(id, x, y, width, height)
     }
 
-    override fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerMove(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         return onPointerUp(id, x, y, width, height)
     }
 
-    override fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
+    public override fun onPointerUp(id: Int, x: Double, y: Double, width: Double, height: Double): Boolean {
         if (reverseX(x) < 0) {
             paddleLeftY = reverseY(y)
         } else {
@@ -187,33 +187,33 @@ class PongDelegate : CanvasDelegate() {
         return true
     }
 
-    var width: Double = 1.0
-    var height: Double = 1.0
-    fun transformX(x: Double): Double {
+    public var width: Double = 1.0
+    public var height: Double = 1.0
+    public fun transformX(x: Double): Double {
         return (x + stageHalfLength) / (stageHalfLength * 2) * width
     }
 
-    fun transformY(y: Double): Double {
+    public fun transformY(y: Double): Double {
         return (y + stageHalfWidth) / (stageHalfWidth * 2) * height
     }
 
-    fun transformWidth(x: Double): Double {
+    public fun transformWidth(x: Double): Double {
         return (x) / (stageHalfLength * 2) * width
     }
 
-    fun transformHeight(y: Double): Double {
+    public fun transformHeight(y: Double): Double {
         return (y) / (stageHalfWidth * 2) * height
     }
 
-    fun reverseX(x: Double): Double {
+    public fun reverseX(x: Double): Double {
         return (x - width / 2) / width * stageHalfLength * 2
     }
 
-    fun reverseY(y: Double): Double {
+    public fun reverseY(y: Double): Double {
         return (y - height / 2) / height * stageHalfWidth * 2
     }
 
-    override fun sizeThatFitsWidth(width: Double, height: Double): Double {
+    public override fun sizeThatFitsWidth(width: Double, height: Double): Double {
         val scale = min(
             (width)/(stageHalfLength),
             (height)/(stageHalfWidth)
@@ -221,7 +221,7 @@ class PongDelegate : CanvasDelegate() {
         return stageHalfLength * scale
     }
 
-    override fun sizeThatFitsHeight(width: Double, height: Double): Double {
+    public override fun sizeThatFitsHeight(width: Double, height: Double): Double {
         val scale = min(
             (width)/(stageHalfLength),
             (height)/(stageHalfWidth)

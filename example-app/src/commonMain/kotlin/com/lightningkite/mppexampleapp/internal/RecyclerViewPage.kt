@@ -12,14 +12,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("recycler-view")
-object RecyclerViewPage : Page {
-    override val title: Readable<String>
+public object RecyclerViewPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Property(10000)
+    public val elementCount = Property(10000)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         var expanded = Property(-1)
         val items = shared { (1..elementCount()).toList() }
         var recyclerView: RecyclerView? = null

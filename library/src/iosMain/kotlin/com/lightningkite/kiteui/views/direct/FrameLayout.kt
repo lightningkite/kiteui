@@ -22,28 +22,28 @@ import kotlin.math.max
 //class LayoutParams()
 
 
-class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+public class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    public override fun getSpacingOverrideProperty() = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    override fun didAddSubview(subview: UIView) {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
+    public override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
+    public override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    public override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
+    public override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
-    override fun willRemoveSubview(subview: UIView) {
+    public override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null due to GC interactions
         @Suppress("SENSELESS_COMPARISON", "IfThenToSafeAccess")
         if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
     init { userInteractionEnabled = false }
-    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+    public override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
     }
 }

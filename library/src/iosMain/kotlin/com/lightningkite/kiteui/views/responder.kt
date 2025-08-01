@@ -9,13 +9,13 @@ import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
-fun UIView.findFirstResponderChild(): UIView? {
+public fun UIView.findFirstResponderChild(): UIView? {
     if(isFirstResponder) return this
     else return subviews.asSequence().mapNotNull { (it as UIView).findFirstResponderChild() }.firstOrNull()
 }
 
 
-fun UIView.scrollToMe(animated: Boolean = false) {
+public fun UIView.scrollToMe(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal
         val rect = it.convertRect(frame, fromView = superview)
@@ -49,7 +49,7 @@ fun UIView.scrollToMe(animated: Boolean = false) {
 }
 
 
-fun UIView.scrollToMeCenter(animated: Boolean = false) {
+public fun UIView.scrollToMeCenter(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal
         val pt = it.convertPoint(center, fromView = superview)

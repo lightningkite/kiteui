@@ -14,19 +14,19 @@ import org.robolectric.RobolectricTestRunner
 import kotlin.test.Test
 
 @RunWith(RobolectricTestRunner::class)
-class LayoutTest {
-    class TestActivity: KiteUiActivity() {
-        companion object {
-            val testId = 517238
+public class LayoutTest {
+    public class TestActivity: KiteUiActivity() {
+        public companion object {
+            public val testId = 517238
         }
 
-        override val mainNavigator: PageNavigator = PageNavigator { Routes(listOf(), mapOf(), Page.Empty) }
+        public override val mainNavigator: PageNavigator = PageNavigator { Routes(listOf(), mapOf(), Page.Empty) }
 
-        val s = LayoutsTestPage()
+        public val s = LayoutsTestPage()
 
-        override val theme: ReactiveContext.() -> Theme = { Theme(id = "unitTest") }
+        public override val theme: ReactiveContext.() -> Theme = { Theme(id = "unitTest") }
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+        public override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setTheme(R.style.Theme_Mppexample)
             with(viewWriter) {

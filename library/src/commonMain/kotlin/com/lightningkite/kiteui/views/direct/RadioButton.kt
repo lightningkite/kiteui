@@ -11,6 +11,6 @@ import kotlin.jvm.JvmInline
 
 
 public expect class RadioButton(context: RContext) : RView {
-    var enabled: Boolean
-    val checked: ImmediateWritable<Boolean>
+    public var enabled: Boolean
+    public val checked: ImmediateWritable<Boolean>
 }

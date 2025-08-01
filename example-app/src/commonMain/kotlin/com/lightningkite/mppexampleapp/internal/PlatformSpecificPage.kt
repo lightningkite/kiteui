@@ -6,8 +6,8 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 
 @Routable("/platform-specific")
-object PlatformSpecificPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object PlatformSpecificPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         platformSpecific()
     }
 }

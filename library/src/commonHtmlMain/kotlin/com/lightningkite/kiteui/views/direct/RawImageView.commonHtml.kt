@@ -25,7 +25,7 @@ public actual abstract class RawImageViewLike(
     public actual val scaleType: ImageScaleType,
 ) : RView(context) {
     public actual abstract val state: Readable<Unit>
-    val _state = RawReadable<Unit>()
+    public val _state: RawReadable<Unit> = RawReadable<Unit>()
 
     init {
         native.classes.add("scaleType-$scaleType")

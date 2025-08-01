@@ -39,14 +39,14 @@ public actual inline operator fun Dimension.div(other: Float): Dimension = Dimen
 public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = Dimension(this.value.coerceAtMost(other.value))
 public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = Dimension(this.value.coerceAtLeast(other.value))
 
-public actual sealed class ImageSource public actual constructor()
-public actual class ImageResource(val resource: Int) : ImageSource()
+public actual sealed class ImageSource actual constructor()
+public actual class ImageResource(public val resource: Int) : ImageSource()
 
-public actual sealed class VideoSource public actual constructor()
-public actual class VideoResource(val resource: Int) : VideoSource()
+public actual sealed class VideoSource actual constructor()
+public actual class VideoResource(public val resource: Int) : VideoSource()
 
-public actual sealed class AudioSource public actual constructor()
-public actual class AudioResource(val resource: Int) : AudioSource()
+public actual sealed class AudioSource actual constructor()
+public actual class AudioResource(public val resource: Int) : AudioSource()
 
 public actual val Dimension.px: Double get() = value.toDouble()
 public actual val Dimension.canvasUnits: Double get() = value.toDouble()

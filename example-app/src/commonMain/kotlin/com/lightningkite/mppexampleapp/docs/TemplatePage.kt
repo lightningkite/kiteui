@@ -9,12 +9,12 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.random.Random
 
-object TemplatePage: DocPage {
-    override val title: Readable<String>
+public object TemplatePage: DocPage {
+    public override val title: Readable<String>
         get() = Constant("Name of Topic")
-    override val covers: List<String> = listOf("topic")
+    public override val covers: List<String> = listOf("topic")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("Name of Topic")
             text("Some instruction goes here.")

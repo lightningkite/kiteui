@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.StateListDrawable
 import android.widget.CheckBox
+import android.widget.Switch
 import androidx.core.widget.CompoundButtonCompat
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.signal.ImmediateWritable
@@ -12,7 +13,7 @@ import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 public actual class Switch public actual constructor(context: RContext): RView(context) {
-    override val native = android.widget.Switch(context.activity)
+    override val native: Switch = Switch(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme
         native.thumbTintList = ColorStateList(

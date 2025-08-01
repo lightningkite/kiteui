@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.RView
 
 public expect class MenuButton(context: RContext) : RView {
 
-    fun opensMenu(createMenu: Frame.() -> Unit)
-    var enabled: Boolean
-    var requireClick: Boolean
-    var preferredDirection: PopoverPreferredDirection
+    public fun opensMenu(createMenu: Frame.() -> Unit)
+    public var enabled: Boolean
+    public var requireClick: Boolean
+    public var preferredDirection: PopoverPreferredDirection
 }

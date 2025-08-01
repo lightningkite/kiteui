@@ -4,7 +4,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-inline fun numberAutocommaBackspace(
+public inline fun numberAutocommaBackspace(
     dirty: String,
     selectionStart: Int,
     selectionEnd: Int = selectionStart,
@@ -26,7 +26,7 @@ inline fun numberAutocommaBackspace(
     }
 }
 
-inline fun numberAutocommaDelete(
+public inline fun numberAutocommaDelete(
     dirty: String,
     selectionStart: Int,
     selectionEnd: Int = selectionStart,
@@ -48,14 +48,14 @@ inline fun numberAutocommaDelete(
     }
 }
 
-inline fun numberAutocommaRepair(
+public inline fun numberAutocommaRepair(
     dirty: String,
     selectionStart: Int? = null,
     selectionEnd: Int? = selectionStart,
     setResult: (String) -> Unit,
     setSelectionRange: (Int, Int) -> Unit,
     allowDecimal: Boolean = true
-) = repairFormatAndPosition(
+): Unit = repairFormatAndPosition(
     dirty = dirty,
     selectionStart = selectionStart,
     selectionEnd = selectionEnd,
@@ -126,7 +126,7 @@ inline fun numberAutocommaRepair(
 //    }
 //)
 
-fun Double.toStringNoExponential(): String {
+public fun Double.toStringNoExponential(): String {
     val preDecimal = toLong().toString()
     val r = rem(1)
     if (r == 0.0) return preDecimal
@@ -136,23 +136,23 @@ fun Double.toStringNoExponential(): String {
     else return preDecimal + "." + postDecimal.toString().padStart(availableDigits, '0').trimEnd('0')
 }
 
-fun Double.commaString(): String {
+public fun Double.commaString(): String {
     val clean = this.toStringNoExponential().filter { it.isDigit() || it in setOf('.', '-') }
     val preDecimal = clean.substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
     val postDecimal = clean.substringAfter('.', "")
     return if (clean.contains('.')) "$preDecimal.$postDecimal" else preDecimal
 }
-fun Int.commaString(): String {
+public fun Int.commaString(): String {
     return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
 }
-fun Long.commaString(): String {
+public fun Long.commaString(): String {
     return toString().substringBefore('.').reversed().chunked(3) { it.reversed() }.reversed().joinToString(",")
 }
 
 
 private inline fun StringBuilder.keyValue(key: String, value: Any?) = appendLine("$key: $value")
 
-inline fun repairFormatAndPosition(
+public inline fun repairFormatAndPosition(
     dirty: String,
     selectionStart: Int? = null,
     selectionEnd: Int? = selectionStart,

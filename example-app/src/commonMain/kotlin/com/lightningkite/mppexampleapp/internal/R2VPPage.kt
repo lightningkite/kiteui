@@ -10,11 +10,11 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
 
 @Routable("r2vp")
-object R2VPPage : Page {
-    override val title: Readable<String>
+public object R2VPPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val expanded = Property(-1)
             var recyclerView: Recycler2? = null

@@ -11,7 +11,8 @@ import com.lightningkite.signal.Readable
 import kotlinx.browser.document
 import kotlinx.coroutines.DelicateCoroutinesApi
 
-fun root(theme: Theme, app: ViewWriter.()->Unit) {
+@InternalKiteUi
+public fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(basePath)
@@ -28,7 +29,8 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
         }
     }.also(app)
 }
-fun root(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
+@InternalKiteUi
+public fun root(theme: Readable<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(basePath)

@@ -1,5 +1,5 @@
 package com.lightningkite.kiteui.views.l2
 
-interface RecyclerViewPlacerGrid: RecyclerViewPlacer {
-    fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid
+public interface RecyclerViewPlacerGrid: RecyclerViewPlacer {
+    public fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid
 }

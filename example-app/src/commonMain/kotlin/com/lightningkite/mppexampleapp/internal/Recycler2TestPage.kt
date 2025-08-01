@@ -12,14 +12,14 @@ import com.lightningkite.kiteui.views.l2.*
 import kotlin.random.Random
 
 @Routable("recycler2-test")
-object Recycler2TestPage : Page {
-    override val title: Readable<String>
+public object Recycler2TestPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Property(10000)
+    public val elementCount = Property(10000)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val expanded = Property(-1)
             var recyclerView: Recycler2? = null

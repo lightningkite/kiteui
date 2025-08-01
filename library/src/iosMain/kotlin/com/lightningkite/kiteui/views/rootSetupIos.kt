@@ -34,20 +34,20 @@ import kotlin.collections.get
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalNativeApi
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.setup(themeReadable: Readable<Theme>, app: ViewWriter.() -> ViewModifiable) {
     setup({ themeReadable.invoke() }, app)
 }
 
 
-class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: WeakReference<UIView>) : NSObject() {
-    var keyboardAnimationDuration: Double = 0.25
+public class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: WeakReference<UIView>) : NSObject() {
+    public var keyboardAnimationDuration: Double = 0.25
 
     @ObjCAction
-    fun keyboardWillChangeFrame(notification: NSNotification?) {
+    public fun keyboardWillChangeFrame(notification: NSNotification?) {
         val userInfo = notification?.userInfo ?: return
         val keyboardFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue ?: return
         val keyboardHeight = cgRectValue(keyboardFrameValue).useContents { size.height }
@@ -63,19 +63,19 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 
     @ObjCAction
-    fun keyboardWillHideNotification() {
+    public fun keyboardWillHideNotification() {
 //            UIView.animateWithDuration(keyboardAnimationDuration) {
         bottom.get()?.constant = 0.0
 //            }
     }
 
     @ObjCAction
-    fun hideKeyboardWhenTappedAround() {
+    public fun hideKeyboardWhenTappedAround() {
         view.get()?.findFirstResponderChild()?.resignFirstResponder()
     }
 }
 
-fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
         Readable.reportException(throwable)
@@ -152,7 +152,7 @@ private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake
     init {
         this.hidden = true
     }
-    override fun willMoveToWindow(newWindow: UIWindow?) {
+    public override fun willMoveToWindow(newWindow: UIWindow?) {
         super.willMoveToWindow(newWindow)
         if (newWindow == null) {
             if(onRemove?.invoke() == true) {
@@ -163,7 +163,7 @@ private class RemoveView(var onRemove: (()->Boolean)? = null): UIView(CGRectMake
     }
 }
 
-fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> ViewModifiable) {
     val systemBarBackground = UIView()
 
     view.addSubview(systemBarBackground)

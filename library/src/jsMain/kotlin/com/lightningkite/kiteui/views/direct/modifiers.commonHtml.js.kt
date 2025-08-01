@@ -19,7 +19,7 @@ import kotlin.js.json
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-internal public actual fun RView.nativeAnimateShow() {
+internal actual fun RView.nativeAnimateShow() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateShow")
     (
             showHideQueue ?: run {
@@ -31,7 +31,7 @@ internal public actual fun RView.nativeAnimateShow() {
             ).put(this, true)
 }
 
-internal public actual fun RView.nativeAnimateHide() {
+internal actual fun RView.nativeAnimateHide() {
     log?.info("${children.singleOrNull()?.debugName}.nativeAnimateHide")
     (
             showHideQueue ?: run {
@@ -47,21 +47,21 @@ private val showHideAnimating = HashMap<RView, OngoingAnimation>()
 private var showHideQueue: HashMap<RView, Boolean>? = null
 
 private data class OngoingAnimation(
-    val on: RView,
-    val from: Json,
-    val to: Json,
-    val goal: Boolean,
-    val startRatio: Double,
+    public val on: RView,
+    public val from: Json,
+    public val to: Json,
+    public val goal: Boolean,
+    public val startRatio: Double,
 ) {
-    var totalTime: Double = 1000.0
-    val myElement = on.native.element as HTMLElement
-    val child = on.children[0].native.element as HTMLElement
-    var animation: Animation? = null
+    public var totalTime: Double = 1000.0
+    public val myElement = on.native.element as HTMLElement
+    public val child = on.children[0].native.element as HTMLElement
+    public var animation: Animation? = null
     private var widthChildResume: String = ""
     private var maxWidthChildResume: String = ""
     private var heightChildResume: String = ""
     private var maxHeightChildResume: String = ""
-    fun animRatio() = animation!!.currentTime.toFloat() / totalTime
+    public fun animRatio() = animation!!.currentTime.toFloat() / totalTime
     init {
         log?.info(
             "QueuedAnimation: ${on.children.singleOrNull()?.debugName} / $goal: ${JSON.stringify(from)} -> ${
@@ -72,7 +72,7 @@ private data class OngoingAnimation(
         )
     }
 
-    fun play() {
+    public fun play() {
         log?.info("Starting animation on ${on.children.singleOrNull()?.debugName}")
         myElement.hidden = false
         totalTime = on.theme.transitionDuration.inWholeMilliseconds.toDouble()
@@ -94,11 +94,11 @@ private data class OngoingAnimation(
     }
 
     private var closed = false
-    fun cancel() {
+    public fun cancel() {
         animation!!.finish()
         done()
     }
-    val done = label@{
+    public val done = label@{
         if(closed) return@label
         closed = true
         showHideAnimating.remove(on)
@@ -112,7 +112,7 @@ private data class OngoingAnimation(
         child.style.removeProperty("maxHeight")
     }
 
-    fun pretendEnd() {
+    public fun pretendEnd() {
         log?.info("pretendEnd")
         animation!!.pause()
         myElement.hidden = !goal
@@ -127,7 +127,7 @@ private data class OngoingAnimation(
         child.style.removeProperty("maxHeight")
     }
 
-    fun continueNow() {
+    public fun continueNow() {
         log?.info("continueNow")
         myElement.hidden = false
         child.style.width = widthChildResume
@@ -339,23 +339,23 @@ private val showHideWorker = label@{
 }
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
+public inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     asDynamic().animate(keyframes, options) as Animation
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
-external interface Animation {
-    var oncancel: ((Event) -> Unit)?
-    var onfinish: ((Event) -> Unit)?
-    var onremove: ((Event) -> Unit)?
-    fun cancel()
-    fun commitStyles()
-    fun finish()
-    fun pause()
-    fun play()
-    fun reverse()
-    var currentTime: Double
-    var startTime: Double
+public inline fun HTMLElement.getAnimations(): Array<Animation> = asDynamic().getAnimations as Array<Animation>
+public external interface Animation {
+    public var oncancel: ((Event) -> Unit)?
+    public var onfinish: ((Event) -> Unit)?
+    public var onremove: ((Event) -> Unit)?
+    public fun cancel()
+    public fun commitStyles()
+    public fun finish()
+    public fun pause()
+    public fun play()
+    public fun reverse()
+    public var currentTime: Double
+    public var startTime: Double
 }
 
 private fun forEach(receiver: Json, action: (key: String, value: dynamic) -> Unit) {

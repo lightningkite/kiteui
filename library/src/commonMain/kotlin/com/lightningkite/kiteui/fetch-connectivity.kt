@@ -3,18 +3,20 @@ package com.lightningkite.kiteui
 import com.lightningkite.signal.AppScope
 import com.lightningkite.signal.Property
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 
-class WaitGate(permit: Boolean = false) {
-    var permit: Boolean = permit
+public class WaitGate(permit: Boolean = false) {
+    public var permit: Boolean = permit
         set(value) {
             field = value
             if (value) {
@@ -24,18 +26,18 @@ class WaitGate(permit: Boolean = false) {
                 continuations.clear()
             }
         }
-    fun permitOnce() {
+    public fun permitOnce() {
         permit = true
         permit = false
     }
-    val continuations = ArrayList<Continuation<Unit>>()
-    suspend fun await(): Unit {
+    public val continuations: ArrayList<Continuation<Unit>> = ArrayList<Continuation<Unit>>()
+    public suspend fun await(): Unit {
         if (permit) return
         else return suspendCancellableCoroutine {
             continuations.add(it)
         }
     }
-    fun abandon() {
+    public fun abandon() {
         for (continuation in continuations) {
             continuation.resumeWithException(CancellationException("abandoned as requested"))
         }
@@ -43,25 +45,25 @@ class WaitGate(permit: Boolean = false) {
     }
 }
 
-class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: Long) -> Unit = { ms -> kotlinx.coroutines.delay(ms) }) {
-    val gate = WaitGate(true)
-    val baseRetry = 10.seconds
-    var nextRetry = baseRetry
-    val maxRetry = 5.minutes
-    val retryAt = Property<Instant?>(null)
+public class ConnectivityGate(public val clock: Clock = Clock.System, public val delay: suspend (ms: Long) -> Unit = { ms -> kotlinx.coroutines.delay(ms) }) {
+    public val gate: WaitGate = WaitGate(true)
+    public val baseRetry: Duration = 10.seconds
+    public var nextRetry: Duration = baseRetry
+    public val maxRetry: Duration = 5.minutes
+    public val retryAt: Property<Instant?> = Property<Instant?>(null)
 
-    fun retryNow() {
+    public fun retryNow() {
         retryAt.value = null
         gate.permit = true
     }
 
-    fun abandon() {
+    public fun abandon() {
         gate.abandon()
         retryAt.value = null
         gate.permit = true
     }
 
-    suspend fun <T> run(tag: String, action: suspend () -> T): T {
+    public suspend fun <T> run(tag: String, action: suspend () -> T): T {
         while (true) {
             gate.await()
             try {
@@ -86,17 +88,17 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
 }
 
 @Deprecated("Use Connectivity instead", ReplaceWith("Connectivity.fetchGate", "com.lightningkite.kiteui.Connectivity"))
-val connectivityFetchGate get() = Connectivity.fetchGate
+public val connectivityFetchGate: ConnectivityGate get() = Connectivity.fetchGate
 
-object Connectivity {
-    val noConnectivityCodes = setOf<Short>(502, 503)
-    val tooMuchCodes = setOf<Short>(420, 429)
-    val stopConnectivityCodes = noConnectivityCodes + tooMuchCodes
-    val fetchGate = ConnectivityGate()
-    val lastConnectivityIssueCode: Property<Short> = Property(0)
+public object Connectivity {
+    public val noConnectivityCodes: Set<Short> = setOf<Short>(502, 503)
+    public val tooMuchCodes: Set<Short> = setOf<Short>(420, 429)
+    public val stopConnectivityCodes: Set<Short> = noConnectivityCodes + tooMuchCodes
+    public val fetchGate: ConnectivityGate = ConnectivityGate()
+    public val lastConnectivityIssueCode: Property<Short> = Property(0)
 }
 
-suspend fun connectivityFetch(
+public suspend fun connectivityFetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: suspend () -> HttpHeaders = { httpHeaders() },
@@ -127,10 +129,10 @@ suspend fun connectivityFetch(
     }
 }
 
-class ConnectivityIssueSuppress(): CoroutineContext.Element {
-    override val key: CoroutineContext.Key<ConnectivityIssueSuppress> = Key
-    object Key: CoroutineContext.Key<ConnectivityIssueSuppress>
+public class ConnectivityIssueSuppress(): CoroutineContext.Element {
+    public override val key: CoroutineContext.Key<ConnectivityIssueSuppress> = Key
+    public object Key: CoroutineContext.Key<ConnectivityIssueSuppress>
 }
-suspend fun <T> suppressConnectivityIssues(action: suspend () -> T): T {
+public suspend fun <T> suppressConnectivityIssues(action: suspend () -> T): T {
     return withContext(ConnectivityIssueSuppress()) { action() }
 }

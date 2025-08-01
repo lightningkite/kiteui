@@ -1,7 +1,7 @@
 package com.lightningkite.kiteui.models
 
 
-fun Theme.Companion.clean(primary: Color?): Theme = run {
+public fun Theme.Companion.clean(primary: Color?): Theme = run {
     val back = Color(red = 229f / 255f, green = 229f / 255f, blue = 234f / 255f, alpha = 1f)
     val defaultColor = Color(red = 0 / 255f, green = 122 / 255f, blue = 255 / 255f, alpha = 1f)
     val highlight = primary ?: defaultColor

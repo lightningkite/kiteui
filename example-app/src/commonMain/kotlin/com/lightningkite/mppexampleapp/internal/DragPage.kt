@@ -17,9 +17,9 @@ import com.lightningkite.mppexampleapp.Resources
 import kotlinx.coroutines.launch
 
 @Routable("drag")
-object DragPage : Page {
+public object DragPage : Page {
 
-    override fun ViewWriter.render(): ViewModifiable = col {
+    public override fun ViewWriter.render(): ViewModifiable = col {
         h2("Drag test")
         text("Behold some dragging magic!")
         card - link {

@@ -13,17 +13,17 @@ import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalTrueGrid
 import kotlinx.coroutines.delay
 
 @Routable("recycler-view-infinite-images")
-object InfiniteImagesPage : Page {
-    override val title: Readable<String>
+public object InfiniteImagesPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    object ReturnIndexList: List<Int>{
-        override val size: Int
+    public object ReturnIndexList: List<Int>{
+        public override val size: Int
             get() = 10_000
-        override fun get(index: Int): Int = index
-        override fun isEmpty(): Boolean = false
-        override fun iterator(): Iterator<Int> = (0..<10_000).iterator()
-        override fun listIterator(): ListIterator<Int> = object: ListIterator<Int> {
+        public override fun get(index: Int): Int = index
+        public override fun isEmpty(): Boolean = false
+        public override fun iterator(): Iterator<Int> = (0..<10_000).iterator()
+        public override fun listIterator(): ListIterator<Int> = object: ListIterator<Int> {
             var n = -1
             override fun hasNext(): Boolean = n < 10_000
             override fun hasPrevious(): Boolean = n > 0
@@ -32,7 +32,7 @@ object InfiniteImagesPage : Page {
             override fun previous(): Int = --n
             override fun previousIndex(): Int = --n
         }
-        override fun listIterator(index: Int): ListIterator<Int> = object: ListIterator<Int> {
+        public override fun listIterator(index: Int): ListIterator<Int> = object: ListIterator<Int> {
             var n = index - 1
             override fun hasNext(): Boolean = n < 10_000
             override fun hasPrevious(): Boolean = n > 0
@@ -41,14 +41,14 @@ object InfiniteImagesPage : Page {
             override fun previous(): Int = --n
             override fun previousIndex(): Int = --n
         }
-        override fun subList(fromIndex: Int, toIndex: Int): List<Int> = (fromIndex..<toIndex).toList()
-        override fun lastIndexOf(element: Int): Int = element
-        override fun indexOf(element: Int): Int = element
-        override fun containsAll(elements: Collection<Int>): Boolean = true
-        override fun contains(element: Int): Boolean = true
+        public override fun subList(fromIndex: Int, toIndex: Int): List<Int> = (fromIndex..<toIndex).toList()
+        public override fun lastIndexOf(element: Int): Int = element
+        public override fun indexOf(element: Int): Int = element
+        public override fun containsAll(elements: Collection<Int>): Boolean = true
+        public override fun contains(element: Int): Boolean = true
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         recyclerView {
 
             new.placer = RecyclerViewPlacerVerticalTrueGrid(4)
@@ -68,10 +68,10 @@ object InfiniteImagesPage : Page {
     }
 }
 
-class ImageViewPager(val initialIndex: Int) : Page {
-    val currentPage = Property(initialIndex)
+public class ImageViewPager(val initialIndex: Int) : Page {
+    public val currentPage = Property(initialIndex)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         themeFromLast { it.copy(background = Color.black, foreground = Color.white) } - frame {
             val rv: ViewPager
             viewPager {

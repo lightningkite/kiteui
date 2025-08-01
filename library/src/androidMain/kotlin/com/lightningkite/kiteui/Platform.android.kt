@@ -47,7 +47,8 @@ public actual fun setStatusBarColor(color: Color) {
     window?.statusBarColor = color.toInt()
 }
 
-fun isColorDark(color: Int) : Boolean {
+@InternalKiteUi
+public fun isColorDark(color: Int) : Boolean {
     val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 0.587 * android.graphics.Color.green(color) + 0.114 * android.graphics.Color.blue(color)) / 255
     return darkness >= 0.5
 }

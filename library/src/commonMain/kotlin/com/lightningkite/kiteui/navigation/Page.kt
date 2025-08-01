@@ -6,18 +6,18 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 
-interface Page {
-    val title: Readable<String>
+public interface Page {
+    public val title: Readable<String>
         get() = Constant(
             this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen").removeSuffix(" Page")
         )
-    fun ViewWriter.render(): ViewModifiable
-    object Empty: Page {
-        override fun ViewWriter.render(): ViewModifiable = space {}
+    public fun ViewWriter.render(): ViewModifiable
+    public object Empty: Page {
+        public override fun ViewWriter.render(): ViewModifiable = space {}
     }
-    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Page {
-        override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
-        override val title: Readable<String> = Constant(title)
+    public open class Direct(title: String = "", public val render: ViewWriter.()->ViewModifiable): Page {
+        public override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
+        public override val title: Readable<String> = Constant(title)
     }
 }
 

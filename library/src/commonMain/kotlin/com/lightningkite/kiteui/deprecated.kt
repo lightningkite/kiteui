@@ -1,6 +1,10 @@
 package com.lightningkite.kiteui
 
-operator fun Nothing.minus(other: Nothing): Nothing = TODO()
-operator fun Nothing.contains(other: Nothing): Boolean = TODO()
+@InternalKiteUi
+public operator fun Nothing.minus(other: Nothing): Nothing = TODO()
+@InternalKiteUi
+public operator fun Nothing.contains(other: Nothing): Boolean = TODO()
 
-@Deprecated("Use kotlinx.coroutines instead") val delay = Unit
+@InternalKiteUi
+@Deprecated("Use kotlinx.coroutines instead")
+public val delay: Unit = Unit

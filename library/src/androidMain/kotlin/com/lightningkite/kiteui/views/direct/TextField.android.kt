@@ -24,7 +24,7 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.kiteui.views.*
 
 public actual open class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = EditText(context.activity).focusIsKeyboard().apply {
+    override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         inputType = EditorInfo.TYPE_CLASS_TEXT
     }
     override fun applyTheme(theme: ThemeAndBack) { super.applyTheme(theme); val theme = theme.theme
@@ -38,8 +38,8 @@ public actual open class TextInput public actual constructor(context: RContext) 
                 theme.font.italic
             )
         )
-        native.paintFlags = native.paintFlags and (android.graphics.Paint.UNDERLINE_TEXT_FLAG or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG).inv() or
-                (if(theme.font.underline) android.graphics.Paint.UNDERLINE_TEXT_FLAG else 0) or
+        native.paintFlags = native.paintFlags and (Paint.UNDERLINE_TEXT_FLAG or Paint.STRIKE_THRU_TEXT_FLAG).inv() or
+                (if(theme.font.underline) Paint.UNDERLINE_TEXT_FLAG else 0) or
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         useAllCaps = theme.font.allCaps
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
@@ -136,12 +136,12 @@ public actual open class TextInput public actual constructor(context: RContext) 
 }
 
 
-abstract class EquatableByRef(val key: String, val ref: Any) {
-    override fun hashCode(): Int = key.hashCode() + ref.hashCode()
-    override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
+public abstract class EquatableByRef(public val key: String, public val ref: Any) {
+    public override fun hashCode(): Int = key.hashCode() + ref.hashCode()
+    public override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
-var EditText.keyboardHints: KeyboardHints
+public var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {
             InputType.TYPE_CLASS_NUMBER -> KeyboardHints(KeyboardCase.None, KeyboardType.Integer)

@@ -15,14 +15,14 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Routable("experiment")
-object ExperimentPage : Page {
-    override val title: Readable<String>
+public object ExperimentPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Property(7)
+    public val elementCount = Property(7)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val c = Property("")
             text {

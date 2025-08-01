@@ -6,70 +6,70 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.rContextAddonInit
 
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
-typealias KiteUiNavigator = PageNavigator
+public typealias KiteUiNavigator = PageNavigator
 @Deprecated("Use PageNavigator directly instead", ReplaceWith("PageNavigator", "com.lightningkite.kiteui.navigation.PageNavigator"))
-typealias ScreenStack = PageNavigator
-class PageNavigator(private val routesGetter: ()->Routes) {
-    val routes: Routes by lazy { routesGetter() }
+public typealias ScreenStack = PageNavigator
+public class PageNavigator(private val routesGetter: ()->Routes) {
+    public val routes: Routes by lazy { routesGetter() }
 
-    fun navigateUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
-    fun resetUrlLikePath(path: String) = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
+    public fun navigateUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
+    public fun resetUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    val stack: Property<List<Page>> = Property(listOf())
-    fun wrap(screen: Page): Page = screen
+    public val stack: Property<List<Page>> = Property(listOf())
+    public fun wrap(screen: Page): Page = screen
     
-    val currentPage: Readable<Page?> = shared { stack().lastOrNull() }
-    val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
+    public val currentPage: Readable<Page?> = shared { stack().lastOrNull() }
+    public val canGoBack: Readable<Boolean> = shared { stack().size > 1 }
     
-    fun navigate(screen: Page) = navigateRaw(wrap(screen))
-    fun replace(screen: Page) = replaceRaw(wrap(screen))
-    fun reset(screen: Page) = resetRaw(wrap(screen))
+    public fun navigate(screen: Page): Unit = navigateRaw(wrap(screen))
+    public fun replace(screen: Page): Unit = replaceRaw(wrap(screen))
+    public fun reset(screen: Page): Unit = resetRaw(wrap(screen))
 
-    fun navigateRaw(screen: Page) {
+    public fun navigateRaw(screen: Page) {
         stack.value += screen
     }
-    fun replaceRaw(screen: Page) {
+    public fun replaceRaw(screen: Page) {
         stack.value = stack.value.dropLast(1) + screen
     }
-    fun resetRaw(screen: Page) {
+    public fun resetRaw(screen: Page) {
         stack.value = listOf(screen)
     }
 
-    fun goBack(): Boolean {
+    public fun goBack(): Boolean {
         if(stack.value.size <= 1)
             return false
         stack.value = stack.value.dropLast(1)
         return true
     }
 
-    fun dismiss(): Boolean {
+    public fun dismiss(): Boolean {
         if(stack.value.isEmpty())
             return false
         stack.value = stack.value.dropLast(1)
         return true
     }
-    fun clear() {
+    public fun clear() {
         stack.value = listOf()
     }
-    fun isStackEmpty(): Boolean = stack.value.isEmpty()
+    public fun isStackEmpty(): Boolean = stack.value.isEmpty()
 
-    companion object {
+    public companion object {
         @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator.routes", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
-        val mainRoutes: Routes get() = TODO()
+        public val mainRoutes: Routes get() = TODO()
         @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
-        val main: PageNavigator get() = TODO()
+        public val main: PageNavigator get() = TODO()
         @Deprecated("Use navigator properly", ReplaceWith("dialogPageNavigator", "com.lightningkite.kiteui.navigation.dialogPageNavigator"), level = DeprecationLevel.ERROR)
-        val dialog: PageNavigator get() = TODO()
+        public val dialog: PageNavigator get() = TODO()
     }
     @Deprecated("Use navigator properly", ReplaceWith("dialogPageNavigator", "com.lightningkite.kiteui.navigation.dialogPageNavigator"), level = DeprecationLevel.ERROR)
-    val dialog: PageNavigator get() = TODO()
+    public val dialog: PageNavigator get() = TODO()
 }
 
 public expect fun PageNavigator.bindToPlatform(context: RContext)
 
-var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
-var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
-var ViewWriter.dialogPageNavigator by rContextAddonInit<PageNavigator>()
+public var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
+public var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
+public var ViewWriter.dialogPageNavigator by rContextAddonInit<PageNavigator>()
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
-val PlatformNavigator: PageNavigator get() = TODO()
+public val PlatformNavigator: PageNavigator get() = TODO()

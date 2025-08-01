@@ -12,5 +12,5 @@ import kotlin.contracts.*
 
 
 public expect class CircularProgress(context: RContext) : RView {
-    var ratio: Float
+    public var ratio: Float
 }

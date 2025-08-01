@@ -10,10 +10,10 @@ import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import kotlin.reflect.KClass
 
-class Routes(
-    val parsers: List<(UrlLikePath) -> Page?>,
-    val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
-    val fallback: Page = object: Page {
+public class Routes(
+    public val parsers: List<(UrlLikePath) -> Page?>,
+    public val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
+    public val fallback: Page = object: Page {
         override val title = Constant("Not Found")
         override fun ViewWriter.render(): ViewModifiable = run {
             return frame {
@@ -25,43 +25,43 @@ class Routes(
         }
     }
 ) {
-    fun render(screen: Page) = renderers.get(screen::class)?.invoke(screen)
-    fun parse(path: UrlLikePath) = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
-    fun parseOrFallback(path: UrlLikePath) = try { parse(path) } catch(e: Exception) {
+    public fun render(screen: Page): RouteRendered? = renderers.get(screen::class)?.invoke(screen)
+    public fun parse(path: UrlLikePath): Page? = parsers.asSequence().mapNotNull { it(path) }.firstOrNull()
+    public fun parseOrFallback(path: UrlLikePath): Page? = try { parse(path) } catch(e: Exception) {
         fallback
     }
 }
 
-data class RouteRendered(
-    val urlLikePath: UrlLikePath,
-    val listenables: List<Listenable>
+public data class RouteRendered(
+    public val urlLikePath: UrlLikePath,
+    public val listenables: List<Listenable>
 )
 
-data class UrlLikePath(
-    val segments: List<String>,
-    val parameters: Map<String, String>
+public data class UrlLikePath(
+    public val segments: List<String>,
+    public val parameters: Map<String, String>
 ) {
-    companion object {
-        val EMPTY = UrlLikePath(listOf(), mapOf())
+    public companion object {
+        public val EMPTY: UrlLikePath = UrlLikePath(listOf(), mapOf())
 
-        fun fromParts(pathname: String, search: String) = UrlLikePath(
+        public fun fromParts(pathname: String, search: String): UrlLikePath = UrlLikePath(
             segments = pathname.split('/').filter { it.isNotBlank() },
             parameters = search.trimStart('?').split('&').filter { it.isNotBlank() }
                 .associate { it.substringBefore('=') to decodeURIComponent(it.substringAfter('=')) }
         )
 
-        fun fromUrlString(url: String): UrlLikePath {
+        public fun fromUrlString(url: String): UrlLikePath {
             val parts = url.split("?")
             return fromParts(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "")
         }
     }
 
-    fun render() = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
+    public fun render(): String = segments.joinToString("/") + (parameters.takeUnless { it.isEmpty() }?.entries?.joinToString(
         "&",
         "?"
     ) { "${it.key}=${encodeURIComponent(it.value)}" } ?: "")
 
 }
 
-fun Page.render(writer: ViewWriter): ViewModifiable = with(writer) { render() }
+public fun Page.render(writer: ViewWriter): ViewModifiable = with(writer) { render() }
 

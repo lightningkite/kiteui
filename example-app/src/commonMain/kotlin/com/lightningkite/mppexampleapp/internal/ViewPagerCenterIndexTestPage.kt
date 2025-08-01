@@ -15,8 +15,8 @@ import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
 import com.lightningkite.signal.Constant
 import com.lightningkite.kiteui.views.l2.children
 
-object ViewPagerCenterIndexTestPage : Page {
-    override fun ViewWriter.render() = frame {
+public object ViewPagerCenterIndexTestPage : Page {
+    public override fun ViewWriter.render() = frame {
         val slides = Constant((0..10).toList())
         unpadded - expanding
         val recycler = horizontalRecyclerView {

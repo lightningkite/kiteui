@@ -16,11 +16,11 @@ import kotlinx.coroutines.yield
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("reactivity")
-object ReactivityPage : Page {
-    override val title: Readable<String>
+public object ReactivityPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val local = Property("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
         val indirect = shared { local() + " " + persist() }

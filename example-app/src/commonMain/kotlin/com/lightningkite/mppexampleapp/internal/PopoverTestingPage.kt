@@ -12,8 +12,8 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("popover-testing")
-object PopoverTestingPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = frame {
+public object PopoverTestingPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = frame {
         fun ViewWriter.testGrouping() = col {
             for(horizontal in listOf(false, true)) {
                 for(after in listOf(false, true)) {

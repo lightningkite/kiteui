@@ -10,32 +10,36 @@ import com.lightningkite.signal.Constant
 import com.lightningkite.signal.Readable
 
 
-@Deprecated("Renamed to PageNavigator", ReplaceWith("PageNavigator")) typealias ScreenNavigator = PageNavigator
+@Deprecated("Renamed to PageNavigator", ReplaceWith("PageNavigator"))
+public typealias ScreenNavigator = PageNavigator
 
 @Deprecated("Move to using 'Page'", ReplaceWith("Page", "com.lightningkite.kiteui.navigation.Page"))
-interface Screen: Page {
-    override fun ViewWriter.render(): ViewModifiable {
+public interface Screen: Page {
+    public override fun ViewWriter.render(): ViewModifiable {
         @Suppress("DEPRECATION")
         return frame { render() }
 //        return this.lastWrittenView ?: throw IllegalStateException("Screens must create a single view, but you have not created one.")
     }
-    fun ViewWriter.renderOld(): Any?
+    public fun ViewWriter.renderOld(): Any?
 
     @Suppress("Deprecation")
-    object Empty: Screen {
+    public object Empty: Screen {
 
         @Deprecated("Use render2", ReplaceWith("render2()"))
-        override fun ViewWriter.renderOld(): ViewModifiable = space {}
+        public override fun ViewWriter.renderOld(): ViewModifiable = space {}
     }
 
     @Suppress("Deprecation")
-    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Screen {
+    public open class Direct(title: String = "", public val render: ViewWriter.()->ViewModifiable): Screen {
 
         @Deprecated("Use render2", ReplaceWith("render2()"))
-        override fun ViewWriter.renderOld(): ViewModifiable = this@Direct.render(this)
-        override val title: Readable<String> = Constant(title)
+        public override fun ViewWriter.renderOld(): ViewModifiable = this@Direct.render(this)
+        public override val title: Readable<String> = Constant(title)
     }
 }
-@Deprecated("Renamed to pageNavigator", ReplaceWith("pageNavigator")) var ViewWriter.screenNavigator by ViewWriter::pageNavigator
-@Deprecated("Renamed to mainPageNavigator", ReplaceWith("mainPageNavigator")) var ViewWriter.mainScreenNavigator by ViewWriter::mainPageNavigator
-@Deprecated("Renamed to dialogPageNavigator", ReplaceWith("dialogPageNavigator")) var ViewWriter.dialogScreenNavigator by ViewWriter::dialogPageNavigator
+@Deprecated("Renamed to pageNavigator", ReplaceWith("pageNavigator"))
+public var ViewWriter.screenNavigator by ViewWriter::pageNavigator
+@Deprecated("Renamed to mainPageNavigator", ReplaceWith("mainPageNavigator"))
+public var ViewWriter.mainScreenNavigator by ViewWriter::mainPageNavigator
+@Deprecated("Renamed to dialogPageNavigator", ReplaceWith("dialogPageNavigator"))
+public var ViewWriter.dialogScreenNavigator by ViewWriter::dialogPageNavigator

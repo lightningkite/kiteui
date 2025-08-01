@@ -19,7 +19,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
     
     public actual var range: ClosedRange<LocalDateTime>? = null
 
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
         setOnClickListener {
             showDatePicker(
@@ -45,7 +45,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         }
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -58,6 +58,6 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = super.applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = super.applyThemeWithRipple(theme)
 
 }

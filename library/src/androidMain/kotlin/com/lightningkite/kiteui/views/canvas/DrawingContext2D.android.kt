@@ -8,26 +8,27 @@ import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.FontAndStyle
+import com.lightningkite.kiteui.models.Paint
 import com.lightningkite.kiteui.models.turns
 import com.lightningkite.kiteui.views.Path.DrawingResources
 import com.lightningkite.kiteui.views.direct.colorInt
 
 
-abstract class DrawingView : View {
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+public abstract class DrawingView : View {
+    public constructor(context: Context?) : super(context)
+    public constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    public constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual abstract class DrawingContext2D(val canvas: Canvas) {
-    val currentPath = Path()
-    val clearPaint = android.graphics.Paint().apply {
+public actual abstract class DrawingContext2D(public val canvas: Canvas) {
+    public val currentPath: Path = Path()
+    public val clearPaint: android.graphics.Paint = Paint().apply {
         color = android.graphics.Color.TRANSPARENT
         setXfermode(PorterDuffXfermode(PorterDuff.Mode.DST_OUT))
     }
-    var fillPaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.FILL }
-    var strokePaintObj = android.graphics.Paint().apply { style = android.graphics.Paint.Style.STROKE }
-    val drawingResource = DrawingResources()
+    public var fillPaintObj: android.graphics.Paint = Paint().apply { style = android.graphics.Paint.Style.FILL }
+    public var strokePaintObj: android.graphics.Paint = Paint().apply { style = android.graphics.Paint.Style.STROKE }
+    public val drawingResource: DrawingResources = DrawingResources()
     public actual abstract fun save()
     public actual abstract fun restore()
     public actual abstract fun scale(x: Double, y: Double)
@@ -52,8 +53,8 @@ public actual abstract class DrawingContext2D(val canvas: Canvas) {
     public actual abstract var lineWidth: Double
     public actual abstract var miterLimit: Double
     public actual abstract var lineDashOffset: Double
-    abstract fun setLineDash(segments: Array<Double>)
-    abstract fun getLineDash(): Array<Double>
+    public abstract fun setLineDash(segments: Array<Double>)
+    public abstract fun getLineDash(): Array<Double>
     public actual abstract fun closePath()
     public actual abstract fun moveTo(x: Double, y: Double)
     public actual abstract fun lineTo(x: Double, y: Double)
@@ -89,13 +90,13 @@ public actual abstract class DrawingContext2D(val canvas: Canvas) {
 
 }
 
-class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
-    override fun save() { canvas.save() }
-    override fun restore() { canvas.restore() }
-    override fun scale(x: Double, y: Double) { canvas.scale(x.toFloat(), y.toFloat()) }
-    override fun rotate(angle: Double) { canvas.rotate(angle.toFloat()) }
-    override fun translate(x: Double, y: Double) { canvas.translate(x.toFloat(), y.toFloat()) }
-    override fun transform(
+public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
+    public override fun save() { canvas.save() }
+    public override fun restore() { canvas.restore() }
+    public override fun scale(x: Double, y: Double) { canvas.scale(x.toFloat(), y.toFloat()) }
+    public override fun rotate(angle: Double) { canvas.rotate(angle.toFloat()) }
+    public override fun translate(x: Double, y: Double) { canvas.translate(x.toFloat(), y.toFloat()) }
+    public override fun transform(
         a: Double,
         b: Double,
         c: Double,
@@ -117,56 +118,56 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
             ))
         })
     }
-    override var globalCompositeOperation: String
+    public override var globalCompositeOperation: String
         get() = TODO()
         set(value) {}
-    override var imageSmoothingEnabled: Boolean
+    public override var imageSmoothingEnabled: Boolean
         get() = TODO()
         set(value) {}
-    override fun clearRect(x: Double, y: Double, w: Double, h: Double) {
+    public override fun clearRect(x: Double, y: Double, w: Double, h: Double) {
         canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), clearPaint)
     }
-    override fun fillRect(x: Double, y: Double, w: Double, h: Double) {
+    public override fun fillRect(x: Double, y: Double, w: Double, h: Double) {
         canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), fillPaintObj)
     }
-    override fun strokeRect(x: Double, y: Double, w: Double, h: Double){
+    public override fun strokeRect(x: Double, y: Double, w: Double, h: Double){
         canvas.drawRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), strokePaintObj)
     }
-    override fun beginPath() {
+    public override fun beginPath() {
         currentPath.reset()
     }
-    override fun stroke() {
+    public override fun stroke() {
         canvas.drawPath(currentPath, strokePaintObj)
     }
-    override var lineWidth: Double
+    public override var lineWidth: Double
         get() = strokePaintObj.strokeWidth.toDouble()
         set(value) { strokePaintObj.strokeWidth = value.toFloat() }
-    override var miterLimit: Double
+    public override var miterLimit: Double
         get() = strokePaintObj.strokeMiter.toDouble()
         set(value) { strokePaintObj.strokeMiter = value.toFloat() }
-    override var lineDashOffset: Double
+    public override var lineDashOffset: Double
         get() = TODO()
         set(value) { }
-    override fun setLineDash(segments: Array<Double>) {
+    public override fun setLineDash(segments: Array<Double>) {
         if(segments.isEmpty()) strokePaintObj.pathEffect = null
         else strokePaintObj.pathEffect = DashPathEffect(segments.map { it.toFloat() }.toFloatArray(), 0f)
     }
-    override fun getLineDash(): Array<Double> {
+    public override fun getLineDash(): Array<Double> {
         TODO()
     }
-    override fun closePath() {
+    public override fun closePath() {
         currentPath.close()
     }
-    override fun moveTo(x: Double, y: Double) {
+    public override fun moveTo(x: Double, y: Double) {
         currentPath.moveTo(x.toFloat(), y.toFloat())
     }
-    override fun lineTo(x: Double, y: Double) {
+    public override fun lineTo(x: Double, y: Double) {
         currentPath.lineTo(x.toFloat(), y.toFloat())
     }
-    override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) {
+    public override fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double) {
         currentPath.quadTo(cpx.toFloat(), cpy.toFloat(), x.toFloat(), y.toFloat())
     }
-    override fun bezierCurveTo(
+    public override fun bezierCurveTo(
         cp1x: Double,
         cp1y: Double,
         cp2x: Double,
@@ -177,7 +178,7 @@ class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
         currentPath.cubicTo(cp1x.toFloat(), cp1y.toFloat(),cp2x.toFloat(), cp2y.toFloat(), x.toFloat(), y.toFloat())
     }
 
-    override fun rect(x: Double, y: Double, w: Double, h: Double) {
+    public override fun rect(x: Double, y: Double, w: Double, h: Double) {
         currentPath.addRect(x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), Path.Direction.CCW)
     }
 
@@ -212,12 +213,12 @@ public actual fun DrawingContext2D.fillEvenOdd()  {
     currentPath.fillType = Path.FillType.EVEN_ODD
     canvas.drawPath(currentPath, fillPaintObj)
 }
-public actual var DrawingContext2D.strokePaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.strokePaint: Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         strokePaintObj.color = value.colorInt()
     }
-public actual var DrawingContext2D.fillPaint: com.lightningkite.kiteui.models.Paint
+public actual var DrawingContext2D.fillPaint: Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         fillPaintObj.color = value.colorInt()

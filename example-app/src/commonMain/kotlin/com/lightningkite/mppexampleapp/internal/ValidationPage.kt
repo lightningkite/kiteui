@@ -12,16 +12,16 @@ import com.lightningkite.kiteui.views.l2.field
 import kotlin.coroutines.CoroutineContext
 
 @Routable("validation")
-object ValidationPage : Page {
-    override val title: Readable<String>
+public object ValidationPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    data class Complex(
-        val x: Int = 0,
-        val y: String = ""
+    public data class Complex(
+        public val x: Int = 0,
+        public val y: String = ""
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val original = Property(Complex())
         col {
             field("x") {

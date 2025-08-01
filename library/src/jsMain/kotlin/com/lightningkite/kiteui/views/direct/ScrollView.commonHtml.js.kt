@@ -13,11 +13,11 @@ import org.w3c.dom.*
 
 
 public actual class ScrollingBehaviorImpl public actual constructor(
-    val on: RView,
+    public val on: RView,
     public actual override val horizontal: Boolean,
     public actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    public val native: FutureElement = on.native
 
     init {
         native.style.lineHeight = "0px !important"
@@ -86,7 +86,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             )
         }
     }
-    val _directlyInteractingWithScroller = Property(false)
+    public val _directlyInteractingWithScroller: Property<Boolean> = Property(false)
     public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
 
     init {
@@ -162,7 +162,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
     }
 
     private var scrollToInstance = 0
-    fun disableSnapTemporarily() {
+    public fun disableSnapTemporarily() {
         native.classes.removeAll { it.startsWith("snapTo-") }
         native.setStyleProperty("scroll-snap-type", "unset")
     }

@@ -13,20 +13,20 @@ public actual object ConsoleRoot: Console {
     public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
 private class PlatformConsole(val tag: String): Console {
-    override fun tag(tag: String): Console = PlatformConsole(tag)
-    override fun log(vararg entries: Any?) {
+    public override fun tag(tag: String): Console = PlatformConsole(tag)
+    public override fun log(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }
 
-    override fun error(vararg entries: Any?) {
+    public override fun error(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }
 
-    override fun info(vararg entries: Any?) {
+    public override fun info(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }
 
-    override fun warn(vararg entries: Any?) {
+    public override fun warn(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }
 }

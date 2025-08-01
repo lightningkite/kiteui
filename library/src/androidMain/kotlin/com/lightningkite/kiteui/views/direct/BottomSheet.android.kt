@@ -35,18 +35,18 @@ public actual fun ViewWriter.openBottomSheet(
     var createdView: RView? = null
     o.withoutAnimation {
         object: ViewWriter() {
-            override val context: RContext get() = this@openBottomSheet.context
-            override fun willAddChild(view: RView) {
+            public override val context: RContext get() = this@openBottomSheet.context
+            public override fun willAddChild(view: RView) {
                 println("willAddChild $view: ${o.theme}")
                 view.parent = o
                 view.themeChoice = ThemeDerivation.Set(o.theme.let { it.revert ?: it }[DialogSemantic].theme)
             }
-            override fun addChild(view: RView) {
+            public override fun addChild(view: RView) {
                 println("Adding child $view")
                 createdView = view
                 dialog.setContentView(view.native)
             }
-            override val coroutineContext: CoroutineContext = o.coroutineContext
+            public override val coroutineContext: CoroutineContext = o.coroutineContext
         }.popoverWriter {
             createdView?.shutdown()
             dialog.dismiss()

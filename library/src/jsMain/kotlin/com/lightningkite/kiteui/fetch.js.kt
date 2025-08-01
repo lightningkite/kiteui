@@ -92,7 +92,9 @@ public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHea
     }
 }
 public actual typealias HttpHeaders = Headers
-fun HttpHeaders.forEach(action: (String, String) -> Unit) {
+
+
+@InternalKiteUi public fun HttpHeaders.forEach(action: (String, String) -> Unit) {
     val keys = this.asDynamic().keys()
     var nextKey: dynamic
     do {
@@ -111,7 +113,7 @@ fun HttpHeaders.forEach(action: (String, String) -> Unit) {
 //    public actual suspend fun blob(): Blob = wraps.blob().await()
 //    public actual val headers: HttpHeaders get() = wraps.headers
 //}
-public actual class RequestResponse(val wraps: XMLHttpRequest) {
+public actual class RequestResponse(public val wraps: XMLHttpRequest) {
     public actual val status: Short get() = wraps.status
     public actual val ok: Boolean get() = wraps.status / 100 == 2
     public actual suspend fun text(): String {
@@ -174,23 +176,23 @@ public actual fun websocket(url: String): WebSocket {
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
-    override fun close(code: Short, reason: String) = native.close(code, reason)
-    override fun send(data: String) = native.send(data)
-    override fun send(data: Blob) = native.send(data)
-    override fun onOpen(action: () -> Unit) {
+public class WebSocketWrapper(public val native: org.w3c.dom.WebSocket) : WebSocket {
+    public override fun close(code: Short, reason: String): Unit = native.close(code, reason)
+    public override fun send(data: String): Unit = native.send(data)
+    public override fun send(data: Blob): Unit = native.send(data)
+    public override fun onOpen(action: () -> Unit) {
         native.addEventListener("open", { action() })
     }
 
-    override fun onMessage(action: (String) -> Unit) {
+    public override fun onMessage(action: (String) -> Unit) {
         native.addEventListener("message", { it as MessageEvent; (it.data as? String)?.let { action(it) } })
     }
 
-    override fun onBinaryMessage(action: (Blob) -> Unit) {
+    public override fun onBinaryMessage(action: (Blob) -> Unit) {
         native.addEventListener("message", { it as MessageEvent; (it.data as? Blob)?.let { action(it) } })
     }
 
-    override fun onClose(action: (Short) -> Unit) {
+    public override fun onClose(action: (Short) -> Unit) {
         native.addEventListener("close", { action((it as CloseEvent).code) })
     }
 }
@@ -198,7 +200,8 @@ class WebSocketWrapper(val native: org.w3c.dom.WebSocket) : WebSocket {
 public actual fun Blob.bytes(): Long = size.toLong()
 public actual fun FileReference.bytes(): Long = size.toLong()
 
-fun jsTextBlob(blob: Blob) = js("blob.text()") as Promise<String>
+@InternalKiteUi
+public fun jsTextBlob(blob: Blob): Promise<String> = js("blob.text()") as Promise<String>
 public actual suspend fun Blob.text(): String = jsTextBlob(this).await()
 public actual suspend fun FileReference.text(): String = jsTextBlob(this).await()
 public actual fun String.toBlob(contentType: String): Blob = Blob(arrayOf(this), BlobPropertyBag(type = contentType))

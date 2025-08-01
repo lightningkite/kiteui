@@ -1,24 +1,24 @@
 package com.lightningkite.kiteui
 
-suspend inline fun fetch(
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     type: String = "text/plain",
     body: String
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
-suspend inline fun fetch(
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: Blob
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
-suspend inline fun fetch(
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
+public suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: FileReference
-) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
+): RequestResponse = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
 public expect suspend fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
@@ -28,29 +28,29 @@ public expect suspend fun fetch(
     onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
 ): RequestResponse
 
-class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
+public class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
 
-enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
+public enum class HttpMethod { GET, POST, PUT, PATCH, DELETE, HEAD }
 
-fun httpHeaders(vararg entries: Pair<String, String>) = httpHeaders(entries.toList())
+public fun httpHeaders(vararg entries: Pair<String, String>): HttpHeaders = httpHeaders(entries.toList())
 public expect fun httpHeaders(map: Map<String, String> = mapOf()): HttpHeaders
 public expect fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders
 public expect fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders
 public expect fun httpHeaders(headers: HttpHeaders): HttpHeaders
 public expect class HttpHeaders {
-    fun append(name: String, value: String)
-    fun delete(name: String)
-    fun get(name: String): String?
-    fun has(name: String): Boolean
-    fun set(name: String, value: String)
+    public fun append(name: String, value: String)
+    public fun delete(name: String)
+    public fun get(name: String): String?
+    public fun has(name: String): Boolean
+    public fun set(name: String, value: String)
 }
 
 public expect class RequestResponse {
-    val status: Short
-    val ok: Boolean
-    val headers: HttpHeaders
-    suspend fun text(): String
-    suspend fun blob(): Blob
+    public val status: Short
+    public val ok: Boolean
+    public val headers: HttpHeaders
+    public suspend fun text(): String
+    public suspend fun blob(): Blob
 }
 
 public expect class Blob
@@ -65,41 +65,41 @@ public expect fun FileReference.bytes():Long
 public expect fun FileReference.fileName():String
 public expect suspend fun FileReference.text(): String
 
-sealed interface RequestBody {
-    val type: String
-    val bytes: Long
+public sealed interface RequestBody {
+    public val type: String
+    public val bytes: Long
 }
-data class RequestBodyText(val content: String, override val type: String): RequestBody {
-    override val bytes: Long get() = content.encodeToByteArray().size.toLong()
+public data class RequestBodyText(val content: String, override val type: String): RequestBody {
+    public override val bytes: Long get() = content.encodeToByteArray().size.toLong()
 }
-data class RequestBodyBlob(val content: Blob): RequestBody {
-    override val type: String get() = content.mimeType()
-    override val bytes: Long get() = content.bytes()
+public data class RequestBodyBlob(val content: Blob): RequestBody {
+    public override val type: String get() = content.mimeType()
+    public override val bytes: Long get() = content.bytes()
 }
-data class RequestBodyFile(val content: FileReference): RequestBody {
-    override val type: String get() = content.mimeType()
-    override val bytes: Long get() = content.bytes()
+public data class RequestBodyFile(val content: FileReference): RequestBody {
+    public override val type: String get() = content.mimeType()
+    public override val bytes: Long get() = content.bytes()
 }
 
 public expect fun websocket(url: String): WebSocket
 
-interface WebSocket {
-    fun close(code: Short, reason: String)
-    fun send(data: String)
-    fun send(data: Blob)
-    fun onOpen(action: ()->Unit)
-    fun onMessage(action: (String)->Unit)
-    fun onBinaryMessage(action: (Blob)->Unit)
-    fun onClose(action: (Short)->Unit)
-    fun cancel() { close(1000, "Closed normally") }
+public interface WebSocket {
+    public fun close(code: Short, reason: String)
+    public fun send(data: String)
+    public fun send(data: Blob)
+    public fun onOpen(action: ()->Unit)
+    public fun onMessage(action: (String)->Unit)
+    public fun onBinaryMessage(action: (Blob)->Unit)
+    public fun onClose(action: (Short)->Unit)
+    public fun cancel() { close(1000, "Closed normally") }
 }
 
 /*
 
 retry {
-    val ws = websocket(url)
+    public val ws = websocket(url)
     ws.send("asdf")
-    val msg = ws.incoming.receive()
+    public val msg = ws.incoming.receive()
     ws.close()
     while(true) {
         ws.receive()

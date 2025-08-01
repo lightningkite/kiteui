@@ -9,13 +9,13 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("list-edit")
-object ListEditPage : Page {
-    override val title: Readable<String>
+public object ListEditPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    val data = Property(beeMovieScript.split('\n').take(5).toList())
+    public val data = Property(beeMovieScript.split('\n').take(5).toList())
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         row {
 
             expanding - recyclerView {
@@ -40,7 +40,7 @@ object ListEditPage : Page {
     }
 }
 
-val beeMovieScript = """
+public val beeMovieScript = """
     Scripts.com
     Bee Movie
     By Jerry Seinfeld

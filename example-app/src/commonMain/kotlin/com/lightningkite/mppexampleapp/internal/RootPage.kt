@@ -28,8 +28,8 @@ import com.lightningkite.mppexampleapp.docs.VideoElementPage
 import com.lightningkite.mppexampleapp.docs.ViewPagerElementPage
 
 @Routable("/internal")
-object RootPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object RootPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "Beautiful by default." }

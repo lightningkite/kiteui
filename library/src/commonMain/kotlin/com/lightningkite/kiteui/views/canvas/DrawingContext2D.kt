@@ -4,22 +4,22 @@ import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.FontAndStyle
 
-enum class TextAlign{
+public enum class TextAlign{
     start, end, left, right, center
 }
 
 public expect abstract class DrawingContext2D {
-    abstract fun save()
-    abstract fun restore()
-    abstract fun scale(x: Double, y: Double)
-    abstract fun rotate(angle: Double)
-    abstract fun translate(x: Double, y: Double)
-    abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
+    public abstract fun save()
+    public abstract fun restore()
+    public abstract fun scale(x: Double, y: Double)
+    public abstract fun rotate(angle: Double)
+    public abstract fun translate(x: Double, y: Double)
+    public abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 //  abstract   fun getTransform(): DOMMatrix
 //    abstract fun setTransform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
 //    abstract var globalAlpha: Double
-    abstract var globalCompositeOperation: String
-    abstract var imageSmoothingEnabled: Boolean
+    public abstract var globalCompositeOperation: String
+    public abstract var imageSmoothingEnabled: Boolean
 //  abstract   var imageSmoothingQuality: ImageSmoothingQuality
 //  abstract   var strokeStyle: dynamic
 //  abstract       get()
@@ -35,12 +35,12 @@ public expect abstract class DrawingContext2D {
 //    abstract var shadowBlur: Double
 //    abstract var shadowColor: String
 //    abstract var filter: String
-    abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
-    abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
-    abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
-    abstract fun beginPath()
+    public abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    public abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    public abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    public abstract fun beginPath()
 //  abstract   fun fill(path: Path2D, fillRule: CanvasFillRule)
-    abstract fun stroke()
+    public abstract fun stroke()
 //  abstract   fun stroke(path: Path2D)
 
 //  abstract   fun clip(fillRule: CanvasFillRule)
@@ -80,21 +80,21 @@ public expect abstract class DrawingContext2D {
 //    abstract fun removeHitRegion(id: String)
 //    abstract fun clearHitRegions()
 
-    abstract var lineWidth: Double
+    public abstract var lineWidth: Double
 //  abstract   var lineCap: CanvasLineCap
 //  abstract   var lineJoin: CanvasLineJoin
-    abstract var miterLimit: Double
-    abstract var lineDashOffset: Double
+    public abstract var miterLimit: Double
+    public abstract var lineDashOffset: Double
 //    abstract fun setLineDash(segments: Array<Double>)
 //    abstract fun getLineDash(): Array<Double>
-    abstract fun closePath()
-    abstract fun moveTo(x: Double, y: Double)
-    abstract fun lineTo(x: Double, y: Double)
-    abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
-    abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
+    public abstract fun closePath()
+    public abstract fun moveTo(x: Double, y: Double)
+    public abstract fun lineTo(x: Double, y: Double)
+    public abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    public abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
 //    abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double)
 //    abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radiusX: Double, radiusY: Double, rotation: Double)
-    abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+    public abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 //    abstract fun arc(x: Double, y: Double, radius: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 //    abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }

@@ -13,11 +13,11 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.lazyExpanding
 
 @Routable("recycler-view/horizontal")
-object HorizontalRecyclerViewPage : Page {
-    override val title: Readable<String>
+public object HorizontalRecyclerViewPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         var expanded = Property(-1)
         val items = Property((1..101).toList())
         var recyclerView: RecyclerView? = null

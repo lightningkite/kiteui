@@ -238,5 +238,5 @@ public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveCont
     }
 }
 
-internal public expect fun RView.nativeAnimateShow()
-internal public expect fun RView.nativeAnimateHide()
+internal expect fun RView.nativeAnimateShow()
+internal expect fun RView.nativeAnimateHide()

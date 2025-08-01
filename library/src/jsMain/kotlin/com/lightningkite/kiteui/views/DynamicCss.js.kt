@@ -16,18 +16,18 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 
-external interface BaseUrlScript {
-    val baseUrl: String
+public external interface BaseUrlScript {
+    public val baseUrl: String
 }
 
 public actual class DynamicCss public actual constructor(public actual val basePath: String) {
-    val customStyleSheetElement: HTMLStyleElement by lazy {
+    public val customStyleSheetElement: HTMLStyleElement by lazy {
         val sheet = document.createElement("style") as HTMLStyleElement
         sheet.title = "generated-css"
         document.head!!.appendChild(sheet)
         sheet
     }
-    val customStyleSheet: CSSStyleSheet by lazy {
+    public val customStyleSheet: CSSStyleSheet by lazy {
         customStyleSheetElement
         document.styleSheets.let {
             for (i in 0 until it.length) {
@@ -67,7 +67,7 @@ public actual class DynamicCss public actual constructor(public actual val baseP
         }
     }
 
-    var queue: Json = json()
+    public var queue: Json = json()
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private fun Json.subObj(key: String) = this.get(key) as? Json ?: run {
         val obj = json()
@@ -87,8 +87,8 @@ public actual class DynamicCss public actual constructor(public actual val baseP
         }
     }
 
-    var flushTotal: Duration = 0.seconds
-    var ruleTotal = 0
+    public var flushTotal: Duration = 0.seconds
+    public var ruleTotal: Int = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     public actual fun flush() {
         measureTime {

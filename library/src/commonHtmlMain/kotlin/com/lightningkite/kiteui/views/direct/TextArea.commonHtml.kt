@@ -12,7 +12,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         native.tag = "div"
         native.classes.add("textarea-container")
     }
-    val textarea = FutureElement().apply {
+    public val textarea: FutureElement = FutureElement().apply {
         tag = "textarea"
         classes.add("editable")
         style.resize = "none"

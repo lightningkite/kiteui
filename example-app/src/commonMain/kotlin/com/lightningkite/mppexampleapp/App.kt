@@ -13,7 +13,7 @@ import com.lightningkite.mppexampleapp.internal.RootPage
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
+public val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
     "defaulter",
     transitionDuration = 150.milliseconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
@@ -26,9 +26,9 @@ val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
             ).withoutBack
         }
     ))
-val appTheme = Property<Theme>(defaultTheme)
+public val appTheme = Property<Theme>(defaultTheme)
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
+public fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
     RViewHelper.leakDetection = true
     return appBase(navigator, dialog) {
         swapView {
@@ -63,4 +63,4 @@ fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifia
     }
 }
 
-interface UseFullPage
+public interface UseFullPage

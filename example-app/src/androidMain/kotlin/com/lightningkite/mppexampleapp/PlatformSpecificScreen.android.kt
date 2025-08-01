@@ -13,7 +13,7 @@ import com.lightningkite.mppexampleapp.Resources
 public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     return col {
         text("Lookie here at this icon:")
-        val visible = Property(false)
+        public val visible = Property(false)
         switch { checked bind visible }
         expanding - zoomableImage {
             source = Resources.imagesSolera

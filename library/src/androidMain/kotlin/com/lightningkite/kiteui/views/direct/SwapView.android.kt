@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorFilter
+import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import com.lightningkite.kiteui.views.ViewWriter
@@ -23,11 +24,11 @@ import com.lightningkite.kiteui.views.*
 
 public actual class SwapView public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = FrameLayout(context.activity)
+    override val native: FrameLayout = FrameLayout(context.activity)
 
-    companion object {
-        val swapTimeMakeViewPerformance = PerformanceInfo("swapTimeMakeView")
-        val swapTimeAddViewsPerformance = PerformanceInfo("swapTimeAddViews")
+    public companion object {
+        public val swapTimeMakeViewPerformance: PerformanceInfo = PerformanceInfo("swapTimeMakeView")
+        public val swapTimeAddViewsPerformance: PerformanceInfo = PerformanceInfo("swapTimeAddViews")
     }
 
     public actual fun swap(
@@ -124,28 +125,28 @@ public actual class SwapView public actual constructor(context: RContext) : RVie
 private fun RView.walkTopDown(): Sequence<RView> = sequenceOf(this) + children.asSequence().flatMap { it.walkTopDown() }
 
 private class CustomTransition(val fromRoot: ViewGroup): Transition() {
-    override fun captureStartValues(transitionValues: TransitionValues) {
-        val r = android.graphics.Rect()
+    public override fun captureStartValues(transitionValues: TransitionValues) {
+        val r = Rect()
         transitionValues.view.getDrawingRect(r)
         fromRoot.offsetDescendantRectToMyCoords(transitionValues.view, r)
         transitionValues.values["relativeToRoot"] = r
     }
 
-    override fun captureEndValues(transitionValues: TransitionValues) {
-        val r = android.graphics.Rect()
+    public override fun captureEndValues(transitionValues: TransitionValues) {
+        val r = Rect()
         transitionValues.view.getDrawingRect(r)
         fromRoot.offsetDescendantRectToMyCoords(transitionValues.view, r)
         transitionValues.values["relativeToRoot"] = r
     }
 
-    override fun createAnimator(
+    public override fun createAnimator(
         sceneRoot: ViewGroup,
         startValues: TransitionValues?,
         endValues: TransitionValues?
     ): Animator? {
         val startDummy = startValues?.view?.toBitmapDrawable() ?: return null
-        val startRect = (startValues?.values?.get("relativeToRoot") as? android.graphics.Rect) ?: return null
-        val endRect = (endValues?.values?.get("relativeToRoot") as? android.graphics.Rect) ?: return null
+        val startRect = (startValues?.values?.get("relativeToRoot") as? Rect) ?: return null
+        val endRect = (endValues?.values?.get("relativeToRoot") as? Rect) ?: return null
         startDummy.setBounds(startRect)
         sceneRoot.overlay.add(startDummy)
         startValues.view.visibility = View.INVISIBLE
@@ -160,7 +161,7 @@ private class CustomTransition(val fromRoot: ViewGroup): Transition() {
         }
 
         return TypedValueAnimator.FloatAnimator(0f, 1f).apply {
-            val midRect = android.graphics.Rect()
+            val midRect = Rect()
             onUpdate {
                 midRect.set(
                     (startRect.left * (1f - it) + endRect.left * it).toInt(),
@@ -185,6 +186,6 @@ private class CustomTransition(val fromRoot: ViewGroup): Transition() {
 private fun View.toBitmapDrawable(): BitmapDrawable {
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 //    b.eraseColor(0xFFFF0000.toInt())
-    draw(android.graphics.Canvas(b))
+    draw(Canvas(b))
     return BitmapDrawable(resources, b)
 }

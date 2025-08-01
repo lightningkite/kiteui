@@ -11,9 +11,9 @@ import com.lightningkite.kiteui.views.l2.*
 
 
 @Routable("navigation")
-object NavigationTestPage : Page {
+public object NavigationTestPage : Page {
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Navigation" }
             fun navSelector(label: String, value: ViewWriter.(AppNav.() -> Unit) -> ViewModifiable) {

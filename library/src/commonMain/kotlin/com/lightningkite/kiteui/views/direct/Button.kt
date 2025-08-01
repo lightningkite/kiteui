@@ -12,9 +12,9 @@ import kotlin.contracts.*
 
 
 public expect class Button(context: RContext) : RViewWithAction {
-    var enabled: Boolean
+    public var enabled: Boolean
 }
 
-fun Button.onClick(label: String? = null, icon: Icon? = null, action: suspend ()->Unit) {
+public fun Button.onClick(label: String? = null, icon: Icon? = null, action: suspend ()->Unit) {
     this.action = Action(label ?: "Press", icon ?: Icon.send, action = action)
 }

@@ -9,23 +9,23 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-public actual class Space public actual constructor(context: RContext, val multiplier: Double): RView(context) {
+public actual class Space public actual constructor(context: RContext, public val multiplier: Double): RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = NSpace(context.activity)
+    override val native: NSpace = NSpace(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()
         native.mySuggestedMinimumHeight = (theme.theme.gap * multiplier).value.roundToInt()
     }
 }
 
-class NSpace(context: Context): View(context) {
-    var mySuggestedMinimumWidth = 1
-    override fun getSuggestedMinimumWidth(): Int {
+public class NSpace(context: Context): View(context) {
+    public var mySuggestedMinimumWidth: Int = 1
+    public override fun getSuggestedMinimumWidth(): Int {
         return mySuggestedMinimumWidth
     }
 
-    var mySuggestedMinimumHeight = 1
-    override fun getSuggestedMinimumHeight(): Int {
+    public var mySuggestedMinimumHeight: Int = 1
+    public override fun getSuggestedMinimumHeight(): Int {
         return mySuggestedMinimumHeight
     }
     /**
@@ -46,7 +46,7 @@ class NSpace(context: Context): View(context) {
         return result
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(
             getDefaultSize2(suggestedMinimumWidth, widthMeasureSpec),
             getDefaultSize2(suggestedMinimumHeight, heightMeasureSpec)

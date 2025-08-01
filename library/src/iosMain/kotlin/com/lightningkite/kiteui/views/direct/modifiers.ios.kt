@@ -26,16 +26,16 @@ public actual fun ViewWriter.hintPopover(
     setup: ViewWriter.() -> Unit,
 ): ViewWrapper {
     beforeNextElementSetup {
-        fun openDialog() {
+        public fun openDialog() {
             // TODO
 //            toast(inner = setup)
         }
 
-        val actionHolder = object : NSObject() {
+        public val actionHolder = object : NSObject() {
             @ObjCAction
             fun eventHandler() = openDialog()
         }
-        val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+        public val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
         native.addGestureRecognizer(rec)
     }
     return ViewWrapper
@@ -49,8 +49,8 @@ public actual fun ViewWriter.hasPopover(
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
     beforeNextElementSetup {
-        val originalNavigator = pageNavigator
-        fun openDialog() {
+        public val originalNavigator = pageNavigator
+        public fun openDialog() {
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
@@ -145,8 +145,8 @@ public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContex
 public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         native.hidden = !default
-        var runNumber = 0
-        var lastCommitted = 0
+        public var runNumber = 0
+        public var lastCommitted = 0
         reactiveScope {
             val value = condition()
             val myRun = ++runNumber

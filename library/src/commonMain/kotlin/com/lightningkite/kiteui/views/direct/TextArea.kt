@@ -15,8 +15,8 @@ import kotlin.contracts.*
 
 
 public expect class TextArea(context: RContext) : RViewWithAction {
-    var enabled: Boolean
-    val content: ImmediateWritable<String>
-    var keyboardHints: KeyboardHints
-    var hint: String
+    public var enabled: Boolean
+    public val content: ImmediateWritable<String>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
 }

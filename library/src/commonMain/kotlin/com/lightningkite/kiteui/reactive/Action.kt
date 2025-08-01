@@ -8,10 +8,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
-interface Action: Readable<Boolean> {
-    val title: String
-    val icon: Icon
-    fun startAction(scope: CoroutineScope)
+public interface Action: Readable<Boolean> {
+    public val title: String
+    public val icon: Icon
+    public fun startAction(scope: CoroutineScope)
 }
 
 //data class ExternalLinkAction(
@@ -33,7 +33,7 @@ interface Action: Readable<Boolean> {
 //    TODO()
 //})
 
-fun Action(
+public fun Action(
     title: String,
     icon: Icon = Icon.send,
     clearErrorOnDependencyChange: Boolean = ExceptionHandlers.clearErrorOnDependencyChange,
@@ -41,7 +41,7 @@ fun Action(
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
     action: suspend () -> Unit
-) = if (clearErrorOnDependencyChange) {
+): Action = if (clearErrorOnDependencyChange) {
     DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
     RetryableAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
@@ -51,9 +51,9 @@ fun Action(
     } ?: it
 }
 
-class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
-    var lastInvoked = TimeSource.Monotonic.markNow()
-    override fun startAction(scope: CoroutineScope) {
+public class FrequencyCapAction(public val wraps: Action, public val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
+    public var lastInvoked: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+    public override fun startAction(scope: CoroutineScope) {
         if (lastInvoked.elapsedNow() > frequencyCap) {
             lastInvoked = TimeSource.Monotonic.markNow()
             wraps.startAction(scope)
@@ -61,18 +61,18 @@ class FrequencyCapAction(val wraps: Action, val frequencyCap: Duration = 500.mil
     }
 }
 
-class RetryableAction(
-    override val title: String,
-    override val icon: Icon,
-    val keepRunningWhile: CoroutineScope? = AppScope,
-    val ignoreRetryWhileRunning: Boolean = false,
+public class RetryableAction(
+    public override val title: String,
+    public override val icon: Icon,
+    public val keepRunningWhile: CoroutineScope? = AppScope,
+    public val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
-    var action: suspend () -> Unit,
+    public var action: suspend () -> Unit,
 ) : Action, Readable<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun startAction(scope: CoroutineScope) {
+    public override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         lastJob?.cancel()
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
@@ -101,7 +101,7 @@ class RetryableAction(
         }
     }
 
-    fun cancel() {
+    public fun cancel() {
         lastJob?.let {
             lastJob = null
             it.cancel()
@@ -109,26 +109,26 @@ class RetryableAction(
     }
 }
 
-class DependentAction(
-    override val title: String,
-    override val icon: Icon,
-    val keepRunningWhile: CoroutineScope? = AppScope,
-    val ignoreRetryWhileRunning: Boolean = false,
+public class DependentAction(
+    public override val title: String,
+    public override val icon: Icon,
+    public val keepRunningWhile: CoroutineScope? = AppScope,
+    public val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
-    var action: suspend () -> Unit,
+    public var action: suspend () -> Unit,
 ) : DependencyChangeListener(), Action, Readable<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
-    override fun onDependencyNotReady() {
+    public override fun onDependencyNotReady() {
         reportTo.state = ReadableState.notReady
     }
 
-    override fun onDependencyChange() {
+    public override fun onDependencyChange() {
         reportTo.state = ReadableState(false)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun startAction(scope: CoroutineScope) {
+    public override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
@@ -159,7 +159,7 @@ class DependentAction(
         }
     }
 
-    override fun cancel() {
+    public override fun cancel() {
         action = {}
         super.cancel()
         lastJob?.let {

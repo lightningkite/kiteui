@@ -16,15 +16,15 @@ import com.lightningkite.kiteui.views.minus
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("arguments-example/{id}")
-class ArgumentsExamplePage(val id: String): Page {
+public class ArgumentsExamplePage(val id: String): Page {
 
     @QueryParameter
-    val toAdd = Property("")
+    public val toAdd = Property("")
 
     @QueryParameter
-    val list = Property(listOf("sample"))
+    public val list = Property(listOf("sample"))
 
-    override fun ViewWriter.render() = col {
+    public override fun ViewWriter.render() = col {
         transitionId = id
         h1 { content = "Hello world!" }
         text {

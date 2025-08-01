@@ -70,11 +70,11 @@ public actual class RawImageView public actual constructor(
                     ImageView.ScaleType.CENTER_INSIDE -> requestOptions =
                         requestOptions.clone().optionalCenterInside()
 
-                    ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
+                    ImageView.ScaleType.FIT_CENTER, AImageView.ScaleType.FIT_START, AImageView.ScaleType.FIT_END -> requestOptions =
                         requestOptions.clone().optionalFitCenter()
 
                     ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
-                    ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
+                    ImageView.ScaleType.CENTER, AImageView.ScaleType.MATRIX -> {}
                     else -> {}
                 }
             }
@@ -112,15 +112,15 @@ public actual class RawImageView public actual constructor(
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
         init {
             this.adjustViewBounds = true
             this.clipToOutline = true
         }
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
-        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        public var widthMeasureSpecLast: Int = 0
+        public var heightMeasureSpecLast: Int = 0
+        public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
                 heightMeasureSpecLast = heightMeasureSpec
@@ -138,9 +138,9 @@ public actual class RawImageView public actual constructor(
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+        public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }

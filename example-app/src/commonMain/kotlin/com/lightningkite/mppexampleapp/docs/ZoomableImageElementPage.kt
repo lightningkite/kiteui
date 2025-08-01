@@ -10,10 +10,10 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlin.random.Random
 
 @Routable("docs/zoomable-image")
-object ZoomableImageElementPage: DocPage {
-    override val covers: List<String> = listOf("image", "Image", "zoomable")
+public object ZoomableImageElementPage: DocPage {
+    public override val covers: List<String> = listOf("image", "Image", "zoomable")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         zoomableImage {
             source = ImageRemote("https://picsum.photos/seed/starter/2048/2048")
         }

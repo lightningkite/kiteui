@@ -7,7 +7,7 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 
-fun ViewWriter.navGroupColumn(
+public fun ViewWriter.navGroupColumn(
     elements: Readable<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
@@ -99,7 +99,7 @@ private fun RView.navGroupColumnInner(readable: Readable<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+public fun ViewWriter.navGroupActions(elements: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupActionsInner(elements)
         setup()
@@ -164,7 +164,7 @@ private fun RView.navGroupActionsInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+public fun ViewWriter.navGroupTop(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupTopInner(readable)
         setup()
@@ -218,7 +218,7 @@ private fun RView.navGroupTopInner(readable: Readable<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
+public fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
     return frame {
         centered - icon {
             ::source { navElement.icon() }
@@ -237,7 +237,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
     }
 }
 
-fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
+public fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
     return row {
         centered - icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
@@ -256,7 +256,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
+public fun ViewWriter.navGroupTabs(readable: Readable<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
     return nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {

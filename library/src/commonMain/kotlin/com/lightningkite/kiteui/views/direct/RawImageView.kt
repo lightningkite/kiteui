@@ -8,10 +8,10 @@ import com.lightningkite.signal.ImmediateWritable
 import com.lightningkite.signal.Readable
 
 public expect abstract class RawImageViewLike: RView {
-    val source: ImageSource
-    val description: String
-    val scaleType: ImageScaleType
-    abstract val state: Readable<Unit>
+    public val source: ImageSource
+    public val description: String
+    public val scaleType: ImageScaleType
+    public abstract val state: Readable<Unit>
 }
 
 public expect class RawImageView(
@@ -20,7 +20,7 @@ public expect class RawImageView(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Readable<Unit>
+    public override val state: Readable<Unit>
 }
 
 public expect class RawImageViewZoomable(
@@ -29,7 +29,7 @@ public expect class RawImageViewZoomable(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Readable<Unit>
-    val zoomState: ImmediateWritable<ZoomState>
+    public override val state: Readable<Unit>
+    public val zoomState: ImmediateWritable<ZoomState>
 }
 public expect class ZoomState

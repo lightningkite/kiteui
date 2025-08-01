@@ -24,11 +24,11 @@ internal fun Theme.backgroundClippingDrawableWithoutCorners(): GradientDrawable 
 }
 
 private class MyGradientDrawable(): GradientDrawable() {
-    var colorsOverTime: Array<Pair<IntArray, FloatArray>>? = null
+    public var colorsOverTime: Array<Pair<IntArray, FloatArray>>? = null
     private var animator: ValueAnimator? = null
     private var setInstance = 0
     private var lastSetColors: IntArray? = null
-    fun set(goal: IntArray, ratios: FloatArray) {
+    public fun set(goal: IntArray, ratios: FloatArray) {
         if(Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
             setColors(goal, ratios)
         } else {
@@ -36,7 +36,7 @@ private class MyGradientDrawable(): GradientDrawable() {
         }
         lastSetColors = goal
     }
-    fun animateColorsTo(goal: IntArray, ratios: FloatArray, duration: Duration) {
+    public fun animateColorsTo(goal: IntArray, ratios: FloatArray, duration: Duration) {
         val myInstance = ++setInstance
         animator?.cancel()
         if(!animationsEnabled || lastSetColors?.size != goal.size) {

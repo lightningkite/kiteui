@@ -8,12 +8,12 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
-class PersistentProperty<T>(
+public class PersistentProperty<T>(
     private val key: String,
     defaultValue: T,
     private val serializer: KSerializer<T>,
 ) : ImmediateWritable<T>, BaseImmediateReadable<T>(defaultValue) {
-    override var value: T
+    public override var value: T
         get() = super.value
         set(value) {
             PlatformStorage.set(key, DefaultJson.encodeToString(serializer, value))
@@ -21,7 +21,7 @@ class PersistentProperty<T>(
             super.value = value
         }
 
-    override suspend infix fun set(value: T) {
+    public override suspend infix fun set(value: T) {
         this.value = value
     }
 
@@ -35,7 +35,7 @@ class PersistentProperty<T>(
     }
 }
 
-inline fun <reified T> PersistentProperty(
+public inline fun <reified T> PersistentProperty(
     key: String,
     defaultValue: T
 ): PersistentProperty<T> = PersistentProperty(key, defaultValue, serializer())

@@ -66,7 +66,7 @@ public actual object AppState {
         }
     }
 
-    val _lastUniversalKeyboardInput = sharedProcess<KeyCodeWithModifiers> {
+    public val _lastUniversalKeyboardInput: Signal<KeyCodeWithModifiers> = sharedProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(
@@ -109,13 +109,13 @@ public actual object AppState {
     }
 }
 
-external interface WakeLockSentinel {
-    val released: Boolean
-    fun release(): Promise<Unit>
+public external interface WakeLockSentinel {
+    public val released: Boolean
+    public fun release(): Promise<Unit>
 }
 
 private object _AnimationFrame : Listenable {
-    override fun addListener(listener: () -> Unit): () -> Unit {
+    public override fun addListener(listener: () -> Unit): () -> Unit {
         var end = false
         var sub: (Double) -> Unit = {}
         sub = label@{
@@ -134,10 +134,10 @@ private object _AnimationFrame : Listenable {
 }
 
 private object _InForeground : ImmediateReadable<Boolean> {
-    override val value: Boolean
+    public override val value: Boolean
         get() = (document.asDynamic().visibilityState as? String) != "hidden"
 
-    override fun addListener(listener: () -> Unit): () -> Unit {
+    public override fun addListener(listener: () -> Unit): () -> Unit {
         val l = { _: Event -> listener(); Unit }
         document.addEventListener("visibilitychange", l)
         return { document.removeEventListener("visibilitychange", l) }

@@ -2,9 +2,9 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
 
-abstract class ViewWrapper {
-    abstract fun view(): RView?
-    companion object: ViewWrapper() {
+public abstract class ViewWrapper {
+    public abstract fun view(): RView?
+    public companion object: ViewWrapper() {
         override fun view(): RView? = null
     }
 }

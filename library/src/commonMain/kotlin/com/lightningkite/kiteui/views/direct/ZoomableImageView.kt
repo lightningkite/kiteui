@@ -19,41 +19,41 @@ import kotlin.contracts.*
 import kotlin.coroutines.CoroutineContext
 
 
-class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
-    override val rView: Frame = with(viewWriter) { frame { } }
-    override val coroutineContext: CoroutineContext get() = rView.coroutineContext
+public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
+    public override val rView: Frame = with(viewWriter) { frame { } }
+    public override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
-    data class Info(
-        val sources: List<ImageSource>,
-        val scaleType: ImageScaleType,
-        val description: String?
+    public data class Info(
+        public val sources: List<ImageSource>,
+        public val scaleType: ImageScaleType,
+        public val description: String?
     )
 
-    var info: Info? = null
+    public var info: Info? = null
         set(value) {
             field = value
             if (ready) afterTimeout(10) { refresh() }
         }
-    var source: ImageSource?
+    public var source: ImageSource?
         get() = info?.sources?.firstOrNull()
         set(value) {
             info = info?.copy(sources = listOfNotNull(value)) ?: Info(listOfNotNull(value), ImageScaleType.Fit, null)
         }
-    var scaleType: ImageScaleType
+    public var scaleType: ImageScaleType
         get() = info?.scaleType ?: ImageScaleType.Fit
         set(value) {
             info = info?.copy(scaleType = value) ?: Info(listOf(), value, null)
         }
-    var description: String?
+    public var description: String?
         get() = info?.description
         set(value) {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
-    var refreshOnParamChange: Boolean = false
-    var naturalSize: Boolean = false
+    public var refreshOnParamChange: Boolean = false
+    public var naturalSize: Boolean = false
 
-    var ready = false
-    fun postSetup() {
+    public var ready: Boolean = false
+    public fun postSetup() {
         ready = true
         refresh()
     }
@@ -61,7 +61,7 @@ class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
     private var lastRendered: Info? = null
     private var lastRender: List<RawImageViewZoomable>? = null
 
-    val activityIndicator: ActivityIndicator
+    public val activityIndicator: ActivityIndicator
     init {
         with(rView) {
             centered - activityIndicator {
@@ -71,8 +71,8 @@ class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
         }
     }
 
-    val shown = RawReadable<Info?>(ReadableState(null))
-    fun refresh() {
+    public val shown: RawReadable<Info?> = RawReadable<Info?>(ReadableState(null))
+    public fun refresh() {
         if (!ready) return
         val info = info
         if (lastRendered != info) {
@@ -120,5 +120,5 @@ class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
             }
         }
     }
-    var showLoadingIndicator: Boolean by activityIndicator::shown
+    public var showLoadingIndicator: Boolean by activityIndicator::shown
 }

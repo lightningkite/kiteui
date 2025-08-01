@@ -9,11 +9,11 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
 @Routable("docs/view-modifiers")
-object ViewModifiersPage : DocPage {
-    override val covers: List<String> =
+public object ViewModifiersPage : DocPage {
+    public override val covers: List<String> =
         listOf("view modifiers", "View modifier", "ViewModifiers", "viewModifiers", "viewmodifiers")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("View Modifiers")
             text("KiteUI has a number of view modifiers that can be used to modify the look, behavior and position of views.")

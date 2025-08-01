@@ -9,7 +9,7 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
+public fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
     val n = navigator
     return this.swapView {
         debugName = "navigatorView"
@@ -37,7 +37,7 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
     }
 }
 
-fun ViewWriter.navigatorViewDialog(): SwapView {
+public fun ViewWriter.navigatorViewDialog(): SwapView {
     val n = dialogPageNavigator
     return this.swapView {
         debugName = "navigatorViewDialog"

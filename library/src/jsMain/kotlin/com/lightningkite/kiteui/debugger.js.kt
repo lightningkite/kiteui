@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
-var debug: Boolean = true
+@InternalKiteUi
+public var debug: Boolean = true
 public actual fun debugger() {
     if(debug) js("debugger;")
 }
@@ -32,32 +33,32 @@ public actual fun Throwable.printStackTrace2() {
 public actual object ConsoleRoot: Console {
     private val platform = PlatformConsole("MyApp")
     public actual override fun tag(tag: String): Console = platform.tag(tag)
-    public actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    public actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    public actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    public actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
+    public actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
+    public actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
+    public actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
 }
 private class PlatformConsole(val tag: String): Console {
-    override fun tag(tag: String): Console = PlatformConsole(tag)
-    override fun log(vararg entries: Any?) {
+    public override fun tag(tag: String): Console = PlatformConsole(tag)
+    public override fun log(vararg entries: Any?) {
         console.log(tag, *entries)
     }
 
-    override fun error(vararg entries: Any?) {
+    public override fun error(vararg entries: Any?) {
         console.error(tag, *entries)
     }
 
-    override fun info(vararg entries: Any?) {
+    public override fun info(vararg entries: Any?) {
         console.info(tag, *entries)
     }
 
-    override fun warn(vararg entries: Any?) {
+    public override fun warn(vararg entries: Any?) {
         console.warn(tag, *entries)
     }
 }
 
 private external interface WeakRef<T> {
-    fun deref(): T?
+    public fun deref(): T?
 }
 
 public actual class WeakReference<T: Any> public actual constructor(referred: T) {

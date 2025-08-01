@@ -14,10 +14,10 @@ import kotlin.contracts.*
 
 public expect class TextView(context: RContext) : RView {
 
-    var content: String
-    var align: Align
-    var ellipsis: Boolean
-    var wraps: Boolean
-    var wordBreak: WordBreak
-    fun setBasicHtmlContent(html: String)
+    public var content: String
+    public var align: Align
+    public var ellipsis: Boolean
+    public var wraps: Boolean
+    public var wordBreak: WordBreak
+    public fun setBasicHtmlContent(html: String)
 }

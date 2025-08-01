@@ -17,8 +17,8 @@ public expect class Code constructor(context: RContext): RView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.code(setup: Code.() -> Unit = {}): Code {
+public inline fun ViewWriter.code(setup: Code.() -> Unit = {}): Code {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Code(context) , setup)
 }
-fun ViewWriter.code(content: String) = code { this.content = content }
+public fun ViewWriter.code(content: String) = code { this.content = content }

@@ -7,9 +7,9 @@ import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.stack
 import kotlin.test.Test
 
-class LayoutTest {
+public class LayoutTest {
     @Test
-    fun test() {
+    public fun test() {
         val s = LayoutsTestPage()
         lateinit var root: RView
         root(Theme(id = "unitTest")) {

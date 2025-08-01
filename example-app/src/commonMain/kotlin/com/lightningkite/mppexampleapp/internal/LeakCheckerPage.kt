@@ -19,10 +19,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Routable("ultra-basic")
-object UltraBasicPage : Page {
-    val count = Property(0)
+public object UltraBasicPage : Page {
+    public val count = Property(0)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
 //        frame {
 //            onRemove { println("stack onRemove") }
         col {
@@ -46,8 +46,8 @@ object UltraBasicPage : Page {
 }
 
 @Routable("counter")
-object CounterPage : Page {
-    val count = object : ImmediateWritable<Int> {
+public object CounterPage : Page {
+    public val count = object : ImmediateWritable<Int> {
         val listeners = ArrayList<() -> Unit>()
         override var value: Int = 0
             set(value) {
@@ -65,7 +65,7 @@ object CounterPage : Page {
         }
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             text {
                 ::content { "${count()}" }
@@ -79,10 +79,10 @@ object CounterPage : Page {
 }
 
 @Routable("leak-checker")
-object LeakCheckerPage : Page {
-    val stringProp = Property("X")
-    val doubleProp = Property<Double?>(0.0)
-    val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+public object LeakCheckerPage : Page {
+    public val stringProp = Property("X")
+    public val doubleProp = Property<Double?>(0.0)
+    public val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
@@ -119,7 +119,7 @@ object LeakCheckerPage : Page {
         "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val index = Property(0)
         col {
 //            launch {

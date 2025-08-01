@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.l2.appBase
 import com.lightningkite.kiteui.views.l2.navigatorViewDialog
 import kotlinx.browser.document
 
-fun main() {
+public fun main() {
     println("TEST")
     val context = ViewWriter(NView3(document.body!!))
     context.app()

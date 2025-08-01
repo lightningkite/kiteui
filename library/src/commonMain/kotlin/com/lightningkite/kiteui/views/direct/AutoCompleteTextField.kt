@@ -14,7 +14,7 @@ import kotlin.contracts.*
 
 
 public expect class AutoCompleteTextField(context: RContext) : RViewWithAction {
-    val content: ImmediateWritable<String>
-    var keyboardHints: KeyboardHints
-    var suggestions: List<String>
+    public val content: ImmediateWritable<String>
+    public var keyboardHints: KeyboardHints
+    public var suggestions: List<String>
 }

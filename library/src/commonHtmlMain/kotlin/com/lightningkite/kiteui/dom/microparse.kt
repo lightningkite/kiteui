@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.dom
 
-sealed interface MPNode {
-    fun secure()
+import com.lightningkite.kiteui.InternalKiteUi
 
-    companion object {
-        val okTags = setOf(
+public sealed interface MPNode {
+    public fun secure()
+
+    public companion object {
+        public val okTags: Set<String> = setOf(
             "p",
             "ul",
             "li",
@@ -36,37 +38,38 @@ sealed interface MPNode {
             "h6",
             "br",
         )
-        val okAttrs = setOf(
+        public val okAttrs: Set<String> = setOf(
             "href"
         )
     }
 
-    data class Element(
-        var tagName: String,
-        val attributes: MutableMap<String, String> = HashMap(),
-        val children: MutableList<MPNode> = ArrayList()
+    public data class Element(
+        public var tagName: String,
+        public val attributes: MutableMap<String, String> = HashMap(),
+        public val children: MutableList<MPNode> = ArrayList()
     ) : MPNode {
-        override fun toString(): String {
+        public override fun toString(): String {
             if(tagName == "br") return "<br>"
             return "<${tagName} ${attributes.entries.joinToString(" ") { "${it.key}=\"${it.value}\"" }}>${
                 children.joinToString("")
             }</${tagName}>"
         }
 
-        override fun secure() {
+        public override fun secure() {
             if (tagName !in okTags) tagName = "span"
             attributes.keys.retainAll(okAttrs)
             children.forEach { it.secure() }
         }
     }
 
-    data class Text(val content: String) : MPNode {
-        override fun toString(): String = content
-        override fun secure() {}
+    public data class Text(val content: String) : MPNode {
+        public override fun toString(): String = content
+        public override fun secure() {}
     }
 }
 
-fun String.parseMPNodes(): List<MPNode> {
+@InternalKiteUi
+public fun String.parseMPNodes(): List<MPNode> {
     val stack = arrayListOf(MPNode.Element("*"))
     starts(
         onTag = {

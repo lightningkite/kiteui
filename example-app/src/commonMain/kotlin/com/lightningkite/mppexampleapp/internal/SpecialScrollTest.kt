@@ -15,8 +15,8 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 
 @Routable("scroll-test")
-object SpecialScrollTest : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object SpecialScrollTest : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Scroll Layout Test" }
             lateinit var verticalScrollElement: ScrollingBehaviors

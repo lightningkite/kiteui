@@ -1,10 +1,10 @@
 package com.lightningkite.kiteui.views
 
 public expect class RContext: RContextHelper {
-    fun split(): RContext
-    override val darkMode: Boolean?
+    public fun split(): RContext
+    public override val darkMode: Boolean?
 }
-abstract class RContextHelper {
-    val addons = HashMap<String, Any?>()  // TODO: Use record
-    abstract val darkMode: Boolean?
+public abstract class RContextHelper {
+    public val addons: HashMap<String, Any?> = HashMap<String, Any?>()  // TODO: Use record
+    public abstract val darkMode: Boolean?
 }

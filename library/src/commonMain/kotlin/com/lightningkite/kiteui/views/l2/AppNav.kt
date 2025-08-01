@@ -12,44 +12,44 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.signal.invoke
 import com.lightningkite.signal.*
 
-data class UserInfo(
-    val name: String,
-    val profileImage: ImageVector? = null,
-    val defaultIcon: Icon,
+public data class UserInfo(
+    public val name: String,
+    public val profileImage: ImageVector? = null,
+    public val defaultIcon: Icon,
 )
 
-interface AppNav {
-    var appName: String
-    var appIcon: Icon
-    var appLogo: ImageSource
-    var navItems: List<NavElement>
-    var actions: List<NavElement>
-    var exists: Boolean
+public interface AppNav {
+    public var appName: String
+    public var appIcon: Icon
+    public var appLogo: ImageSource
+    public var navItems: List<NavElement>
+    public var actions: List<NavElement>
+    public var exists: Boolean
 
-    class ByProperty : AppNav {
-        val appNameProperty = Property("My App")
-        override var appName: String by appNameProperty
-        val appIconProperty = Property<Icon>(Icon.home)
-        override var appIcon: Icon by appIconProperty
-        val appLogoProperty = Property<ImageSource>(Icon.home.toImageSource(Color.white))
-        override var appLogo: ImageSource by appLogoProperty
-        val navItemsProperty = Property(listOf<NavElement>())
-        override var navItems: List<NavElement> by navItemsProperty
-        val actionsProperty = Property<List<NavElement>>(listOf())
-        override var actions: List<NavElement> by actionsProperty
-        val existsProperty = Property(true)
-        override var exists: Boolean by existsProperty
+    public class ByProperty : AppNav {
+        public val appNameProperty: Property<String> = Property("My App")
+        public override var appName: String by appNameProperty
+        public val appIconProperty: Property<Icon> = Property<Icon>(Icon.home)
+        public override var appIcon: Icon by appIconProperty
+        public val appLogoProperty: Property<ImageSource> = Property<ImageSource>(Icon.home.toImageSource(Color.white))
+        public override var appLogo: ImageSource by appLogoProperty
+        public val navItemsProperty: Property<List<NavElement>> = Property(listOf<NavElement>())
+        public override var navItems: List<NavElement> by navItemsProperty
+        public val actionsProperty: Property<List<NavElement>> = Property<List<NavElement>>(listOf())
+        public override var actions: List<NavElement> by actionsProperty
+        public val existsProperty: Property<Boolean> = Property(true)
+        public override var exists: Boolean by existsProperty
     }
 }
 
 
-val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
+public val ViewWriter.appNavFactory by rContextAddon<Property<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
     Property(
         ViewWriter::appNavBottomTabs
     )
 )
 
-fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): ViewModifiable {
+public fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): ViewModifiable {
     return appBase(main, dialog) {
         swapView {
             debugName = "swapView for appNavFactory"
@@ -61,7 +61,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
+public fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     val showMenu = Property(false)
     return OuterSemantic.onNext - col {
@@ -98,7 +98,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
+public fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
     return OuterSemantic.onNext - col {
@@ -125,7 +125,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
+public fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     return OuterSemantic.onNext - col {
         debugName = "outer nav"
@@ -185,7 +185,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
+public fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     return OuterSemantic.onNext - col {
 // Nav 4 left and top - add dropdown for user info

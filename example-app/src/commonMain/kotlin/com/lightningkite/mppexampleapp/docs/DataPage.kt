@@ -15,12 +15,12 @@ import com.lightningkite.mppexampleapp.widgets.code
 import kotlinx.coroutines.delay
 
 @Routable("docs/data")
-object DataPage : DocPage {
+public object DataPage : DocPage {
 
-    override val title: Readable<String>
+    public override val title: Readable<String>
         get() = Constant("Data: How to do Reactivity in KiteUI")
 
-    override val covers: List<String> = listOf(
+    public override val covers: List<String> = listOf(
         "data",
         "Property",
         "PersistentProperty",
@@ -31,7 +31,7 @@ object DataPage : DocPage {
         "launch"
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             val secondsElapsed = sharedProcess<Int> {
                 // Starts out as 'loading'

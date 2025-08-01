@@ -6,16 +6,16 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.rContextAddon
 
-var ViewWriter.titleDepth: Int by rContextAddon(0)
+public var ViewWriter.titleDepth: Int by rContextAddon(0)
 
 @ViewDsl
-fun ViewWriter.titledSection(
+public fun ViewWriter.titledSection(
     title: String,
     content: RowOrCol.() -> Unit,
 ) = titledSection({ this.content = title }, content)
 
 @ViewDsl
-fun ViewWriter.titledSection(
+public fun ViewWriter.titledSection(
     titleSetup: TextView.() -> Unit = {},
     content: RowOrCol.() -> Unit,
 ): ViewModifiable {

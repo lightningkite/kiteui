@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 
 public actual class Frame public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = FrameLayout(context.activity)
+    override val native: FrameLayout = FrameLayout(context.activity)
     override fun childTouches(child: RView): Int {
         val p = child.lparams as FrameLayout.LayoutParams
         var total = 0
@@ -33,7 +33,7 @@ public actual class Frame public actual constructor(context: RContext) : RView(c
 
 public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = SlightlyModifiedLinearLayout(context.activity)
+    override val native: SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
             if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -87,7 +87,7 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
 
 public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val cannotBeCovered: Boolean get() = false
-    override val native = SlightlyModifiedLinearLayout(context.activity)
+    override val native: SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     override fun childTouches(child: RView): Int {
@@ -139,8 +139,8 @@ public actual class RowCollapsingToColumn public actual constructor(context: RCo
     }
 }
 
-open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
-    override fun generateDefaultLayoutParams(): LayoutParams? {
+public open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
+    public override fun generateDefaultLayoutParams(): LayoutParams? {
         if (orientation == HORIZONTAL) {
             return LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
         } else if (orientation == VERTICAL) {

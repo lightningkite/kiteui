@@ -10,7 +10,7 @@ import kotlin.contracts.*
 
 public expect class WebView(context: RContext) : RView {
 
-    var url: String
-    var permitJs: Boolean
-    var content: String
+    public var url: String
+    public var permitJs: Boolean
+    public var content: String
 }

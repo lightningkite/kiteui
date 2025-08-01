@@ -5,8 +5,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class AutoInsertCommaTest {
-    val testCases = listOf(
+public class AutoInsertCommaTest {
+    public val testCases = listOf(
         "1234567",
         "12345678",
         "123456789",
@@ -25,7 +25,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun editsKeepPosition() {
+    public fun editsKeepPosition() {
         fun testOnString(string: String) {
             repeat(string.length + 1) {
                 var post = ""
@@ -77,7 +77,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun insert() {
+    public fun insert() {
         fun testOnString(string: String) {
             repeat(string.length + 1) {
                 var post = ""
@@ -102,7 +102,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun testBackspace() {
+    public fun testBackspace() {
         fun testOnString(string: String) {
             repeat(string.length + 1) {
                 var post = ""
@@ -129,7 +129,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun testDelete() {
+    public fun testDelete() {
         fun testOnString(string: String) {
             repeat(string.length + 1) {
                 var post = ""
@@ -156,7 +156,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun testDeleteRange() {
+    public fun testDeleteRange() {
         fun testOnString(string: String) {
             repeat(string.length) {
                 var post = ""
@@ -184,7 +184,7 @@ class AutoInsertCommaTest {
     }
 
     @Test
-    fun decimalFormat() {
+    public fun decimalFormat() {
         assertEquals("5.99", 5.99.toStringNoExponential())
         assertEquals("1224.54", 1224.54.toStringNoExponential())
         assertEquals("1224.542", 1224.542.toStringNoExponential())

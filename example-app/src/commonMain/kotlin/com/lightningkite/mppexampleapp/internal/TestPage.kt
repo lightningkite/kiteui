@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.row
 
 @Routable("test")
-class TestPage: Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public class TestPage: Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             row {
             }

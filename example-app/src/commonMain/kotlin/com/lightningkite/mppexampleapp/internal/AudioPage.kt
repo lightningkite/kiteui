@@ -11,11 +11,11 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 
 @Routable("audio")
-object AudioPage : Page {
+public object AudioPage : Page {
 
-    val backgroundSoundPlaying = PersistentProperty("backgroundNoisePlaying", false)
+    public val backgroundSoundPlaying = PersistentProperty("backgroundNoisePlaying", false)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val soundEffectPool = SoundEffectPool()
         col {
             h1("Audio Testing")

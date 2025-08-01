@@ -9,45 +9,45 @@ import android.view.ViewDebug
 import android.view.ViewGroup
 
 
-typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
+public typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
 /**
  * A drastically simplified variant of LinearLayout.
  */
-open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) :
+public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) :
     ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
 
-    var isBaselineAligned = true
+    public var isBaselineAligned: Boolean = true
     private var mBaselineAlignedChildIndex = -1
     private var mBaselineChildTop = 0
     private var mOrientation = 0
     private var mGravity = Gravity.START or Gravity.TOP
     private var mTotalLength = 0
-    var isMeasureWithLargestChildEnabled: Boolean = false
+    public var isMeasureWithLargestChildEnabled: Boolean = false
     private var mMaxAscent: IntArray = IntArray(4)
     private var mMaxDescent: IntArray = IntArray(4)
 
     private var mLayoutDirection: Int = -1
 
     @JvmOverloads
-    constructor(context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : this(
+    public constructor(context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : this(
         context,
         attrs,
         defStyleAttr,
         0
     )
 
-    override fun shouldDelayChildPressedState(): Boolean {
+    public override fun shouldDelayChildPressedState(): Boolean {
         return false
     }
 
-    var gap: Int = 0
+    public var gap: Int = 0
         set(value) {
             field = value
             requestLayout()
         }
 
 
-    override fun getBaseline(): Int {
+    public override fun getBaseline(): Int {
         if (mBaselineAlignedChildIndex < 0) {
             return super.getBaseline()
         }
@@ -93,7 +93,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         return childTop + /*lp.topMargin +*/ childBaseline
     }
 
-    var baselineAlignedChildIndex: Int
+    public var baselineAlignedChildIndex: Int
         /**
          * @return The index of the child that will be used if this layout is
          * part of a larger layout that is baseline aligned, or -1 if none has
@@ -116,7 +116,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             mBaselineAlignedChildIndex = i
         }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (mOrientation == VERTICAL) {
             measureVertical(widthMeasureSpec, heightMeasureSpec)
         } else {
@@ -164,7 +164,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @see .setOrientation
      * @see .onMeasure
      */
-    fun measureVertical(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public fun measureVertical(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         mTotalLength = 0
         var maxWidth = 0
         var childState = 0
@@ -475,7 +475,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         }
     }
 
-    override fun measureChild(child: View?, parentWidthMeasureSpec: Int, parentHeightMeasureSpec: Int) {
+    public override fun measureChild(child: View?, parentWidthMeasureSpec: Int, parentHeightMeasureSpec: Int) {
         val lp = child!!.layoutParams
 
         val childWidthMeasureSpec = getChildMeasureSpec(
@@ -503,7 +503,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @see .setOrientation
      * @see .onMeasure
      */
-    fun measureHorizontal(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public fun measureHorizontal(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         mTotalLength = 0
         var maxHeight = 0
         var childState = 0
@@ -944,7 +944,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param index the index of the child after which we want to skip children
      * @return the number of children to skip, 0 by default
      */
-    fun getChildrenSkipCount(child: View?, index: Int): Int {
+    public fun getChildrenSkipCount(child: View?, index: Int): Int {
         return 0
     }
 
@@ -956,7 +956,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param childIndex the index of the null child
      * @return the width or height of the child depending on the orientation
      */
-    fun measureNullChild(childIndex: Int): Int {
+    public fun measureNullChild(childIndex: Int): Int {
         return 0
     }
 
@@ -974,7 +974,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param heightMeasureSpec vertical space requirements as imposed by the parent
      * @param totalHeight extra space that has been used up by the parent vertically
      */
-    fun measureChildBeforeLayout(
+    public fun measureChildBeforeLayout(
         child: View?, childIndex: Int,
         widthMeasureSpec: Int, totalWidth: Int, heightMeasureSpec: Int,
         totalHeight: Int
@@ -993,7 +993,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param child the child for which to obtain the location offset
      * @return the location offset in pixels
      */
-    fun getLocationOffset(child: View?): Int {
+    public fun getLocationOffset(child: View?): Int {
         return 0
     }
 
@@ -1006,11 +1006,11 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param child the child whose next sibling will be moved
      * @return the location offset of the next child in pixels
      */
-    fun getNextLocationOffset(child: View?): Int {
+    public fun getNextLocationOffset(child: View?): Int {
         return 0
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    public override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         if (mOrientation == VERTICAL) {
             layoutVertical(l, t, r, b)
         } else {
@@ -1030,7 +1030,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param right
      * @param bottom
      */
-    fun layoutVertical(left: Int, top: Int, right: Int, bottom: Int) {
+    public fun layoutVertical(left: Int, top: Int, right: Int, bottom: Int) {
         val paddingLeft: Int = paddingLeft
         var childTop: Int
         var childLeft: Int
@@ -1091,7 +1091,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         }
     }
 
-    override fun onRtlPropertiesChanged(layoutDirection: Int) {
+    public override fun onRtlPropertiesChanged(layoutDirection: Int) {
         super.onRtlPropertiesChanged(layoutDirection)
         if (layoutDirection != mLayoutDirection) {
             mLayoutDirection = layoutDirection
@@ -1113,7 +1113,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @param right
      * @param bottom
      */
-    fun layoutHorizontal(left: Int, top: Int, right: Int, bottom: Int) {
+    public fun layoutHorizontal(left: Int, top: Int, right: Int, bottom: Int) {
         val isLayoutRtl: Boolean = layoutDirection == LAYOUT_DIRECTION_RTL
         val paddingTop: Int = paddingTop
         var childTop: Int
@@ -1219,7 +1219,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         child.layout(left, top, left + width, top + height)
     }
 
-    open var orientation: Int
+    public open var orientation: Int
         /**
          * Returns the current orientation.
          *
@@ -1240,15 +1240,15 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             }
         }
 
-    var ignoreWeights: Boolean = false
+    public var ignoreWeights: Boolean = false
         set(value) {
             field = value
             requestLayout()
         }
 
-    var gravity: Int
+    public var gravity: Int
         /**
-         * Returns the current gravity. See [android.view.Gravity]
+         * Returns the current gravity. See [Gravity]
          *
          * @return the current gravity.
          * @see .setGravity
@@ -1260,7 +1260,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          * views are placed if there is extra vertical space. If this layout has a
          * HORIZONTAL orientation, this controls the alignment of the children.
          *
-         * @param gravity See [android.view.Gravity]
+         * @param gravity See [Gravity]
          *
          * @attr ref android.R.styleable#LinearLayout_gravity
          */
@@ -1278,7 +1278,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
             }
         }
 
-    fun setHorizontalGravity(horizontalGravity: Int) {
+    public fun setHorizontalGravity(horizontalGravity: Int) {
         val gravity = horizontalGravity and Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK
         if ((mGravity and Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) != gravity) {
             mGravity = (mGravity and Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK.inv()) or gravity
@@ -1286,7 +1286,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         }
     }
 
-    fun setVerticalGravity(verticalGravity: Int) {
+    public fun setVerticalGravity(verticalGravity: Int) {
         val gravity = verticalGravity and Gravity.VERTICAL_GRAVITY_MASK
         if ((mGravity and Gravity.VERTICAL_GRAVITY_MASK) != gravity) {
             mGravity = (mGravity and Gravity.VERTICAL_GRAVITY_MASK.inv()) or gravity
@@ -1294,11 +1294,11 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         }
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
+    public override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
         return LayoutParams(0, 0)
     }
 
-    override fun generateDefaultLayoutParams(): LayoutParams? {
+    public override fun generateDefaultLayoutParams(): LayoutParams? {
         if (orientation == HORIZONTAL) {
             return LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -1313,7 +1313,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
         return null
     }
 
-    override fun generateLayoutParams(lp: ViewGroup.LayoutParams): LayoutParams {
+    public override fun generateLayoutParams(lp: ViewGroup.LayoutParams): LayoutParams {
         if (lp is LayoutParams) {
             return LayoutParams(lp)
         } else if (lp is MarginLayoutParams) {
@@ -1322,11 +1322,11 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
     }
 
     // Override to allow type-checking of LayoutParams.
-    override fun checkLayoutParams(p: ViewGroup.LayoutParams): Boolean {
+    public override fun checkLayoutParams(p: ViewGroup.LayoutParams): Boolean {
         return p is LayoutParams
     }
 
-    override fun getAccessibilityClassName(): CharSequence {
+    public override fun getAccessibilityClassName(): CharSequence {
         return "LinearLayout"
     }
 
@@ -1336,7 +1336,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_weight
      * @attr ref android.R.styleable#LinearLayout_Layout_layout_gravity
      */
-    open class LayoutParams : UseMarginsLayoutParams, MaxSizeLayoutParams {
+    public open class LayoutParams : UseMarginsLayoutParams, MaxSizeLayoutParams {
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1344,7 +1344,7 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        var weight = 0f
+        public var weight: Float = 0f
         /**
          * Indicates how much of the extra space in the LinearLayout will be
          * allocated to the view associated with these LayoutParams. Specify
@@ -1352,18 +1352,18 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          * will be pro-rated among all views whose weight is greater than 0.
          */
         @ViewDebug.ExportedProperty(category = "layout")
-        var gapRatio = 1f
+        public var gapRatio: Float = 1f
 
         @ViewDebug.ExportedProperty(category = "layout")
-        var gapBeforeOverride: Int? = null
+        public var gapBeforeOverride: Int? = null
 
-        override var maxWidth: Int = Int.MAX_VALUE / 4
-        override var maxHeight: Int = Int.MAX_VALUE / 4
+        public override var maxWidth: Int = Int.MAX_VALUE / 4
+        public override var maxHeight: Int = Int.MAX_VALUE / 4
 
         /**
          * Gravity for the view associated with these LayoutParams.
          *
-         * @see android.view.Gravity
+         * @see Gravity
          */
         @ViewDebug.ExportedProperty(
             category = "layout",
@@ -1393,12 +1393,12 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
                 to = "FILL"
             )]
         )
-        var gravity = -1
+        public var gravity: Int = -1
 
         /**
          * {@inheritDoc}
          */
-        constructor(width: Int, height: Int) : super(width, height) {
+        public constructor(width: Int, height: Int) : super(width, height) {
             weight = 0f
         }
 
@@ -1412,14 +1412,14 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          * [.WRAP_CONTENT] or a fixed size in pixels
          * @param weight the weight
          */
-        constructor(width: Int, height: Int, weight: Float) : super(width, height) {
+        public constructor(width: Int, height: Int, weight: Float) : super(width, height) {
             this.weight = weight
         }
 
         /**
          * {@inheritDoc}
          */
-        constructor(p: ViewGroup.LayoutParams) : super(p)
+        public constructor(p: ViewGroup.LayoutParams) : super(p)
 
         /**
          * Copy constructor. Clones the width, height, margin values, weight,
@@ -1427,15 +1427,15 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
          *
          * @param source The layout params to copy from.
          */
-        constructor(source: LayoutParams) : super(source) {
+        public constructor(source: LayoutParams) : super(source) {
             weight = source.weight
             gravity = source.gravity
         }
     }
 
-    companion object {
-        const val HORIZONTAL = 0
-        const val VERTICAL = 1
+    public companion object {
+        public const val HORIZONTAL: Int = 0
+        public const val VERTICAL: Int = 1
         private const val VERTICAL_GRAVITY_COUNT = 4
 
         private const val INDEX_CENTER_VERTICAL = 0
@@ -1446,11 +1446,11 @@ open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defSt
 }
 
 
-abstract class UseMarginsLayoutParams: ViewGroup.LayoutParams {
-    constructor(width: Int, height: Int):super(width, height)
-    constructor(c: Context, attrs: AttributeSet):super(c, attrs)
-    constructor(source: ViewGroup.LayoutParams):super(source) {
+public abstract class UseMarginsLayoutParams: ViewGroup.LayoutParams {
+    public constructor(width: Int, height: Int):super(width, height)
+    public constructor(c: Context, attrs: AttributeSet):super(c, attrs)
+    public constructor(source: ViewGroup.LayoutParams):super(source) {
         useMargins = (source as? UseMarginsLayoutParams)?.useMargins ?: false
     }
-    var useMargins: Boolean = false
+    public var useMargins: Boolean = false
 }

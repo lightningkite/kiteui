@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.R
 import android.content.res.ColorStateList
 import android.view.View
 import android.widget.FrameLayout
@@ -11,12 +12,12 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class Button public actual constructor(context: RContext): RViewWithAction(context) {
-    val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
+    public val progress: ProgressBar = ProgressBar(context.activity, null, R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
         visibility = View.GONE
     }
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 

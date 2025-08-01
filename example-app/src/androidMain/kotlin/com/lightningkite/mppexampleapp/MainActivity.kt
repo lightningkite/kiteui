@@ -16,10 +16,10 @@ import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.internal.LeakCheckerPage
 
-class MainActivity : KiteUiActivity() {
-    override val mainNavigator: PageNavigator = PageNavigator { AutoRoutes }
-    val dialogNavigator: PageNavigator = PageNavigator { AutoRoutes }
-    override fun onCreate(savedInstanceState: Bundle?) {
+public class MainActivity : KiteUiActivity() {
+    public override val mainNavigator: PageNavigator = PageNavigator { AutoRoutes }
+    public val dialogNavigator: PageNavigator = PageNavigator { AutoRoutes }
+    public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         codeCacheDir.setReadOnly()
         with(viewWriter) {
@@ -47,6 +47,6 @@ class MainActivity : KiteUiActivity() {
         }
     }
 
-    override val theme: ReactiveContext.() -> Theme
+    public override val theme: ReactiveContext.() -> Theme
         get() = { appTheme() }
 }

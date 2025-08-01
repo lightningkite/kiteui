@@ -13,7 +13,7 @@ import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 public actual class RadioButton public actual constructor(context: RContext): RView(context) {
-    override val native = android.widget.RadioButton(context.activity)
+    override val native: RadioButton = RadioButton(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme
         CompoundButtonCompat.setButtonTintList(

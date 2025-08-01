@@ -31,17 +31,17 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
 @Routable("docs/available-views")
-object CheatSheet : DocPage {
-    override val covers: List<String>
+public object CheatSheet : DocPage {
+    public override val covers: List<String>
         get() = listOf("Available KiteUI Views")
 
-    data class ExampleEntry(
-        val name: String,
-        val tags: Set<String> = setOf()
+    public data class ExampleEntry(
+        public val name: String,
+        public val tags: Set<String> = setOf()
     )
 
-    data object LinkSemantic : Semantic("link") {
-        override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+    public data object LinkSemantic : Semantic("link") {
+        public override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
             derivations = mapOf(
                 HoverSemantic to {
                     it.withoutBack(
@@ -52,9 +52,9 @@ object CheatSheet : DocPage {
         )
     }
 
-    val known = HashSet<ExampleEntry>()
-    val jump = Property<ExampleEntry?>(null)
-    fun ViewWriter.example(
+    public val known = HashSet<ExampleEntry>()
+    public val jump = Property<ExampleEntry?>(null)
+    public fun ViewWriter.example(
         name: String,
         description: String,
         code: String,
@@ -105,7 +105,7 @@ object CheatSheet : DocPage {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun ViewWriter.render(): ViewModifiable = frame {
+    public override fun ViewWriter.render(): ViewModifiable = frame {
         article {
             titledSection("Available Views") {
 
@@ -1335,10 +1335,10 @@ object CheatSheet : DocPage {
     }
 }
 
-typealias StringID = String
+public typealias StringID = String
 
 private data class SetForeground(val color: Color) : Semantic("frgnd-${color.toInt()}") {
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         foreground = color,
         background = if (color.perceivedBrightness > 0.5f) Color.black else Color.gray(0.9f)
     )

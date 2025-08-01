@@ -5,7 +5,7 @@ import com.lightningkite.kiteui.views.RView
 import android.webkit.WebView as AndroidWebView
 
 public actual class WebView public actual constructor(context: RContext): RView(context) {
-    override val native = AndroidWebView(context.activity).apply {
+    override val native: AndroidWebView = AndroidWebView(context.activity).apply {
     }
     public actual var url: String
         get() {

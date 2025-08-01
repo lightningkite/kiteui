@@ -28,5 +28,7 @@ import com.lightningkite.signal.ReactiveContext
 
 
 
-@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.kiteui.launch")) val launch = Unit
-@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.readable.reactiveScope")) val reactiveScope = Unit
+@Deprecated("Wrong import; this has moved", ReplaceWith("launch", "com.lightningkite.kiteui.launch"))
+public val launch: Unit = Unit
+@Deprecated("Wrong import; this has moved", ReplaceWith("reactiveScope", "com.lightningkite.readable.reactiveScope"))
+public val reactiveScope: Unit = Unit

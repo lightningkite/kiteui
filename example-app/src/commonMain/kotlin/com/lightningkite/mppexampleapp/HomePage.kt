@@ -53,9 +53,9 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
-class HomePage: Page {
-    override val title: Readable<String> get() = Constant("KiteUI")
-    override fun ViewWriter.render(): ViewModifiable = run {
+public class HomePage: Page {
+    public override val title: Readable<String> get() = Constant("KiteUI")
+    public override fun ViewWriter.render(): ViewModifiable = run {
         return article {
             centered - h1("KiteUI - Beautiful by Default")
             separator()

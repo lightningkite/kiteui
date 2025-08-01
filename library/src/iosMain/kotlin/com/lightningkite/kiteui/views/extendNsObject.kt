@@ -41,59 +41,59 @@ import kotlin.reflect.KProperty
 //        storage.getOrPut(thisRef) { HashMap() }.put(this, value)
 //    }
 //}
-class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
+public class ExtensionProperty<A: NSObject, B>(): ReadWriteProperty<A, B?> {
     
-    val key = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
-    override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
-    override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
+    public val key = NSValue.valueWithPointer((Random.nextLong().toString() as NSString).UTF8String)
+    public override fun getValue(thisRef: A, property: KProperty<*>): B? = getValue(thisRef)
+    public override fun setValue(thisRef: A, property: KProperty<*>, value: B?) = setValue(thisRef, value)
     
     @Suppress("UNCHECKED_CAST")
-    fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
+    public fun getValue(thisRef: A): B? = com.lightningkite.kiteui.objc.getAssociatedObjectWithKey(thisRef, key) as? B
     
-    fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
-    companion object {
+    public fun setValue(thisRef: A, value: B?) = com.lightningkite.kiteui.objc.setAssociatedObjectWithKey(thisRef, key, value)
+    public companion object {
         fun debug() {}
     }
 }
 
 private val UIViewExplicitlyNeedsLayout = ExtensionProperty<UIView, Boolean>()
-var UIView.explicitlyNeedsLayout: Boolean? by UIViewExplicitlyNeedsLayout
+public var UIView.explicitlyNeedsLayout: Boolean? by UIViewExplicitlyNeedsLayout
 
 private val UIViewIgnoreInteraction = ExtensionProperty<UIView, Boolean>()
-var UIView.extensionIgnoreInteraction: Boolean? by UIViewIgnoreInteraction
+public var UIView.extensionIgnoreInteraction: Boolean? by UIViewIgnoreInteraction
 
 private val UIViewWeight = ExtensionProperty<UIView, Float>()
-var UIView.extensionWeight: Float? by UIViewWeight
+public var UIView.extensionWeight: Float? by UIViewWeight
 
 private val UIViewSpacingBeforeOverride = ExtensionProperty<UIView, Dimension>()
-var UIView.extensionSpacingBeforeOverride: Dimension? by UIViewSpacingBeforeOverride
+public var UIView.extensionSpacingBeforeOverride: Dimension? by UIViewSpacingBeforeOverride
 
 private val UIViewPadding = ExtensionProperty<UIView, Edges>()
-var UIView.extensionPadding: Edges? by UIViewPadding
+public var UIView.extensionPadding: Edges? by UIViewPadding
 
 private val UIViewSafeInsetPadding = ExtensionProperty<UIView, Edges>()
-var UIView.extensionSafeInsetPadding: Edges? by UIViewSafeInsetPadding
+public var UIView.extensionSafeInsetPadding: Edges? by UIViewSafeInsetPadding
 
 private val UIViewSizeRules = ExtensionProperty<UIView, SizeConstraints>()
-var UIView.extensionSizeConstraints: SizeConstraints? by UIViewSizeRules
+public var UIView.extensionSizeConstraints: SizeConstraints? by UIViewSizeRules
 
 private val UIViewHorizontalAlign = ExtensionProperty<UIView, Align>()
-var UIView.extensionHorizontalAlign: Align? by UIViewHorizontalAlign
+public var UIView.extensionHorizontalAlign: Align? by UIViewHorizontalAlign
 
 private val UIViewVerticalAlign = ExtensionProperty<UIView, Align>()
-var UIView.extensionVerticalAlign: Align? by UIViewVerticalAlign
+public var UIView.extensionVerticalAlign: Align? by UIViewVerticalAlign
 
 private val UIViewFontAndStyle = ExtensionProperty<UIView, FontAndStyle>()
-var UIView.extensionFontAndStyle: FontAndStyle? by UIViewFontAndStyle
+public var UIView.extensionFontAndStyle: FontAndStyle? by UIViewFontAndStyle
 
 private val UIViewTextSize = ExtensionProperty<UIView, Double>()
-var UIView.extensionTextSize: Double? by UIViewTextSize
+public var UIView.extensionTextSize: Double? by UIViewTextSize
 
 private val UIViewForcePadding = ExtensionProperty<UIView, Boolean>()
-var UIView.extensionForcePadding: Boolean? by UIViewForcePadding
+public var UIView.extensionForcePadding: Boolean? by UIViewForcePadding
 
 private val UIViewCollapsed = ExtensionProperty<UIView, Boolean>()
-var UIView.extensionCollapsed: Boolean? by UIViewCollapsed
+public var UIView.extensionCollapsed: Boolean? by UIViewCollapsed
 
 private val NSObjectStrongRefHolder = ExtensionProperty<NSObject, NSObject>()
-var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder
+public var NSObject.extensionStrongRef: NSObject? by NSObjectStrongRefHolder

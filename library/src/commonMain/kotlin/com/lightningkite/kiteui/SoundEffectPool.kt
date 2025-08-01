@@ -11,31 +11,31 @@ import kotlinx.coroutines.delay
 //import com.lightningkite.kiteui.views.reactiveScope
 
 public expect class SoundEffectPool(concurrency: Int = 4) {
-    suspend fun preload(sound: AudioSource)
-    suspend fun play(sound: AudioSource): PlayingSoundEffect
-    fun unload(sound: AudioSource)
+    public suspend fun preload(sound: AudioSource)
+    public suspend fun play(sound: AudioSource): PlayingSoundEffect
+    public fun unload(sound: AudioSource)
 }
 
-interface PlayingSoundEffect {
-    var volume: Float
-    var isPlaying: Boolean
-    fun stop()
+public interface PlayingSoundEffect {
+    public var volume: Float
+    public var isPlaying: Boolean
+    public fun stop()
 }
 
 public expect suspend fun AudioSource.load(): PlayableAudio
 
-interface PlayableAudio {
-    var volume: Float
-    var loop: Boolean
-    var isPlaying: Boolean
-    fun onComplete(action: ()->Unit)
-    fun stop()
-    fun play() {
+public interface PlayableAudio {
+    public var volume: Float
+    public var loop: Boolean
+    public var isPlaying: Boolean
+    public fun onComplete(action: ()->Unit)
+    public fun stop()
+    public fun play() {
         isPlaying = true
     }
 }
 
-fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
+public fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
     val backgroundAudioShared = CoroutineScope(coroutineContext).async {
         audio.load().apply {
             volume = backgroundVolume

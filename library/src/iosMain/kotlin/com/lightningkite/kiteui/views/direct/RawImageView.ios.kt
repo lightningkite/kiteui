@@ -133,9 +133,9 @@ public actual class RawImageView public actual constructor(
     }
 }
 
-class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+public class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return this.image?.size?.useContents {
             val original = this
             size.useContents {
@@ -152,7 +152,7 @@ class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
         } ?: CGSizeMake(0.0, 0.0)
     }
 
-    var naturalSize: Boolean = false
+    public var naturalSize: Boolean = false
 }
 
 public actual class RawImageViewZoomable public actual constructor(
@@ -249,22 +249,22 @@ public actual class RawImageViewZoomable public actual constructor(
 public actual data class ZoomState(val offset: CValue<CGPoint>, val zoom: Double)
 
 
-object ImageCache {
-    val imageCache = NSCache()
-    fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
-    fun set(key: ImageSource, value: UIImage) {
+public object ImageCache {
+    public val imageCache = NSCache()
+    public fun get(key: ImageSource): UIImage? = imageCache.objectForKey(key) as? UIImage
+    public fun set(key: ImageSource, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
     }
 
-    inline fun get(key: ImageSource, load: () -> UIImage): UIImage {
+    public inline fun get(key: ImageSource, load: () -> UIImage): UIImage {
         (imageCache.objectForKey(key) as? UIImage)?.let { return it }
         val loaded = load()
         imageCache.setObject(loaded, key, loaded.size.useContents { width * height * 4 }.toULong())
         return loaded
     }
 
-    val imageCacheSized = NSCache()
-    suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
+    public val imageCacheSized = NSCache()
+    public suspend fun get(key: ImageSource, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = Triple(key, minWidth, minHeight)
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let { return it }
         val baseCached = get(key, { load() })

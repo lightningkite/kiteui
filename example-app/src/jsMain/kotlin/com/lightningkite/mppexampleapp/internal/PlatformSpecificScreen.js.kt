@@ -5,7 +5,7 @@ import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
+public val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
 
 public actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //    val current = Property(0)

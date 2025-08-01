@@ -11,7 +11,7 @@ import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.SimplifiedLinearLayout
 import com.lightningkite.kiteui.views.direct.SlightlyModifiedLinearLayout
 
-val RView.lparams: ViewGroup.LayoutParams
+public val RView.lparams: ViewGroup.LayoutParams
     get() {
         val parent = parent
         val parentElement = parent?.native

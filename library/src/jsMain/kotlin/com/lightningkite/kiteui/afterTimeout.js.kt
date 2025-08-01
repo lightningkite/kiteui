@@ -15,7 +15,8 @@ public actual inline fun afterTimeout(milliseconds: Long, crossinline action: ()
     }
 }
 
-suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { cont ->
+@InternalKiteUi
+public suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { cont ->
     then(
         onFulfilled = {
             cont.resume(it)

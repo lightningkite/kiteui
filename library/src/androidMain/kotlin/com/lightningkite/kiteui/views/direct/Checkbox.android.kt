@@ -20,7 +20,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class Checkbox public actual constructor(context: RContext): RView(context) {
-    override val native = AndroidCheckBox(context.activity)
+    override val native: AndroidCheckBox = AndroidCheckBox(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         val theme = theme.theme
         CompoundButtonCompat.setButtonTintList(

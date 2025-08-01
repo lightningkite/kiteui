@@ -24,7 +24,7 @@ import platform.posix.memcpy
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-val client = HttpClient {
+public val client = HttpClient {
     install(WebSockets)
     install(UserAgent) {
         agent = Platform.userAgent
@@ -185,29 +185,29 @@ public actual fun websocket(url: String): WebSocket {
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-class WebSocketWrapper(val url: String) : WebSocket {
-    val closeReason = Channel<CloseReason>()
-    val sending = Channel<Frame>(10)
-    var stayOn = true
-    val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(val url: String) : WebSocket {
+    public val closeReason = Channel<CloseReason>()
+    public val sending = Channel<Frame>(10)
+    public var stayOn = true
+    public val onOpen = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -280,32 +280,32 @@ class WebSocketWrapper(val url: String) : WebSocket {
         }
     }
 
-    override fun close(code: Short, reason: String) {
+    public override fun close(code: Short, reason: String) {
         stayOn = false
         closeReason.trySend(CloseReason(code, reason))
     }
 
-    override fun send(data: String) {
+    public override fun send(data: String) {
         sending.trySend(Frame.Text(data))
     }
 
-    override fun send(data: Blob) {
+    public override fun send(data: Blob) {
         sending.trySend(Frame.Binary(false, data.data.toByteArray()))
     }
 
-    override fun onOpen(action: () -> Unit) {
+    public override fun onOpen(action: () -> Unit) {
         onOpen.add(action)
     }
 
-    override fun onMessage(action: (String) -> Unit) {
+    public override fun onMessage(action: (String) -> Unit) {
         onMessage.add(action)
     }
 
-    override fun onBinaryMessage(action: (Blob) -> Unit) {
+    public override fun onBinaryMessage(action: (Blob) -> Unit) {
         onBinaryMessage.add(action)
     }
 
-    override fun onClose(action: (Short) -> Unit) {
+    public override fun onClose(action: (Short) -> Unit) {
         onClose.add(action)
     }
 }
@@ -318,18 +318,20 @@ public actual fun Blob.mimeType(): String = type
 public actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
 
 public actual fun FileReference.fileName(): String {
-    val extension = suggestedType?.preferredFilenameExtension ?: ""
+    public val extension = suggestedType?.preferredFilenameExtension ?: ""
     return "${provider.suggestedName ?: ""}.$extension"
 }
 
-fun String.nsdata(): NSData? =
+@InternalKiteUi
+public fun String.nsdata(): NSData? =
     NSString.create(string = this).dataUsingEncoding(NSUTF8StringEncoding)
 
-fun NSData.string(): String? =
+@InternalKiteUi
+public fun NSData.string(): String? =
     NSString.create(data = this, encoding = NSUTF8StringEncoding)?.toString()
 
-
-fun ByteArray.toNSData(): NSData = memScoped {
+@InternalKiteUi
+public fun ByteArray.toNSData(): NSData = memScoped {
     NSData.create(
         bytes = allocArrayOf(this@toNSData),
         length = this@toNSData.size.toULong()
@@ -337,7 +339,7 @@ fun ByteArray.toNSData(): NSData = memScoped {
 }
 
 
-fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt()).apply {
+public fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.toInt()).apply {
     usePinned {
         memcpy(it.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)
     }

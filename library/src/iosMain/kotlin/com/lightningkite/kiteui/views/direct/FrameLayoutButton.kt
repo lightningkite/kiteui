@@ -20,28 +20,28 @@ import platform.darwin.sel_registerName
 //class LayoutParams()
 
 
-class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
+public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public val spacingOverride: Property<Dimension?> = Property<Dimension?>(null)
+    public override fun getSpacingOverrideProperty() = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
-    override fun didAddSubview(subview: UIView) {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
+    public override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
+    public override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
+    public override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    public override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
     }
-    override fun willRemoveSubview(subview: UIView) {
+    public override fun willRemoveSubview(subview: UIView) {
         // Fixes a really cursed crash where "this" is null due to GC interactions
         @Suppress("SENSELESS_COMPARISON", "IfThenToSafeAccess")
         if (this != null) frameLayoutWillRemoveSubview(subview, childSizeCache)
         super.willRemoveSubview(subview)
     }
 
-    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+    public override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
     }
 
@@ -49,13 +49,13 @@ class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverr
         userInteractionEnabled = true
         addTarget(this, sel_registerName("onclick"), UIControlEventTouchUpInside or UIControlEventTouchUpOutside)
     }
-    fun setOnClick(action: ()->Unit): ()->Unit {
+    public fun setOnClick(action: ()->Unit): ()->Unit {
         onClick = action
         return { onClick = null }
     }
     private var onClick: (()->Unit)? = null
     @ObjCAction
-    fun onclick() {
+    public fun onclick() {
         if (enabled) {
             onClick?.invoke()
         }

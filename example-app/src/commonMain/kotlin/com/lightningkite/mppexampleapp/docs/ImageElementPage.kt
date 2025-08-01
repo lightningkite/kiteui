@@ -10,10 +10,10 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlin.random.Random
 
 @Routable("docs/image")
-object ImageElementPage: DocPage {
-    override val covers: List<String> = listOf("image", "Image")
+public object ImageElementPage: DocPage {
+    public override val covers: List<String> = listOf("image", "Image")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("Image")
             text("You can use the image element to render many types of images with fairly smooth animations.")

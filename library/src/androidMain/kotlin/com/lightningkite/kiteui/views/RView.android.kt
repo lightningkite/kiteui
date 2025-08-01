@@ -29,8 +29,8 @@ import com.lightningkite.signal.onRemove
 import kotlin.math.min
 
 public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
-    abstract val native: View
-    open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
+    public abstract val native: View
+    public open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
 
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
@@ -39,7 +39,7 @@ public actual abstract class RView public actual constructor(context: RContext) 
 
     public actual override var showOnPrint: Boolean = true
 
-    open fun defaultLayoutParams(): LayoutParams =
+    public open fun defaultLayoutParams(): LayoutParams =
         FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
     override var opacity: Double
@@ -402,10 +402,10 @@ public actual abstract class RView public actual constructor(context: RContext) 
     }
 }
 
-var animationsEnabled: Boolean = true
+public var animationsEnabled: Boolean = true
 public actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
 public actual inline fun RView.withoutAnimation(action: () -> Unit) = native.withoutAnimation(action)
-inline fun View.withoutAnimation(action: () -> Unit) {
+public inline fun View.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {
         action()
         return

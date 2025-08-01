@@ -13,11 +13,11 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration.Companion.hours
 
 @Routable("external-services")
-object ExternalServicesPage : Page {
-    override val title: Readable<String>
+public object ExternalServicesPage : Page {
+    public override val title: Readable<String>
         get() = super.title
-    val image = Property<ImageSource?>(null)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public val image = Property<ImageSource?>(null)
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }

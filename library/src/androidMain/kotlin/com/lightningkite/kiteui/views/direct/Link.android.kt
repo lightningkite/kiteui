@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 
 public actual class Link public actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayout(context.activity).apply {
+    override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true
     }
 
@@ -60,7 +60,7 @@ public actual class Link public actual constructor(context: RContext): RView(con
         return super.applyState(t)
     }
 
-    override fun applyTheme(theme: ThemeAndBack) = applyThemeWithRipple(theme)
+    override fun applyTheme(theme: ThemeAndBack): Unit = applyThemeWithRipple(theme)
 }
 
 

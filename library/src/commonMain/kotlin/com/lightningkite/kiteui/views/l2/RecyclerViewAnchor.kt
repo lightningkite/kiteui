@@ -2,13 +2,13 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.Align
 
-sealed class RecyclerViewAnchor {
-    data class SpecificElement(
-        val index: Int,
-        val align: Align
+public sealed class RecyclerViewAnchor {
+    public data class SpecificElement(
+        public val index: Int,
+        public val align: Align
     ): RecyclerViewAnchor()
-    data class FuzzyIndex(
-        val index: Double,
-        val ratioOfFocus: Double
+    public data class FuzzyIndex(
+        public val index: Double,
+        public val ratioOfFocus: Double
     ): RecyclerViewAnchor()
 }

@@ -9,7 +9,7 @@ import kotlinx.browser.window
 import org.w3c.dom.*
 import kotlin.math.min
 
-enum class PageNavigatorBehavior {
+public enum class PageNavigatorBehavior {
     /**
      * The browser back button returns the user to the previous screen state.
      * Reset does not carry over here.
@@ -26,13 +26,13 @@ enum class PageNavigatorBehavior {
      */
     Deprecated;
 
-    companion object {
-        var current = PageNavigatorBehavior.Separate
+    public companion object {
+        public var current: PageNavigatorBehavior = PageNavigatorBehavior.Separate
     }
 }
 
 @Deprecated("")
-var PageNavigatorUseExperimentalBehavior: Boolean
+public var PageNavigatorUseExperimentalBehavior: Boolean
     get() = PageNavigatorBehavior.current == PageNavigatorBehavior.Link
     set(value) {
         PageNavigatorBehavior.current = if (value) PageNavigatorBehavior.Link else PageNavigatorBehavior.Deprecated
@@ -327,11 +327,11 @@ public actual fun PageNavigator.bindToPlatform(context: RContext) {
 // From URL Bar
 // From Stack / Last Update
 
-external interface BaseUrlScript {
-    val baseUrl: String
+public external interface BaseUrlScript {
+    public val baseUrl: String
 }
 
-var basePath = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
+public var basePath: String = ((document.getElementById("baseUrlLocation") as? HTMLScriptElement)
     ?.innerText
     ?.let { JSON.parse<BaseUrlScript>(it).baseUrl }
     ?: document.baseURI.takeIf { document.getElementsByTagName("base").length != 0 }

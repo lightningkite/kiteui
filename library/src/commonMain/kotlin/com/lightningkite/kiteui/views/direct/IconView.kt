@@ -13,6 +13,6 @@ import kotlin.contracts.*
 
 public expect class IconView(context: RContext) : RView {
 
-    var source: Icon?
-    var description: String?
+    public var source: Icon?
+    public var description: String?
 }

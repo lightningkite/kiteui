@@ -4,7 +4,7 @@ import kotlin.random.Random
 
 private fun <T, R> paramToReceiver(action: T.()->R): (T)->R = action
 
-fun Theme.Companion.material(
+public fun Theme.Companion.material(
     id: String,
     foreground: Paint = Color.black,
     background: Paint = Color.white,
@@ -85,8 +85,8 @@ fun Theme.Companion.material(
 )
 
 @Deprecated("Use Theme.material instead")
-object MaterialLikeTheme {
-    operator fun invoke(
+public object MaterialLikeTheme {
+    public operator fun invoke(
         id: String,
         foreground: Paint = Color.black,
         background: Paint = Color.white,
@@ -101,7 +101,7 @@ object MaterialLikeTheme {
         gap: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.dp,
-    ) = Theme.material(
+    ): Theme = Theme.material(
         id = id,
         foreground = foreground,
         background = background,
@@ -118,7 +118,7 @@ object MaterialLikeTheme {
         outlineWidth = outlineWidth
     )
 
-    fun randomLight(): Theme {
+    public fun randomLight(): Theme {
         val hue = Random.nextFloat().turns
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
@@ -129,7 +129,7 @@ object MaterialLikeTheme {
         )
     }
 
-    fun randomDark(): Theme {
+    public fun randomDark(): Theme {
         val hue = Random.nextFloat().turns
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
@@ -142,10 +142,10 @@ object MaterialLikeTheme {
         )
     }
 
-    fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
+    public fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
 }
 
-fun Theme.randomTitleFontSettings() = copy(
+public fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
     derivations = mapOf(
         HeaderSemantic to {
@@ -162,7 +162,7 @@ fun Theme.randomTitleFontSettings() = copy(
     )
 )
 
-fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
+public fun Theme.randomElevationAndCorners() = when (Random.nextInt(0, 3)) {
     0 -> copy(
         id = "${Random.nextInt()}",
         elevation = Random.nextInt(2, 4).dp,

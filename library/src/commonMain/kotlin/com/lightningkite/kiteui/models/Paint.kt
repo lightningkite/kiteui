@@ -6,29 +6,29 @@ import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.time.Duration
 
-sealed interface Paint {
-    fun closestColor(): Color
-    fun map(mapper: (Color)->Color): Paint
+public sealed interface Paint {
+    public fun closestColor(): Color
+    public fun map(mapper: (Color)->Color): Paint
 }
-fun Paint.applyAlpha(alpha: Float): Paint = map { it.applyAlpha(alpha) }
-fun Paint.lighten(ratio: Float): Paint = map { it.lighten(ratio) }
-fun Paint.darken(ratio: Float): Paint = map { it.darken(ratio) }
+public fun Paint.applyAlpha(alpha: Float): Paint = map { it.applyAlpha(alpha) }
+public fun Paint.lighten(ratio: Float): Paint = map { it.lighten(ratio) }
+public fun Paint.darken(ratio: Float): Paint = map { it.darken(ratio) }
 
-data class FadingColor(val base: Color, val alternate: Color): Paint {
-    override fun closestColor(): Color = base
-    override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
+public data class FadingColor(val base: Color, val alternate: Color): Paint {
+    public override fun closestColor(): Color = base
+    public override fun map(mapper: (Color) -> Color): Paint = FadingColor(base = mapper(base), alternate = mapper(alternate))
 }
-data class GradientStop(val ratio: Float, val color: Color)
-data class LinearGradient(
-    val stops: List<GradientStop>,
+public data class GradientStop(val ratio: Float, val color: Color)
+public data class LinearGradient(
+    public val stops: List<GradientStop>,
     /**
      * Zero is left to right, angle added is clockwise
      */
-    val angle: Angle = Angle.zero,
-    val screenStatic: Boolean = false,
+    public val angle: Angle = Angle.zero,
+    public val screenStatic: Boolean = false,
 ) : Paint {
-    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
-    override fun closestColor(): Color {
+    public override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
+    public override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
         if (stops.size == 1) return stops[0].color
         return Color(
@@ -47,19 +47,19 @@ data class LinearGradient(
         )
     }
 
-    fun toGrayscale() = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
-    fun toWhite(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
-    fun toBlack(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
-    fun highlight(ratio: Float) = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
-    fun invert() = copy(stops = stops.map { it.copy(color = it.color.invert()) })
+    public fun toGrayscale(): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toGrayscale()) })
+    public fun toWhite(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toWhite(ratio)) })
+    public fun toBlack(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.toBlack(ratio)) })
+    public fun highlight(ratio: Float): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.highlight(ratio)) })
+    public fun invert(): LinearGradient = copy(stops = stops.map { it.copy(color = it.color.invert()) })
 }
 
-data class RadialGradient(
-    val stops: List<GradientStop>,
-    val screenStatic: Boolean = false,
+public data class RadialGradient(
+    public val stops: List<GradientStop>,
+    public val screenStatic: Boolean = false,
 ) : Paint {
-    override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
-    override fun closestColor(): Color {
+    public override fun map(mapper: (Color) -> Color): Paint = copy(stops = stops.map { it.copy(color = it.color.let(mapper)) })
+    public override fun closestColor(): Color {
         if (stops.isEmpty()) return Color.transparent
         if (stops.size == 1) return stops[0].color
         return Color(
@@ -79,80 +79,80 @@ data class RadialGradient(
     }
 }
 
-data class Color(
-    val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
+public data class Color(
+    public val alpha: Float = 0f, val red: Float = 0f, val green: Float = 0f, val blue: Float = 0f
 ) : Paint {
 
-    override fun map(mapper: (Color) -> Color): Paint = let(mapper)
-    override fun closestColor(): Color = this
-    fun applyAlpha(alpha: Float) = copy(alpha = alpha * this.alpha)
+    public override fun map(mapper: (Color) -> Color): Paint = let(mapper)
+    public override fun closestColor(): Color = this
+    public fun applyAlpha(alpha: Float): Color = copy(alpha = alpha * this.alpha)
 
-    fun toInt(): Int {
+    public fun toInt(): Int {
         return (alpha.byteize() shl 24) or (red.byteize() shl 16) or (green.byteize() shl 8) or (blue.byteize())
     }
 
-    fun toGradient(ratio: Float = 0.2f): LinearGradient = LinearGradient(
+    public fun toGradient(ratio: Float = 0.2f): LinearGradient = LinearGradient(
         stops = listOf(
             GradientStop(1f, this), GradientStop(0f, darken(ratio))
         )
     )
 
-    fun toGrayscale(): Color {
+    public fun toGrayscale(): Color {
         val average = 0.299f * red + 0.587f * green + 0.114f * blue
         return Color(
             alpha = alpha, red = average, green = average, blue = average
         )
     }
 
-    fun darken(ratio: Float): Color = copy(
+    public fun darken(ratio: Float): Color = copy(
         red = red * (1f - ratio), green = green * (1f - ratio), blue = blue * (1f - ratio)
     )
 
-    fun lighten(ratio: Float): Color = copy(
+    public fun lighten(ratio: Float): Color = copy(
         red = red + (1f - red) * ratio, green = green + (1f - green) * ratio, blue = blue + (1f - blue) * ratio
     )
 
-    fun withAlpha(alpha: Float): Color = copy(
+    public fun withAlpha(alpha: Float): Color = copy(
         alpha = alpha
     )
 
-    companion object {
+    public companion object {
 
-        val transparent = Color()
-        val white = Color(1f, 1f, 1f, 1f)
-        val gray = Color(1f, .5f, .5f, .5f)
-        fun gray(amount: Float) = Color(1f, amount, amount, amount)
-        val black = Color(1f, 0f, 0f, 0f)
+        public val transparent: Color = Color()
+        public val white: Color = Color(1f, 1f, 1f, 1f)
+        public val gray: Color = Color(1f, .5f, .5f, .5f)
+        public fun gray(amount: Float): Color = Color(1f, amount, amount, amount)
+        public val black: Color = Color(1f, 0f, 0f, 0f)
 
-        val red = Color(1f, 1f, 0f, 0f)
-        val orange = Color(1f, 1f, 0.5f, 0f)
-        val yellow = Color(1f, 1f, 1f, 0f)
-        val green = Color(1f, 0f, 1f, 0f)
-        val teal = Color(1f, 0f, 1f, 1f)
-        val blue = Color(1f, 0f, 0f, 1f)
-        val purple = Color(1f, 1f, 0f, 1f)
+        public val red: Color = Color(1f, 1f, 0f, 0f)
+        public val orange: Color = Color(1f, 1f, 0.5f, 0f)
+        public val yellow: Color = Color(1f, 1f, 1f, 0f)
+        public val green: Color = Color(1f, 0f, 1f, 0f)
+        public val teal: Color = Color(1f, 0f, 1f, 1f)
+        public val blue: Color = Color(1f, 0f, 0f, 1f)
+        public val purple: Color = Color(1f, 1f, 0f, 1f)
 
         private fun Float.byteize() = (this * 0xFF).toInt().coerceIn(0x00, 0xFF)
 
         private fun Int.floatize() = (this.coerceIn(0x00, 0xFF).toFloat() / 0xFF)
 
-        fun fromInt(value: Int): Color = Color(
+        public fun fromInt(value: Int): Color = Color(
             alpha = value.ushr(24).and(0xFF).floatize(),
             red = value.shr(16).and(0xFF).floatize(),
             green = value.shr(8).and(0xFF).floatize(),
             blue = value.and(0xFF).floatize()
         )
 
-        fun fromHex(value: Int): Color = Color(
+        public fun fromHex(value: Int): Color = Color(
             alpha = 1f,
             red = value.shr(16).and(0xFF).floatize(),
             green = value.shr(8).and(0xFF).floatize(),
             blue = value.and(0xFF).floatize()
         )
 
-        fun fromHexString(value: String): Color = fromHex(value.replace("#", "").toInt(16))
+        public fun fromHexString(value: String): Color = fromHex(value.replace("#", "").toInt(16))
 
-        fun interpolate(left: Color, right: Color, ratio: Float): Color {
+        public fun interpolate(left: Color, right: Color, ratio: Float): Color {
             val invRatio = 1 - ratio
             return Color(
                 alpha = left.alpha.times(invRatio) + right.alpha.times(ratio),
@@ -162,56 +162,56 @@ data class Color(
             )
         }
 
-        fun hsvInterpolate(left: Color, right: Color, ratio: Float): Color =
+        public fun hsvInterpolate(left: Color, right: Color, ratio: Float): Color =
             HSVColor.interpolate(left.toHSV(), right.toHSV(), ratio).toRGB()
     }
 
-    val average: Float get() = (red + green + blue) / 3f
-    val perceivedBrightness: Float
+    public val average: Float get() = (red + green + blue) / 3f
+    public val perceivedBrightness: Float
         get() = sqrt(
             red * red * HSPColor.redBrightness +
                     green * green * HSPColor.greenBrightness +
                     blue * blue * HSPColor.blueBrightness
         )
-    val redInt: Int get() = red.byteize()
-    val greenInt: Int get() = green.byteize()
-    val blueInt: Int get() = blue.byteize()
+    public val redInt: Int get() = red.byteize()
+    public val greenInt: Int get() = green.byteize()
+    public val blueInt: Int get() = blue.byteize()
 
-    operator fun plus(other: Color): Color = copy(
+    public operator fun plus(other: Color): Color = copy(
         red = (red + other.red),
         green = (green + other.green),
         blue = (blue + other.blue),
     )
 
-    operator fun minus(other: Color): Color = copy(
+    public operator fun minus(other: Color): Color = copy(
         red = (red - other.red),
         green = (green - other.green),
         blue = (blue - other.blue),
     )
 
-    operator fun div(other: Color): Color = copy(
+    public operator fun div(other: Color): Color = copy(
         red = (red / other.red),
         green = (green / other.green),
         blue = (blue / other.blue),
     )
 
-    operator fun times(other: Color): Color = copy(
+    public operator fun times(other: Color): Color = copy(
         red = (red * other.red),
         green = (green * other.green),
         blue = (blue * other.blue),
     )
 
-    infix fun channelDifferenceSum(other: Color): Float = abs(red - other.red) +
+    public infix fun channelDifferenceSum(other: Color): Float = abs(red - other.red) +
             abs(green - other.green) +
             abs(blue - other.blue) +
             abs(alpha - other.alpha)
 
-    fun toWhite(ratio: Float) = interpolate(this, white, ratio)
-    fun toBlack(ratio: Float) = interpolate(this, black, ratio)
-    fun highlight(ratio: Float) = if (average > .5) toBlack(ratio) else toWhite(ratio)
-    fun invert(): Color = Color(alpha = alpha, red = 1f - red, green = 1f - green, blue = 1f - blue)
+    public fun toWhite(ratio: Float): Color = interpolate(this, white, ratio)
+    public fun toBlack(ratio: Float): Color = interpolate(this, black, ratio)
+    public fun highlight(ratio: Float): Color = if (average > .5) toBlack(ratio) else toWhite(ratio)
+    public fun invert(): Color = Color(alpha = alpha, red = 1f - red, green = 1f - green, blue = 1f - blue)
 
-    fun toHSV(): HSVColor = HSVColor(alpha = alpha, hue = when {
+    public fun toHSV(): HSVColor = HSVColor(alpha = alpha, hue = when {
         (red > green && red > blue) -> (green - blue).div(max(max(red, green), blue) - min(min(red, green), blue))
         (green > red && green > blue) -> (blue - red).div(
             max(max(red, green), blue) - min(
@@ -234,7 +234,7 @@ data class Color(
     }, value = max(max(red, green), blue)
     )
 
-    fun toHSP(): HSPColor = HSPColor(alpha = alpha, hue = when {
+    public fun toHSP(): HSPColor = HSPColor(alpha = alpha, hue = when {
         (red > green && red > blue) -> (green - blue).div(max(max(red, green), blue) - min(min(red, green), blue))
         (green > red && green > blue) -> (blue - red).div(
             max(max(red, green), blue) - min(
@@ -257,19 +257,19 @@ data class Color(
     }, brightness = perceivedBrightness
     )
 
-    fun toWeb(): String {
+    public fun toWeb(): String {
         return "rgba($redInt, $greenInt, $blueInt, $alpha)"
     }
 
-    fun toAlphalessWeb(): String {
+    public fun toAlphalessWeb(): String {
         @Suppress("EXPERIMENTAL_API_USAGE") return "#" + this.toInt().toUInt().toString(16).padStart(8, '0').drop(2)
     }
 }
 
-data class HSVColor(
-    val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val value: Float = 0f
+public data class HSVColor(
+    public val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val value: Float = 0f
 ) {
-    fun toRGB(): Color {
+    public fun toRGB(): Color {
         val h = (hue.turns.mod(1f) * 6).toInt()
         val f = hue.turns.mod(1f) * 6 - h
         val p = value.coerceIn(0f, 1f) * (1 - saturation.coerceIn(0f, 1f))
@@ -287,8 +287,8 @@ data class HSVColor(
         }
     }
 
-    companion object {
-        fun interpolate(left: HSVColor, right: HSVColor, ratio: Float): HSVColor {
+    public companion object {
+        public fun interpolate(left: HSVColor, right: HSVColor, ratio: Float): HSVColor {
             val invRatio = 1 - ratio
 //            val leftHuePower = left.saturation
 //            val rightHuePower = right.saturation
@@ -303,10 +303,10 @@ data class HSVColor(
     }
 }
 
-data class HSPColor(
-    val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val brightness: Float = 0f
+public data class HSPColor(
+    public val alpha: Float = 1f, val hue: Angle = Angle(0f), val saturation: Float = 0f, val brightness: Float = 0f
 ) {
-    fun toRGB(): Color {
+    public fun toRGB(): Color {
         val minOverMax = 1f - saturation
         var part: Float = 0f
         val r: Float
@@ -363,11 +363,11 @@ data class HSPColor(
         return Color(red = r, green = g, blue = b, alpha = alpha)
     }
 
-    companion object {
-        const val redBrightness = .299f
-        const val greenBrightness = .587f
-        const val blueBrightness = .114f
-        fun interpolate(left: HSPColor, right: HSPColor, ratio: Float): HSPColor {
+    public companion object {
+        public const val redBrightness: Float = .299f
+        public const val greenBrightness: Float = .587f
+        public const val blueBrightness: Float = .114f
+        public fun interpolate(left: HSPColor, right: HSPColor, ratio: Float): HSPColor {
             val invRatio = 1 - ratio
             return HSPColor(
                 alpha = left.alpha.times(invRatio) + right.alpha.times(ratio),
@@ -379,9 +379,9 @@ data class HSPColor(
     }
 }
 
-fun Byte.positiveRemainder(other: Byte): Byte = this.rem(other).plus(other).rem(other).toByte()
-fun Short.positiveRemainder(other: Short): Short = this.rem(other).plus(other).rem(other).toShort()
-fun Int.positiveRemainder(other: Int): Int = this.rem(other).plus(other).rem(other)
-fun Long.positiveRemainder(other: Long): Long = this.rem(other).plus(other).rem(other)
-fun Float.positiveRemainder(other: Float): Float = this.rem(other).plus(other).rem(other)
-fun Double.positiveRemainder(other: Double): Double = this.rem(other).plus(other).rem(other)
+public fun Byte.positiveRemainder(other: Byte): Byte = this.rem(other).plus(other).rem(other).toByte()
+public fun Short.positiveRemainder(other: Short): Short = this.rem(other).plus(other).rem(other).toShort()
+public fun Int.positiveRemainder(other: Int): Int = this.rem(other).plus(other).rem(other)
+public fun Long.positiveRemainder(other: Long): Long = this.rem(other).plus(other).rem(other)
+public fun Float.positiveRemainder(other: Float): Float = this.rem(other).plus(other).rem(other)
+public fun Double.positiveRemainder(other: Double): Double = this.rem(other).plus(other).rem(other)

@@ -1,45 +1,45 @@
 package com.lightningkite.kiteui.models
 
 public expect class ScreenTransition {
-    companion object {
-        val None: ScreenTransition
-        val Push: ScreenTransition
-        val Pop: ScreenTransition
-        val PullDown: ScreenTransition
-        val PullUp: ScreenTransition
-        val Fade: ScreenTransition
-        val GrowFade: ScreenTransition
-        val ShrinkFade: ScreenTransition
+    public companion object {
+        public val None: ScreenTransition
+        public val Push: ScreenTransition
+        public val Pop: ScreenTransition
+        public val PullDown: ScreenTransition
+        public val PullUp: ScreenTransition
+        public val Fade: ScreenTransition
+        public val GrowFade: ScreenTransition
+        public val ShrinkFade: ScreenTransition
     }
 }
 
-data class ScreenTransitions(
-    val forward: ScreenTransition,
-    val reverse: ScreenTransition,
-    val neutral: ScreenTransition,
+public data class ScreenTransitions(
+    public val forward: ScreenTransition,
+    public val reverse: ScreenTransition,
+    public val neutral: ScreenTransition,
 ) {
-    companion object {
-        val None = ScreenTransitions(
+    public companion object {
+        public val None: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.None,
             reverse = ScreenTransition.None,
             neutral = ScreenTransition.None,
         )
-        val HorizontalSlide = ScreenTransitions(
+        public val HorizontalSlide: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.Push,
             reverse = ScreenTransition.Pop,
             neutral = ScreenTransition.Fade,
         )
-        val Fade = ScreenTransitions(
+        public val Fade: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.Fade,
             reverse = ScreenTransition.Fade,
             neutral = ScreenTransition.Fade,
         )
-        val FadeResize = ScreenTransitions(
+        public val FadeResize: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.GrowFade,
             reverse = ScreenTransition.ShrinkFade,
             neutral = ScreenTransition.Fade,
         )
-        val VerticalSlide = ScreenTransitions(
+        public val VerticalSlide: ScreenTransitions = ScreenTransitions(
             forward = ScreenTransition.PullUp,
             reverse = ScreenTransition.PullDown,
             neutral = ScreenTransition.Fade,

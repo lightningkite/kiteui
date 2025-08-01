@@ -9,7 +9,7 @@ import com.lightningkite.signal.Writable
 
 
 public expect class CoordinatorFrame(context: RContext) : RView {
-    fun bottomSheet(
+    public fun bottomSheet(
         peekSize: Dimension? = null,
         partialRatio: Float = 0.5f,
         draggable: Boolean = true,
@@ -18,33 +18,33 @@ public expect class CoordinatorFrame(context: RContext) : RView {
         blockBehind: Boolean = false,
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     )
-    fun leftSlidingPanel(
+    public fun leftSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
     )
-    fun rightSlidingPanel(
+    public fun rightSlidingPanel(
         ratio: Float? = null,
         blockBehind: Boolean = false,
         content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
     )
-    fun onLeftSwipe(action: suspend () -> Unit)
-    fun onRightSwipe(action: suspend () -> Unit)
+    public fun onLeftSwipe(action: suspend () -> Unit)
+    public fun onRightSwipe(action: suspend () -> Unit)
 }
 
-enum class BottomSheetState {
+public enum class BottomSheetState {
     EXPANDED,
     PARTIALLY_EXPANDED,
     COLLAPSED
 }
 
-interface BottomSheetControl {
-    val state: Writable<BottomSheetState>
-    fun close()
+public interface BottomSheetControl {
+    public val state: Writable<BottomSheetState>
+    public fun close()
 }
 
-interface SlidingPanelControl {
-    fun close()
+public interface SlidingPanelControl {
+    public fun close()
 }
 
 public expect class CoordinatorDragHandle(context: RContext): RView

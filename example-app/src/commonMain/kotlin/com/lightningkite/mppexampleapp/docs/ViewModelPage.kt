@@ -10,16 +10,16 @@ import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.mppexampleapp.widgets.code
 
 @Routable("docs/viewmodel")
-object ViewModelPage: DocPage {
+public object ViewModelPage: DocPage {
 
-    override val title: Readable<String>
+    public override val title: Readable<String>
         get() = Constant("ViewModels in KiteUI")
 
-    override val covers: List<String> = listOf(
+    public override val covers: List<String> = listOf(
         "ViewModel",
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             titledSection("ViewModels") {
                 text("One question I've received about KiteUI is how one does ViewModels.")
@@ -29,8 +29,8 @@ object ViewModelPage: DocPage {
                     content = """
                         class OrderViewModel : ViewModel() {
                            private val _uiState = MutableStateFlow(OrderUiState(pickupOptions = pickupOptions()))
-                           val uiState: StateFlow<OrderUiState> = _uiState.asStateFlow()
-                           suspend fun submit() = ...
+                           public val uiState: StateFlow<OrderUiState> = _uiState.asStateFlow()
+                           public suspend fun submit() = ...
                            // ...
                         }
                     """.trimIndent()
@@ -40,8 +40,8 @@ object ViewModelPage: DocPage {
                     content = """
                         class OrderViewModel {
                            private val _uiState = Property(OrderUiState(pickupOptions = pickupOptions()))
-                           val uiState: Readable<OrderUiState> get() = _uiState
-                           suspend fun submit() = ...
+                           public val uiState: Readable<OrderUiState> get() = _uiState
+                           public suspend fun submit() = ...
                            // ...
                         }
                     """.trimIndent()
@@ -51,11 +51,11 @@ object ViewModelPage: DocPage {
                     content = """
                         class OrderViewPage: Page {
                             private val _uiState = Property(OrderUiState(pickupOptions = pickupOptions()))
-                            val uiState: Readable<OrderUiState> get() = _uiState
-                            suspend fun submit() = ...
+                            public val uiState: Readable<OrderUiState> get() = _uiState
+                            public suspend fun submit() = ...
                             // ...
                             
-                            override fun ViewWriter.render2() = col {
+                            public override fun ViewWriter.render2() = col {
                                 text {
                                     ::content { "My UI state is: " + uiState().toString() }
                                 }

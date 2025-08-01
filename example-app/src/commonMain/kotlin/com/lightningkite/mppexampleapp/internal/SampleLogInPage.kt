@@ -15,8 +15,8 @@ import com.lightningkite.mppexampleapp.Resources
 import kotlinx.coroutines.delay
 
 @Routable("sample/login")
-object SampleLogInPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object SampleLogInPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val email = Property("")
         val password = Property("")
         frame {

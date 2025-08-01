@@ -10,9 +10,9 @@ import androidx.transition.Visibility.MODE_OUT
 
 
 public actual class ScreenTransition(
-    val name: String,
-    val enter: () -> Transition?,
-    val exit: () -> Transition?,
+    public val name: String,
+    public val enter: () -> Transition?,
+    public val exit: () -> Transition?,
 ) {
     public actual companion object {
         public actual val None: ScreenTransition

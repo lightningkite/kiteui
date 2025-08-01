@@ -18,9 +18,9 @@ public expect class ScrollingBehaviorImpl constructor(
      override var showScrollBars: Boolean
 
 
-     override val viewport: Readable<Rect>
+     override val viewport: Signal<Rect>
 
-     override val content: Readable<Rect>
+     override val content: Signal<Rect>
 
      override val directlyInteractingWithScroller: Readable<Boolean>
 

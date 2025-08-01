@@ -173,8 +173,8 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
 }
 
 private class TextAreaDelegate() : NSObject(), UITextViewDelegateProtocol {
-    val listeners = ArrayList<() -> Unit>()
-    override fun textViewDidChange(textView: UITextView) {
+    public val listeners = ArrayList<() -> Unit>()
+    public override fun textViewDidChange(textView: UITextView) {
         listeners.invokeAllSafe()
     }
 }

@@ -73,8 +73,8 @@ public actual abstract class DrawingContext2D {
 //  public actual abstract   var lineJoin: CanvasLineJoin
     public actual abstract var miterLimit: Double
     public actual abstract var lineDashOffset: Double
-    abstract fun setLineDash(segments: Array<Double>)
-    abstract fun getLineDash(): Array<Double>
+    public abstract fun setLineDash(segments: Array<Double>)
+    public abstract fun getLineDash(): Array<Double>
     public actual abstract fun closePath()
     public actual abstract fun moveTo(x: Double, y: Double)
     public actual abstract fun lineTo(x: Double, y: Double)

@@ -7,11 +7,11 @@ import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 
 public actual class ScrollingBehaviorImpl public actual constructor(
-    val on: RView,
+    public val on: RView,
     public actual override val horizontal: Boolean,
     public actual override val vertical: Boolean
 ) : ScrollingBehaviors {
-    val native = on.native
+    public val native: FutureElement = on.native
     init {
         native.tag = "div"
         native.style.lineHeight = "0px !important"
@@ -35,8 +35,8 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             else native.classes += "hideScrollbar"
         }
 
-    public actual override val viewport: Readable<Rect> = Readable.Never
-    public actual override val content: Readable<Rect> = Readable.Never
+    public actual override val viewport: Signal<Rect> = Signal.Never
+    public actual override val content: Signal<Rect> = Signal.Never
     public actual override val directlyInteractingWithScroller: Readable<Boolean> get() = Constant(false)
     public actual override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {

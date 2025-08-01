@@ -3,7 +3,7 @@ package com.lightningkite.kiteui.models
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-fun Theme.Companion.flat(
+public fun Theme.Companion.flat(
     id: String,
     hue: Angle,
     accentHue: Angle = hue + Angle.halfTurn,

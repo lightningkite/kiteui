@@ -12,8 +12,8 @@ import com.lightningkite.kiteui.views.direct.*
 import kotlinx.coroutines.delay
 
 @Routable("performance")
-object PerformanceTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object PerformanceTestPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Performance Test" }
             text("This screen is hammering the UI by adding and removing thousands of views and updating content.")

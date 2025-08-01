@@ -15,10 +15,10 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 
 @Routable("sample/data")
-object DataLoadingExamplePage : Page {
+public object DataLoadingExamplePage : Page {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val data: Readable<List<Post>> = asyncReadable {
             delay(5000)
             val response: RequestResponse = fetch("https://jsonplaceholder.typicode.com/posts", onDownloadProgress = { complete, max -> println("$complete/$max") })

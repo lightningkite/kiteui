@@ -8,7 +8,7 @@ import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 
-fun ViewWriter.navLayout(
+public fun ViewWriter.navLayout(
     appName: String = "My App",
     appIcon: Icon = Icon.star,
     appLogo: ImageSource = Icon.star.toImageSource(Color.gray),
@@ -19,21 +19,21 @@ fun ViewWriter.navLayout(
 
 }
 
-fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
+public fun ViewWriter.navBottomBar(show: Readable<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
     row {
         ::shown { show() && !AppState.softInputOpen() }
         navGroupTabs(shared { navElements() }) {}
     } 
 }
 
-fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
+public fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElement>) {
 
 }
 
-var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
-var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
+public var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
+public var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
 
-fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): ViewModifiable {
+public fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): ViewModifiable {
     return coordinatorFrame {
         mainPageNavigator = main
         dialog?.let {

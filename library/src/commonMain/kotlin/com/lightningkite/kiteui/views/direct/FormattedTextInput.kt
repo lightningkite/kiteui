@@ -8,13 +8,13 @@ import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 
 public expect class FormattedTextInput(context: RContext) : RViewWithAction {
-    var enabled: Boolean
-    val content: ImmediateWritable<String>
-    var hint: String
-    var align: Align
-    var keyboardHints: KeyboardHints
+    public var enabled: Boolean
+    public val content: ImmediateWritable<String>
+    public var hint: String
+    public var align: Align
+    public var keyboardHints: KeyboardHints
 
-    fun format(
+    public fun format(
         isRawData: (Char) -> Boolean,
         formatter: (clean: String) -> String,
     )

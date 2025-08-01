@@ -7,12 +7,12 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import kotlin.math.abs
 
-class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
+public class RecyclerViewPlacerHorizontalGrid(public val rows: Int) :
     RecyclerViewPlacerGrid {
-    override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid =
+    public override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid =
         RecyclerViewPlacerVerticalGrid(count)
 
-    override fun place(
+    public override fun place(
         dataRange: IntRange,
         anchor: RecyclerViewAnchor?,
         previousViewport: Rect,
@@ -104,7 +104,7 @@ class RecyclerViewPlacerHorizontalGrid(val rows: Int) :
         }
     }
 
-    override fun prebake(
+    public override fun prebake(
         prebakeRange: IntRange,
         dataRange: IntRange,
         writer: ViewWriter,

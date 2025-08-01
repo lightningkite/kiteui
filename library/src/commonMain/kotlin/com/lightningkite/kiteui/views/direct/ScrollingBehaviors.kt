@@ -6,20 +6,20 @@ import com.lightningkite.signal.Readable
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 
-interface ScrollingBehaviors {
-    val horizontal: Boolean
-    val vertical: Boolean
-    var showScrollBars: Boolean
-    val viewport: Readable<Rect>
-    val content: Readable<Rect>
-    val directlyInteractingWithScroller: Readable<Boolean>
-    var snapToElements: Pair<Align?, Align?>
-    var scrollSnapStop: Boolean
-    fun scrollTo(left: Double, top: Double, animated: Boolean)
-    fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+public interface ScrollingBehaviors {
+    public val horizontal: Boolean
+    public val vertical: Boolean
+    public var showScrollBars: Boolean
+    public val viewport: Readable<Rect>
+    public val content: Readable<Rect>
+    public val directlyInteractingWithScroller: Readable<Boolean>
+    public var snapToElements: Pair<Align?, Align?>
+    public var scrollSnapStop: Boolean
+    public fun scrollTo(left: Double, top: Double, animated: Boolean)
+    public fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
 
     /**
      * Should not interrupt animations.
      */
-    fun scrollToKeepAnimations(x: Double, y: Double)
+    public fun scrollToKeepAnimations(x: Double, y: Double)
 }

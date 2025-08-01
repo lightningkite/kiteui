@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.models
 
 import kotlin.random.Random
 
-fun Theme.Companion.material3(
+public fun Theme.Companion.material3(
     id: String,
     primary: Color = Color.fromHex(0xFF6200EE.toInt()),
     secondary: Color = Color.fromHex(0xFF03DAC6.toInt()),
@@ -63,8 +63,8 @@ fun Theme.Companion.material3(
     ),
 )
 
-object M3Theme {
-    operator fun invoke(
+public object M3Theme {
+    public operator fun invoke(
         id: String,
         primary: Color = Color.fromHex(0xFF6200EE.toInt()),
         secondary: Color = Color.fromHex(0xFF03DAC6.toInt()),
@@ -80,7 +80,7 @@ object M3Theme {
         gap: Dimension = 1.rem,
         outline: Paint = background.closestColor().highlight(0.1f),
         outlineWidth: Dimension = 0.px,
-    ) = Theme.material3(
+    ): Theme = Theme.material3(
         id = id,
         primary = primary,
         secondary = secondary,
@@ -98,7 +98,7 @@ object M3Theme {
         outlineWidth = outlineWidth,
     )
 
-    fun randomLight(): Theme {
+    public fun randomLight(): Theme {
         val hue = Random.nextFloat().turns
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
@@ -110,7 +110,7 @@ object M3Theme {
         )
     }
 
-    fun randomDark(): Theme {
+    public fun randomDark(): Theme {
         val hue = Random.nextFloat().turns
         val saturation = Random.nextFloat() * 0.5f + 0.25f
         val value = Random.nextFloat() * 0.5f + 0.25f
@@ -123,6 +123,6 @@ object M3Theme {
         )
     }
 
-    fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
+    public fun random(): Theme = if (Random.nextBoolean()) randomLight() else randomDark()
 }
 

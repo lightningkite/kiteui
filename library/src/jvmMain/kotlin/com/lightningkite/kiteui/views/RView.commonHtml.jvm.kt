@@ -6,17 +6,17 @@ import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Rect
 
-public actual class FutureElementStyle(val underlyingMap: MutableMap<String, String>) {
-    operator fun get(key: String): String? = underlyingMap.get(key)
-    operator fun set(key: String, value: String?) {
+public actual class FutureElementStyle(public val underlyingMap: MutableMap<String, String>) {
+    public operator fun get(key: String): String? = underlyingMap.get(key)
+    public operator fun set(key: String, value: String?) {
         if (value == null) underlyingMap.remove(key)
         else underlyingMap.set(key, value)
     }
 }
 
-public actual class FutureElementAttributes(val underlyingMap: MutableMap<String, String>) {
-    operator fun get(key: String): String? = underlyingMap.get(key)
-    operator fun set(key: String, value: String?) {
+public actual class FutureElementAttributes(public val underlyingMap: MutableMap<String, String>) {
+    public operator fun get(key: String): String? = underlyingMap.get(key)
+    public operator fun set(key: String, value: String?) {
         if (value == null) underlyingMap.remove(key)
         else underlyingMap.set(key, value)
     }
@@ -30,7 +30,7 @@ public actual class FutureElement public actual constructor() {
     public actual var id: String? = null
     public actual var content: String? = null
     public actual var innerHtmlUnsafe: String? = null
-    val childrenBack = ArrayList<FutureElement>()
+    public val childrenBack: ArrayList<FutureElement> = ArrayList<FutureElement>()
     public actual val children: List<FutureElement> = childrenBack
     public actual fun appendChild(element: FutureElement) {
         childrenBack.add(element)
@@ -71,7 +71,7 @@ public actual class FutureElement public actual constructor() {
     public actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
     public actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
 
-    fun render(out: Appendable) {
+    public fun render(out: Appendable) {
         out.append('<')
         out.append(tag)
         attributes.underlyingMap.forEach { (key, value) ->
@@ -115,7 +115,7 @@ public actual class FutureElement public actual constructor() {
     }
 }
 
-fun Appendable.appendSafe(html: String) {
+public fun Appendable.appendSafe(html: String) {
     for(char in html) {
         when(char) {
                 '&' -> append("&amp;")

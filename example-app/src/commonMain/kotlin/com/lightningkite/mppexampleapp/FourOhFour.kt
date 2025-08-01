@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.text
 
 @FallbackRoute
-class FourOhFour() : Page {
-    override fun ViewWriter.render() = col {
+public class FourOhFour() : Page {
+    public override fun ViewWriter.render() = col {
         h1 { content = "Not Found" }
         text { content = "Sorry, couldn't find what you were looking for." }
     }

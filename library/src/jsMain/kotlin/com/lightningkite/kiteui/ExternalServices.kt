@@ -27,7 +27,7 @@ public actual object ExternalServices {
         lastFileInput = null
     }
 
-    suspend fun requestFileInput(mimeTypes: List<String>, setup: HTMLInputElement.() -> Unit): List<FileReference> =
+    public suspend fun requestFileInput(mimeTypes: List<String>, setup: HTMLInputElement.() -> Unit): List<FileReference> =
         suspendCancellableCoroutine {
             removeFileInput()
             (document.createElement("input") as HTMLInputElement).apply {
@@ -49,12 +49,12 @@ public actual object ExternalServices {
             }.click()
         }
 
-    public actual suspend fun requestFile(mimeTypes: List<String>) = requestFileInput(mimeTypes, {}).firstOrNull()
-    public actual suspend fun requestFiles(mimeTypes: List<String>) = requestFileInput(mimeTypes, { multiple = true })
-    public actual suspend fun requestCaptureSelf(mimeTypes: List<String>) =
+    public actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = requestFileInput(mimeTypes, {}).firstOrNull()
+    public actual suspend fun requestFiles(mimeTypes: List<String>): List<FileReference> = requestFileInput(mimeTypes, { multiple = true })
+    public actual suspend fun requestCaptureSelf(mimeTypes: List<String>): FileReference? =
         requestFileInput(mimeTypes, { setAttribute("capture", "user") }).firstOrNull()
 
-    public actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>) =
+    public actual suspend fun requestCaptureEnvironment(mimeTypes: List<String>): FileReference? =
         requestFileInput(mimeTypes, { setAttribute("capture", "environment") }).firstOrNull()
 
     public actual fun setClipboardText(value: String) {
@@ -71,7 +71,7 @@ public actual object ExternalServices {
         if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
         val a = document.createElement("a") as HTMLAnchorElement
 
-        a.href = com.lightningkite.kiteui.fetch(
+        a.href = fetch(
             url, method = HttpMethod.GET,
             httpHeaders().apply {
                 append("mode", "cors")

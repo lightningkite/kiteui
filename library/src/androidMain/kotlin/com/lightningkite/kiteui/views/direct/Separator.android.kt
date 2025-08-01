@@ -13,7 +13,7 @@ import com.lightningkite.kiteui.views.*
 
 
 public actual class Separator public actual constructor(context: RContext): RView(context) {
-    override val native = NSeparator(context.activity).apply {
+    override val native: NSeparator = NSeparator(context.activity).apply {
         minimumWidth = 1
         minimumHeight = 1
     }
@@ -40,13 +40,13 @@ public actual class Separator public actual constructor(context: RContext): RVie
     }
 }
 
-class NSeparator(context: Context) : View(context) {
-    var thickness: Int = 1
+public class NSeparator(context: Context) : View(context) {
+    public var thickness: Int = 1
         set(value) {
             field = value
             requestLayout()
         }
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 //        setMeasuredDimension(if(containerHorizontal) thickness else measuredWidth, if(!containerHorizontal) measuredHeight else thickness)
         setMeasuredDimension(

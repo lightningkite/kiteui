@@ -19,7 +19,7 @@ public actual class ProgrammaticLayout public actual constructor(context: RConte
         set(value) {
             field = value; invalidateLayout()
         }
-    var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
+    public var log: Console? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     override fun postSetup() {
         super.postSetup()

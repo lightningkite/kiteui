@@ -8,8 +8,8 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.direct.scrolling
 import com.lightningkite.mppexampleapp.widgets.code
 
-interface DocPage: Page {
-    val covers: List<String>
+public interface DocPage: Page {
+    public val covers: List<String>
 }
 
 //data object CodeSemantic: Semantic {
@@ -21,7 +21,7 @@ interface DocPage: Page {
 //}
 //val ViewWriter.code: ViewWrapper get() = CodeSemantic.onNext
 
-fun ViewWriter.example(
+public fun ViewWriter.example(
     codeText: String,
     action: ViewWriter.()->ViewModifiable
 ): ViewModifiable {
@@ -32,7 +32,7 @@ fun ViewWriter.example(
     }
 }
 
-fun ViewWriter.article(
+public fun ViewWriter.article(
     setup: ContainingView.()->Unit
 ): ViewModifiable = scrolling - frame {
     align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col {

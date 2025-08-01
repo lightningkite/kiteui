@@ -2,26 +2,29 @@
 
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.encodeURIComponent
 
 public actual data class DimensionRaw(
-    val px: Double = 0.0,
-    val rem: Double = 0.0,
+    public val px: Double = 0.0,
+    public val rem: Double = 0.0,
 ): Comparable<DimensionRaw> {
-    val roughPx get() = px + rem * 16
-    override fun toString(): String {
+    public val roughPx: Double get() = px + rem * 16
+    public override fun toString(): String {
         return when {
             px == 0.0 -> "${rem}rem"
             rem == 0.0 -> "${px}px"
             else -> "calc(${px}px + ${rem}rem)"
         }
     }
-    override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
+    public override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
 }
-fun Dimension(
+
+@InternalKiteUi
+public fun Dimension(
     px: Double = 0.0,
     rem: Double = 0.0,
-) = Dimension(DimensionRaw(px, rem))
+): Dimension = Dimension(DimensionRaw(px, rem))
 
 public actual val Int.px: Dimension
     get() = Dimension(px = this.toDouble())
@@ -57,7 +60,8 @@ public actual operator fun Dimension.div(other: Float): Dimension = Dimension(
 public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
 public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
-fun CornerRadii.toRawCornerRadius(): String = when (this) {
+@InternalKiteUi
+public fun CornerRadii.toRawCornerRadius(): String = when (this) {
     is CornerRadii.Constant -> "calc(min(var(--parentSpacing, 0px), ${value.value}))"
     is CornerRadii.ForceConstant -> value.value.toString()
     is CornerRadii.RatioOfSize -> "${ratio.times(100).toInt()}%"
@@ -74,24 +78,26 @@ public actual data class Font(
     val direct: FontDirect? = null,
 )
 
-data class FontDirect(
-    val normal: Map<Int, String>,
-    val italics: Map<Int, String>,
+@InternalKiteUi
+public data class FontDirect(
+    public val normal: Map<Int, String>,
+    public val italics: Map<Int, String>,
 )
 
 public actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
 public actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-public actual sealed class ImageSource public actual constructor()
+public actual sealed class ImageSource actual constructor()
 public actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
-public actual sealed class VideoSource public actual constructor()
+public actual sealed class VideoSource actual constructor()
 public actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
-public actual sealed class AudioSource public actual constructor()
+public actual sealed class AudioSource actual constructor()
 public actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
-fun Dimension.toBoxShadow(): String {
+@InternalKiteUi
+public fun Dimension.toBoxShadow(): String {
     if (value.roughPx == 0.0)
         return "none"
     val offsetX = 0.px.value
@@ -101,19 +107,19 @@ fun Dimension.toBoxShadow(): String {
     return "$offsetX $offsetY $blur $spread #77777799"
 }
 
-class ScreenTransitionPart(
-    val from: Map<String, String>,
-    val to: Map<String, String>
+public class ScreenTransitionPart(
+    public val from: Map<String, String>,
+    public val to: Map<String, String>
 ) {
-    operator fun plus(other: ScreenTransitionPart) = ScreenTransitionPart(from = from + other.from, to = to + other.to)
+    public operator fun plus(other: ScreenTransitionPart): ScreenTransitionPart = ScreenTransitionPart(from = from + other.from, to = to + other.to)
 }
 
 public actual class ScreenTransition(
-    val name: String,
-    val enter: ScreenTransitionPart,
-    val exit: ScreenTransitionPart,
+    public val name: String,
+    public val enter: ScreenTransitionPart,
+    public val exit: ScreenTransitionPart,
 ) {
-    operator fun plus(other: ScreenTransition) = ScreenTransition(name = name + other.name, enter = enter + other.enter, exit = exit + other.exit)
+    public operator fun plus(other: ScreenTransition): ScreenTransition = ScreenTransition(name = name + other.name, enter = enter + other.enter, exit = exit + other.exit)
     public actual companion object {
         public actual val None: ScreenTransition = ScreenTransition(
             name = "None",
@@ -186,7 +192,8 @@ public actual class ScreenTransition(
     }
 }
 
-fun ImageVector.vectorToSvgDataUrl(): String {
+@InternalKiteUi
+public fun ImageVector.vectorToSvgDataUrl(): String {
     return "data:image/svg+xml;utf8," + encodeURIComponent(buildString {
         append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width.value}\" height=\"${height.value}\" viewBox=\"$viewBoxMinX $viewBoxMinY $viewBoxWidth $viewBoxHeight\">")

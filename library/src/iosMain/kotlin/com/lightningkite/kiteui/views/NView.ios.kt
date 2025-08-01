@@ -18,11 +18,11 @@ import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.signal.invokeAllSafe
 import platform.QuartzCore.CATransaction
 
-typealias NView = UIView
+public typealias NView = UIView
 
 
 @Suppress("UNCHECKED_CAST")
-val UIView.spacingOverride: Property<Dimension?>?
+public val UIView.spacingOverride: Property<Dimension?>?
     get() = (this as? UIViewWithSpacingRulesProtocol)
         ?.getSpacingOverrideProperty()
         ?.let { it as? Property<Dimension?> }

@@ -8,9 +8,9 @@ import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.UseFullPage
 
 @Routable("full-screen")
-class FullExampleScreen: Page, UseFullPage {
+public class FullExampleScreen: Page, UseFullPage {
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             h1 { content = "Full Screen!" }
             link {

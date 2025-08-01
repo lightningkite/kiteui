@@ -10,11 +10,11 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class RouterGeneration(
-    val codeGenerator: CodeGenerator,
-    val logger: KSPLogger,
+public class RouterGeneration(
+    public val codeGenerator: CodeGenerator,
+    public val logger: KSPLogger,
 ) : CommonSymbolProcessor2(codeGenerator, "kiteui", 1) {
-    override fun interestedIn(resolver: Resolver): Set<KSFile> {
+    public override fun interestedIn(resolver: Resolver): Set<KSFile> {
         val allRoutables = resolver.getAllFiles().filter {
             it.declarations
                 .filterIsInstance<KSClassDeclaration>()
@@ -23,7 +23,7 @@ class RouterGeneration(
         return allRoutables
     }
 
-    override fun process2(resolver: Resolver, files: Set<KSFile>) {
+    public override fun process2(resolver: Resolver, files: Set<KSFile>) {
         val allRoutables = files
             .flatMap { it.declarations }
             .filterIsInstance<KSClassDeclaration>()
@@ -179,8 +179,8 @@ class RouterGeneration(
     }
 }
 
-class MyProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+public class MyProvider : SymbolProcessorProvider {
+    public override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return RouterGeneration(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,
@@ -188,15 +188,15 @@ class MyProvider : SymbolProcessorProvider {
     }
 }
 
-class ParsedRoutable(
-    val source: KSClassDeclaration
+public class ParsedRoutable(
+    public val source: KSClassDeclaration
 ) {
-    sealed class Segment {
-        data class Constant(val value: String) : Segment()
-        data class Variable(val name: String, val type: KSType) : Segment()
+    public sealed class Segment {
+        public data class Constant(val value: String) : Segment()
+        public data class Variable(val name: String, val type: KSType) : Segment()
     }
 
-    val routes = source.annotations("Routable")!!.map {
+    public val routes = source.annotations("Routable")!!.map {
         it.arguments[0].value as String
     }.map {
         it.split('/')
@@ -215,9 +215,9 @@ class ParsedRoutable(
             }
     }
 
-    data class QueryParam(val name: String, val type: KSType, val qpName: String)
+    public data class QueryParam(val name: String, val type: KSType, val qpName: String)
 
-    val queryParameters = source.getAllProperties()
+    public val queryParameters = source.getAllProperties()
         .flatMap {
             it.annotations("QueryParameter").map { a ->
                 it to ((a.arguments[0].value as? String)?.takeUnless { it.isBlank() } ?: it.simpleName.asString())
@@ -233,10 +233,10 @@ class ParsedRoutable(
         .sortedBy { it.qpName }
 }
 
-fun KSTypeReference.toKotlin(annotations: Sequence<KSAnnotation>? = null): String =
+public fun KSTypeReference.toKotlin(annotations: Sequence<KSAnnotation>? = null): String =
     this.resolve().toKotlin(annotations ?: sequenceOf())
 
-fun KSType.toKotlin(annotations: Sequence<KSAnnotation> = sequenceOf()): String {
+public fun KSType.toKotlin(annotations: Sequence<KSAnnotation> = sequenceOf()): String {
     (this.declaration as? KSTypeParameter)?.let { return it.name.asString() }
 
     val annotationString = annotations.joinToString(" ") {

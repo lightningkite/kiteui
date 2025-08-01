@@ -15,14 +15,14 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
-class Recycler2(
+public class Recycler2(
     viewWriter: ViewWriter,
-    val vertical: Boolean = true,
-    var log: Console? = null//ConsoleRoot.tag("Recycler2"),
+    public val vertical: Boolean = true,
+    public var log: Console? = null//ConsoleRoot.tag("Recycler2"),
 ) : ViewModifiable {
-    override val coroutineContext: CoroutineContext
+    public override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
-    val outerFrame: Frame
+    public val outerFrame: Frame
     internal lateinit var scroll: ScrollingBehaviors
         private set
     internal val cells: ProgrammaticLayout
@@ -31,25 +31,25 @@ class Recycler2(
         private set
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
-    override val rView: RView
+    public override val rView: RView
         get() = outerFrame
 
-    var gap: Dimension?
+    public var gap: Dimension?
         get() = cells.gap
         set(value) {
             cells.gap = value
         }
-    var paddingByEdge: Edges?
+    public var paddingByEdge: Edges?
         get() = cells.paddingByEdge
         set(value) {
             cells.paddingByEdge = value
         }
-    var padding: Dimension?
+    public var padding: Dimension?
         get() = cells.padding
         set(value) {
             cells.padding = value
         }
-    var exists: Boolean
+    public var exists: Boolean
         get() = outerFrame.shown
         set(value) {
             outerFrame.shown = value
@@ -57,26 +57,26 @@ class Recycler2(
 
     private val _centerIndex = Property(0)
     private val _displayedRangeFirst = Property(0)
-    val firstIndex: Readable<Int> = _displayedRangeFirst.withWrite {
+    public val firstIndex: Readable<Int> = _displayedRangeFirst.withWrite {
         if (it != _displayedRangeFirst.value)
             scrollToIndex(it, Align.Start)
     }
     private val _displayedRangeLast = Property(0)
-    val lastIndex: Readable<Int> = _displayedRangeLast.withWrite {
+    public val lastIndex: Readable<Int> = _displayedRangeLast.withWrite {
         if (it != _displayedRangeLast.value)
             scrollToIndex(it, Align.End)
     }
-    val centerIndex: Writable<Int> = _centerIndex.withWrite {
+    public val centerIndex: Writable<Int> = _centerIndex.withWrite {
         if (it != _centerIndex.value)
             scrollToIndex(it, Align.Center)
     }
 
-    var snapToElements: Align? = null
+    public var snapToElements: Align? = null
         set(value) {
             field = value
             scroll.snapToElements = if (vertical) null to value else value to null
         }
-    var scrollSnapStop: Boolean = false
+    public var scrollSnapStop: Boolean = false
         set(value) {
             field = value
             scroll.scrollSnapStop = value
@@ -123,23 +123,23 @@ class Recycler2(
         }
     }
 
-    var overdraw = 20.0
+    public var overdraw: Double = 20.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
-    var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
+    public var placer: RecyclerViewPlacer = RecyclerViewPlacerVerticalGrid(1)
         set(value) {
             field = value
             log?.log("placer set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
+    public var data: RecyclerViewData<*, *>? = RecyclerViewData.Empty
         set(value) {
             field = value
             log?.log("data set calls invalidateLayout()")
             cells.invalidateLayout()
         }
-    var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
+    public var rendererSet: RecyclerViewRendererSet<*, *>? = RecyclerViewRendererSet.Empty
         set(value) {
             field = value
             (cells.children.lastIndex downTo 1).forEach { cells.removeChild(it) }
@@ -152,7 +152,7 @@ class Recycler2(
     private var activeCells = ArrayList<MyCell<*>>()
     private var reuseableCells = ArrayList<MyCell<*>>()
 
-    fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
+    public fun scrollToIndex(toIndex: Int, align: Align, animate: Boolean = true) {
         activeCells.find { it.index == toIndex }?.let {
             // Nice!  Just scroll away!
             scroll.scrollTo(
@@ -206,14 +206,14 @@ class Recycler2(
     }
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
-        val indexProp = Property(-1)
-        val data = LateInitProperty<T>()
-        override lateinit var type: RecyclerViewRenderer<*>
-        lateinit var view: RView
+        public val indexProp = Property(-1)
+        public val data = LateInitProperty<T>()
+        public override lateinit var type: RecyclerViewRenderer<*>
+        public lateinit var view: RView
         private var constraint: Size = Size.Zero
         private var inProgress: ProgrammingLayoutInProgress? = null
         private var _size: Size? = null
-        fun setup(
+        public fun setup(
             type: RecyclerViewRenderer<T>,
             constrain: Size,
             data: T?,
@@ -231,7 +231,7 @@ class Recycler2(
             this.inProgress = inProgress
         }
 
-        fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
+        public fun onPullForPlacing(constrain: Size, data: T?, index: Int, inProgress: ProgrammingLayoutInProgress) {
 //            view.withoutAnimation {
             view.shown = true
             view.opacity = 1.0
@@ -244,7 +244,7 @@ class Recycler2(
             this.inProgress = inProgress
         }
 
-        fun animatedDismiss() {
+        public fun animatedDismiss() {
             view.opacity = 0.0
             val reuse = reuseableCells
             activeCells.remove(this)
@@ -254,15 +254,15 @@ class Recycler2(
             }
         }
 
-        fun instantDismiss() {
+        public fun instantDismiss() {
             view.shown = false
             activeCells.remove(this)
             reuseableCells.add(this@MyCell)
         }
 
-        override val index: Int get() = indexProp.value
-        override val item: Any? get() = data.state.getOrNull()
-        override val size: Size
+        public override val index: Int get() = indexProp.value
+        public override val item: Any? get() = data.state.getOrNull()
+        public override val size: Size
             get() {
                 return _size ?: run {
                     statsMeasures++
@@ -271,24 +271,24 @@ class Recycler2(
                     n
                 }
             }
-        override var left: Double = 0.0
-        override var top: Double = 0.0
-        override var right: Double = 0.0
-        override var bottom: Double = 0.0
+        public override var left: Double = 0.0
+        public override var top: Double = 0.0
+        public override var right: Double = 0.0
+        public override var bottom: Double = 0.0
 
-        var leftOld: Double = 0.0
-        var topOld: Double = 0.0
-        var rightOld: Double = 0.0
-        var bottomOld: Double = 0.0
+        public var leftOld: Double = 0.0
+        public var topOld: Double = 0.0
+        public var rightOld: Double = 0.0
+        public var bottomOld: Double = 0.0
 
-        override fun place(left: Double, top: Double, right: Double, bottom: Double) {
+        public override fun place(left: Double, top: Double, right: Double, bottom: Double) {
             this.left = left
             this.top = top
             this.right = right
             this.bottom = bottom
         }
 
-        fun offset(x: Double, y: Double) {
+        public fun offset(x: Double, y: Double) {
             left += x
             right += x
             top += y
@@ -898,7 +898,7 @@ class Recycler2(
 
 
     @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> ViewModifiable): Unit {
+    public fun <T> children(items: Readable<List<T>>, render: ViewWriter.(value: Readable<T>) -> ViewModifiable): Unit {
         var currentData: List<T> = listOf()
         rendererSet = object : RecyclerViewRendererSet<T, Int> {
             override fun id(item: T): Int = currentData.indexOf(item)
@@ -923,7 +923,7 @@ class Recycler2(
     }
 
     @Deprecated("Set your placer instead. ")
-    var columns: Int = 1
+    public var columns: Int = 1
         set(value) {
             field = value
 
@@ -933,10 +933,14 @@ class Recycler2(
                 RecyclerViewPlacerHorizontalGrid(columns)
         }
 
-    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Readable<Int> get() = firstIndex
-    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Readable<Int> get() = lastIndex
-    @Deprecated("Renamed to 'centerIndex'") val index: Writable<Int> get() = centerIndex
-    @Deprecated("Just use directly") val new get() = this
+    @Deprecated("Renamed to 'firstIndex'")
+    public val firstVisibleIndex: Readable<Int> get() = firstIndex
+    @Deprecated("Renamed to 'lastIndex'")
+    public val lastVisibleIndex: Readable<Int> get() = lastIndex
+    @Deprecated("Renamed to 'centerIndex'")
+    public val index: Writable<Int> get() = centerIndex
+    @Deprecated("Just use directly")
+    public val new: Recycler2 get() = this
 }
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null
@@ -952,7 +956,7 @@ internal fun rectOverlaps(
     b2: Double,
 ): Boolean = l1 < r2 && r1 > l2 && t1 < b2 && b1 > t2
 
-fun estimateJumpAnchor(
+public fun estimateJumpAnchor(
     activeCells: List<RecyclerViewPlaceable>,
     vertical: Boolean,
     viewport: Rect

@@ -14,7 +14,7 @@ import com.lightningkite.signal.Writable
 import com.lightningkite.kiteui.views.*
 
 public actual class Video public actual constructor(context: RContext): RView(context) {
-    override val native = PlayerView(context.activity).apply {
+    override val native: PlayerView = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
     }
 

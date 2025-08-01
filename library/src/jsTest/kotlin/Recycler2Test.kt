@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.testing.manual.assertManualReview
 import kotlin.test.Test
 
-class Recycler2Test {
+public class Recycler2Test {
     @Test fun scrollRules() = assertManualReview(
         file = "ScrollView.commonHtml.js.kt",
         currentHash = "fba7a2cd837572a70abc5359b1fbdbd244240cfd",

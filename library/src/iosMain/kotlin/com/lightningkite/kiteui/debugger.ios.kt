@@ -12,14 +12,15 @@ import kotlin.reflect.KClass
 public actual fun debugger() {
 }
 
+@InternalKiteUi
 @OptIn(ExperimentalNativeApi::class)
-object ObjCountTrackers {
+public object ObjCountTrackers {
     private val allWeak = HashMap<KClass<*>, ArrayList<WeakReference<Any>>>()
-    val alive: Map<KClass<*>, Int> get() {
+    public val alive: Map<KClass<*>, Int> get() {
         allWeak.values.forEach { it.removeAll { it.get() == null } }
         return allWeak.mapValues { it.value.size }
     }
-    fun track(instance: Any) {
+    public fun track(instance: Any) {
         allWeak.getOrPut(instance::class) {
             println("Tracking type ${instance::class.qualifiedName}")
             ArrayList()

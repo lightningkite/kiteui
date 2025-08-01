@@ -10,7 +10,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @ViewDsl
-fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
+public fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = {}): IconView {
     return icon {
         source = icon
         this.description = description
@@ -19,7 +19,7 @@ fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = 
 }
 
 @ViewDsl
-fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Unit) {
+public fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Unit) {
     col {
         var noViewCreated = true
         var view: RView? = null
@@ -45,7 +45,7 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun RView.errorText(): ViewModifiable {
+public fun RView.errorText(): ViewModifiable {
     val errors = Property<Set<Exception>>(setOf())
     return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
         this@errorText += object: ExceptionHandler {
@@ -69,7 +69,7 @@ fun RView.errorText(): ViewModifiable {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
+public inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return col {
         gap = 0.px

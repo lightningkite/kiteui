@@ -38,7 +38,7 @@ public actual object ExternalServices {
             completionHandler = {})
     }
 
-    val mostTypes = listOf(
+    public val mostTypes = listOf(
         UTTypeData,
         UTTypeText,
         UTTypeImage,
@@ -48,16 +48,17 @@ public actual object ExternalServices {
         UTTypeSourceCode,
     )
 
-    var currentlyPresented: UIViewController? = null
+    public var currentlyPresented: UIViewController? = null
         // Return null if the view controller is not in view (and cannot be used to present another view controller)
         get() = field?.takeIf { it.viewLoaded && it.view.window != null }
-    var currentPresenter: (UIViewController) -> Unit = {}
+    public var currentPresenter: (UIViewController) -> Unit = {}
 
-    fun present(vc: UIViewController) {
+    public fun present(vc: UIViewController) {
         currentlyPresented?.presentViewController(vc, animated = true, completion = null) ?: currentPresenter(vc)
     }
 
-    lateinit var rootView: UIView
+    @InternalKiteUi
+    public lateinit var rootView: UIView
     public actual suspend fun requestFile(mimeTypes: List<String>): FileReference? = suspendCancellableCoroutine { cont ->
         val imagePickerCompat = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
         if (imagePickerCompat) {
@@ -314,7 +315,7 @@ public actual object ExternalServices {
     }
 
 
-    suspend fun requestCapture(
+    public suspend fun requestCapture(
         camera: UIImagePickerControllerCameraDevice,
         mode: UIImagePickerControllerCameraCaptureMode,
     ): FileReference? = suspendCancellableCoroutine { cont ->
@@ -397,7 +398,8 @@ public actual object ExternalServices {
         onDownloadProgress: ((progress: Float) -> Unit)?
     ) = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
 
-    suspend fun downloadMultiple(
+    @InternalKiteUi
+    public suspend fun downloadMultiple(
         urlToNames: Map<String, String>,
         preferredDestination: DownloadLocation,
         onDownloadProgress: ((progress: Float) -> Unit)?
@@ -531,12 +533,12 @@ public actual object ExternalServices {
         private val progressOfTasks = mutableMapOf<NSURLSessionDownloadTask, DownloadTaskState>()
         private val temporaryFiles = mutableListOf<NSURL>()
 
-        fun setFilenameForDownloadTask(task: NSURLSessionDownloadTask, filename: String) {
+        public fun setFilenameForDownloadTask(task: NSURLSessionDownloadTask, filename: String) {
             progressOfTasks[task] = DownloadTaskState(filename, 0f)
         }
 
 
-        override fun URLSession(
+        public override fun URLSession(
             session: NSURLSession,
             downloadTask: NSURLSessionDownloadTask,
             didFinishDownloadingToURL: NSURL
@@ -552,7 +554,7 @@ public actual object ExternalServices {
             }
         }
 
-        override fun URLSession(
+        public override fun URLSession(
             session: NSURLSession,
             didBecomeInvalidWithError: NSError?
         ) {
@@ -561,10 +563,10 @@ public actual object ExternalServices {
             }
         }
 
-        override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
+        public override fun URLSession(session: NSURLSession, didCreateTask: NSURLSessionTask) {
         }
 
-        override fun URLSession(
+        public override fun URLSession(
             session: NSURLSession,
             downloadTask: NSURLSessionDownloadTask,
             didWriteData: int64_t,
@@ -581,7 +583,7 @@ public actual object ExternalServices {
     }
 
     public actual fun openEvent(title: String, description: String, location: String, start: LocalDateTime, end: LocalDateTime, zone: TimeZone){
-        val store = EKEventStore()
+        public val store = EKEventStore()
         store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
             if (hasPermission) {
                 afterTimeout(1) {
@@ -613,7 +615,7 @@ public actual object ExternalServices {
 
     public actual fun openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
 
-        val options = arrayListOf(
+        public val options = arrayListOf(
             "Apple Maps" to {
                 val mapItem = MKMapItem(placemark = MKPlacemark(CLLocationCoordinate2DMake(
                     latitude, longitude

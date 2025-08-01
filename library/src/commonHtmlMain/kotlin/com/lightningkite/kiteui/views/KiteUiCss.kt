@@ -6,7 +6,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 
-class KiteUiCss(val dynamicCss: DynamicCss) {
+public class KiteUiCss(public val dynamicCss: DynamicCss) {
     init {
         // basis rules
         //language=CSS
@@ -727,7 +727,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     }
 
     private val transitionHandled = HashSet<String>()
-    fun transition(transition: ScreenTransition): String {
+    public fun transition(transition: ScreenTransition): String {
         if (!transitionHandled.add(transition.name)) return "transition-${transition.name}"
         fun StringBuilder.extracted(part: ScreenTransitionPart) {
             for ((key, value) in part.from) append("$key: $value; ")
@@ -771,7 +771,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     private var cssGenTotal: Duration = 0.seconds
     private val themeInteractiveHandled = HashSet<String>()
-    fun themeInteractive(theme: Theme): String {
+    public fun themeInteractive(theme: Theme): String {
         if (!themeInteractiveHandled.add(theme.id)) return theme.classes
         measureTime {
             theme.derivedFrom?.let { themeInteractive(it) }
@@ -871,7 +871,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     private inline fun <T> Theme.diff(diff: Theme? = null, getter: Theme.() -> T): T? =
         getter().takeUnless { diff?.getter() == it }
 
-    fun theme(
+    public fun theme(
         theme: Theme,
         diff: Theme? = null,
         asSelectors: List<String> = listOf(theme.classSelector),
@@ -1015,10 +1015,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return classes
     }
 
-    fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
+    public fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
-    val rowCollapsingToColumnHandled = HashSet<String>()
-    fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
+    public val rowCollapsingToColumnHandled: HashSet<String> = HashSet<String>()
+    public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
         val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
@@ -1090,7 +1090,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         return name
     }
 
-    inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
+    public inline fun apply(theme: Theme, out: (prop: String, value: String) -> Unit) {
 
     }
 }

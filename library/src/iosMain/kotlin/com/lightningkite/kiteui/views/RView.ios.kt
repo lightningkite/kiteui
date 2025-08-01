@@ -382,14 +382,14 @@ public actual abstract class RView public actual constructor(context: RContext) 
     }
 }
 
-var animationsEnabled: Boolean = true
-var isInAnimationBlock: Boolean = false
+public var animationsEnabled: Boolean = true
+public var isInAnimationBlock: Boolean = false
 public actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
 public actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
 
-inline fun UIView.withoutAnimation(action: () -> Unit) {
+public inline fun UIView.withoutAnimation(action: () -> Unit) {
     assertMainThread()
     val before = animationsEnabled
     try {
@@ -406,7 +406,7 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
     }
 }
 
-inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
+public inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         val before = isInAnimationBlock
         isInAnimationBlock = true
@@ -420,7 +420,7 @@ inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     }
 }
 
-inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+public inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
         completion = { onComplete() },
@@ -439,7 +439,7 @@ inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, cross
     }
 }
 
-inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
+public inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.transitionWithView(
         view = native,
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),

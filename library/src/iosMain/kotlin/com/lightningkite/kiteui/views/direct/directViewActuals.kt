@@ -17,10 +17,10 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 
-class Ref<T>(var target: T?)
+public class Ref<T>(var target: T?)
 
 
-inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
+public inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
     val actionHolder = object: NSObject() {
         @ObjCAction
         fun eventHandler() = action()
@@ -44,7 +44,7 @@ inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIC
 }
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
-fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
+public fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
     val observer = object: NSObject(), KeyValueObserverProtocol {
         override fun observeValueForKeyPath(
             keyPath: String?,
@@ -61,7 +61,7 @@ fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
 
 @OptIn(ExperimentalNativeApi::class)
 private class ObserveRemover(val source: WeakReference<NSObject>, val key: String, var observer: NSObject? = null): ()->Unit {
-    override fun invoke() {
+    public override fun invoke() {
         source.get()?.let { source ->
             observer?.let {
                 source.removeObserver(it, key)
@@ -71,7 +71,7 @@ private class ObserveRemover(val source: WeakReference<NSObject>, val key: Strin
     }
 }
 
-fun UIControl.findNextFocus(): UIView? {
+public fun UIControl.findNextFocus(): UIView? {
     println("findNextFocus $this")
     return superview?.let {
         it.findNextParentFocus(startingAtIndex = it.subviews.indexOf(this) + 1)
@@ -102,9 +102,9 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
     return null
 }
 
-val NextFocusDelegateShared = NextFocusDelegate()
-class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
-    override fun textFieldShouldReturn(textField: UITextField): Boolean {
+public val NextFocusDelegateShared = NextFocusDelegate()
+public class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
+    public override fun textFieldShouldReturn(textField: UITextField): Boolean {
         textField.findNextFocus()?.let {
             it.becomeFirstResponder()
         } ?: textField.resignFirstResponder()

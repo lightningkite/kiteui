@@ -11,13 +11,13 @@ import platform.UIKit.UIView
 
 
 
-class WrapperView : UIView(CGRectZero.readValue()) {
+public class WrapperView : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false
     }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         val smallerSize = CGSizeMake(width = size.useContents { width } - padding.horizontalSum.value, height = size.useContents { height } - padding.verticalSum.value)
         return ((subviews.firstOrNull() as? UIView)?.sizeThatFits(smallerSize) ?: smallerSize).useContents {
@@ -25,7 +25,7 @@ class WrapperView : UIView(CGRectZero.readValue()) {
         }
     }
 
-    override fun layoutSubviews() {
+    public override fun layoutSubviews() {
         super.layoutSubviews()
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
         bounds.useContents {
@@ -37,7 +37,7 @@ class WrapperView : UIView(CGRectZero.readValue()) {
             )
         }
     }
-    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+    public override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         if (hidden) return null
         if (bounds.useContents {
                 val rect = this

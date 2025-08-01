@@ -12,7 +12,7 @@ import org.w3c.dom.get
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
+public val data = Property<List<String>>((0..2500).map { "Item $it" }.toList())
 
 public actual fun ViewWriter.platformSpecific() {
 }

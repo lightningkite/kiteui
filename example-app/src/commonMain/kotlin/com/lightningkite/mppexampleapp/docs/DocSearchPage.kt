@@ -13,12 +13,12 @@ import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
 
 @Routable("docs")
-object DocSearchPage : Page {
+public object DocSearchPage : Page {
 
     @QueryParameter
-    val query = Property<String>("")
+    public val query = Property<String>("")
 
-    val docsPages = Property(listOf(
+    public val docsPages = Property(listOf(
         // TODO: Gradle tasks
         // TODO: Resources
         // TODO: Platform-specific views
@@ -38,7 +38,7 @@ object DocSearchPage : Page {
         { CheatSheet }
     ))
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         frame {
             align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col  {
                 h1("Documentation")

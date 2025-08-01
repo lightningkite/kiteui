@@ -12,11 +12,11 @@ import com.lightningkite.kiteui.views.l2.*
 import kotlin.random.Random
 
 @Routable("rich-text-button")
-object RichTextButtonPage : Page {
-    override val title: Readable<String>
+public object RichTextButtonPage : Page {
+    public override val title: Readable<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val incr = Property(0)
             text { ::content { incr().toString() }}

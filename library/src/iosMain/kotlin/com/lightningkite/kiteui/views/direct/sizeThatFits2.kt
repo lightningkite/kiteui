@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.PerformanceInfo
 import com.lightningkite.kiteui.viewDebugTarget
 
 
-fun UIView.sizeThatFits2(
+public fun UIView.sizeThatFits2(
     size: CValue<CGSize>,
     sizeConstraints: SizeConstraints?
 ): CValue<CGSize> {
