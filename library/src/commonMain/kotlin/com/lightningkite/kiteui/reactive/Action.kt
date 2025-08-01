@@ -12,6 +12,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
+import kotlin.coroutines.coroutineContext
 
 interface Action: Reactive<Boolean> {
     val title: String
@@ -45,7 +46,7 @@ fun Action(
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
-    action: suspend () -> Unit
+    action: suspend CoroutineScope.() -> Unit
 ) = if (clearErrorOnDependencyChange) {
     DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
@@ -72,7 +73,7 @@ class RetryableAction(
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    var action: suspend () -> Unit,
+    var action: suspend CoroutineScope.() -> Unit,
 ) : Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
@@ -120,7 +121,7 @@ class DependentAction(
     val keepRunningWhile: CoroutineScope? = AppScope,
     val ignoreRetryWhileRunning: Boolean = false,
     private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    var action: suspend () -> Unit,
+    var action: suspend CoroutineScope.() -> Unit,
 ) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
