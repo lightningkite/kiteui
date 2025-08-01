@@ -2,13 +2,25 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.nsdata
-import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.WeakReference
 import platform.Foundation.*
 import platform.UIKit.*
 
+@OptIn(ExperimentalNativeApi::class)
 actual class TextView actual constructor(context: RContext) : RView(context) {
     override val native = UILabelWithLayerBackground()
+//    init {
+//        native.rContext = context
+//        onRemove { native.rContext = null }
+//    }
     val label get() = native.label
 
     init {
@@ -112,6 +124,14 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
         }
+    actual var lineClamp: Int? = null
+        set(value) {
+            field = value
+            label.numberOfLines = value?.toLong() ?: 0L
+            if (value != null && label.lineBreakMode != NSLineBreakByTruncatingTail) {
+                label.lineBreakMode = NSLineBreakByTruncatingTail
+            }
+        }
 
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);
@@ -130,7 +150,10 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
     actual fun setBasicHtmlContent(html: String) {
         val x = NSAttributedString.create(
             data = html.nsdata()!!,
-            options = mapOf(NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType),
+            options = mapOf(
+                NSDocumentTypeDocumentAttribute to NSHTMLTextDocumentType,
+                NSCharacterEncodingDocumentAttribute to NSUTF8StringEncoding
+            ),
             documentAttributes = null,
             error = null
         )

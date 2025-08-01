@@ -11,7 +11,7 @@ import platform.UIKit.UIView
 
 fun UIView.findFirstResponderChild(): UIView? {
     if(isFirstResponder) return this
-    else return subviews.asSequence().mapNotNull { (it as UIView).findFirstResponderChild() }.firstOrNull()
+    else return subviews.asSequence().filterIsInstance<UIView>().filter { !it.hidden }.mapNotNull { it.findFirstResponderChild() }.firstOrNull()
 }
 
 

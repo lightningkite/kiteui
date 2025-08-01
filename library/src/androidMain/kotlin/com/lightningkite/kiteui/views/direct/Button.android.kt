@@ -9,8 +9,7 @@ import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
-
-actual class Button actual constructor(context: RContext): RViewWithAction(context) {
+actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     val progress = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0
         minimumHeight = 0
@@ -38,6 +37,14 @@ actual class Button actual constructor(context: RContext): RViewWithAction(conte
         native.setOnClickListener {
             if (enabled) {
                 action?.startAction(this)
+            }
+        }
+        native.setOnLongClickListener {
+            if (enabled) {
+                secondaryAction?.startAction(this)
+                secondaryAction != null
+            } else {
+                false
             }
         }
     }

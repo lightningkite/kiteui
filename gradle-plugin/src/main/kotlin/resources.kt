@@ -4,9 +4,9 @@ import org.apache.fontbox.ttf.OTFParser
 import org.apache.fontbox.ttf.TTFParser
 import java.io.File
 
-fun String?.str() = if (this == null) "null" else "\"$this\""
+internal fun String?.str() = if (this == null) "null" else "\"$this\""
 
-sealed class Resource {
+internal sealed class Resource {
     data class Font(
         val name: String,
         val normal: Map<Int, SubFont>,
@@ -49,7 +49,7 @@ val boldnessNames = mapOf(
 ).mapKeys { it.key.lowercase() }
 val boldnessNamesByLength = boldnessNames.entries.sortedByDescending { it.key.length }
 
-fun File.resources(): Map<String, Resource> {
+internal fun File.resources(): Map<String, Resource> {
     val out = HashMap<String, Resource>()
     walkTopDown().forEach { file ->
         if (file.name.isEmpty()) return@forEach
@@ -115,7 +115,7 @@ fun File.resources(): Map<String, Resource> {
     return out
 }
 
-fun String.applyLocalizations(packageName: String, local: Set<NeededStringTemplate>): String {
+internal fun String.applyLocalizations(packageName: String, local: Set<NeededStringTemplate>): String {
     var value = this
     for (l in local) {
         value = l.pattern.replace(value) {
@@ -129,7 +129,7 @@ fun String.applyLocalizations(packageName: String, local: Set<NeededStringTempla
     }.joinToString("\n")
 }
 
-fun String.localizer(out: MutableSet<NeededStringTemplate>) {
+internal fun String.localizer(out: MutableSet<NeededStringTemplate>) {
     val raw = this
     fun argNameByIndex(index: Int) = ('a' + ((('x' - 'a') + index) % 26)).toString()
     val stringStack = ArrayList<StringLitData>()
@@ -282,7 +282,7 @@ fun String.localizer(out: MutableSet<NeededStringTemplate>) {
     }
 }
 
-data class NeededStringTemplate(
+internal data class NeededStringTemplate(
     val content: List<String>,
     val triple: Boolean,
     val args: List<String>,
@@ -318,10 +318,10 @@ data class NeededStringTemplate(
     )
 }
 
-class CodeData(var braceLevel: Int = 1, var parenLevel: Int = 1) {
+internal class CodeData(var braceLevel: Int = 1, var parenLevel: Int = 1) {
 }
 
-class StringLitData(
+internal class StringLitData(
     val start: Int,
 ) {
     var triple = false
@@ -337,18 +337,18 @@ class StringLitData(
 }
 
 
-val `casing separator regex` = Regex("([-_\\s]+([A-Z]*[a-z0-9]+))|([-_\\s]*[A-Z]+)")
-inline fun String.caseAlter(crossinline update: (after: String) -> String): String =
+internal val `casing separator regex` = Regex("([-_\\s]+([A-Z]*[a-z0-9]+))|([-_\\s]*[A-Z]+)")
+internal inline fun String.caseAlter(crossinline update: (after: String) -> String): String =
     `casing separator regex`.replace(this) {
         if (it.range.start == 0) it.value
         else update(it.value.filter { !(it == '-' || it == '_' || it.isWhitespace()) })
     }
 
 
-fun String.titleCase() = caseAlter { " " + it.capitalize() }.capitalize()
-fun String.spaceCase() = caseAlter { " " + it }.decapitalize()
-fun String.kabobCase() = caseAlter { "-$it" }.toLowerCase()
-fun String.snakeCase() = caseAlter { "_$it" }.toLowerCase()
-fun String.screamingSnakeCase() = caseAlter { "_$it" }.toUpperCase()
-fun String.camelCase() = caseAlter { it.capitalize() }.decapitalize()
-fun String.pascalCase() = caseAlter { it.capitalize() }.capitalize()
+internal fun String.titleCase() = caseAlter { " " + it.capitalize() }.capitalize()
+internal fun String.spaceCase() = caseAlter { " " + it }.decapitalize()
+internal fun String.kabobCase() = caseAlter { "-$it" }.toLowerCase()
+internal fun String.snakeCase() = caseAlter { "_$it" }.toLowerCase()
+internal fun String.screamingSnakeCase() = caseAlter { "_$it" }.toUpperCase()
+internal fun String.camelCase() = caseAlter { it.capitalize() }.decapitalize()
+internal fun String.pascalCase() = caseAlter { it.capitalize() }.capitalize()

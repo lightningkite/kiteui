@@ -4,20 +4,24 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.reactive
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("internal/scroll-into-view-test")
 object ScrollIntoViewTest : Page {
 
     enum class Location { Top, Bottom }
-    val jumpTo = Property<Location?>(null)
+    val jumpTo = Signal<Location?>(null)
 
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - frame {

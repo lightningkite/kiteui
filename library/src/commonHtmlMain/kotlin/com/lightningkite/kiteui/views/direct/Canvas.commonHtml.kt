@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.*
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 
@@ -10,7 +11,15 @@ actual class Canvas actual constructor(context: RContext): RView(context) {
         set(value) {
             field = value
             onDelegateSet(value)
+            value?.theme = themeAndBack.theme
+            delegate?.invalidate?.invoke()
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        delegate?.theme = theme.theme
+        delegate?.invalidate?.invoke()
+    }
     init {
         native.tag = "canvas"
         native.attributes.tabIndex = 1
@@ -114,32 +123,3 @@ expect fun Canvas.setupResizeListener()
 //            value.invalidate()
 //        }
 //    }
-
-actual typealias KeyCode = String
-actual object KeyCodes {
-    actual val left: KeyCode get() = "ArrowLeft"
-    actual val right: KeyCode get() = "ArrowRight"
-    actual val up: KeyCode get() = "ArrowUp"
-    actual val down: KeyCode get() = "ArrowDown"
-    actual fun letter(char: Char): KeyCode = "Key" + char.uppercase()
-    actual fun num(digit: Int): KeyCode = "Digit$digit"
-    actual fun numpad(digit: Int): KeyCode = "Numpad$digit"
-    actual val space: KeyCode get() = "Space"
-    actual val enter: KeyCode get() = "Enter"
-    actual val tab: KeyCode get() = "Tab"
-    actual val escape: KeyCode get() = "Escape"
-    actual val leftCtrl: KeyCode get() = "ControlLeft"
-    actual val rightCtrl: KeyCode get() = "ControlRight"
-    actual val leftShift: KeyCode get() = "ShiftLeft"
-    actual val rightShift: KeyCode get() = "ShiftRight"
-    actual val leftAlt: KeyCode get() = "AltLeft"
-    actual val rightAlt: KeyCode get() = "AltRight"
-    actual val equals: KeyCode get() = "Equal"
-    actual val dash: KeyCode get() = "Minus"
-    actual val backslash: KeyCode get() = "Backslash"
-    actual val leftBrace: KeyCode get() = "BracketLeft"
-    actual val rightBrace: KeyCode get() = "BracketRight"
-    actual val semicolon: KeyCode get() = "Semicolon"
-    actual val comma: KeyCode get() = "Comma"
-    actual val period: KeyCode get() = "Period"
-}

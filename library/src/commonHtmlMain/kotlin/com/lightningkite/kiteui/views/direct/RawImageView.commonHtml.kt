@@ -10,13 +10,24 @@ import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
 import com.lightningkite.kiteui.models.ImageVector
 import com.lightningkite.kiteui.models.vectorToSvgDataUrl
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.RawReadable
-import com.lightningkite.readable.Readable
+import com.lightningkite.kiteui.views.backgroundImage
+import com.lightningkite.kiteui.views.backgroundPosition
+import com.lightningkite.kiteui.views.backgroundRepeat
+import com.lightningkite.kiteui.views.backgroundSize
+import com.lightningkite.kiteui.views.position
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.getValue
 import kotlin.js.JsName
+import kotlin.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 actual abstract class RawImageViewLike(
     context: RContext,
@@ -24,8 +35,8 @@ actual abstract class RawImageViewLike(
     actual val description: String,
     actual val scaleType: ImageScaleType,
 ) : RView(context) {
-    actual abstract val state: Readable<Unit>
-    val _state = RawReadable<Unit>()
+    actual abstract val state: Reactive<Unit>
+    val _state = RawReactive<Unit>()
 
     init {
         native.classes.add("scaleType-$scaleType")
@@ -48,14 +59,42 @@ actual class RawImageView actual constructor(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
-    override val cannotBeCovered: Boolean get() = false
 
     init {
         native.tag = "img"
         native.classes.add("viewDraws")
     }
-    actual override val state: Readable<Unit> = _state
+    actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
+}
+
+actual class SizelessRawImageView actual constructor(
+    context: RContext,
+    source: ImageSource,
+    description: String,
+    scaleType: ImageScaleType,
+) : RawImageViewLike(context, source, description, scaleType) {
+
+    init {
+        native.tag = "div"
+        native.classes.add("viewDraws")
+    }
+    actual override val state: Reactive<Unit> = _state
+    init {
+        native.style.backgroundImage = "url('${source.toUrl()}')"
+        native.style.backgroundPosition = "center"
+        native.style.backgroundRepeat = "no-repeat"
+        native.style.backgroundSize = when(scaleType) {
+            ImageScaleType.Fit -> "contain"
+            ImageScaleType.Crop -> "cover"
+            ImageScaleType.Stretch -> TODO("Not supported yet")
+            ImageScaleType.NoScale -> "auto"
+        }
+        launch {
+            delay(100L)
+            _state.state = ReactiveState(Unit)
+        }
+    }
 }
 
 actual class RawImageViewZoomable actual constructor(
@@ -68,9 +107,9 @@ actual class RawImageViewZoomable actual constructor(
         native.tag = "img"
         native.classes.add("viewDraws")
     }
-    actual override val state: Readable<Unit> = _state
+    actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
-    actual val zoomState: ImmediateWritable<ZoomState> = Property(Unit)
+    actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
 }
 
 @JsName("createObjectURLBlob")

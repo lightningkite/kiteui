@@ -1,8 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIView
 
@@ -10,21 +15,13 @@ import platform.UIKit.UIView
 
 actual class ToggleButton actual constructor(context: RContext) : RView(context) {
     override val native: FrameLayoutButton = FrameLayoutButton()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
     actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
-    private val _checked = Property(false)
-    actual val checked: ImmediateWritable<Boolean> get() = _checked
+    private val _checked = Signal(false)
+    actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         onRemove(native.observe("highlighted", { refreshTheming() }))

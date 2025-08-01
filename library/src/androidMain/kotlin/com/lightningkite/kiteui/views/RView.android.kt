@@ -3,38 +3,51 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import android.os.Looper
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.afterTimeout
+import com.lightningkite.kiteui.debugMode
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
-import com.lightningkite.readable.onRemove
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.math.min
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
-    open fun childTouches(child: RView): Int = Gravity.LEFT or Gravity.TOP or Gravity.RIGHT or Gravity.BOTTOM
 
+    var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
+
+        onRemove {
+            removeListener?.invoke()
+        }
     }
 
     actual override var showOnPrint: Boolean = true
@@ -151,9 +164,12 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                         yInView = event.y.toDouble(),
                     )
                 when (event.action) {
-                    android.view.DragEvent.ACTION_DRAG_ENTERED, android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(
-                        ev
-                    )
+                    android.view.DragEvent.ACTION_DRAG_LOCATION -> value.over(ev)
+
+                    android.view.DragEvent.ACTION_DRAG_ENTERED -> value.enter(ev)
+                    android.view.DragEvent.ACTION_DRAG_EXITED -> value.exit(ev)
+
+                    android.view.DragEvent.ACTION_DRAG_ENDED -> value.end(ev)
 
                     android.view.DragEvent.ACTION_DROP -> value.drop(ev)
                     else -> true
@@ -229,58 +245,89 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             floatArrayOf(topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft)
     }
 
-    private var edgeToEdgePadding: Edges? = null
-        set(value) {
-            if (field != value) {
-                field = value
-                updatePadding()
-                children.forEach {
-                    if (value != null) {
-                        fun walkdown(it: RView) {
-                            if (it.edgeToEdgePadding != null) {
-                                it.edgeToEdgePadding = null
-                            }
-                            it.children.forEach { walkdown(it) }
-                        }
-                        walkdown(it)
-                    }
-                    ViewCompat.requestApplyInsets(it.native)
-                }
-            }
-        }
-
-    protected fun updatePadding() {
-        val padding = (paddingByEdge ?: when {
-            !themeAndBack.padding -> null
-            else -> themeAndBack.theme.padding
-        })?.let {
-            edgeToEdgePadding?.let { e -> it + e } ?: it
-        }
+    override fun refreshPadding() {
+        super.refreshPadding()
+        val value = appliedPadding
         native.setPadding(
-            padding?.left?.value?.toInt() ?: 0,
-            padding?.top?.value?.toInt() ?: 0,
-            padding?.right?.value?.toInt() ?: 0,
-            padding?.bottom?.value?.toInt() ?: 0,
+            value.left.value.toInt(),
+            value.top.value.toInt(),
+            value.right.value.toInt(),
+            value.bottom.value.toInt(),
         )
     }
 
+    // Map to track active animators for each view property
+    companion object {
+        private val activeAnimators = mutableMapOf<String, ValueAnimator>()
+    }
+
+    private fun animateProperty(targetValue: Float, existingAnimator: ValueAnimator?, getter: ()->Float, setter: (Float)->Unit): ValueAnimator? {
+        existingAnimator?.cancel()
+        if(getter() == targetValue) return null
+        
+        if (animationsEnabled) {
+            return ValueAnimator.ofFloat(getter(), targetValue).apply {
+                duration = theme.transitionDuration.inWholeMilliseconds
+                addUpdateListener {
+                    setter(it.animatedValue as Float)
+                }
+                start()
+            }
+        } else {
+            setter(targetValue)
+            return null
+        }
+    }
+    private var animatorTranslationX: ValueAnimator? = null
+    private var animatorTranslationY: ValueAnimator? = null
+    private var animatorTranslationZ: ValueAnimator? = null
+    private var animatorRotationX: ValueAnimator? = null
+    private var animatorRotationY: ValueAnimator? = null
+    private var animatorRotation: ValueAnimator? = null
+    private var animatorScaleX: ValueAnimator? = null
+    private var animatorScaleY: ValueAnimator? = null
+    
     actual override fun applyTheme(theme: ThemeAndBack) {
-        ViewCompat.requestApplyInsets(native)
-//        ViewCompat.dispatchApplyWindowInsets(native, ViewCompat.computeSystemWindowInsets())
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
             native.elevation = 0f
         }
-        updatePadding()
         if (theme.drawBackground) {
-            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable)
+            val backgroundDrawable = theme.theme.backgroundDrawableWithoutCorners(background as? GradientDrawable).also {
+                removeListener?.invoke()
+                removeListener = it.applyGradientRadiusListener(native)
+            }
             backgroundBlock = backgroundDrawable
             updateCorners()
             background = backgroundDrawable
         } else {
             backgroundBlock = null
             background = null
+        }
+        updateTransform(theme.theme)
+    }
+
+    private fun updateTransform(theme: Theme) {
+        theme.transform?.let { transform ->
+            animatorTranslationX = animateProperty(transform.translationX.toFloat(), animatorTranslationX, { native.translationX }, { native.translationX = it })
+            animatorTranslationY = animateProperty(transform.translationY.toFloat(), animatorTranslationY, { native.translationY }, { native.translationY = it })
+            animatorTranslationZ = animateProperty(transform.translationZ.toFloat(), animatorTranslationZ, { native.translationZ }, { native.translationZ = it })
+            animatorRotationX = animateProperty(transform.rotationX.toFloat(), animatorRotationX, { native.rotationX }, { native.rotationX = it })
+            animatorRotationY = animateProperty(transform.rotationY.toFloat(), animatorRotationY, { native.rotationY }, { native.rotationY = it })
+            animatorRotation = animateProperty(transform.rotation.toFloat(), animatorRotation, { native.rotation }, { native.rotation = it })
+            animatorScaleX = animateProperty(transform.scaleX.toFloat(), animatorScaleX, { native.scaleX }, { native.scaleX = it })
+            animatorScaleY = animateProperty(transform.scaleY.toFloat(), animatorScaleY, { native.scaleY }, { native.scaleY = it })
+        } ?: run {
+            // Reset transformations if no transform is specified
+            animatorTranslationX = animateProperty(0f, animatorTranslationX, { native.translationX }, { native.translationX = it })
+            animatorTranslationY = animateProperty(0f, animatorTranslationY, { native.translationY }, { native.translationY = it })
+            animatorTranslationZ = animateProperty(0f, animatorTranslationZ, { native.translationZ }, { native.translationZ = it })
+            animatorRotationX = animateProperty(0f, animatorRotationX, { native.rotationX }, { native.rotationX = it })
+            animatorRotationY = animateProperty(0f, animatorRotationY, { native.rotationY }, { native.rotationY = it })
+            animatorRotation = animateProperty(0f, animatorRotation, { native.rotation }, { native.rotation = it })
+            animatorScaleX = animateProperty(1f, animatorScaleX, { native.scaleX }, { native.scaleX = it })
+            animatorScaleY = animateProperty(1f, animatorScaleY, { native.scaleY }, { native.scaleY = it })
         }
     }
 
@@ -294,75 +341,36 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 //        val previousTrace =
 //            generateSequence(this) { it.parent }.map { "  ${it} - ${it.native}, clickable: ${it.native.isClickable}, focusable: ${it.native.isFocusable}" }
 //                .toList()
-        if (viewDebugTarget == this) println("--postsetup--")
-        if (viewDebugTarget == this) println("hasInteractiveParent: $hasInteractiveParent")
-        if (viewDebugTarget == this) println("interactive parent is: ${generateSequence(this) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
-        if (viewDebugTarget == this) println("wasClickable: $wasClickable")
-        if (viewDebugTarget == this) println("wasFocusable: $wasFocusable")
-        if (viewDebugTarget == this) println("ignoreInteraction: $ignoreInteraction")
-        if (!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
-            native.setOnClickListener {
-                println("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
+        debugPrint {
+            buildString {
+                appendLine("--postsetup--")
+                appendLine("hasInteractiveParent: $hasInteractiveParent")
+                appendLine("interactive parent is: ${generateSequence(this@RView) { it.parent }.find { (it.native.isClickable || it.native.isFocusable) && it !is CoordinatorFrame }}")
+                appendLine("wasClickable: $wasClickable")
+                appendLine("wasFocusable: $wasFocusable")
+                appendLine("ignoreInteraction: $ignoreInteraction")
             }
         }
-
-        if (!cannotBeCovered) {
-            val l = OnApplyWindowInsetsListener { v: View, insetsGetter: WindowInsetsCompat ->
-                if (insetsGetter === WindowInsetsCompat.CONSUMED) {
-                    edgeToEdgePadding = null
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                val padding = paddingByEdge ?: when {
-                    !themeAndBack.padding -> Edges.ZERO
-                    else -> themeAndBack.theme.padding
-                }
-                val insets = insetsGetter.getInsets(WindowInsetsCompat.Type.systemBars())
-                fun shouldApply(direction: Int, alreadyHasPadding: Boolean): Boolean {
-                    return generateSequence(this) { it.parent }
-                        .zipWithNext()
-                        .all { (child, parent) -> parent.childTouches(child) and direction == direction }
-                        .and(
-                            alreadyHasPadding ||
-                                    (children.asSequence()
-                                        .any { childTouches(it) and direction == direction && it.cannotBeCovered })
-                        )
-                }
-
-                val shouldApplyLeft = shouldApply(Gravity.LEFT, padding.left.value > 0)
-                val shouldApplyTop = shouldApply(Gravity.TOP, padding.top.value > 0)
-                val shouldApplyRight = shouldApply(Gravity.RIGHT, padding.right.value > 0)
-                val shouldApplyBottom = shouldApply(Gravity.BOTTOM, padding.bottom.value > 0)
-                val shouldApplyAny = shouldApplyLeft || shouldApplyTop || shouldApplyRight || shouldApplyBottom
-                if (!shouldApplyAny) {
-                    edgeToEdgePadding = null
-                    return@OnApplyWindowInsetsListener insetsGetter
-                }
-                edgeToEdgePadding = Edges(
-                    left = if (shouldApplyLeft) insets.left.px else 0.px,
-                    top = if (shouldApplyTop) insets.top.px else 0.px,
-                    right = if (shouldApplyRight) insets.right.px else 0.px,
-                    bottom = if (shouldApplyBottom) insets.bottom.px else 0.px,
-                )
-                WindowInsetsCompat.CONSUMED
+        if (!hasInteractiveParent && !wasClickable && !wasFocusable && !ignoreInteraction) {
+            native.setOnClickListener {
+                Log.log("$this ($it) blocked the touch, because hasInteractiveParent = $hasInteractiveParent and wasClickable: ${wasClickable} and wasFocusable: ${wasFocusable}")
             }
-            ViewCompat.setOnApplyWindowInsetsListener(native, l)
-            onRemove { ViewCompat.setOnApplyWindowInsetsListener(native, null) }
         }
     }
 
     actual override fun internalAddChild(index: Int, view: RView) {
         (native as ViewGroup).addView(view.native, index)
         if (fullyStarted) ViewCompat.requestApplyInsets(view.native)
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalAddChild($index $view) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
     }
 
     actual override fun internalRemoveChild(index: Int) {
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalRemoveChild($index) failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeViewAt(index)
     }
 
     actual override fun internalClearChildren() {
-        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
+        if ((native as ViewGroup).childCount != children.size) throw IllegalStateException("internalClearChildren() failed on $this: Native child count ${(native as ViewGroup).childCount} != RView count ${children.size} on ${this::class.qualifiedName}")
         (native as ViewGroup).removeAllViews()
     }
 
@@ -373,7 +381,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     ): RippleDrawable {
         val rippleColor = ColorStateList.valueOf(theme[HoverSemantic].theme.background.colorInt())
         val backgroundDrawable = if (fullyApply) {
-            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable)
+            theme.backgroundDrawableWithoutCorners(oldRippleDrawable?.getDrawable(0) as? GradientDrawable).also {
+                removeListener?.invoke()
+                removeListener = it.applyGradientRadiusListener(native)
+            }
         } else {
             GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
@@ -384,14 +395,23 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             }
         }
         backgroundBlock = backgroundDrawable
-        return oldRippleDrawable?.apply {
-            setColor(rippleColor)
-            setDrawable(0, backgroundDrawable)
-        } ?: RippleDrawable(rippleColor, backgroundDrawable, null)
+        if (oldRippleDrawable != null) {
+            oldRippleDrawable.setColor(rippleColor)
+            // Use reflection to set the drawable to avoid API level issues
+            try {
+                val method = RippleDrawable::class.java.getMethod("setDrawable", Int::class.javaPrimitiveType, Drawable::class.java)
+                method.invoke(oldRippleDrawable, 0, backgroundDrawable)
+            } catch (e: Exception) {
+                // Fallback to creating a new RippleDrawable
+                return RippleDrawable(rippleColor, backgroundDrawable, null)
+            }
+            return oldRippleDrawable
+        } else {
+            return RippleDrawable(rippleColor, backgroundDrawable, null)
+        }
     }
 
     protected fun applyThemeWithRipple(theme: ThemeAndBack) {
-        updatePadding()
         if (theme.drawBackground) {
             native.elevation = theme.theme.elevation.value
         } else {
@@ -399,6 +419,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
         background = getBackgroundWithRipple(theme.theme, theme.drawBackground, background as? RippleDrawable)
         updateCorners()
+        updateTransform(theme.theme)
     }
 }
 
@@ -416,4 +437,10 @@ inline fun View.withoutAnimation(action: () -> Unit) {
     } finally {
         animationsEnabled = true
     }
+}
+
+
+inline fun View.debugPrint(get: ()->String) {
+    if(debugMode && viewDebugTarget?.native == this)
+        Log.tag("viewDebugTarget").info(get())
 }

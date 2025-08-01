@@ -1,15 +1,20 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Color
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.readable.onRemove
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-
 import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import com.lightningkite.kiteui.views.canvas.fillPaint
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CATransaction
@@ -23,41 +28,19 @@ actual class Canvas actual constructor(context: RContext) : RView(context) {
         get() = native.delegate
         set(value) {
             native.delegate = value
+            value?.theme = themeAndBack.theme
+            delegate?.invalidate?.invoke()
         }
+
+    override fun applyTheme(theme: ThemeAndBack) {
+        super.applyTheme(theme)
+        delegate?.theme = theme.theme
+        delegate?.invalidate?.invoke()
+    }
 
     init {
         onRemove { native.terminate() }
     }
-}
-
-actual typealias KeyCode = String
-
-actual object KeyCodes {
-    actual val left: KeyCode get() = UIKeyInputLeftArrow
-    actual val right: KeyCode get() = UIKeyInputRightArrow
-    actual val up: KeyCode get() = UIKeyInputUpArrow
-    actual val down: KeyCode get() = UIKeyInputDownArrow
-    actual fun letter(char: Char): KeyCode = char.lowercase()
-    actual fun num(digit: Int): KeyCode = digit.toString()
-    actual fun numpad(digit: Int): KeyCode = digit.toString()
-    actual val space: KeyCode get() = " "
-    actual val enter: KeyCode get() = "\n"
-    actual val tab: KeyCode get() = "\t"
-    actual val escape: KeyCode get() = UIKeyInputEscape
-    actual val leftCtrl: KeyCode get() = ""
-    actual val rightCtrl: KeyCode get() = ""
-    actual val leftShift: KeyCode get() = ""
-    actual val rightShift: KeyCode get() = ""
-    actual val leftAlt: KeyCode get() = ""
-    actual val rightAlt: KeyCode get() = ""
-    actual val equals: KeyCode get() = "="
-    actual val dash: KeyCode get() = "-"
-    actual val backslash: KeyCode get() = "\\"
-    actual val leftBrace: KeyCode get() = "["
-    actual val rightBrace: KeyCode get() = "]"
-    actual val semicolon: KeyCode get() = ";"
-    actual val comma: KeyCode get() = ","
-    actual val period: KeyCode get() = "."
 }
 
 
@@ -72,7 +55,8 @@ class CanvasView : UIView(CGRectZero.readValue()) {
     fun gestureSink() {
     }
 
-    private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")), UIGestureRecognizerCustomPProtocol {
+    private var gestureRecognizer: UIGestureRecognizer? = object : UIGestureRecognizer(this@CanvasView, sel_registerName("gestureSink")),
+        UIGestureRecognizerCustomPProtocol {
         override fun touchesBegan(began: Any?, withEvent: Any?) {
             val touches = began as Set<UITouch>
             withEvent as UIEvent

@@ -1,15 +1,20 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.Event
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.HtmlElementLike
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 fun <V> HtmlElementLike.vprop(
     eventName: String,
     get: HtmlElementLike.() -> V,
     set: HtmlElementLike.(V) -> Unit
-): ImmediateWritable<V> {
-    return object : ImmediateWritable<V>, BaseListenable() {
+): MutableReactiveValue<V> {
+    return object : MutableReactiveValue<V>, BaseListenable() {
         init {
             addEventListener(eventName) {
                 invokeAllListeners()
@@ -31,8 +36,8 @@ fun <V> HtmlElementLike.vprop(
 fun <V> HtmlElementLike.vread(
     eventName: String,
     get: HtmlElementLike.() -> V
-): Readable<V> {
-    return object : ImmediateReadable<V>, BaseListenable() {
+): Reactive<V> {
+    return object : ReactiveValue<V>, BaseListenable() {
         init {
             addEventListener(eventName) {
                 invokeAllListeners()

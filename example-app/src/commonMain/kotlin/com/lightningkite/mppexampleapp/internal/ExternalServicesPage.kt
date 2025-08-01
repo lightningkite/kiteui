@@ -1,42 +1,48 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.time.Duration.Companion.hours
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Duration.Companion.hours
+import kotlinx.serialization.builtins.ListSerializer
 
 @Routable("external-services")
 object ExternalServicesPage : Page {
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = super.title
-    val image = Property<ImageSource?>(null)
+    val image = Signal<ImageSource?>(null)
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }
-//                text { content = "Note the use of the multi-layer 'Readable' in `fetching`." }
+//                text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
             } in padded
 
             row {
                 button {
                     text { content = "openTab" }
-                    onClick { ExternalServices.openTab("https://google.com") }
+                    onClick { context.openTab("https://google.com") }
                 }
 
                 button {
                     text { content = "openTab (mail)" }
-                    onClick { ExternalServices.openTab("mailto:joseph@lightningkite.com") }
+                    onClick { context.openTab("mailto:joseph@lightningkite.com") }
                 }
                 button {
                     text { content = "openTab (phone)" }
-                    onClick { ExternalServices.openTab("tel:8013693729") }
+                    onClick { context.openTab("tel:8013693729") }
                 }
             }
             row {
@@ -58,11 +64,11 @@ object ExternalServicesPage : Page {
             scrollingHorizontally - row {
                 button {
                     text("Open Map")
-                    onClick { ExternalServices.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
+                    onClick { context.openMap(latitude = 0.0, longitude = 0.0, label = "Null Island") }
                 }
                 button {
                     text("Open Event")
-                    onClick { ExternalServices.openEvent(
+                    onClick { context.openEvent(
                         title = "Test Event",
                         description = "This is a test event from the KiteUI Tester app.",
                         location = "255 S 300 W Logan, UT 84321",
@@ -74,7 +80,7 @@ object ExternalServicesPage : Page {
                 button {
                     text("Download")
                     onClick {
-                        ExternalServices.download(
+                        context.download(
                             "yes.png",
                             "https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png"
                         )
@@ -83,14 +89,44 @@ object ExternalServicesPage : Page {
                 button {
                     text("Share")
                     onClick {
-                        ExternalServices.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
+                        context.share("Cool Thing", "Check out this cool thing!", "https://github.com/lightningkite/kiteui")
                     }
                 }
                 button {
                     text("Share image")
                     onClick {
                         val blob = fetch("https://static.wikia.nocookie.net/fzero/images/d/da/Captain_Falcon_SSBU.png").blob()
-                        ExternalServices.share(listOf("Captain_Falcon.png" to blob))
+                        context.share(listOf("Captain_Falcon.png" to blob))
+                    }
+                }
+            }
+
+            scrollingHorizontally - row {
+                button {
+                    text { content = "download image" }
+                    onClick {
+                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Downloads)
+                    }
+                }
+                button {
+                    text { content = "download gallery image" }
+                    onClick {
+                        ExternalServices.download("test.jpg", "https://picsum.photos/200/300", DownloadLocation.Pictures)
+                    }
+                }
+
+                button {
+                    text { content = "download csv" }
+                    onClick {
+                        ExternalServices.download(
+                            "file.csv",
+                            """
+                                name,phone
+                                Joseph Ivie,8013693729
+                                Dan Ostler,9876543210,
+                                Brady Svedin,4632180951
+                            """.trimIndent().toBlob("text/csv; charset=utf-8; header=present")
+                        )
                     }
                 }
             }
@@ -100,14 +136,14 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile" }
                     onClick {
-                        println(ExternalServices.requestFile(listOf("*/*")))
+                        println(context.requestFile(listOf("*/*")))
                     }
                 }
 
                 button {
                     text { content = "requestFiles" }
                     onClick {
-                        println(ExternalServices.requestFiles(listOf("*/*")))
+                        println(context.requestFiles(listOf("*/*")))
                     }
                 }
             }
@@ -116,7 +152,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestFile image" }
                     onClick {
-                        image.value = ExternalServices.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = context.requestFile(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -124,7 +160,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestFiles image" }
                     onClick {
                         image.value =
-                            ExternalServices.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
+                            context.requestFiles(listOf("image/*"))?.firstOrNull()?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -133,7 +169,7 @@ object ExternalServicesPage : Page {
                 button {
                     text { content = "requestCaptureSelf" }
                     onClick {
-                        image.value = ExternalServices.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
+                        image.value = context.requestCaptureSelf(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
 
@@ -141,7 +177,7 @@ object ExternalServicesPage : Page {
                     text { content = "requestCaptureEnvironment" }
                     onClick {
                         image.value =
-                            ExternalServices.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
+                            context.requestCaptureEnvironment(listOf("image/*"))?.let { ImageLocal(it) }
                     }
                 }
             }
@@ -163,7 +199,7 @@ object ExternalServicesPage : Page {
 //                    }
 //
 //
-//                    onClick{ExternalServices.setClipboardText(clip.await())}
+//                    onClick{context.setClipboardText(clip.await())}
 //                }
 //            }
         }

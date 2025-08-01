@@ -2,10 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.ImmediateWritable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class FormattedTextInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
@@ -32,7 +36,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
         this.isRawData = isRawData
     }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String>, BaseListenable() {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 repairFormatAndPosition(
@@ -63,45 +67,7 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            native.attributes.type = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "text"
-                KeyboardType.Integer -> "text"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "text"
-            }
-            native.attributes.inputMode = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "decimal"
-                KeyboardType.Integer -> "numeric"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "email"
-            }
-
-            when (value.autocomplete) {
-                AutoComplete.Email -> {
-                    native.attributes.type = "email"
-                    native.attributes.autocomplete = "email"
-                }
-
-                AutoComplete.Password -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "current-password"
-                }
-
-                AutoComplete.NewPassword -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "new-password"
-                }
-
-                AutoComplete.Phone -> {
-                    native.attributes.autocomplete = "tel"
-                }
-
-                null, AutoComplete.OneTimeCode -> {
-                    native.attributes.autocomplete = "off"
-                }
-            }
+            native.applyKeyboardHints(value)
         }
 
     actual inline var hint: String

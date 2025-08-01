@@ -1,12 +1,14 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.CoroutineScope
@@ -14,10 +16,10 @@ import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSRunLoopCommonModes
 import platform.QuartzCore.CADisplayLink
+import platform.UIKit.UIApplication
 import platform.UIKit.UIKeyboardWillHideNotification
 import platform.UIKit.UIKeyboardWillShowNotification
 import platform.UIKit.UIScreen
-import platform.UIKit.UIApplication
 import platform.darwin.NSObject
 import platform.darwin.sel_registerName
 
@@ -36,17 +38,17 @@ actual object AppState {
     init {
         CADisplayLink.displayLinkWithTarget(handle, sel_registerName("onFrame")).addToRunLoop(NSRunLoop.currentRunLoop, forMode = NSRunLoopCommonModes)
     }
-    internal val _windowInfo = Property(WindowStatistics(
+    internal val _windowInfo = Signal(WindowStatistics(
         width = Dimension(UIScreen.mainScreen.bounds.useContents { size.width }),
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),
         density = UIScreen.mainScreen.scale.toFloat()
     ))
-    actual val windowInfo: ImmediateReadable<WindowStatistics>
+    actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    val _inForeground = Property(true)
-    actual val inForeground: ImmediateReadable<Boolean>
+    val _inForeground = Signal(true)
+    actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
-    actual val softInputOpen: ImmediateReadable<Boolean> get() = _SoftInputOpen
+    actual val softInputOpen: ReactiveValue<Boolean> get() = _SoftInputOpen
 
     private var currentLockCount = 0
     actual fun keepScreenOn(scope: CoroutineScope) {
@@ -63,7 +65,7 @@ actual object AppState {
 }
 
 
-private object _SoftInputOpen : ImmediateReadable<Boolean>, Writable<Boolean> {
+private object _SoftInputOpen : ReactiveValue<Boolean>, MutableReactive<Boolean> {
     private val listeners = ArrayList<() -> Unit>()
     override var value: Boolean = false
         set(value) {

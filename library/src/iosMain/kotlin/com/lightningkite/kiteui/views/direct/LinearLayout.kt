@@ -3,19 +3,26 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
-import com.lightningkite.readable.Property
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.max
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.QuartzCore.CALayer
 import platform.UIKit.*
-import kotlin.math.max
+import platform.darwin.NSInteger
 
 //private val UIViewLayoutParams = ExtensionProperty<UIView, LayoutParams>()
 //val UIView.layoutParams: LayoutParams by UIViewLayoutParams
@@ -38,7 +45,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             setNeedsLayout()
             informParentOfSizeChange()
         }
-    val spacingOverride: Property<Dimension?> = Property<Dimension?>(null).also {
+    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
 
@@ -63,10 +70,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     }
     override fun subviewDidChangeSizing(view: UIView?) {
         val view = view ?: return
-        val index = subviews.indexOf(view)
+        val index = arrangedSubviews.indexOf(view)
         if (index != -1) childSizeCache[index].clear()
         else {
-            println("WARN: Child $view not found inside $this")
+            Log.warn("WARN: Child $view not found inside $this")
         }
         lastLaidOutSize = null
         informParentOfSizeChangeDueToChild()
@@ -93,9 +100,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
 
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
-        if(subviews.any { it == viewDebugTarget?.native }) {
-            println("parent sizeThatFits: ${size.useContents { "$width x $height" }}")
-        }
         val sizeLocal = size.local
         val measuredSize = Size()
 
@@ -103,7 +107,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizes = calcSizes(sizeLocal, sizeLocal.primary == ScrollLayoutMeta.unboundSize)
         measuredSize.primary += padding.primaryStart
         var first = true
-        subviews.zip(sizes) { view, size ->
+        arrangedSubviews.zip(sizes) { view, size ->
             view as UIView
             if (view.hidden || view.extensionCollapsed == true) return@zip
             if (first) {
@@ -113,19 +117,26 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             }
             measuredSize.primary += size.primary
             measuredSize.secondary = max(measuredSize.secondary, size.secondary + padding.secondarySum)
-            if (viewDebugTarget?.native == view) {
-                println("size: $size")
-                println("measuredSize: $measuredSize")
+            view.debugPrint {
+                "size: $size\nmeasuredSize: $measuredSize"
             }
         }
         measuredSize.primary += padding.primaryEnd
         return measuredSize.objc
     }
 
-    override fun didAddSubview(subview: UIView) {
-        super.didAddSubview(subview)
-        val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
-        childSizeCache.add(index, HashMap())
+    val arrangedSubviews = ArrayList<UIView>()
+    fun addArrangedSubview(view: UIView) {
+        childSizeCache.add(arrangedSubviews.size, HashMap())
+        arrangedSubviews.add(view)
+        addSubview(view)
+        lastLaidOutSize = null
+        informParentOfSizeChangeDueToChild()
+    }
+    fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
+        childSizeCache.add(atIndex.toInt(), HashMap())
+        arrangedSubviews.add(atIndex.toInt(), view)
+        insertSubview(view, atIndex)
         lastLaidOutSize = null
         informParentOfSizeChangeDueToChild()
     }
@@ -135,10 +146,13 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         @Suppress("SENSELESS_COMPARISON")
         if (this != null) {
             lastLaidOutSize = null
-            val index = subviews.indexOf(subview).also { if (it == -1) throw Exception() }
-            childSizeCache.removeAt(index)
+            val index = arrangedSubviews.indexOf(subview)
+            if(index != -1) {
+                arrangedSubviews.removeAt(index)
+                childSizeCache.removeAt(index)
+                informParentOfSizeChangeDueToChild()
+            }
         }
-        informParentOfSizeChangeDueToChild()
         super.willRemoveSubview(subview)
     }
 
@@ -154,10 +168,10 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
 
         var totalWeight = 0f
 
-        val out = arrayOfNulls<Size?>(subviews.size)
+        val out = arrayOfNulls<Size?>(arrangedSubviews.size)
 
         var first = true
-        subviews.forEachIndexed { index, it ->
+        arrangedSubviews.forEachIndexed { index, it ->
             it as UIView
             if (it.hidden || it.extensionCollapsed == true) {
                 out[index] = Size(0.0, 0.0)
@@ -180,6 +194,9 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
                     it.extensionSizeConstraints
                 ).local
             }
+            debugPrint {
+                ("Loaded size ${required} based on $measureInput")
+            }
             t.resume()
             it.extensionSizeConstraints?.let {
                 it.primaryMax?.let { required.primary = required.primary.coerceAtMost(it.value) }
@@ -195,7 +212,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             out[index] = required
         }
 
-        subviews.forEachIndexed { index, it ->
+        arrangedSubviews.forEachIndexed { index, it ->
             it as UIView
             if (out[index] != null) return@forEachIndexed
             if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
@@ -216,6 +233,7 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
             required.secondary = required.secondary.coerceAtLeast(0.0)
             out[index] = required
         }
+        debugPrint { "Sizes of children: ${out.indices.joinToString("\n") { "${subviews}" }}" }
         t.cancel()
         @Suppress("UNCHECKED_CAST")
         return out as Array<Size>
@@ -225,9 +243,6 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
     var lastLaidOutPadding: Edges? = null
     override fun layoutSubviews() {
         val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
-        if(subviews.any { it == viewDebugTarget?.native }) {
-            println("parent layoutSubviews: ${bounds.useContents { "${size.width} x ${size.height}" }}")
-        }
         val mySize = bounds.useContents { size.local }
         if (lastLaidOutSize == mySize && lastLaidOutPadding == padding) return
         var t = PerformanceInfo.trace("layoutLinear")
@@ -239,8 +254,8 @@ class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProt
         val sizes = calcSizes(frame.useContents { size.local }, true)
         t.resume()
         var first = true
-        for (index in subviews.indices) {
-            val view = subviews[index] as UIView
+        for (index in arrangedSubviews.indices) {
+            val view = arrangedSubviews[index] as UIView
             val size = sizes[index]
             if (!(view.hidden || view.extensionCollapsed == true)) {
                 if (first) {

@@ -6,16 +6,19 @@ import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.invoke
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.datetime.*
 
 actual class LocalDateTimeField actual constructor(context: RContext) :
     RViewWithAction(context) {
-    private val property: Property<LocalDateTime?> = Property(null)
-    actual val content: ImmediateWritable<LocalDateTime?> = property
+    private val property: Signal<LocalDateTime?> = Signal(null)
+    actual val content: MutableReactiveValue<LocalDateTime?> = property
     
     actual var range: ClosedRange<LocalDateTime>? = null
 

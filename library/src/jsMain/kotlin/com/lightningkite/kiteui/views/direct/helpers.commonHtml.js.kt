@@ -1,16 +1,18 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.SizeConstraints
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.Listenable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
-import org.w3c.dom.get
 
 actual fun HtmlElementLike.resizeObserver(): Listenable {
     return object: BaseListenable() {
@@ -80,7 +82,6 @@ fun HTMLElement.measureByTempEdit(max: Size): Size {
 }
 
 fun HTMLElement.measureByDuplicate(max: Size): Size {
-    println("Measuring by duplicate...")
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement

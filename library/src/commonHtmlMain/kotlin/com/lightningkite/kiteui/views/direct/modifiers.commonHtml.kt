@@ -2,9 +2,14 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
-import com.lightningkite.readable.reactiveScope
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 
 @ViewModifierDsl3
@@ -75,6 +80,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
 @ViewModifierDsl3
 actual fun ViewWriter.weight(amount: Float): ViewWrapper {
     beforeNextElementSetup {
+        lastSetWeight = amount
         native.style.flexGrow = "$amount"
         native.style.flexShrink = "$amount"
         native.style.flexBasis = "0"
@@ -88,6 +94,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
+            lastSetWeight = amount
             if (amount != 0f) {
                 native.style.flexGrow = "$amount"
                 native.style.flexShrink = "$amount"
@@ -106,6 +113,8 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 @ViewModifierDsl3
 actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
+        lastSetHorizontalAlign = horizontal
+        lastSetVerticalAlign = vertical
         native.classes.add("h${horizontal}")
         native.desiredHorizontalGravity = horizontal
         native.classes.add("v${vertical}")
@@ -116,6 +125,20 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+    beforeNextElementSetup {
+        setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
+    }
+    return ViewWrapper
+}
+
+@ViewModifierDsl3
+actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+    vertical: Boolean,
+    horizontal: Boolean,
+    refreshAction: Action,
+    crossinline setup: ScrollingBehaviors.() -> Unit
+): ViewWrapper {
+    // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }

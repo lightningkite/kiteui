@@ -1,27 +1,30 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.readable.*
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.LogRoot
 import com.lightningkite.kiteui.dom.KeyboardEvent
-import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.views.direct.KeyCode
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.js.Promise
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.await
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
-import kotlin.js.Promise
 
 actual object AppState {
     actual val animationFrame: Listenable
         get() = _AnimationFrame
-    internal val _windowInfo = Property(
+    internal val _windowInfo = Signal(
         WindowStatistics(
             width = window.innerWidth.px,
             height = window.innerHeight.px,
@@ -40,12 +43,12 @@ actual object AppState {
             }
         })
     }
-    actual val windowInfo: ImmediateReadable<WindowStatistics>
+    actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    actual val inForeground: ImmediateReadable<Boolean>
+    actual val inForeground: ReactiveValue<Boolean>
         get() = _InForeground
-    internal val _softInputOpen = Property(false)
-    actual val softInputOpen: ImmediateReadable<Boolean>
+    internal val _softInputOpen = Signal(false)
+    actual val softInputOpen: ReactiveValue<Boolean>
         get() = _softInputOpen
 
     private var currentLock: WakeLockSentinel? = null
@@ -56,8 +59,10 @@ actual object AppState {
                 try {
                     currentLock =
                         (window.navigator.asDynamic().wakeLock.request("screen") as Promise<WakeLockSentinel>).await()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    ConsoleRoot.warn("Could not acquire screen lock - probably unsupported", e)
+                    LogRoot.warn("Could not acquire screen lock - probably unsupported", e)
                 }
             }
         }
@@ -69,7 +74,7 @@ actual object AppState {
         }
     }
 
-    val _lastUniversalKeyboardInput = sharedProcess<KeyCodeWithModifiers> {
+    val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(
@@ -136,7 +141,7 @@ private object _AnimationFrame : Listenable {
     }
 }
 
-private object _InForeground : ImmediateReadable<Boolean> {
+private object _InForeground : ReactiveValue<Boolean> {
     override val value: Boolean
         get() = (document.asDynamic().visibilityState as? String) != "hidden"
 

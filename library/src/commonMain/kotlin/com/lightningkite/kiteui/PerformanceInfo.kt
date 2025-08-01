@@ -35,7 +35,7 @@ class PerformanceInfo(val key: String, val immediate: Boolean = false) {
     }
 
     fun print() {
-        println("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
+        Log.log("$key: ${average.inWholeMicroseconds} microseconds (${sum.inWholeMilliseconds}ms / $count)")
         reset()
     }
 

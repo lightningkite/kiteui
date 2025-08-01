@@ -2,25 +2,30 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
-import com.lightningkite.kiteui.utils.repairFormatAndPosition
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
+import com.lightningkite.kiteui.utils.repairFormatAndPosition
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<Double?> = object : ImmediateWritable<Double?>, BaseListenable() {
+    actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(
                     dirty = native.attributes.valueString ?: "",
                     selectionStart = selectionStart,
                     selectionEnd = selectionEnd,
-                    allowDecimal = keyboardHints != KeyboardHints.integer,
+                    allowDecimal = keyboardHints.type.allowDecimal,
                     setResult = {
                         native.attributes.valueString = it
                     },
@@ -37,6 +42,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                     native.attributes.valueString = value?.commaString()
             }
     }
+
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
@@ -46,6 +52,8 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 KeyboardType.Integer -> "text"
                 KeyboardType.Phone -> "tel"
                 KeyboardType.Email -> "text"
+                KeyboardType.IntegerWithNegative -> "text"
+                KeyboardType.DecimalWithNegative -> "text"
             }
             native.attributes.inputMode = when (value.type) {
                 KeyboardType.Text -> "text"
@@ -53,6 +61,9 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 KeyboardType.Integer -> "numeric"
                 KeyboardType.Phone -> "tel"
                 KeyboardType.Email -> "email"
+                // Number inputs are not guaranteed to include the '-' sign as an option, fall back to regular text input to ensure negative sign is accessible.
+                KeyboardType.IntegerWithNegative -> if (usingWebOnMobile()) "text" else "numeric"
+                KeyboardType.DecimalWithNegative -> if (usingWebOnMobile()) "text" else "decimal"
             }
 
             when (value.autocomplete) {
@@ -124,3 +135,5 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
 expect val NumberInput.selectionStart: Int?
 expect val NumberInput.selectionEnd: Int?
 expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+
+expect fun usingWebOnMobile(): Boolean

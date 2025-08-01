@@ -1,16 +1,20 @@
 package com.lightningkite.kiteui
 
-import com.lightningkite.readable.AppScope
-import com.lightningkite.readable.Property
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.coroutines.*
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlin.coroutines.*
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 
 class WaitGate(permit: Boolean = false) {
@@ -48,7 +52,7 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
     val baseRetry = 10.seconds
     var nextRetry = baseRetry
     val maxRetry = 5.minutes
-    val retryAt = Property<Instant?>(null)
+    val retryAt = Signal<Instant?>(null)
 
     fun retryNow() {
         retryAt.value = null
@@ -93,7 +97,7 @@ object Connectivity {
     val tooMuchCodes = setOf<Short>(420, 429)
     val stopConnectivityCodes = noConnectivityCodes + tooMuchCodes
     val fetchGate = ConnectivityGate()
-    val lastConnectivityIssueCode: Property<Short> = Property(0)
+    val lastConnectivityIssueCode: Signal<Short> = Signal(0)
 }
 
 suspend fun connectivityFetch(
@@ -108,7 +112,7 @@ suspend fun connectivityFetch(
                 fetch(url = url, method = method, headers = headers(), body = body)
             } catch(e: ConnectionException) {
                 // Perform a single retry immediately
-                println("WARNING: Forced retry on $method $url")
+                Log.warn("Forced retry on $method $url")
                 val r = try {
                     fetch(url = url, method = method, headers = headers(), body = body)
                 } catch(e: ConnectionException) {

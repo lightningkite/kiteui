@@ -1,20 +1,23 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
-import kotlinx.coroutines.delay
-import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.kiteui.models.Align
 import com.lightningkite.mppexampleapp.Resources
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("testing")
 object TestingGroundPage: Page {
-    val progressRatio: Property<Float> = Property(0f)
+    val progressRatio: Signal<Float> = Signal(0f)
     override fun ViewWriter.render(): ViewModifiable = run {
 //        val ratioShared = sharedSuspending {
 //            kotlinx.coroutines.delay(1000)
@@ -27,7 +30,7 @@ object TestingGroundPage: Page {
 
         scrolling - col {
             h1("Experiments test")
-            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSolera }
+            centered - sizeConstraints(maxWidth = 10.rem) - image { source = Resources.imagesSnowyBackground }
 
             launch {
                 while (true) {

@@ -2,10 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
 import platform.UIKit.*
@@ -59,7 +62,7 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
             native.informParentOfSizeChange()
         }
 
-    actual val content: ImmediateWritable<String> = object : ImmediateWritable<String> {
+    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text ?: ""
             set(value) { textField.text = value }
@@ -70,25 +73,9 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            textField.autocapitalizationType = when (value.case) {
-                KeyboardCase.None -> UITextAutocapitalizationType.UITextAutocapitalizationTypeNone
-                KeyboardCase.Letters -> UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters
-                KeyboardCase.Words -> UITextAutocapitalizationType.UITextAutocapitalizationTypeWords
-                KeyboardCase.Sentences -> UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
-            }
-            textField.keyboardType = when (value.type) {
-                KeyboardType.Text -> UIKeyboardTypeDefault
-                KeyboardType.Integer -> UIKeyboardTypeNumberPad
-                KeyboardType.Phone -> UIKeyboardTypePhonePad
-                KeyboardType.Decimal -> UIKeyboardTypeNumbersAndPunctuation
-                KeyboardType.Email -> UIKeyboardTypeEmailAddress
-            }
-            textField.textContentType = when (value.autocomplete) {
-                AutoComplete.Email -> UITextContentTypeUsername
-                AutoComplete.Password -> UITextContentTypePassword
-                AutoComplete.NewPassword -> UITextContentTypeNewPassword
-                else -> null
-            }
+            textField.autocapitalizationType = value.case.ios
+            textField.keyboardType = value.type.ios
+            textField.textContentType = value.autocomplete.iosTextContentType
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
     override fun actionSet(value: Action?) {

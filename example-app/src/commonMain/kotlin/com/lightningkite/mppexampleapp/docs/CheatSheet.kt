@@ -4,7 +4,9 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.locale.RenderSize
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atBottom
@@ -14,21 +16,24 @@ import com.lightningkite.kiteui.views.atStart
 import com.lightningkite.kiteui.views.atTop
 import com.lightningkite.kiteui.views.atTopStart
 import com.lightningkite.kiteui.views.canvas.*
-import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.l2.*
 import com.lightningkite.mppexampleapp.internal.RootPage
 import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlin.math.PI
+import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import kotlin.math.PI
-import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 
 @Routable("docs/available-views")
 object CheatSheet : DocPage {
@@ -53,7 +58,7 @@ object CheatSheet : DocPage {
     }
 
     val known = HashSet<ExampleEntry>()
-    val jump = Property<ExampleEntry?>(null)
+    val jump = Signal<ExampleEntry?>(null)
     fun ViewWriter.example(
         name: String,
         description: String,
@@ -456,7 +461,7 @@ object CheatSheet : DocPage {
                         description = "Used in forms to include things.",
                         code = """
                         col {
-                            val selected = Property<Set<String>>(setOf("Ketchup"))
+                            val selected = Signal<Set<String>>(setOf("Ketchup"))
                             for(option in listOf("Ketchup", "Mustard", "Mayo")) {
                                 row {
                                     centered - checkbox {
@@ -472,7 +477,7 @@ object CheatSheet : DocPage {
                     """.trimIndent(),
                         result = {
                             col {
-                                val selected = Property<Set<String>>(setOf("Ketchup"))
+                                val selected = Signal<Set<String>>(setOf("Ketchup"))
                                 for (option in listOf("Ketchup", "Mustard", "Mayo")) {
                                     row {
                                         centered - checkbox {
@@ -492,7 +497,7 @@ object CheatSheet : DocPage {
                         description = "Used in forms to pick a single option.",
                         code = """
                         col {
-                            val selected = Property<String>("Chicken")
+                            val selected = Signal<String>("Chicken")
                             centered - text("Pick one")
                             for(option in listOf("Chicken", "Steak", "Shrimp")) {
                                 row {
@@ -509,7 +514,7 @@ object CheatSheet : DocPage {
                     """.trimIndent(),
                         result = {
                             col {
-                                val selected = Property<String>("Chicken")
+                                val selected = Signal<String>("Chicken")
                                 centered - text("Pick one")
                                 for (option in listOf("Chicken", "Steak", "Shrimp")) {
                                     row {
@@ -529,7 +534,7 @@ object CheatSheet : DocPage {
                         name = "toggleButton",
                         description = "Button that switches between two states",
                         code = """
-                            val toggled = Property<Boolean>(false)
+                            val toggled = Signal<Boolean>(false)
                             toggleButton {
                                 centered - text {
                                     ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
@@ -538,7 +543,7 @@ object CheatSheet : DocPage {
                             }
                     """.trimIndent(),
                         result = {
-                            val toggled = Property<Boolean>(false)
+                            val toggled = Signal<Boolean>(false)
                             toggleButton {
                                 centered - text {
                                     ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
@@ -551,14 +556,14 @@ object CheatSheet : DocPage {
                         name = "field",
                         description = "Wraps another input with a label.",
                         code = """
-                        val name = Property("")
+                        val name = Signal("")
                         field(label = "First Name") {
                             textInput { content bind name }
                         }
                         text { ::content { "Name is ${'$'}{name()}" } }
                     """.trimIndent(),
                         result = {
-                            val name = Property("")
+                            val name = Signal("")
                             field(label = "First Name") {
                                 textInput { content bind name }
                             }
@@ -569,7 +574,7 @@ object CheatSheet : DocPage {
                         name = "localDateField",
                         description = "A field for entering a date.",
                         code = """
-                        val date = Property<LocalDate?>(null)
+                        val date = Signal<LocalDate?>(null)
                         localDateField {
                             range = LocalDate(1970, 1, 1)..LocalDate(year = 1971, 12, 31)
                             content bind date
@@ -578,7 +583,7 @@ object CheatSheet : DocPage {
                    
                     """.trimIndent(),
                         result = {
-                            val date = Property<LocalDate?>(null)
+                            val date = Signal<LocalDate?>(null)
                             localDateField {
                                 range = LocalDate(1970, 1, 1)..LocalDate(year = 1971, 12, 31)
                                 content bind date
@@ -590,7 +595,7 @@ object CheatSheet : DocPage {
                         name = "localTimeField",
                         description = "A field for entering a time.",
                         code = """
-                        val time = Property<LocalTime?>(null)
+                        val time = Signal<LocalTime?>(null)
                         localTimeField {
                             content bind time
                         }
@@ -598,7 +603,7 @@ object CheatSheet : DocPage {
                    
                     """.trimIndent(),
                         result = {
-                            val time = Property<LocalTime?>(null)
+                            val time = Signal<LocalTime?>(null)
                             localTimeField {
                                 content bind time
                             }
@@ -609,7 +614,7 @@ object CheatSheet : DocPage {
                         name = "localDateTimeField",
                         description = "A field for entering both a date and a time.",
                         code = """
-                        val date = Property<LocalDateTime?>(null)
+                        val date = Signal<LocalDateTime?>(null)
                         localDateTimeField {
                             content bind date
                         }
@@ -617,7 +622,7 @@ object CheatSheet : DocPage {
                    
                     """.trimIndent(),
                         result = {
-                            val date = Property<LocalDateTime?>(null)
+                            val date = Signal<LocalDateTime?>(null)
                             localDateTimeField {
                                 content bind date
                             }
@@ -630,7 +635,7 @@ object CheatSheet : DocPage {
                         code = """
                         text { content = "LOTR Characters" }
                         val characters = Constant(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
-                        val valueChanged = Property(characters.value.first())
+                        val valueChanged = Signal(characters.value.first())
                         select {
                             bind(edits = valueChanged, data = characters) { character -> character }
                         }
@@ -639,7 +644,7 @@ object CheatSheet : DocPage {
                         result = {
                             text { content = "LOTR Characters" }
                             val characters = Constant(listOf("Bilbo", "Frodo", "Gandalf", "Thorin"))
-                            val valueChanged = Property(characters.value.first())
+                            val valueChanged = Signal(characters.value.first())
                             select {
                                 bind(edits = valueChanged, data = characters) { character -> character }
                             }
@@ -651,7 +656,7 @@ object CheatSheet : DocPage {
                         name = "switch",
                         description = "A switch, intended to do something immediately when changed.",
                         code = """
-                        val switchValue = Property(false)
+                        val switchValue = Signal(false)
                         row {
                             expanding - text("My switch")
                             switch { checked bind switchValue } 
@@ -659,7 +664,7 @@ object CheatSheet : DocPage {
                         text { ::content { "Switch is ${'$'}{ if(switchValue()) "ON" else "OFF" }" } }
                     """.trimIndent(),
                         result = {
-                            val switchValue = Property(false)
+                            val switchValue = Signal(false)
                             row {
                                 expanding - text("My switch")
                                 switch { checked bind switchValue }
@@ -671,7 +676,7 @@ object CheatSheet : DocPage {
                         name = "textArea",
                         description = "The text area",
                         code = """
-                        val longText = Property("")
+                        val longText = Signal("")
                         sizeConstraints(height = 120.dp) - scrolling - textArea { 
                             content bind longText
                             hint = "Some hint"
@@ -679,7 +684,7 @@ object CheatSheet : DocPage {
                         sizeConstraints(height = 120.dp) - scrolling - text { ::content { "Entered Input: ${'$'}{longText()}" } }
                     """.trimIndent(),
                         result = {
-                            val longText = Property("")
+                            val longText = Signal("")
                             sizeConstraints(height = 120.dp) - scrolling - textArea {
                                 content bind longText
                                 hint = "Some hint"
@@ -691,7 +696,7 @@ object CheatSheet : DocPage {
                         name = "textInput",
                         description = "The text area",
                         code = """
-                        val text = Property("")
+                        val text = Signal("")
                         textInput { 
                             content bind text
                             hint = "Some hint"
@@ -699,7 +704,7 @@ object CheatSheet : DocPage {
                         text { ::content { "Entered Input: ${'$'}{text()}" } }
                     """.trimIndent(),
                         result = {
-                            val text = Property("")
+                            val text = Signal("")
                             textInput {
                                 content bind text
                                 hint = "Some hint"
@@ -711,7 +716,7 @@ object CheatSheet : DocPage {
                         name = "numberInput",
                         description = "Input for numbers",
                         code = """
-                            val number = Property<Double?>(null)
+                            val number = Signal<Double?>(null)
                             numberInput {
                                 content bind number
                                 hint = "A number"
@@ -719,7 +724,7 @@ object CheatSheet : DocPage {
                             text { ::content { "Entered Number: ${'$'}{number()}" } }
                         """.trimIndent()
                     ) {
-                        val number = Property<Double?>(null)
+                        val number = Signal<Double?>(null)
                         numberInput {
                             content bind number
                             hint = "A number"
@@ -730,7 +735,7 @@ object CheatSheet : DocPage {
                         name = "phoneNumberInput",
                         description = "Input for phone numbers. Uses formattedTextInput under the hood.",
                         code = """
-                            val number = Property<String>("")
+                            val number = Signal<String>("")
                             field("Phone Number") {
                                 phoneNumberInput {
                                     format = PhoneNumberFormat.USA
@@ -743,7 +748,7 @@ object CheatSheet : DocPage {
                         """.trimIndent(),
                         references = setOf(ExampleEntry("formattedTextInput"))
                     ) {
-                        val number = Property<String>("")
+                        val number = Signal<String>("")
                         field("Phone Number") {
                             phoneNumberInput {
                                 format = PhoneNumberFormat.USA
@@ -1001,7 +1006,7 @@ object CheatSheet : DocPage {
                         name = "shownWhen",
                         description = "Shows or hides a view dynamically.  Animated.",
                         code = """
-                            val visible = Property(true)
+                            val visible = Signal(true)
                             row {
                                 expanding - text("Visible")
                                 switch { checked bind visible }
@@ -1009,7 +1014,7 @@ object CheatSheet : DocPage {
                             shownWhen { visible() } - text("Only visible when on")
                         """.trimIndent(),
                         result = {
-                            val visible = Property(true)
+                            val visible = Signal(true)
                             row {
                                 expanding - text("Visible")
                                 switch { checked bind visible }
@@ -1166,7 +1171,7 @@ object CheatSheet : DocPage {
                         name = "formattedTextInput",
                         description = "raw text input that you can filter and format as you please.",
                         code = """
-                            val input = Property("")
+                            val input = Signal("")
                             {
                             field("Enter Hex Color") {
                                 formattedTextInput {
@@ -1186,7 +1191,7 @@ object CheatSheet : DocPage {
                             }
                         """.trimIndent()
                     ) {
-                        val input = Property("")
+                        val input = Signal("")
                         field("Enter Hex Color") {
                             formattedTextInput {
                                 content bind input
@@ -1296,7 +1301,7 @@ object CheatSheet : DocPage {
                             val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
                             col {
-                                forEach(shared { fruits }) { fruit ->
+                                forEach(remember { fruits }) { fruit ->
                                     card - text(fruit)
                                 }
                             }
@@ -1305,7 +1310,7 @@ object CheatSheet : DocPage {
                             val fruits = listOf("Apples", "Oranges", "Plums", "Bananas", "Cherries")
 
                             col {
-                                forEach(shared { fruits }) { fruit ->
+                                forEach(remember { fruits }) { fruit ->
                                     card - text(fruit)
                                 }
                             }

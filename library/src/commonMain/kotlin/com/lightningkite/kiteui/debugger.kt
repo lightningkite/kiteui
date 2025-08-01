@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.RViewHelper
 
 var debugMode: Boolean = false
 expect fun debugger(): Unit
@@ -14,7 +15,7 @@ expect class WeakReference<T: Any>(referred: T) {
 val leaks = ArrayList<WeakReference<*>>()
 private var lastGc = clockMillis()
 private var lastGcReport = clockMillis()
-private val leakLog = ConsoleRoot.tag("RViewLeaks")
+private val leakLog = LogRoot.tag("RViewLeaks")
 private fun gcIfNotVeryRecent() {
     if(clockMillis() - lastGc > 100.0) {
         gc()
@@ -49,6 +50,27 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
+fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        get()?.let {
+            println("Leaked $name")
+            leaks.add(this)
+            recheckLeakAfterDelay(milliseconds, name)
+        }
+    }
+}
+fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
+    afterTimeout(milliseconds) {
+        gcIfNotVeryRecent()
+        if (get() == null) {
+            println("Leak $name cleaned up")
+            leaks.remove(this)
+        } else {
+            recheckLeakAfterDelay(milliseconds, name)
+        }
+    }
+}
 expect fun assertMainThread()
 
 expect fun Throwable.printStackTrace2()
@@ -58,23 +80,37 @@ fun Throwable.report(context: String = "") = Throwable_report(this, context)
 expect fun Any?.identityHashCode(): Int
 
 var viewDebugTarget: RView? = null
+inline fun RViewHelper.debugPrint(get: ()->String) {
+    if(debugMode && viewDebugTarget == this)
+        Log.tag("viewDebugTarget").info(get())
+}
+inline fun RView.debugPrint(get: ()->String) {
+    if(debugMode && viewDebugTarget == this)
+        Log.tag("viewDebugTarget").info(get())
+}
 
-interface Console {
-    fun tag(tag: String): Console
+@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
+typealias Console = Log
+@Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
+typealias ConsoleRoot = Log.Companion
+
+interface Log {
+    companion object: Log by LogRoot
+    fun tag(tag: String): Log
     fun log(vararg entries: Any?)
     fun error(vararg entries: Any?)
     fun info(vararg entries: Any?)
     fun warn(vararg entries: Any?)
 }
-fun Console.infoOrAbove(): Console = object : Console by this {
+fun Log.infoOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
 }
-fun Console.warnOrAbove(): Console = object : Console by this {
+fun Log.warnOrAbove(): Log = object : Log by this {
     override fun log(vararg entries: Any?) {}
     override fun info(vararg entries: Any?) {}
 }
-expect object ConsoleRoot: Console {
-    override fun tag(tag: String): Console
+expect object LogRoot: Log {
+    override fun tag(tag: String): Log
     override fun log(vararg entries: Any?)
     override fun error(vararg entries: Any?)
     override fun info(vararg entries: Any?)

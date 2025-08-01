@@ -2,10 +2,16 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
@@ -22,8 +28,8 @@ actual class Select actual constructor(context: RContext): RView(context) {
     }
 
     actual fun <T> bind(
-        edits: Writable<T>,
-        data: Readable<List<T>>,
+        edits: MutableReactive<T>,
+        data: Reactive<List<T>>,
         render: (T) -> String
     ) {
         val picker = (textField.inputView as UIPickerView)
@@ -39,9 +45,9 @@ actual class Select actual constructor(context: RContext): RView(context) {
             }
 
             override fun numberOfComponentsInPickerView(pickerView: UIPickerView): NSInteger = 1L
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, numberOfRowsInComponent: NSInteger): NSInteger = list.size.toLong()
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, titleForRow: NSInteger, forComponent: NSInteger): String? {
                 return render(list[titleForRow.toInt()])
             }
@@ -50,7 +56,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                 val item = list[index]
                 edits set item
             }
-            @Suppress("CONFLICTING_OVERLOADS", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @ObjCSignatureOverride
             override fun pickerView(pickerView: UIPickerView, didSelectRow: NSInteger, inComponent: NSInteger) {
                 index = didSelectRow.toInt()
                 set.startAction(this@Select)

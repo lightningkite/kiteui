@@ -1,60 +1,41 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
-import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    kotlin("native.cocoapods")
-    id("com.android.library")
+    alias(libs.plugins.kotlinMultiplatform)
+//    alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.comLightningkiteTestingManual)
-//    id("org.jetbrains.dokka")
     signing
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    alias(libs.plugins.vannitechPublishing)
+    alias(libs.plugins.dokka)
 }
 
-val lk = project.lk {
-    kotlinTestManualPlugin()
+dokka {
+    // Dokka generates a new process managed by Gradle
+    dokkaGeneratorIsolation = ProcessIsolation {
+        // Configures heap size
+        maxHeapSize = "4g"
+    }
 }
 
 kotlin {
-    androidTarget {
-        publishLibraryVariants("release", "debug")
-        dependencies {
-            api(libs.appcompat)
-            api(libs.ktx)
-            api(libs.swiperefreshlayout)
-            api(libs.material)
-            api(libs.transition)
-            api(libs.cardview)
-            api(libs.timber)
-            api(libs.glide)
-            api(libs.photoview)
-            api(libs.ktorClientCore)
-            api(libs.ktorClientCio)
-            api(libs.ktorClientOkhttp)
-            api(libs.ktorClientWebsockets)
-            api(libs.media3Exoplayer)
-            api(libs.media3Ui)
-            api(libs.media3Common)
-            api(libs.androidxAutofill)
-        }
-        this.compilerOptions {
-            this.jvmTarget.set(JvmTarget.JVM_1_8)
-        }
-    }
+    applyDefaultHierarchyTemplate()
+//    explicitApi()
+
     jvm()
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-//        it.binaries.framework {
-//            baseName = "library"
-//        }
+    androidTarget {
+        publishLibraryVariants("release")
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_1_8)
+        }
     }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
     js(IR) {
         browser {
             testTask {
@@ -65,9 +46,6 @@ kotlin {
             }
         }
     }
-//    wasmJs {
-//        browser()
-//    }
 
 //    explicitApi = ExplicitApiMode.Warning
     compilerOptions {
@@ -76,11 +54,10 @@ kotlin {
         freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
     }
     sourceSets {
-        applyDefaultHierarchyTemplate()
 
         val commonMain by getting {
             dependencies {
-                api(lk.readable(2))
+                api(libs.comLightningkiteReactive)
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
@@ -91,11 +68,28 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
-                implementation(lk.kotlinTestManualRuntime())
+                implementation(libs.comLightningkiteTestingKotlinTestManualRuntime)
             }
         }
         val androidMain by getting {
             dependencies {
+                api(libs.appcompat)
+                api(libs.ktx)
+                api(libs.swiperefreshlayout)
+                api(libs.material)
+                api(libs.transition)
+                api(libs.cardview)
+                api(libs.timber)
+                api(libs.glide)
+                api(libs.photoview)
+                api(libs.ktorClientCore)
+                api(libs.ktorClientCio)
+                api(libs.ktorClientOkhttp)
+                api(libs.ktorClientWebsockets)
+                api(libs.media3Exoplayer)
+                api(libs.media3Ui)
+                api(libs.media3Common)
+                api(libs.androidxAutofill)
             }
         }
         val androidUnitTest by getting {
@@ -128,47 +122,14 @@ kotlin {
         val jsMain by getting {
             dependsOn(commonHtmlMain)
         }
-
-//        val wasmJsMain by getting {
-//            dependsOn(commonHtmlMain)
-//        }
     }
-
-//    cocoapods {
-//        summary = "KiteUI"
-//        homepage = "https://github.com/lightningkite/kiteui"
-//        ios.deploymentTarget = "12.0"
-//
-//        pod("FlexLayout") { version = "2.0.03" }
-//        pod("PinLayout") {
-//            version = "1.10.5"
-//            extraOpts += listOf("-compiler-option", "-fmodules")
-//        }
-//    }
-}
-
-//tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask>().configureEach {
-//    doLast {
-//        podfile.get().appendText("\nENV['SWIFT_VERSION'] = '5'")
-//    }
-//}
-
-kotlin {
-    targets
-        .matching { it is org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget }
-        .configureEach {
-            this as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-
-            compilations.getByName("main") {
-                val objcAddition by cinterops.creating {
-                    defFile(project.file("src/iosMain/def/objcAddition.def"))
-                }
-                this.kotlinOptions {
-//                    this.freeCompilerArgs += "-Xruntime-logs=gc=info"
-//                    this.freeCompilerArgs += "-Xallocator=mimalloc"
-                }
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
+        compilations.getByName("main") {
+            val objcAddition by cinterops.creating {
+                defFile(project.file("src/iosMain/def/objcAddition.def"))
             }
         }
+    }
 }
 
 android {
@@ -184,7 +145,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+        coreLibraryDesugaring(libs.desugar.jdk.libs)
     }
     testOptions {
         unitTests {
@@ -193,31 +154,9 @@ android {
     }
 }
 dependencies {
-    implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
+    implementation(libs.ktor.client.okhttp.jvm)
 }
 
-mavenPublishing {
-    // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-    coordinates(group.toString(), name, version.toString())
-    pom {
-        name.set("KiteUI")
-        description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
-        github("lightningkite", "kiteui")
-
-        licenses {
-            mit()
-        }
-
-        developers {
-            joseph()
-            brady()
-            developer{
-                id.set("shanelk")
-                name.set("Shane Thompson")
-                email.set("shane@lightningkite.com")
-            }
-        }
-    }
-
+lkLibrary("lightningkite", "kiteui") {
+    description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }

@@ -5,9 +5,7 @@ import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.dom.addClass
-import kotlinx.dom.createElement
 import kotlinx.dom.hasClass
 import kotlinx.dom.removeClass
 import org.w3c.dom.*
@@ -325,45 +323,64 @@ inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(ta
 actual fun RView.nativeSetDragData(data: DragData?) {
     native.onElement {
         if (data != null) {
-            (it as HTMLElement).ondragstart = { it.dataTransfer!!.setData(data.mimeType, data.data) }
+            (it as HTMLElement).ondragstart = {
+                it.stopPropagation()
+                for((type, value) in data.typeToData) {
+                    it.dataTransfer!!.setData(type, value)
+                }
+            }
         } else {
             (it as HTMLElement).ondragstart = null
         }
     }
 }
 
+
 actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
+    fun DragEvent.toDragEvent() = com.lightningkite.kiteui.models.DragEvent(
+        data = DragData("", typeToData = dataTransfer!!.types.associate { it to dataTransfer!!.getData(it) }),
+        xInView = x,
+        yInView = y
+    )
+
     native.onElement {
         if (listener != null) {
-            (it as HTMLElement).ondragover = { e ->
-                if (listener.over(
-                        com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
-                            xInView = e.x,
-                            yInView = e.y
-                        )
-                    )
-                ) {
+            it as HTMLElement
+            it.ondragover = { e ->
+                if (listener.over(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
             }
-            (it as HTMLElement).ondrop = { e ->
-                if (listener.drop(
-                        com.lightningkite.kiteui.models.DragEvent(
-                            data = DragData("", typeToData = e.dataTransfer!!.types.associate { it to e.dataTransfer!!.getData(it) }),
-                            xInView = e.x,
-                            yInView = e.y
-                        )
-                    )
-                ) {
+            it.ondragenter = { e ->
+                if (listener.enter(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondragleave = { e ->
+                if (listener.exit(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondragend = { e ->
+                if (listener.end(e.toDragEvent())) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+            }
+            it.ondrop = { e ->
+                if (listener.drop(e.toDragEvent())) {
                     e.preventDefault()
                     e.stopPropagation()
                 }
             }
         } else {
             (it as HTMLElement).ondragover = null
-            (it as HTMLElement).ondrop = null
+            it.ondragleave = null
+            it.ondragexit = null
+            it.ondrop = null
         }
     }
 }

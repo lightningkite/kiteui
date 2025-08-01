@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
-import com.lightningkite.kiteui.Console
-import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
@@ -25,7 +24,7 @@ class RecyclerViewPlacerVerticalGrid(
         ?: sizeByType[type]
         ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
 
-    var log: Console? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
+    var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
     override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     override fun place(
@@ -56,8 +55,8 @@ class RecyclerViewPlacerVerticalGrid(
                 is RecyclerViewAnchor.FuzzyIndex -> {
                     val averageRowHeight = existingCells.sumOf { it.existingHeight(cellSize) } / existingCells.size
                     val focusRowIndex = it.index.coerceIn(dataRange.first.toDouble(), dataRange.last.toDouble()).div(columns).toInt().times(columns)
-                    val partialIndexOffset = it.index.rem(columns) / columns * averageRowHeight
-                    viewport.top + viewport.height * it.ratioOfFocus - partialIndexOffset to focusRowIndex
+                    val partialIndexOffset = it.index.rem(columns) / columns * (averageRowHeight)
+                    viewport.top + (viewport.height - paddingTop - paddingBottom) * it.ratioOfFocus - partialIndexOffset to focusRowIndex
                 }
                 is RecyclerViewAnchor.SpecificElement -> {
                     val currentIndex = it.index.coerceIn(dataRange).div(columns).times(columns)

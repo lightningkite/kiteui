@@ -2,24 +2,28 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.navigation.Page
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewModifiable
-import com.lightningkite.readable.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.expanding
-import com.lightningkite.kiteui.views.minus
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
 @Routable("sample/data")
 object DataLoadingExamplePage : Page {
     @Serializable data class Post(val userId: Int, val id: Int, val title: String, val body: String)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        val data: Readable<List<Post>> = asyncReadable {
+        val data: Reactive<List<Post>> = rememberSuspending {
             delay(5000)
             val response: RequestResponse = fetch("https://jsonplaceholder.typicode.com/posts", onDownloadProgress = { complete, max -> println("$complete/$max") })
             Json.decodeFromString<List<Post>>(response.text())
@@ -30,8 +34,8 @@ object DataLoadingExamplePage : Page {
             expanding - recyclerView {
                 children(data) {
                     card - col {
-                        val takesTime = asyncReadable { delay(Random.nextLong(0, 5000)); "" }
-                        val f = shared { takesTime() }
+                        val takesTime = rememberSuspending { delay(Random.nextLong(0, 5000)); "" }
+                        val f = remember { takesTime() }
                         h3 { ::content { it().title + f() } }
                         text { ::content.invoke { it().body.substringBefore('\n') + f() } }
                     }

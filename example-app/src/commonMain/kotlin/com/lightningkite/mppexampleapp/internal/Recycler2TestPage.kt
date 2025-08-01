@@ -1,27 +1,30 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
-import com.lightningkite.kiteui.exceptions.PlainTextException
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.*
-import kotlin.random.Random
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("recycler2-test")
 object Recycler2TestPage : Page {
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Property(10000)
+    val elementCount = Signal(10000)
 
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
-            val expanded = Property(-1)
+            val expanded = Signal(-1)
             var recyclerView: Recycler2? = null
             row {
                 for (align in Align.values()) {
@@ -55,14 +58,14 @@ object Recycler2TestPage : Page {
             }
             expanding - Recycler2(this).apply {
                 recyclerView = this
-                log = ConsoleRoot.tag("R2")
-                placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = ConsoleRoot.tag("Placer") }
+                log = LogRoot.tag("R2")
+                placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = LogRoot.tag("Placer") }
 //                this.snapToElements = null to Align.Start
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(
                         viewWriter: ViewWriter,
-                        data: Readable<Int>,
-                        index: Readable<Int>
+                        data: Reactive<Int>,
+                        index: Reactive<Int>
                     ): ViewModifiable {
                         return with(viewWriter) {
                             card - button {

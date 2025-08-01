@@ -1,27 +1,32 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.field
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("recycler-view")
 object RecyclerViewTestPage : Page {
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Property(10000)
+    val elementCount = Signal(10000)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        var expanded = Property(-1)
-        val items = shared { (1..elementCount()).toList() }
+        var expanded = Signal(-1)
+        val items = remember { (1..elementCount()).toList() }
         var recyclerView: RecyclerView? = null
         col {
             row {
@@ -54,7 +59,9 @@ object RecyclerViewTestPage : Page {
             }
             recyclerView {
                 recyclerView = this
+                log = Log.tag("R2")
                 gap = 0.5.rem
+                paddingByEdge = Edges(left = 1.rem, right = 1.rem, top = 1.rem, bottom = 10.rem)
 //                columns = 2
                 reactive {
                     val index = expanded()

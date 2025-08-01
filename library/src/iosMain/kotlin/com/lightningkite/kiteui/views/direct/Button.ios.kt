@@ -1,22 +1,17 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.onRemove
-import com.lightningkite.readable.reactiveScope
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
-actual class Button actual constructor(context: RContext) : RViewWithAction(context) {
+actual class Button actual constructor(context: RContext) : RViewWithSecondaryAction(context) {
     override val native = FrameLayoutButton()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
 
     init {
         activityIndicator {
@@ -29,6 +24,13 @@ actual class Button actual constructor(context: RContext) : RViewWithAction(cont
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         onRemove(native.setOnClick {
+            value?.startAction(this)
+        })
+    }
+
+    override fun secondaryActionSet(value: Action?) {
+        super.secondaryActionSet(value)
+        onRemove(native.setOnLongPress {
             value?.startAction(this)
         })
     }

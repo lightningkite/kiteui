@@ -7,17 +7,18 @@ import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.models.ScreenTransitions
 import com.lightningkite.kiteui.models.px
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
-import com.lightningkite.readable.invoke
-import com.lightningkite.readable.reactive
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
-private var ViewWriter.bottomSheetState: Writable<BottomSheetState>? by rContextAddon<Writable<BottomSheetState>?>(null)
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
 
     init {
         native.tag = "div"
@@ -39,7 +40,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
 
-        val expanded = Property(startState)
+        val expanded = Signal(startState)
         var willRemove: RView? = null
         val transition = ScreenTransitions.VerticalSlide
         fun closePanel() {
@@ -60,7 +61,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     ignoreInteraction = true
                 }
                 expanding - content(object : BottomSheetControl {
-                    override val state: Writable<BottomSheetState> = expanded
+                    override val state: MutableReactive<BottomSheetState> = expanded
                     override fun close() {
                         closePanel()
                     }

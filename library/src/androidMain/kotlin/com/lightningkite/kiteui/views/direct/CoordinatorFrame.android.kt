@@ -8,12 +8,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -21,27 +23,17 @@ import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
 import com.lightningkite.kiteui.views.withoutAnimation
-import com.lightningkite.readable.AppState
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.Writable
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
-    override val cannotBeCovered: Boolean get() = false
     override val native = CoordinatorLayoutWithGestures(context.activity)
-    override fun childTouches(child: RView): Int {
-        val p = child.lparams as CoordinatorLayout.LayoutParams
-        var total = 0
-        if (p.width == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.LEFT or Gravity.RIGHT
-        if (p.height == ViewGroup.LayoutParams.MATCH_PARENT) total = total or Gravity.TOP or Gravity.BOTTOM
-        if (p.gravity and Gravity.LEFT > 0) total = total or Gravity.LEFT
-        if (p.gravity and Gravity.RIGHT > 0) total = total or Gravity.RIGHT
-        if (p.gravity and Gravity.TOP > 0) total = total or Gravity.TOP
-        if (p.gravity and Gravity.BOTTOM > 0) total = total or Gravity.BOTTOM
-        return total
-    }
 
     override fun willAddChild(view: RView) {
         view.native.layoutParams = defaultLayoutParams()
@@ -68,9 +60,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         lateinit var b: BottomSheetBehavior<View>
         var sub: ViewModifiable? = null
         var backToRemove: RView? = null
-        val state = Property(startState)
+        val state = Signal(startState)
         val control = object : BottomSheetControl {
-            override val state: Writable<BottomSheetState> = state
+            override val state: MutableReactive<BottomSheetState> = state
             override fun close() {
                 b.state = BottomSheetBehavior.STATE_HIDDEN
             }
@@ -102,9 +94,8 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            println("onSlide $sub $slideOffset")
                             sub?.rView?.native?.run {
-                                layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top).also { println("Height is $it") }
+                                layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top)
                                 requestLayout()
                             }
                             backToRemove?.native?.alpha = (1f + slideOffset).coerceIn(0f, 1f)
@@ -131,6 +122,10 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 }
                 (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
                 b.state = BottomSheetBehavior.STATE_HIDDEN
+                native.setOnClickListener {
+                    // TODO: Remove the need for this hack
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
 
             } - col { sub = content(control) }
         }
@@ -173,6 +168,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 })
                 //TODO: blocksBehind
+                native.setOnClickListener {
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.LEFT
             (lparams as? CoordinatorLayout.LayoutParams)?.width = ratio?.let {
@@ -220,6 +218,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     }
                 })
                 //TODO: blocksBehind
+                native.setOnClickListener {
+                    Log.log("$this ($it) blocked the touch, because screw you")
+                }
             }
             (lparams as? CoordinatorLayout.LayoutParams)?.gravity = Gravity.RIGHT
             (lparams as? CoordinatorLayout.LayoutParams)?.width = ratio?.let {

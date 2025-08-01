@@ -1,10 +1,20 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.models.Edges
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class RContext(val controller: UIViewController) : RContextHelper() {
+actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper() {
+    init { if(parent == null) ExternalServices.baseContext = this }
     actual fun split(): RContext = RContext(controller).apply { addons.putAll(this@RContext.addons) }
+    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons.putAll(this@RContext.addons) }
 
     actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
@@ -24,4 +34,31 @@ actual class RContext(val controller: UIViewController) : RContextHelper() {
                 controller.setNeedsStatusBarAppearanceUpdate()
             }
         }
+
+    val controllerForPresenting get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
+    private var dismissing: Boolean = false
+    fun dismissSelf() {
+        dismissing = true
+        println("Dismissing myself $controller through ${parent?.controller}")
+        controller.presentingViewController?.dismissViewControllerAnimated(true) {}
+    }
+    fun present(vc: UIViewController) {
+        println("$controller present $vc")
+        val contextToUse = generateSequence(this) { it.parent }.first {
+            println("Can I present from ${it.controller}?  Dismissing is ${it.dismissing}")
+            !it.dismissing && it.controller.view.window != null
+        }
+        val controller = contextToUse.controllerForPresenting
+        if(controller == null) return
+        if(controller.presentedViewController != null) {
+            println("Dismissing old on $controller")
+            controller.dismissViewControllerAnimated(true) {
+                println("Ready to present next")
+                controller.presentViewController(vc, animated = true, completion = null)
+            }
+        } else {
+            println("About to present")
+            controller.presentViewController(vc, animated = true, completion = null)
+        }
+    }
 }

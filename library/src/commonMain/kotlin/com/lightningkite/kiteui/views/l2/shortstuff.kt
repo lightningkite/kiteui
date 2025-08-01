@@ -2,9 +2,14 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -19,7 +24,7 @@ fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->Unit = 
 }
 
 @ViewDsl
-fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Unit) {
+fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Unit) {
     col {
         var noViewCreated = true
         var view: RView? = null
@@ -46,7 +51,7 @@ fun ViewWriter.lazyExpanding(visible: Readable<Boolean>, sub: ViewWriter.()->Uni
 
 @ViewDsl
 fun RView.errorText(): ViewModifiable {
-    val errors = Property<Set<Exception>>(setOf())
+    val errors = Signal<Set<Exception>>(setOf())
     return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
         this@errorText += object: ExceptionHandler {
             override val priority: Float

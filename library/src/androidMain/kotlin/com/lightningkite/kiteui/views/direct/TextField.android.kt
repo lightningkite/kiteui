@@ -19,9 +19,14 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
-import com.lightningkite.readable.ImmediateWritable
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual open class TextInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
@@ -45,7 +50,7 @@ actual open class TextInput actual constructor(context: RContext) : RViewWithAct
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual val content: ImmediateWritable<String> = native.contentProperty()
+    actual val content: MutableReactiveValue<String> = native.contentProperty()
     actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
@@ -195,8 +200,8 @@ var EditText.keyboardHints: KeyboardHints
     set(value) {
         val n = this
         val inputType = when (value.type) {
-            KeyboardType.Integer -> InputType.TYPE_CLASS_NUMBER
-            KeyboardType.Decimal -> InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            KeyboardType.Integer, KeyboardType.IntegerWithNegative -> InputType.TYPE_CLASS_NUMBER
+            KeyboardType.Decimal, KeyboardType.DecimalWithNegative -> InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             KeyboardType.Text -> {
                 when (value.case) {
                     KeyboardCase.Words -> InputType.TYPE_TEXT_FLAG_CAP_WORDS

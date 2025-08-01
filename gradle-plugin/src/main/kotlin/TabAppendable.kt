@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui
 
-class TabAppendable(val wraps: Appendable, val tabString: String = "    ") {
+internal class TabAppendable(val wraps: Appendable, val tabString: String = "    ") {
 //    var imports = HashSet<String>()
     var tabs = 0
     var needIndent = false

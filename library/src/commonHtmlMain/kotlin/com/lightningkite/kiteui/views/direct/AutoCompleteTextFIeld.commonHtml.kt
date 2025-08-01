@@ -2,9 +2,13 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.Writable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 actual class AutoCompleteTextField actual constructor(context: RContext) : RViewWithAction(context) {
@@ -12,48 +16,11 @@ actual class AutoCompleteTextField actual constructor(context: RContext) : RView
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    actual val content: MutableReactiveValue<String> = native.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
-            native.attributes.type = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "text"
-                KeyboardType.Integer -> "text"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "text"
-            }
-            native.attributes.inputMode = when (value.type) {
-                KeyboardType.Text -> "text"
-                KeyboardType.Decimal -> "decimal"
-                KeyboardType.Integer -> "numeric"
-                KeyboardType.Phone -> "tel"
-                KeyboardType.Email -> "email"
-            }
-
-            when (value.autocomplete) {
-                AutoComplete.Email -> {
-                    native.attributes.type = "email"
-                    native.attributes.autocomplete = "email"
-                }
-
-                AutoComplete.Password -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "current-password"
-                }
-
-                AutoComplete.NewPassword -> {
-                    native.attributes.type = "password"
-                    native.attributes.autocomplete = "new-password"
-                }
-
-                AutoComplete.Phone -> {
-                    native.attributes.autocomplete = "tel"
-                }
-                AutoComplete.OneTimeCode, null -> {
-                    native.attributes.autocomplete = "off"
-                }
-            }
+            native.applyKeyboardHints(value)
         }
     init {
         native.addEventListener("keyup") { ev ->

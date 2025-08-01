@@ -10,8 +10,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
     init {
         // basis rules
         //language=CSS
-        @Suppress("CssUnresolvedCustomProperty")
-        dynamicCss.rule("""
+        try {
+            @Suppress("CssUnresolvedCustomProperty")
+            dynamicCss.rule(
+                """
             @media print {
                 .do-not-print{
                     display: none !important;
@@ -36,12 +38,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                     flex-basis: unset !important;
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+            )
+        } catch(e: Exception) {
+            Exception("Failed to add print ruleset", e).printStackTrace()
+        }
         @Suppress("CssUnresolvedCustomProperty")
         dynamicCss.rule(
             """
             /*noinspection ALL*/@media {
-            html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+            .kui {
                 margin: 0;
                 padding: 0;
                 border: 0;
@@ -50,23 +56,23 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 vertical-align: baseline;
             }
             
-            p, h1, h2, h3, h4, h5, h6, .subtext {
+            p.kui, h1.kui, h2.kui, h3.kui, h4.kui, h5.kui, h6.kui, .subtext {
                 white-space: pre-wrap;
             }
             
-            p li {
+            p.kui li.kui {
                 margin-inline-start: 1em;
             }
-            p a {
+            p.kui a.kui {
                 text-decoration: revert;
                 color: revert;
             }
-            p a:visited {
+            p.kui a.kui:visited {
                 color: revert;
             }
     
             /* HTML5 display-role reset for older browsers */
-            article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+            article.kui, aside.kui, details.kui, figcaption.kui, figure.kui, footer.kui, header.kui, hgroup.kui, menu.kui, nav.kui, section.kui {
                 display: block;
             }
     
@@ -74,57 +80,57 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 line-height: 1;
             }
     
-            ol, ul {
+            ol.kui, ul.kui {
                 list-style: none;
             }
     
-            blockquote, q {
+            blockquote.kui, q.kui {
                 quotes: none;
             }
     
-            blockquote:before, blockquote:after, q:before, q:after {
+            blockquote.kui:before, blockquote.kui:after, q.kui:before, q.kui:after {
                 content: '';
                 content: none;
             }
     
-            table {
+            table.kui {
                 border-collapse: collapse;
                 border-spacing: 0;
             }
 
-            .icon {
+            .kui.icon {
                 color: var(--icon-color, black);
             }
 
-            .padded:not(.swapImage) {
+            .kui.padded:not(.swapImage) {
                 padding: var(--padding, 0px);
             }
 
-            input[type="number"] {
+            input.kui[type="number"] {
                 appearance: textfield;
             }
 
-            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+            input.kui::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
                 appearance: none;
             }
 
-            progress::-moz-progress-bar {
+            progress.kui::-moz-progress-bar {
                 height: 100%;
                 background-color: currentcolor;
                 border-radius: 1rem;
             }
 
-            progress::-webkit-progress-bar {
+            progress.kui::-webkit-progress-bar {
                 border-radius: 100px;
             }
 
-            progress::-webkit-progress-value {
+            progress.kui::-webkit-progress-value {
                 height: 100%;
                 background-color: currentcolor;
                 border-radius: 1rem;
             }
 
-            progress {
+            progress.kui {
                 background: none;
                 max-height: 0.25rem !important;
                 border: medium;
@@ -135,23 +141,23 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             
             
             
-           .progress-ring {
+           .kui.progress-ring {
               width: 100%;
               justify-content: space-around;
             }
             
-            .progress-ring-svg {
+            .kui.progress-ring-svg {
                 display: block;
                 margin: 10px auto;
             }
 
-            .circle-background {
+            .kui.circle-background {
                           fill: none;
                           stroke: --background-color;
                           stroke-width: 3.8;
             }
             
-            .circle-progress {
+            .kui.circle-progress {
                 fill: none;
                 stroke-width:2.8;
                 stroke-linecap: round;
@@ -160,12 +166,12 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
          
 
-            .progress-ring-content {
+            .kui.progress-ring-content {
                 text-anchor: middle;
                 
             }
             
-            .progress-ring-content {
+            .kui.progress-ring-content {
               fill: #666;
               font-family: sans-serif;
               font-size: 0.5em;
@@ -183,50 +189,66 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 gap: var(--spacing, 0);
             }       
 
-            .touchscreenOnly {
+            .kui.touchscreenOnly {
             }
-            .disableContextMenu {
+            .kui.disableContextMenu {
                 -webkit-user-select: none !important;  
                 -webkit-touch-callout: none !important;  
             }
 
-            .viewPager > :not(.recyclerViewCap) {
+            .kui.viewPager > :not(.recyclerViewCap) {
                 width: var(--pager-width, 0rem);
                 height: var(--pager-height, 0rem);
                 scroll-snap-align: center;
                 scroll-snap-stop: always;
             }
 
-            .viewPager {
+            .kui.viewPager {
                 scroll-snap-type: x mandatory;
             }
 
-            .hideScrollbar {
+            .kui.hideScrollbar {
                 scrollbar-width: none;
             }
-            .hideScrollbar::-webkit-scrollbar {
+            .kui.hideScrollbar::-webkit-scrollbar {
                 display: none;
             }
 
-            .suppress-overflow-anchors > * {
+            .kui.suppress-overflow-anchors > * {
                 overflow-anchor: none;
             }
 
-            .notransition, .notransition * {
+            .kui.notransition, .kui.notransition * {
                 transition: none !important;
             }
 
-            *.animatingShowHide {
+            .kui.animatingShowHide {
                 overflow: hidden;
             }
 
-            * {
+            .kui {
+                box-sizing: border-box;
+                line-height: unset;
+                --parentPadding: 0px;
+                scrollbar-color: rgb(153, 153, 153) rgba(0, 0, 0, 0);
+                scrollbar-width: thin;
+                scrollbar-gutter: auto;
+                flex-shrink: 0;
+                max-width: calc(100%);
+                max-height: calc(100%);
+                min-height: 0px;
+                min-width: 0px;
+                padding: 0px;
                 transition-timing-function: linear;
                 transition-delay: 0s;
-                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
+                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter, transform;
+            }
+            
+            .kui.transition {
+                overflow: hidden;
             }
 
-            [hidden] {
+            .kui[hidden] {
                 display: none !important;
             }
 
@@ -251,60 +273,54 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 }
             }
 
-            ::-webkit-scrollbar-corner {
+            .kui::-webkit-scrollbar-corner {
                 background: none;
             }
 
-            ::-webkit-scrollbar-thumb {
+            .kui::-webkit-scrollbar-thumb {
                 background: color-mix(in srgb, currentcolor 20%, transparent);
                 border-radius: 4px;
             }
 
-            ::-webkit-scrollbar {
+            .kui::-webkit-scrollbar {
                 background: none;
             }
 
-            .scroll-horizontal {
+            .kui.scroll-horizontal {
                 overflow: auto hidden;
             }
 
-            .scroll-horizontal > * {
+            .kui.scroll-horizontal  * {
                 max-width: unset;
             }
+            .kui.scroll-horizontal * {
+                max-width: 100;
+            }
 
-            .scroll-vertical {
+            .kui.scroll-vertical {
                 overflow: hidden auto;
             }
 
-            .scroll-vertical > * {
+            .kui.scroll-vertical  * {
                 max-height: unset;
+            }
+            .kui.has-set-height * {
+                max-height: 100%;
             }
 
             iframe#webpack-dev-server-client-overlay {
                 display: none !important;
             }
 
-            .kiteui-separator {
+            .kui.kiteui-separator {
                 background-color: var(--separator-color, currentcolor);
                 min-width: 1px;
                 min-height: 1px;
             }
 
-            ::placeholder {
+            .kui::placeholder {
                 color: currentcolor;
                 opacity: 0.3;
-            }
-
-            * {
-                scrollbar-color: rgb(153, 153, 153) rgba(0, 0, 0, 0);
-                scrollbar-width: thin;
-                scrollbar-gutter: auto;
-                flex-shrink: 0;
-                max-width: calc(100%);
-                max-height: calc(100%);
-                min-height: 0px;
-                min-width: 0px;
-                padding: 0px;
             }
 
             .kiteui-label.kiteui-label {
@@ -439,11 +455,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 cursor: pointer;
             }
 
-            button {
+            button.kui {
                 position: relative;
             }
 
-            button.working::after {
+            button.kui.working::after {
                 opacity: 0.5 !important;
                 content: "";
                 pointer-events: none;
@@ -461,16 +477,17 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 transition: 0.3s;
                 animation: 2s linear infinite spin !important;
             }
+            
+            .popover {
+                transition-property: color, background-image, background-color, border-color, outline-color, outline-width, box-shadow, border-radius, opacity, backdrop-filter;
+            }
 
-            img {
+            img.kui {
                 overflow: hidden;
             }
             
-            .optColChild {
+            .optimized > * {
                 display: block;
-            }
-            .optColChild:last-child {
-                margin-bottom: 0px !important;
             }
             .weakFill {
                 width: 100%;
@@ -491,11 +508,11 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 animation: 2s linear infinite spin !important;
             }
 
-            input:focus:not(.transition), select:focus:not(.transition), textarea:focus:not(.transition) {
+            input.kui:focus:not(.transition), select.kui:focus:not(.transition), textarea.kui:focus:not(.transition) {
                 outline: none;
             }
 
-            button, input, textarea, select {
+            button.kui, input.kui, textarea.kui, select.kui {
                 background: none;
                 border-width: 0px;
                 outline-width: 0px;
@@ -504,17 +521,17 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 text-align: start;
             }
 
-            a:visited {
+            a.kui:visited {
                 color: unset;
             }
 
-            a {
+            a.kui {
                 text-decoration: none;
                 color: unset;
                 display: block;
             }
 
-            body > div {
+            body > div.kui {
                 height: 100%;
                 max-width: 100vw;
             }
@@ -602,11 +619,15 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
+            .icon > svg {
+                display: block;
+            }
             
             .textarea-container {
               /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
               display: grid;
               position: relative;
+              overflow-y: scroll;
             }
             .textarea-container::after {
               /* Note the weird space! Needed to preventy jumpy behavior */
@@ -639,16 +660,16 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             }
 
             .kiteui-space {
-                display: inline-block;
+                display: block;
                 min-height: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
                 min-width: calc(var(--space-multiplier, 1.0) * var(--spacing, 0px));
             }
 
-            :hover.visibleOnParentHover {
+            .kui:hover.visibleOnParentHover {
                 visibility: visible;
             }
 
-            :hover > .visibleOnParentHover {
+            .kui:hover > .visibleOnParentHover {
                 visibility: visible;
             }
 
@@ -660,27 +681,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 max-height: unset;
             }
 
-            h1, h2, h3, h4, h5, h6, p, .subtext {
-            }
-
-            * {
-                box-sizing: border-box;
-                line-height: unset;
-                --parentPadding: 0px;
-            }
             }
         """.trimIndent()
         )
         for(h in Align.entries + listOf(null))
             for(v in Align.entries + listOf(null))
                 dynamicCss.rule("""
-                    .snapTo-$h-$v > :not(:first-child) {
+                    .kui.snapTo-$h-$v > :not(:first-child) {
                         scroll-snap-align: ${listOfNotNull(h, v).joinToString(" "){ it.name.lowercase() }}
                     }
                 """.trimIndent())
         try {
             dynamicCss.rule(
-                """progress::-webkit-progress-value {
+                """progress.kui::-webkit-progress-value {
                     height: 100%;
                     background-color: currentColor;
                     border-radius: 1rem;
@@ -690,7 +703,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """progress::-webkit-progress-bar {
+                """progress.kui::-webkit-progress-bar {
                     border-radius: 100px;
                     background: var(--nearest-background-color);
                     padding: 1px;
@@ -700,7 +713,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """progress::-moz-progress-bar {
+                """progress.kui::-moz-progress-bar {
                     height: 100%;
                     background-color: currentColor;
                     border-radius: 1rem;
@@ -710,7 +723,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+                """input.kui::-webkit-outer-spin-button, input.kui::-webkit-inner-spin-button {
                     -webkit-appearance: none;
                 }"""
             )
@@ -718,7 +731,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         }
         try {
             dynamicCss.rule(
-                """input[type=number] {
+                """input.kui[type=number] {
                     -moz-appearance: textfield
                 }"""
             )
@@ -888,9 +901,9 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             dynamicCss.add(selector, key, value, mediaQuery)
         }
 
-        val directSel = sel("")
+        val directSel = sel(".kui")
 
-        val backSel = (if (includeMaybeTransition) sel(".clickable") else sel(".transition"))
+        val backSel = (if (includeMaybeTransition) sel(".kui.clickable") else sel(".kui.transition"))
 
         theme.diff(diff) { background }?.let {
             if(diff?.background is FadingColor) addToCss(backSel, "animation", "none")
@@ -943,7 +956,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { outlineWidth }?.let {
             addToCss(backSel, "outline-width", it.value.toString())
             addToCss(backSel, "outline-style", if (it != 0.px) "solid" else "none")
-            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
+            // hack!  this makes button bars possible, though it does change where the outline goes.
+            // TODO: please please figure out a better way
+            addToCss(backSel, "outline-offset", it.times(-1).coerceAtLeast(theme.padding.top.times(-1)).value.toString())
+//            addToCss(backSel, "outline-offset", it.times(-1).value.toString())
         }
         theme.diff(diff) { elevation }?.let {
             addToCss(backSel, "box-shadow", theme.elevation.toBoxShadow())
@@ -978,6 +994,22 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
         theme.diff(diff) { background }
             ?.let { addToCss(directSel, "--nearest-background-color", it.closestColor().toWeb()) }
         theme.diff(diff) { cornerRadii }?.let { addToCss(backSel, "border-radius", it.toRawCornerRadius()) }
+        theme.diff(diff) { blurBackground }?.let {
+
+            if(it.value != DimensionRaw.zero) {
+                val filterValue = "blur(${it.value})"
+                if (filterValue.isNotEmpty()) {
+                    addToCss(backSel, "backdrop-filter", filterValue)
+                    addToCss(backSel, "-webkit-backdrop-filter", filterValue)
+                } else {
+                    addToCss(backSel, "backdrop-filter", "none")
+                    addToCss(backSel, "-webkit-backdrop-filter", "none")
+                }
+            } else {
+                addToCss(backSel, "backdrop-filter", "none")
+                addToCss(backSel, "-webkit-backdrop-filter", "none")
+            }
+        }
         theme.diff(diff) { foreground }?.let {
             addToCss(directSel, "color-scheme", if(it.closestColor().perceivedBrightness > 0.5) "dark" else "light")
             when (it) {
@@ -1009,6 +1041,44 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 is Color -> addToCss(directSel, "--separator-color", it.toWeb())
                 is FadingColor -> addToCss(directSel, "--separator-color", "")
                 else -> addToCss(directSel, "--separator-color", it.closestColor().toWeb())
+            }
+        }
+        
+        theme.diff(diff) { transform }?.let {
+            if (it != null) {
+                val transformParts = mutableListOf<String>()
+                
+                // Add translation transforms
+                if (it.translationX != 0.0 || it.translationY != 0.0 || it.translationZ != 0.0) {
+                    val translateParts = mutableListOf<String>()
+                    if (it.translationX != 0.0) translateParts.add("${it.translationX}px")
+                    if (it.translationY != 0.0) translateParts.add("${it.translationY}px")
+                    if (it.translationZ != 0.0) translateParts.add("${it.translationZ}px")
+                    
+                    transformParts.add("translate3d(${translateParts.joinToString(", ")})")
+                }
+                
+                // Add rotation transforms
+                if (it.rotation != 0.0) {
+                    transformParts.add("rotate(${it.rotation}deg)")
+                }
+                if (it.rotationX != 0.0) {
+                    transformParts.add("rotateX(${it.rotationX}deg)")
+                }
+                if (it.rotationY != 0.0) {
+                    transformParts.add("rotateY(${it.rotationY}deg)")
+                }
+                
+                // Add scale transforms
+                if (it.scaleX != 1.0 || it.scaleY != 1.0) {
+                    transformParts.add("scale(${it.scaleX}, ${it.scaleY})")
+                }
+                
+                if (transformParts.isNotEmpty()) {
+                    addToCss(backSel, "transform", transformParts.joinToString(" "))
+                }
+            } else {
+                addToCss(backSel, "transform", "none")
             }
         }
 

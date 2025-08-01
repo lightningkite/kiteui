@@ -7,7 +7,10 @@ import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.applySafeInsets
 import com.lightningkite.kiteui.views.l2.coordinatorFrame
+import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.kiteui.views.l2.field
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
 @Routable("sample/dialog")
@@ -31,6 +34,23 @@ object DialogSamplesPage : Page {
                 }
             }
             button {
+                h6 { content = "Launch edit dialog" }
+                onClick {
+                    dialog { close ->
+                        col {
+                            text("INPUT TIME!")
+                            field("Field") {
+                                textInput {  }
+                            }
+                            button {
+                                text("OK")
+                                onClick { close() }
+                            }
+                        }
+                    }
+                }
+            }
+            button {
                 h6 { content = "Launch Test Bottom Sheet Old" }
                 onClick {
                     openBottomSheet {
@@ -46,6 +66,7 @@ object DialogSamplesPage : Page {
                 onClick {
                     coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
                         DialogSemantic.onNext - col {
+                            applySafeInsets()
                             centered - coordinatorDragHandle()
                             button {
                                 text("Close")

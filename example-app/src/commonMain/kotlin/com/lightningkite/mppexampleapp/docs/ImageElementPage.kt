@@ -1,12 +1,18 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.ExternalServices
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.requestFile
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.random.Random
 
 @Routable("docs/image")
@@ -17,9 +23,9 @@ object ImageElementPage: DocPage {
         article {
             h1("Image")
             text("You can use the image element to render many types of images with fairly smooth animations.")
-            val currentImage = Property<ImageSource>(ImageRemote("https://picsum.photos/seed/starter/640/480"))
+            val currentImage = Signal<ImageSource>(ImageRemote("https://picsum.photos/seed/starter/640/480"))
             example("""
-                val currentImage = Property<ImageSource>(ImageRemote("https://picsum.photos/seed/starter/640/480"))
+                val currentImage = Signal<ImageSource>(ImageRemote("https://picsum.photos/seed/starter/640/480"))
                 col {
                     sizeConstraints(height = 10.rem) - image {
                         scaleType = ImageScaleType.Crop
@@ -60,7 +66,7 @@ object ImageElementPage: DocPage {
                         expanding - button {
                             text("Pick")
                             onClick {
-                                ExternalServices.requestFile(listOf("image/*"))
+                                context.requestFile(listOf("image/*"))
                                     ?.let(::ImageLocal)
                                     ?.let { currentImage.value = it }
                             }

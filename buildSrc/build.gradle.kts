@@ -5,7 +5,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.0.20")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.0")
     implementation("org.apache.pdfbox:fontbox:2.0.27")
 }
 kotlin {

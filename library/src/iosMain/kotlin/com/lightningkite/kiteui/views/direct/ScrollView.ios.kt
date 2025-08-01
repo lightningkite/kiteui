@@ -2,19 +2,24 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWrapper
 import com.lightningkite.kiteui.views.extensionHorizontalAlign
 import com.lightningkite.kiteui.views.extensionIgnoreInteraction
 import com.lightningkite.kiteui.views.extensionVerticalAlign
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
+import kotlin.math.abs
 import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 import platform.darwin.NSObject
-import kotlin.math.abs
 
 class ScrollView(
     context: RContext,
@@ -22,14 +27,6 @@ class ScrollView(
     override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
     override val native = FrameLayout()
-    override fun childTouches(side: Side, child: RView): Boolean {
-        return when(side) {
-            Side.Left -> child.native.extensionHorizontalAlign?.touchesStart != false
-            Side.Top -> child.native.extensionVerticalAlign?.touchesStart != false
-            Side.Right -> child.native.extensionHorizontalAlign?.touchesEnd != false
-            Side.Bottom -> child.native.extensionVerticalAlign?.touchesEnd != false
-        }
-    }
     val scroller = ScrollLayout()
     init { native.addSubview(scroller) }
 
@@ -101,10 +98,6 @@ class ScrollView(
                 Align.End -> targetContentOffset.pointed.y + viewportYSize
                 else -> targetContentOffset.pointed.y + viewportYSize / 2
             }
-            println("currentX: $currentX")
-            println("currentY: $currentY")
-            println("focusX: $focusX")
-            println("focusY: $focusY")
 
 
             val (candidatesX, candidatesY) = if(scrollSnapStop) {
@@ -136,7 +129,6 @@ class ScrollView(
                     Align.Stretch -> targetContentOffset.pointed.y = y.y() - viewportYSize / 2
                 }
             }
-            println("targetContentOffset: ${targetContentOffset.pointed.run { "$x, $y" }}")
         }
     }
 
@@ -168,7 +160,7 @@ class ScrollView(
             scroller.extensionIgnoreInteraction = value
             scroller.scrollEnabled = !value
         }
-    override val viewport: Readable<Rect> = (sizeChange + scroll).lensListenable {
+    override val viewport: Reactive<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = scroller.contentOffset.useContents { x to y }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -180,7 +172,7 @@ class ScrollView(
             )
         }
     }
-    override val content: Readable<Rect> = (sizeChange).lensListenable {
+    override val content: Reactive<Rect> = (sizeChange).lensListenable {
         val (sw, sh) = scroller.contentSize.useContents { width to height }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -190,8 +182,8 @@ class ScrollView(
             )
         }
     }
-    private val _directlyInteractingWithScroller = Property(false)
-    override val directlyInteractingWithScroller: Readable<Boolean> get() = _directlyInteractingWithScroller
+    private val _directlyInteractingWithScroller = Signal(false)
+    override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {

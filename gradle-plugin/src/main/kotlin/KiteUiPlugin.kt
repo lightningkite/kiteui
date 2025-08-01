@@ -260,5 +260,5 @@ class KiteUiPlugin : Plugin<Project> {
 
 }
 
-val Any?.groovyObject: GroovyObject? get() = this as? GroovyObject
-fun GroovyObject.getPropertyAsObject(key: String): GroovyObject? = getProperty(key) as? GroovyObject
+internal val Any?.groovyObject: GroovyObject? get() = this as? GroovyObject
+internal fun GroovyObject.getPropertyAsObject(key: String): GroovyObject? = getProperty(key) as? GroovyObject

@@ -21,11 +21,15 @@ import kotlin.math.max
 
 fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>): Unit {
     val mySize = bounds.useContents { size.local }
-    if(viewDebugTarget?.native == this) println("frameLayoutLayoutSubviews ${mySize}")
+    debugPrint { "frameLayoutLayoutSubviews ${mySize}" }
     val padding = (extensionPadding ?: Edges.ZERO).plus(extensionSafeInsetPadding ?: Edges.ZERO)
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
+        if(view is RView.BlurBackgroundView) {
+            view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
+            return@zip
+        }
         val h = view.extensionHorizontalAlign ?: Align.Stretch
         val v = view.extensionVerticalAlign ?: Align.Stretch
         val offsetH = when (h) {
@@ -45,9 +49,7 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
         val oldSize = view.bounds.useContents { this.size.width to this.size.height }
 
         run {
-            if(viewDebugTarget?.native == this) {
-                println("Don't animate the change")
-            }
+            debugPrint { "Don't animate the change" }
             view.setPsuedoframe(
                 offsetH,
                 offsetV,
@@ -64,10 +66,15 @@ fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Size, Siz
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+    val mySize = bounds.useContents { size.local }
     val frameLayout = this
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->
         view as UIView
         if (view.hidden || view.extensionCollapsed == true) return@zip
+        if(view is RView.BlurBackgroundView) {
+            view.setPsuedoframe(0.0, 0.0, mySize.width, mySize.height)
+            return@zip
+        }
         val anchorPositionInFrameLayout = with(anchor.second) { convertRect(bounds, toView = frameLayout) }.local
         val (offsetH, offsetV) = anchor.first.calculatePopoverOffset(
             anchorPositionInFrameLayout,
@@ -99,6 +106,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
     if (!pointInside(point, withEvent)) return null
     for (it in subviews.asReversed()) {
         it as UIView
+        if(it is RView.BlurBackgroundView) continue
 //        println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()}")
         if (it.hidden) {
 //            println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} it.hidden")
@@ -125,7 +133,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         )
         return when {
             hitResult != null -> {
-//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null")
+//                println("${this.toShortString()}.frameLayoutHitTest -> ${it.toShortString()} hitResult != null (hitResult: $hitResult)")
                 hitResult
             }
             it.extensionIgnoreInteraction == true -> {
@@ -147,7 +155,7 @@ fun UIView.frameLayoutHitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIVi
         }
     }
 //    println("$this give up: $userInteractionEnabled")
-    return if (extensionIgnoreInteraction != true) this else null
+    return if (userInteractionEnabled && extensionIgnoreInteraction != true) this else null
 }
 
 
@@ -163,10 +171,10 @@ fun UIView.frameLayoutSizeThatFits(
     for ((index, size) in sizes.withIndex()) {
         measuredSize.width = max(measuredSize.width, size.width + padding.horizontalSum.value)
         measuredSize.height = max(measuredSize.height, size.height + padding.verticalSum.value)
-        if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}")
+        debugPrint { "frameLayoutSizeThatFits[$index] ${size} -> ${measuredSize}" }
     }
 
-    if(viewDebugTarget?.native == this) println("frameLayoutSizeThatFits ${inputSize} -> ${measuredSize}")
+    debugPrint { "frameLayoutSizeThatFits ${inputSize} -> ${measuredSize}" }
     return measuredSize.objc
 }
 
@@ -179,6 +187,9 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
     return subviews.mapIndexed { index: Int, it: Any? ->
         it as UIView
         if (it.hidden || it.extensionCollapsed == true) return@mapIndexed Size()
+        if(it is RView.BlurBackgroundView) {
+            return@mapIndexed Size()
+        }
         val measureInput = remaining.copy(width = remaining.width, height = remaining.height)
         t.pause()
         val required = childSizeCache[index].getOrPut(measureInput) {
@@ -187,7 +198,7 @@ private fun UIView.frameLayoutCalcSizes(size: Size, childSizeCache: ArrayList<Ha
                 it.extensionSizeConstraints
             ).local
         }
-        if(viewDebugTarget?.native == this) println("frameLayoutCalcSizes child[$index] ${size} -> ${required}")
+        this.debugPrint { "frameLayoutCalcSizes child[$index] ${size} -> ${required}" }
         t.resume()
         it.extensionSizeConstraints?.let {
             it.maxWidth?.let { required.width = required.width.coerceAtMost(it.value) }

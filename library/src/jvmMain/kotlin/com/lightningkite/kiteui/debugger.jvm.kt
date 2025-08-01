@@ -22,16 +22,16 @@ actual fun assertMainThread() {
 
 actual fun Throwable.printStackTrace2() = printStackTrace()
 
-actual object ConsoleRoot: Console {
-    private val platform = PlatformConsole("MyApp")
-    actual override fun tag(tag: String): Console = platform.tag(tag)
+actual object LogRoot: Log {
+    private val platform = PlatformLog("")
+    actual override fun tag(tag: String): Log = platform.tag(tag)
     actual override fun log(vararg entries: Any?) = platform.log(*entries)
     actual override fun error(vararg entries: Any?) = platform.error(*entries)
     actual override fun info(vararg entries: Any?) = platform.info(*entries)
     actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
-private class PlatformConsole(val tag: String): Console {
-    override fun tag(tag: String): Console = PlatformConsole(tag)
+private class PlatformLog(val tag: String): Log {
+    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
     override fun log(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }

@@ -1,12 +1,18 @@
 package com.lightningkite.kiteui.exceptions
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.debugMode
-import com.lightningkite.kiteui.models.Action
-import com.lightningkite.readable.onRemove
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.dialog
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 class ExceptionHandlers {
@@ -17,15 +23,14 @@ class ExceptionHandlers {
             var open = false
             override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
                 if(open) {
-                    println("Blocked $exception; already open")
+                    Log.warn("Blocked $exception; already open")
                     return {}
                 }
                 open = true
                 view.closePopovers()
                 val message = view.exceptionToMessage(exception)!!
-                view.dialog {
+                view.dialog { closer ->
                     onRemove {
-                        println("Closing")
                         open = false
                     }
                     col {
@@ -39,12 +44,12 @@ class ExceptionHandlers {
                             for(action in message.actions) {
                                 button {
                                     text(action.title)
-                                    onClick { closePopovers(); action.startAction(view) }
+                                    onClick { closer(); action.startAction(view) }
                                 }
                             }
                             buttonTheme - button {
                                 text("OK")
-                                onClick { closePopovers() }
+                                onClick { closer() }
                             }
                         }
                     }

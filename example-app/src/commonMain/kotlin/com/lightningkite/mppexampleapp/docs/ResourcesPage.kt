@@ -1,15 +1,20 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.SoundEffectPool
 import com.lightningkite.kiteui.load
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.Resources
 import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 @Routable("docs/resources")
@@ -29,11 +34,11 @@ object ResourcesPage: DocPage {
             example("""
                 // Using a resource from your project
                 image {
-                    source = Resources.imagesSolera
+                    source = Resources.imagesSnowyBackground
                 }
             """.trimIndent()) {
                 sizeConstraints(height = 10.rem) - image {
-                    source = Resources.imagesSolera
+                    source = Resources.imagesSnowyBackground
                 }
             }
 
@@ -148,7 +153,7 @@ object ResourcesPage: DocPage {
                     import com.lightningkite.mppexampleapp.Resources
 
                     // Access image resources
-                    val image = Resources.imagesSolera
+                    val image = Resources.imagesSnowyBackground
 
                     // Access audio resources
                     val audio = Resources.audioTaunt
@@ -169,7 +174,7 @@ object ResourcesPage: DocPage {
             h2("Resource Naming")
             text("Resource properties are named based on the file path and name. For example:")
             text("""
-                • images/solera.png becomes Resources.imagesSolera
+                • images/solera.png becomes Resources.imagesSnowyBackground
                 • audio/taunt.mp3 becomes Resources.audioTaunt
                 • video/back.mp4 becomes Resources.videoBack
             """.trimIndent())

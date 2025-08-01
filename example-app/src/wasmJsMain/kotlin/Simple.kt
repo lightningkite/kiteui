@@ -2,12 +2,16 @@ package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.contains
 import com.lightningkite.kiteui.navigation.PlatformNavigator
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.appBase
 import com.lightningkite.kiteui.views.l2.navigatorViewDialog
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.browser.document
 
 fun main() {
@@ -29,7 +33,7 @@ fun main() {
 //            val navigator = PlatformNavigator
 //            PlatformNavigator.routes = AutoRoutes
 //            context.navigator = navigator
-//            val counter = Property<Int>(0)
+//            val counter = Signal<Int>(0)
 //            swapView {
 //                swapping(current = { counter.await() }, views = {
 //                    text("Value is now ${it}")

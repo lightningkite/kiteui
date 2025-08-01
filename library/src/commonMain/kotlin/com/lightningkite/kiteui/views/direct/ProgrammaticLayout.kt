@@ -4,10 +4,14 @@ import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.Theme
-import com.lightningkite.readable.Listenable
-import com.lightningkite.readable.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 
 expect class ProgrammaticLayout(context: RContext): RView {
@@ -29,6 +33,7 @@ interface ProgrammaticLayoutDelegate {
 }
 
 interface ProgrammingLayoutInProgress {
+    val within: Size
     val gap: Double
     val padding: Double
     val paddingTop: Double

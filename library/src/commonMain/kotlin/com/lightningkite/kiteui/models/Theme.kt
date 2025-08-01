@@ -81,7 +81,7 @@ abstract class Semantic(val key: String) : ThemeDerivation {
     }
 
     fun Theme.withBack(
-        cascading: Boolean = false,
+        cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
         cornerRadii: CornerRadii? = null,
@@ -93,6 +93,8 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth: Dimension? = null,
         separatorOverride: Paint? = LinearGradient.INVALID,
         background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
@@ -111,13 +113,15 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
         derivations = derivations,
     ).withBack
     fun Theme.withoutBack(
-        cascading: Boolean = false,
+        cascading: Boolean = true,
         font: FontAndStyle? = null,
         elevation: Dimension? = null,
         cornerRadii: CornerRadii? = null,
@@ -129,6 +133,8 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth: Dimension? = null,
         separatorOverride: Paint? = LinearGradient.INVALID,
         background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
@@ -147,6 +153,8 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -165,6 +173,8 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth: Dimension? = null,
         separatorOverride: Paint? = LinearGradient.INVALID,
         background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
@@ -183,6 +193,8 @@ abstract class Semantic(val key: String) : ThemeDerivation {
         outlineWidth = outlineWidth,
         background = background,
         separatorOverride = separatorOverride,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -274,6 +286,9 @@ data object ClickableSemantic : Semantic("clk") {
     override fun default(theme: Theme): ThemeAndBack = theme.withoutBackButPadding
 }
 
+/**
+ * Supported on Web only.
+ */
 data object HoverSemantic : Semantic("hov") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.2f) },
@@ -282,6 +297,9 @@ data object HoverSemantic : Semantic("hov") {
     )
 }
 
+/**
+ * Supported on Web and iOS.  Android will use the standard ripple effect instead.
+ */
 data object DownSemantic : Semantic("dwn") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.background.map { it.highlight(0.3f) },
@@ -290,6 +308,9 @@ data object DownSemantic : Semantic("dwn") {
     )
 }
 
+/**
+ * Supported on Web only.
+ */
 data object FocusSemantic : Semantic("fcs") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         outlineWidth = theme.outlineWidth + 2.dp,
@@ -559,6 +580,21 @@ class ThemeBuilder {
     }
 }
 
+data class Transformation(
+    val translationX: Double = 0.0,
+    val translationY: Double = 0.0,
+    val translationZ: Double = 0.0,
+    val rotationX: Double = 0.0,
+    val rotationY: Double = 0.0,
+    val rotation: Double = 0.0,
+    val scaleX: Double = 1.0,
+    val scaleY: Double = 1.0,
+)
+
+sealed interface ShaderEffect {
+    data class Blur(val amount: Dimension) : ShaderEffect
+}
+
 class Theme(
     val id: String,
 
@@ -576,6 +612,12 @@ class Theme(
     val outlineWidth: Dimension = 0.px,
     val separatorOverride: Paint? = null,
     val background: Paint = Color.white,
+
+    /**
+     * Supported on Web and partially on iOS.
+     */
+    val blurBackground: Dimension = 0.px,
+    val transform: Transformation? = null,
 
     val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
@@ -632,6 +674,8 @@ class Theme(
         outlineWidth: Dimension = this.outlineWidth,
         separatorOverride: Paint? = this.separatorOverride,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -649,6 +693,8 @@ class Theme(
         outlineWidth = outlineWidth,
         separatorOverride = separatorOverride,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -669,6 +715,8 @@ class Theme(
         outlineWidth: Dimension? = null,
         separatorOverride: Paint? = LinearGradient.INVALID,
         background: Paint? = null,
+        blurBackground: Dimension? = null,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions? = null,
         dialogTransitions: ScreenTransitions? = null,
         transitionDuration: Duration? = null,
@@ -688,6 +736,8 @@ class Theme(
         outlineWidth = outlineWidth ?: this.outlineWidth,
         separatorOverride = if(separatorOverride == LinearGradient.INVALID) this.separatorOverride else separatorOverride,
         background = background ?: this.background,
+        blurBackground = blurBackground ?: this.blurBackground,
+        transform = transform ?: this.transform,
         bodyTransitions = bodyTransitions ?: this.bodyTransitions,
         dialogTransitions = dialogTransitions ?: this.dialogTransitions,
         transitionDuration = transitionDuration ?: this.transitionDuration,
@@ -706,6 +756,8 @@ class Theme(
             outlineWidth = outlineWidth,
             separatorOverride = separatorOverride,
             background = background,
+            blurBackground = blurBackground,
+            transform = transform,
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,
@@ -726,6 +778,8 @@ class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -745,6 +799,8 @@ class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -767,6 +823,8 @@ class Theme(
         outline: Paint = Color.black,
         outlineWidth: Dimension = 0.px,
         background: Paint = Color.white,
+        blurBackground: Dimension = 0.px,
+        transform: Transformation? = null,
         bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
         dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
         transitionDuration: Duration = 0.15.seconds,
@@ -804,6 +862,8 @@ class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -850,6 +910,8 @@ class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -884,6 +946,8 @@ class Theme(
         outline = outline,
         outlineWidth = outlineWidth,
         background = background,
+        blurBackground = blurBackground,
+        transform = transform,
         bodyTransitions = bodyTransitions,
         dialogTransitions = dialogTransitions,
         transitionDuration = transitionDuration,
@@ -924,6 +988,8 @@ class Theme(
         outline: Paint = this.outline,
         outlineWidth: Dimension = this.outlineWidth,
         background: Paint = this.background,
+        blurBackground: Dimension = this.blurBackground,
+        transform: Transformation? = this.transform,
         bodyTransitions: ScreenTransitions = this.bodyTransitions,
         dialogTransitions: ScreenTransitions = this.dialogTransitions,
         transitionDuration: Duration = this.transitionDuration,
@@ -960,6 +1026,8 @@ class Theme(
             outline = outline,
             outlineWidth = outlineWidth,
             background = background,
+            blurBackground = blurBackground,
+            transform = transform,
             bodyTransitions = bodyTransitions,
             dialogTransitions = dialogTransitions,
             transitionDuration = transitionDuration,

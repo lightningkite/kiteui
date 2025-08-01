@@ -16,11 +16,16 @@ import androidx.core.text.set
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.*
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 actual class NumberInput actual constructor(context: RContext) : RViewWithAction(context) {
     override val native = EditText(context.activity).focusIsKeyboard().apply {
@@ -36,7 +41,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                         dirty = str,
                         selectionStart = selectionStart,
                         selectionEnd = selectionEnd,
-                        allowDecimal = keyboardHints != KeyboardHints.integer,
+                        allowDecimal = keyboardHints.type.allowDecimal,
                         setResult = {
                             setText(it)
                         },
@@ -81,7 +86,7 @@ actual class NumberInput actual constructor(context: RContext) : RViewWithAction
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
     }
-    actual val content: ImmediateWritable<Double?> = native.contentProperty().asDouble()
+    actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
     actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints

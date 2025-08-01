@@ -1,14 +1,16 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.readable.Writable
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.readable.BaseListenable
-import com.lightningkite.readable.ImmediateWritable
-import com.lightningkite.readable.ReadableState
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.utils.commaString
 import com.lightningkite.kiteui.utils.numberAutocommaRepair
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlinx.datetime.*
 
 actual class LocalDateTimeField actual constructor(context: RContext) : RViewWithAction(context) {
@@ -20,7 +22,7 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         native.attributes.type = "datetime-local"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<LocalDateTime?> = object : ImmediateWritable<LocalDateTime?>, BaseListenable() {
+    actual val content: MutableReactiveValue<LocalDateTime?> = object : MutableReactiveValue<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -82,7 +84,7 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
         native.attributes.type = "date"
         native.classes.add("editable")
     }
-    actual val content: ImmediateWritable<LocalDate?> = object : ImmediateWritable<LocalDate?>, BaseListenable() {
+    actual val content: MutableReactiveValue<LocalDate?> = object : MutableReactiveValue<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -146,7 +148,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         native.classes.add("editable")
     }
 
-    actual val content: ImmediateWritable<LocalTime?> = object : ImmediateWritable<LocalTime?>, BaseListenable() {
+    actual val content: MutableReactiveValue<LocalTime?> = object : MutableReactiveValue<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -209,7 +211,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //        setup(LocalDateField(this))
 //    }
 //
-//actual val LocalDateField.content: Writable<LocalDate?>
+//actual val LocalDateField.content: MutableReactive<LocalDate?>
 //    get() = native.vprop(
 //        eventName = "input",
 //        get = {
@@ -254,7 +256,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //        setup(LocalTimeField(this))
 //    }
 //
-//actual val LocalTimeField.content: Writable<LocalTime?>
+//actual val LocalTimeField.content: MutableReactive<LocalTime?>
 //    get() = native.vprop(
 //        "input",
 //        {
@@ -299,7 +301,7 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
 //        setup(LocalDateTimeField(this))
 //    }
 //
-//actual val LocalDateTimeField.content: Writable<LocalDateTime?>
+//actual val LocalDateTimeField.content: MutableReactive<LocalDateTime?>
 //    get() = native.vprop(
 //        "input",
 //        {

@@ -1,18 +1,22 @@
 package com.lightningkite.mppexampleapp.docs
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.readable.Constant
-import com.lightningkite.readable.Readable
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.titledSection
 import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 
 @Routable("docs/viewmodel")
 object ViewModelPage: DocPage {
 
-    override val title: Readable<String>
+    override val title: Reactive<String>
         get() = Constant("ViewModels in KiteUI")
 
     override val covers: List<String> = listOf(
@@ -39,8 +43,8 @@ object ViewModelPage: DocPage {
                 code {
                     content = """
                         class OrderViewModel {
-                           private val _uiState = Property(OrderUiState(pickupOptions = pickupOptions()))
-                           val uiState: Readable<OrderUiState> get() = _uiState
+                           private val _uiState = Signal(OrderUiState(pickupOptions = pickupOptions()))
+                           val uiState: Reactive<OrderUiState> get() = _uiState
                            suspend fun submit() = ...
                            // ...
                         }
@@ -50,8 +54,8 @@ object ViewModelPage: DocPage {
                 code {
                     content = """
                         class OrderViewPage: Page {
-                            private val _uiState = Property(OrderUiState(pickupOptions = pickupOptions()))
-                            val uiState: Readable<OrderUiState> get() = _uiState
+                            private val _uiState = Signal(OrderUiState(pickupOptions = pickupOptions()))
+                            val uiState: Reactive<OrderUiState> get() = _uiState
                             suspend fun submit() = ...
                             // ...
                             

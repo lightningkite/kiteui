@@ -1,36 +1,30 @@
 package com.lightningkite.mppexampleapp.internal
 
-import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.pageNavigator
+import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.readable.Property
-import com.lightningkite.readable.await
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.mppexampleapp.Resources
-import com.lightningkite.readable.debounce
-import com.lightningkite.readable.lens
-import com.lightningkite.readable.onRemove
-import com.lightningkite.readable.shared
-import com.lightningkite.readable.sharedProcess
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.lightningkite.reactive.context.*
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import com.lightningkite.reactive.lensing.*
+import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Routable("animation-test")
 object AnimationTestPage : Page {
     override fun ViewWriter.render(): ViewModifiable = scrolling - col {
-        val a = Property(true)
-        val s = Property(true)
-        val d = Property(true)
-        val f = Property(true)
+        val a = Signal(true)
+        val s = Signal(true)
+        val d = Signal(true)
+        val f = Signal(true)
         val map = mapOf("A" to a, "S" to s, "D" to d, "F" to f)
         button {
             text("Alternate")
@@ -74,7 +68,7 @@ object AnimationTestPage : Page {
             expanding - card - col {
                 h2("forEachAnimated Weighted Vertical")
                 expanding - col {
-                    forEachAnimated(shared {
+                    forEachAnimated(remember {
                         map.entries.mapNotNull { if(it.value()) it.key else null }
                     }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
                         card - text {
@@ -100,11 +94,20 @@ object AnimationTestPage : Page {
                     }
                 }
             }
+            expanding - card - col {
+                h2("Vertical (flex)")
+                expanding - col {
+                    for((key, prop) in map) {
+                        shownWhen { prop() } - card - text { content = key; debugName = content }
+                    }
+                    expanding - space()
+                }
+            }
         }
         card - col {
             h2("forEachAnimated Weighted Horizontal")
             row {
-                forEachAnimated(shared {
+                forEachAnimated(remember {
                     map.entries.mapNotNull { if(it.value()) it.key else null }
                 }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
                     card - text {
@@ -136,7 +139,7 @@ object AnimationTestPage : Page {
         }
     }
 
-    private suspend fun ViewWriter.fakeLogin(email: Property<String>) {
+    private suspend fun ViewWriter.fakeLogin(email: Signal<String>) {
         fetch("fake-login/${email.await()}")
         pageNavigator.navigate(ControlsPage)
     }

@@ -17,6 +17,9 @@ actual data class DimensionRaw(
         }
     }
     override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
+    companion object {
+        val zero = DimensionRaw()
+    }
 }
 fun Dimension(
     px: Double = 0.0,
