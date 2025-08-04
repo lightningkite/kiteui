@@ -6,6 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.kotlin.dsl.create
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.io.File
 
@@ -43,63 +44,65 @@ class KiteUiPlugin : Plugin<Project> {
             }
         }
 
-        tasks.create("kiteuiResourcesCommon", Task::class.java).apply {
-            val task = this
+        tasks.register("kiteuiResourcesCommon", Task::class.java).apply {
+            val task = this.get()
             group = "kiteui"
             val resourceFolder = project.file("src/commonMain/resources")
-            inputs.files(resourceFolder)
+            task.inputs.files(resourceFolder)
             val out = project.file("build/generated/kiteui-common/Resources.kt")
-            outputs.file(out)
-            doLast {
+            task.outputs.file(out)
+            task.doLast {
                 if (resourceFolder.listFiles()?.isNotEmpty() == true) {
                     resourcesCommon(resourceFolder, out, ext)
                 }
             }
-            tasks.matching { it.name == "compileCommonMainKotlinMetadata" }.configureEach { dependsOn(task) }
-            tasks.matching { it.name.startsWith("ksp") && it.name.contains("metadata") }.configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(task) }
+            tasks.matching { it.name == "compileCommonMainKotlinMetadata" }.configureEach { dependsOn(this) }
+            tasks.matching { it.name.startsWith("ksp") && it.name.contains("metadata") }
+                .configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(this) }
         }
 
-        tasks.create("kiteuiResourcesJsNonVitePart", Copy::class.java).apply {
-            val task = this
-            dependsOn("kiteuiResourcesCommon")
+        tasks.register("kiteuiResourcesJsNonVitePart", Copy::class.java).apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
-            from("src/commonMain/resources")
-            into("src/jsMain/resources/common")
+            task.from("src/commonMain/resources")
+            task.into("src/jsMain/resources/common")
         }
-        tasks.create("kiteuiResourcesJs", Copy::class.java).apply {
-            val task = this
-            dependsOn("kiteuiResourcesJsNonVitePart")
+        tasks.register("kiteuiResourcesJs", Copy::class.java).apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesJsNonVitePart")
             group = "kiteui"
-            from("src/commonMain/resources")
-            into("src/jsMain/resources/common")
-            into("src/jsMain/resources/public/common")
+            task.from("src/commonMain/resources")
+            task.into("src/jsMain/resources/common")
+            task.into("src/jsMain/resources/public/common")
             val out = project.file("build/generated/kiteui-js/Resources.js.kt")
             val gitIgnore = project.file("src/jsMain/resources/common/.gitignore")
             val publicGitIgnore = project.file("src/jsMain/resources/public/common/.gitignore")
-            outputs.file(out)
-            outputs.file(gitIgnore)
-            outputs.file(publicGitIgnore)
+            task.outputs.file(out)
+            task.outputs.file(gitIgnore)
+            task.outputs.file(publicGitIgnore)
             val resourceFolder = project.file("src/commonMain/resources")
-            inputs.files(resourceFolder)
-            doLast {
+            task.inputs.files(resourceFolder)
+            task.doLast {
                 resourcesJs(listOf(gitIgnore, publicGitIgnore), resourceFolder, out, ext)
             }
             tasks.matching { it.name == "compileKotlinJs" }.configureEach { dependsOn(task) }
-            tasks.matching { it.name == "kspKotlinJs" }.configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(task) }
+            tasks.matching { it.name == "kspKotlinJs" }
+                .configureEach { println("CONFIGURE kspKotlinJs"); dependsOn(task) }
             tasks.matching { it.name == "jsProcessResources" }.configureEach { dependsOn(task) }
         }
 
-        tasks.create("kiteuiResourcesJvm", Task::class.java).apply {
-            val task = this
-            dependsOn("kiteuiResourcesCommon")
+        tasks.register("kiteuiResourcesJvm", Task::class.java).apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             val out = project.file("build/generated/kiteui-jvm/Resources.jvm.kt")
             val gitIgnore = project.file("src/jvmMain/resources/common/.gitignore")
-            outputs.file(out)
-            outputs.file(gitIgnore)
+            task.outputs.file(out)
+            task.outputs.file(gitIgnore)
             val resourceFolder = project.file("src/commonMain/resources")
-            inputs.files(resourceFolder)
-            doLast {
+            task.inputs.files(resourceFolder)
+            task.doLast {
                 resourcesJs(listOf(gitIgnore), resourceFolder, out, ext)
             }
             tasks.matching { it.name == "compileKotlinJvm" }.configureEach { dependsOn(task) }
@@ -107,51 +110,61 @@ class KiteUiPlugin : Plugin<Project> {
             tasks.matching { it.name == "jvmProcessResources" }.configureEach { dependsOn(task) }
         }
 
-        tasks.create("kiteuiResourcesIos").apply {
-            val task = this
-            dependsOn("kiteuiResourcesCommon")
+        tasks.register("kiteuiResourcesIos").apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             val resourceFolder = project.file("src/commonMain/resources")
             resourceFolder.mkdirs()
 
             val outKt = project.file("build/generated/kiteui-ios/Resources.ios.kt")
             outKt.parentFile.mkdirs()
-            outputs.file(outKt)
+            task.outputs.file(outKt)
 
-            inputs.dir(resourceFolder)
+            task.inputs.dir(resourceFolder)
             afterEvaluate {
                 val outProject = ext.iosProjectRoot
                 outProject.mkdirs()
                 val outAssets = outProject.resolve("Assets.xcassets")
                 val outNonAssets = outProject.resolve("resourcesFromCommon")
                 val outPlist = outProject.resolve("Info.plist")
-                outputs.dir(outAssets)
-                outputs.dir(outNonAssets)
-                outputs.file(outPlist)
-                doLast {
+                task.outputs.dir(outAssets)
+                task.outputs.dir(outNonAssets)
+                task.outputs.file(outPlist)
+                task.doLast {
                     resourcesIos(resourceFolder, outPlist, outNonAssets, outAssets, outKt, ext)
                 }
             }
-            tasks.matching { it.name.startsWith("compile") && it.name.contains("ios", true) && it.name.contains("kotlin", true) }
+            tasks.matching {
+                it.name.startsWith("compile") && it.name.contains(
+                    "ios",
+                    true
+                ) && it.name.contains("kotlin", true)
+            }
                 .configureEach { dependsOn(task) }
-            tasks.matching { it.name.startsWith("ksp") && it.name.contains("ios", true) && it.name.contains("kotlin", true) }
+            tasks.matching {
+                it.name.startsWith("ksp") && it.name.contains("ios", true) && it.name.contains(
+                    "kotlin",
+                    true
+                )
+            }
                 .configureEach { dependsOn(task) }
             tasks.matching { it.name.contains("ios", true) && it.name.endsWith("ProcessResources") }
                 .configureEach { dependsOn(task) }
         }
 
-        tasks.create("kiteuiResourcesAndroid").apply {
-            val task = this
-            dependsOn("kiteuiResourcesCommon")
+        tasks.register("kiteuiResourcesAndroid").apply {
+            val task = this.get()
+            task.dependsOn("kiteuiResourcesCommon")
             group = "kiteui"
             val resourceFolder = project.file("src/commonMain/resources")
-            inputs.files(resourceFolder)
+            task.inputs.files(resourceFolder)
             val androidResFolder = project.file("src/androidMain/res")
             val outKt =
                 project.file("build/generated/kiteui-android/Resources.android.kt")
-            outputs.file(outKt)
+            task.outputs.file(outKt)
             // TODO: Manifest for tracking which files are under our control; git-ignore
-            doLast {
+            task.doLast {
                 resourcesAndroid(resourceFolder, androidResFolder, outKt, ext)
             }
             tasks.matching { it.name.startsWith("compile") && it.name.endsWith("KotlinAndroid", true) }
@@ -160,18 +173,17 @@ class KiteUiPlugin : Plugin<Project> {
                 .configureEach { dependsOn(task) }
         }
 
-        tasks.create("kiteuiResourcesAll").apply {
-            val task = this
+        tasks.register("kiteuiResourcesAll").apply {
+            val task = this.get()
             group = "kiteui"
-            dependsOn("kiteuiResourcesCommon")
-            dependsOn("kiteuiResourcesJs")
-            dependsOn("kiteuiResourcesIos")
-            dependsOn("kiteuiResourcesAndroid")
-            dependsOn("kiteuiResourcesJvm")
+            task.dependsOn("kiteuiResourcesCommon")
+            task.dependsOn("kiteuiResourcesJs")
+            task.dependsOn("kiteuiResourcesIos")
+            task.dependsOn("kiteuiResourcesAndroid")
+            task.dependsOn("kiteuiResourcesJvm")
         }
 
-        tasks.create("generateAutoRoutes") {
-            val task = this
+        tasks.create("generateAutoRoutes", configuration = autoRoutes@{
             group = "kiteui"
             val sources = project.file("src/commonMain/kotlin")
             inputs.dir(sources)
@@ -185,11 +197,10 @@ class KiteUiPlugin : Plugin<Project> {
                         it.name.contains("Kotlin")) ||
                         (it.name.contains("ksp") &&
                                 it.name.contains("Kotlin"))
-            }.configureEach { dependsOn(task) }
-        }
+            }.configureEach { dependsOn(this@autoRoutes) }
+        })
 
-        tasks.create("syncVersionsIos") {
-            val task = this
+        tasks.create("syncVersionsIos", configuration = {
             group = "kiteui"
             doLast {
                 val versionName =
@@ -224,9 +235,8 @@ class KiteUiPlugin : Plugin<Project> {
 //                it.name == "syncFramework"
 //            }.configureEach { dependsOn(task) }
 
-        }
-        tasks.create("syncVersionsJs") {
-            val task = this
+        })
+        tasks.create(name = "syncVersionsJs", configuration = jsVersion@{
             group = "kiteui"
             val out1 = project.file("src/jsMain/resources/version.js")
             val out2 = project.file("src/jsMain/resources/public/version.js")
@@ -248,13 +258,13 @@ class KiteUiPlugin : Plugin<Project> {
             }
             tasks.matching {
                 it.name == "jsProcessResources"
-            }.configureEach { dependsOn(task) }
+            }.configureEach { dependsOn(this@jsVersion) }
 
-        }
-        tasks.create("syncVersions") {
+        })
+        tasks.create("syncVersions", configuration = {
             dependsOn("syncVersionsIos")
             dependsOn("syncVersionsJs")
-        }
+        })
         Unit
     }
 

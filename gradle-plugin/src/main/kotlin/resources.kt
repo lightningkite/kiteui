@@ -66,8 +66,8 @@ internal fun File.resources(): Map<String, Resource> {
             "mp3", "ogg", "wav" -> out[name] = Resource.Audio(name, file, relativeFile)
             "otf", "ttf" -> {
                 val font = when (relativeFile.extension) {
-                    "otf" -> OTFParser().parse(file)
-                    "ttf" -> TTFParser().parse(file)
+                    "otf" -> OTFParser().parseEmbedded(file.inputStream())
+                    "ttf" -> TTFParser().parseEmbedded(file.inputStream())
                     else -> throw IllegalArgumentException()
                 }
                 val sf = Resource.Font.SubFont(

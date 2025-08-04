@@ -361,9 +361,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     actual override fun internalClearChildren() {
         children.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.native.removeFromSuperview()
         }
     }
 }

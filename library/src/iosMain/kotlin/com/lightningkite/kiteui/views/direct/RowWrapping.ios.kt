@@ -116,7 +116,6 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
         var isFirstInLine = true
 
         arrangedSubviews.forEachIndexed { index, view ->
-            view as UIView
             if (view.hidden || view.extensionCollapsed == true) return@forEachIndexed
 
             val measureInput = Size(availableWidth, sizeLocal.height)
@@ -183,7 +182,6 @@ class FlexLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtoc
         var isFirstInLine = true
 
         arrangedSubviews.forEachIndexed { index, view ->
-            view as UIView
             if (view.hidden || view.extensionCollapsed == true) return@forEachIndexed
 
             val measureInput = Size(availableWidth, mySize.height)
@@ -262,14 +260,12 @@ actual class RowWrapping actual constructor(context: RContext) : RView(context) 
         if (index >= native.arrangedSubviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
         }
-        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+        native.arrangedSubviews[index].removeFromSuperview()
     }
 
     override fun internalClearChildren() {
         native.arrangedSubviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.removeFromSuperview()
         }
     }
 }
