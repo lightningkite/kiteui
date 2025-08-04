@@ -53,14 +53,12 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         if (index >= native.arrangedSubviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
         }
-        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+        native.arrangedSubviews[index].removeFromSuperview()
     }
 
     override fun internalClearChildren() {
         native.arrangedSubviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.removeFromSuperview()
         }
     }
 }
@@ -109,14 +107,12 @@ actual class RowCollapsingToColumn actual constructor(context: RContext, breakpo
         if (index >= native.arrangedSubviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
         }
-        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+        native.arrangedSubviews[index].removeFromSuperview()
     }
 
     override fun internalClearChildren() {
         native.arrangedSubviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.removeFromSuperview()
         }
     }
 }
