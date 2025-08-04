@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.FieldLabelSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
@@ -125,7 +126,7 @@ class Label(val label: TextView, val container: RowOrCol): ViewWriter(), ViewMod
     var content: String by label::content
 }
 @OptIn(ExperimentalContracts::class)
-@ViewDsl
+@Deprecated("use the new label: label(String, RowOrCol.() -> ViewModifiable)")
 inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     val l: Label
@@ -136,6 +137,17 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
         setup(l)
     }
     return l
+}
+
+@ViewDsl
+@OptIn(ExperimentalContracts::class)
+inline fun ViewWriter.label(label: String, content: RowOrCol.() -> ViewModifiable): ViewModifiable {
+    contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
+    return col {
+        FieldLabelSemantic.onNext - text(label)
+        spacingOverrideBeforeNext(0.px)
+        content()
+    }
 }
 
 @OptIn(ExperimentalContracts::class)
