@@ -1,47 +1,40 @@
 [versions]
-agp = "8.5.2"
+agp = "8.11.1"
 desugar_jdk_libs = "2.1.5"
-fontbox = "2.0.27"
+fontbox = "3.0.5"
 kotlin = "2.2.0"
-ksp = "2.2.0-2.0.2"
-android-minSdk = "24"
-android-compileSdk = "34"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 cardview = "1.0.0"
-commonsLang3 = "3.16.0"
+commonsLang3 = "3.18.0"
 glide = "5.0.0-rc01"
-androidGradle = "8.5.2"
 junit = "4.13.2"
-kotlinxCoroutinesCore = "1.9.0"
+kotlinxCoroutinesCore = "1.10.2"
 kotlinxDatetime = "0.6.1"
-kotlinxSerializationJson = "1.7.3"
-ktorVersion = "3.0.0"
-ktx = "1.16.0-alpha02"
+kotlinxSerializationJson = "1.9.0"
+ktorVersion = "3.2.3"
+ktx = "1.16.0"
 lkGradleHelpers = "4.0.3"
 material = "1.12.0"
-media3Exoplayer = "1.5.1"
+media3Exoplayer = "1.8.0"
 photoview = "2.3.0"
-robolectric = "4.13"
+robolectric = "4.15.1"
 swiperefreshlayout = "1.1.0"
 timber = "5.0.1"
-transition = "1.5.1"
+transition = "1.6.0"
 vannitechPublishing = "0.34.0"
 dokka = "2.0.0"
 
 
 [libraries]
 fontbox = { module = "org.apache.pdfbox:fontbox", version.ref = "fontbox" }
-kspApi = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0-rc01" }
+androidxAutofill = { module = "androidx.autofill:autofill", version = "1.3.0" }
 appcompat = { module = "androidx.appcompat:appcompat", version = { ref = "appcompat" } }
 cardview = { module = "androidx.cardview:cardview", version = { ref = "cardview" } }
-comLightningkiteReadable = { module = "com.lightningkite:reactive", version = "5.1.3-4" }
+comLightningkiteReactive = { module = "com.lightningkite:reactive", version = "5.1.3-12" }
 comLightningkiteTestingKotlinTestManualRuntime = { module = "com.lightningkite.testing:kotlin-test-manual-runtime", version = "0.0.9" }
 commonsLang3 = { module = "org.apache.commons:commons-lang3", version = { ref = "commonsLang3" } }
 glide = { module = "com.github.bumptech.glide:glide", version = { ref = "glide" } }
-androidGradle = { module = "com.android.tools.build:gradle", version = { ref = "androidGradle" } }
 junit = { module = "junit:junit", version = { ref = "junit" } }
 kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = { ref = "kotlinxCoroutinesCore" } }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = { ref = "kotlinxCoroutinesCore" } }

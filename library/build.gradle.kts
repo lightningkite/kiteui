@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -58,7 +57,7 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(libs.comLightningkiteReadable)
+                api(libs.comLightningkiteReactive)
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)

@@ -19,14 +19,11 @@ import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.WorkingSemantic
 import com.lightningkite.kiteui.onMainThread
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
 import kotlin.random.Random
@@ -269,17 +266,19 @@ public abstract class RViewHelper(override val context: RContext) : ViewWriter()
             }
         })
         add(object : StatusListener {
-            override fun working(readable: Reactive<*>) {
-                listenForWorking(readable)
+            override fun working(reactive: Reactive<*>) {
+                listenForWorking(reactive)
             }
 
-            override fun loading(readable: Reactive<*>) {
-                listenForStatus(readable)
+            override fun loading(reactive: Reactive<*>) {
+                listenForStatus(reactive)
             }
         })
         add(Dispatchers.Main.immediate)
     }
     public override val coroutineContext: CoroutineContext = contextSetup()
+
+    fun withoutLoadingAnimations(): CoroutineContext = coroutineContext.minusKey(StatusListener.Key);
 
     internal fun listenForWorking(readable: Reactive<*>): () -> Unit {
         var loading = false
@@ -388,4 +387,6 @@ public abstract class RViewHelper(override val context: RContext) : ViewWriter()
     public override fun toString(): String {
         return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
+
+    operator fun Action.invoke() = startAction(this@RViewHelper)
 }

@@ -109,7 +109,6 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         measuredSize.primary += padding.primaryStart
         var first = true
         arrangedSubviews.zip(sizes) { view, size ->
-            view as UIView
             if (view.hidden || view.extensionCollapsed == true) return@zip
             if (first) {
                 first = false
@@ -173,7 +172,6 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
 
         var first = true
         arrangedSubviews.forEachIndexed { index, it ->
-            it as UIView
             if (it.hidden || it.extensionCollapsed == true) {
                 out[index] = Size(0.0, 0.0)
                 return@forEachIndexed
@@ -214,7 +212,6 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         }
 
         arrangedSubviews.forEachIndexed { index, it ->
-            it as UIView
             if (out[index] != null) return@forEachIndexed
             if (it.hidden || it.extensionCollapsed == true) return@forEachIndexed
             val w = it.extensionWeight?.takeUnless { ignoreWeights }?.toDouble() ?: 1.0
@@ -256,7 +253,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         t.resume()
         var first = true
         for (index in arrangedSubviews.indices) {
-            val view = arrangedSubviews[index] as UIView
+            val view = arrangedSubviews[index]
             val size = sizes[index]
             if (!(view.hidden || view.extensionCollapsed == true)) {
                 if (first) {

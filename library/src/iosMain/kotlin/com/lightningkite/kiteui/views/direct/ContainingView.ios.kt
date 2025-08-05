@@ -55,14 +55,12 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
         if (index >= native.arrangedSubviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
         }
-        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+        native.arrangedSubviews[index].removeFromSuperview()
     }
 
     override fun internalClearChildren() {
         native.arrangedSubviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.removeFromSuperview()
         }
     }
 }
@@ -112,14 +110,12 @@ public actual class RowCollapsingToColumn public actual constructor(context: RCo
         if (index >= native.arrangedSubviews.size || index < 0) {
             throw IllegalStateException("Index $index not in 0..<${native.arrangedSubviews.size}")
         }
-        (native.arrangedSubviews[index] as UIView).removeFromSuperview()
+        native.arrangedSubviews[index].removeFromSuperview()
     }
 
     override fun internalClearChildren() {
         native.arrangedSubviews.toList().forEach {
-            (it as UIView).let {
-                it.removeFromSuperview()
-            }
+            it.removeFromSuperview()
         }
     }
 }
