@@ -8,25 +8,12 @@ import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.signal.Property
-import com.lightningkite.signal.await
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import com.lightningkite.mppexampleapp.Resources
-import com.lightningkite.signal.debounce
-import com.lightningkite.signal.lens
-import com.lightningkite.signal.onRemove
-import com.lightningkite.signal.shared
-import com.lightningkite.signal.sharedProcess
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("animation-test")

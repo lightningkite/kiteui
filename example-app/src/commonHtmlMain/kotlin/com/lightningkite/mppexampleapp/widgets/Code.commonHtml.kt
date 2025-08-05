@@ -21,4 +21,4 @@ public actual class Code public actual constructor(context: RContext): RView(con
         }
 }
 
-internal public expect fun FutureElement.runHighlighter()
+internal expect fun FutureElement.runHighlighter()

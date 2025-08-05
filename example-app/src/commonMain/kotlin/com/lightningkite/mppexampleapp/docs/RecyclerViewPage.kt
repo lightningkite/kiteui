@@ -225,7 +225,7 @@ public object RecyclerViewPage : DocPage {
                         text("Add Item")
                         onClick { 
                             // Create a new item with a unique ID
-                            public val newItem = ListItem(nextId++, "New Item")
+                            val newItem = ListItem(nextId++, "New Item")
                             itemsList.value = itemsList.value + newItem
                         }
                     }
