@@ -278,7 +278,7 @@ public abstract class RViewHelper(override val context: RContext) : ViewWriter()
     }
     public override val coroutineContext: CoroutineContext = contextSetup()
 
-    fun withoutLoadingAnimations(): CoroutineContext = coroutineContext.minusKey(StatusListener.Key);
+    public fun withoutLoadingAnimations(): CoroutineContext = coroutineContext.minusKey(StatusListener.Key);
 
     internal fun listenForWorking(readable: Reactive<*>): () -> Unit {
         var loading = false
@@ -388,5 +388,5 @@ public abstract class RViewHelper(override val context: RContext) : ViewWriter()
         return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
 
-    operator fun Action.invoke() = startAction(this@RViewHelper)
+    public operator fun Action.invoke(): Unit = startAction(this@RViewHelper)
 }

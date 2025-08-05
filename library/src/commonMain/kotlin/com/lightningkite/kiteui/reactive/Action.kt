@@ -119,7 +119,7 @@ public class RetryableAction(
         }
     }
 
-    override fun plus(other: Action) = RetryableAction(
+    override fun plus(other: Action): RetryableAction = RetryableAction(
         title,
         icon,
         keepRunningWhile,
