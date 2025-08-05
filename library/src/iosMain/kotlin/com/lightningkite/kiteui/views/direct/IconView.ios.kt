@@ -54,25 +54,25 @@ public actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithS
         }
     }
 
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     override fun drawLayer(layer: CALayer, inContext: CGContextRef?) {
         super.drawLayer(layer, inContext)
     }
     private var iconLayer: CALayer? = null
-    var icon: Icon? = null
+    public var icon: Icon? = null
         set(value) {
             field = value
             refresh()
             informParentOfSizeChange()
         }
-    var iconPaint: Paint = Color.black
+    public var iconPaint: Paint = Color.black
         set(value) {
             field = value
             refresh()
         }
-    var iconOriginalSize: Pair<CGFloat, CGFloat> = 1.0 to 1.0
+    public var iconOriginalSize: Pair<CGFloat, CGFloat> = 1.0 to 1.0
     private fun refresh() {
         iconLayer?.removeFromSuperlayer()
         iconLayer = icon?.toImageSource(iconPaint)?.caLayer()?.also {

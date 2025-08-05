@@ -88,7 +88,7 @@ public actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileRef
     }
 }
 
-actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileReference> = run {
+public actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileReference> = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/" )}
     if (onlyMedia) {
@@ -126,7 +126,7 @@ public data class UIAlertActionSuspending<out T>(
     public val handler: suspend () -> T,
 )
 
-suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
+public suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(
             title = title,
@@ -141,7 +141,7 @@ suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, va
         }.also { present(it) }
     }!!.handler()
 }
-suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
+public suspend fun <T> RContext.actionSheetCancellable(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T? {
     return suspendCancellableCoroutine<UIAlertActionSuspending<T>?> { cont ->
         UIAlertController.alertControllerWithTitle(
             title = title,
@@ -511,7 +511,7 @@ public actual suspend fun RContext.download(
     url: String,
     preferredDestination: DownloadLocation,
     onDownloadProgress: ((progress: Float) -> Unit)?
-) = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
+): Unit = downloadMultiple(mapOf(url to name), preferredDestination, onDownloadProgress)
 
 public suspend fun RContext.downloadMultiple(
     urlToNames: Map<String, String>,
@@ -629,10 +629,10 @@ public actual suspend fun RContext.download(
     }
 }
 
-public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) =
+public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>): Unit =
     showShareSheet(items = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) })
 
-public actual fun RContext.share(title: String, message: String?, url: String?) =
+public actual fun RContext.share(title: String, message: String?, url: String?): Unit =
     showShareSheet(messages = listOf(message), items = listOf(url?.let { NSURL(string = it) }))
 
 
@@ -715,7 +715,7 @@ public actual fun RContext.openEvent(
     end: LocalDateTime,
     zone: TimeZone
 ) {
-    public val store = EKEventStore()
+    val store = EKEventStore()
     store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
         if (hasPermission) {
             afterTimeout(1) {
@@ -748,7 +748,7 @@ public actual fun RContext.openEvent(
 @InternalKiteUi
 public actual fun RContext.openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
 
-    public val options = arrayListOf(
+    val options = arrayListOf(
         "Apple Maps" to {
             val mapItem = MKMapItem(
                 placemark = MKPlacemark(

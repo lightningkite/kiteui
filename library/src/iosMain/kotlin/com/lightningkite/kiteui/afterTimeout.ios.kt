@@ -3,7 +3,7 @@ package com.lightningkite.kiteui
 import platform.darwin.*
 
 public actual inline fun afterTimeout(milliseconds: Long, crossinline action: () -> Unit): () -> Unit {
-    public var stillRun: Boolean = true
+    var stillRun: Boolean = true
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, milliseconds * NSEC_PER_MSEC.toLong()), dispatch_get_main_queue()) {
         if(!stillRun) return@dispatch_after
         action()

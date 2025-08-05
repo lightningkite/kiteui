@@ -9,7 +9,7 @@ private var lastBoundPageNavigator: PageNavigator? = null
 
 public actual fun PageNavigator.bindToPlatform(context: RContext) {
     lastBoundPageNavigator = this
-    public val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
+    val landing = routes.parse(postedLandingUrl ?: UrlLikePath.EMPTY)
     stack.value = listOf(landing ?: routes.fallback)
 }
 

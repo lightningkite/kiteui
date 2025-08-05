@@ -20,7 +20,7 @@ import platform.darwin.NSObject
 @InternalKiteUi
 public actual class AutoCompleteTextField public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native: WrapperView = WrapperView()
-    val textField = UITextField().apply {
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -108,7 +108,7 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
                 else -> UIReturnKeyType.UIReturnKeyDone
             }
         }
-    var hint: String = ""
+    public var hint: String = ""
         set(value) {
             field = value
             updateHint()

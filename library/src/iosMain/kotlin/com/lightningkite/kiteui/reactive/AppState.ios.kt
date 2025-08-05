@@ -9,8 +9,6 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
-import com.lightningkite.signal.*
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -47,12 +45,12 @@ public actual object AppState {
         height = Dimension(UIScreen.mainScreen.bounds.useContents { size.height }),
         density = UIScreen.mainScreen.scale.toFloat()
     ))
-    actual val windowInfo: ReactiveValue<WindowStatistics>
+    public actual val windowInfo: ReactiveValue<WindowStatistics>
         get() = _windowInfo
-    public val _inForeground = Signal(true)
-    actual val inForeground: ReactiveValue<Boolean>
+    public val _inForeground: Signal<Boolean> = Signal(true)
+    public actual val inForeground: ReactiveValue<Boolean>
         get() = _inForeground
-    actual val softInputOpen: ReactiveValue<Boolean> get() = _SoftInputOpen
+    public actual val softInputOpen: ReactiveValue<Boolean> get() = _SoftInputOpen
 
     private var currentLockCount = 0
     public actual fun keepScreenOn(scope: CoroutineScope) {
