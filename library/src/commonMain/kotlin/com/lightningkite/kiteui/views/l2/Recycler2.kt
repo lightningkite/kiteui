@@ -23,8 +23,8 @@ import kotlinx.coroutines.launch
 
 public class Recycler2(
     viewWriter: ViewWriter,
-    val vertical: Boolean = true,
-    var log: Log? = null//ConsoleRoot.tag("Recycler2"),
+    public val vertical: Boolean = true,
+    public var log: Log? = null//ConsoleRoot.tag("Recycler2"),
 ) : ViewModifiable {
     public override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
@@ -61,20 +61,20 @@ public class Recycler2(
             outerFrame.shown = value
         }
 
-    var recycling: Boolean = true
+    public var recycling: Boolean = true
 
     private val _centerIndex = Signal(0)
     private val _displayedRangeFirst = Signal(0)
-    val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
+    public val firstIndex: Reactive<Int> = _displayedRangeFirst.withWrite {
         if (it != _displayedRangeFirst.value)
             scrollToIndex(it, Align.Start)
     }
     private val _displayedRangeLast = Signal(0)
-    val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
+    public val lastIndex: Reactive<Int> = _displayedRangeLast.withWrite {
         if (it != _displayedRangeLast.value)
             scrollToIndex(it, Align.End)
     }
-    val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
+    public val centerIndex: MutableReactive<Int> = _centerIndex.withWrite {
         if (it != _centerIndex.value)
             scrollToIndex(it, Align.Center)
     }
@@ -133,7 +133,7 @@ public class Recycler2(
         }
     }
 
-    var overdraw = AppState.windowInfo.value.height.viewUnits / 3.0
+    public var overdraw: Double = AppState.windowInfo.value.height.viewUnits / 3.0
 
     private var anchor: RecyclerViewAnchor? = RecyclerViewAnchor.SpecificElement(0, Align.Start)
 
@@ -216,10 +216,10 @@ public class Recycler2(
     }
 
     private inner class MyCell<T> : RecyclerViewPlaceable {
-        val indexProp = Signal(-1)
-        val data = RawReactive<T>()
-        override lateinit var type: RecyclerViewRenderer<*>
-        lateinit var view: RView
+        public val indexProp = Signal(-1)
+        public val data = RawReactive<T>()
+        public override lateinit var type: RecyclerViewRenderer<*>
+        public lateinit var view: RView
         private var constraint: Size = Size.Zero
         private var inProgress: ProgrammingLayoutInProgress? = null
         private var _size: Size? = null
@@ -267,7 +267,7 @@ public class Recycler2(
             this.inProgress = inProgress
         }
 
-        fun onPullForPlacing(constrain: Size, data: ReactiveState<T>, index: Int, inProgress: ProgrammingLayoutInProgress) {
+        public fun onPullForPlacing(constrain: Size, data: ReactiveState<T>, index: Int, inProgress: ProgrammingLayoutInProgress) {
 //            view.withoutAnimation {
             view.shown = true
             view.opacity = 1.0
@@ -954,7 +954,7 @@ public class Recycler2(
 
 
     @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
+    public fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
         var currentData: List<T> = listOf()
         rendererSet = object : RecyclerViewRendererSet<T, Int> {
             override fun id(item: T): Int = currentData.indexOf(item)
@@ -989,10 +989,14 @@ public class Recycler2(
                 RecyclerViewPlacerHorizontalGrid(columns)
         }
 
-    @Deprecated("Renamed to 'firstIndex'") val firstVisibleIndex: Reactive<Int> get() = firstIndex
-    @Deprecated("Renamed to 'lastIndex'") val lastVisibleIndex: Reactive<Int> get() = lastIndex
-    @Deprecated("Renamed to 'centerIndex'") val index: MutableReactive<Int> get() = centerIndex
-    @Deprecated("Just use directly") val new get() = this
+    @Deprecated("Renamed to 'firstIndex'")
+    public val firstVisibleIndex: Reactive<Int> get() = firstIndex
+    @Deprecated("Renamed to 'lastIndex'")
+    public val lastVisibleIndex: Reactive<Int> get() = lastIndex
+    @Deprecated("Renamed to 'centerIndex'")
+    public val index: MutableReactive<Int> get() = centerIndex
+    @Deprecated("Just use directly")
+    public val new: Recycler2 get() = this
 }
 
 internal fun <T> MutableList<T>.popOrNull(): T? = if (!isEmpty()) removeAt(lastIndex) else null

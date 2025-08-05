@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -23,6 +24,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class FormattedTextInput public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         var block = false
@@ -78,7 +80,7 @@ public actual class FormattedTextInput public actual constructor(context: RConte
         this.isRawData = isRawData
         this.formatter = formatter
     }
-    actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
+    public actual val content: MutableReactiveValue<String> = native.contentProperty().lens(
         get = { it.filter(isRawData) },
         set = { formatter(it.filter(isRawData)) }
     )

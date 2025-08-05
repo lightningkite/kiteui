@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -16,8 +17,9 @@ import platform.darwin.NSObject
 
 
 
+@InternalKiteUi
 public actual class AutoCompleteTextField public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
+    override val native: WrapperView = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
@@ -33,7 +35,7 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
         fontAndStyle = theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -42,20 +44,20 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -111,7 +113,7 @@ public actual class AutoCompleteTextField public actual constructor(context: RCo
             field = value
             updateHint()
         }
-    inline var align: Align
+    public inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center

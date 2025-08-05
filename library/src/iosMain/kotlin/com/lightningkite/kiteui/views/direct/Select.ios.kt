@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -19,15 +20,16 @@ import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 
+@InternalKiteUi
 public actual class Select public actual constructor(context: RContext): RView(context) {
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     init {
         native.addSubview(textField)
         textField.inputView = UIPickerView()
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String
@@ -72,7 +74,7 @@ public actual class Select public actual constructor(context: RContext): RView(c
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -82,7 +84,7 @@ public actual class Select public actual constructor(context: RContext): RView(c
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)

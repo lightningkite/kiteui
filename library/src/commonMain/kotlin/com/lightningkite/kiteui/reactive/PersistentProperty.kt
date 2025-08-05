@@ -17,7 +17,7 @@ public class PersistentProperty<T>(
     defaultValue: T,
     private val serializer: KSerializer<T>,
 ) : MutableReactiveValue<T>, BaseReactiveValue<T>(defaultValue) {
-    override var value: T
+    public override var value: T
         get() = super.value
         set(value) {
             PlatformStorage.set(key, DefaultJson.encodeToString(serializer, value))

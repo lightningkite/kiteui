@@ -13,8 +13,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("rich-text-button")
-object RichTextButtonPage : Page {
-    override val title: Reactive<String>
+public object RichTextButtonPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
     public override fun ViewWriter.render(): ViewModifiable = run {

@@ -17,7 +17,7 @@ import kotlin.jvm.JvmInline
 
 
 public expect class AutoCompleteTextField(context: RContext) : RViewWithAction {
-    val content: MutableReactiveValue<String>
-    var keyboardHints: KeyboardHints
-    var suggestions: List<String>
+    public val content: MutableReactiveValue<String>
+    public var keyboardHints: KeyboardHints
+    public var suggestions: List<String>
 }

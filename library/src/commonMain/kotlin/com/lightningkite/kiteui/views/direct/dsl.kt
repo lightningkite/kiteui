@@ -289,7 +289,7 @@ public inline fun ViewWriter.switch(setup: Switch.() -> Unit = {}): Switch {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.slider(setup: Slider.() -> Unit = {}): Slider {
+public inline fun ViewWriter.slider(setup: Slider.() -> Unit = {}): Slider {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(Slider(context) , setup)
 }
@@ -347,7 +347,7 @@ public inline fun ViewWriter.webView(setup: WebView.() -> Unit = {}): WebView {
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
+public inline fun ViewWriter.rowWrapping(setup: RowWrapping.() -> Unit = {}): RowWrapping {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(RowWrapping(context) ) { setup() }
 }

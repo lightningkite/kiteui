@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
@@ -36,14 +37,15 @@ import platform.darwin.dispatch_get_main_queue
 import platform.darwin.sel_registerName
 
 
+@InternalKiteUi
 public actual class Video public actual constructor(context: RContext) : RView(context) {
 
-    inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
+    public inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
 
     }
-    val ios = IosDelegate()
+    public val ios: IosDelegate = IosDelegate()
 
-    val controller = AVPlayerViewController().apply {
+    public val controller: AVPlayerViewController = AVPlayerViewController().apply {
         delegate = ios
 
         // Most UIViews use UIViewAutoresizingNone by default, but AVPlayerViewController does not and causes
@@ -54,7 +56,7 @@ public actual class Video public actual constructor(context: RContext) : RView(c
         // set by the KiteUI theme
         view.backgroundColor = UIColor.colorWithWhite(0.0, 0.0)
     }
-    override val native = controller.view
+    override val native: UIView = controller.view
 
     private val _playing = Signal(false)
     private val _volume = Signal(0f)
@@ -179,14 +181,14 @@ public actual class Video public actual constructor(context: RContext) : RView(c
         }
 
     
-    actual val time: MutableReactive<Double>
+    public actual val time: MutableReactive<Double>
         get() = _time
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
     
-    actual val playing: MutableReactive<Boolean>
+    public actual val playing: MutableReactive<Boolean>
         get() = _playing
             .withWrite {
                 shouldPlay = it
@@ -196,7 +198,7 @@ public actual class Video public actual constructor(context: RContext) : RView(c
                     controller.player?.pause()
             }
 
-    actual val volume: MutableReactive<Float>
+    public actual val volume: MutableReactive<Float>
         get() = _volume
             .withWrite {
                 controller.player?.volume = it

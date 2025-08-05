@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -16,8 +17,9 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.darwin.NSObject
 
+@InternalKiteUi
 public actual class FormattedTextInput public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
+    override val native: WrapperView = WrapperView()
     val textField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
@@ -62,7 +64,7 @@ public actual class FormattedTextInput public actual constructor(context: RConte
         fontAndStyle = theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -70,13 +72,13 @@ public actual class FormattedTextInput public actual constructor(context: RConte
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.placeholder = hint
         // TODO: Colored hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -90,7 +92,7 @@ public actual class FormattedTextInput public actual constructor(context: RConte
         this.formatter = formatter
     }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = (textField.text ?: "").filter(isRawData)
             set(value) {

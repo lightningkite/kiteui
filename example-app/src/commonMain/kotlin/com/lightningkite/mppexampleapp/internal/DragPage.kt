@@ -32,10 +32,10 @@ import kotlinx.coroutines.launch
 @Routable("drag")
 public object DragPage : Page {
 
-    val numbers = Signal(List(9) { it + 1 })
+    public val numbers = Signal(List(9) { it + 1 })
 
     private data class Highlight(val amount: Int) : Semantic("highlight-$amount") {
-        override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+        public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
             background = theme.background.lighten(amount/50f)
         )
     }

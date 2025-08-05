@@ -28,7 +28,7 @@ public object ReactiveToolsPage : Page, DocPage {
         "MutableRemember"
     )
 
-    fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): ViewModifiable {
+    public fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): ViewModifiable {
         return fieldTheme - row {
             gap = 0.5.rem
             val buffer = Signal<Double?>(null)

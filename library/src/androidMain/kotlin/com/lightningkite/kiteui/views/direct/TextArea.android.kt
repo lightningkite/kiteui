@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -23,6 +24,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     override val native: EditText = EditText(context.activity).focusIsKeyboard().apply {
         maxLines = Int.MAX_VALUE
@@ -63,8 +65,8 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
             native.isEnabled = value
             refreshTheming()
         }
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }

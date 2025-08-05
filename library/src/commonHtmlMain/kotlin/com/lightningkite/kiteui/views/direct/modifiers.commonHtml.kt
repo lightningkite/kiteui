@@ -95,6 +95,7 @@ public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
@@ -116,6 +117,7 @@ public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float)
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
@@ -138,7 +140,8 @@ public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, hor
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+@InternalKiteUi
+public actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -184,6 +187,7 @@ public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
 
@@ -220,6 +224,7 @@ public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContex
 // End
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
 //    // TODO: include old animation code
 //    beforeNextElementSetup {

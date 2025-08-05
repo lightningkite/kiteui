@@ -6,15 +6,20 @@ import androidx.core.view.WindowCompat
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.views.AndroidAppContext
 
+@InternalKiteUi
 public actual val Platform.Companion.current: Platform
     get() = Platform.Android
+@InternalKiteUi
 public actual val Platform.Companion.probablyAppleUser: Boolean
     get() = false
+@InternalKiteUi
 public actual val Platform.Companion.usesTouchscreen: Boolean
     get() = true
+@InternalKiteUi
 public actual val Platform.Companion.userAgent: String
     get() = "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
 
+@InternalKiteUi
 public actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window
 

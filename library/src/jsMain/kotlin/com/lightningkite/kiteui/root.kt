@@ -34,7 +34,7 @@ public fun root(theme: Theme, app: ViewWriter.()->Unit) {
         }
     }.also(app)
 }
-fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
+public fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(basePath).also {

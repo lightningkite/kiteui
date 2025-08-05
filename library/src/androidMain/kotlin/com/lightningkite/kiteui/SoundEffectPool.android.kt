@@ -83,6 +83,7 @@ public actual class SoundEffectPool public actual constructor(concurrency: Int) 
 }
 
 private val runningMediaPlayers = ArrayList<MediaPlayer>()
+@InternalKiteUi
 public actual suspend fun AudioSource.load(): PlayableAudio {
     val player = MediaPlayer()
     var toClose: Closeable? = null

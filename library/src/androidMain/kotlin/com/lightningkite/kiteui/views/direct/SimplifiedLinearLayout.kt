@@ -7,12 +7,14 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewDebug
 import android.view.ViewGroup
+import com.lightningkite.kiteui.InternalKiteUi
 
 
 public typealias SimplifiedLinearLayoutLayoutParams = SimplifiedLinearLayout.LayoutParams
 /**
  * A drastically simplified variant of LinearLayout.
  */
+@InternalKiteUi
 public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) :
     ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
 
@@ -1446,6 +1448,7 @@ public open class SimplifiedLinearLayout(context: Context?, attrs: AttributeSet?
 }
 
 
+@InternalKiteUi
 public abstract class UseMarginsLayoutParams: ViewGroup.LayoutParams {
     public constructor(width: Int, height: Int):super(width, height)
     public constructor(c: Context, attrs: AttributeSet):super(c, attrs)

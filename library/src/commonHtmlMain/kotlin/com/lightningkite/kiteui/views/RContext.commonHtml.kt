@@ -15,9 +15,9 @@ public actual class RContext(
     public val dynamicCss: DynamicCss = DynamicCss(basePath),
     public val kiteUiCss: KiteUiCss = KiteUiCss(dynamicCss),
 ) : RContextHelper() {
-    val id = Random.nextInt()
-    actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons.putAll(this@RContext.addons) }
+    public val id: Int = Random.nextInt()
+    public actual fun split(): RContext = RContext(basePath, dynamicCss, kiteUiCss).apply { addons.putAll(this@RContext.addons) }
     actual override val darkMode: Boolean? get() = null
-    override fun toString(): String = "RContext@$id"
-    actual var immersiveMode: Boolean = false
+    public override fun toString(): String = "RContext@$id"
+    public actual var immersiveMode: Boolean = false
 }

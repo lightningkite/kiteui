@@ -1,18 +1,21 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 import kotlinx.cinterop.*
 import platform.CoreGraphics.*
+import platform.Foundation.NSCoder
 import platform.QuartzCore.CAGradientLayer
 import platform.QuartzCore.CALayer
 import platform.UIKit.*
 
 
+@InternalKiteUi
 public actual class ProgressBar public actual constructor(context: RContext) : RView(context) {
-    override val native = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
+    override val native: ResizeableProgressView = ResizeableProgressView(CGRectMake(0.0, 0.0, 0.0, 0.0))
     override fun applyTheme(theme: ThemeAndBack) {
         super.applyTheme(theme);
         native.progressLayer.setMask(backgroundLayer?.getOrInitBackgroundMask())
@@ -24,10 +27,10 @@ public actual class ProgressBar public actual constructor(context: RContext) : R
 @OptIn(ExperimentalForeignApi::class)
 public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 
-    public val progressLayer = ProgressCALayer().also {
+    public val progressLayer: ProgressCALayer = ProgressCALayer().also {
         layer.insertSublayer(it, 0u)
     }
-    public var progress by progressLayer::progress
+    public var progress: Float by progressLayer::progress
 
     public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         return size.useContents { CGSizeMake(width, 5.0) }
@@ -40,15 +43,16 @@ public class ResizeableProgressView(frame: CValue<CGRect>) : UIView(frame) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
+@InternalKiteUi
 public class ProgressCALayer : CALayer {
     @OverrideInit
-    constructor() : super()
+    public constructor() : super()
 
     @OverrideInit
-    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    public constructor(coder: NSCoder) : super(coder)
 
     @OverrideInit
-    constructor(layer: kotlin.Any) : super(layer)
+    public constructor(layer: Any) : super(layer)
 
     public var tintColor: UIColor = UIColor.whiteColor
     public var progress: Float = 0f

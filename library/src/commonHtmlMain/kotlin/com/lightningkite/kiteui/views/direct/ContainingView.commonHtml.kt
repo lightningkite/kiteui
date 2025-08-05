@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
@@ -8,6 +9,7 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.*
 
+@InternalKiteUi
 public actual class Frame public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
@@ -80,6 +82,7 @@ public actual class Frame public actual constructor(context: RContext) : RView(c
     }
 }
 
+@InternalKiteUi
 public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
@@ -94,7 +97,7 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
             if(!value) native.classes.add("optimized")
             else native.classes.remove("optimized")
         }
-    actual var vertical: Boolean = true
+    public actual var vertical: Boolean = true
         set(value) {
             field = value
             native.style.flexDirection = if(value) "column" else "row"
@@ -198,6 +201,7 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
     }
 }
 
+@InternalKiteUi
 public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     init {
         native.tag = "div"

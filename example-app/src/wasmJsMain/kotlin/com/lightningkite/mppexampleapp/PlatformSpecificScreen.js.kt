@@ -17,7 +17,7 @@ import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 
-val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
+public val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
 
 public actual fun ViewWriter.platformSpecific() {
 }

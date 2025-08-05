@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 
 private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
+@InternalKiteUi
 public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
 
     init {
@@ -152,6 +154,7 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
 }
 
 
+@InternalKiteUi
 public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic

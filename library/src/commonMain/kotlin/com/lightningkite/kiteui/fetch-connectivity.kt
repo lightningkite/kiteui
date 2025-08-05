@@ -10,11 +10,13 @@ import kotlin.coroutines.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration
 
 
 public class WaitGate(permit: Boolean = false) {
@@ -47,12 +49,12 @@ public class WaitGate(permit: Boolean = false) {
     }
 }
 
-class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: Long) -> Unit = { ms -> kotlinx.coroutines.delay(ms) }) {
-    val gate = WaitGate(true)
-    val baseRetry = 10.seconds
-    var nextRetry = baseRetry
-    val maxRetry = 5.minutes
-    val retryAt = Signal<Instant?>(null)
+public class ConnectivityGate(public val clock: Clock = Clock.System, public val delay: suspend (ms: Long) -> Unit = { ms -> kotlinx.coroutines.delay(ms) }) {
+    public val gate: WaitGate = WaitGate(true)
+    public val baseRetry: Duration = 10.seconds
+    public var nextRetry: Duration = baseRetry
+    public val maxRetry: Duration = 5.minutes
+    public val retryAt: Signal<Instant?> = Signal<Instant?>(null)
 
     public fun retryNow() {
         retryAt.value = null
@@ -92,12 +94,12 @@ class ConnectivityGate(val clock: Clock = Clock.System, val delay: suspend (ms: 
 @Deprecated("Use Connectivity instead", ReplaceWith("Connectivity.fetchGate", "com.lightningkite.kiteui.Connectivity"))
 public val connectivityFetchGate: ConnectivityGate get() = Connectivity.fetchGate
 
-object Connectivity {
-    val noConnectivityCodes = setOf<Short>(502, 503)
-    val tooMuchCodes = setOf<Short>(420, 429)
-    val stopConnectivityCodes = noConnectivityCodes + tooMuchCodes
-    val fetchGate = ConnectivityGate()
-    val lastConnectivityIssueCode: Signal<Short> = Signal(0)
+public object Connectivity {
+    public val noConnectivityCodes: Set<Short> = setOf<Short>(502, 503)
+    public val tooMuchCodes: Set<Short> = setOf<Short>(420, 429)
+    public val stopConnectivityCodes: Set<Short> = noConnectivityCodes + tooMuchCodes
+    public val fetchGate: ConnectivityGate = ConnectivityGate()
+    public val lastConnectivityIssueCode: Signal<Short> = Signal(0)
 }
 
 public suspend fun connectivityFetch(

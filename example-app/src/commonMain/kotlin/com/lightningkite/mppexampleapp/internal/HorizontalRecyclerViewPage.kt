@@ -18,11 +18,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("recycler-view/horizontal")
-object HorizontalRecyclerViewPage : Page {
-    override val title: Reactive<String>
+public object HorizontalRecyclerViewPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         var expanded = Signal(-1)
         val items = Signal((1..101).toList())
         var recyclerView: RecyclerView? = null

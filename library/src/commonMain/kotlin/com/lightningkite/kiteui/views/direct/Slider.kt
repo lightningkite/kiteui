@@ -12,37 +12,37 @@ import com.lightningkite.readable.*
 /**
  * A slider component that allows users to select a value from a continuous range.
  */
-expect class Slider(context: RContext) : RView {
+public expect class Slider(context: RContext) : RView {
     /**
      * Whether the slider is enabled or disabled.
      */
-    var enabled: Boolean
+    public var enabled: Boolean
     
     /**
      * The current value of the slider, between 0.0 and 1.0.
      */
-    val value: MutableReactiveValue<Float>
+    public val value: MutableReactiveValue<Float>
     
     /**
      * The minimum value of the slider.
      */
-    var min: Float
+    public var min: Float
     
     /**
      * The maximum value of the slider.
      */
-    var max: Float
+    public var max: Float
     
     /**
      * The step size for the slider. If null, the slider is continuous.
      */
-    var step: Float?
+    public var step: Float?
 }
 
 /**
  * Sets the value range for the slider.
  */
-fun Slider.range(min: Float, max: Float, step: Float? = null) {
+public fun Slider.range(min: Float, max: Float, step: Float? = null) {
     this.min = min
     this.max = max
     this.step = step
@@ -51,7 +51,7 @@ fun Slider.range(min: Float, max: Float, step: Float? = null) {
 /**
  * Sets the value range for the slider using integers.
  */
-fun Slider.range(min: Int, max: Int, step: Int? = null) {
+public fun Slider.range(min: Int, max: Int, step: Int? = null) {
     this.min = min.toFloat()
     this.max = max.toFloat()
     this.step = step?.toFloat()

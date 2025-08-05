@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -10,8 +11,9 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class Button actual constructor(context: RContext) : RViewWithSecondaryAction(context) {
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
 
     init {
         activityIndicator {

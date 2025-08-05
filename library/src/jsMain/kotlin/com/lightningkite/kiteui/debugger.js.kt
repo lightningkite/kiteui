@@ -2,20 +2,25 @@ package com.lightningkite.kiteui
 
 @InternalKiteUi
 public var debug: Boolean = true
+@InternalKiteUi
 public actual fun debugger() {
     if(debug) js("debugger;")
 }
 
+@InternalKiteUi
 public actual fun gc(): GCInfo {
     return GCInfo(-1L)
 }
+@InternalKiteUi
 public actual fun cleanImageCache() {
 }
 public actual fun gcReport() {}
 
+@InternalKiteUi
 public actual fun assertMainThread() {
 }
 
+@InternalKiteUi
 public actual fun Throwable.printStackTrace2() {
     printStackTrace()
 //    val stack = this.asDynamic().stack
@@ -33,14 +38,14 @@ public actual fun Throwable.printStackTrace2() {
 public actual object LogRoot: Log {
     private val platform = PlatformLog("")
     public actual override fun tag(tag: String): Log = platform.tag(tag)
-    public actual override fun log(vararg entries: Any?) = platform.log(*entries)
-    public actual override fun error(vararg entries: Any?) = platform.error(*entries)
-    public actual override fun info(vararg entries: Any?) = platform.info(*entries)
-    public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
+    public actual override fun log(vararg entries: Any?): Unit = platform.log(*entries)
+    public actual override fun error(vararg entries: Any?): Unit = platform.error(*entries)
+    public actual override fun info(vararg entries: Any?): Unit = platform.info(*entries)
+    public actual override fun warn(vararg entries: Any?): Unit = platform.warn(*entries)
 }
 private class PlatformLog(val tag: String): Log {
-    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
-    override fun log(vararg entries: Any?) {
+    public override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
+    public override fun log(vararg entries: Any?) {
         console.log(tag, *entries)
     }
 
@@ -61,6 +66,7 @@ private external interface WeakRef<T> {
     public fun deref(): T?
 }
 
+@InternalKiteUi
 public actual class WeakReference<T: Any> public actual constructor(referred: T) {
     public actual fun get(): T? = native?.deref()
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
@@ -85,6 +91,7 @@ public actual class WeakReference<T: Any> public actual constructor(referred: T)
 //""")
 private var counter = 1
 private var counterSymbol = js("Symbol(\"IDHC\")")
+@InternalKiteUi
 public actual fun Any?.identityHashCode(): Int {
     if (this == null) return 0 else {
         val e = asDynamic()[counterSymbol]

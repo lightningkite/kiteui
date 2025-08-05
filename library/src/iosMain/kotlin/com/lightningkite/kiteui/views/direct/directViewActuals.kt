@@ -23,7 +23,8 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-public class Ref<T>(var target: T?)
+@InternalKiteUi
+public class Ref<T>(public var target: T?)
 
 @InternalKiteUi
 public inline fun UIControl.onEvent(calculationContext: CalculationContext, events: UIControlEvents, crossinline action: ()->Unit): ()->Unit {
@@ -105,7 +106,9 @@ private fun UIView.findNextChildFocus(startingAtIndex: Int): UIView? {
     return null
 }
 
-public val NextFocusDelegateShared = NextFocusDelegate()
+@InternalKiteUi
+public val NextFocusDelegateShared: NextFocusDelegate = NextFocusDelegate()
+@InternalKiteUi
 public class NextFocusDelegate: NSObject(), UITextFieldDelegateProtocol {
     public override fun textFieldShouldReturn(textField: UITextField): Boolean {
         textField.findNextFocus()?.let {

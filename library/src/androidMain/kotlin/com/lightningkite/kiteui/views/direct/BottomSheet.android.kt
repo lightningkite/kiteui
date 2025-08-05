@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -20,6 +21,7 @@ import com.lightningkite.kiteui.views.popoverWriter
 import com.lightningkite.kiteui.views.withoutAnimation
 import kotlin.coroutines.CoroutineContext
 
+@InternalKiteUi
 public actual fun ViewWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,

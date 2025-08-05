@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ScreenTransition
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
@@ -9,6 +10,7 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.UIView
 import kotlin.time.DurationUnit
 
+@InternalKiteUi
 public actual fun RView.animateIn(
     transition: ScreenTransition,
     done: (() -> Unit)?
@@ -39,6 +41,7 @@ public actual fun RView.animateIn(
         )
     }
 }
+@InternalKiteUi
 public actual fun RView.animateOut(
     transition: ScreenTransition,
     done: (() -> Unit)?

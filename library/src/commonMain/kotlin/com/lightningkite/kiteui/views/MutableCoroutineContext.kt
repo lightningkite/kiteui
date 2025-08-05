@@ -2,12 +2,12 @@ package com.lightningkite.kiteui.views
 
 import kotlin.coroutines.CoroutineContext
 
-class MutableCoroutineContext: CoroutineContext {
-    val list = ArrayList<CoroutineContext.Element>()
-    fun add(context: CoroutineContext) {
+public class MutableCoroutineContext: CoroutineContext {
+    public val list: ArrayList<CoroutineContext.Element> = ArrayList<CoroutineContext.Element>()
+    public fun add(context: CoroutineContext) {
         context.fold(Unit) { _, element -> add(element) }
     }
-    fun add(element: CoroutineContext.Element) {
+    public fun add(element: CoroutineContext.Element) {
         list.add(element)
     }
     override fun <R> fold(initial: R, operation: (R, CoroutineContext.Element) -> R): R {
@@ -22,7 +22,7 @@ class MutableCoroutineContext: CoroutineContext {
         return null
     }
 
-    override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext {
+    public override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext {
         return MutableCoroutineContext().apply {
             this@MutableCoroutineContext.list.forEach { if(it[key] == null) this@apply.add(it) }
         }

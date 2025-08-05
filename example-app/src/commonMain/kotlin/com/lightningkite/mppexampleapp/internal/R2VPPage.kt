@@ -15,8 +15,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("r2vp")
-object R2VPPage : Page {
-    override val title: Reactive<String>
+public object R2VPPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
     public override fun ViewWriter.render(): ViewModifiable = run {

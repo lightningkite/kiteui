@@ -17,10 +17,10 @@ import com.lightningkite.readable.*
 public typealias NumberField = NumberInput
 public expect class NumberInput(context: RContext) : RViewWithAction {
 
-    var enabled: Boolean
-    val content: MutableReactiveValue<Double?>
-    var keyboardHints: KeyboardHints
-    var hint: String
-    var range: ClosedRange<Double>?
-    var align: Align
+    public var enabled: Boolean
+    public val content: MutableReactiveValue<Double?>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
+    public var range: ClosedRange<Double>?
+    public var align: Align
 }

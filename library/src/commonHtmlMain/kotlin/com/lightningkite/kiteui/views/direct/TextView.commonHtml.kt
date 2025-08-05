@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.parseMPNodes
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.WordBreak
@@ -7,6 +8,7 @@ import com.lightningkite.kiteui.views.*
 
 
 
+@InternalKiteUi
 public actual class TextView public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "p"
@@ -46,7 +48,7 @@ public actual class TextView public actual constructor(context: RContext) : RVie
         set(value) {
             native.setStyleProperty("word-break", if(value == WordBreak.BreakAll) "break-all" else "normal")
         }
-    actual var lineClamp: Int? = null
+    public actual var lineClamp: Int? = null
         set(value) {
             field = value
             value?.let {
@@ -58,7 +60,7 @@ public actual class TextView public actual constructor(context: RContext) : RVie
                 native.setStyleProperty("text-overflow", "ellipsis")
             }
         }
-    actual fun setBasicHtmlContent(html: String) {
+    public actual fun setBasicHtmlContent(html: String) {
         native.style.whiteSpace = "pre-line"
         native.innerHtmlUnsafe = html.parseMPNodes().onEach { it.secure() }.joinToString(" ")
     }

@@ -20,16 +20,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-class DragDropReordering(
+public class DragDropReordering(
     private val scope: CoroutineScope,
-    val mimeType: String = "application/kiteui-index",
-    val reorder: suspend (Move) -> Unit
+    public val mimeType: String = "application/kiteui-index",
+    public val reorder: suspend (Move) -> Unit
 ) {
-    fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
-    fun decode(data: DragData) = data[mimeType]?.toInt()
+    public fun encode(index: Int): DragData = DragData("Source Index", mimeType, index.toString())
+    public fun decode(data: DragData): Int? = data[mimeType]?.toInt()
 
-    data class Move(val start: Int, val end: Int) {
-        fun <T> reorder(list: List<T>) =
+    public data class Move(val start: Int, val end: Int) {
+        public fun <T> reorder(list: List<T>): List<T> =
             if (start == end) list
             else list
                 .toMutableList()
@@ -37,10 +37,10 @@ class DragDropReordering(
                 .toList()
     }
 
-    val willMove = Signal<Move?>(null)
+    public val willMove: Signal<Move?> = Signal<Move?>(null)
 
-    inner class Delegate(val index: Reactive<Int>) : DropTargetDelegate {
-        override fun enter(event: DragEvent): Boolean =
+    public inner class Delegate(public val index: Reactive<Int>) : DropTargetDelegate {
+        public override fun enter(event: DragEvent): Boolean =
             decode(event.data)
                 ?.let { source ->
                     index.state.handle(
@@ -51,12 +51,12 @@ class DragDropReordering(
                 }
                 ?: false
 
-        override fun end(event: DragEvent): Boolean {
+        public override fun end(event: DragEvent): Boolean {
             willMove.value = null
             return true
         }
 
-        override fun drop(event: DragEvent): Boolean =
+        public override fun drop(event: DragEvent): Boolean =
             decode(event.data)
                 ?.let { sourceIdx ->
                     scope.launch {
@@ -69,7 +69,7 @@ class DragDropReordering(
     }
 }
 
-fun <T> RView.forEachReorderable(
+public fun <T> RView.forEachReorderable(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
     separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
@@ -109,20 +109,20 @@ fun <T> RView.forEachReorderable(
     }
 }
 
-class RecyclerReorderable<T, ID>(
-    val wraps: RecyclerViewRendererSet<T, ID>,
-    val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+public class RecyclerReorderable<T, ID>(
+    public val wraps: RecyclerViewRendererSet<T, ID>,
+    public val view: Recycler2,
+    public val separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
-    val handler = DragDropReordering(view, reorder = reorder)
+    public val handler: DragDropReordering = DragDropReordering(view, reorder = reorder)
 
-    override fun id(item: T): ID = wraps.id(item)
+    public override fun id(item: T): ID = wraps.id(item)
 
-    inner class ReorderWrapper(
-        val renderer: RecyclerViewRenderer<T>
+    public inner class ReorderWrapper(
+        public val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
-        override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable = with(viewWriter) {
+        public override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable = with(viewWriter) {
             col {
                 themeTakeNonCascadingFromParent = true
 
@@ -150,10 +150,10 @@ class RecyclerReorderable<T, ID>(
         }
     }
 
-    override fun renderer(item: T): RecyclerViewRenderer<T> = ReorderWrapper(wraps.renderer(item))
+    public override fun renderer(item: T): RecyclerViewRenderer<T> = ReorderWrapper(wraps.renderer(item))
 }
 
-fun <T, ID> Recycler2.childrenReorderable(
+public fun <T, ID> Recycler2.childrenReorderable(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,

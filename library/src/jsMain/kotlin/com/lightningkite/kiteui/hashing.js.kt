@@ -12,6 +12,9 @@ private suspend fun ByteArray.digest(type: String): ByteArray {
     val p: Promise<ArrayBuffer> = window.asDynamic().crypto.subtle.digest(type, this)
     return suspendCoroutine { c -> p.then({c.resume(Int8Array(it).unsafeCast<ByteArray>())}, {c.resumeWithException(it)}) }
 }
+@InternalKiteUi
 public actual suspend fun ByteArray.sha1(): ByteArray = digest("SHA-1")
+@InternalKiteUi
 public actual suspend fun ByteArray.sha256(): ByteArray = digest("SHA-256")
+@InternalKiteUi
 public actual suspend fun ByteArray.sha512(): ByteArray = digest("SHA-512")

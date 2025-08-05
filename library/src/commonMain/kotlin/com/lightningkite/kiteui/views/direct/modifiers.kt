@@ -129,7 +129,7 @@ public expect inline fun ViewWriter.__scrollsUncontracted(
 ): ViewWrapper
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingWithRefresh(
+public inline fun ViewWriter.scrollingWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ViewWrapper {
@@ -137,7 +137,7 @@ inline fun ViewWriter.scrollingWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingHorizontallyWithRefresh(
+public inline fun ViewWriter.scrollingHorizontallyWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ViewWrapper {
@@ -145,7 +145,7 @@ inline fun ViewWriter.scrollingHorizontallyWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingBothWithRefresh(
+public inline fun ViewWriter.scrollingBothWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
 ): ViewWrapper {
@@ -153,7 +153,7 @@ inline fun ViewWriter.scrollingBothWithRefresh(
 }
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingWithRefresh(
+public inline fun ViewWriter.scrollingWithRefresh(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -162,7 +162,7 @@ inline fun ViewWriter.scrollingWithRefresh(
     return __scrollsWithRefreshUncontracted(vertical = vertical, horizontal = horizontal, refreshAction = refreshAction, setup)
 }
 
-expect inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+public expect inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,

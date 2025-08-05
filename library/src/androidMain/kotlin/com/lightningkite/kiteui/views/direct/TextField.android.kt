@@ -18,6 +18,7 @@ import androidx.core.graphics.TypefaceCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -50,8 +51,8 @@ public actual open class TextInput public actual constructor(context: RContext) 
         native.setTextSize(TypedValue.COMPLEX_UNIT_PX, theme.font.size.value.toFloat())
     }
 
-    actual val content: MutableReactiveValue<String> = native.contentProperty()
-    actual var enabled: Boolean
+    public actual val content: MutableReactiveValue<String> = native.contentProperty()
+    public actual var enabled: Boolean
         get() = native.isEnabled
         set(value) {
             native.isEnabled = value
@@ -141,11 +142,13 @@ public actual open class TextInput public actual constructor(context: RContext) 
 }
 
 
+@InternalKiteUi
 public abstract class EquatableByRef(public val key: String, public val ref: Any) {
     public override fun hashCode(): Int = key.hashCode() + ref.hashCode()
     public override fun equals(other: Any?): Boolean = other is EquatableByRef && this.key == other.key && this.ref == other.ref
 }
 
+@InternalKiteUi
 public var EditText.keyboardHints: KeyboardHints
     get() {
         return when (inputType) {

@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.Dimension
@@ -32,9 +33,10 @@ import platform.objc.sel_registerName
 
 private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
 
+@InternalKiteUi
 public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
 
-    override val native = FrameLayout()
+    override val native: FrameLayout = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
     // lifetime of the view
@@ -235,8 +237,9 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
 }
 
 
+@InternalKiteUi
 public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
 
     override fun postSetup() {
         super.postSetup()

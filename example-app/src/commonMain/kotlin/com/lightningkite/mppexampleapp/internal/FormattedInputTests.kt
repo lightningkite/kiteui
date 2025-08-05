@@ -17,10 +17,10 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("test/formatted-input")
-class FormattedInputTests : Page {
-    val phone = Signal("")
-    val general = Signal("")
-    override fun ViewWriter.render(): ViewModifiable = run {
+public class FormattedInputTests : Page {
+    public val phone = Signal("")
+    public val general = Signal("")
+    public override fun ViewWriter.render(): ViewModifiable = run {
         col {
             field("General Formatted Input") {
                 formattedTextInput {

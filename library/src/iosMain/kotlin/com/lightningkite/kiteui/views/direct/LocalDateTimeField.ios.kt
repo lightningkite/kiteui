@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -18,13 +19,14 @@ import platform.UIKit.*
 
 
 
+@InternalKiteUi
 public actual class LocalDateField public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDate?>(null)
-    actual val content: MutableReactiveValue<LocalDate?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDate?> get() = _content
     // TODO
     public actual var range: ClosedRange<LocalDate>? = null
 
@@ -43,7 +45,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -53,7 +55,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -61,7 +63,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         textField.textAlignment = alignment
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value
@@ -81,13 +83,14 @@ public actual class LocalDateField public actual constructor(context: RContext) 
     }
 }
 
+@InternalKiteUi
 public actual class LocalTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalTime?>(null)
-    actual val content: MutableReactiveValue<LocalTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value
@@ -109,7 +112,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -119,7 +122,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -127,7 +130,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         textField.textAlignment = alignment
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value
@@ -147,13 +150,14 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
     }
 }
 
+@InternalKiteUi
 public actual class LocalDateTimeField public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
-    val textField = TextFieldInput(this)
+    override val native: WrapperView = WrapperView()
+    public val textField: TextFieldInput = TextFieldInput(this)
     init { native.addSubview(textField) }
 
     private val _content = Signal<LocalDateTime?>(null)
-    actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
+    public actual val content: MutableReactiveValue<LocalDateTime?> get() = _content
     override fun actionSet(value: Action?) {
         super.actionSet(value)
         textField.action = value
@@ -175,7 +179,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         }
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -185,7 +189,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         textField.textColor = theme.foreground.closestColor().toUiColor()
         fontAndStyle = theme.font
     }
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -193,7 +197,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         textField.textAlignment = alignment
     }
 
-    var enabled: Boolean
+    public var enabled: Boolean
         get() = textField.enabled
         set(value) {
             textField.enabled = value

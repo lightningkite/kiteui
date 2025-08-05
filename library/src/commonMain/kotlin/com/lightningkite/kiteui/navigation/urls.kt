@@ -38,12 +38,12 @@ public val DefaultJson: Json get() = DefaultJsonCurrent
 private var UrlPropertiesCurrent: Properties = Properties(DefaultSerializersModule)
 public val UrlProperties: Properties get() = UrlPropertiesCurrent
 
-fun <T> Properties.encodeToStringMap(
+public fun <T> Properties.encodeToStringMap(
     serializer: KSerializer<T>,
     value: T,
     key: String,
     out: MutableMap<String, String>
-) {
+): Unit {
     if (value == null) return
     out += encodeToStringMap(Wrapper.serializer(serializer), Wrapper(value)).mapKeys {
         it.key.replaceFirst(
@@ -72,7 +72,7 @@ public inline fun <reified T> Properties.decodeFromStringMap(
     decodeFromStringMap(serializersModule.serializer<T>(), key, source)?.let { into.valueSet(it) }
 }
 
-public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>) =
+public inline fun <reified T> Properties.encodeToStringMap(value: T, key: String, out: MutableMap<String, String>): Unit =
     encodeToStringMap(UrlProperties.serializersModule.serializer<T>(), value, key, out)
 
 public inline fun <reified T> Properties.decodeFromStringMap(key: String, source: Map<String, String>): T? =

@@ -30,14 +30,15 @@ import kotlin.setValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@InternalKiteUi
 public actual abstract class RawImageViewLike(
     context: RContext,
     public actual val source: ImageSource,
     public actual val description: String,
     public actual val scaleType: ImageScaleType,
 ) : RView(context) {
-    actual abstract val state: Reactive<Unit>
-    val _state = RawReactive<Unit>()
+    public actual abstract val state: Reactive<Unit>
+    public val _state: RawReactive<Unit> = RawReactive<Unit>()
 
     init {
         native.classes.add("scaleType-$scaleType")
@@ -54,6 +55,7 @@ public actual abstract class RawImageViewLike(
     }
 }
 
+@InternalKiteUi
 public actual class RawImageView public actual constructor(
     context: RContext,
     source: ImageSource,
@@ -69,7 +71,8 @@ public actual class RawImageView public actual constructor(
     init { nativeLoad(source.toUrl()) }
 }
 
-actual class SizelessRawImageView actual constructor(
+@InternalKiteUi
+public actual class SizelessRawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -98,7 +101,8 @@ actual class SizelessRawImageView actual constructor(
     }
 }
 
-actual class RawImageViewZoomable actual constructor(
+@InternalKiteUi
+public actual class RawImageViewZoomable actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -110,7 +114,7 @@ actual class RawImageViewZoomable actual constructor(
     }
     actual override val state: Reactive<Unit> = _state
     init { nativeLoad(source.toUrl()) }
-    actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
+    public actual val zoomState: MutableReactiveValue<ZoomState> = Signal(Unit)
 }
 
 @JsName("createObjectURLBlob")

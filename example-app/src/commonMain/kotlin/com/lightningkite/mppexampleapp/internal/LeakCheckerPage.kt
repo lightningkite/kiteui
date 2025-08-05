@@ -21,8 +21,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Routable("ultra-basic")
-object UltraBasicPage : Page {
-    val count = Signal(0)
+public object UltraBasicPage : Page {
+    public val count = Signal(0)
 
     public override fun ViewWriter.render(): ViewModifiable = run {
 //        frame {
@@ -48,8 +48,8 @@ object UltraBasicPage : Page {
 }
 
 @Routable("counter")
-object CounterPage : Page {
-    val count = object : MutableReactiveValue<Int> {
+public object CounterPage : Page {
+    public val count = object : MutableReactiveValue<Int> {
         val listeners = ArrayList<() -> Unit>()
         override var value: Int = 0
             set(value) {
@@ -81,10 +81,10 @@ object CounterPage : Page {
 }
 
 @Routable("leak-checker")
-object LeakCheckerPage : Page {
-    val stringProp = Signal("X")
-    val doubleProp = Signal<Double?>(0.0)
-    val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
+public object LeakCheckerPage : Page {
+    public val stringProp = Signal("X")
+    public val doubleProp = Signal<Double?>(0.0)
+    public val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
         "scrolling" to { frame { scrolling - col { text("A") } } },
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
@@ -121,7 +121,7 @@ object LeakCheckerPage : Page {
         "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val index = Signal(0)
         col {
 //            launch {

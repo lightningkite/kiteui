@@ -11,18 +11,18 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-interface ScrollingBehaviors {
-    val horizontal: Boolean
-    val vertical: Boolean
-    var showScrollBars: Boolean
-    val viewport: Reactive<Rect>
-    val content: Reactive<Rect>
-    val directlyInteractingWithScroller: Reactive<Boolean>
-    var snapToElements: Pair<Align?, Align?>
-    var scrollSnapStop: Boolean
-    fun scrollTo(left: Double, top: Double, animated: Boolean)
-    fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
-    var ignoreInteraction: Boolean
+public interface ScrollingBehaviors {
+    public val horizontal: Boolean
+    public val vertical: Boolean
+    public var showScrollBars: Boolean
+    public val viewport: Reactive<Rect>
+    public val content: Reactive<Rect>
+    public val directlyInteractingWithScroller: Reactive<Boolean>
+    public var snapToElements: Pair<Align?, Align?>
+    public var scrollSnapStop: Boolean
+    public fun scrollTo(left: Double, top: Double, animated: Boolean)
+    public fun scrollTo(element: RView, horizontal: Align, vertical: Align, animated: Boolean)
+    public var ignoreInteraction: Boolean
 
     /**
      * Should not interrupt animations.

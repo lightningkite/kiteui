@@ -71,10 +71,10 @@ public class PhoneNumberInput(container: ViewWriter): ViewModifiable {
             field = value
             input.format(value::isRawData, value::format)
         }
-    var enabled: Boolean by input::enabled
-    val content: MutableReactiveValue<String> by input::content
-    var hint: String by input::hint
-    var align: Align by input::align
+    public var enabled: Boolean by input::enabled
+    public val content: MutableReactiveValue<String> by input::content
+    public var hint: String by input::hint
+    public var align: Align by input::align
 }
 
 public operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }

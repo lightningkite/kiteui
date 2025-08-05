@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.widget.CheckBox
 import android.widget.RadioButton
 import androidx.core.widget.CompoundButtonCompat
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -16,6 +17,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class RadioButton public actual constructor(context: RContext): RView(context) {
     override val native: RadioButton = RadioButton(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
@@ -42,6 +44,6 @@ public actual class RadioButton public actual constructor(context: RContext): RV
         return super.applyState(t)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
+    public actual val checked: MutableReactiveValue<Boolean> = native.contentProperty()
 
 }

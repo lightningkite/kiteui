@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -11,6 +12,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class AutoCompleteTextField public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "input"

@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
@@ -22,19 +23,20 @@ import platform.darwin.sel_registerName
 //class LayoutParams()
 
 
+@InternalKiteUi
 public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
     private val tapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("onclick"))
     private val longPressGestureRecognizer = UILongPressGestureRecognizer(this, sel_registerName("onLongPress"))
 
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    public override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    public override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    public override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    public override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    public override fun layoutSubviews(): Unit = frameLayoutLayoutSubviews(childSizeCache)
+    public override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
+    public override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     public override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
@@ -56,12 +58,12 @@ public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSi
         addGestureRecognizer(longPressGestureRecognizer)
     }
 
-    fun setOnClick(action: ()->Unit): ()->Unit {
+    public fun setOnClick(action: ()->Unit): ()->Unit {
         onClick = action
         return { onClick = null }
     }
 
-    fun setOnLongPress(action: ()->Unit): ()->Unit {
+    public fun setOnLongPress(action: ()->Unit): ()->Unit {
         onLongPress = action
         return { onLongPress = null }
     }
@@ -76,7 +78,7 @@ public class FrameLayoutButton(): UIButton(CGRectZero.readValue()), UIViewWithSi
 
     private var onLongPress: (()->Unit)? = null
     @ObjCAction
-    fun onLongPress() {
+    public fun onLongPress() {
         if (enabled) {
             onLongPress?.invoke()
         }

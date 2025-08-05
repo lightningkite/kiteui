@@ -17,15 +17,15 @@ public class RecyclerViewPlacerVerticalGrid(
 ) :
     RecyclerViewPlacerGrid {
     public val sizeByType: HashMap<RecyclerViewRenderer<*>, Double> = HashMap<RecyclerViewRenderer<*>, Double>()
-    public fun RecyclerViewPlaceable.height(cellSize: Double) = ratio?.let { cellSize * it }
+    public fun RecyclerViewPlaceable.height(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: size.height.also { if(sizeDoesNotChange) sizeByType[type] = it }
-    public fun RecyclerViewPlaceable.existingHeight(cellSize: Double) = ratio?.let { cellSize * it }
+    public fun RecyclerViewPlaceable.existingHeight(cellSize: Double): Double = ratio?.let { cellSize * it }
         ?: sizeByType[type]
         ?: (bottom - top).also { if(sizeDoesNotChange) sizeByType[type] = it }
 
-    var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
-    override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
+    public var log: Log? = null //ConsoleRoot.tag("RecyclerViewPlacerVerticalGrid")
+    public override fun withOrthogonalCount(count: Int): RecyclerViewPlacerGrid = RecyclerViewPlacerVerticalGrid(count)
 
     public override fun place(
         dataRange: IntRange,

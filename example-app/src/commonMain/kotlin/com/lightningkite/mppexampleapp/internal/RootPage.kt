@@ -32,9 +32,9 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("/internal")
-object RootPage : Page {
-    override val title: Reactive<String> = Constant("Test Pages")
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object RootPage : Page {
+    public override val title: Reactive<String> = Constant("Test Pages")
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "Test Pages" }

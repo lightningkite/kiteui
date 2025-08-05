@@ -13,7 +13,7 @@ import com.lightningkite.readable.*
 public actual fun ViewWriter.platformSpecific(): ViewModifiable {
     return col {
         text("Lookie here at this icon:")
-        val visible = Signal(false)
+        public val visible = Signal(false)
         switch { checked bind visible }
         expanding - zoomableImage {
             source = Resources.imagesSnowyBackground

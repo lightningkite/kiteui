@@ -12,13 +12,13 @@ public data class DragData(
     public val mimeType: String get() = typeToData.keys.firstOrNull() ?: ""
     public val data: String get() = typeToData.values.firstOrNull() ?: ""
 
-    public operator fun get(mimeType: String) = typeToData[mimeType]
+    public operator fun get(mimeType: String): String? = typeToData[mimeType]
 }
 
-data class DragEvent(
+public data class DragEvent(
     public val data: DragData,
     public val xInView: Double,
     public val yInView: Double
 ) {
-    public val types get() = data.typeToData.keys
+    public val types: Set<String> get() = data.typeToData.keys
 }

@@ -21,62 +21,62 @@ import kotlin.math.*
 /**
  * Data point for the graph.
  */
-data class Point(val x: Double, val y: Double)
+public data class Point(val x: Double, val y: Double)
 
 /**
  * Delegate class for drawing graphs on a Canvas.
  * This provides basic graphing functionality with customizable appearance.
  */
-class GraphDelegate : CanvasDelegate() {
+public class GraphDelegate : CanvasDelegate() {
     // Data to be displayed on the graph
-    var data: List<Point> = emptyList()
+    public var data: List<Point> = emptyList()
 
     // Graph appearance properties
     private var _lineColor: Color? = null // Color.blue
-    var lineColor: Color
+    public var lineColor: Color
         get() = _lineColor ?: theme.foreground.closestColor()
         set(value) { _lineColor = value }
     private var _pointColor: Color? = null // Color.red
-    var pointColor: Color
+    public var pointColor: Color
         get() = _pointColor ?: theme.foreground.closestColor()
         set(value) { _pointColor = value }
     private var _gridColor: Color? = null // Color(0.8f, 0.8f, 0.8f, 1.0f)
-    var gridColor: Color
+    public var gridColor: Color
         get() = _gridColor ?: theme.background.closestColor().highlight(0.1f)
         set(value) { _gridColor = value }
     private var _axisColor: Color? = null // Color.black
-    var axisColor: Color
+    public var axisColor: Color
         get() = _axisColor ?: theme.foreground.closestColor()
         set(value) { _axisColor = value }
     private var _textColor: Color? = null // Color.black
-    var textColor: Color
+    public var textColor: Color
         get() = _textColor ?: theme.foreground.closestColor()
         set(value) { _textColor = value }
-    var showGrid: Boolean = true
-    var showPoints: Boolean = true
+    public var showGrid: Boolean = true
+    public var showPoints: Boolean = true
     private var _pointSize: Dimension? = null // 5.0.dp
-    var pointSize: Dimension
+    public var pointSize: Dimension
         get() = _pointSize ?: theme.padding.left
         set(value) { _pointSize = value }
     private var _lineWidth: Dimension? = null // 2.0.dp
-    var lineWidth: Dimension
+    public var lineWidth: Dimension
         get() = _lineWidth ?: 1.dp
         set(value) { _lineWidth = value }
     private var _padding: Dimension? = null // 0.dp
-    var padding: Dimension
+    public var padding: Dimension
         get() = _padding ?: (theme.font.size * 4)
         set(value) { _padding = value }
 
     // Axis labels
-    var xAxisLabel: String = "X"
-    var yAxisLabel: String = "Y"
+    public var xAxisLabel: String = "X"
+    public var yAxisLabel: String = "Y"
 
     // Font sizes
-    var axisLabelFontSize: Dimension = 1.rem
-    var tickLabelFontSize: Dimension = 0.8.rem
-    var noDataMessageFontSize: Dimension = 2.rem
+    public var axisLabelFontSize: Dimension = 1.rem
+    public var tickLabelFontSize: Dimension = 0.8.rem
+    public var noDataMessageFontSize: Dimension = 2.rem
 
-    override fun draw(context: DrawingContext2D) {
+    public override fun draw(context: DrawingContext2D) {
         if (data.isEmpty()) {
             drawEmptyGraph(context)
             return
@@ -365,7 +365,7 @@ class GraphDelegate : CanvasDelegate() {
 /**
  * Extension function to create a graph canvas with the given setup.
  */
-fun ViewWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
+public fun ViewWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
     return canvas {
         delegate = GraphDelegate().apply(setup)
     }
@@ -374,7 +374,7 @@ fun ViewWriter.graph(setup: GraphDelegate.() -> Unit = {}): Canvas {
 /**
  * Extension function to create a line graph with the given data.
  */
-fun ViewWriter.lineGraph(
+public fun ViewWriter.lineGraph(
     data: List<Point>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {
@@ -390,7 +390,7 @@ fun ViewWriter.lineGraph(
  */
 @JvmName("lineGraphFromYValues")
 @JsName("lineGraphFromYValues")
-fun ViewWriter.lineGraph(
+public fun ViewWriter.lineGraph(
     yValues: List<Double>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {
@@ -403,7 +403,7 @@ fun ViewWriter.lineGraph(
  */
 @JvmName("lineGraphFromPairs")
 @JsName("lineGraphFromPairs")
-fun ViewWriter.lineGraph(
+public fun ViewWriter.lineGraph(
     points: List<Pair<Double, Double>>,
     setup: GraphDelegate.() -> Unit = {}
 ): Canvas {

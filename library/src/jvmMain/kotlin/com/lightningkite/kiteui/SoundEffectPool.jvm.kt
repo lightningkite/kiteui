@@ -13,4 +13,5 @@ public actual class SoundEffectPool public actual constructor(concurrency: Int) 
     public actual fun unload(sound: AudioSource) {
     }
 }
+@InternalKiteUi
 public actual suspend fun AudioSource.load(): PlayableAudio = TODO()

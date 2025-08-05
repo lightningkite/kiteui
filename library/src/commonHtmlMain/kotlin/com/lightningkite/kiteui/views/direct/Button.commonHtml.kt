@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.dom.MouseEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
@@ -8,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@InternalKiteUi
 public actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     init {
         themeChoice += ClickableSemantic

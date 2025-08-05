@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -10,11 +11,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import platform.UIKit.*
 
-actual class Slider actual constructor(context: RContext) : RView(context) {
-    override val native = UISlider()
+@InternalKiteUi
+public actual class Slider actual constructor(context: RContext) : RView(context) {
+    override val native: UISlider = UISlider()
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float>
+    public actual val value: MutableReactiveValue<Float>
         get() {
             return object : MutableReactiveValue<Float> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
@@ -68,7 +70,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             native.minimumValue = value.toFloat()
@@ -76,7 +78,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             native.maximumValue = value.toFloat()
@@ -84,7 +86,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             // iOS UISlider doesn't have a built-in step property
@@ -100,7 +102,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         value.value = valueProp.value
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value

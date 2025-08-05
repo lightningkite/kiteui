@@ -6,12 +6,14 @@ import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.views.*
 
 
+@InternalKiteUi
 public actual class Separator public actual constructor(context: RContext): RView(context) {
     override val native: NSeparator = NSeparator(context.activity).apply {
         minimumWidth = 1
@@ -40,6 +42,7 @@ public actual class Separator public actual constructor(context: RContext): RVie
     }
 }
 
+@InternalKiteUi
 public class NSeparator(context: Context) : View(context) {
     public var thickness: Int = 1
         set(value) {

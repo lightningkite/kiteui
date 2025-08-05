@@ -24,7 +24,7 @@ public fun ViewWriter.icon(icon: Icon, description: String, setup: IconView.()->
 }
 
 @ViewDsl
-fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Unit) {
+public fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Unit) {
     col {
         var noViewCreated = true
         var view: RView? = null
@@ -50,7 +50,7 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun RView.errorText(): ViewModifiable {
+public fun RView.errorText(): ViewModifiable {
     val errors = Signal<Set<Exception>>(setOf())
     return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
         this@errorText += object: ExceptionHandler {

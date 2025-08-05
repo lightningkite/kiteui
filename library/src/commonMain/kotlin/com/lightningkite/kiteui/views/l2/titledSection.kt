@@ -12,7 +12,7 @@ public var ViewWriter.titleDepth: Int by rContextAddon(0)
 public fun ViewWriter.titledSection(
     title: String,
     content: RowOrCol.() -> Unit,
-) = titledSection({ this.content = title }, content)
+) : ViewModifiable= titledSection({ this.content = title }, content)
 
 @ViewDsl
 public fun ViewWriter.titledSection(

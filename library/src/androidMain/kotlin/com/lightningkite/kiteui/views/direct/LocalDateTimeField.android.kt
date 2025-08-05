@@ -18,7 +18,7 @@ import kotlinx.datetime.*
 public actual class LocalDateTimeField public actual constructor(context: RContext) :
     RViewWithAction(context) {
     private val property: Signal<LocalDateTime?> = Signal(null)
-    actual val content: MutableReactiveValue<LocalDateTime?> = property
+    public actual val content: MutableReactiveValue<LocalDateTime?> = property
     
     public actual var range: ClosedRange<LocalDateTime>? = null
 

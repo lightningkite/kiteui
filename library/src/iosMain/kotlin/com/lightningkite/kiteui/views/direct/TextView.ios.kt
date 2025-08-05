@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.nsdata
 import com.lightningkite.kiteui.reactive.*
@@ -15,13 +16,14 @@ import platform.Foundation.*
 import platform.UIKit.*
 
 @OptIn(ExperimentalNativeApi::class)
-actual class TextView actual constructor(context: RContext) : RView(context) {
-    override val native = UILabelWithLayerBackground()
+@InternalKiteUi
+public actual class TextView actual constructor(context: RContext) : RView(context) {
+    override val native: UILabelWithLayerBackground = UILabelWithLayerBackground()
 //    init {
 //        native.rContext = context
 //        onRemove { native.rContext = null }
 //    }
-    val label get() = native.label
+public val label: UILabel get() = native.label
 
     init {
         label.numberOfLines = 0
@@ -67,7 +69,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
             label.numberOfLines = if (value) 0 else 1
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
@@ -124,7 +126,7 @@ actual class TextView actual constructor(context: RContext) : RView(context) {
                 WordBreak.BreakAll -> NSLineBreakByCharWrapping
             }
         }
-    actual var lineClamp: Int? = null
+    public actual var lineClamp: Int? = null
         set(value) {
             field = value
             label.numberOfLines = value?.toLong() ?: 0L
@@ -174,9 +176,10 @@ private val dynamicTypeScaleFactors = mapOf(
     UIContentSizeCategoryExtraExtraLarge to 1.31,
     UIContentSizeCategoryExtraExtraExtraLarge to 1.42,
 )
-public const val ENABLE_DYNAMIC_TYPE = false
 @InternalKiteUi
-public fun preferredScaleFactor() = if (ENABLE_DYNAMIC_TYPE) {
+public const val ENABLE_DYNAMIC_TYPE: Boolean = false
+@InternalKiteUi
+public fun preferredScaleFactor(): Double = if (ENABLE_DYNAMIC_TYPE) {
     dynamicTypeScaleFactors[UIApplication.sharedApplication.preferredContentSizeCategory] ?: 1.0
 } else {
     1.0

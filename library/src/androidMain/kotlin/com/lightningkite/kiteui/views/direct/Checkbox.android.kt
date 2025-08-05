@@ -9,6 +9,7 @@ import android.widget.CompoundButton
 import android.widget.CompoundButton.OnCheckedChangeListener
 import android.widget.ProgressBar
 import androidx.core.widget.CompoundButtonCompat
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -21,6 +22,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class Checkbox public actual constructor(context: RContext): RView(context) {
     override val native: AndroidCheckBox = AndroidCheckBox(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {

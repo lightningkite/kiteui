@@ -9,6 +9,7 @@ import kotlinx.coroutines.asExecutor
 
 @InternalKiteUi
 public val __mainHandler: Handler by lazy { Looper.getMainLooper().let(::Handler) }
+@InternalKiteUi
 public actual inline fun onMainThread(crossinline  action: () -> Unit): Unit {
     if(Looper.myLooper() == Looper.getMainLooper()) action() else {
         __mainHandler.post { action() }

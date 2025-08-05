@@ -5,6 +5,7 @@ package com.lightningkite.kiteui.models
 import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.encodeURIComponent
 
+@InternalKiteUi
 public actual data class DimensionRaw(
     public val px: Double = 0.0,
     public val rem: Double = 0.0,
@@ -19,7 +20,7 @@ public actual data class DimensionRaw(
     }
     public override fun compareTo(other: DimensionRaw): Int = roughPx.compareTo(other.roughPx)
     public companion object {
-        val zero = DimensionRaw()
+        public val zero: DimensionRaw = DimensionRaw()
     }
 }
 
@@ -29,38 +30,49 @@ public fun Dimension(
     rem: Double = 0.0,
 ): Dimension = Dimension(DimensionRaw(px, rem))
 
+@InternalKiteUi
 public actual val Int.px: Dimension
     get() = Dimension(px = this.toDouble())
 
+@InternalKiteUi
 public actual val Int.rem: Dimension
     get() = Dimension(rem = this.toDouble())
 
+@InternalKiteUi
 public actual val Double.rem: Dimension
     get() = Dimension(rem = this)
 
+@InternalKiteUi
 public actual val Int.dp: Dimension
     get() = Dimension(px = this.toDouble())
 
+@InternalKiteUi
 public actual val Double.dp: Dimension
     get() = Dimension(px = this)
 
+@InternalKiteUi
 public actual operator fun Dimension.plus(other: Dimension): Dimension = Dimension(
     px = this.value.px + other.value.px,
     rem = this.value.rem + other.value.rem,
 )
+@InternalKiteUi
 public actual operator fun Dimension.minus(other: Dimension): Dimension = Dimension(
     px = this.value.px - other.value.px,
     rem = this.value.rem - other.value.rem,
 )
+@InternalKiteUi
 public actual operator fun Dimension.times(other: Float): Dimension = Dimension(
     px = this.value.px * other,
     rem = this.value.rem * other,
 )
+@InternalKiteUi
 public actual operator fun Dimension.div(other: Float): Dimension = Dimension(
     px = this.value.px / other,
     rem = this.value.rem / other,
 )
+@InternalKiteUi
 public actual inline fun Dimension.coerceAtMost(other: Dimension): Dimension = minOf(this, other)
+@InternalKiteUi
 public actual inline fun Dimension.coerceAtLeast(other: Dimension): Dimension = maxOf(this, other)
 
 @InternalKiteUi
@@ -74,6 +86,7 @@ public fun CornerRadii.toRawCornerRadius(): String = when (this) {
     }
 }
 
+@InternalKiteUi
 public actual data class Font(
     val cssFontFamilyName: String,
     val url: String? = null,
@@ -87,16 +100,24 @@ public data class FontDirect(
     public val italics: Map<Int, String>,
 )
 
+@InternalKiteUi
 public actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
+@InternalKiteUi
 public actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
+@InternalKiteUi
 public actual sealed class ImageSource actual constructor()
+@InternalKiteUi
 public actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
+@InternalKiteUi
 public actual sealed class VideoSource actual constructor()
+@InternalKiteUi
 public actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
+@InternalKiteUi
 public actual sealed class AudioSource actual constructor()
+@InternalKiteUi
 public actual data class AudioResource(val relativeUrl: String) : AudioSource()
 
 @InternalKiteUi
@@ -117,6 +138,7 @@ public class ScreenTransitionPart(
     public operator fun plus(other: ScreenTransitionPart): ScreenTransitionPart = ScreenTransitionPart(from = from + other.from, to = to + other.to)
 }
 
+@InternalKiteUi
 public actual class ScreenTransition(
     public val name: String,
     public val enter: ScreenTransitionPart,

@@ -44,9 +44,9 @@ public abstract class KiteUiActivity : AppCompatActivity() {
 
     public abstract val mainNavigator : PageNavigator
 
-    lateinit var root: RView
+    public lateinit var root: RView
     private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
-    val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
+    public val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
         override val context: RContext = RContext(this@KiteUiActivity).also {
             ExternalServices.baseContext = it
         }

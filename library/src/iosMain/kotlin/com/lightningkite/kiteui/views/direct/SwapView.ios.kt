@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ScreenTransition
 import com.lightningkite.kiteui.views.NewViewWriter
 import com.lightningkite.kiteui.views.RContext
@@ -14,9 +15,10 @@ import com.lightningkite.kiteui.views.informParentOfSizeChange
 import com.lightningkite.kiteui.views.withoutAnimation
 
 
-actual class SwapView actual constructor(context: RContext): RView(context) {
+@InternalKiteUi
+public actual class SwapView actual constructor(context: RContext): RView(context) {
 
-    override val native = FrameLayout()
+    override val native: FrameLayout = FrameLayout()
     private var currentView: RView? = null
 
     init {

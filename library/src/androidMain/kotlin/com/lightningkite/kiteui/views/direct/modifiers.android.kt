@@ -14,6 +14,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
@@ -51,6 +52,7 @@ public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     beforeNextElementSetup {
         val originalSize = try {
@@ -86,6 +88,7 @@ public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float)
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
@@ -133,7 +136,7 @@ public actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, hor
 }
 @InternalKiteUi
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+public actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -211,6 +214,7 @@ public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     wrapNextIn(object : RViewWrapper(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
@@ -222,11 +226,13 @@ public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContex
     return ViewWrapper
 }
 
+@InternalKiteUi
 public interface MaxSizeLayoutParams {
     public var maxWidth: Int
     public var maxHeight: Int
 }
 
+@InternalKiteUi
 public class DesiredSizeView(context: Context) : ViewGroup(context) {
     public var constraints: SizeConstraints = SizeConstraints()
         set(value) {
@@ -257,8 +263,8 @@ public class DesiredSizeView(context: Context) : ViewGroup(context) {
         getChildAt(0).layout(paddingLeft, paddingTop, r - l - paddingRight, b - t - paddingBottom)
     }
 
-    public val Int.measureSpecMode get() = MeasureSpec.getMode(this)
-    public val Int.measureSpecSize get() = MeasureSpec.getSize(this)
+    public val Int.measureSpecMode: Int get() = MeasureSpec.getMode(this)
+    public val Int.measureSpecSize: Int get() = MeasureSpec.getSize(this)
     public fun Int.measureSpecConstrainMax(value: Int): Int = MeasureSpec.makeMeasureSpec(
         if (measureSpecMode != MeasureSpec.UNSPECIFIED) measureSpecSize.coerceAtMost(value) else value,
         when (measureSpecMode) {
@@ -414,6 +420,7 @@ public actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
 //        exists = default

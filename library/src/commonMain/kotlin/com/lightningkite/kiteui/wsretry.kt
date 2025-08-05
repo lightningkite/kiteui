@@ -246,8 +246,8 @@ public interface RetryWebsocket : WebSocket, TypedWebSocket<String, String> {
 }
 
 
-interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
-    val connected: Reactive<Boolean>
+public interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
+    public val connected: Reactive<Boolean>
 
     public fun close(code: Short, reason: String)
     public fun send(data: SEND)
@@ -257,7 +257,7 @@ interface TypedWebSocket<SEND, RECEIVE> : ResourceUse {
 }
 
 
-val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
+public val <RECEIVE> TypedWebSocket<*, RECEIVE>.mostRecentMessage: Reactive<RECEIVE?>
     get() = object : Reactive<RECEIVE?> {
         var value: RECEIVE? = null
             private set

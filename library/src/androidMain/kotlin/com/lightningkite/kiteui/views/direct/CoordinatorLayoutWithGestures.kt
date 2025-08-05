@@ -4,9 +4,11 @@ import android.content.Context
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.math.absoluteValue
 import kotlin.math.atan
 
+@InternalKiteUi
 public class CoordinatorLayoutWithGestures(context: Context) : CoordinatorLayout(context) {
 
     public var onLeftSwipeAction: (() -> Unit)? = null

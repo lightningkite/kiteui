@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.KiteUiActivity
 import com.lightningkite.kiteui.Platform
 import com.lightningkite.kiteui.userAgent
@@ -21,6 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 
+@InternalKiteUi
 public object AndroidAppContext {
     public lateinit var applicationCtx: Context
     public val res: Resources by lazy { applicationCtx.resources }

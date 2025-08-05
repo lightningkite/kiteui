@@ -16,7 +16,7 @@ import com.lightningkite.readable.*
 @Routable("docs/viewmodel")
 public object ViewModelPage: DocPage {
 
-    override val title: Reactive<String>
+    public override val title: Reactive<String>
         get() = Constant("ViewModels in KiteUI")
 
     public override val covers: List<String> = listOf(
@@ -44,8 +44,8 @@ public object ViewModelPage: DocPage {
                     content = """
                         class OrderViewModel {
                            private val _uiState = Signal(OrderUiState(pickupOptions = pickupOptions()))
-                           val uiState: Reactive<OrderUiState> get() = _uiState
-                           suspend fun submit() = ...
+                           public val uiState: Reactive<OrderUiState> get() = _uiState
+                           public suspend fun submit() = ...
                            // ...
                         }
                     """.trimIndent()
@@ -55,8 +55,8 @@ public object ViewModelPage: DocPage {
                     content = """
                         class OrderViewPage: Page {
                             private val _uiState = Signal(OrderUiState(pickupOptions = pickupOptions()))
-                            val uiState: Reactive<OrderUiState> get() = _uiState
-                            suspend fun submit() = ...
+                            public val uiState: Reactive<OrderUiState> get() = _uiState
+                            public suspend fun submit() = ...
                             // ...
                             
                             public override fun ViewWriter.render2() = col {

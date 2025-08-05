@@ -27,6 +27,7 @@ import com.bumptech.glide.request.target.SizeReadyCallback
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -39,17 +40,19 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual abstract class RawImageViewLike constructor(
     context: RContext,
     public actual val source: ImageSource,
     public actual val description: String,
     public actual val scaleType: ImageScaleType,
 ) : RView(context){
-    actual abstract val state: Reactive<Unit>
+    public actual abstract val state: Reactive<Unit>
 }
 
 
 
+@InternalKiteUi
 public actual class RawImageView public actual constructor(
     context: RContext,
     source: ImageSource,
@@ -124,8 +127,8 @@ public actual class RawImageView public actual constructor(
     }
 
 
-    class GlideImageView(context: Context) : AppCompatImageView(context) {
-        var ignoreNaturalSize: Boolean = false
+    public class GlideImageView(context: Context) : AppCompatImageView(context) {
+        public var ignoreNaturalSize: Boolean = false
             set(value) {
                 field = value
                 requestLayout()
@@ -135,9 +138,9 @@ public actual class RawImageView public actual constructor(
             this.clipToOutline = true
         }
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
-        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        public var widthMeasureSpecLast: Int = 0
+        public var heightMeasureSpecLast: Int = 0
+        public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
                 heightMeasureSpecLast = heightMeasureSpec
@@ -156,9 +159,9 @@ public actual class RawImageView public actual constructor(
             if(ignoreNaturalSize) setMeasuredDimension(0, 0)
         }
 
-        val callbacks = ArrayList<SizeReadyCallback>()
+        public val callbacks: ArrayList<SizeReadyCallback> = ArrayList<SizeReadyCallback>()
 
-        val target = object : ImageViewTarget<Drawable>(this) {
+        public val target: ImageViewTarget<Drawable> = object : ImageViewTarget<Drawable>(this) {
             override fun setResource(resource: Drawable?) {
                 this@GlideImageView.setImageDrawable(resource)
             }
@@ -192,7 +195,8 @@ public actual class RawImageView public actual constructor(
 }
 
 
-actual class SizelessRawImageView actual constructor(
+@InternalKiteUi
+public actual class SizelessRawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -221,11 +225,11 @@ actual class SizelessRawImageView actual constructor(
                     ImageView.ScaleType.CENTER_INSIDE -> requestOptions =
                         requestOptions.clone().optionalCenterInside()
 
-                    ImageView.ScaleType.FIT_CENTER, android.widget.ImageView.ScaleType.FIT_START, android.widget.ImageView.ScaleType.FIT_END -> requestOptions =
+                    ImageView.ScaleType.FIT_CENTER, AImageView.ScaleType.FIT_START, AImageView.ScaleType.FIT_END -> requestOptions =
                         requestOptions.clone().optionalFitCenter()
 
                     ImageView.ScaleType.FIT_XY -> requestOptions = requestOptions.clone().optionalCenterInside()
-                    ImageView.ScaleType.CENTER, android.widget.ImageView.ScaleType.MATRIX -> {}
+                    ImageView.ScaleType.CENTER, AImageView.ScaleType.MATRIX -> {}
                     else -> {}
                 }
             }
@@ -270,9 +274,9 @@ actual class SizelessRawImageView actual constructor(
         }
 
 
-        var widthMeasureSpecLast = 0
-        var heightMeasureSpecLast = 0
-        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        public var widthMeasureSpecLast: Int = 0
+        public var heightMeasureSpecLast: Int = 0
+        public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             if (this !in animatingSize) {
                 widthMeasureSpecLast = widthMeasureSpec
                 heightMeasureSpecLast = heightMeasureSpec
@@ -336,6 +340,7 @@ actual class SizelessRawImageView actual constructor(
 }
 
 
+@InternalKiteUi
 public actual class RawImageViewZoomable public actual constructor(
     context: RContext,
     source: ImageSource,
@@ -346,7 +351,7 @@ public actual class RawImageViewZoomable public actual constructor(
     actual override val state: Reactive<Unit> = _state
     override val native: PhotoView = PhotoView(context.activity)
     private val _zoomState = Signal<ZoomState>(native.imageMatrix)
-    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
+    public actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
     init {
         native.setOnScaleChangeListener { _, _, _ -> zoomState.value = native.imageMatrix }
         native.setOnViewDragListener { _, _ -> zoomState.value = native.imageMatrix }

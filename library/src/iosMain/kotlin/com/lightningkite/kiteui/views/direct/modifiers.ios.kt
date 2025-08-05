@@ -31,16 +31,16 @@ public actual fun ViewWriter.hintPopover(
     setup: ViewWriter.() -> Unit,
 ): ViewWrapper {
     beforeNextElementSetup {
-        public fun openDialog() {
+        fun openDialog() {
             // TODO
 //            toast(inner = setup)
         }
 
-        public val actionHolder = object : NSObject() {
+        val actionHolder = object : NSObject() {
             @ObjCAction
             fun eventHandler() = openDialog()
         }
-        public val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
+        val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
         native.addGestureRecognizer(rec)
     }
     return ViewWrapper
@@ -106,6 +106,7 @@ public actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
     this.beforeNextElementSetup {
         reactiveScope {
@@ -118,6 +119,7 @@ public actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float)
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
@@ -130,7 +132,7 @@ public actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrap
 
 @InternalKiteUi
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(
+public actual inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
@@ -140,7 +142,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
+public actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     refreshAction: Action,
@@ -184,6 +186,7 @@ public actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
 }
 
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         reactiveScope {
@@ -196,11 +199,12 @@ public actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContex
 
 // End
 @ViewModifierDsl3
+@InternalKiteUi
 public actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
     beforeNextElementSetup {
         native.hidden = !default
-        public var runNumber = 0
-        public var lastCommitted = 0
+        var runNumber = 0
+        var lastCommitted = 0
         reactiveScope {
             val value = condition()
             val myRun = ++runNumber

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.KeyCodes
@@ -12,6 +13,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class ToggleButton public actual constructor(context: RContext) : RView(context) {
     public val input: FutureElement = FutureElement().apply {
         themeChoice += ClickableSemantic
@@ -49,7 +51,7 @@ public actual class ToggleButton public actual constructor(context: RContext) : 
         Frame.internalAddChildStack(this, index, view)
     }
 
-    actual val checked: MutableReactiveValue<Boolean> = input.vprop(
+    public actual val checked: MutableReactiveValue<Boolean> = input.vprop(
         "input",
         { attributes.checked == true },
         { value -> attributes.checked = value })

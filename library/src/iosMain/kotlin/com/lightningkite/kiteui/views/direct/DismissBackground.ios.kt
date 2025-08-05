@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -21,9 +22,10 @@ import platform.UIKit.*
 import platform.darwin.sel_registerName
 
 
+@InternalKiteUi
 public actual class DismissBackground public actual constructor(context: RContext) : RView(context) {
 
-    override val native = NDismissBackground()
+    override val native: NDismissBackground = NDismissBackground()
     public actual fun onClick(action: suspend () -> Unit): Unit {
         native.onClick = {
             launch { action() }
@@ -48,14 +50,15 @@ public actual class DismissBackground public actual constructor(context: RContex
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
 
+@InternalKiteUi
 public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     UIViewWithSizeOverridesProtocol,
     UIViewWithSpacingRulesProtocol {
 
-    var onClick: () -> Unit = {}
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    var anchor: Pair<PopoverPreferredDirection, UIView>? = null
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public var onClick: () -> Unit = {}
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    public var anchor: Pair<PopoverPreferredDirection, UIView>? = null
+    override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
     override fun layoutSubviews() {
@@ -66,8 +69,8 @@ public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
             frameLayoutLayoutAnchoredSubviews(childSizeCache, anchor)
         }
     }
-    override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
-    override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
+    override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
     override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)
@@ -124,7 +127,7 @@ public actual class NDismissBackground() : UIButton(CGRectZero.readValue()),
     }
 
     @ObjCAction
-    fun onclick() {
+    public fun onclick() {
         onClick()
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.RContext
@@ -11,7 +12,8 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.debugPrint
 import kotlin.math.roundToInt
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+@InternalKiteUi
+public actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     override val native: NProgrammaticLayout = NProgrammaticLayout(context.activity).apply {
         rview = this@ProgrammaticLayout
     }
@@ -41,12 +43,13 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     }
 }
 
-class NProgrammaticLayout(context: Context) : ViewGroup(context) {
-    var spacingCurrentPx: Double = 0.0
-    var paddingTopCurrentPx: Double = 0.0
-    var paddingLeftCurrentPx: Double = 0.0
-    var paddingRightCurrentPx: Double = 0.0
-    var paddingBottomCurrentPx: Double = 0.0
+@InternalKiteUi
+public class NProgrammaticLayout(context: Context) : ViewGroup(context) {
+    public var spacingCurrentPx: Double = 0.0
+    public var paddingTopCurrentPx: Double = 0.0
+    public var paddingLeftCurrentPx: Double = 0.0
+    public var paddingRightCurrentPx: Double = 0.0
+    public var paddingBottomCurrentPx: Double = 0.0
     private var currentSize: Size = Size.Zero
 
     public var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
@@ -90,7 +93,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         )
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         debugPrint { "onMeasure on ProgrammaticLayout" }
         val newWidth = when (View.MeasureSpec.getMode(widthMeasureSpec)) {
             View.MeasureSpec.AT_MOST -> View.MeasureSpec.getSize(widthMeasureSpec).toDouble()
@@ -132,7 +135,7 @@ class NProgrammaticLayout(context: Context) : ViewGroup(context) {
         super.requestLayout()
     }
 
-    override fun requestLayout() {
+    public override fun requestLayout() {
         debugPrint { "requestLayout on ProgrammaticLayout" }
         if(isInLayout) {
             return

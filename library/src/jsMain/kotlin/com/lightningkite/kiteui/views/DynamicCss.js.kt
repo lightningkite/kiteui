@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Font
 import com.lightningkite.kiteui.navigation.basePath
 import kotlinx.browser.document
@@ -16,6 +17,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 
+@InternalKiteUi
 public external interface BaseUrlScript {
     public val baseUrl: String
 }

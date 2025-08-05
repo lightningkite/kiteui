@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
@@ -17,20 +18,22 @@ import com.lightningkite.readable.*
 import kotlin.math.roundToInt
 
 
-actual class Frame actual constructor(context: RContext) : RView(context) {
-    override val native = FrameLayout(context.activity)
+@InternalKiteUi
+public actual class Frame actual constructor(context: RContext) : RView(context) {
+    override val native: FrameLayout = FrameLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 }
 
+@InternalKiteUi
 public actual class RowOrCol actual constructor(context: RContext) : RView(context) {
-    override val native = SlightlyModifiedLinearLayout(context.activity)
+    override val native: SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
         SimplifiedLinearLayout.LayoutParams(
             if (vertical) ViewGroup.LayoutParams.MATCH_PARENT else ViewGroup.LayoutParams.WRAP_CONTENT,
             if (vertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT,
         )
-    actual var vertical: Boolean
+    public actual var vertical: Boolean
         get() = native.orientation == SimplifiedLinearLayout.VERTICAL
         set(value) {
             native.orientation = if (value) SimplifiedLinearLayout.VERTICAL else SimplifiedLinearLayout.HORIZONTAL
@@ -57,6 +60,7 @@ public actual class RowOrCol actual constructor(context: RContext) : RView(conte
     }
 }
 
+@InternalKiteUi
 public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) : RView(context) {
     override val native:SlightlyModifiedLinearLayout = SlightlyModifiedLinearLayout(context.activity)
     override fun defaultLayoutParams(): ViewGroup.LayoutParams =
@@ -90,6 +94,7 @@ public actual class RowCollapsingToColumn public actual constructor(context: RCo
     }
 }
 
+@InternalKiteUi
 public open class SlightlyModifiedLinearLayout(context: Context) : SimplifiedLinearLayout(context) {
     public override fun generateDefaultLayoutParams(): LayoutParams? {
         if (orientation == HORIZONTAL) {

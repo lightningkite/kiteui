@@ -31,5 +31,5 @@ public abstract class CanvasDelegate {
     public open fun sizeThatFitsHeight(width: Double, height: Double): Double = height
     public var invalidate: () -> Unit = {}
     public var theme: Theme = Theme.placeholder
-    public open fun RView.fallbackView() = { text("Rich content here that doesn't support accessibility.") }
+    public open fun RView.fallbackView(): () -> TextView = { text("Rich content here that doesn't support accessibility.") }
 }

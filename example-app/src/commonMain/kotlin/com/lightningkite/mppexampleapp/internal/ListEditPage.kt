@@ -13,11 +13,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("list-edit")
-object ListEditPage : Page {
-    override val title: Reactive<String>
+public object ListEditPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
-    val data = Signal(beeMovieScript.split('\n').take(5).toList())
+    public val data = Signal(beeMovieScript.split('\n').take(5).toList())
 
     public override fun ViewWriter.render(): ViewModifiable = run {
         row {

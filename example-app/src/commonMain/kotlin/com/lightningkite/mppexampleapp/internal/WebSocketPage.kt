@@ -13,8 +13,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("sample/websockets")
-object WebSocketPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object WebSocketPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val socket = remember {
             retryWebsocket("wss://socketsbay.com/wss/v2/1/demo/", 30_000L).also { use(it) }
         }

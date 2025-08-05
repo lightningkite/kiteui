@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.core.content.getSystemService
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
@@ -15,7 +16,8 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable(), TextWatcher {
+@InternalKiteUi
+public fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableReactiveValue<String>, BaseListenable(), TextWatcher {
     override fun afterTextChanged(s: Editable?) { invokeAllListeners() }
     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -25,7 +27,8 @@ fun EditText.contentProperty(): MutableReactiveValue<String> = object : MutableR
     override suspend fun set(value: String) { this.value = value }
     init { addTextChangedListener(this) }
 }
-fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
+@InternalKiteUi
+public fun CompoundButton.contentProperty(): MutableReactiveValue<Boolean> = object : MutableReactiveValue<Boolean>, BaseListenable(), CompoundButton.OnCheckedChangeListener {
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) { invokeAllListeners() }
     override var value: Boolean
         get() = isChecked

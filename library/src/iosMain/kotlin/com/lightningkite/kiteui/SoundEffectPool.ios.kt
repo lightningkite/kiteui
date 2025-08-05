@@ -34,6 +34,7 @@ public actual class SoundEffectPool public actual constructor(concurrency: Int) 
 }
 
 
+@InternalKiteUi
 public actual suspend fun AudioSource.load(): PlayableAudio {
     AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, null)
     AVAudioSession.sharedInstance().setActive(true, null)

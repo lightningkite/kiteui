@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.reactive
 
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.reactive.*
@@ -13,12 +12,16 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.*
+import kotlin.coroutines.coroutineContext
 
 public interface Action: Reactive<Boolean> {
     public val title: String
     public val icon: Icon
     public fun startAction(scope: CoroutineScope)
+    public operator fun plus(other: Action): Action
 }
+
+public operator fun Action.invoke(scope: CoroutineScope): Unit = startAction(scope)
 
 //data class ExternalLinkAction(
 //    override val name: String,
@@ -46,7 +49,7 @@ public fun Action(
     keepRunningWhile: CoroutineScope? = AppScope,
     frequencyCap: Duration? = 500.milliseconds,
     ignoreRetryWhileRunning: Boolean = true,
-    action: suspend () -> Unit
+    action: suspend CoroutineScope.() -> Unit
 ): Action = if (clearErrorOnDependencyChange) {
     DependentAction(title, icon, keepRunningWhile, ignoreRetryWhileRunning, action = action)
 } else {
@@ -59,26 +62,28 @@ public fun Action(
 
 public class FrequencyCapAction(public val wraps: Action, public val frequencyCap: Duration = 500.milliseconds) : Action by wraps {
     public var lastInvoked: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
-    public override fun startAction(scope: CoroutineScope) {
+    override fun startAction(scope: CoroutineScope) {
         if (lastInvoked.elapsedNow() > frequencyCap) {
             lastInvoked = TimeSource.Monotonic.markNow()
             wraps.startAction(scope)
         }
     }
+
+    override fun plus(other: Action): Action = FrequencyCapAction(wraps.plus(if (other is FrequencyCapAction) other.wraps else other), frequencyCap)
 }
 
 public class RetryableAction(
-    public override val title: String,
-    public override val icon: Icon,
+    override val title: String,
+    override val icon: Icon,
     public val keepRunningWhile: CoroutineScope? = AppScope,
     public val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
-    public var action: suspend () -> Unit,
+    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
+    public val action: suspend CoroutineScope.() -> Unit,
 ) : Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
     @OptIn(ExperimentalStdlibApi::class)
-    public override fun startAction(scope: CoroutineScope) {
+    override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         lastJob?.cancel()
         lastJob = (keepRunningWhile ?: scope).let { calculationContext ->
@@ -113,40 +118,39 @@ public class RetryableAction(
             it.cancel()
         }
     }
+
+    override fun plus(other: Action): RetryableAction = RetryableAction(
+        title,
+        icon,
+        keepRunningWhile,
+        ignoreRetryWhileRunning,
+        reportTo
+    ) plus@{
+        this@RetryableAction.startAction(this)
+        other.startAction(this)
+    }
 }
 
-class DependentAction(
+public class DependentAction(
     override val title: String,
     override val icon: Icon,
-    val keepRunningWhile: CoroutineScope? = AppScope,
-    val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
-    var action: suspend () -> Unit,
-) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
-public class DependentAction(
-    public override val title: String,
-    public override val icon: Icon,
     public val keepRunningWhile: CoroutineScope? = AppScope,
     public val ignoreRetryWhileRunning: Boolean = false,
-    private val reportTo: RawReadable<Boolean> = RawReadable<Boolean>(ReadableState(false)),
-    public var action: suspend () -> Unit,
-) : DependencyChangeListener(), Action, Readable<Boolean> by reportTo {
+    private val reportTo: RawReactive<Boolean> = RawReactive<Boolean>(ReactiveState(false)),
+    public val action: suspend CoroutineScope.() -> Unit,
+) : DependencyChangeListener(), Action, Reactive<Boolean> by reportTo {
     internal var lastJob: Job? = null
 
     override fun onDependencyNotReady() {
         reportTo.state = ReactiveState.notReady
-    public override fun onDependencyNotReady() {
-        reportTo.state = ReadableState.notReady
     }
 
     override fun onDependencyChange() {
         reportTo.state = ReactiveState(false)
-    public override fun onDependencyChange() {
-        reportTo.state = ReadableState(false)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    public override fun startAction(scope: CoroutineScope) {
+    override fun startAction(scope: CoroutineScope) {
         if(ignoreRetryWhileRunning && lastJob?.isCompleted == false) return
         dependencyBlockStart()
         lastJob?.cancel()
@@ -177,12 +181,22 @@ public class DependentAction(
         }
     }
 
-    public override fun cancel() {
-        action = {}
+    override fun cancel() {
         super.cancel()
         lastJob?.let {
             lastJob = null
             it.cancel()
         }
+    }
+
+    override fun plus(other: Action): Action = DependentAction(
+        title,
+        icon,
+        keepRunningWhile,
+        ignoreRetryWhileRunning,
+        reportTo
+    ) plus@{
+        this@DependentAction.startAction(this)
+        other.startAction(this)
     }
 }

@@ -32,15 +32,15 @@ public interface ProgrammaticLayoutDelegate {
     }
 }
 
-interface ProgrammingLayoutInProgress {
-    val within: Size
-    val gap: Double
-    val padding: Double
-    val paddingTop: Double
-    val paddingLeft: Double
-    val paddingRight: Double
-    val paddingBottom: Double
-    fun measure(child: RView, sizeConstraint: Size): Size
-    fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
-    fun existingPosition(child: RView): Rect
+public interface ProgrammingLayoutInProgress {
+    public val within: Size
+    public val gap: Double
+    public val padding: Double
+    public val paddingTop: Double
+    public val paddingLeft: Double
+    public val paddingRight: Double
+    public val paddingBottom: Double
+    public fun measure(child: RView, sizeConstraint: Size): Size
+    public fun place(child: RView, left: Double, top: Double, right: Double, bottom: Double)
+    public fun existingPosition(child: RView): Rect
 }

@@ -8,5 +8,5 @@ public expect class RowOrCol(context: RContext) : RView {
     public var vertical: Boolean
     public fun spacingOverrideBeforeNext(amount: Dimension)
 }
-expect class RowWrapping(context: RContext) : RView {
+public expect class RowWrapping(context: RContext) : RView {
 }

@@ -9,7 +9,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual class Slider actual constructor(context: RContext) : RView(context) {
+public actual class Slider actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "input"
         native.attributes.type = "range"
@@ -21,7 +21,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
     }
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float> = native.vprop(
+    public actual val value: MutableReactiveValue<Float> = native.vprop(
         "input",
         { attributes.valueString?.toFloatOrNull() ?: 0.5f },
         { newValue -> 
@@ -42,7 +42,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         }
     )
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             native.setAttribute("min", value.toString())
@@ -50,7 +50,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             native.setAttribute("max", value.toString())
@@ -58,7 +58,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             native.setAttribute("step", value?.toString() ?: "any")
@@ -69,7 +69,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         value.value = valueProp.value
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = !(native.attributes.disabled ?: false)
         set(value) {
             native.attributes.disabled = !value

@@ -9,11 +9,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
 
-class WorkAndLoadTracker(
-    val scope: CoroutineScope,
-    val onException: (Exception, working: Boolean) -> (() -> Unit)?
+public class WorkAndLoadTracker(
+    public val scope: CoroutineScope,
+    public val onException: (Exception, working: Boolean) -> (() -> Unit)?
 ) {
-    val loading = Signal(false)
+    public val loading: Signal<Boolean> = Signal(false)
     private var loadCount = 0
         set(value) {
             field = value
@@ -23,7 +23,7 @@ class WorkAndLoadTracker(
                 loading.value = true
             }
         }
-    val working = Signal(false)
+    public val working: Signal<Boolean> = Signal(false)
     private var workCount = 0
         set(value) {
             field = value
@@ -80,7 +80,7 @@ class WorkAndLoadTracker(
     }
 
 
-    val statusListener = object : StatusListener {
+    public val statusListener: StatusListener = object : StatusListener {
         override fun working(readable: Reactive<*>) {
             listenForWorking(readable)
         }

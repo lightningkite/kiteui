@@ -40,8 +40,8 @@ public interface Screen: Page {
     }
 }
 @Deprecated("Renamed to pageNavigator", ReplaceWith("pageNavigator"))
-public var ViewWriter.screenNavigator by ViewWriter::pageNavigator
+public var ViewWriter.screenNavigator: PageNavigator by ViewWriter::pageNavigator
 @Deprecated("Renamed to mainPageNavigator", ReplaceWith("mainPageNavigator"))
-public var ViewWriter.mainScreenNavigator by ViewWriter::mainPageNavigator
+public var ViewWriter.mainScreenNavigator: PageNavigator by ViewWriter::mainPageNavigator
 @Deprecated("Renamed to dialogPageNavigator", ReplaceWith("dialogPageNavigator"))
-public var ViewWriter.dialogScreenNavigator by ViewWriter::dialogPageNavigator
+public var ViewWriter.dialogScreenNavigator: PageNavigator by ViewWriter::dialogPageNavigator

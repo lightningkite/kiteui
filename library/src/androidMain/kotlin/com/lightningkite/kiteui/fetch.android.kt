@@ -41,6 +41,7 @@ public val client: HttpClient
 
 private val fetchLog = LogRoot.tag("fetch")
 
+@InternalKiteUi
 public actual suspend fun fetch(
     url: String,
     method: HttpMethod,
@@ -115,13 +116,17 @@ public actual suspend fun fetch(
     }
 }
 
+@InternalKiteUi
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
+@InternalKiteUi
 public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
+@InternalKiteUi
 public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+@InternalKiteUi
 public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
@@ -142,6 +147,7 @@ public actual class HttpHeaders(public val map: MutableMap<String, List<String>>
     }
 }
 
+@InternalKiteUi
 public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
@@ -173,6 +179,7 @@ public actual class RequestResponse(public val wraps: HttpResponse) {
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
+@InternalKiteUi
 public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
@@ -309,8 +316,10 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
 public actual class FileReference(public val uri: Uri)
 
 
-public actual fun Blob.mimeType() = type
-public actual fun FileReference.mimeType() = when (uri.scheme) {
+@InternalKiteUi
+public actual fun Blob.mimeType():String = type
+@InternalKiteUi
+public actual fun FileReference.mimeType():String = when (uri.scheme) {
     ContentResolver.SCHEME_CONTENT -> AndroidAppContext.applicationCtx.contentResolver.getType(uri)
     ContentResolver.SCHEME_FILE ->
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
@@ -319,6 +328,7 @@ public actual fun FileReference.mimeType() = when (uri.scheme) {
     else -> null
 } ?: "*/*"
 
+@InternalKiteUi
 public actual fun FileReference.fileName(): String {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
@@ -341,7 +351,9 @@ public val webSocketClient: HttpClient by lazy {
     }
 }
 
+@InternalKiteUi
 public actual fun Blob.bytes(): Long = data.size.toLong()
+@InternalKiteUi
 public actual fun FileReference.bytes(): Long {
     return AndroidAppContext.applicationCtx.contentResolver
         .query(uri, null, null, null, null)
@@ -360,15 +372,19 @@ public actual fun FileReference.bytes(): Long {
 //    }
 //}
 
+@InternalKiteUi
 public actual suspend fun Blob.text(): String = data.toString(Charsets.UTF_8)
+@InternalKiteUi
 public actual suspend fun FileReference.text(): String = withContext(Dispatchers.Main) {
     withContext(Dispatchers.IO) {
         AndroidAppContext.applicationCtx.contentResolver.openInputStream(uri)!!.reader(Charsets.UTF_8).readText()
     }
 }
 
+@InternalKiteUi
 public actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }
 
-actual suspend fun Blob.toByteArray(): ByteArray = data
+@InternalKiteUi
+public actual suspend fun Blob.toByteArray(): ByteArray = data

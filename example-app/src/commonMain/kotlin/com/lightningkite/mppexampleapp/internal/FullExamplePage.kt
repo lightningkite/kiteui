@@ -19,9 +19,9 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("full-screen")
-class FullScreenPage: Page, UseFullPage {
+public class FullScreenPage: Page, UseFullPage {
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
 //        programmatic {
 //            delegate = ProgrammaticLayoutDelegate.AllFull
 //            frame {

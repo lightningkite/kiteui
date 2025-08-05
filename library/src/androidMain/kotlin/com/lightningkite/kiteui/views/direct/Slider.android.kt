@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import android.content.res.ColorStateList
 import android.widget.SeekBar
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -10,12 +11,12 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual class Slider actual constructor(context: RContext) : RView(context) {
+public actual class Slider actual constructor(context: RContext) : RView(context) {
     private val nativeSeekBar = SeekBar(context.activity)
-    override val native = nativeSeekBar
+    override val native: SeekBar = nativeSeekBar
 
     private val valueProp = Signal(0.5f)
-    actual val value: MutableReactiveValue<Float>
+    public actual val value: MutableReactiveValue<Float>
         get() {
             return object : MutableReactiveValue<Float> {
                 override fun addListener(listener: () -> Unit): () -> Unit {
@@ -80,21 +81,21 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
             }
         }
 
-    actual var min: Float = 0f
+    public actual var min: Float = 0f
         set(value) {
             field = value
             // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
-    actual var max: Float = 1f
+    public actual var max: Float = 1f
         set(value) {
             field = value
             // Update current value to ensure it's within new range
             this.value.value = this.value.value
         }
 
-    actual var step: Float? = null
+    public actual var step: Float? = null
         set(value) {
             field = value
             // Android SeekBar doesn't have a built-in step property
@@ -109,7 +110,7 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         value.value = valueProp.value
     }
 
-    actual var enabled: Boolean
+    public actual var enabled: Boolean
         get() = nativeSeekBar.isEnabled
         set(value) {
             nativeSeekBar.isEnabled = value
@@ -127,8 +128,8 @@ actual class Slider actual constructor(context: RContext) : RView(context) {
         val t = theme.theme
 
         // Apply theme colors to the slider
-        nativeSeekBar.progressTintList = android.content.res.ColorStateList.valueOf(t.foreground.closestColor().colorInt())
-        nativeSeekBar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(t.background.closestColor().colorInt())
-        nativeSeekBar.thumbTintList = android.content.res.ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+        nativeSeekBar.progressTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
+        nativeSeekBar.progressBackgroundTintList = ColorStateList.valueOf(t.background.closestColor().colorInt())
+        nativeSeekBar.thumbTintList = ColorStateList.valueOf(t.foreground.closestColor().colorInt())
     }
 }

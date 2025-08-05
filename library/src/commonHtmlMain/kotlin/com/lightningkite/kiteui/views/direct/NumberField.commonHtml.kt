@@ -18,7 +18,7 @@ public actual class NumberInput public actual constructor(context: RContext) : R
         native.tag = "input"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<Double?> = object : MutableReactiveValue<Double?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 numberAutocommaRepair(
@@ -43,7 +43,7 @@ public actual class NumberInput public actual constructor(context: RContext) : R
             }
     }
 
-    actual var keyboardHints: KeyboardHints = KeyboardHints()
+    public actual var keyboardHints: KeyboardHints = KeyboardHints()
         set(value) {
             field = value
             native.attributes.type = when (value.type) {
@@ -132,8 +132,8 @@ public actual class NumberInput public actual constructor(context: RContext) : R
         set(value) { native.attributes.disabled = !value }
 }
 
-expect val NumberInput.selectionStart: Int?
-expect val NumberInput.selectionEnd: Int?
-expect fun NumberInput.setSelectionRange(start: Int, end: Int)
+public expect val NumberInput.selectionStart: Int?
+public expect val NumberInput.selectionEnd: Int?
+public expect fun NumberInput.setSelectionRange(start: Int, end: Int)
 
-expect fun usingWebOnMobile(): Boolean
+public expect fun usingWebOnMobile(): Boolean

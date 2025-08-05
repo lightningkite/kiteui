@@ -25,11 +25,11 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 
 @Routable("scroll-element")
-object ScrollElementTestPage : Page {
-    override val title: Reactive<String>
+public object ScrollElementTestPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             repeat(3) {
                 card - col {

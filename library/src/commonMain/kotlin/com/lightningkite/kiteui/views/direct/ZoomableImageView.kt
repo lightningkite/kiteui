@@ -67,8 +67,8 @@ public class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
         }
     }
 
-    val shown = RawReactive<Info?>(ReactiveState(null))
-    fun refresh() {
+    public val shown: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public fun refresh() {
         if (!ready) return
         val info = info
         if (lastRendered != info) {

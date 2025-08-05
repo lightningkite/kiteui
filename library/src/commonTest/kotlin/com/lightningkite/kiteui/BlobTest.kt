@@ -4,7 +4,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class BlobTest {
+public class BlobTest {
     @Test fun test() = runTest {
         val c = "This is some test content"
         assertEquals(c, c.toBlob().also {

@@ -18,10 +18,10 @@ import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 @Routable("docs/resources")
-object ResourcesPage: DocPage {
-    override val covers: List<String> = listOf("resources", "Resources", "assets", "Assets", "images", "audio", "video", "fonts")
+public object ResourcesPage: DocPage {
+    public override val covers: List<String> = listOf("resources", "Resources", "assets", "Assets", "images", "audio", "video", "fonts")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("Resources")
             text("KiteUI provides a convenient way to access resources (assets) in your multiplatform application. Resources can include images, audio, video, and fonts.")

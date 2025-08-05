@@ -3,10 +3,12 @@ package com.lightningkite.kiteui.views.direct
 import android.content.Context
 import android.graphics.Shader
 import android.widget.TextView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.LinearGradient
 import com.lightningkite.kiteui.models.Paint
 
+@InternalKiteUi
 public class TextViewWithGradient(context: Context): android.widget.TextView(context) {
 
     public var kuiPaintForeground: Paint = Color.black

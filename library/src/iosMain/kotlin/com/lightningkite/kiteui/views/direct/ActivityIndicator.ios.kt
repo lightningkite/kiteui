@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
@@ -7,8 +8,9 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.*
 import platform.UIKit.UIActivityIndicatorView
 
+@InternalKiteUi
 public actual class ActivityIndicator public actual constructor(context: RContext): RView(context) {
-    override val native = UIActivityIndicatorView().apply {
+    override val native: UIActivityIndicatorView = UIActivityIndicatorView().apply {
         hidden = false
         startAnimating()
         extensionSizeConstraints = SizeConstraints(minWidth = 1.rem, minHeight = 1.rem)

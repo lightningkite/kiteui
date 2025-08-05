@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.SizeConstraints
@@ -27,16 +28,17 @@ import platform.UIKit.*
 //class LayoutParams()
 
 
+@InternalKiteUi
 public class FrameLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
 
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
-    override fun getSpacingOverrideProperty() = spacingOverride
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null)
+    public override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
     private val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList()
     public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = frameLayoutSizeThatFits(size, childSizeCache)
-    public override fun layoutSubviews() = frameLayoutLayoutSubviews(childSizeCache)
-    public override fun subviewDidChangeSizing(view: UIView?) = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
-    public override fun forceRemeasures() = childSizeCache.forEach { it.clear() }
+    public override fun layoutSubviews(): Unit = frameLayoutLayoutSubviews(childSizeCache)
+    public override fun subviewDidChangeSizing(view: UIView?): Unit = frameLayoutSubviewDidChangeSizing(view, childSizeCache)
+    public override fun forceRemeasures(): Unit = childSizeCache.forEach { it.clear() }
     public override fun didAddSubview(subview: UIView) {
         super.didAddSubview(subview)
         frameLayoutDidAddSubview(subview, childSizeCache)

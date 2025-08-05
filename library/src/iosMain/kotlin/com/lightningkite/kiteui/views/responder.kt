@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.direct.ScrollLayout
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -9,12 +10,14 @@ import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIView
 
+@InternalKiteUi
 public fun UIView.findFirstResponderChild(): UIView? {
     if(isFirstResponder) return this
     else return subviews.asSequence().filterIsInstance<UIView>().filter { !it.hidden }.mapNotNull { it.findFirstResponderChild() }.firstOrNull()
 }
 
 
+@InternalKiteUi
 public fun UIView.scrollToMe(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal
@@ -49,6 +52,7 @@ public fun UIView.scrollToMe(animated: Boolean = false) {
 }
 
 
+@InternalKiteUi
 public fun UIView.scrollToMeCenter(animated: Boolean = false) {
     generateSequence(superview) { it.superview }.filterIsInstance<ScrollLayout>().firstOrNull()?.let {
         // goal: centers equal

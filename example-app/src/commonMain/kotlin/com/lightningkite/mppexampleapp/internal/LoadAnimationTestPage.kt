@@ -72,8 +72,8 @@ public object LoadAnimationTestPage : Page {
         }
     }
 
-    object WeirdSem: Semantic("weird") {
-        override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+    public object WeirdSem: Semantic("weird") {
+        public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
             cascading = false,
             padding = Edges(2.rem)
         )

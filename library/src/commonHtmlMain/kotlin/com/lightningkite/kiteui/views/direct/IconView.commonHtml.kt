@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 
 
+@InternalKiteUi
 public actual class IconView public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"

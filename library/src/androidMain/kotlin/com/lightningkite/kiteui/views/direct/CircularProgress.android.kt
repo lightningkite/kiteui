@@ -10,12 +10,14 @@ import android.graphics.drawable.RotateDrawable
 import android.view.View
 import android.widget.ProgressBar
 import androidx.annotation.FloatRange
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import kotlin.math.roundToInt
 
+@InternalKiteUi
 public actual class CircularProgress public actual constructor(context: RContext) : RView(context) {
 
     override val native: NCircularProgress = NCircularProgress(context.activity).apply {
@@ -37,6 +39,7 @@ public actual class CircularProgress public actual constructor(context: RContext
 }
 
 
+@InternalKiteUi
 public class NCircularProgress(context: Context) : ProgressBar (context) {
 
     private val progressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

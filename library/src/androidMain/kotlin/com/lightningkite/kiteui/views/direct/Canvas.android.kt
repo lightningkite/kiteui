@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -12,6 +13,7 @@ import com.lightningkite.kiteui.views.canvas.DrawingContext2DImpl
 import kotlin.math.min
 
 
+@InternalKiteUi
 public actual class Canvas public actual constructor(context: RContext): RView(context) {
     override val native: NCanvas = NCanvas(context.activity)
 
@@ -31,6 +33,7 @@ public actual class Canvas public actual constructor(context: RContext): RView(c
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
+@InternalKiteUi
 public actual class NCanvas @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

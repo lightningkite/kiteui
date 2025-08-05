@@ -13,7 +13,7 @@ import kotlin.contracts.*
 import kotlin.jvm.JvmInline
 
 
-expect class Select(context: RContext) : RView {
-    var enabled: Boolean
-    fun <T> bind(edits: MutableReactive<T>, data: Reactive<List<T>>, render: (T) -> String)
+public expect class Select(context: RContext) : RView {
+    public var enabled: Boolean
+    public fun <T> bind(edits: MutableReactive<T>, data: Reactive<List<T>>, render: (T) -> String)
 }

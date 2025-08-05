@@ -19,7 +19,7 @@ import com.lightningkite.readable.*
 @Routable("docs/navigation")
 public object NavigationPage: DocPage {
 
-    override val title: Reactive<String>
+    public override val title: Reactive<String>
         get() = Constant("Navigation: how to manage screens")
 
     public override val covers: List<String> = listOf(

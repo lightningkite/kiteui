@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -22,7 +23,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
         native.attributes.type = "datetime-local"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<LocalDateTime?> = object : MutableReactiveValue<LocalDateTime?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalDateTime?> = object : MutableReactiveValue<LocalDateTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -75,6 +76,7 @@ public actual class LocalDateTimeField public actual constructor(context: RConte
 }
 
 
+@InternalKiteUi
 public actual class LocalDateField public actual constructor(context: RContext) : RViewWithAction(context) {
     public companion object {
         public val charCount: Int = "2024-06-01".length
@@ -84,7 +86,7 @@ public actual class LocalDateField public actual constructor(context: RContext) 
         native.attributes.type = "date"
         native.classes.add("editable")
     }
-    actual val content: MutableReactiveValue<LocalDate?> = object : MutableReactiveValue<LocalDate?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalDate?> = object : MutableReactiveValue<LocalDate?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()
@@ -148,7 +150,7 @@ public actual class LocalTimeField public actual constructor(context: RContext) 
         native.classes.add("editable")
     }
 
-    actual val content: MutableReactiveValue<LocalTime?> = object : MutableReactiveValue<LocalTime?>, BaseListenable() {
+    public actual val content: MutableReactiveValue<LocalTime?> = object : MutableReactiveValue<LocalTime?>, BaseListenable() {
         init {
             native.addEventListener("input") {
                 invokeAllListeners()

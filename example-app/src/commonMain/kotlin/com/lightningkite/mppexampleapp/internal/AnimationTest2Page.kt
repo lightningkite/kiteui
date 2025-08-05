@@ -20,8 +20,8 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("animation-test2")
-object AnimationTest2Page : Page {
-    override fun ViewWriter.render(): ViewModifiable = scrolling - col {
+public object AnimationTest2Page : Page {
+    public override fun ViewWriter.render(): ViewModifiable = scrolling - col {
         val a = Signal(true)
         val s = Signal(true)
         val d = Signal(true)

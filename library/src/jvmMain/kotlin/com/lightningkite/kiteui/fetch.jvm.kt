@@ -32,6 +32,7 @@ public val client: HttpClient by lazy { webSocketClient }
 
 private val fetchLog = LogRoot.tag("fetch")
 
+@InternalKiteUi
 public actual suspend fun fetch(
     url: String,
     method: HttpMethod,
@@ -94,10 +95,13 @@ public actual suspend fun fetch(
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
+@InternalKiteUi
 public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
+@InternalKiteUi
 public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
+@InternalKiteUi
 public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
@@ -118,6 +122,7 @@ public actual class HttpHeaders(public val map: MutableMap<String, List<String>>
     }
 }
 
+@InternalKiteUi
 public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
@@ -285,9 +290,12 @@ public class WebSocketWrapper(public val url: String) : WebSocket {
 public actual class FileReference(public val file: File)
 
 
-public actual fun Blob.mimeType() = type
-public actual fun FileReference.mimeType() = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+@InternalKiteUi
+public actual fun Blob.mimeType(): String = type
+@InternalKiteUi
+public actual fun FileReference.mimeType():String = Files.probeContentType(file.toPath()) ?: "application/octet-stream"
 
+@InternalKiteUi
 public actual fun FileReference.fileName(): String = file.toString().substringAfterLast('/')
 @InternalKiteUi
 public actual class Blob(public val data: ByteArray, public val type: String)
@@ -305,7 +313,9 @@ public val webSocketClient: HttpClient by lazy {
     }
 }
 
+@InternalKiteUi
 public actual fun Blob.bytes(): Long = data.size.toLong()
+@InternalKiteUi
 public actual fun FileReference.bytes(): Long = file.length()
 //public actual suspend fun Blob.byteArray(): ByteArray = data
 //public actual suspend fun FileReference.byteArray(): ByteArray = withContext(Dispatchers.Main) {
@@ -321,4 +331,4 @@ public actual fun String.toBlob(contentType: String): Blob {
     return Blob(toByteArray(Charsets.UTF_8), contentType)
 }
 
-actual suspend fun Blob.toByteArray(): ByteArray = data
+public actual suspend fun Blob.toByteArray(): ByteArray = data

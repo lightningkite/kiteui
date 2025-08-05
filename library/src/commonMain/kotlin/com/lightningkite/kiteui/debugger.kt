@@ -50,7 +50,7 @@ public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long) {
         }
     }
 }
-fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
+public fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         get()?.let {
@@ -60,7 +60,7 @@ fun WeakReference<*>.checkLeakAfterDelay(milliseconds: Long, name: String) {
         }
     }
 }
-fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
+public fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
     afterTimeout(milliseconds) {
         gcIfNotVeryRecent()
         if (get() == null) {
@@ -71,28 +71,28 @@ fun WeakReference<*>.recheckLeakAfterDelay(milliseconds: Long, name: String) {
         }
     }
 }
-expect fun assertMainThread()
+public expect fun assertMainThread()
 
 public expect fun Throwable.printStackTrace2()
 public var Throwable_report: (Throwable, String) -> Unit = { e, _ -> e.printStackTrace2() }
-public fun Throwable.report(context: String = "") = Throwable_report(this, context)
+public fun Throwable.report(context: String = ""): Unit = Throwable_report(this, context)
 
 public expect fun Any?.identityHashCode(): Int
 
-var viewDebugTarget: RView? = null
-inline fun RViewHelper.debugPrint(get: ()->String) {
+public var viewDebugTarget: RView? = null
+public inline fun RViewHelper.debugPrint(get: ()->String) {
     if(debugMode && viewDebugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
-inline fun RView.debugPrint(get: ()->String) {
+public inline fun RView.debugPrint(get: ()->String) {
     if(debugMode && viewDebugTarget == this)
         Log.tag("viewDebugTarget").info(get())
 }
 
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias Console = Log
+public typealias Console = Log
 @Deprecated("Update to 'Log'", ReplaceWith("Log", "com.lightningkite.kiteui.Log"))
-typealias ConsoleRoot = Log.Companion
+public typealias ConsoleRoot = Log.Companion
 
 public interface Log {
     public companion object: Log by LogRoot

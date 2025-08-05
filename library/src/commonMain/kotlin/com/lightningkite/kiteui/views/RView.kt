@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.exceptions.ExceptionHandlers
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -12,7 +13,7 @@ import com.lightningkite.readable.*
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 
-expect abstract class RView constructor(context: RContext) : RViewHelper {
+public expect abstract class RView constructor(context: RContext) : RViewHelper {
     override var showOnPrint: Boolean
     override fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean)
     override fun requestFocus()
@@ -23,8 +24,8 @@ expect abstract class RView constructor(context: RContext) : RViewHelper {
     override fun internalClearChildren()
 }
 
-abstract class RViewWrapper(context: RContext) : RView(context) {
-    override var gap: Dimension? = null
+public abstract class RViewWrapper(context: RContext) : RView(context) {
+    public override var gap: Dimension? = null
         get() = field ?: parent?.gap
 }
 
@@ -43,16 +44,16 @@ public abstract class RViewWithAction(context: RContext) : RView(context) {
     }
 }
 
-abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(context) {
+public abstract class RViewWithSecondaryAction(context: RContext) : RViewWithAction(context) {
     private var secondaryActionStatusRemove: (() -> Unit)? = null
     init { onRemove { secondaryActionStatusRemove?.invoke(); secondaryActionStatusRemove = null } }
-    var secondaryAction: Action? = null
+    public var secondaryAction: Action? = null
         set(value) {
             field = value
             secondaryActionSet(value)
         }
 
-    open fun secondaryActionSet(value: Action?) {
+    public open fun secondaryActionSet(value: Action?) {
         secondaryActionStatusRemove?.invoke()
         secondaryActionStatusRemove = value?.let { listenForWorking(it) }
     }
@@ -69,8 +70,10 @@ public fun RView.rectangleRelativeTo(other: RView): Rect? {
     )
 }
 
-expect val RView.areAnimationsEnabled: Boolean
-expect inline fun RView.withoutAnimation(action: () -> Unit)
+@InternalKiteUi
+public expect val RView.areAnimationsEnabled: Boolean
+@InternalKiteUi
+public expect inline fun RView.withoutAnimation(action: () -> Unit)
 
 //expect abstract class RView2 expect constructor(context: RContext): CoroutineContext {
 //    val context: RContext

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
@@ -7,8 +8,9 @@ import com.lightningkite.kiteui.views.ViewDsl
 import platform.UIKit.UIView
 import platform.WebKit.WKWebView
 
+@InternalKiteUi
 public actual class WebView public actual constructor(context: RContext): RView(context) {
-    override val native = WKWebView()
+    override val native: WKWebView = WKWebView()
     public actual inline var url: String
         get() = TODO()
         set(value) {}

@@ -15,10 +15,10 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("docs/recyclerView")
-object RecyclerViewPage : DocPage {
-    override val covers: List<String> = listOf("RecyclerView", "recyclerView", "horizontalRecyclerView", "list", "grid", "vertical", "horizontal")
+public object RecyclerViewPage : DocPage {
+    public override val covers: List<String> = listOf("RecyclerView", "recyclerView", "horizontalRecyclerView", "list", "grid", "vertical", "horizontal")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         article {
             h1("RecyclerView")
             text("RecyclerView is a powerful component for displaying lists and grids of items efficiently. It reuses view elements as they scroll off-screen, making it ideal for displaying large datasets.")
@@ -137,8 +137,8 @@ object RecyclerViewPage : DocPage {
             example("""
                 // Define item types outside the function
                 sealed interface ListItem {
-                    data class Text(val text: String) : ListItem
-                    data class Image(val imageUrl: String) : ListItem
+                    public data class Text(val text: String) : ListItem
+                    public data class Image(val imageUrl: String) : ListItem
                 }
 
                 expanding - recyclerView {
@@ -196,7 +196,7 @@ object RecyclerViewPage : DocPage {
                         text("Add Item")
                         onClick { 
                             // Create a new item with a unique ID
-                            val newItem = ListItem(nextId++, "New Item")
+                            public val newItem = ListItem(nextId++, "New Item")
                             itemsList.value = itemsList.value + newItem
                         }
                     }
@@ -225,7 +225,7 @@ object RecyclerViewPage : DocPage {
                         text("Add Item")
                         onClick { 
                             // Create a new item with a unique ID
-                            val newItem = ListItem(nextId++, "New Item")
+                            public val newItem = ListItem(nextId++, "New Item")
                             itemsList.value = itemsList.value + newItem
                         }
                     }

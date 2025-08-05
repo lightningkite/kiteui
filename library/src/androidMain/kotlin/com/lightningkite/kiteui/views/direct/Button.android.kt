@@ -4,11 +4,13 @@ import android.content.res.ColorStateList
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
+@InternalKiteUi
 public actual class Button actual constructor(context: RContext): RViewWithSecondaryAction(context) {
     public val progress: ProgressBar = ProgressBar(context.activity, null, android.R.attr.progressBarStyleSmall).apply {
         minimumWidth = 0

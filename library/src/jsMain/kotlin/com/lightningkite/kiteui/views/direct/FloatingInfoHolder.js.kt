@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.DOMRect
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DialogSemantic
@@ -21,6 +22,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@InternalKiteUi
 public actual class FloatingInfoHolder public actual constructor(public val source: RView) {
     public val theme: Theme get() = source.theme
     public val maxDist: Int = 32
@@ -299,5 +301,7 @@ public actual class FloatingInfoHolder public actual constructor(public val sour
     }
 }
 
-public val DOMRect.centerY get() =  (top + bottom) / 2
-public val DOMRect.centerX get() =  (left + right) / 2
+@InternalKiteUi
+public val DOMRect.centerY: Double get() =  (top + bottom) / 2
+@InternalKiteUi
+public val DOMRect.centerX: Double get() =  (left + right) / 2

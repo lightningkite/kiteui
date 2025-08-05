@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
 
+@InternalKiteUi
 public actual class FutureElementStyle(public val underlyingMap: MutableMap<String, String>) {
     public operator fun get(key: String): String? = underlyingMap.get(key)
     public operator fun set(key: String, value: String?) {
@@ -13,6 +15,7 @@ public actual class FutureElementStyle(public val underlyingMap: MutableMap<Stri
     }
 }
 
+@InternalKiteUi
 public actual class FutureElementAttributes(public val underlyingMap: MutableMap<String, String>) {
     public operator fun get(key: String): String? = underlyingMap.get(key)
     public operator fun set(key: String, value: String?) {
@@ -21,28 +24,41 @@ public actual class FutureElementAttributes(public val underlyingMap: MutableMap
     }
 }
 
+@InternalKiteUi
 public actual class FutureElement public actual constructor() {
+    @InternalKiteUi
     public actual val actualElementForLeakTracking: Any? get() = null
+    @InternalKiteUi
     public actual var xmlns: String? = null
+    @InternalKiteUi
     public actual var tag: String = "tag"
+    @InternalKiteUi
     public actual var classes: MutableSet<String> = HashSet()
+    @InternalKiteUi
     public actual var id: String? = null
+    @InternalKiteUi
     public actual var content: String? = null
+    @InternalKiteUi
     public actual var innerHtmlUnsafe: String? = null
     public val childrenBack: ArrayList<FutureElement> = ArrayList<FutureElement>()
+    @InternalKiteUi
     public actual val children: List<FutureElement> = childrenBack
+    @InternalKiteUi
     public actual fun appendChild(element: FutureElement) {
         childrenBack.add(element)
     }
 
+    @InternalKiteUi
     public actual fun appendChild(index: Int, element: FutureElement) {
         childrenBack.add(index, element)
     }
 
+    @InternalKiteUi
     public actual fun removeChild(index: Int) {
         childrenBack.removeAt(index)
     }
 
+    @InternalKiteUi
     public actual fun clearChildren() {
         childrenBack.clear()
     }
@@ -54,20 +70,28 @@ public actual class FutureElement public actual constructor() {
 
     public actual inline fun flushClasses() {}
 
+    @InternalKiteUi
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(HashMap())
+    @InternalKiteUi
     public actual val style: FutureElementStyle = FutureElementStyle(HashMap())
+    @InternalKiteUi
     public actual var desiredVerticalGravity: Align? = null
+    @InternalKiteUi
     public actual var desiredHorizontalGravity: Align? = null
+    @InternalKiteUi
     public actual fun setAttribute(key: String, value: String?) {
         if (value == null) attributes.underlyingMap.remove(key)
         else attributes.underlyingMap[key] = value
     }
+    @InternalKiteUi
     public actual fun setStyleProperty(key: String, value: String?) {
         if (value == null) style.underlyingMap.remove(key)
         else style.underlyingMap[key] = value
     }
 
+    @InternalKiteUi
     public actual inline fun addEventListener(name: String, listener: (Event) -> Unit) {}
+    @InternalKiteUi
     public actual inline fun replaceEventListener(name: String, listener: (Event) -> Unit) {}
 
     public fun render(out: Appendable) {
@@ -114,6 +138,7 @@ public actual class FutureElement public actual constructor() {
     }
 }
 
+@InternalKiteUi
 public fun Appendable.appendSafe(html: String) {
     for(char in html) {
         when(char) {
@@ -126,7 +151,7 @@ public fun Appendable.appendSafe(html: String) {
         }
     }
 }
-
+@InternalKiteUi
 public actual fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
@@ -135,5 +160,7 @@ public actual fun RView.nativeScrollIntoView(
 
 }
 
+@InternalKiteUi
 public actual fun RView.nativeSetDragData(data: DragData?) {}
+@InternalKiteUi
 public actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {}

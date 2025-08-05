@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -13,7 +14,8 @@ import kotlin.math.roundToInt
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+@InternalKiteUi
+public actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"
         native.style.position = "relative"
@@ -23,7 +25,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
         set(value) {
             field = value; invalidateLayout()
         }
-    var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
+    public var log: Log? = null// ConsoleRoot.tag("ProgrammaticLayout")
 
     override fun postSetup() {
         super.postSetup()
@@ -200,7 +202,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     private var lastFillHeight: Boolean = true
     private var timeoutSet = false
     private var currentSize: Size = Size.Zero
-    actual fun invalidateLayout() {
+    public actual fun invalidateLayout() {
         log?.log("invalidateLayout()")
         if (timeoutSet) return
         window.setTimeout({

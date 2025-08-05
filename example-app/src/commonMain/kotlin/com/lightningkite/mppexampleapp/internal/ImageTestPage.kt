@@ -15,8 +15,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("image-test")
-object ImageTestPage : Page {
-    override val title: Reactive<String>
+public object ImageTestPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
     public override fun ViewWriter.render(): ViewModifiable = run {

@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.*
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.R
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -23,6 +24,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class Select public actual constructor(context: RContext): RView(context) {
     override val native: Spinner = Spinner(context.activity).apply {
         minimumHeight = 0
@@ -74,7 +76,7 @@ public actual class Select public actual constructor(context: RContext): RView(c
         background = layerDrawable
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String

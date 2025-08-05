@@ -17,8 +17,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("recycler-view-infinite-images")
-object InfiniteImagesPage : Page {
-    override val title: Reactive<String>
+public object InfiniteImagesPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
     public object ReturnIndexList: List<Int>{
@@ -72,8 +72,8 @@ object InfiniteImagesPage : Page {
     }
 }
 
-class ImageViewPager(val initialIndex: Int) : Page {
-    val currentPage = Signal(initialIndex)
+public class ImageViewPager(val initialIndex: Int) : Page {
+    public val currentPage = Signal(initialIndex)
 
     public override fun ViewWriter.render(): ViewModifiable = run {
         themeFromLast { it.copy(background = Color.black, foreground = Color.white) } - frame {

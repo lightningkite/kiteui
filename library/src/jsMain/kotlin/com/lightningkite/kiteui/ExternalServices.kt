@@ -17,6 +17,7 @@ import org.w3c.files.FilePropertyBag
 import kotlin.coroutines.resume
 import kotlin.js.json
 
+@InternalKiteUi
 public actual fun RContext.openTab(url: String) {
     window.open(url, "_blank")
 }
@@ -52,19 +53,26 @@ public suspend fun RContext.requestFileInput(
         }.click()
     }
 
-public actual suspend fun RContext.requestFile(mimeTypes: List<String>) = requestFileInput(mimeTypes, {}).firstOrNull()
-public actual suspend fun RContext.requestFiles(mimeTypes: List<String>) = requestFileInput(mimeTypes, { multiple = true })
-public actual suspend fun RContext.requestCaptureSelf(mimeTypes: List<String>) =
+@InternalKiteUi
+public actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference? = requestFileInput(mimeTypes, {}).firstOrNull()
+@InternalKiteUi
+public actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileReference>
+        = requestFileInput(mimeTypes, { multiple = true })
+@InternalKiteUi
+public actual suspend fun RContext.requestCaptureSelf(mimeTypes: List<String>): FileReference? =
     requestFileInput(mimeTypes, { setAttribute("capture", "user") }).firstOrNull()
 
-public actual suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String>) =
+@InternalKiteUi
+public actual suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String>): FileReference? =
     requestFileInput(mimeTypes, { setAttribute("capture", "environment") }).firstOrNull()
 
-public actual fun RContext.setClipboardText(value: String) {
+@InternalKiteUi
+public actual fun RContext.setClipboardText(value: String): Unit {
     window.navigator.clipboard.writeText(value)
 }
 
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
+@InternalKiteUi
 public actual suspend fun RContext.download(
     name: String,
     url: String,
@@ -91,6 +99,7 @@ public actual suspend fun RContext.download(
 }
 
 @JsName("downloadBlob")
+@InternalKiteUi
 public actual suspend fun RContext.download(name: String, blob: Blob, preferredDestination: DownloadLocation) {
     if (!name.matches(validDownloadName)) throw IllegalArgumentException("Name $name has invalid characters!")
     val a = document.createElement("a") as HTMLAnchorElement
@@ -105,6 +114,7 @@ public actual suspend fun RContext.download(name: String, blob: Blob, preferredD
 }
 
 @JsName("shareBlob")
+@InternalKiteUi
 public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) {
     val files = namesToBlobs.map {
         val name = it.first
@@ -126,6 +136,7 @@ public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>)
     } else throw IllegalArgumentException("Your browser won't let you share these files.")
 }
 
+@InternalKiteUi
 public actual fun RContext.share(title: String, message: String?, url: String?) {
     val navigator = window.navigator.asDynamic()
     if (navigator.canShare == undefined || navigator.share == undefined) {
@@ -149,6 +160,7 @@ private fun innerShare(title: String, message: String?, url: String?) {
     )
 }
 
+@InternalKiteUi
 public actual fun RContext.openEvent(
     title: String,
     description: String,
@@ -188,6 +200,7 @@ public actual fun RContext.openEvent(
     a.click();
 }
 
+@InternalKiteUi
 public actual fun RContext.openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
     openTab("https://www.google.com/maps/@${latitude},${longitude},${zoom ?: 16}")
 }

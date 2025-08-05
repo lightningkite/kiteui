@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.src
 import com.lightningkite.reactive.context.*
@@ -9,6 +10,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import org.w3c.dom.HTMLImageElement
 
+@InternalKiteUi
 public actual fun RawImageViewLike.nativeLoad(url: String?) {
     native.onElement {
         it as HTMLImageElement

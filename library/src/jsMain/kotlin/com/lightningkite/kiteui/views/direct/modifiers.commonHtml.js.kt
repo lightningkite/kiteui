@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
@@ -61,7 +62,7 @@ private data class OngoingAnimation(
     private var maxWidthChildResume: String = ""
     private var heightChildResume: String = ""
     private var maxHeightChildResume: String = ""
-    fun animRatio() = animation!!.currentTime.toFloat() / totalTime
+    public fun animRatio() = animation!!.currentTime.toFloat() / totalTime
 
     init {
         log?.info(
@@ -100,7 +101,7 @@ private data class OngoingAnimation(
         done()
     }
 
-    val done = label@{
+    public val done = label@{
         if (closed) return@label
         closed = true
         showHideAnimating.remove(on)
@@ -356,6 +357,7 @@ private val showHideWorker = label@{
 }
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+@InternalKiteUi
 public inline fun HTMLElement.animate(keyframes: Array<dynamic>, options: dynamic): Animation =
     asDynamic().animate(keyframes, options) as Animation
 

@@ -10,7 +10,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
-public operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
+public operator fun ViewWrapper.minus(other: ViewWrapper): ViewWrapper.Companion = ViewWrapper
 public operator fun ViewWrapper.contains(other: ViewWrapper): Boolean = true
 
 @Deprecated("Just bind to themeChoice directly")
@@ -83,13 +83,13 @@ public inline val ViewWriter.down: ViewWrapper get() = DownSemantic.onNext
 public inline val ViewWriter.selected: ViewWrapper get() = SelectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("UnselectedSemantic.onNext", "com.lightningkite.kiteui.models.UnselectedSemantic"))
-inline val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
+public inline val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DisabledSemantic.onNext", "com.lightningkite.kiteui.models.DisabledSemantic"))
 public inline val ViewWriter.disabled: ViewWrapper get() = DisabledSemantic.onNext
 
 @ViewModifierDsl3
-val ViewWriter.compact: ViewWrapper
+public val ViewWriter.compact: ViewWrapper
     get() = CompactSemantic.onNext
 
 @ViewModifierDsl3

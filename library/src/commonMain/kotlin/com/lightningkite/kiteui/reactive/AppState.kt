@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 @Deprecated("Use AppState instead", ReplaceWith("AppState.inForeground", "com.lightningkite.readable.AppState")) public val InForeground: ReactiveValue<Boolean> get() = AppState.inForeground
 @Deprecated("Use AppState instead", ReplaceWith("AppState.softInputOpen", "com.lightningkite.readable.AppState")) public val SoftInputOpen: ReactiveValue<Boolean> get() = AppState.softInputOpen
 
-expect object AppState {
+public expect object AppState {
     public val animationFrame: Listenable
     public val windowInfo: ReactiveValue<WindowStatistics>
     public val inForeground: ReactiveValue<Boolean>

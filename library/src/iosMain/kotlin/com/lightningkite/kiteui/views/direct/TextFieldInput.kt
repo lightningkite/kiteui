@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.reactive.*
@@ -18,12 +19,13 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalNativeApi::class)
+@InternalKiteUi
 public class TextFieldInput(calculationContext: CalculationContext): UITextField(CGRectZero.readValue()) {
-    public val calculationContextWeak = WeakReference(calculationContext)
+    public val calculationContextWeak: WeakReference<CalculationContext> = WeakReference(calculationContext)
 
     // Explicit frame prevents UnsatisfiableConstraints error when automatic constraints are set by the system
     // https://stackoverflow.com/questions/54284029/uitoolbar-with-uibarbuttonitem-layoutconstraint-issue
-    public val toolbar = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
+    public val toolbar: UIToolbar = UIToolbar(CGRectMake(0.0, 0.0, UIScreen.mainScreen.bounds.useContents { size.width }, 35.0)).apply {
         barStyle = UIBarStyleDefault
         setTranslucent(true)
         sizeToFit()

@@ -7,6 +7,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
@@ -17,6 +18,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class Video public actual constructor(context: RContext): RView(context) {
     override val native: PlayerView = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
@@ -53,7 +55,7 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 else -> {}
             }
         }
-    actual val time: MutableReactive<Double>
+    public actual val time: MutableReactive<Double>
         get() = object : MutableReactive<Double> {
             override suspend fun set(value: Double) {
                 native.player!!.seekTo((value * 1000.0).toLong())
@@ -76,7 +78,7 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 return { native.player!!.removeListener(l) }
             }
         }
-    actual val playing: MutableReactive<Boolean>
+    public actual val playing: MutableReactive<Boolean>
         get() = object : MutableReactive<Boolean> {
             override suspend fun set(value: Boolean) {
                 if (value) {
@@ -98,7 +100,7 @@ public actual class Video public actual constructor(context: RContext): RView(co
                 return { native.player!!.removeListener(l) }
             }
         }
-    actual val volume: MutableReactive<Float>
+    public actual val volume: MutableReactive<Float>
         get() = object : MutableReactive<Float> {
             override suspend fun set(value: Float) {
                 native.player!!.volume = value

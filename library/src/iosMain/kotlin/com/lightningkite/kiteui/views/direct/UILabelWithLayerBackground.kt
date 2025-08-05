@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.openTab
@@ -17,7 +18,8 @@ import platform.objc.sel_registerName
 import kotlin.experimental.ExperimentalNativeApi
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
+@InternalKiteUi
+public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
     init {
         userInteractionEnabled = false
     }

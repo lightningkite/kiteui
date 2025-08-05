@@ -29,24 +29,24 @@ public interface AppNav {
     public var actions: List<NavElement>
     public var exists: Boolean
 
-    class ByProperty : AppNav {
-        val appNameProperty = Signal("My App")
-        override var appName: String by appNameProperty
-        val appIconProperty = Signal<Icon>(Icon.home)
-        override var appIcon: Icon by appIconProperty
-        val appLogoProperty = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
-        override var appLogo: ImageSource by appLogoProperty
-        val navItemsProperty = Signal(listOf<NavElement>())
-        override var navItems: List<NavElement> by navItemsProperty
-        val actionsProperty = Signal<List<NavElement>>(listOf())
-        override var actions: List<NavElement> by actionsProperty
-        val existsProperty = Signal(true)
-        override var exists: Boolean by existsProperty
+    public class ByProperty : AppNav {
+        public val appNameProperty: Signal<String> = Signal("My App")
+        public override var appName: String by appNameProperty
+        public val appIconProperty: Signal<Icon> = Signal<Icon>(Icon.home)
+        public override var appIcon: Icon by appIconProperty
+        public val appLogoProperty: Signal<ImageSource> = Signal<ImageSource>(Icon.home.toImageSource(Color.white))
+        public override var appLogo: ImageSource by appLogoProperty
+        public val navItemsProperty: Signal<List<NavElement>> = Signal(listOf<NavElement>())
+        public override var navItems: List<NavElement> by navItemsProperty
+        public val actionsProperty: Signal<List<NavElement>> = Signal<List<NavElement>>(listOf())
+        public override var actions: List<NavElement> by actionsProperty
+        public val existsProperty: Signal<Boolean> = Signal(true)
+        public override var exists: Boolean by existsProperty
     }
 }
 
 
-public val ViewWriter.appNavFactory by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
+public val ViewWriter.appNavFactory: Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable> by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )

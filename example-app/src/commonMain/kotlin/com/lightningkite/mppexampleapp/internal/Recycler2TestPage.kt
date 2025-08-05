@@ -15,12 +15,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("recycler2-test")
-object Recycler2TestPage : Page {
-    override val title: Reactive<String>
+public object Recycler2TestPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
     @QueryParameter
-    val elementCount = Signal(10000)
+    public val elementCount = Signal(10000)
 
     public override fun ViewWriter.render(): ViewModifiable = run {
         col {

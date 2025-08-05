@@ -1,7 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
-actual val NumberInput.selectionStart: Int? get() = null
-actual val NumberInput.selectionEnd: Int? get() = null
-actual fun NumberInput.setSelectionRange(start: Int, end: Int) {}
+import com.lightningkite.kiteui.InternalKiteUi
 
-actual fun usingWebOnMobile(): Boolean = false
+@InternalKiteUi
+public actual val NumberInput.selectionStart: Int? get() = null
+@InternalKiteUi
+public actual val NumberInput.selectionEnd: Int? get() = null
+@InternalKiteUi
+public actual fun NumberInput.setSelectionRange(start: Int, end: Int) {}
+
+@InternalKiteUi
+public actual fun usingWebOnMobile(): Boolean = false

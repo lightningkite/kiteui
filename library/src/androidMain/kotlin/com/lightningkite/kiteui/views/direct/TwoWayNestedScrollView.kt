@@ -23,6 +23,7 @@ import androidx.core.view.*
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.accessibility.AccessibilityRecordCompat
 import androidx.core.widget.EdgeEffectCompat
+import com.lightningkite.kiteui.InternalKiteUi
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -33,6 +34,7 @@ import kotlin.math.min
  * as both a nested scrolling parent and child on both new and old versions of Android.
  * Nested scrolling is enabled by default.
  */
+@InternalKiteUi
 public class TwoWayNestedScrollView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
     defStyleAttr: Int = 0

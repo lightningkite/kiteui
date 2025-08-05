@@ -1,9 +1,9 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
-import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.browser.document
 import kotlinx.dom.addClass
@@ -15,7 +15,8 @@ import kotlin.js.Json
 import kotlin.js.json
 import kotlin.random.Random
 
-public actual class FutureElement public actual constructor() {
+@InternalKiteUi
+public actual class FutureElement actual constructor() {
     public actual val actualElementForLeakTracking: Any? get() = element
     public val elementToDo: ArrayList<(Element) -> Unit> = ArrayList<(Element) -> Unit>()
     public var element: Element? = null
@@ -66,18 +67,22 @@ public actual class FutureElement public actual constructor() {
         return e
     }
 
+    @InternalKiteUi
     public actual fun click() {
         onElement { (it as HTMLElement).click() }
     }
 
+    @InternalKiteUi
     public actual fun focus() {
         onElement { (it as HTMLElement).focus() }
     }
 
+    @InternalKiteUi
     public actual fun blur() {
         onElement { (it as HTMLElement).blur() }
     }
 
+    @InternalKiteUi
     public actual fun screenRectangle(): Rect? {
         return element?.getBoundingClientRect()?.let {
             Rect(
@@ -89,15 +94,22 @@ public actual class FutureElement public actual constructor() {
         }
     }
 
+    @InternalKiteUi
     public actual var xmlns: String? = null
+    @InternalKiteUi
     public actual var tag: String = "tag"
     public val attributesBack: Json = json()
+    @InternalKiteUi
     public actual val attributes: FutureElementAttributes = FutureElementAttributes(attributesBack)
     public val styleBack: Json = json()
+    @InternalKiteUi
     public actual val style: FutureElementStyle = FutureElementStyle(styleBack)
+    @InternalKiteUi
     public actual var desiredVerticalGravity: Align? = null
+    @InternalKiteUi
     public actual var desiredHorizontalGravity: Align? = null
     public val eventsBack: Json = json()
+    @InternalKiteUi
     public actual inline fun addEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
@@ -108,6 +120,7 @@ public actual class FutureElement public actual constructor() {
         }
     }
 
+    @InternalKiteUi
     public actual inline fun replaceEventListener(
         name: String,
         crossinline listener: (Event) -> Unit
@@ -118,6 +131,7 @@ public actual class FutureElement public actual constructor() {
     }
 
     public val futureStyles: Json = json()
+    @InternalKiteUi
     public actual fun setStyleProperty(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -138,6 +152,7 @@ public actual class FutureElement public actual constructor() {
     }
 
     public val futureAttributes: Json = json()
+    @InternalKiteUi
     public actual fun setAttribute(key: String, value: String?) {
         val element = element
         if (element == null) {
@@ -157,13 +172,17 @@ public actual class FutureElement public actual constructor() {
     }
 
 
+    @InternalKiteUi
     public actual var classes: MutableSet<String> = ClassSet()
+    @InternalKiteUi
     public actual inline fun flushClasses() {}
+    @InternalKiteUi
     public actual var id: String? = null
         set(value) {
             field = value
             element?.id = value ?: Random.nextInt().toString()
         }
+    @InternalKiteUi
     public actual var content: String? = null
         set(value) {
             field = value
@@ -171,6 +190,7 @@ public actual class FutureElement public actual constructor() {
                 (element as? HTMLElement)?.innerText = value
             }
         }
+    @InternalKiteUi
     public actual var innerHtmlUnsafe: String? = null
         set(value) {
             field = value
@@ -179,6 +199,7 @@ public actual class FutureElement public actual constructor() {
             }
         }
     private val lastChildren = ArrayList<FutureElement>()
+    @InternalKiteUi
     public actual val children: List<FutureElement>
         get() {
             return element?.let {
@@ -192,6 +213,7 @@ public actual class FutureElement public actual constructor() {
             } ?: lastChildren
         }
 
+    @InternalKiteUi
     public actual fun appendChild(element: FutureElement) {
         assertSizeMatch()
         lastChildren.add(element)
@@ -201,6 +223,7 @@ public actual class FutureElement public actual constructor() {
         assertSizeMatch()
     }
 
+    @InternalKiteUi
     public actual fun appendChild(index: Int, element: FutureElement) {
         assertSizeMatch()
         if (index > lastChildren.size) throw IllegalStateException()
@@ -213,6 +236,7 @@ public actual class FutureElement public actual constructor() {
         assertSizeMatch()
     }
 
+    @InternalKiteUi
     public actual fun removeChild(index: Int) {
         assertSizeMatch()
         lastChildren.removeAt(index)
@@ -222,6 +246,7 @@ public actual class FutureElement public actual constructor() {
         assertSizeMatch()
     }
 
+    @InternalKiteUi
     public actual fun clearChildren() {
         assertSizeMatch()
         lastChildren.clear()
@@ -244,18 +269,18 @@ public actual class FutureElement public actual constructor() {
 
     public inner class ClassSet : MutableSet<String> {
         public val map: HashSet<String> = HashSet<String>()
-        public override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
-        public override fun addAll(elements: Collection<String>): Boolean =
+        override fun add(element: String): Boolean = this@FutureElement.element?.addClass(element) ?: map.add(element)
+        override fun addAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.addClass(*elements.toTypedArray()) ?: map.addAll(elements)
 
-        public override val size: Int get() = this@FutureElement.element?.classList?.length ?: map.size
-        public override fun clear(): Unit = element?.let { it.className = "" } ?: map.clear()
-        public override fun isEmpty(): Boolean = element?.className?.isBlank() ?: map.isEmpty()
-        public override fun containsAll(elements: Collection<String>): Boolean = elements.all { contains(it) }
-        public override fun contains(element: String): Boolean =
+        override val size: Int get() = this@FutureElement.element?.classList?.length ?: map.size
+        override fun clear(): Unit = element?.let { it.className = "" } ?: map.clear()
+        override fun isEmpty(): Boolean = element?.className?.isBlank() ?: map.isEmpty()
+        override fun containsAll(elements: Collection<String>): Boolean = elements.all { contains(it) }
+        override fun contains(element: String): Boolean =
             this@FutureElement.element?.let { it.hasClass(element) } ?: map.contains(element)
 
-        public override fun iterator(): MutableIterator<String> = this@FutureElement.element?.let {
+        override fun iterator(): MutableIterator<String> = this@FutureElement.element?.let {
             var index = 0
             val list = it.classList
             object : MutableIterator<String> {
@@ -274,11 +299,11 @@ public actual class FutureElement public actual constructor() {
             }
         } ?: map.iterator()
 
-        public override fun retainAll(elements: Collection<String>): Boolean = throw NotImplementedError()
-        public override fun remove(element: String): Boolean =
+        override fun retainAll(elements: Collection<String>): Boolean = throw NotImplementedError()
+        override fun remove(element: String): Boolean =
             this@FutureElement.element?.removeClass(element) ?: map.remove(element)
 
-        public override fun removeAll(elements: Collection<String>): Boolean =
+        override fun removeAll(elements: Collection<String>): Boolean =
             this@FutureElement.element?.removeClass(*elements.toTypedArray()) ?: map.removeAll(elements)
     }
 }
@@ -293,7 +318,9 @@ private fun remove(receiver: Json, key: String) {
     js("delete receiver[key]")
 }
 
+@InternalKiteUi
 public actual class FutureElementStyle(public var native: dynamic)
+@InternalKiteUi
 public actual class FutureElementAttributes(public var native: dynamic)
 
 public fun Align?.logicalPosition(): ScrollLogicalPosition = when (this) {
@@ -320,7 +347,9 @@ public actual fun RView.nativeScrollIntoView(
 }
 
 @Suppress("NOTHING_TO_INLINE")
+@InternalKiteUi
 public inline fun objectAssign(target: dynamic, source: dynamic): Any? = js("Object.assign(target, source)")
+@InternalKiteUi
 public actual fun RView.nativeSetDragData(data: DragData?) {
     native.onElement {
         if (data != null) {
@@ -337,7 +366,8 @@ public actual fun RView.nativeSetDragData(data: DragData?) {
 }
 
 
-actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
+@InternalKiteUi
+public actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
     fun DragEvent.toDragEvent() = com.lightningkite.kiteui.models.DragEvent(
         data = DragData("", typeToData = dataTransfer!!.types.associate { it to dataTransfer!!.getData(it) }),
         xInView = x,

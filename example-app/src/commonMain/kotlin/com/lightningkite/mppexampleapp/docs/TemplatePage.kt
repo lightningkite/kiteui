@@ -10,8 +10,8 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-object TemplatePage: DocPage {
-    override val title: Reactive<String>
+public object TemplatePage: DocPage {
+    public override val title: Reactive<String>
         get() = Constant("Name of Topic")
     public override val covers: List<String> = listOf("topic")
 

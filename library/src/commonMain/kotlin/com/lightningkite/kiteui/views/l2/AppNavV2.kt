@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -36,8 +35,9 @@ public fun ViewWriter.navSideBar(navElements: ReactiveContext.() -> List<NavElem
 
 }
 
-public var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
-public var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
+public var ViewWriter.overlayFrame: RView? by rContextAddon<RView?>(null)
+public var ViewWriter.coordinatorFrame: CoordinatorFrame?
+        by rContextAddon<CoordinatorFrame?>(null)
 
 public fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): ViewModifiable {
     return coordinatorFrame {

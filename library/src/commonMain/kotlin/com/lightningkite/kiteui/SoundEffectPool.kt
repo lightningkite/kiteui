@@ -13,10 +13,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 
-expect class SoundEffectPool(concurrency: Int = 4) {
-    suspend fun preload(sound: AudioSource)
-    suspend fun play(sound: AudioSource): PlayingSoundEffect
-    fun unload(sound: AudioSource)
+public expect class SoundEffectPool(concurrency: Int = 4) {
+    public suspend fun preload(sound: AudioSource)
+    public suspend fun play(sound: AudioSource): PlayingSoundEffect
+    public fun unload(sound: AudioSource)
 }
 
 public interface PlayingSoundEffect {

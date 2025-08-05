@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.UIViewWithSpacingRulesProtocol
 import com.lightningkite.kiteui.reactive.*
@@ -19,8 +20,9 @@ import platform.QuartzCore.CALayer
 import platform.QuartzCore.CATransform3DMakeScale
 import platform.UIKit.*
 
+@InternalKiteUi
 public actual class IconView public actual constructor(context: RContext): RView(context) {
-    override val native = NIconView()
+    override val native: NIconView = NIconView()
     public actual var source: Icon?
         get() = native.icon
         set(value) {
@@ -41,6 +43,7 @@ public actual class IconView public actual constructor(context: RContext): RView
 
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
+@InternalKiteUi
 public actual class NIconView(): NView(CGRectMake(0.0,0.0,0.0,0.0)), UIViewWithSpacingRulesProtocol {
     init {
         userInteractionEnabled = false

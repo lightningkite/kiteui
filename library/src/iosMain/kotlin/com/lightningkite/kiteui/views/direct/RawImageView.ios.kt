@@ -46,21 +46,23 @@ import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 import platform.posix.QOS_CLASS_DEFAULT
 
+@InternalKiteUi
 public actual abstract class RawImageViewLike constructor(
     context: RContext,
     public actual val source: ImageSource,
     public actual val description: String,
     public actual val scaleType: ImageScaleType,
 ) : RView(context){
-    actual abstract val state: Reactive<Unit>
+    public actual abstract val state: Reactive<Unit>
 
     protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
 
-    override val disableBackground = true
+    override val disableBackground: Boolean = true
 }
 
 
-suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
+@InternalKiteUi
+public suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
     null -> null
     is ImageRaw -> UIImage(data = value.data.data)
     is ImageResource -> UIImage.imageNamed(value.name)
@@ -115,7 +117,8 @@ suspend fun ImageSource?.load(size: Size?): UIImage? = when (val value = this) {
     else -> null
 }
 
-actual class RawImageView actual constructor(
+@InternalKiteUi
+public actual class RawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -125,7 +128,7 @@ actual class RawImageView actual constructor(
     actual override val state: Reactive<Unit> = _state
 
 
-    override val native = UIImageViewFixedSizing()
+    override val native: UIImageViewFixedSizing = UIImageViewFixedSizing()
 
     init {
         native.clipsToBounds = true
@@ -152,7 +155,8 @@ actual class RawImageView actual constructor(
     }
 }
 
-actual class SizelessRawImageView actual constructor(
+@InternalKiteUi
+public actual class SizelessRawImageView actual constructor(
     context: RContext,
     source: ImageSource,
     description: String,
@@ -161,7 +165,7 @@ actual class SizelessRawImageView actual constructor(
     private val _state = RawReactive<Unit>()
     actual override val state: Reactive<Unit> = _state
 
-    override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
+    override val native: UIImageViewFixedSizing = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
 
     init {
         native.clipsToBounds = true
@@ -188,14 +192,15 @@ actual class SizelessRawImageView actual constructor(
     }
 }
 
-class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
-    var ignoreNaturalSize: Boolean = false
+@InternalKiteUi
+public class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
+    public var ignoreNaturalSize: Boolean = false
         set(value) {
             field = value
             informParentOfSizeChange()
         }
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         if(ignoreNaturalSize) return CGSizeMake(0.0, 0.0)
         return this.image?.size?.useContents {
             val original = this
@@ -216,6 +221,7 @@ class UIImageViewFixedSizing(): UIImageView(CGRectZero.readValue()) {
     public var naturalSize: Boolean = false
 }
 
+@InternalKiteUi
 public actual class RawImageViewZoomable public actual constructor(
     context: RContext,
     source: ImageSource,
@@ -223,7 +229,7 @@ public actual class RawImageViewZoomable public actual constructor(
     scaleType: ImageScaleType,
 ) : RawImageViewLike(context, source, description, scaleType) {
 
-    val doubleTapTarget: NSObject = object: NSObject() {
+    public val doubleTapTarget: NSObject = object: NSObject() {
         @ObjCAction
         fun handleDoubleTap(sender: UITapGestureRecognizer) {
             if (sender.state != UIGestureRecognizerStateEnded) return
@@ -246,10 +252,10 @@ public actual class RawImageViewZoomable public actual constructor(
             }
         }
     }
-    val doubleTapRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
+    public val doubleTapRecognizer: UITapGestureRecognizer = UITapGestureRecognizer(doubleTapTarget, sel_registerName("handleDoubleTap:")).apply {
         numberOfTapsRequired = 2UL
     }
-    override val native = UIScrollView(CGRectZero.readValue()).apply {
+    override val native: UIScrollView = UIScrollView(CGRectZero.readValue()).apply {
         addGestureRecognizer(doubleTapRecognizer)
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
@@ -259,7 +265,7 @@ public actual class RawImageViewZoomable public actual constructor(
         showsHorizontalScrollIndicator = false
         showsVerticalScrollIndicator = false
     }
-    val imageView = UIImageView(CGRectZero.readValue()).apply {
+    public val imageView: UIImageView = UIImageView(CGRectZero.readValue()).apply {
         contentMode = when (scaleType) {
             ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
             ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
@@ -267,7 +273,7 @@ public actual class RawImageViewZoomable public actual constructor(
             ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
         }
     }
-    val dg: UIScrollViewDelegateProtocol = object: NSObject(), UIScrollViewDelegateProtocol {
+    public val dg: UIScrollViewDelegateProtocol = object: NSObject(), UIScrollViewDelegateProtocol {
         override fun viewForZoomingInScrollView(scrollView: UIScrollView): UIView? {
             return imageView
         }
@@ -298,7 +304,7 @@ public actual class RawImageViewZoomable public actual constructor(
     private val UIScrollView.zs get() = ZoomState(this.contentOffset, this.zoomScale)
 
     private val _zoomState = Signal<ZoomState>(native.zs)
-    actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
+    public actual val zoomState: MutableReactiveValue<ZoomState> = _zoomState
 
 
     init {
@@ -320,14 +326,15 @@ public actual class RawImageViewZoomable public actual constructor(
 public actual data class ZoomState(val offset: CValue<CGPoint>, val zoom: Double)
 
 
-object ImageCache {
-    val imageCache = NSCache()
-    fun get(key: String): UIImage? = imageCache.objectForKey(key) as? UIImage
-    fun set(key: String, value: UIImage) {
+@InternalKiteUi
+public object ImageCache {
+    public val imageCache: NSCache = NSCache()
+    public fun get(key: String): UIImage? = imageCache.objectForKey(key) as? UIImage
+    public fun set(key: String, value: UIImage) {
         imageCache.setObject(value, key, value.size.useContents { width * height * 4 }.toULong())
     }
 
-    inline fun get(key: String, load: () -> UIImage): UIImage {
+    public inline fun get(key: String, load: () -> UIImage): UIImage {
         (imageCache.objectForKey(key) as? UIImage)?.let {
             println("Got from base cache $it from key $key")
             return it
@@ -337,8 +344,8 @@ object ImageCache {
         return loaded
     }
 
-    val imageCacheSized = NSCache()
-    suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
+    public val imageCacheSized: NSCache = NSCache()
+    public suspend fun get(key: String, minWidth: Int, minHeight: Int, load: suspend () -> UIImage): UIImage {
         val sizeKey = "$key//$minWidth//$minHeight"
         println("Lookup $key $minWidth $minHeight")
         (imageCacheSized.objectForKey(sizeKey) as? UIImage)?.let {

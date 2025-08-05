@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalForeignApi::class)
 package com.lightningkite.kiteui.utils
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Rect
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -9,29 +10,37 @@ import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 
+@InternalKiteUi
 public val CValue<CGRect>.local: Rect
     get() = useContents {
         return Rect(origin.x, origin.y, origin.x + size.width, origin.y + size.height)
     }
 
-typealias LocalPoint = Pair<Double, Double>
+@InternalKiteUi
+public typealias LocalPoint = Pair<Double, Double>
 
-val CValue<CGPoint>.local: LocalPoint
+@InternalKiteUi
+public val CValue<CGPoint>.local: LocalPoint
     get() = useContents {
         return x to y
     }
 
-operator fun LocalPoint.plus(other: LocalPoint) : LocalPoint =
+@InternalKiteUi
+public operator fun LocalPoint.plus(other: LocalPoint) : LocalPoint =
     first + other.first to second + other.second
 
-operator fun LocalPoint.minus(other: LocalPoint) : LocalPoint =
+@InternalKiteUi
+public operator fun LocalPoint.minus(other: LocalPoint) : LocalPoint =
     first - other.first to second - other.second
 
-operator fun LocalPoint.times(other: Double) : LocalPoint =
+@InternalKiteUi
+public operator fun LocalPoint.times(other: Double) : LocalPoint =
     first * other to second * other
 
-operator fun LocalPoint.div(other: Int) : LocalPoint =
+@InternalKiteUi
+public operator fun LocalPoint.div(other: Int) : LocalPoint =
     first / other to second / other
 
-val LocalPoint.cg: CValue<CGPoint>
+@InternalKiteUi
+public val LocalPoint.cg: CValue<CGPoint>
     get() = CGPointMake(first, second)

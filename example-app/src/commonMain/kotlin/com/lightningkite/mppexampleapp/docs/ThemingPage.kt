@@ -187,8 +187,8 @@ public object ThemingPage : DocPage {
     }
 }
 
-data object GlassSemantic : Semantic("glass") {
-    override fun default(theme: Theme): ThemeAndBack {
+public data object GlassSemantic : Semantic("glass") {
+    public override fun default(theme: Theme): ThemeAndBack {
         return theme.withBack(
             background = Color.gray.withAlpha(0.25f),
             blurBackground = 1.rem,
@@ -204,21 +204,21 @@ data object GlassSemantic : Semantic("glass") {
     }
 }
 
-data object AnimatedEmphasis1Semantic : Semantic("ae1s") {
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+public data object AnimatedEmphasis1Semantic : Semantic("ae1s") {
+    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         cascading = false,
         transform = Transformation(scaleX = 1.1, scaleY = 1.1)
     )
 }
-data object AnimatedEmphasis2Semantic : Semantic("ae2s") {
-    override fun default(theme: Theme): ThemeAndBack = theme.withBack(
+public data object AnimatedEmphasis2Semantic : Semantic("ae2s") {
+    public override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         cascading = false,
         transform = Transformation(scaleX = 0.9, scaleY = 0.9)
     )
 }
 
-data object InvertedSemantic : Semantic("invert") {
-    override fun default(theme: Theme): ThemeAndBack = theme.copy(
+public data object InvertedSemantic : Semantic("invert") {
+    public override fun default(theme: Theme): ThemeAndBack = theme.copy(
         id = key,
         background = theme.background.map { it.invert() },
         outline = theme.outline.map { it.invert() },

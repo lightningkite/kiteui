@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.CornerRadii
 import com.lightningkite.kiteui.models.DismissSemantic
@@ -13,7 +14,8 @@ import com.lightningkite.kiteui.views.dialog
 import com.lightningkite.kiteui.views.l2.overlayFrame
 import com.lightningkite.kiteui.views.popoverWriter
 
-actual fun RView.openPopover(
+@InternalKiteUi
+public actual fun RView.openPopover(
     preferredDirection: PopoverPreferredDirection,
     createMenu: Frame.() -> Unit
 ) {

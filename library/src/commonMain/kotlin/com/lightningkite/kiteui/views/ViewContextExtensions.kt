@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
@@ -48,25 +49,25 @@ public fun <T> rContextAddonInit(): ReadWriteProperty<ViewWriter, T> = object : 
     "Use 'pageNavigator' instead",
     ReplaceWith("this.pageNavigator", "com.lightningkite.kiteui.navigator.pageNavigator")
 )
-public val ViewWriter.navigator by ViewWriter::pageNavigator
+public val ViewWriter.navigator: PageNavigator by ViewWriter::pageNavigator
 
-var ViewWriter.safeInsets by rContextAddonGenerate<Reactive<Edges>> { Constant(Edges.ZERO) }
+public var ViewWriter.safeInsets: Reactive<Edges> by rContextAddonGenerate<Reactive<Edges>> { Constant(Edges.ZERO) }
 
-var ViewWriter.popoverParent by rContextAddonGenerate<ViewWriter?> { null }
-var ViewWriter.popoverCloser by rContextAddonGenerate<(() -> Unit)?> { null }
-var ViewWriter.popoverKeepOpen by rContextAddonGenerate<Int> { 0 }
+public var ViewWriter.popoverParent: ViewWriter? by rContextAddonGenerate<ViewWriter?> { null }
+public var ViewWriter.popoverCloser: (() -> Unit)? by rContextAddonGenerate<(() -> Unit)?> { null }
+public var ViewWriter.popoverKeepOpen: Int by rContextAddonGenerate<Int> { 0 }
 
 public fun ViewWriter.closePopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.closePopovers()
 }
-fun ViewWriter.closeThisPopover() {
+public fun ViewWriter.closeThisPopover() {
     popoverCloser?.invoke()
     popoverCloser = null
     popoverParent?.closeSiblingPopovers()
 }
-fun ViewWriter.closeSiblingPopovers() {
+public fun ViewWriter.closeSiblingPopovers() {
     popoverCloser?.invoke()
     popoverCloser = null
 }
@@ -102,7 +103,7 @@ public fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boo
  * `dismissBackground`, for example.) Setting this value to `false` guarantees that the presentation strategy
  * *will not* prevent interaction with views below the overlay.
  */
-expect fun ViewWriter.overlayWriter(
+public expect fun ViewWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
     body: RView.(remove: () -> Unit) -> Unit

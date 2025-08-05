@@ -14,48 +14,48 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 
 @ViewModifierDsl3
-public val ViewWriter.atStart get() = align(Align.Start, Align.Stretch)
+public val ViewWriter.atStart: ViewWrapper get() = align(Align.Start, Align.Stretch)
 @ViewModifierDsl3
-public val ViewWriter.atEnd get() = align(Align.End, Align.Stretch)
+public val ViewWriter.atEnd: ViewWrapper get() = align(Align.End, Align.Stretch)
 @ViewModifierDsl3
-public val ViewWriter.atTop get() = align(Align.Stretch, Align.Start)
+public val ViewWriter.atTop: ViewWrapper get() = align(Align.Stretch, Align.Start)
 @ViewModifierDsl3
-public val ViewWriter.atBottom get() = align(Align.Stretch, Align.End)
+public val ViewWriter.atBottom: ViewWrapper get() = align(Align.Stretch, Align.End)
 @ViewModifierDsl3
-public val ViewWriter.centeredHorizontally get() = align(Align.Center, Align.Stretch)
+public val ViewWriter.centeredHorizontally: ViewWrapper get() = align(Align.Center, Align.Stretch)
 @ViewModifierDsl3
-public val ViewWriter.centeredVertically get() = align(Align.Stretch, Align.Center)
+public val ViewWriter.centeredVertically: ViewWrapper get() = align(Align.Stretch, Align.Center)
 
 @ViewModifierDsl3
-public val ViewWriter.atTopStart get() = align(Align.Start, Align.Start)
+public val ViewWriter.atTopStart: ViewWrapper get() = align(Align.Start, Align.Start)
 @ViewModifierDsl3
-public val ViewWriter.atCenterStart get() = align(Align.Start, Align.Center)
+public val ViewWriter.atCenterStart: ViewWrapper get() = align(Align.Start, Align.Center)
 @ViewModifierDsl3
-public val ViewWriter.atBottomStart get() = align(Align.Start, Align.End)
+public val ViewWriter.atBottomStart: ViewWrapper get() = align(Align.Start, Align.End)
 @ViewModifierDsl3
-public val ViewWriter.atTopCenter get() = align(Align.Center, Align.Start)
+public val ViewWriter.atTopCenter: ViewWrapper get() = align(Align.Center, Align.Start)
 @ViewModifierDsl3
-public val ViewWriter.centered get() = align(Align.Center, Align.Center)
+public val ViewWriter.centered: ViewWrapper get() = align(Align.Center, Align.Center)
 @ViewModifierDsl3
-public val ViewWriter.atBottomCenter get() = align(Align.Center, Align.End)
+public val ViewWriter.atBottomCenter: ViewWrapper get() = align(Align.Center, Align.End)
 @ViewModifierDsl3
-public val ViewWriter.atTopEnd get() = align(Align.End, Align.Start)
+public val ViewWriter.atTopEnd: ViewWrapper get() = align(Align.End, Align.Start)
 @ViewModifierDsl3
-public val ViewWriter.atCenterEnd get() = align(Align.End, Align.Center)
+public val ViewWriter.atCenterEnd: ViewWrapper get() = align(Align.End, Align.Center)
 @ViewModifierDsl3
-public val ViewWriter.atBottomEnd get() = align(Align.End, Align.End)
+public val ViewWriter.atBottomEnd: ViewWrapper get() = align(Align.End, Align.End)
 
 
 @ViewModifierDsl3
-public val ViewWriter.expanding get() = weight(1f)
+public val ViewWriter.expanding: ViewWrapper get() = weight(1f)
 
 @ViewModifierDsl3
-public fun ViewWriter.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(maxWidth = width))
+public fun ViewWriter.maxWidthCentered(width: Dimension): ViewWrapper = align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(maxWidth = width))
 @ViewModifierDsl3
-public fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
+public fun ViewWriter.maxHeight(height: Dimension): ViewWrapper = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
-public fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}) {
+public fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String, setup: IconView.()->Unit = {}): Unit {
     icon {
         ::source { source() }
         this.description = description
@@ -63,9 +63,9 @@ public fun ViewWriter.icon(source: ReactiveContext.()->Icon, description: String
     }
 }
 
-public val Icon.Companion.empty get() = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf())
+public val Icon.Companion.empty: Icon get() = Icon(2.rem, 2.rem, 0, -960, 960, 960, listOf())
 
-fun <T> RView.forEach(
+public fun <T> RView.forEach(
     items: Reactive<List<T>>,
     render: ViewWriter.(T) -> Unit
 ) {
@@ -75,7 +75,7 @@ fun <T> RView.forEach(
     }
 }
 
-fun <T> RView.forEachUpdating(
+public fun <T> RView.forEachUpdating(
     items: Reactive<List<T>>,
     placeholdersWhileLoading: Int = 5,
     render: ViewWriter.(Reactive<T>) -> Unit
@@ -135,7 +135,7 @@ fun <T> RView.forEachUpdating(
     }
 }
 
-fun <T, ID> RowOrCol.forEachById(
+public fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWrapper = { ViewWrapper },
@@ -143,11 +143,11 @@ fun <T, ID> RowOrCol.forEachById(
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
-        var oldIndex: Int,
-        val oldId: ID,
-        val data: Signal<T>,
-        val view: RView,
-        val shown: Signal<Boolean>
+        public var oldIndex: Int,
+        public val oldId: ID,
+        public val data: Signal<T>,
+        public val view: RView,
+        public val shown: Signal<Boolean>
     ) {
         public var livenessIter = 0
         public fun show() {
@@ -215,17 +215,17 @@ fun <T, ID> RowOrCol.forEachById(
         old.subList(oldPos, old.size).forEach { it.hide() }
     }
 }
-fun <T> RowOrCol.forEachAnimated(
+public fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
     preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { ViewWrapper },
     render: ViewWriter.(T) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
-        var oldIndex: Int,
-        val data: T,
-        val view: RView,
-        val shown: Signal<Boolean>
+        public var oldIndex: Int,
+        public val data: T,
+        public val view: RView,
+        public val shown: Signal<Boolean>
     ) {
         public var livenessIter = 0
         public fun show() {

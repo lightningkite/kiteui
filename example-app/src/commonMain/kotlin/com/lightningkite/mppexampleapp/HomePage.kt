@@ -52,9 +52,9 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
-class HomePage: Page {
-    override val title: Reactive<String> get() = Constant("KiteUI")
-    override fun ViewWriter.render(): ViewModifiable = run {
+public class HomePage: Page {
+    public override val title: Reactive<String> get() = Constant("KiteUI")
+    public override fun ViewWriter.render(): ViewModifiable = run {
         return article {
             centered - h1("KiteUI - Beautiful by Default")
             separator()

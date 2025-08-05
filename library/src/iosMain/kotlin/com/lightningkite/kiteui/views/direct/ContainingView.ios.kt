@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
@@ -13,11 +14,12 @@ import com.lightningkite.readable.*
 import platform.UIKit.UIView
 
 
+@InternalKiteUi
 public actual class RowOrCol public actual constructor(context: RContext) : RView(context) {
-    override val native = LinearLayout()
+    override val native: LinearLayout = LinearLayout()
 
 
-    actual var vertical: Boolean
+    public actual var vertical: Boolean
         get() = native.horizontal.not()
         set(value) {
             native.horizontal = !value
@@ -65,10 +67,11 @@ public actual class RowOrCol public actual constructor(context: RContext) : RVie
     }
 }
 
+@InternalKiteUi
 public actual class RowCollapsingToColumn public actual constructor(context: RContext, breakpoints: List<Dimension>) :
     RView(context) {
 
-    override val native = LinearLayout()
+    override val native: LinearLayout = LinearLayout()
 
     init {
         reactiveScope {
@@ -121,7 +124,8 @@ public actual class RowCollapsingToColumn public actual constructor(context: RCo
     }
 }
 
+@InternalKiteUi
 public actual class Frame actual constructor(context: RContext) : RView(context) {
 
-    override val native = FrameLayout()
+    override val native: FrameLayout = FrameLayout()
 }

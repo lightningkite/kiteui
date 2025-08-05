@@ -29,7 +29,7 @@ import platform.Foundation.*
 import platform.UniformTypeIdentifiers.*
 import platform.posix.memcpy
 
-public val client = HttpClient {
+public val client: HttpClient = HttpClient {
     install(WebSockets)
     install(UserAgent) {
         agent = Platform.userAgent
@@ -51,6 +51,7 @@ public val client = HttpClient {
     }
 }
 
+@InternalKiteUi
 public actual suspend fun fetch(
     url: String,
     method: HttpMethod,
@@ -126,18 +127,21 @@ public actual suspend fun fetch(
     }
 }
 
+@InternalKiteUi
 public actual fun httpHeaders(map: Map<String, String>): HttpHeaders =
     HttpHeaders(map.entries.associateTo(HashMap()) { it.key.lowercase() to listOf(it.value) })
 
+@InternalKiteUi
 public actual fun httpHeaders(sequence: Sequence<Pair<String, String>>): HttpHeaders =
     HttpHeaders(sequence.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
+@InternalKiteUi
 public actual fun httpHeaders(headers: HttpHeaders): HttpHeaders = HttpHeaders(headers.map.toMutableMap())
 public actual fun httpHeaders(list: List<Pair<String, String>>): HttpHeaders =
     HttpHeaders(list.groupBy { it.first.lowercase() }.mapValues { it.value.map { it.second } }.toMutableMap())
 
 @InternalKiteUi
-public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
+public actual class HttpHeaders(public val map: MutableMap<String, List<String>>) {
     public actual fun append(name: String, value: String): Unit {
         map[name.lowercase()] = (map[name.lowercase()] ?: listOf()) + value
     }
@@ -153,7 +157,8 @@ public actual class HttpHeaders(val map: MutableMap<String, List<String>>) {
     }
 }
 
-public actual class RequestResponse(val wraps: HttpResponse) {
+@InternalKiteUi
+public actual class RequestResponse(public val wraps: HttpResponse) {
     public actual val status: Short get() = wraps.status.value.toShort()
     public actual val ok: Boolean get() = wraps.status.isSuccess()
     public actual suspend fun text(): String {
@@ -192,34 +197,35 @@ public actual class RequestResponse(val wraps: HttpResponse) {
             wraps.headers.entries().associateTo(HashMap()) { it.key.lowercase() to it.value })
 }
 
+@InternalKiteUi
 public actual fun websocket(url: String): WebSocket {
     return WebSocketWrapper(url)
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-public class WebSocketWrapper(val url: String) : WebSocket {
-    public val closeReason = Channel<CloseReason>()
-    public val sending = Channel<Frame>(10)
-    public var stayOn = true
-    public val onOpen = ArrayList<() -> Unit>()
+public class WebSocketWrapper(public val url: String) : WebSocket {
+    public val closeReason: Channel<CloseReason> = Channel<CloseReason>()
+    public val sending: Channel<Frame> = Channel<Frame>(10)
+    public var stayOn: Boolean = true
+    public val onOpen: ArrayList<() -> Unit> = ArrayList<() -> Unit>()
 
     init {
         onOpen.add { assertMainThread() }
     }
 
-    public val onClose = ArrayList<(Short) -> Unit>()
+    public val onClose: ArrayList<(Short) -> Unit> = ArrayList<(Short) -> Unit>()
 
     init {
         onClose.add { assertMainThread() }
     }
 
-    public val onMessage = ArrayList<(String) -> Unit>()
+    public val onMessage: ArrayList<(String) -> Unit> = ArrayList<(String) -> Unit>()
 
     init {
         onMessage.add { assertMainThread() }
     }
 
-    public val onBinaryMessage = ArrayList<(Blob) -> Unit>()
+    public val onBinaryMessage: ArrayList<(Blob) -> Unit> = ArrayList<(Blob) -> Unit>()
 
     init {
         onBinaryMessage.add { assertMainThread() }
@@ -325,16 +331,19 @@ public class WebSocketWrapper(val url: String) : WebSocket {
 }
 
 @InternalKiteUi
-public actual class Blob(val data: NSData, val type: String = "application/octet-stream")
+public actual class Blob(public val data: NSData, public val type: String = "application/octet-stream")
 @InternalKiteUi
-public actual class FileReference(val provider: NSItemProvider, val suggestedType: UTType? = null)
+public actual class FileReference(public val provider: NSItemProvider, public val suggestedType: UTType? = null)
 
 
+@InternalKiteUi
 public actual fun Blob.mimeType(): String = type
+@InternalKiteUi
 public actual fun FileReference.mimeType(): String = suggestedType?.preferredMIMEType ?: "application/octet-stream"
 
+@InternalKiteUi
 public actual fun FileReference.fileName(): String {
-    public val extension = suggestedType?.preferredFilenameExtension ?: ""
+    val extension = suggestedType?.preferredFilenameExtension ?: ""
     return "${provider.suggestedName ?: ""}.$extension"
 }
 
@@ -361,9 +370,12 @@ public fun NSData.toByteArray(): ByteArray = ByteArray(this@toByteArray.length.t
     }
 }
 
-actual fun Blob.bytes(): Long = this.data.length.toLong()
-actual suspend fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
-actual fun FileReference.bytes(): Long = -1L
+@InternalKiteUi
+public actual fun Blob.bytes(): Long = this.data.length.toLong()
+@InternalKiteUi
+public actual suspend fun Blob.toByteArray(): ByteArray = this.data.toByteArray()
+@InternalKiteUi
+public actual fun FileReference.bytes(): Long = -1L
 
 //public actual suspend fun Blob.byteArray(): ByteArray = data.toByteArray()
 //public actual suspend fun FileReference.byteArray(): ByteArray {

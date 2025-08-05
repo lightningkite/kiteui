@@ -37,6 +37,7 @@ public enum class PageNavigatorBehavior {
 }
 
 @Deprecated("")
+@InternalKiteUi
 public var PageNavigatorUseExperimentalBehavior: Boolean
     get() = PageNavigatorBehavior.current == PageNavigatorBehavior.Link
     set(value) {
@@ -332,6 +333,7 @@ public actual fun PageNavigator.bindToPlatform(context: RContext) {
 // From URL Bar
 // From Stack / Last Update
 
+@InternalKiteUi
 public external interface BaseUrlScript {
     public val baseUrl: String
 }

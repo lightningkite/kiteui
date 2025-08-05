@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Angle
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.Dimension
@@ -14,26 +15,37 @@ import com.lightningkite.kiteui.views.Path.DrawingResources
 import com.lightningkite.kiteui.views.direct.colorInt
 
 
+@InternalKiteUi
 public abstract class DrawingView : View {
     public constructor(context: Context?) : super(context)
     public constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     public constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 }
 @Suppress("ACTUAL_WITHOUT_EXPECT")
+@InternalKiteUi
 public actual abstract class DrawingContext2D(public val canvas: Canvas) {
     public val currentPath: Path = Path()
     public val clearPaint: android.graphics.Paint = Paint().apply {
         color = android.graphics.Color.TRANSPARENT
         setXfermode(PorterDuffXfermode(PorterDuff.Mode.DST_OUT))
     }
+    @InternalKiteUi
     public var fillPaintObj: android.graphics.Paint = Paint().apply { style = android.graphics.Paint.Style.FILL }
+    @InternalKiteUi
     public var strokePaintObj: android.graphics.Paint = Paint().apply { style = android.graphics.Paint.Style.STROKE }
+    @InternalKiteUi
     public val drawingResource: DrawingResources = DrawingResources()
+    @InternalKiteUi
     public actual abstract fun save()
+    @InternalKiteUi
     public actual abstract fun restore()
+    @InternalKiteUi
     public actual abstract fun scale(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun rotate(angle: Double)
+    @InternalKiteUi
     public actual abstract fun translate(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun transform(
         a: Double,
         b: Double,
@@ -43,22 +55,39 @@ public actual abstract class DrawingContext2D(public val canvas: Canvas) {
         f: Double
     )
 
+    @InternalKiteUi
     public actual abstract var globalCompositeOperation: String
+    @InternalKiteUi
     public actual abstract var imageSmoothingEnabled: Boolean
+    @InternalKiteUi
     public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun beginPath()
+    @InternalKiteUi
     public actual abstract fun stroke()
+    @InternalKiteUi
     public actual abstract var lineWidth: Double
+    @InternalKiteUi
     public actual abstract var miterLimit: Double
+    @InternalKiteUi
     public actual abstract var lineDashOffset: Double
+    @InternalKiteUi
     public abstract fun setLineDash(segments: Array<Double>)
+    @InternalKiteUi
     public abstract fun getLineDash(): Array<Double>
+    @InternalKiteUi
     public actual abstract fun closePath()
+    @InternalKiteUi
     public actual abstract fun moveTo(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun lineTo(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun bezierCurveTo(
         cp1x: Double,
         cp1y: Double,
@@ -86,10 +115,12 @@ public actual abstract class DrawingContext2D(public val canvas: Canvas) {
 //        rotation: Double
 //    )
 
+    @InternalKiteUi
     public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 
 }
 
+@InternalKiteUi
 public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
     public override fun save() { canvas.save() }
     public override fun restore() { canvas.restore() }
@@ -205,29 +236,36 @@ public class DrawingContext2DImpl(canvas: Canvas): DrawingContext2D(canvas) {
 //    }
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.fill() {
     currentPath.fillType = Path.FillType.WINDING
     canvas.drawPath(currentPath, fillPaintObj)
 }
+@InternalKiteUi
 public actual fun DrawingContext2D.fillEvenOdd()  {
     currentPath.fillType = Path.FillType.EVEN_ODD
     canvas.drawPath(currentPath, fillPaintObj)
 }
+@InternalKiteUi
 public actual var DrawingContext2D.strokePaint: Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         strokePaintObj.color = value.colorInt()
     }
+@InternalKiteUi
 public actual var DrawingContext2D.fillPaint: Paint
     get() = Color.fromInt(fillPaintObj.color)
     set(value) {
         fillPaintObj.color = value.colorInt()
     }
+@InternalKiteUi
 public actual val DrawingContext2D.width: Double
     get() = canvas.width.toDouble()
+@InternalKiteUi
 public actual val DrawingContext2D.height: Double
     get() = canvas.height.toDouble()
 
+@InternalKiteUi
 public actual fun DrawingContext2D.appendArc(
     x: Double,
     y: Double,
@@ -284,6 +322,7 @@ public actual fun DrawingContext2D.appendArc(
     }
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.drawText(
     text: String,
     x: Double,
@@ -297,6 +336,7 @@ public actual fun DrawingContext2D.drawText(
     )
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.drawOutlinedText(
     text: String,
     x: Double,
@@ -310,6 +350,7 @@ public actual fun DrawingContext2D.drawOutlinedText(
     )
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.font(
     size: Double,
     value: FontAndStyle
@@ -318,6 +359,7 @@ public actual fun DrawingContext2D.font(
     fillPaintObj.textSize = size.toFloat()
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
     fillPaintObj.textAlign = when(alignment) {
         TextAlign.start -> android.graphics.Paint.Align.LEFT  // TODO: locales
@@ -328,6 +370,7 @@ public actual fun DrawingContext2D.textAlign(alignment: TextAlign) {
     }
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.clear() {
     canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.DST_OUT)
 }

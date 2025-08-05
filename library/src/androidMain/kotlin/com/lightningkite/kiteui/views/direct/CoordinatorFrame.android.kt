@@ -8,6 +8,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.models.CardSemantic
 import com.lightningkite.kiteui.models.Color
@@ -32,8 +33,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
+@InternalKiteUi
 public actual class CoordinatorFrame public actual constructor(context: RContext) : RView(context) {
-    override val native = CoordinatorLayoutWithGestures(context.activity)
+    override val native: CoordinatorLayoutWithGestures = CoordinatorLayoutWithGestures(context.activity)
 
     override fun willAddChild(view: RView) {
         view.native.layoutParams = defaultLayoutParams()
@@ -240,6 +242,7 @@ public actual class CoordinatorFrame public actual constructor(context: RContext
     }
 }
 
+@InternalKiteUi
 public actual class CoordinatorDragHandle public actual constructor(context: RContext) : RView(context) {
     override val native: BottomSheetDragHandleView = BottomSheetDragHandleView(context.activity).apply {
         minimumWidth = 5.rem.value.toInt()

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyCodes
@@ -12,6 +13,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
+@InternalKiteUi
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
     init {
         native.tag = "div"
@@ -32,7 +34,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         }
         native.appendChild(this)
     }
-    actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
+    public actual val content: MutableReactiveValue<String> = textarea.vprop("input", { attributes.valueString ?: "" }, { attributes.valueString = it })
     init {
         content.addListener {
             native.setAttribute("data-replicated-value", content.value)

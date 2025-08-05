@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 
+@InternalKiteUi
 public class KiteUiCss(public val dynamicCss: DynamicCss) {
     init {
         // basis rules
@@ -1085,7 +1087,7 @@ public class KiteUiCss(public val dynamicCss: DynamicCss) {
         return classes
     }
 
-    public fun Edges.css() = "${top.value} ${right.value} ${bottom.value} ${left.value}"
+    public fun Edges.css():String = "${top.value} ${right.value} ${bottom.value} ${left.value}"
 
     public val rowCollapsingToColumnHandled: HashSet<String> = HashSet<String>()
     public fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {

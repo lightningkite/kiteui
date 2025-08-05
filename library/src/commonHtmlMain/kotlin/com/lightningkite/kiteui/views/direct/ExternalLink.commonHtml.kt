@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
+@InternalKiteUi
 public actual class ExternalLink public actual constructor(context: RContext) : RView(context) {
     init {
         themeChoice += ClickableSemantic

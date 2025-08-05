@@ -66,7 +66,7 @@ public fun UIView.frameLayoutLayoutSubviews(childSizeCache: ArrayList<HashMap<Si
 
 @InternalKiteUi
 @OptIn(ExperimentalForeignApi::class)
-fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
+public fun UIView.frameLayoutLayoutAnchoredSubviews(childSizeCache: ArrayList<HashMap<Size, Size>>, anchor: Pair<PopoverPreferredDirection, UIView>) {
     val mySize = bounds.useContents { size.local }
     val frameLayout = this
     subviews.zip(frameLayoutCalcSizes(frame.useContents { size.local }, childSizeCache)) { view, size ->

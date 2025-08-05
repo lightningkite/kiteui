@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.reactive
 
 import com.lightningkite.kiteui.LogRoot
-import com.lightningkite.signal.*
 import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.KeyboardEvent
 import com.lightningkite.kiteui.models.KeyCodeWithModifiers
 import com.lightningkite.kiteui.models.WindowStatistics
@@ -14,7 +14,6 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.js.Promise
-import com.lightningkite.kiteui.views.direct.KeyCodeWithModifiers
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
@@ -24,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.events.Event
 
+@InternalKiteUi
 public actual object AppState {
     public actual val animationFrame: Listenable
         get() = _AnimationFrame
@@ -77,7 +77,7 @@ public actual object AppState {
         }
     }
 
-    public val _lastUniversalKeyboardInput = reactiveProcess<KeyCodeWithModifiers> {
+    public val _lastUniversalKeyboardInput: Reactive<KeyCodeWithModifiers> = reactiveProcess<KeyCodeWithModifiers> {
         val l = { ev: Event ->
             ev as KeyboardEvent
             emit(
@@ -145,7 +145,7 @@ private object _AnimationFrame : Listenable {
 }
 
 private object _InForeground : ReactiveValue<Boolean> {
-    override val value: Boolean
+    public override val value: Boolean
         get() = (document.asDynamic().visibilityState as? String) != "hidden"
 
     public override fun addListener(listener: () -> Unit): () -> Unit {

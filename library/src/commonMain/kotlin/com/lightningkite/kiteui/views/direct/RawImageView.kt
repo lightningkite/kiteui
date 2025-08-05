@@ -11,11 +11,11 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-expect abstract class RawImageViewLike: RView {
-    val source: ImageSource
-    val description: String
-    val scaleType: ImageScaleType
-    abstract val state: Reactive<Unit>
+public expect abstract class RawImageViewLike: RView {
+    public val source: ImageSource
+    public val description: String
+    public val scaleType: ImageScaleType
+    public abstract val state: Reactive<Unit>
 }
 
 public expect class RawImageView(
@@ -24,16 +24,16 @@ public expect class RawImageView(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Reactive<Unit>
+    public override val state: Reactive<Unit>
 }
 
-expect class SizelessRawImageView(
+public expect class SizelessRawImageView(
     context: RContext,
     source: ImageSource,
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Reactive<Unit>
+    public override val state: Reactive<Unit>
 }
 
 public expect class RawImageViewZoomable(
@@ -42,7 +42,7 @@ public expect class RawImageViewZoomable(
     description: String,
     scaleType: ImageScaleType,
 ) : RawImageViewLike {
-    override val state: Reactive<Unit>
-    val zoomState: MutableReactiveValue<ZoomState>
+    public override val state: Reactive<Unit>
+    public val zoomState: MutableReactiveValue<ZoomState>
 }
 public expect class ZoomState

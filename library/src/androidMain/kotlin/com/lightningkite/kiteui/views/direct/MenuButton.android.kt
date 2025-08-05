@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
 
+@InternalKiteUi
 public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true

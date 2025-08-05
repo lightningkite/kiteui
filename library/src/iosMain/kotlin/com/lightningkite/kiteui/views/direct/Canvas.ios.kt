@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.objc.UIGestureRecognizerCustomPProtocol
@@ -21,8 +22,9 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.*
 import platform.darwin.*
 
+@InternalKiteUi
 public actual class Canvas public actual constructor(context: RContext) : RView(context) {
-    override val native = CanvasView()
+    override val native: CanvasView = CanvasView()
 
     public actual var delegate: CanvasDelegate?
         get() = native.delegate
@@ -44,6 +46,7 @@ public actual class Canvas public actual constructor(context: RContext) : RView(
 }
 
 
+@InternalKiteUi
 public class CanvasView : UIView(CGRectZero.readValue()) {
     init {
         opaque = false

@@ -129,6 +129,7 @@ public external class AudioBuffer {
 @InternalKiteUi
 public external class AudioDestinationNode : AudioNode
 
+@InternalKiteUi
 public actual suspend fun AudioSource.load(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement

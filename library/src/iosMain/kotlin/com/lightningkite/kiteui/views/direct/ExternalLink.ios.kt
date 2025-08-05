@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -17,8 +18,9 @@ import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIControlEventTouchUpInside
 
+@InternalKiteUi
 public actual class ExternalLink public actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     init {
         onRemove(native.setOnClick {
             to?.let { to ->

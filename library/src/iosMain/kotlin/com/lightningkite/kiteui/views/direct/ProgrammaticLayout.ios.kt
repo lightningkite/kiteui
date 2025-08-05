@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.debugPrint
@@ -27,7 +28,8 @@ import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.UIEvent
 import platform.UIKit.UIView
 
-actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
+@InternalKiteUi
+public actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     @OptIn(ExperimentalNativeApi::class)
     override val native: NProgrammaticLayout = NProgrammaticLayout().apply {
         rview = WeakReference(this@ProgrammaticLayout)
@@ -65,6 +67,7 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
 }
 
 @OptIn(ExperimentalNativeApi::class)
+@InternalKiteUi
 public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIViewWithSizeOverridesProtocol {
     public var spacingCurrentPx: Double = 0.0
     public var paddingTopCurrentPx: Double = 0.0
@@ -77,7 +80,7 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
             setNeedsLayout()
         }
     private var currentSize: Size = Size.Zero
-    var rview: WeakReference<ProgrammaticLayout>? = null
+    public var rview: WeakReference<ProgrammaticLayout>? = null
     private val inProgress = object: ProgrammingLayoutInProgress {
         override val within: Size
             get() = currentSize
@@ -151,7 +154,7 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
         }
     }
 
-    override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
+    public override fun hitTest(point: CValue<CGPoint>, withEvent: UIEvent?): UIView? {
         return frameLayoutHitTest(point, withEvent)
     }
 }

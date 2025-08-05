@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.locale.renderToString
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.DisabledSemantic
@@ -15,11 +16,12 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.datetime.*
 
+@InternalKiteUi
 public actual class LocalDateField public actual constructor(context: RContext) :
     RViewWithAction(context) {
     private val property: Signal<LocalDate?> = Signal(null)
-    actual val content: MutableReactiveValue<LocalDate?> = property
-    actual var range: ClosedRange<LocalDate>? = null
+    public actual val content: MutableReactiveValue<LocalDate?> = property
+    public actual var range: ClosedRange<LocalDate>? = null
 
     override val native: FrameLayout = FrameLayout(context.activity).apply {
         isClickable = true

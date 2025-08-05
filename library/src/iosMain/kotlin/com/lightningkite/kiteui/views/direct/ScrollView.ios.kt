@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
@@ -21,20 +22,21 @@ import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 import platform.darwin.NSObject
 
+@InternalKiteUi
 public class ScrollView(
     context: RContext,
     public override val horizontal: Boolean,
     public override val vertical: Boolean
 ) : RViewWrapper(context), ScrollingBehaviors {
-    override val native = FrameLayout()
-    val scroller = ScrollLayout()
+    public override val native: FrameLayout = FrameLayout()
+    public val scroller: ScrollLayout = ScrollLayout()
     init { native.addSubview(scroller) }
 
     private var scrollCalcOngoing = false
     private val sizeChange = BasicListenable()
     private val scroll = BasicListenable()
 
-    public override val addChildTarget get() = scroller
+    public override val addChildTarget: ScrollLayout get() = scroller
 
     private val dg: UIScrollViewDelegateProtocol = object : NSObject(), UIScrollViewDelegateProtocol {
         override fun scrollViewDidScroll(scrollView: UIScrollView) {
@@ -153,14 +155,14 @@ public class ScrollView(
             scroller.showsHorizontalScrollIndicator = value
             scroller.showsVerticalScrollIndicator = value
         }
-    override var ignoreInteraction: Boolean
+    public override var ignoreInteraction: Boolean
         get() = super.ignoreInteraction
         set(value) {
             super.ignoreInteraction = value
             scroller.extensionIgnoreInteraction = value
             scroller.scrollEnabled = !value
         }
-    override val viewport: Reactive<Rect> = (sizeChange + scroll).lensListenable {
+    public override val viewport: Reactive<Rect> = (sizeChange + scroll).lensListenable {
         val (ox, oy) = scroller.contentOffset.useContents { x to y }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -172,7 +174,7 @@ public class ScrollView(
             )
         }
     }
-    override val content: Reactive<Rect> = (sizeChange).lensListenable {
+    public override val content: Reactive<Rect> = (sizeChange).lensListenable {
         val (sw, sh) = scroller.contentSize.useContents { width to height }
         val (vw, vh) = scroller.bounds.useContents { size.width to size.height }
         scroller.bounds.useContents {
@@ -183,7 +185,7 @@ public class ScrollView(
         }
     }
     private val _directlyInteractingWithScroller = Signal(false)
-    override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
+    public override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     public override var snapToElements: Pair<Align?, Align?> = null to null
         set(value) {

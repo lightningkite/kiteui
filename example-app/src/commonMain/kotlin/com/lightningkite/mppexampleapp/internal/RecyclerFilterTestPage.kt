@@ -17,10 +17,10 @@ import com.lightningkite.readable.Property
 import com.lightningkite.readable.shared
 
 @Routable("recycler-filter-test")
-object RecyclerFilterTestPage : Page {
-    val searchText = Property("")
+public object RecyclerFilterTestPage : Page {
+    public val searchText = Property("")
 
-    override fun ViewWriter.render(): ViewModifiable = col {
+    public override fun ViewWriter.render(): ViewModifiable = col {
 
         fieldTheme - row {
             expanding - textInput {

@@ -12,7 +12,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-fun RView.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Boolean = true, bottom: Boolean = true) {
+public fun RView.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Boolean = true, bottom: Boolean = true) {
     val s = safeInsets
     reactive {
         val full = s()
@@ -24,7 +24,7 @@ fun RView.applySafeInsets(left: Boolean = true, top: Boolean = true, right: Bool
         )
     }
 }
-fun RView.applySafeInsets(mapper: ReactiveContext.(Edges)->Edges) {
+public fun RView.applySafeInsets(mapper: ReactiveContext.(Edges)->Edges) {
     val s = safeInsets
     reactive {
         val full = s()

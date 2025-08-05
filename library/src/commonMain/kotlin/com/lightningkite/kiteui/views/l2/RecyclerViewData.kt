@@ -9,15 +9,15 @@ public interface RecyclerViewData<T, ID> {
         public override fun get(index: Int): Unit = Unit
     }
 
-    class FromList<T>(val list: List<T>) : RecyclerViewData<T, Any?> {
-        override val range: IntRange = list.indices
-        override fun get(index: Int): T {
+    public class FromList<T>(public val list: List<T>) : RecyclerViewData<T, Any?> {
+        public override val range: IntRange = list.indices
+        public override fun get(index: Int): T {
             if (index !in list.indices) throw IndexOutOfBoundsException("Index $index out of range for ${list.indices}")
             return list[index]
         }
     }
 
-    companion object {
-        fun <T> fromList(list: List<T>) = FromList(list)
+    public companion object {
+        public fun <T> fromList(list: List<T>): FromList<T> = FromList(list)
     }
 }

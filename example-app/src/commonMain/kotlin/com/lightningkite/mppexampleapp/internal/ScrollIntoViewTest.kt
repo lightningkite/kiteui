@@ -20,8 +20,8 @@ import com.lightningkite.readable.*
 @Routable("internal/scroll-into-view-test")
 public object ScrollIntoViewTest : Page {
 
-    enum class Location { Top, Bottom }
-    val jumpTo = Signal<Location?>(null)
+    public enum class Location { Top, Bottom }
+    public val jumpTo = Signal<Location?>(null)
 
     public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - frame {

@@ -20,8 +20,8 @@ import com.lightningkite.readable.*
 import kotlinx.coroutines.delay
 
 @Routable("sample/login")
-object SampleLogInPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+public object SampleLogInPage : Page {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val email = Signal("")
         val password = Signal("")
         unpadded - frame {

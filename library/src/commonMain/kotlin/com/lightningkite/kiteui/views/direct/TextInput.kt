@@ -16,9 +16,9 @@ import com.lightningkite.readable.*
 public typealias TextField = TextInput
 public expect class TextInput(context: RContext) : RViewWithAction {
 
-    var enabled: Boolean
-    val content: MutableReactiveValue<String>
-    var keyboardHints: KeyboardHints
-    var hint: String
-    var align: Align
+    public var enabled: Boolean
+    public val content: MutableReactiveValue<String>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
+    public var align: Align
 }

@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
 import android.view.View
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.times
 import com.lightningkite.kiteui.views.*
@@ -9,14 +10,16 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-actual class Space actual constructor(context: RContext, val multiplier: Double): RView(context) {
-    override val native = NSpace(context.activity)
+@InternalKiteUi
+public actual class Space actual constructor(context: RContext, public val multiplier: Double): RView(context) {
+    override val native: NSpace = NSpace(context.activity)
     override fun applyTheme(theme: ThemeAndBack) {
         native.mySuggestedMinimumWidth = (theme.theme.gap * multiplier).value.roundToInt()
         native.mySuggestedMinimumHeight = (theme.theme.gap * multiplier).value.roundToInt()
     }
 }
 
+@InternalKiteUi
 public class NSpace(context: Context): View(context) {
     public var mySuggestedMinimumWidth: Int = 1
     public override fun getSuggestedMinimumWidth(): Int {

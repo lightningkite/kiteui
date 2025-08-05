@@ -17,6 +17,6 @@ public actual class RContext(public val activity: KiteUiActivity): RContextHelpe
             Configuration.UI_MODE_NIGHT_YES -> true
             else -> null
         }
-    actual fun split() = RContext(activity).also { it.addons.putAll(addons) }
-    actual var immersiveMode: Boolean = false
+    public actual fun split(): RContext = RContext(activity).also { it.addons.putAll(addons) }
+    public actual var immersiveMode: Boolean = false
 }

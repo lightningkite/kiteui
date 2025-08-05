@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView as AndroidAutocompleteTextView
 import android.widget.ProgressBar
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.Theme
@@ -19,8 +20,9 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class AutoCompleteTextField actual constructor(context: RContext): RViewWithAction(context) {
-    override val native = AndroidAutocompleteTextView(context.activity)
+    override val native: AndroidAutocompleteTextView = AndroidAutocompleteTextView(context.activity)
     public actual val content: MutableReactiveValue<String> = native.contentProperty()
     public actual var keyboardHints: KeyboardHints
         get() {

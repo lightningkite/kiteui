@@ -17,9 +17,9 @@ import kotlin.contracts.*
 import kotlin.jvm.JvmInline
 
 
-expect class TextArea(context: RContext) : RViewWithAction {
-    var enabled: Boolean
-    val content: MutableReactiveValue<String>
-    var keyboardHints: KeyboardHints
-    var hint: String
+public expect class TextArea(context: RContext) : RViewWithAction {
+    public var enabled: Boolean
+    public val content: MutableReactiveValue<String>
+    public var keyboardHints: KeyboardHints
+    public var hint: String
 }

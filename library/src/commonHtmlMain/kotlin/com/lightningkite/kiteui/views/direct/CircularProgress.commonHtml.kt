@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.*
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
+@InternalKiteUi
 public actual class CircularProgress public actual constructor(context: RContext): RView(context) {
 
 

@@ -15,6 +15,6 @@ import kotlin.jvm.JvmInline
 
 public expect class RadioToggleButton(context: RContext) : RView {
 
-    var enabled: Boolean
-    val checked: MutableReactiveValue<Boolean>
+    public var enabled: Boolean
+    public val checked: MutableReactiveValue<Boolean>
 }

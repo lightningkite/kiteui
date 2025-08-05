@@ -30,6 +30,7 @@ import platform.darwin.NSInteger
 //class LayoutParams()
 
 
+@InternalKiteUi
 public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverridesProtocol, UIViewWithSpacingRulesProtocol {
     public var horizontal: Boolean = true
     public var gap: Double = 0.0
@@ -45,7 +46,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
             setNeedsLayout()
             informParentOfSizeChange()
         }
-    val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null).also {
+    public val spacingOverride: Signal<Dimension?> = Signal<Dimension?>(null).also {
         it.addListener { it.value?.let { gap = it.value } }
     }
 
@@ -99,7 +100,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
     public val Edges.secondaryStart get() = if(!horizontal) left.value else top.value
     public val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
 
-    override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
+    public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val sizeLocal = size.local
         val measuredSize = Size()
 
@@ -125,15 +126,15 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         return measuredSize.objc
     }
 
-    val arrangedSubviews = ArrayList<UIView>()
-    fun addArrangedSubview(view: UIView) {
+    public val arrangedSubviews = ArrayList<UIView>()
+    public fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
         addSubview(view)
         lastLaidOutSize = null
         informParentOfSizeChangeDueToChild()
     }
-    fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
+    public fun insertArrangedSubview(view: UIView, atIndex: NSInteger) {
         childSizeCache.add(atIndex.toInt(), HashMap())
         arrangedSubviews.add(atIndex.toInt(), view)
         insertSubview(view, atIndex)

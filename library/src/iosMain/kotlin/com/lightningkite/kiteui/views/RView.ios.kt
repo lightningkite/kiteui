@@ -14,6 +14,10 @@ import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
+import platform.QuartzCore.CATransform3DIdentity
+import platform.QuartzCore.CATransform3DMakeRotation
+import platform.QuartzCore.CATransform3DMakeScale
+import platform.QuartzCore.CATransform3DMakeTranslation
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIBlurEffect
@@ -31,13 +35,14 @@ import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
 
 
+@InternalKiteUi
 public actual abstract class RView public actual constructor(context: RContext) : RViewHelper(context) {
-    abstract val native: UIView
-    var tag: Any? = null
+    public abstract val native: UIView
+    public var tag: Any? = null
 
     public actual override var showOnPrint: Boolean = true
 
-    var sizeConstraints: SizeConstraints?
+    public var sizeConstraints: SizeConstraints?
         get() = native.extensionSizeConstraints
         set(value) {
             native.extensionSizeConstraints = value
@@ -174,10 +179,10 @@ public actual abstract class RView public actual constructor(context: RContext) 
      * for subclasses of RView. In this way, themes with a back may be applied so that corner radius is respected
      * without drawing anything that would cover the content of the view.
      */
-    protected open val disableBackground = false
+    protected open val disableBackground: Boolean = false
 
-    class BlurBackgroundView: UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
-    var effectBackground: BlurBackgroundView? = null
+    public class BlurBackgroundView: UIVisualEffectView(UIBlurEffect.effectWithStyle(UIBlurEffectStyle.UIBlurEffectStyleRegular))
+    public var effectBackground: BlurBackgroundView? = null
 
     actual override fun applyTheme(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
@@ -303,29 +308,29 @@ public actual abstract class RView public actual constructor(context: RContext) 
                 // Apply transformations to the native view's layer
                 if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
                     // Apply translation
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeTranslation(
+                    native.layer.transform = CATransform3DMakeTranslation(
                         transform.translationX,
                         transform.translationY,
                         transform.translationZ
                     )
                 } else if (transform.rotation != 0.0) {
                     // Apply rotation (convert degrees to radians)
-                    val radians = transform.rotation * (kotlin.math.PI / 180.0)
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
+                    val radians = transform.rotation * (PI / 180.0)
+                    native.layer.transform = CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
                 } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
                     // Apply scale
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeScale(
+                    native.layer.transform = CATransform3DMakeScale(
                         transform.scaleX,
                         transform.scaleY,
                         1.0
                     )
                 } else {
                     // Default identity transform
-                    native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                    native.layer.transform = CATransform3DIdentity.readValue()
                 }
             } ?: run {
                 // Reset transform if no transformation is specified
-                native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                native.layer.transform = CATransform3DIdentity.readValue()
             }
         }
     }
@@ -370,16 +375,16 @@ public actual abstract class RView public actual constructor(context: RContext) 
 
 public var animationsEnabled: Boolean = true
 public var isInAnimationBlock: Boolean = false
-public actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+public actual val RView.areAnimationsEnabled: Boolean get() = animationsEnabled
 public actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
 
-inline fun UIView.debugPrint(get: ()->String) {
+public inline fun UIView.debugPrint(get: ()->String) {
     if(debugMode && viewDebugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }
-inline fun UIView.withoutAnimation(action: () -> Unit) {
+public inline fun UIView.withoutAnimation(action: () -> Unit) {
     assertMainThread()
     val before = animationsEnabled
     try {
@@ -396,6 +401,7 @@ inline fun UIView.withoutAnimation(action: () -> Unit) {
     }
 }
 
+@InternalKiteUi
 public inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(/*extensionAnimationDuration ?:*/ 0.5) {
         val before = isInAnimationBlock
@@ -410,6 +416,7 @@ public inline fun UIView.animateIfAllowed(crossinline action: () -> Unit) {
     }
 }
 
+@InternalKiteUi
 public inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.animateWithDuration(
         duration = theme.transitionDuration.toDouble(DurationUnit.SECONDS),
@@ -429,6 +436,7 @@ public inline fun RView.animateIfAllowed(crossinline onComplete: () -> Unit = {}
     }
 }
 
+@InternalKiteUi
 public inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, crossinline action: () -> Unit) {
     if (animationsEnabled) UIView.transitionWithView(
         view = native,

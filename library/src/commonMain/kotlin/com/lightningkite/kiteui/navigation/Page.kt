@@ -10,8 +10,8 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-interface Page {
-    val title: Reactive<String>
+public interface Page {
+    public val title: Reactive<String>
         get() = Constant(
             this::class.simpleName.toString().camelToHuman().removeSuffix(" Screen").removeSuffix(" Page")
         )
@@ -19,9 +19,9 @@ interface Page {
     public object Empty: Page {
         public override fun ViewWriter.render(): ViewModifiable = space {}
     }
-    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Page {
-        override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
-        override val title: Reactive<String> = Constant(title)
+    public open class Direct(title: String = "", public val render: ViewWriter.()->ViewModifiable): Page {
+        public override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)
+        public override val title: Reactive<String> = Constant(title)
     }
 }
 

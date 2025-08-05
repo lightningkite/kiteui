@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.useContents
@@ -16,6 +17,7 @@ import platform.UIKit.UIRectCornerBottomRight
 import platform.UIKit.UIRectCornerTopLeft
 import platform.UIKit.UIRectCornerTopRight
 
+@InternalKiteUi
 public fun Color.toUiColor(): UIColor = UIColor(
     red = red.toDouble().coerceIn(0.0, 1.0),
     green = green.toDouble().coerceIn(0.0, 1.0),
@@ -77,6 +79,7 @@ internal fun UIView.layoutLayers(parentSpacing: Double) {
 }
 
 
+@InternalKiteUi
 public class CAGradientLayerResizing : CAGradientLayer {
 
     @OverrideInit
@@ -187,6 +190,7 @@ public class CAGradientLayerResizing : CAGradientLayer {
 //UIFontWeight regular UIFontWeight(rawValue: 0.0)
 //UIFontWeight semibold UIFontWeight(rawValue: 0.30000001192092896)
 //UIFontWeight bold UIFontWeight(rawValue: 0.4000000059604645)
+@InternalKiteUi
 public fun Int.toUIFontWeight(): Double {
     return (this - 400) * (0.4 / 300)
 }

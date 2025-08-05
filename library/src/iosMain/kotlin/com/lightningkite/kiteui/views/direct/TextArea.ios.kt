@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -16,11 +17,12 @@ import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
+@InternalKiteUi
 public actual class TextArea public actual constructor(context: RContext) : RViewWithAction(context) {
-    override val native = WrapperView()
+    override val native: WrapperView = WrapperView()
     private val delegate = TextAreaDelegate()
 
-    val trigger: NSObject = object: NSObject() {
+    public val trigger: NSObject = object: NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -30,7 +32,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
             }
         }
     }
-    val textField = UITextView().apply {
+    public val textField: UITextView = UITextView().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -65,7 +67,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         fontAndStyle = theme.font
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val textSize = textSize
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
@@ -74,26 +76,26 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         // TODO: Hint
 //        textField.attributedPlaceholder = hint
     }
 
-    var textSize: Dimension = 1.rem
+    public var textSize: Dimension = 1.rem
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override var value: String
             get() = textField.text
             set(value) {
@@ -121,7 +123,7 @@ public actual class TextArea public actual constructor(context: RContext) : RVie
             field = value
             updateHint()
         }
-    inline var align: Align
+    public inline var align: Align
         get() = when (textField.textAlignment) {
             NSTextAlignmentLeft -> Align.Start
             NSTextAlignmentCenter -> Align.Center

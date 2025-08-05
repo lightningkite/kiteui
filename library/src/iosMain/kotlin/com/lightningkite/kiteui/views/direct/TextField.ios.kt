@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -19,12 +20,13 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 
+@InternalKiteUi
 public actual class TextInput public actual constructor(context: RContext) : RViewWithAction(context) {
-    companion object {
-        public var alwaysToolbar = false
+    public companion object {
+        public var alwaysToolbar: Boolean = false
     }
 
-    val trigger: NSObject = object : NSObject() {
+    public val trigger: NSObject = object : NSObject() {
         @ObjCAction
         fun done() {
             action?.let {
@@ -33,8 +35,8 @@ public actual class TextInput public actual constructor(context: RContext) : RVi
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    override val native = WrapperView()
-    val textField = UITextField().apply {
+    override val native: WrapperView = WrapperView()
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor
@@ -75,7 +77,7 @@ public actual class TextInput public actual constructor(context: RContext) : RVi
         updateHint()
     }
 
-    fun updateFont() {
+    public fun updateFont() {
         val alignment = textField.textAlignment
         textField.font = fontAndStyle?.let {
             it.font.get(it.size.value * preferredScaleFactor(), it.weight.toUIFontWeight(), it.italic)
@@ -83,21 +85,21 @@ public actual class TextInput public actual constructor(context: RContext) : RVi
         textField.textAlignment = alignment
     }
 
-    fun updateHint() {
+    public fun updateHint() {
         textField.attributedPlaceholder = NSAttributedString.create(
             hint,
             mapOf(NSForegroundColorAttributeName to theme.foreground.closestColor().withAlpha(0.5f).toUiColor())
         )
     }
 
-    var fontAndStyle: FontAndStyle? = null
+    public var fontAndStyle: FontAndStyle? = null
         set(value) {
             field = value
             updateFont()
             native.informParentOfSizeChange()
         }
 
-    actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
+    public actual val content: MutableReactiveValue<String> = object : MutableReactiveValue<String> {
         override fun addListener(listener: () -> Unit): () -> Unit {
             var lastValue = value
             return textField.onEvent(this@TextInput, UIControlEventEditingChanged, listener)

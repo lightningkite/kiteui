@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.PageNavigator
@@ -14,8 +15,9 @@ import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 
+@InternalKiteUi
 public actual class Link public actual constructor(context: RContext): RView(context) {
-    override val native = FrameLayoutButton()
+    override val native: FrameLayoutButton = FrameLayoutButton()
     init {
         onRemove(native.setOnClick {
             onClick?.let { launch { it() } }

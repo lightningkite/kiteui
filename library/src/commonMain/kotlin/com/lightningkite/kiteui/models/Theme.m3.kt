@@ -18,7 +18,7 @@ public fun Theme.Companion.material3(
     gap: Dimension = 1.rem,
     outline: Paint = background.closestColor().highlight(0.1f),
     outlineWidth: Dimension = 0.px,
-) = Theme(
+) : Theme = Theme(
     id = id,
     font = body,
     elevation = elevation,

@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.identityHashCode as idhc
 
+@InternalKiteUi
 public actual fun Throwable.printStackTrace2() = printStackTrace()
 public actual object LogRoot: Log {
     private val platform = PlatformLog("")
@@ -13,8 +14,8 @@ public actual object LogRoot: Log {
     public actual override fun warn(vararg entries: Any?) = platform.warn(*entries)
 }
 private class PlatformLog(val tag: String): Log {
-    override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
-    override fun log(vararg entries: Any?) {
+    public override fun tag(tag: String): Log = PlatformLog(if(this.tag == "") tag else this.tag + "/" + tag)
+    public override fun log(vararg entries: Any?) {
         println("$tag: " + entries.joinToString(" "))
     }
 
@@ -32,6 +33,7 @@ private class PlatformLog(val tag: String): Log {
 }
 
 @OptIn(ExperimentalNativeApi::class)
+@InternalKiteUi
 public actual typealias WeakReference<T> = kotlin.native.ref.WeakReference<T>
 
 @OptIn(ExperimentalNativeApi::class)

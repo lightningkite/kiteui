@@ -12,12 +12,12 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-expect class FormattedTextInput(context: RContext) : RViewWithAction {
-    var enabled: Boolean
-    val content: MutableReactiveValue<String>
-    var hint: String
-    var align: Align
-    var keyboardHints: KeyboardHints
+public expect class FormattedTextInput(context: RContext) : RViewWithAction {
+    public var enabled: Boolean
+    public val content: MutableReactiveValue<String>
+    public var hint: String
+    public var align: Align
+    public var keyboardHints: KeyboardHints
 
     public fun format(
         isRawData: (Char) -> Boolean,

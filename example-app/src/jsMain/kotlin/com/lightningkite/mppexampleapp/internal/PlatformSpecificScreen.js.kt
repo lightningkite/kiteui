@@ -10,7 +10,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
+public val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
 
 actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //    val current = Signal(0)

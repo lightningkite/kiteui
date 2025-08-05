@@ -80,28 +80,28 @@ public inline fun ViewWriter.h6(crossinline setup: TextView.() -> Unit = {}): Te
 }
 
 @ViewDsl
-public fun ViewWriter.h1(text: String) = h1 { content = text }
+public fun ViewWriter.h1(text: String): TextView = h1 { content = text }
 
 @ViewDsl
-public fun ViewWriter.h2(text: String) = h2 { content = text }
+public fun ViewWriter.h2(text: String): TextView = h2 { content = text }
 
 @ViewDsl
-public fun ViewWriter.h3(text: String) = h3 { content = text }
+public fun ViewWriter.h3(text: String): TextView = h3 { content = text }
 
 @ViewDsl
-public fun ViewWriter.h4(text: String) = h4 { content = text }
+public fun ViewWriter.h4(text: String): TextView = h4 { content = text }
 
 @ViewDsl
-public fun ViewWriter.h5(text: String) = h5 { content = text }
+public fun ViewWriter.h5(text: String): TextView = h5 { content = text }
 
 @ViewDsl
-public fun ViewWriter.h6(text: String) = h6 { content = text }
+public fun ViewWriter.h6(text: String): TextView = h6 { content = text }
 
 @ViewDsl
-public fun ViewWriter.text(text: String) = text { content = text }
+public fun ViewWriter.text(text: String): TextView = text { content = text }
 
 @ViewDsl
-public fun ViewWriter.subtext(text: String) = subtext { content = text }
+public fun ViewWriter.subtext(text: String): TextView = subtext { content = text }
 
 // TODO: Button with working indicator
 
@@ -166,8 +166,7 @@ public fun Button.onClickAssociatedField(
     val action = Action(
         title = title,
         icon = icon,
-        action = action
-    )
+    ) { action() }
     field.action = action
     this.action = action
 }
@@ -182,8 +181,7 @@ public fun Button.onClickAssociatedField(
     val action = Action(
         title = title,
         icon = icon,
-        action = action
-    )
+    ) { action() }
     field.action = action
     this.action = action
 }

@@ -12,7 +12,7 @@ public fun Theme.Companion.flat2(
     brightnessStep: Float = 0.05f,
     title: FontAndStyle = FontAndStyle(),
     body: FontAndStyle = FontAndStyle(),
-) = Theme(
+) : Theme = Theme(
     id = id,
     font = body,
     elevation = 0.dp,

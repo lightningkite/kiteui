@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -7,6 +8,7 @@ import com.lightningkite.kiteui.views.*
 import kotlinx.coroutines.launch
 
 
+@InternalKiteUi
 public actual class DismissBackground public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "div"

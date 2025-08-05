@@ -17,11 +17,11 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 
 @Routable("reactivity")
-object ReactivityPage : Page {
-    override val title: Reactive<String>
+public object ReactivityPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public override fun ViewWriter.render(): ViewModifiable = run {
         val local = Signal("Local")
         val persist = PersistentProperty("persistent-example", "Persistent")
         val indirect = remember { local() + " " + persist() }

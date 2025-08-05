@@ -19,11 +19,11 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.builtins.ListSerializer
 
 @Routable("external-services")
-object ExternalServicesPage : Page {
-    override val title: Reactive<String>
+public object ExternalServicesPage : Page {
+    public override val title: Reactive<String>
         get() = super.title
-    val image = Signal<ImageSource?>(null)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    public val image = Signal<ImageSource?>(null)
+    public override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             col {
                 h1 { content = "This screen demonstrates various some external access." }

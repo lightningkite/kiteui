@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.objc.toObjcId
@@ -23,7 +24,8 @@ import kotlin.experimental.ExperimentalNativeApi
 
 
 @OptIn(ExperimentalNativeApi::class)
-class UILabelWithGradient : UIView(CGRectZero.readValue()) {
+@InternalKiteUi
+public class UILabelWithGradient : UIView(CGRectZero.readValue()) {
 
     init {
         userInteractionEnabled = false

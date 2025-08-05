@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
@@ -14,15 +15,16 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 
 
+@InternalKiteUi
 public actual class Switch public actual constructor(context: RContext) : RView(context) {
-    override val native = UISwitch()
+    override val native: UISwitch = UISwitch()
 
     public actual inline var enabled: Boolean
         get() = native.enabled
         set(value) {
             native.enabled = value
         }
-    actual val checked: MutableReactiveValue<Boolean>
+    public actual val checked: MutableReactiveValue<Boolean>
         get() {
             return object : MutableReactiveValue<Boolean> {
                 override fun addListener(listener: () -> Unit): () -> Unit {

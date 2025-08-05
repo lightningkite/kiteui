@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.utils
 
 import android.view.View
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Rect
 
+@InternalKiteUi
 public fun View.getBoundariesInWindow(): Rect {
     val posInWindow = IntArray(2)
     getLocationInWindow(posInWindow)

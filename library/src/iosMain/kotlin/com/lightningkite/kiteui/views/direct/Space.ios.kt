@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.*
 
@@ -11,9 +12,10 @@ import platform.UIKit.UIView
 
 
 
-actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
+@InternalKiteUi
+public actual class Space actual constructor(context: RContext, private val multiplier: Double): RView(context) {
 
-    override val native = NSpace()
+    override val native: NSpace = NSpace()
     override fun applyTheme(theme: ThemeAndBack) {
         native.natSize = CGSizeMake(theme.theme.gap.value * multiplier, theme.theme.gap.value * multiplier)
     }
@@ -23,7 +25,8 @@ actual class Space actual constructor(context: RContext, private val multiplier:
 }
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
-public actual class NSpace(var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+@InternalKiteUi
+public actual class NSpace(public var natSize: CValue<CGSize> = CGSizeMake(0.0, 0.0)): UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> = natSize
 }
 

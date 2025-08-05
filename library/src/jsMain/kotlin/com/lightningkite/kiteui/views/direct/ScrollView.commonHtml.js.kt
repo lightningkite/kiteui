@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
@@ -18,6 +19,7 @@ import kotlinx.dom.addClass
 import org.w3c.dom.*
 
 
+@InternalKiteUi
 public actual class ScrollingBehaviorImpl public actual constructor(
     public val on: RView,
     public actual override val horizontal: Boolean,
@@ -92,7 +94,7 @@ public actual class ScrollingBehaviorImpl public actual constructor(
             )
         }
     }
-    val _directlyInteractingWithScroller = Signal(false)
+    public val _directlyInteractingWithScroller: Signal<Boolean> = Signal(false)
     actual override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     init {

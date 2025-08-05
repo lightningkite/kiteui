@@ -13,7 +13,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
-fun ViewWriter.navGroupColumn(
+public fun ViewWriter.navGroupColumn(
     elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
@@ -105,7 +105,7 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+public fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupActionsInner(elements)
         setup()
@@ -170,7 +170,7 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+public fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
     return row {
         navGroupTopInner(readable)
         setup()
@@ -262,7 +262,7 @@ public fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): 
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
+public fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
     return nav - unpadded - row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {

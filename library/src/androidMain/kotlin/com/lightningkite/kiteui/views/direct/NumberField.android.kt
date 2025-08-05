@@ -86,8 +86,8 @@ public actual class NumberInput public actual constructor(context: RContext) : R
                 (if(theme.font.strikethrough) Paint.STRIKE_THRU_TEXT_FLAG else 0)
         native.isAllCaps = theme.font.allCaps
     }
-    actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
-    actual var keyboardHints: KeyboardHints
+    public actual val content: MutableReactiveValue<Double?> = native.contentProperty().asDouble()
+    public actual var keyboardHints: KeyboardHints
         get() {
             return native.keyboardHints
         }

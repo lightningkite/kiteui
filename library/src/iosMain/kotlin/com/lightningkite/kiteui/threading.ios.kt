@@ -7,6 +7,7 @@ import platform.Foundation.NSThread
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 
+@InternalKiteUi
 public actual inline fun onMainThread(crossinline  action: () -> Unit): Unit = if(NSThread.isMainThread) action() else {
     dispatch_async(dispatch_get_main_queue()) { action() }
 }

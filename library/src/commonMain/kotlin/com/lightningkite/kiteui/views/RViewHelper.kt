@@ -36,74 +36,74 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
-abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
-    override val rView: RView get() = this as RView
+public abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
+    public override val rView: RView get() = this as RView
 
-    abstract var showOnPrint: Boolean
-    var isShutdown = false
+    public abstract var showOnPrint: Boolean
+    public var isShutdown: Boolean = false
         private set
 
-    open var opacity: Double = 1.0
-    open var shown: Boolean = true
+    public open var opacity: Double = 1.0
+    public open var shown: Boolean = true
     @Deprecated("Renamed to 'shown'", ReplaceWith("shown"))
-    var exists: Boolean
+    public var exists: Boolean
         get() = shown
         set(value) { shown = value }
-    open var visible: Boolean = true
-    open var gap: Dimension? = null
+    public open var visible: Boolean = true
+    public open var gap: Dimension? = null
     @Deprecated("Renamed to 'gap'", ReplaceWith("gap"))
-    var spacing: Dimension?
+    public var spacing: Dimension?
         get() = gap
         set(value) { gap = value }
-    open var ignoreInteraction: Boolean = false
-    var padding: Dimension?
+    public open var ignoreInteraction: Boolean = false
+    public var padding: Dimension?
         get() = paddingByEdge?.left
         set(value) { paddingByEdge = value?.let(::Edges) }
-    var additionalPadding: Edges? = null
+    public var additionalPadding: Edges? = null
         set(value) {
             field = value
             refreshPadding()
         }
-    open var paddingByEdge: Edges? = null
+    public open var paddingByEdge: Edges? = null
         set(value) {
             field = value
             refreshPadding()
         }
-    open var transitionId: String? = null
+    public open var transitionId: String? = null
 
     // Safe insets handling
-    var lastSetWeight: Float? = null
-    var lastSetHorizontalAlign: Align = Align.Stretch
-    var lastSetVerticalAlign: Align = Align.Stretch
+    public var lastSetWeight: Float? = null
+    public var lastSetHorizontalAlign: Align = Align.Stretch
+    public var lastSetVerticalAlign: Align = Align.Stretch
 
     // drag 'n drop
-    open var dragData: DragData? = null
-    open var dropTargetDelegate: DropTargetDelegate? = null
+    public open var dragData: DragData? = null
+    public open var dropTargetDelegate: DropTargetDelegate? = null
 
-    abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
-    abstract fun requestFocus()
+    public abstract fun scrollIntoView(horizontal: Align?, vertical: Align?, animate: Boolean = true)
+    public abstract fun requestFocus()
 
-    companion object {
-        var leakDetection: Boolean = false
-        var removeBeforeShutdown: Boolean = false
+    public companion object {
+        public var leakDetection: Boolean = false
+        public var removeBeforeShutdown: Boolean = false
     }
 
 
     // Theming
 
     private val id = Random.Default.nextInt()
-    var themeTakeNonCascadingFromParent: Boolean = false
+    public var themeTakeNonCascadingFromParent: Boolean = false
         set(value) {
             field = value
             refreshTheming()
         }
-    var themeChoice: ThemeDerivation = ThemeDerivation.Companion.none
+    public var themeChoice: ThemeDerivation = ThemeDerivation.Companion.none
         set(value) {
             field = value
             refreshTheming()
         }
-    val theme: Theme get() = themeAndBack.theme
-    var themeAndBack: ThemeAndBack = Theme.Companion.placeholder.withBack
+    public val theme: Theme get() = themeAndBack.theme
+    public var themeAndBack: ThemeAndBack = Theme.Companion.placeholder.withBack
         private set(value) {
             if (value != field) {
                 field = value
@@ -116,24 +116,25 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             }
         }
 
-    open val mySpacingForChildren: Dimension
+    public open val mySpacingForChildren: Dimension
         get()  {
             val pad = padding ?: themeAndBack.theme.padding.top
             val gap = gap ?: themeAndBack.theme.gap
             return minOf(pad, gap)
         }
-    val appliedPadding get() = (paddingByEdge ?: if(themeAndBack.padding) theme.padding else Edges.ZERO).let {
+    public val appliedPadding: Edges
+        get() = (paddingByEdge ?: if(themeAndBack.padding) theme.padding else Edges.ZERO).let {
         if(additionalPadding != null) it + additionalPadding
         else it
     }
-    protected var fullyStarted = false
-    abstract fun applyTheme(theme: ThemeAndBack)
-    open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
+    protected var fullyStarted: Boolean = false
+    public abstract fun applyTheme(theme: ThemeAndBack)
+    public open fun applyState(theme: ThemeAndBack): ThemeAndBack = theme
         .let { if(working.value) it[WorkingSemantic] else it }
         .let { if(loading.value) it[LoadingSemantic] else it }
-    open fun refreshPadding() {
+    public open fun refreshPadding() {
     }
-    fun refreshTheming() {
+    public fun refreshTheming() {
         if (this == viewDebugTarget) println("refreshTheming")
         if (!fullyStarted) {
             if (this == viewDebugTarget) println("refreshTheming abandoned due to not fullyStarted")
@@ -155,26 +156,26 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     // Children
 
-    var parent: RView? = null
+    public var parent: RView? = null
         set(value) {
             field = value
             if (parent != null) refreshTheming()
         }
     private val internalChildren = ArrayList<RView>()
-    val children: List<RView> get() = internalChildren
-    override fun willAddChild(view: RView) {
+    public val children: List<RView> get() = internalChildren
+    public override fun willAddChild(view: RView) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call willAddChild was made")
         view.parent = this as RView
     }
 
-    fun addChild(index: Int, view: RView) {
+    public fun addChild(index: Int, view: RView) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call addChild was made")
         if (view.parent !== this) view.parent = this as RView
         internalChildren.add(index, view)
         internalAddChild(index, view)
     }
 
-    override fun addChild(view: RView) {
+    public override fun addChild(view: RView) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call addChild was made")
         if (view.parent !== this) view.parent = this as RView
         val index = children.size
@@ -182,14 +183,14 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         internalAddChild(index, view)
     }
 
-    fun removeChild(index: Int) {
+    public fun removeChild(index: Int) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         if (index !in children.indices) throw IllegalArgumentException("$index not in range ${children.indices}")
         internalRemoveChild(index)
         internalChildren.removeAt(index).also { it.shutdown() }
     }
 
-    fun removeChild(view: RView) {
+    public fun removeChild(view: RView) {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt to call removeChild was made")
         val i = children.indexOf(view)
         if (i != -1) removeChild(i)
@@ -198,7 +199,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
     }
 
-    fun clearChildren() {
+    public fun clearChildren() {
         if(isShutdown) println("WARNING!! $this is shut down, but attempt call to was made ")
         internalClearChildren()
         internalChildren.removeAll {
@@ -212,7 +213,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     // Exceptions and Actions
 
     private var exceptionHandlers: ExceptionHandlers? = null
-    operator fun plusAssign(exceptionHandler: ExceptionHandler) {
+    public operator fun plusAssign(exceptionHandler: ExceptionHandler) {
         exceptionHandlers?.let {
             it += exceptionHandler
         } ?: run {
@@ -223,7 +224,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
 
     private var exceptionToMessages: ExceptionToMessages? = null
-    operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
+    public operator fun plusAssign(exceptionToMessage: ExceptionToMessage) {
         exceptionToMessages?.let {
             it += exceptionToMessage
         } ?: run {
@@ -233,7 +234,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         }
     }
 
-    val loading = Signal(false)
+    public val loading: Signal<Boolean> = Signal(false)
     private var loadCount = 0
         set(value) {
             field = value
@@ -245,7 +246,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
                 refreshTheming()
             }
         }
-    val working = Signal(false)
+    public val working: Signal<Boolean> = Signal(false)
     private var workCount = 0
         set(value) {
             field = value
@@ -278,7 +279,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         })
         add(Dispatchers.Main.immediate)
     }
-    override val coroutineContext: CoroutineContext = contextSetup()
+    public override val coroutineContext: CoroutineContext = contextSetup()
 
     internal fun listenForWorking(readable: Reactive<*>): () -> Unit {
         var loading = false
@@ -338,7 +339,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         return r
     }
 
-    fun exceptionToMessage(exception: Exception): ExceptionMessage? {
+    public fun exceptionToMessage(exception: Exception): ExceptionMessage? {
         val myView = this@RViewHelper as RView
         fun handle(view: RViewHelper): ExceptionMessage? {
             return view.exceptionToMessages?.handle(myView, exception) ?: view.parent?.let { handle(it) }
@@ -347,7 +348,7 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     }
 
     // Cleanup Insurance
-    open fun shutdown() {
+    public open fun shutdown() {
         job.cancel()
         if (removeBeforeShutdown) {
             for (index in internalChildren.lastIndex downTo 0) {
@@ -363,28 +364,28 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         parent = null
     }
 
-    open fun leakDetect() {
+    public open fun leakDetect() {
         WeakReference(this).checkLeakAfterDelay(1000)
     }
 
-    abstract fun internalAddChild(index: Int, view: RView)
-    abstract fun internalRemoveChild(index: Int)
-    abstract fun internalClearChildren()
-    open fun postSetup() {
+    public abstract fun internalAddChild(index: Int, view: RView)
+    public abstract fun internalRemoveChild(index: Int)
+    public abstract fun internalClearChildren()
+    public open fun postSetup() {
         fullyStarted = true
         refreshTheming()
     }
 
-    abstract fun screenRectangle(): Rect?
+    public abstract fun screenRectangle(): Rect?
 
 
     // Calculation context
 
     @Deprecated("Not needed anymore", ReplaceWith("this"))
-    val calculationContext: CoroutineScope get() = this
+    public val calculationContext: CoroutineScope get() = this
 
-    var debugName: String? = null
-    override fun toString(): String {
+    public var debugName: String? = null
+    public override fun toString(): String {
         return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
 }

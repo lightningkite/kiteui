@@ -18,8 +18,8 @@ public interface RecyclerViewRendererSet<in T, out ID> {
         public override fun renderer(item: Any?): RecyclerViewRenderer<Any?> = RecyclerViewRenderer.Blank
     }
 
-    companion object {
-        fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> ViewModifiable) =
+    public companion object {
+        public fun <T, ID> single(id: (T) -> ID, render: ViewWriter.(data: Reactive<T>) -> ViewModifiable): RecyclerViewRendererSet<T, ID> =
             object : RecyclerViewRendererSet<T, ID> {
                 override fun id(item: T): ID = id(item)
                 val r = object : RecyclerViewRenderer<T> {
@@ -35,8 +35,8 @@ public interface RecyclerViewRendererSet<in T, out ID> {
 
         public class MultiBuilder<T, ID> internal constructor(public val id: (T)->ID) {
             internal val entries = ArrayList<Pair<(T)->Boolean, RecyclerViewRenderer<T>>>()
-            fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
-            infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> ViewModifiable) {
+            public fun elementsMatching(predicate: (T)->Boolean): (T)->Boolean = predicate
+            public infix fun ((T)->Boolean).renderedAs(renderer: ViewWriter.(data: Reactive<T>) -> ViewModifiable) {
                 entries += this to object : RecyclerViewRenderer<T> {
                     override fun render(
                         viewWriter: ViewWriter,

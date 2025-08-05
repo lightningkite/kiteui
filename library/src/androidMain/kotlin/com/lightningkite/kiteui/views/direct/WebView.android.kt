@@ -1,9 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import android.webkit.WebView as AndroidWebView
 
+@InternalKiteUi
 public actual class WebView public actual constructor(context: RContext): RView(context) {
     override val native: AndroidWebView = AndroidWebView(context.activity).apply {
     }

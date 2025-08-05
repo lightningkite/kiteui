@@ -4,6 +4,7 @@ package com.lightningkite.kiteui.views
 
 
 import com.lightningkite.kiteui.ExternalServices
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
@@ -36,12 +37,13 @@ public fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifi
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
     setup({ themeReadable.invoke() }, app)
 }
 
 
-public class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: WeakReference<UIView>) : NSObject() {
+@InternalKiteUi
+public class KeyboardObserver(public val bottom: WeakReference<NSLayoutConstraint>, public val view: WeakReference<UIView>) : NSObject() {
     public var keyboardAnimationDuration: Double = 0.25
 
     @ObjCAction
@@ -73,7 +75,7 @@ public class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val
     }
 }
 
-fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+public fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -154,7 +156,7 @@ private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectM
         this.hidden = true
     }
 
-    override fun willMoveToWindow(newWindow: UIWindow?) {
+    public override fun willMoveToWindow(newWindow: UIWindow?) {
         super.willMoveToWindow(newWindow)
         if (newWindow == null) {
             if (onRemove?.invoke() == true) {

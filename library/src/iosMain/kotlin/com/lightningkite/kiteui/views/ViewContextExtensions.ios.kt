@@ -26,7 +26,7 @@ actual fun ViewWriter.overlayWriter(
     body: RView.(remove: () -> Unit) -> Unit
 ) {
     if (!modal) {
-        var willRemove: RView? = null
+        public var willRemove: RView? = null
         with(overlayFrame ?: return) {
             withoutAnimation {
                 beforeNextElementSetup {
@@ -44,9 +44,9 @@ actual fun ViewWriter.overlayWriter(
         }
     } else {
         println("Waiting...")
-        val theme = this@overlayWriter.overlayFrame?.theme ?: Theme.placeholder
+        public val theme = this@overlayWriter.overlayFrame?.theme ?: Theme.placeholder
         println("Let's go!")
-        val viewController = object : UIViewController(null, null) {
+        public val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
                 super.viewDidDisappear(animated)
             }

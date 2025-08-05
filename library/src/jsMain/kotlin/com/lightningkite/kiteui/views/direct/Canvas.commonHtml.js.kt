@@ -1,11 +1,13 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.dom.ResizeObserver
 import com.lightningkite.kiteui.views.canvas.DrawingContext2D
 import kotlinx.browser.window
 import org.w3c.dom.*
 import kotlin.math.roundToInt
 
+@InternalKiteUi
 public actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     delegate?.let { value ->
         value.invalidate = {
@@ -23,6 +25,7 @@ public actual fun Canvas.onDelegateSet(delegate: CanvasDelegate?) {
     }
 }
 
+@InternalKiteUi
 public actual fun Canvas.setupResizeListener() {
     native.onElement { htmlNative ->
         htmlNative as HTMLCanvasElement

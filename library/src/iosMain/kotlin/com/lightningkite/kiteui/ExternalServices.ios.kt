@@ -38,6 +38,7 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.posix.int64_t
 
+@InternalKiteUi
 public actual fun RContext.openTab(url: String) {
     UIApplication.sharedApplication.openURL(
         url = NSURL(string = url),
@@ -55,7 +56,7 @@ private val mostTypes = listOf(
     UTTypeSourceCode,
 )
 
-lateinit var rootView: UIView
+public lateinit var rootView: UIView
 public actual suspend fun RContext.requestFile(mimeTypes: List<String>): FileReference? = run {
     val onlyMedia = mimeTypes.all { it.startsWith("image/") || it.startsWith("video/") }
     val includesMedia = mimeTypes.any { it.startsWith("image/") || it.startsWith("video/") || it.startsWith("*/" )}
@@ -119,10 +120,10 @@ actual suspend fun RContext.requestFiles(mimeTypes: List<String>): List<FileRefe
 }
 
 
-data class UIAlertActionSuspending<out T>(
-    val title: String,
-    val style: UIAlertActionStyle = UIAlertActionStyleDefault,
-    val handler: suspend () -> T,
+public data class UIAlertActionSuspending<out T>(
+    public val title: String,
+    public val style: UIAlertActionStyle = UIAlertActionStyleDefault,
+    public val handler: suspend () -> T,
 )
 
 suspend fun <T> RContext.actionSheet(title: String?, message: String? = null, vararg actions: UIAlertActionSuspending<T>): T {
@@ -398,6 +399,7 @@ public actual suspend fun RContext.requestCaptureSelf(mimeTypes: List<String>): 
     }
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.requestCaptureEnvironment(mimeTypes: List<String>): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) {
         requestCapture(
@@ -503,6 +505,7 @@ public actual fun RContext.setClipboardText(value: String) {
     UIPasteboard.generalPasteboard.string = value
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.download(
     name: String,
     url: String,
@@ -606,6 +609,7 @@ private suspend fun copyFilesToCameraRoll(files: List<NSURL>) {
     }
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.download(
     name: String,
     blob: Blob,
@@ -711,7 +715,7 @@ public actual fun RContext.openEvent(
     end: LocalDateTime,
     zone: TimeZone
 ) {
-    val store = EKEventStore()
+    public val store = EKEventStore()
     store.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { hasPermission, error ->
         if (hasPermission) {
             afterTimeout(1) {
@@ -741,9 +745,10 @@ public actual fun RContext.openEvent(
 }
 
 
+@InternalKiteUi
 public actual fun RContext.openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
 
-    val options = arrayListOf(
+    public val options = arrayListOf(
         "Apple Maps" to {
             val mapItem = MKMapItem(
                 placemark = MKPlacemark(

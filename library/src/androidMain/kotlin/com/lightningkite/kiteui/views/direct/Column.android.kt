@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext
@@ -16,11 +17,12 @@ import kotlin.math.roundToInt
  * A custom layout that implements flexbox-like wrapping behavior for Android.
  * This is similar to the FlexLayout used in the iOS implementation.
  */
-class FlexboxLayout(context: Context) : ViewGroup(context) {
-    var gap: Int = 0
-    var lineGap: Int = 0
+@InternalKiteUi
+public class FlexboxLayout(context: Context) : ViewGroup(context) {
+    public var gap: Int = 0
+    public var lineGap: Int = 0
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
@@ -92,7 +94,7 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
         setMeasuredDimension(width, finalHeight)
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    public override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val width = r - l
         var currentX = 0
         var currentY = 0
@@ -133,8 +135,9 @@ class FlexboxLayout(context: Context) : ViewGroup(context) {
     private fun min(a: Int, b: Int): Int = if (a < b) a else b
 }
 
-actual class RowWrapping actual constructor(context: RContext) : RView(context) {
-    override val native = FlexboxLayout(context.activity)
+@InternalKiteUi
+public actual class RowWrapping actual constructor(context: RContext) : RView(context) {
+    override val native: FlexboxLayout = FlexboxLayout(context.activity)
 
     override var gap: Dimension?
         get() = super.gap

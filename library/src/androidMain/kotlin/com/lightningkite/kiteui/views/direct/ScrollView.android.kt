@@ -228,7 +228,7 @@ public class ScrollView constructor(
             native.isHorizontalScrollBarEnabled = value
             native.isVerticalScrollBarEnabled = value
         }
-    override val viewport: Reactive<Rect> = object : Reactive<Rect>, Listenable by scrollChanged {
+    public override val viewport: Reactive<Rect> = object : Reactive<Rect>, Listenable by scrollChanged {
         override val state: ReactiveState<Rect>
             get() {
                 debugPrint { "Reading actual viewport, got ${native.scrollX}, ${native.scrollY}" }
@@ -242,7 +242,7 @@ public class ScrollView constructor(
                 )
             }
     }
-    override val content: Reactive<Rect> = object : Reactive<Rect>, BaseListenable() {
+    public override val content: Reactive<Rect> = object : Reactive<Rect>, BaseListenable() {
         override val state: ReactiveState<Rect>
             get() = ReactiveState(
                 Rect.fromSize(
@@ -264,10 +264,10 @@ public class ScrollView constructor(
         }
     }
 
-    override var snapToElements: Pair<Align?, Align?> = null to null
-    override var scrollSnapStop: Boolean = false
+    public override var snapToElements: Pair<Align?, Align?> = null to null
+    public override var scrollSnapStop: Boolean = false
     private val _directlyInteractingWithScroller = Signal(false)
-    override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
+    public override val directlyInteractingWithScroller: Reactive<Boolean> get() = _directlyInteractingWithScroller
 
     public override fun scrollTo(left: Double, top: Double, animated: Boolean) {
         if (animated) {

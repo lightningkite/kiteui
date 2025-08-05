@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.reactive.*
@@ -14,6 +15,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
 
+@InternalKiteUi
 public actual fun HtmlElementLike.resizeObserver(): Listenable {
     return object: BaseListenable() {
         public var observer: ResizeObserver? = null
@@ -85,7 +87,8 @@ public fun HTMLElement.measureByTempEdit(max: Size): Size {
     return out
 }
 
-fun HTMLElement.measureByDuplicate(max: Size): Size {
+@InternalKiteUi
+public fun HTMLElement.measureByDuplicate(max: Size): Size {
     // This is nasty, but this is the only cross-browser safe way to do this.
     // We clone the view and check its size.
     val clone = this.cloneNode(true) as HTMLElement
@@ -122,6 +125,7 @@ public fun HTMLElement.measureByDuplicate(sizeConstraints: SizeConstraints): Siz
     return out
 }
 
+@InternalKiteUi
 public actual fun HtmlElementLike.mutationObserver(recursive: Boolean): Listenable {
     return object: BaseListenable() {
         var observer: MutationObserver? = null

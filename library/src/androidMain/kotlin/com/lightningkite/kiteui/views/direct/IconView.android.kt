@@ -21,9 +21,11 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.ProgressBar
 import androidx.appcompat.widget.AppCompatImageView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.views.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT")
+@InternalKiteUi
 public actual class NIconView(context: Context) : AppCompatImageView(context) {
     init {
         scaleType = ScaleType.CENTER_INSIDE
@@ -43,6 +45,7 @@ public actual class NIconView(context: Context) : AppCompatImageView(context) {
     }
 }
 
+@InternalKiteUi
 public actual class IconView public actual constructor(context: RContext): RView(context) {
     override val native: NIconView = NIconView(context.activity)
     public actual var source: Icon?

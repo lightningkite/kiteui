@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.reactive.*
@@ -11,6 +12,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.UnsupportedOperationException
 
+@InternalKiteUi
 public actual class ScrollingBehaviorImpl public actual constructor(
     public val on: RView,
     public actual override val horizontal: Boolean,

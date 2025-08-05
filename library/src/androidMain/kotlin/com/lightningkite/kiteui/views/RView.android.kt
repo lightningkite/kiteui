@@ -19,6 +19,7 @@ import android.widget.ScrollView
 import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.debugMode
@@ -37,10 +38,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.math.min
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
-    abstract val native: View
+@InternalKiteUi
+public actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+    public abstract val native: View
 
-    var removeListener: (() -> Unit)? = null
+    public var removeListener: (() -> Unit)? = null
     init {
         if (Looper.myLooper() != Looper.getMainLooper())
             throw Exception("Cannot create views on any thread but the main thread")
@@ -257,7 +259,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
     // Map to track active animators for each view property
-    companion object {
+    public companion object {
         private val activeAnimators = mutableMapOf<String, ValueAnimator>()
     }
 
@@ -425,7 +427,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 public var animationsEnabled: Boolean = true
 public actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
-public actual inline fun RView.withoutAnimation(action: () -> Unit) = native.withoutAnimation(action)
+public actual inline fun RView.withoutAnimation(action: () -> Unit): Unit = native.withoutAnimation(action)
 public inline fun View.withoutAnimation(action: () -> Unit) {
     if (!animationsEnabled) {
         action()
@@ -440,7 +442,7 @@ public inline fun View.withoutAnimation(action: () -> Unit) {
 }
 
 
-inline fun View.debugPrint(get: ()->String) {
+public inline fun View.debugPrint(get: ()->String) {
     if(debugMode && viewDebugTarget?.native == this)
         Log.tag("viewDebugTarget").info(get())
 }

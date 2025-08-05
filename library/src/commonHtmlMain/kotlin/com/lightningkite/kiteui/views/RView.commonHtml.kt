@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ConsoleRoot
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
@@ -9,8 +10,8 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
-actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
-    var native = FutureElement().also { it.classes.add("kui") }
+public actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
+    public var native: FutureElement = FutureElement().also { it.classes.add("kui") }
 
     public actual override var showOnPrint: Boolean = true
         set(value) {
@@ -159,6 +160,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 }
 
+@InternalKiteUi
 public typealias HtmlElementLike = FutureElement
 
 public expect class FutureElementStyle
@@ -194,11 +196,14 @@ public expect class FutureElement {
     public fun screenRectangle(): Rect?
 }
 
+@InternalKiteUi
 public expect fun RView.nativeScrollIntoView(
     horizontal: Align?,
     vertical: Align?,
     animate: Boolean
 )
 
+@InternalKiteUi
 public expect fun RView.nativeSetDragData(data: DragData?)
+@InternalKiteUi
 public expect fun RView.nativeOnDrop(listener: DropTargetDelegate?)

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.reactive.AppState
 import kotlinx.browser.document
 import org.w3c.dom.HTMLDivElement
@@ -17,8 +18,11 @@ private val measuringDiv = (document.createElement("div") as HTMLDivElement).app
     style.maxHeight = "unset"
     document.body!!.appendChild(this)
 }
+@InternalKiteUi
 public actual val Dimension.px: Double get() = value.roughPx
+@InternalKiteUi
 public actual val Dimension.canvasUnits: Double get() = value.roughPx * AppState.windowInfo.value.density
+@InternalKiteUi
 public actual val Dimension.viewUnits: Double get() = value.roughPx
 
 private fun String.cssCalc(): Int {

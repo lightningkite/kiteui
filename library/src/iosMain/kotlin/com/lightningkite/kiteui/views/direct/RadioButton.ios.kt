@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -12,10 +13,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 
+@InternalKiteUi
 public actual class RadioButton public actual constructor(context: RContext) : RView(context) {
     override val native: WrapperView = WrapperView()
-    val button = FrameLayoutButton()
-    override val addChildTarget get() = button
+    public val button: FrameLayoutButton = FrameLayoutButton()
+    override val addChildTarget: FrameLayoutButton get() = button
     init {
         button.extensionHorizontalAlign = Align.Center
         button.extensionVerticalAlign = Align.Center
@@ -28,7 +30,7 @@ public actual class RadioButton public actual constructor(context: RContext) : R
             button.enabled = value
         }
     private val _checked = Signal(false)
-    actual val checked: MutableReactiveValue<Boolean> get() = _checked
+    public actual val checked: MutableReactiveValue<Boolean> get() = _checked
 
     init {
         themeChoice = ThemeDerivation {

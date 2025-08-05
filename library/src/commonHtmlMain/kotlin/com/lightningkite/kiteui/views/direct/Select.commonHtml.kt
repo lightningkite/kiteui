@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.reactive.*
@@ -13,13 +14,14 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
+@InternalKiteUi
 public actual class Select public actual constructor(context: RContext) : RView(context) {
     init {
         native.tag = "select"
         native.classes.add("editable")
     }
 
-    actual fun <T> bind(
+    public actual fun <T> bind(
         edits: MutableReactive<T>,
         data: Reactive<List<T>>,
         render: (T) -> String

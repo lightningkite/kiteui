@@ -20,7 +20,7 @@ import kotlinx.datetime.LocalTime
 
 public expect class LocalTimeField(context: RContext) : RViewWithAction {
 
-    val content: MutableReactiveValue<LocalTime?>
-    var range: ClosedRange<LocalTime>?
+    public val content: MutableReactiveValue<LocalTime?>
+    public var range: ClosedRange<LocalTime>?
 
 }

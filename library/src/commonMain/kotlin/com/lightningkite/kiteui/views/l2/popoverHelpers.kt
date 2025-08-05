@@ -14,7 +14,7 @@ public fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
+public fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
     overlayWriter(false) {
         withoutAnimation {
 
@@ -40,7 +40,7 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
 }
 
 @Deprecated("Use dialog with explicit closer instead", ReplaceWith("dialog(dismissable, content)"))
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
+public fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
     overlayWriter {
         withoutAnimation {
@@ -71,7 +71,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
     }
 }
 
-fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
+public fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: ()->Unit) -> Unit) {
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
@@ -82,7 +82,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+public fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
     var willRemove: RView? = null
     overlayWriter {
         withoutAnimation {

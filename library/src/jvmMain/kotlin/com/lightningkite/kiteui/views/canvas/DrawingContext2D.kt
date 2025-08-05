@@ -1,17 +1,27 @@
 package com.lightningkite.kiteui.views.canvas
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.*
 
+@InternalKiteUi
 public actual abstract class DrawingContext2D {
+    @InternalKiteUi
     public actual abstract fun save()
+    @InternalKiteUi
     public actual abstract fun restore()
+    @InternalKiteUi
     public actual abstract fun scale(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun rotate(angle: Double)
+    @InternalKiteUi
     public actual abstract fun translate(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun transform(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double)
     //  public actual abstract   fun getTransform(): DOMMatrix
     //    public actual abstract fun setTransform(transform: dynamic)
+    @InternalKiteUi
     public actual abstract var globalCompositeOperation: String
+    @InternalKiteUi
     public actual abstract var imageSmoothingEnabled: Boolean
     //  public actual abstract   var imageSmoothingQuality: ImageSmoothingQuality
 //  public actual abstract   var strokeStyle: dynamic
@@ -23,11 +33,16 @@ public actual abstract class DrawingContext2D {
 //  public actual abstract   fun createLinearGradient(x0: Double, y0: Double, x1: Double, y1: Double): CanvasGradient
 //  public actual abstract   fun createRadialGradient(x0: Double, y0: Double, r0: Double, x1: Double, y1: Double, r1: Double): CanvasGradient
 //  public actual abstract   fun createPattern(image: CanvasImageSource, repetition: String): CanvasPattern?
+    @InternalKiteUi
     public actual abstract fun clearRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun fillRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun strokeRect(x: Double, y: Double, w: Double, h: Double)
+    @InternalKiteUi
     public actual abstract fun beginPath()
     //  public actual abstract   fun fill(path: Path2D, fillRule: CanvasFillRule)
+    @InternalKiteUi
     public actual abstract fun stroke()
 //  public actual abstract   fun stroke(path: Path2D)
 
@@ -68,37 +83,59 @@ public actual abstract class DrawingContext2D {
 //    public actual abstract fun removeHitRegion(id: String)
 //    public actual abstract fun clearHitRegions()
 
+    @InternalKiteUi
     public actual abstract var lineWidth: Double
     //  public actual abstract   var lineCap: CanvasLineCap
 //  public actual abstract   var lineJoin: CanvasLineJoin
+    @InternalKiteUi
     public actual abstract var miterLimit: Double
+    @InternalKiteUi
     public actual abstract var lineDashOffset: Double
+    @InternalKiteUi
     public abstract fun setLineDash(segments: Array<Double>)
+    @InternalKiteUi
     public abstract fun getLineDash(): Array<Double>
+    @InternalKiteUi
     public actual abstract fun closePath()
+    @InternalKiteUi
     public actual abstract fun moveTo(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun lineTo(x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun quadraticCurveTo(cpx: Double, cpy: Double, x: Double, y: Double)
+    @InternalKiteUi
     public actual abstract fun bezierCurveTo(cp1x: Double, cp1y: Double, cp2x: Double, cp2y: Double, x: Double, y: Double)
 //    public actual abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radius: Double)
 //    public actual abstract fun arcTo(x1: Double, y1: Double, x2: Double, y2: Double, radiusX: Double, radiusY: Double, rotation: Double)
-    public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
+@InternalKiteUi
+public actual abstract fun rect(x: Double, y: Double, w: Double, h: Double)
 //    public actual abstract fun arc(x: Double, y: Double, radius: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 //    public actual abstract fun ellipse(x: Double, y: Double, radiusX: Double, radiusY: Double, rotation: Double, startAngle: Double, endAngle: Double, anticlockwise: Boolean)
 }
 
+@InternalKiteUi
 public actual fun DrawingContext2D.appendArc(x: Double, y: Double, radius: Double, startAngle: Angle, endAngle: Angle, anticlockwise: Boolean): Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double):Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.font(size: Double, value: FontAndStyle):Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.textAlign(alignment: TextAlign):Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.fill(): Unit = TODO()
+@InternalKiteUi
 public actual fun DrawingContext2D.fillEvenOdd(): Unit = TODO()
+@InternalKiteUi
 public actual var DrawingContext2D.strokePaint: Paint
     get() = TODO()
     set(value) { TODO() }
+@InternalKiteUi
 public actual var DrawingContext2D.fillPaint: Paint
     get() = TODO()
     set(value) { TODO() }
+@InternalKiteUi
 public actual val DrawingContext2D.width: Double get() = TODO()
+@InternalKiteUi
 public actual val DrawingContext2D.height: Double get() = TODO()

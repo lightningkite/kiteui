@@ -20,11 +20,11 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
     public fun navigateUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { navigate(it) }
     public fun resetUrlLikePath(path: String): Unit? = routes.parse(UrlLikePath.fromUrlString(path))?.let { reset(it) }
 
-    val stack: Signal<List<Page>> = Signal(listOf())
-    fun wrap(screen: Page): Page = screen
+    public val stack: Signal<List<Page>> = Signal(listOf())
+    public fun wrap(screen: Page): Page = screen
     
-    val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
-    val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
+    public val currentPage: Reactive<Page?> = remember { stack().lastOrNull() }
+    public val canGoBack: Reactive<Boolean> = remember { stack().size > 1 }
     
     public fun navigate(screen: Page): Unit = navigateRaw(wrap(screen))
     public fun replace(screen: Page): Unit = replaceRaw(wrap(screen))
@@ -72,9 +72,12 @@ public class PageNavigator(private val routesGetter: ()->Routes) {
 
 public expect fun PageNavigator.bindToPlatform(context: RContext)
 
-public var ViewWriter.pageNavigator by rContextAddonInit<PageNavigator>()
-public var ViewWriter.mainPageNavigator by rContextAddonInit<PageNavigator>()
-public var ViewWriter.dialogPageNavigator by rContextAddonInit<PageNavigator>()
+public var ViewWriter.pageNavigator: PageNavigator
+        by rContextAddonInit<PageNavigator>()
+public var ViewWriter.mainPageNavigator: PageNavigator
+        by rContextAddonInit<PageNavigator>()
+public var ViewWriter.dialogPageNavigator: PageNavigator
+        by rContextAddonInit<PageNavigator>()
 
 @Deprecated("Use navigator properly", ReplaceWith("mainPageNavigator", "com.lightningkite.kiteui.navigation.mainPageNavigator"), level = DeprecationLevel.ERROR)
 public val PlatformNavigator: PageNavigator get() = TODO()

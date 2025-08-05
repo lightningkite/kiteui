@@ -697,20 +697,20 @@ public data class KeyboardHints(
     public val includePasskeys: Boolean = false,
     public val autocorrect: Boolean = true,
 ) {
-    companion object {
-        public val paragraph = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
-        public val title = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
-        public val id = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
-        public val integer = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
-        public val integerWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative)
-        public val decimal = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
-        public val decimalWithNegative = KeyboardHints(KeyboardCase.None, KeyboardType.DecimalWithNegative)
-        public val phone = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
-        public val email =
+    public companion object {
+        public val paragraph: KeyboardHints = KeyboardHints(KeyboardCase.Sentences, KeyboardType.Text)
+        public val title: KeyboardHints = KeyboardHints(KeyboardCase.Words, KeyboardType.Text)
+        public val id: KeyboardHints = KeyboardHints(KeyboardCase.Letters, KeyboardType.Text, autocorrect = false)
+        public val integer: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Integer)
+        public val integerWithNegative: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.IntegerWithNegative)
+        public val decimal: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Decimal)
+        public val decimalWithNegative: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.DecimalWithNegative)
+        public val phone: KeyboardHints = KeyboardHints(KeyboardCase.None, KeyboardType.Phone)
+        public val email: KeyboardHints =
             KeyboardHints(KeyboardCase.None, KeyboardType.Email, autocomplete = AutoComplete.Email, autocorrect = false)
-        public val password = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
-        public val newPassword = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
-        public val oneTimeCode = KeyboardHints(
+        public val password: KeyboardHints = KeyboardHints(autocomplete = AutoComplete.Password, autocorrect = false)
+        public val newPassword: KeyboardHints = KeyboardHints(autocomplete = AutoComplete.NewPassword, autocorrect = false)
+        public val oneTimeCode: KeyboardHints = KeyboardHints(
             KeyboardCase.Letters,
             KeyboardType.Text,
             autocomplete = AutoComplete.OneTimeCode,
@@ -721,7 +721,7 @@ public data class KeyboardHints(
 
 public enum class AutoComplete { Email, Password, NewPassword, Phone, OneTimeCode }
 public enum class KeyboardCase { None, Letters, Words, Sentences }
-public enum class KeyboardType(val allowDecimal: Boolean = true) {
+public enum class KeyboardType(public val allowDecimal: Boolean = true) {
     Text,
     Integer(allowDecimal = false),
     Phone,

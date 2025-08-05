@@ -70,9 +70,9 @@ public class ImageView(viewWriter: ViewWriter) : ViewModifiable {
         }
     }
 
-    val shownInfo = RawReactive<Info?>(ReactiveState(null))
-    val shown by rView::shown
-    var cannotBeCovered = false
+    public val shownInfo: RawReactive<Info?> = RawReactive<Info?>(ReactiveState(null))
+    public val shown: Boolean by rView::shown
+    public var cannotBeCovered: Boolean = false
 
     public fun refresh() {
         if (!ready) return

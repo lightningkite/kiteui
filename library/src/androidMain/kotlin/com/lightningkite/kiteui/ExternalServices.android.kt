@@ -26,17 +26,21 @@ import kotlinx.datetime.toInstant
 import java.io.File
 import kotlin.coroutines.resume
 
+@InternalKiteUi
 public actual fun RContext.openTab(url: String) {
     AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.requestFile(
     mimeTypes: List<String>,
-) = requestFiles(mimeTypes, false).firstOrNull()
+):FileReference? = requestFiles(mimeTypes, false).firstOrNull()
 
+@InternalKiteUi
 public actual suspend fun RContext.requestFiles(
     mimeTypes: List<String>,
-) = requestFiles(mimeTypes, true)
+): List<FileReference>
+        = requestFiles(mimeTypes, true)
 
 public suspend fun RContext.requestFiles(
     mimeTypes: List<String>,
@@ -68,6 +72,7 @@ public suspend fun RContext.requestFiles(
     }
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.requestCaptureSelf(
     mimeTypes: List<String>
 ): FileReference? {
@@ -82,6 +87,7 @@ public actual suspend fun RContext.requestCaptureSelf(
     else throw Exception("Captures besides images and video not supported yet. Requested $mimeTypes")
 }
 
+@InternalKiteUi
 public actual suspend fun RContext.requestCaptureEnvironment(
     mimeTypes: List<String>
 ): FileReference? {
@@ -110,7 +116,7 @@ private suspend fun requestImageCamera(
             )
         }
 
-    AndroidAppContext.requestPermissions(android.Manifest.permission.CAMERA) {
+    AndroidAppContext.requestPermissions(Manifest.permission.CAMERA) {
         if (!it.accepted) return@requestPermissions cont.resume(null)
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, file)
@@ -130,6 +136,7 @@ private suspend fun requestImageCamera(
     }
 }
 
+@InternalKiteUi
 public actual fun RContext.setClipboardText(value: String) {
     (AndroidAppContext.activityCtx?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
         .setPrimaryClip(ClipData.newPlainText(value, value))
@@ -137,7 +144,7 @@ public actual fun RContext.setClipboardText(value: String) {
 
 private val DownloadNotificationId: String = "downloads"
 
-val logger = LogRoot.tag("ExternalServices")
+public val logger: Log = LogRoot.tag("ExternalServices")
 
 @InternalKiteUi
 private val validDownloadName = Regex("[a-zA-Z0-9.\\-_]+")
@@ -217,6 +224,7 @@ public actual suspend fun RContext.download(name: String, blob: Blob, preferredD
 
 private fun <T> List<T>.identity(): T? = first().takeIf { all { it == first() } }
 
+@InternalKiteUi
 public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>) {
     val files = namesToBlobs.map { it.second.saveToTemporaryFile(it.first) }
         .map {
@@ -241,6 +249,7 @@ public actual suspend fun RContext.share(namesToBlobs: List<Pair<String, Blob>>)
     AndroidAppContext.activityCtx?.startActivity(shareIntent)
 }
 
+@InternalKiteUi
 public actual fun RContext.share(title: String, message: String?, url: String?) {
     val i = Intent(Intent.ACTION_SEND)
     i.type = "text/plain"
@@ -249,6 +258,7 @@ public actual fun RContext.share(title: String, message: String?, url: String?) 
     AndroidAppContext.startActivityForResult(Intent.createChooser(i, title)) { _, _ -> }
 }
 
+@InternalKiteUi
 public actual fun RContext.openMap(latitude: Double, longitude: Double, label: String?, zoom: Float?) {
     AndroidAppContext.startActivityForResult(
         intent = Intent(Intent.ACTION_VIEW).apply {
@@ -270,6 +280,7 @@ public actual fun RContext.openMap(latitude: Double, longitude: Double, label: S
     ) { _, _ -> }
 }
 
+@InternalKiteUi
 public actual fun RContext.openEvent(
     title: String,
     description: String,

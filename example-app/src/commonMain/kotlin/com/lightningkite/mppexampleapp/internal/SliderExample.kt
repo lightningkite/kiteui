@@ -14,8 +14,8 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @Routable("slider-example")
-object SliderExamplePage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+public object SliderExamplePage : Page {
+    public override fun ViewWriter.render(): ViewModifiable {
         val sliderValue = Signal(50f)
         val sliderValueText = Signal("50")
 

@@ -1,10 +1,12 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.ClickableSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.views.*
 
 
+@InternalKiteUi
 public actual class MenuButton public actual constructor(context: RContext): RView(context) {
     public val floating: FloatingInfoHolder = FloatingInfoHolder(this)
     init {

@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.InternalKiteUi
 import com.lightningkite.kiteui.models.AutoComplete
 import com.lightningkite.kiteui.models.KeyboardHints
 import com.lightningkite.kiteui.models.KeyboardType
@@ -8,7 +9,8 @@ import com.lightningkite.kiteui.views.autocomplete
 import com.lightningkite.kiteui.views.inputMode
 import com.lightningkite.kiteui.views.type
 
-fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
+@InternalKiteUi
+public fun FutureElement.applyKeyboardHints(hints: KeyboardHints) {
     attributes.type = when (hints.type) {
         KeyboardType.Text -> "text"
         KeyboardType.Decimal -> "text"

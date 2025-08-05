@@ -21,8 +21,8 @@ public object FormsPage : Page {
 
 
 
-    val externals = HashMap<String, Signal<String>>()
-    fun leafExample(propName: String): FormLeaf {
+    public val externals = HashMap<String, Signal<String>>()
+    public fun leafExample(propName: String): FormLeaf {
         val prop = externals.getOrPut(propName) { Signal("Test") }
         return FormLeaf(
             title = propName,
@@ -45,8 +45,8 @@ public object FormsPage : Page {
         )
     }
 
-    val lp = Signal(false)
-    val form = FormSection(
+    public val lp = Signal(false)
+    public val form = FormSection(
         title = "Vehicle for Sale",
         subsections = {
             listOf(

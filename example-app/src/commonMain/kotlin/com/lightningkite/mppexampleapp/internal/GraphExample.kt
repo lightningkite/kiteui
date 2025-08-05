@@ -15,8 +15,8 @@ import com.lightningkite.readable.*
 import kotlin.math.*
 
 @Routable("graph-example")
-object GraphExamplePage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+public object GraphExamplePage : Page {
+    public override fun ViewWriter.render(): ViewModifiable {
         return scrolling - col {
             h1 { content = "Graph Example" }
 
