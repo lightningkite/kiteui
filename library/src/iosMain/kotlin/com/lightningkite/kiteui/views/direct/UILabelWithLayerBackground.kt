@@ -24,7 +24,7 @@ public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
         userInteractionEnabled = false
     }
 
-    public val label = UILabel().also {
+    public val label: UILabel = UILabel().also {
         userInteractionEnabled = false
     }.also(::addSubview)
 
@@ -111,7 +111,7 @@ public class UILabelWithLayerBackground : UIView(CGRectZero.readValue()) {
 
     }
 
-    public val recognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
+    public val recognizer: UITapGestureRecognizer = UITapGestureRecognizer(this, sel_registerName("handleLink"))
     internal fun linkSetup(active: Boolean) {
         userInteractionEnabled = active
         label.userInteractionEnabled = active

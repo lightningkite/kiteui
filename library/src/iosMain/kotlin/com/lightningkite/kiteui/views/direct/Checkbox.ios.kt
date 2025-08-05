@@ -16,7 +16,7 @@ import com.lightningkite.readable.*
 @InternalKiteUi
 public actual class Checkbox public actual constructor(context: RContext) : RView(context) {
     override val native: WrapperView = WrapperView()
-    val button = FrameLayoutButton()
+    public val button: FrameLayoutButton = FrameLayoutButton()
     override val addChildTarget: FrameLayoutButton get() = button
     init {
         button.extensionHorizontalAlign = Align.Center

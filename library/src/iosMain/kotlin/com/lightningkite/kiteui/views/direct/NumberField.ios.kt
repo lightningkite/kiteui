@@ -33,7 +33,7 @@ public actual class NumberInput public actual constructor(context: RContext) : R
             } ?: NextFocusDelegateShared.textFieldShouldReturn(textField)
         }
     }
-    public val textField = UITextField().apply {
+    public val textField: UITextField = UITextField().apply {
         smartDashesType = UITextSmartDashesType.UITextSmartDashesTypeNo
         smartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeNo
         backgroundColor = UIColor.clearColor

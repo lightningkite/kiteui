@@ -21,7 +21,7 @@ public actual class ProgressBar public actual constructor(context: RContext) : R
         native.progressLayer.setMask(backgroundLayer?.getOrInitBackgroundMask())
         native.progressLayer.tintColor = theme[CardSemantic].theme.foreground.closestColor().toUiColor()
     }
-    public actual var ratio by native::progress
+    public actual var ratio: Float by native::progress
 }
 
 @OptIn(ExperimentalForeignApi::class)

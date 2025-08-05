@@ -11,10 +11,10 @@ import com.lightningkite.readable.*
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
 
-actual class RContext(val controller: UIViewController, val parent: RContext? = null) : RContextHelper() {
+public actual class RContext(public val controller: UIViewController, public val parent: RContext? = null) : RContextHelper() {
     init { if(parent == null) ExternalServices.baseContext = this }
-    actual fun split(): RContext = RContext(controller).apply { addons.putAll(this@RContext.addons) }
-    fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons.putAll(this@RContext.addons) }
+    public actual fun split(): RContext = RContext(controller).apply { addons.putAll(this@RContext.addons) }
+    public fun split(controller: UIViewController): RContext = RContext(controller, this@RContext).apply { addons.putAll(this@RContext.addons) }
 
     public actual override val darkMode: Boolean?
         get() = when (controller.traitCollection.userInterfaceStyle) {
@@ -27,7 +27,7 @@ actual class RContext(val controller: UIViewController, val parent: RContext? = 
     // To enable immersive mode for iOS, you must:
     //    1) set "View controller-based status bar appearance" to YES in your Info.plist
     //    2) override prefersStatusBarHidden in your view controller and point it to this variable
-    actual var immersiveMode: Boolean = false
+    public actual var immersiveMode: Boolean = false
         set(value) {
             if (field != value) {
                 field = value
@@ -35,14 +35,14 @@ actual class RContext(val controller: UIViewController, val parent: RContext? = 
             }
         }
 
-    val controllerForPresenting get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
+    public val controllerForPresenting: UIViewController? get() = generateSequence(controller) { it.parentViewController }.firstOrNull { it.definesPresentationContext } as? UIViewController?
     private var dismissing: Boolean = false
-    fun dismissSelf() {
+    public fun dismissSelf() {
         dismissing = true
         println("Dismissing myself $controller through ${parent?.controller}")
         controller.presentingViewController?.dismissViewControllerAnimated(true) {}
     }
-    fun present(vc: UIViewController) {
+    public fun present(vc: UIViewController) {
         println("$controller present $vc")
         val contextToUse = generateSequence(this) { it.parent }.first {
             println("Can I present from ${it.controller}?  Dismissing is ${it.dismissing}")

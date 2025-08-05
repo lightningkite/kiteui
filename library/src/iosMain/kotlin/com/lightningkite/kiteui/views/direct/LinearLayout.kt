@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
+import com.lightningkite.kiteui.models.DimensionRaw
 import com.lightningkite.kiteui.models.Edges
 import com.lightningkite.kiteui.models.SizeConstraints
 import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
@@ -50,7 +51,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         it.addListener { it.value?.let { gap = it.value } }
     }
 
-    public override fun getSpacingOverrideProperty() = spacingOverride
+    public override fun getSpacingOverrideProperty(): Signal<Dimension?> = spacingOverride
 
 //    init { setUserInteractionEnabled(false) }
 
@@ -83,22 +84,22 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
     public data class Size(var primary: Double = 0.0, var secondary: Double = 0.0) {
     }
 
-    public val Size.objc get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
-    public val CGSize.local get() = Size(if (horizontal) width else height, if (horizontal) height else width)
-    public val CValue<CGSize>.local get() = useContents { local }
-    public val SizeConstraints.primaryMax get() = if (horizontal) maxWidth else maxHeight
-    public val SizeConstraints.secondaryMax get() = if (horizontal) maxHeight else maxWidth
-    public val SizeConstraints.primaryMin get() = if (horizontal) minWidth else minHeight
-    public val SizeConstraints.secondaryMin get() = if (horizontal) minHeight else minWidth
-    public val SizeConstraints.primary get() = if (horizontal) width else height
-    public val SizeConstraints.secondary get() = if (horizontal) height else width
-    public val UIView.secondaryAlign get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
-    public val Edges.primarySum get() = if(horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.secondarySum get() = if(!horizontal) horizontalSum.value else verticalSum.value
-    public val Edges.primaryStart get() = if(horizontal) left.value else top.value
-    public val Edges.primaryEnd get() = if(horizontal) right.value else bottom.value
-    public val Edges.secondaryStart get() = if(!horizontal) left.value else top.value
-    public val Edges.secondaryEnd get() = if(!horizontal) right.value else bottom.value
+    public val Size.objc: CValue<CGSize> get() = CGSizeMake(if (horizontal) primary else secondary, if (horizontal) secondary else primary)
+    public val CGSize.local: Size get() = Size(if (horizontal) width else height, if (horizontal) height else width)
+    public val CValue<CGSize>.local: Size get() = useContents { local }
+    public val SizeConstraints.primaryMax: Dimension? get() = if (horizontal) maxWidth else maxHeight
+    public val SizeConstraints.secondaryMax: Dimension? get() = if (horizontal) maxHeight else maxWidth
+    public val SizeConstraints.primaryMin: Dimension? get() = if (horizontal) minWidth else minHeight
+    public val SizeConstraints.secondaryMin: Dimension? get() = if (horizontal) minHeight else minWidth
+    public val SizeConstraints.primary: Dimension? get() = if (horizontal) width else height
+    public val SizeConstraints.secondary: Dimension? get() = if (horizontal) height else width
+    public val UIView.secondaryAlign: Align? get() = if (horizontal) extensionVerticalAlign else extensionHorizontalAlign
+    public val Edges.primarySum: DimensionRaw get() = if(horizontal) horizontalSum.value else verticalSum.value
+    public val Edges.secondarySum: DimensionRaw get() = if(!horizontal) horizontalSum.value else verticalSum.value
+    public val Edges.primaryStart: DimensionRaw get() = if(horizontal) left.value else top.value
+    public val Edges.primaryEnd: DimensionRaw get() = if(horizontal) right.value else bottom.value
+    public val Edges.secondaryStart: DimensionRaw get() = if(!horizontal) left.value else top.value
+    public val Edges.secondaryEnd: DimensionRaw get() = if(!horizontal) right.value else bottom.value
 
     public override fun sizeThatFits(size: CValue<CGSize>): CValue<CGSize> {
         val sizeLocal = size.local
@@ -125,7 +126,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         return measuredSize.objc
     }
 
-    public val arrangedSubviews = ArrayList<UIView>()
+    public val arrangedSubviews: ArrayList<UIView> = ArrayList<UIView>()
     public fun addArrangedSubview(view: UIView) {
         childSizeCache.add(arrangedSubviews.size, HashMap())
         arrangedSubviews.add(view)
@@ -156,7 +157,7 @@ public class LinearLayout : UIView(CGRectZero.readValue()), UIViewWithSizeOverri
         super.willRemoveSubview(subview)
     }
 
-    public val childSizeCache = ArrayList<HashMap<Size, Size>>()
+    public val childSizeCache: ArrayList<HashMap<Size, Size>> = ArrayList<HashMap<Size, Size>>()
 
     public fun calcSizes(size: Size, includeWeighted: Boolean): Array<Size> {
         var t = PerformanceInfo.trace("calcSizeLinear")

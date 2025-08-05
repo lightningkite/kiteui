@@ -125,7 +125,7 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
         }
     }
 
-    public var myInvalidated = false
+    public var myInvalidated: Boolean = false
     public fun invalidateLayout() {
         if(inLayout) return
         myInvalidated = true
@@ -133,7 +133,7 @@ public class NProgrammaticLayout: UIView(CGRectMake(0.0, 0.0, 0.0, 0.0)), UIView
         setNeedsLayout()
     }
 
-    public var inLayout = false
+    public var inLayout: Boolean = false
     public override fun layoutSubviews() {
         if(bounds.useContents { size.width == 0.0 && size.height == 0.0 }) return
         if (inLayout) throw IllegalStateException()

@@ -83,13 +83,13 @@ internal fun UIView.layoutLayers(parentSpacing: Double) {
 public class CAGradientLayerResizing : CAGradientLayer {
 
     @OverrideInit
-    constructor() : super()
+    public constructor() : super()
 
     @OverrideInit
-    constructor(coder: platform.Foundation.NSCoder) : super(coder)
+    public constructor(coder: platform.Foundation.NSCoder) : super(coder)
 
     @OverrideInit
-    constructor(layer: kotlin.Any) : super(layer)
+    public constructor(layer: kotlin.Any) : super(layer)
 
     private var backgroundMask: CALayer? = null
 

@@ -20,13 +20,13 @@ import kotlinx.coroutines.launch
 import platform.UIKit.UIModalPresentationOverFullScreen
 import platform.UIKit.UIViewController
 
-actual fun ViewWriter.overlayWriter(
+public actual fun ViewWriter.overlayWriter(
     modal: Boolean,
     transition: ScreenTransitions,
     body: RView.(remove: () -> Unit) -> Unit
 ) {
     if (!modal) {
-        public var willRemove: RView? = null
+        var willRemove: RView? = null
         with(overlayFrame ?: return) {
             withoutAnimation {
                 beforeNextElementSetup {
@@ -44,9 +44,9 @@ actual fun ViewWriter.overlayWriter(
         }
     } else {
         println("Waiting...")
-        public val theme = this@overlayWriter.overlayFrame?.theme ?: Theme.placeholder
+        val theme = this@overlayWriter.overlayFrame?.theme ?: Theme.placeholder
         println("Let's go!")
-        public val viewController = object : UIViewController(null, null) {
+        val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
                 super.viewDidDisappear(animated)
             }

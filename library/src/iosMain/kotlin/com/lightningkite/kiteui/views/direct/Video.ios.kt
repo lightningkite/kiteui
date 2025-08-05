@@ -111,7 +111,7 @@ public actual class Video public actual constructor(context: RContext) : RView(c
         }
 
     
-    val playerCallbackHolder = object: NSObject() {
+    public val playerCallbackHolder: NSObject = object: NSObject() {
         @ObjCAction
         fun playerItemDidReachEnd(notification: NSNotification?) {
             if (player?.rate == 0f) {

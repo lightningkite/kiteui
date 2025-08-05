@@ -55,8 +55,8 @@ public actual fun ViewWriter.hasPopover(
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
 ): ViewWrapper {
     beforeNextElementSetup {
-        public val originalNavigator = pageNavigator
-        public fun openDialog() {
+        val originalNavigator = pageNavigator
+        fun openDialog() {
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
