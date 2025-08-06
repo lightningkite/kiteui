@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 public class MicroparseTest {
 
     @Test fun secure() {
-        public val base = """
+        val base = """
             <script> TEE HEE HEE </script>
             <button onclick="DIE">HEEE HEE</button>
             <p> Test <br> Content </p>
@@ -17,7 +17,7 @@ public class MicroparseTest {
     }
 
     @Test fun malformed() {
-        public val base = """
+        val base = """
             Something <
         """.trimIndent().parseMPNodes()
         base.let { println(it) }
@@ -26,7 +26,7 @@ public class MicroparseTest {
     }
 
     @Test fun malformed2() {
-        public val base = """
+        val base = """
             Yeah, it's a special <p> Hello World! </
         """.trimIndent().parseMPNodes()
         base.let { println(it) }
