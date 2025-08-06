@@ -4,7 +4,7 @@ import kotlin.test.Test
 
 public class MicroHtmlTests {
     @Test fun testParsing() {
-        public val test = """
+        val test = """
             <h1>Header</h1>
             <p>
                 Paragraph
