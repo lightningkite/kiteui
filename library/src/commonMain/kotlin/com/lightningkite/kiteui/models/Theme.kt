@@ -432,7 +432,9 @@ data object SubtextSemantic : Semantic("sub") {
 }
 
 data object ErrorSemantic : Semantic("err") {
-    override fun default(theme: Theme): ThemeAndBack = theme[DangerSemantic]
+    override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+        foreground = theme[DangerSemantic].theme.background.closestColor().highlight(0.2f)
+    )
 }
 
 data object InvalidSemantic : Semantic("ivd") {

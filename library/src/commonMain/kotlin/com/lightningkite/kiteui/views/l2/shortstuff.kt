@@ -57,7 +57,7 @@ fun RView.errorText(): ViewModifiable {
             override val priority: Float
                 get() = 1f
 
-            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit)? {
+            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
                 errors.value += exception
                 return {
                     errors.value -= exception
