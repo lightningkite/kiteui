@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.direct.RawImageViewLike
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
@@ -180,6 +181,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     var effectBackground: BlurBackgroundView? = null
 
     actual override fun applyTheme(theme: ThemeAndBack) {
+        native.clipsToBounds = theme.drawBackground
+        applyBackgroundChanges(theme)
+    }
+
+    protected fun applyBackgroundChanges(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
             shadowColor = UIColor.grayColor.CGColor
@@ -214,8 +220,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else -> theme.theme.padding
         }
 
+
         val fullyApply = theme.drawBackground
-        native.clipsToBounds = fullyApply
         animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.gap)

@@ -56,6 +56,11 @@ actual abstract class RawImageViewLike constructor(
 
     protected suspend fun load(value: ImageSource?, size: Size?): UIImage? = value.load(size)
 
+    override fun applyTheme(theme: ThemeAndBack) {
+        native.clipsToBounds = true
+        super.applyBackgroundChanges(theme)
+    }
+
     override val disableBackground = true
 }
 
@@ -128,7 +133,6 @@ actual class RawImageView actual constructor(
     override val native = UIImageViewFixedSizing()
 
     init {
-        native.clipsToBounds = true
         native.contentMode = when (scaleType) {
             ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
             ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
@@ -164,7 +168,6 @@ actual class SizelessRawImageView actual constructor(
     override val native = UIImageViewFixedSizing().also { it.ignoreNaturalSize = true }
 
     init {
-        native.clipsToBounds = true
         native.contentMode = when (scaleType) {
             ImageScaleType.Fit -> UIViewContentMode.UIViewContentModeScaleAspectFit
             ImageScaleType.Crop -> UIViewContentMode.UIViewContentModeScaleAspectFill
