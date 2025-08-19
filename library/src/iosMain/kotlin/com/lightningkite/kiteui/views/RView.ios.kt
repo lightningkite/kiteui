@@ -181,6 +181,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     var effectBackground: BlurBackgroundView? = null
 
     actual override fun applyTheme(theme: ThemeAndBack) {
+        native.clipsToBounds = theme.drawBackground
+        applyBackgroundChanges(theme)
+    }
+
+    protected fun applyBackgroundChanges(theme: ThemeAndBack) {
         if (theme.drawBackground && theme.theme.elevation.value != 0.0) native.layer.apply {
             val v = theme.theme.elevation.value
             shadowColor = UIColor.grayColor.CGColor
@@ -215,12 +220,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else -> theme.theme.padding
         }
 
+
         val fullyApply = theme.drawBackground
-
-        if (this !is RawImageViewLike) {
-            native.clipsToBounds = fullyApply // Images handle clipsToBounds internally
-        }
-
         animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.gap)
