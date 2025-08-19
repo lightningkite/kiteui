@@ -95,6 +95,7 @@ object RootPage : Page {
                 linkPage { ExternalServicesPage }
                 linkPage { FullScreenPage() }
                 linkPage { RecyclerViewTestPage }
+                linkPage { ImageTestPage }
                 linkPage { PerformanceTestPage }
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }

@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.direct.RawImageViewLike
 import com.lightningkite.kiteui.views.direct.WrapperView
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
@@ -215,7 +216,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
         val fullyApply = theme.drawBackground
-        native.clipsToBounds = fullyApply
+
+        if (this !is RawImageViewLike) {
+            native.clipsToBounds = fullyApply // Images handle clipsToBounds internally
+        }
+
         animateIfAllowed {
 //            native.clearOldLayers()
 //            if(fullyApply) applyThemeBackground(theme, native, parent?.mySpacing ?: theme.gap)
