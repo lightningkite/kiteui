@@ -5,17 +5,11 @@ import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.forEachUpdating
-import com.lightningkite.kiteui.views.minus
 import com.lightningkite.mppexampleapp.Resources
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 @Routable("arguments-example/{id}")
 class ArgumentsExamplePage(val id: String): Page {
@@ -27,10 +21,10 @@ class ArgumentsExamplePage(val id: String): Page {
     val list = Signal(listOf("sample"))
 
     override fun ViewWriter.render() = col {
-        transitionId = id
+        transitionId = htmlElementId
         h1 { content = "Hello world!" }
         text {
-            content = "My item ID is ${id}"
+            content = "My item ID is ${htmlElementId}"
             transitionId = "itemid"
         }
         text { content = "This is a demonstration of how you can use classes and properties to navigate to different views." }
@@ -40,7 +34,7 @@ class ArgumentsExamplePage(val id: String): Page {
                 val a = toAdd()
                 val b = list()
                 return@label {
-                    ArgumentsExamplePage("$id-plus").also {
+                    ArgumentsExamplePage("$htmlElementId-plus").also {
                         it.toAdd.value = a
                         it.list.value = b
                     }
@@ -63,7 +57,7 @@ class ArgumentsExamplePage(val id: String): Page {
             }
         }
         sizeConstraints(height = 10.rem) - image {
-            source = when(id.hashCode() % 2) {
+            source = when(htmlElementId.hashCode() % 2) {
                 0 -> Resources.imagesSnowyBackground
                 else -> Resources.imagesLightningBackground
             }
