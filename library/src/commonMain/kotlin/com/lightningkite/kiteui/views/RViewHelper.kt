@@ -26,7 +26,6 @@ import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
-import kotlin.random.Random
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +87,6 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
 
     // Theming
 
-    private val id = Random.Default.nextInt()
     var themeTakeNonCascadingFromParent: Boolean = false
         set(value) {
             field = value
@@ -382,10 +380,12 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
     @Deprecated("Not needed anymore", ReplaceWith("this"))
     val calculationContext: CoroutineScope get() = this
 
-    var debugName: String? = null
+    open var debugName: String? = null
     override fun toString(): String {
         return debugName ?: (theme.id + " " + this::class.toString().removePrefix("class ") + "@" + this.identityHashCode().toString(16))
     }
+
+    open var htmlElementId: String? = null
 
     operator fun Action.invoke() = startAction(this@RViewHelper)
 }

@@ -1,12 +1,10 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ConsoleRoot
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
 import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.RowOrCol
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -55,6 +53,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.ignoreInteraction = value
             if (value) native.classes.add("noInteraction")
             else native.classes.remove("noInteraction")
+        }
+
+    override var debugName: String?
+        get() = super.debugName
+        set(value) {
+            super.debugName = value
+            native.setAttribute("data-debug-name", value ?: "")
+        }
+
+    override var htmlElementId: String?
+        get() = super.htmlElementId
+        set(value) {
+            super.htmlElementId = value
+            native.id = value
         }
 
     // drag 'n drop

@@ -60,6 +60,10 @@ object LoadAnimationTestPage : Page {
                     card - text("Hi")
                     text("No card")
                 }
+                row {
+                    reactive { loading()}
+                    text("Has a wrapping element with no padding")
+                }
 //                card - text { ::content { loading() } }
 //                select { bind(writable, remember { loading().let(::listOf) }, { it }) }
 //                textField { content bind loading.withWrite {  } }

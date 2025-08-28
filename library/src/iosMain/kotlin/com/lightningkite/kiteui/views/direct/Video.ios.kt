@@ -2,31 +2,29 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.objc.UIViewWithSizeOverridesProtocol
 import com.lightningkite.kiteui.printStackTrace2
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 import kotlinx.cinterop.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.AVFoundation.*
 import platform.AVKit.AVPlayerViewController
 import platform.AVKit.AVPlayerViewControllerDelegateProtocol
-import platform.CoreGraphics.CGPoint
-import platform.CoreGraphics.CGRectZero
-import platform.CoreGraphics.CGSize
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMake
 import platform.Foundation.NSBundle
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLAuthenticationChallenge
+import platform.Foundation.NSUUID.Companion.UUID
+import platform.Foundation.writeToFile
 import platform.UIKit.*
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.UniformTypeIdentifiers.loadFileRepresentationForContentType
@@ -34,6 +32,8 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.sel_registerName
+import kotlin.collections.mapOf
+import kotlin.time.Duration.Companion.seconds
 
 
 actual class Video actual constructor(context: RContext) : RView(context) {
@@ -109,12 +109,49 @@ actual class Video actual constructor(context: RContext) : RView(context) {
         }
 
     
-    val playerCallbackHolder = object: NSObject() {
+    val playerCallbackHolder: AVAssetResourceLoaderDelegateProtocol = object: NSObject(), AVAssetResourceLoaderDelegateProtocol {
         @ObjCAction
         fun playerItemDidReachEnd(notification: NSNotification?) {
             if (player?.rate == 0f) {
                 onComplete?.invoke()
             }
+        }
+        @ObjCAction
+        fun handleAVPlayerAccess(notification: NSNotification) {
+            val playerItem = notification.`object` as? AVPlayerItem ?: return
+            val lastEvent = playerItem.accessLog()?.events?.lastOrNull() as? AVPlayerItemAccessLogEvent ?: return
+
+            val indicatedBitrate = lastEvent.indicatedBitrate
+
+            println("--------------PLAYER LOG--------------")
+            println("EVENT: ${lastEvent}")
+            println("INDICATED BITRATE: ${indicatedBitrate}")
+            println("PLAYBACK RELATED LOG EVENTS")
+            println("PLAYBACK START DATE: ${lastEvent.playbackStartDate}")
+            println("PLAYBACK SESSION ID: ${lastEvent.playbackSessionID}")
+            println("PLAYBACK START OFFSET: ${lastEvent.playbackStartOffset}")
+            println("PLAYBACK TYPE: ${lastEvent.playbackType}")
+            println("STARTUP TIME: ${lastEvent.startupTime}")
+            println("DURATION WATCHED: ${lastEvent.durationWatched}")
+            println("NUMBER OF DROPPED VIDEO FRAMES: ${lastEvent.numberOfDroppedVideoFrames}")
+            println("NUMBER OF STALLS: ${lastEvent.numberOfStalls}")
+            println("SEGMENTS DOWNLOADED DURATION: ${lastEvent.segmentsDownloadedDuration}")
+            println("DOWNLOAD OVERDUE: ${lastEvent.downloadOverdue}")
+            println("--------------------------------------")
+        }
+
+        override fun resourceLoader(
+            resourceLoader: AVAssetResourceLoader,
+            didCancelLoadingRequest: AVAssetResourceLoadingRequest
+        ) {
+            println("resourceLoader.didCancelLoadingRequest(${didCancelLoadingRequest})")
+        }
+
+        override fun resourceLoader(
+            resourceLoader: AVAssetResourceLoader,
+            didCancelAuthenticationChallenge: NSURLAuthenticationChallenge
+        ) {
+            println("resourceLoader.didCancelAuthenticationChallenge(${didCancelAuthenticationChallenge})")
         }
     }
 
@@ -125,6 +162,26 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             name = AVPlayerItemDidPlayToEndTimeNotification,
             `object` = null
         )
+        NSNotificationCenter.defaultCenter.addObserver(
+            observer = playerCallbackHolder,
+            selector = sel_registerName("handleAVPlayerAccess:"),
+            name = AVPlayerItemNewAccessLogEntryNotification,
+            `object` = null
+        )
+        launch {
+            println("AVPlayerStatusUnknown: $AVPlayerStatusUnknown")
+            println("AVPlayerStatusReadyToPlay: $AVPlayerStatusReadyToPlay")
+            println("AVPlayerStatusFailed: $AVPlayerStatusFailed")
+            while(true) {
+                delay(10.seconds)
+//                if(player?.status == AVPlayerStatusFailed) {
+                    println("Player: $player")
+                    println("Player status: ${player?.status}")
+                    println("ERR: ${player?.error}")
+                    println("Error from player: " + player?.error?.localizedDescription)
+//                }
+            }
+        }
     }
 
 
@@ -138,11 +195,21 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                 }
 
                 is VideoRaw -> {
-                    TODO()
+                    val filePath = NSTemporaryDirectory() + "/" + UUID().UUIDString() + ".mp4"
+                    value.data.data.writeToFile(filePath, true)
+                    val url = NSURL.fileURLWithPath(filePath)
+                    val reread = url.filePathURL!!
+                    player = AVPlayer(uRL = reread)
+                    native.informParentOfSizeChange()
                 }
 
                 is VideoRemote -> {
-                    player = AVPlayer(NSURL(string = value.url))
+                    val asset = AVURLAsset(NSURL(string = value.url), mapOf<Any?, Any?>())
+                    asset.resourceLoader.setDelegate(playerCallbackHolder, dispatch_get_main_queue())
+                    player = AVPlayer(AVPlayerItem(asset)).also {
+                        println("Player: $it")
+                        println("Url is being set to ${value.url}")
+                    }
                     native.informParentOfSizeChange()
                 }
 

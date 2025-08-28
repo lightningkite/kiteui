@@ -10,8 +10,10 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 expect class SoundEffectPool(concurrency: Int = 4) {
     suspend fun preload(sound: AudioSource)
@@ -31,14 +33,18 @@ interface PlayableAudio {
     var volume: Float
     var loop: Boolean
     var isPlaying: Boolean
-    fun onComplete(action: ()->Unit)
+    fun onComplete(action: () -> Unit)
     fun stop()
     fun play() {
         isPlaying = true
     }
 }
 
-fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: Float, playBackgroundAudio: suspend () -> Boolean) {
+fun CalculationContext.backgroundAudio(
+    audio: AudioResource,
+    backgroundVolume: Float,
+    playBackgroundAudio: suspend () -> Boolean
+) {
     val backgroundAudioShared = CoroutineScope(coroutineContext).async {
         audio.load().apply {
             volume = backgroundVolume
@@ -55,6 +61,15 @@ fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: F
             }
         } else {
             backgroundAudio.stop()
+        }
+    }
+    onRemove {
+        AppScope.launch {
+            try {
+                backgroundAudioShared.await().stop()
+            } catch (t: Throwable) {
+                /*squish*/
+            }
         }
     }
 }

@@ -1,15 +1,19 @@
 package com.lightningkite.mppexampleapp
 
 import com.lightningkite.kiteui.Build
+import com.lightningkite.kiteui.HttpMethod
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.WeakReference
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.checkLeakAfterDelay
+import com.lightningkite.kiteui.fetch
 import com.lightningkite.kiteui.leaks
 import com.lightningkite.kiteui.models.DialogSemantic
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ScreenTransitions
+import com.lightningkite.kiteui.models.VideoRaw
+import com.lightningkite.kiteui.models.VideoRemote
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.reactive.*
@@ -35,6 +39,7 @@ import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.direct.sizeConstraints
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.kiteui.views.direct.text
+import com.lightningkite.kiteui.views.direct.video
 import com.lightningkite.kiteui.views.expanding
 import com.lightningkite.kiteui.views.important
 import com.lightningkite.kiteui.views.l2.applySafeInsets
@@ -49,6 +54,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("/")
@@ -56,6 +62,21 @@ class HomePage: Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
     override fun ViewWriter.render(): ViewModifiable = run {
         return article {
+            sizeConstraints(height = 10.rem) - video {
+//                launch {
+//                    val response = fetch(
+//                        "https://api.dev.picme.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.nP7oKDAeHlpYWKRSrp_DRkGGNzAAAAAALAEAACS5J-XN6rZGxMK3hR8u3G7qbKdUUGR5eBQHtgMCFB2TYTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e",
+//                        HttpMethod.GET,
+//                    )
+//                    println("Response: ${response.status}, ${response.headers.get("content-length")} ${response.headers.get("content-type")}")
+//                    val raw = response.blob()
+//                    println("Raw: $raw")
+//                    source = VideoRaw(raw)
+//                }
+                source = VideoRemote("https://jivie.lightningkite.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.zChgSWIysXsddkzRfrvo9a-KNzAAAAAALAEAAHL0H6klLnjlOeGMzNIXjYUFLSSbrczMSaSvkLy_ofs8YTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e")
+//                source = VideoRemote("https://api.dev.picme.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.zChgSWIysXsddkzRfrvo9a-KNzAAAAAALAEAAHL0H6klLnjlOeGMzNIXjYUFLSSbrczMSaSvkLy_ofs8YTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e")
+//                source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4")
+            }
             centered - h1("KiteUI - Beautiful by Default")
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
