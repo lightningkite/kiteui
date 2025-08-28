@@ -194,7 +194,7 @@ dependencies {
 }
 
 val lk = project.lk {
-    version = gitBasedVersion().also { println("Determined version to be $it") }
+    version = "4_0_15_soundpatch"
 }
 mavenPublishing {
     // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)

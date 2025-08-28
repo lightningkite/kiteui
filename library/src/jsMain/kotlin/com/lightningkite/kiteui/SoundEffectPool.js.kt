@@ -13,21 +13,16 @@ import kotlin.js.Promise
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
 
-    private val numberOfStreams = concurrency
-    private var mergerInputIndexCursor = 0
+    // Web doesn't need the provided limit from [concurrency], so we ignore it.
 
     private val context = AudioContext()
-    private val merger = context.createChannelMerger(numberOfStreams).apply {
-        connect(context.destination)
-    }
 
     actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
         val bufferSource = context.createBufferSource()
         bufferSource.buffer = preloadInternal(sound)
-        bufferSource.connect(merger, 0, mergerInputIndexCursor)
-        mergerInputIndexCursor = (mergerInputIndexCursor + 1) % numberOfStreams
+        bufferSource.connect(context.destination)
         bufferSource.start()
 
         return object : PlayingSoundEffect {
