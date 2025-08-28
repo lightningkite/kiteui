@@ -57,6 +57,20 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.classes.remove("noInteraction")
         }
 
+    override var debugName: String?
+        get() = super.debugName
+        set(value) {
+            super.debugName = value
+            native.setAttribute("data-debug-name", value ?: "")
+        }
+
+    override var id: String?
+        get() = super.id
+        set(value) {
+            super.id = value
+            native.id = value
+        }
+
     // drag 'n drop
     override var dragData: DragData?
         get() = super.dragData
