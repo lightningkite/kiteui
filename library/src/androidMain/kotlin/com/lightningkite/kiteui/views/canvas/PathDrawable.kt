@@ -36,10 +36,11 @@ fun Paint.match(kiteui: com.lightningkite.kiteui.models.Paint, parentOffsetX: Fl
         is FadingColor -> match(it.base, parentOffsetX, parentWidth, parentOffsetY, parentHeight)
         is LinearGradient -> {
             val smallest = min(parentWidth, parentHeight) / 2
-            val x0 = parentOffsetX + parentWidth / 2 - it.angle.cos() * smallest
-            val x1 = parentOffsetX + parentWidth / 2 + it.angle.cos() * smallest
-            val y0 = parentOffsetY + parentWidth / 2 - it.angle.sin() * smallest
-            val y1 = parentOffsetY + parentWidth / 2 + it.angle.sin() * smallest
+            val x0 = parentWidth / 2 - it.angle.cos() * smallest
+            val x1 = parentWidth / 2 + it.angle.cos() * smallest
+            val y0 = parentHeight / 2 - it.angle.sin() * smallest
+            val y1 = parentHeight / 2 + it.angle.sin() * smallest
+
             this.shader = android.graphics.LinearGradient(
                 x0,
                 y0,
@@ -104,6 +105,7 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                     }
                 },
                 fill = it.fillColor?.let { color ->
+                    println("--------------- COLOR: ${color.closestColor()}")
                     Paint().apply {
                         match(
                             color,
