@@ -193,12 +193,9 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp-jvm:3.0.0")
 }
 
-val lk = project.lk {
-    version = "4_0_15_soundpatch"
-}
+version = "4_0_15_soundpatch"
 mavenPublishing {
     // publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
     coordinates(group.toString(), name, version.toString())
     pom {
         name.set("KiteUI")

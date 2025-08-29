@@ -5,8 +5,10 @@ import com.lightningkite.kiteui.models.AudioSource
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 //import com.lightningkite.kiteui.views.reactiveScope
 
@@ -52,6 +54,15 @@ fun CalculationContext.backgroundAudio(audio: AudioResource, backgroundVolume: F
             }
         } else {
             backgroundAudio.stop()
+        }
+    }
+    onRemove {
+        GlobalScope.launch {
+            try {
+                backgroundAudioShared.await().stop()
+            } catch (t: Throwable) {
+                /*squish*/
+            }
         }
     }
 }
