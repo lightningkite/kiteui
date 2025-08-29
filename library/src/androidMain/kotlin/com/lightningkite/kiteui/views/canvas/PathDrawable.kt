@@ -105,7 +105,6 @@ class PathDrawable(val vector: ImageVector) : Drawable() {
                     }
                 },
                 fill = it.fillColor?.let { color ->
-                    println("--------------- COLOR: ${color.closestColor()}")
                     Paint().apply {
                         match(
                             color,
