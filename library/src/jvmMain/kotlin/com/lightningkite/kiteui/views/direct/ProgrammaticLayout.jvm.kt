@@ -1,5 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
+import androidx.compose.runtime.Composable
 import com.lightningkite.kiteui.models.Rect
 import com.lightningkite.kiteui.models.Size
 import com.lightningkite.kiteui.reactive.*
@@ -12,16 +13,16 @@ import com.lightningkite.readable.*
 
 actual class ProgrammaticLayout actual constructor(context: RContext) : RView(context) {
     init {
-        native.tag = "div"
-        native.style.position = "relative"
+//        native.tag = "div"
+//        native.style.position = "relative"
     }
     actual var delegate: ProgrammaticLayoutDelegate = ProgrammaticLayoutDelegate.AllFull
         set(value) { field = value; invalidateLayout() }
     override fun internalAddChild(index: Int, view: RView) {
         super.internalAddChild(index, view)
-        view.onRemove(view.native.resizeObserver().addListener {
-            invalidateLayout()
-        })
+//        view.onRemove(view.native.resizeObserver().addListener {
+//            invalidateLayout()
+//        })
     }
 
     override fun internalRemoveChild(index: Int) {
@@ -32,6 +33,11 @@ actual class ProgrammaticLayout actual constructor(context: RContext) : RView(co
     override fun internalClearChildren() {
         super.internalClearChildren()
         invalidateLayout()
+    }
+
+    @Composable
+    override fun compose() {
+        TODO("Not yet implemented")
     }
 
 

@@ -169,20 +169,20 @@ abstract class KiteUiActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        intent?.data?.let {
-            val path = UrlLikePath(
-                segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
-                parameters = it.query?.removePrefix("?")?.split('&')?.associate {
-                    it.decodeURLQueryComponent().substringBefore('=') to it.substringAfter('=', "").decodeURLQueryComponent()
-                } ?: mapOf()
-            )
-            mainNavigator.routes.parse(path)?.let {
-                mainNavigator.navigate(it)
-            }
-        }
-    }
+//    override fun onNewIntent(intent: Intent?) {
+//        super.onNewIntent(intent)
+//        intent?.data?.let {
+//            val path = UrlLikePath(
+//                segments = it.path?.split('/')?.filter { it.isNotBlank() } ?: listOf(),
+//                parameters = it.query?.removePrefix("?")?.split('&')?.associate {
+//                    it.decodeURLQueryComponent().substringBefore('=') to it.substringAfter('=', "").decodeURLQueryComponent()
+//                } ?: mapOf()
+//            )
+//            mainNavigator.routes.parse(path)?.let {
+//                mainNavigator.navigate(it)
+//            }
+//        }
+//    }
 
     override fun onResume() {
         super.onResume()

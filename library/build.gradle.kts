@@ -1,9 +1,14 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import com.lightningkite.deployhelpers.*
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.jetbrainsCompose)
 //    alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
@@ -57,11 +62,18 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
                 api(libs.comLightningkiteReactive)
                 api(libs.kotlinxSerializationJson)
                 api(libs.kotlinxSerializationProperties)
                 api(libs.kotlinxDatetime)
                 api(libs.kotlinxCoroutinesCore)
+
             }
         }
         val commonTest by getting {
@@ -73,6 +85,11 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+                implementation(compose.preview)
+
+//                implementation(compose.preview)
+                implementation(libs.androidx.activity.compose)
+
                 api(libs.appcompat)
                 api(libs.ktx)
                 api(libs.swiperefreshlayout)
@@ -111,8 +128,10 @@ kotlin {
         }
 
         val jvmMain by getting {
-            dependsOn(commonHtmlMain)
+//            dependsOn(commonHtmlMain)
             dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutinesSwing)
                 api(libs.commonsLang3)
                 api(libs.ktorClientCore)
                 api(libs.ktorClientOkhttp)
@@ -131,6 +150,8 @@ kotlin {
         }
     }
 }
+
+
 
 android {
     namespace = "com.lightningkite.kiteui"
@@ -160,3 +181,4 @@ dependencies {
 lkLibrary("lightningkite", "kiteui") {
     description.set("A lightweight, highly opinionated UI framework for Kotlin Multiplatform")
 }
+

@@ -1,0 +1,13 @@
+package com.lightningkite.kiteui.views.direct
+
+import androidx.compose.runtime.Composable
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
+
+actual class Space actual constructor(context: RContext, multiplier: Double) :
+    RView(context) {
+    @Composable
+    override fun compose() {
+        TODO("Not yet implemented")
+    }
+}

@@ -1,0 +1,24 @@
+package com.lightningkite.kiteui.views.direct
+
+import androidx.compose.runtime.Composable
+import com.lightningkite.kiteui.models.KeyboardHints
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RViewWithAction
+import com.lightningkite.reactive.core.MutableReactiveValue
+
+actual class AutoCompleteTextField actual constructor(context: RContext) :
+    RViewWithAction(context) {
+    actual val content: MutableReactiveValue<String>
+        get() = TODO("Not yet implemented")
+    actual var keyboardHints: KeyboardHints
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var suggestions: List<String>
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
+    @Composable
+    override fun compose() {
+        TODO("Not yet implemented")
+    }
+}

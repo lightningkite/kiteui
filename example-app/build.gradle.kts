@@ -1,5 +1,6 @@
 import com.lightningkite.kiteui.KiteUiPlugin
 import com.lightningkite.kiteui.KiteUiPluginExtension
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
@@ -12,6 +13,9 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
+    alias(libs.plugins.composeCompiler)
+
+    alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.androidApplication)
     id("dev.opensavvy.vite.kotlin") version "DEV"
 }
@@ -52,7 +56,21 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+                implementation(libs.androidx.lifecycle.viewmodelCompose)
+                implementation(libs.androidx.lifecycle.runtimeCompose)
                 api(project(":library"))
+            }
+        }
+
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.androidx.activity.compose)
             }
         }
 
@@ -60,7 +78,10 @@ kotlin {
             dependsOn(commonMain)
         }
         val jvmMain by getting {
-            dependsOn(commonHtmlMain)
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.kotlinx.coroutinesSwing)
+            }
         }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
@@ -99,6 +120,18 @@ kotlin {
     }
 }
 
+compose.desktop {
+    application {
+        mainClass = "$group.mppexampleapp.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "$group.mppexampleapp"
+            packageVersion = "1.0.0"
+        }
+    }
+}
+
 android {
     namespace = "$group.mppexampleapp"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
@@ -121,6 +154,9 @@ android {
     }
     dependencies {
         coreLibraryDesugaring(libs.desugar.jdk.libs)
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.8.2"
     }
 }
 

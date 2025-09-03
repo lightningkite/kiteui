@@ -1,0 +1,23 @@
+package com.lightningkite.kiteui.views.direct
+
+import androidx.compose.runtime.Composable
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.kiteui.views.RView
+
+actual class WebView actual constructor(context: RContext) :
+    RView(context) {
+    actual var url: String
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var permitJs: Boolean
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var content: String
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
+    @Composable
+    override fun compose() {
+        TODO("Not yet implemented")
+    }
+}
