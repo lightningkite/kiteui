@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.mppexampleapp.Resources
 
 @Routable("test/vectors")
 object VectorsTestPage : Page {
@@ -283,20 +284,33 @@ object VectorsTestPage : Page {
                     }
                 }
             }
+
+            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+                source = Resources.vectorsTar
+            }
+            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+                source = ImageVector(
+                    width = 3.rem,
+                    height = 3.rem,
+                    viewBoxMinX = 50,
+                    viewBoxMinY = 50,
+                    viewBoxWidth = 364,
+                    viewBoxHeight = 364,
+                    paths = listOf(
+                        ImageVector.Path(
+                            LinearGradient(
+                                stops = listOf(
+                                    GradientStop(0f, Color.blue),
+                                    GradientStop(1f, Color.red),
+                                ),
+                                angle = Angle.eighthTurn,
+                                screenStatic = false
+                            ),
+                            path = "M183.039 68C183.039 65.7909 181.248 64 179.039 64H127.568C92.4602 64 64 92.4602 64 127.568V172.5C64 174.709 65.7909 176.5 68 176.5H84C86.2091 176.5 88 174.709 88 172.5V127.568C88 105.715 105.715 88 127.568 88H179.039C181.248 88 183.039 86.2091 183.039 84V68ZM293.276 88C291.067 88 289.276 86.2091 289.276 84V68C289.276 65.7909 291.067 64 293.276 64H316H336.432C371.54 64 400 92.4602 400 127.568V148V172.5C400 174.709 398.209 176.5 396 176.5H380C377.791 176.5 376 174.709 376 172.5V148V127.568C376 105.715 358.285 88 336.432 88H316H293.276ZM289.276 380C289.276 377.791 291.067 376 293.276 376H336.432C358.285 376 376 358.285 376 336.432V286.737C376 284.528 377.791 282.737 380 282.737H396C398.209 282.737 400 284.528 400 286.737V336.432C400 371.54 371.54 400 336.432 400H293.276C291.067 400 289.276 398.209 289.276 396V380ZM84 282.737C86.2091 282.737 88 284.528 88 286.737V336.432C88 358.285 105.715 376 127.568 376H179.039C181.248 376 183.039 377.791 183.039 380V396C183.039 398.209 181.248 400 179.039 400H127.568C92.4602 400 64 371.54 64 336.432V286.737C64 284.528 65.7909 282.737 68 282.737H84Z"
+                        ),
+                    )
+                )
+            }
         }
     }
 }
-
-private fun vec(vararg pathData: String) = ImageVector(
-    width = 10.rem,
-    height = 10.rem,
-    viewBoxWidth = 150,
-    viewBoxHeight = 150,
-    paths = pathData.map {
-        ImageVector.Path(
-            strokeColor = Color.black,
-            strokeWidth = 1.0,
-            path = it
-        )
-    }
-)

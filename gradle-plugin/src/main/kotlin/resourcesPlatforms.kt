@@ -1,7 +1,8 @@
 package com.lightningkite.kiteui
 
-import org.gradle.api.Task
+import org.w3c.dom.Node
 import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
 
 
 internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginExtension) {
@@ -18,6 +19,7 @@ internal fun resourcesCommon(resourceFolder: File, out: File, ext: KiteUiPluginE
                 is Resource.Binary -> {
                     usesBlob = true; "suspend fun ${r.name}(): Blob"
                 }
+                is Resource.ImageVector -> "val ${r.name}: ImageVector"
 
                 else -> ""
             }
@@ -71,6 +73,8 @@ internal fun resourcesJs(gitIgnores: List<File>, resourceFolder: File, out: File
                         r.relativeFile.toString().replace(File.separatorChar, '/')
                     }\").blob()"
                 }
+
+                is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
 
                 else -> ""
             }
@@ -222,6 +226,8 @@ internal fun resourcesIos(
                     usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
                 }
 
+                is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
+
                 else -> ""
             }
         }
@@ -311,6 +317,7 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
                 is Resource.Image -> "actual val ${r.name}: ImageResource = ImageResource(R.drawable.${it.key.snakeCase()})"
                 is Resource.Video -> "actual val ${r.name}: VideoResource = VideoResource(R.raw.${it.key.snakeCase()})"
                 is Resource.Audio -> "actual val ${r.name}: AudioResource = AudioResource(R.raw.${it.key.snakeCase()})"
+                is Resource.ImageVector -> "actual val ${r.name}: ImageVector = ${r.imageVectorActual}"
                 is Resource.Binary -> {
                     usesBlob = true; "actual suspend fun ${r.name}(): Blob = TODO()"
                 }
@@ -337,3 +344,67 @@ internal fun resourcesAndroid(resourceFolder: File, androidResFolder: File, outK
             """.trimIndent()
     )
 }
+
+private val Resource.ImageVector.imageVectorActual: String
+    get() {
+        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val doc = documentBuilder.parse(this.source.inputStream())
+        val svgElement = doc.documentElement
+
+        val width = svgElement.getAttribute("width")
+        val height = svgElement.getAttribute("height")
+        val (minX, minY, vbWidth, vbHeight) = svgElement.getAttribute("viewBox").split(" ").map { it.toInt() }
+        val paths = doc.getElementsByTagName("path").let { path ->
+            (0 until path.length).map { path.item(it) }
+        }
+
+        fun Node.getAttributeVal(attr: String): String? {
+            return (0 until this.attributes.length).firstNotNullOfOrNull {
+                this.attributes.item(it).takeIf { it.nodeName == attr }?.nodeValue
+            }
+        }
+
+        return buildString {
+            appendLine("ImageVector(")
+            appendLine("    width = ${width.ifBlank { "24" }}.dp,")
+            appendLine("    height = ${height.ifBlank { "24" }}.dp,")
+            appendLine("    viewBoxMinX = $minX,")
+            appendLine("    viewBoxMinY = $minY,")
+            appendLine("    viewBoxWidth = $vbWidth,")
+            appendLine("    viewBoxHeight = $vbHeight,")
+            appendLine("    paths = listOf(")
+            for (p in paths) {
+                appendLine("        ImageVector.Path(")
+                p.getAttributeVal("fill")?.let { fill ->
+                    val fillExpr = when {
+                        fill.equals("none", ignoreCase = true) -> "Color.transparent"
+                        fill.startsWith("#") -> "Color.fromHexString(\"$fill\")"
+                        fill.startsWith("rgb") -> "Color.fromRgbString(\"$fill\")"
+                        fill.startsWith("url(") -> "/* gradient reference: $fill */ Color.transparent"
+                        listOf(
+                            "white",
+                            "gray",
+                            "black",
+                            "red",
+                            "orange",
+                            "yellow",
+                            "green",
+                            "teal",
+                            "blue",
+                            "purple",
+                        ).any { it == fill } -> "Color.${fill}"
+
+                        else -> "Color.black"
+                    }
+                    appendLine("            fillColor = $fillExpr,")
+                }
+                p.getAttributeVal("d")?.let {
+                    appendLine("            path = \"${it}\"")
+                }
+
+                appendLine("        ),")
+            }
+            appendLine("    )")
+            appendLine(")")
+        }
+    }
