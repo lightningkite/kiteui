@@ -362,7 +362,7 @@ object ImageCache {
             val newWidth = baseCached.size.useContents { width * scaling }.roundToInt().toDouble()
             val newHeight = baseCached.size.useContents { height * scaling }.roundToInt().toDouble()
             println("Resized image will be ${ "$newWidth x $newHeight" }")
-            UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), true, 0.0)
+            UIGraphicsBeginImageContextWithOptions(CGSizeMake(newWidth, newHeight), false, 0.0)
             val image = try {
                 baseCached.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
                 UIGraphicsGetImageFromCurrentImageContext()
