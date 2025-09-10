@@ -154,7 +154,24 @@ data class Color(
         )
 
         fun fromHexString(value: String): Color = fromHex(value.replace("#", "").toInt(16))
+        fun fromRgbString(value: String): Color {
+            val values = value.replace(")", "").replace("rgba(", "").replace("rgb(", "").split(" ", ",")
+            return when {
+                (values.size > 3) -> Color(
+                    red = values[0].toFloatOrNull() ?: 0f,
+                    green = values[1].toFloatOrNull() ?: 0f,
+                    blue = values[2].toFloatOrNull() ?: 0f,
+                    alpha = values[3].toFloatOrNull() ?: 0f,
+                )
 
+                (values.size > 2) -> Color(
+                    red = values[0].toFloatOrNull() ?: 0f,
+                    green = values[1].toFloatOrNull() ?: 0f,
+                    blue = values[2].toFloatOrNull() ?: 0f,
+                )
+                else -> transparent
+            }
+        }
         fun interpolate(left: Color, right: Color, ratio: Float): Color {
             val invRatio = 1 - ratio
             return Color(
