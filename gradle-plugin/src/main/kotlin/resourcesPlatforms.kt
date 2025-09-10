@@ -353,6 +353,8 @@ private val Resource.ImageVector.imageVectorActual: String
 
         val width = svgElement.getAttribute("width")
         val height = svgElement.getAttribute("height")
+        val defaultFill = svgElement.getAttribute("fill")
+        println("defaultFill: ${defaultFill}")
         val (minX, minY, vbWidth, vbHeight) = svgElement.getAttribute("viewBox").split(" ").map { it.toInt() }
         val paths = doc.getElementsByTagName("path").let { path ->
             (0 until path.length).map { path.item(it) }
@@ -364,18 +366,26 @@ private val Resource.ImageVector.imageVectorActual: String
             }
         }
 
+        fun String.withDimensionExtension(): String {
+            return if (this.isBlank()) "24.dp"
+            else this.replace("px", ".dp").replace("rem", ".rem").let {
+                if (it.contains(".")) it
+                else it.plus(".dp")
+            }
+        }
+
         return buildString {
             appendLine("ImageVector(")
-            appendLine("    width = ${width.ifBlank { "24" }}.dp,")
-            appendLine("    height = ${height.ifBlank { "24" }}.dp,")
-            appendLine("    viewBoxMinX = $minX,")
-            appendLine("    viewBoxMinY = $minY,")
-            appendLine("    viewBoxWidth = $vbWidth,")
-            appendLine("    viewBoxHeight = $vbHeight,")
-            appendLine("    paths = listOf(")
+            appendLine("        width = ${width.withDimensionExtension()},")
+            appendLine("        height = ${height.withDimensionExtension()},")
+            appendLine("        viewBoxMinX = $minX,")
+            appendLine("        viewBoxMinY = $minY,")
+            appendLine("        viewBoxWidth = $vbWidth,")
+            appendLine("        viewBoxHeight = $vbHeight,")
+            appendLine("        paths = listOf(")
             for (p in paths) {
-                appendLine("        ImageVector.Path(")
-                p.getAttributeVal("fill")?.let { fill ->
+                appendLine("            ImageVector.Path(")
+                (p.getAttributeVal("fill") ?: defaultFill.takeUnless { it.isBlank() })?.let { fill ->
                     val fillExpr = when {
                         fill.equals("none", ignoreCase = true) -> "Color.transparent"
                         fill.startsWith("#") -> "Color.fromHexString(\"$fill\")"
@@ -396,15 +406,15 @@ private val Resource.ImageVector.imageVectorActual: String
 
                         else -> "Color.black"
                     }
-                    appendLine("            fillColor = $fillExpr,")
+                    appendLine("                fillColor = $fillExpr,")
                 }
                 p.getAttributeVal("d")?.let {
-                    appendLine("            path = \"${it}\"")
+                    appendLine("                path = \"${it}\"")
                 }
 
-                appendLine("        ),")
+                appendLine("            ),")
             }
+            appendLine("        )")
             appendLine("    )")
-            appendLine(")")
         }
     }

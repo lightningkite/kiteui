@@ -11,7 +11,7 @@ import com.lightningkite.mppexampleapp.Resources
 @Routable("test/vectors")
 object VectorsTestPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        col {
+        scrolling - col {
             row {
                 image {
                     source = ImageVector(
@@ -286,7 +286,10 @@ object VectorsTestPage : Page {
             }
 
             sizeConstraints(width = 4.rem, height = 4.rem) - image {
-                source = Resources.vectorsTar
+                source = Resources.vectorsBox
+            }
+            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+                source = Resources.vectorsHiking
             }
             sizeConstraints(width = 4.rem, height = 4.rem) - image {
                 source = ImageVector(
