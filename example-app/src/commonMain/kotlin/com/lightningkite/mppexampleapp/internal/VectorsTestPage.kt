@@ -6,6 +6,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.mppexampleapp.Resources
 
 @Routable("test/vectors")
 object VectorsTestPage : Page {
@@ -284,6 +285,12 @@ object VectorsTestPage : Page {
                 }
             }
 
+            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+                source = Resources.vectorsBox
+            }
+            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+                source = Resources.vectorsHiking
+            }
             sizeConstraints(width = 4.rem, height = 4.rem) - image {
                 source = ImageVector(
                     width = 3.rem,
