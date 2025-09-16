@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views.l2
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.div
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.DropTargetDelegate
 import com.lightningkite.kiteui.views.RView
@@ -84,9 +85,10 @@ fun <T> RView.forEachReorderable(
         val idx = indexed.lens { it.index }
         col {
             themeTakeNonCascadingFromParent = true
+            gap = theme.gap / 2
+            this@forEachReorderable.gap = 0.px
 
             dropTargetDelegate = handler.Delegate(idx)
-            ::dragData { handler.encode(idx()) }
 
             separator(item).apply {
                 ::shown shown@{
@@ -96,7 +98,9 @@ fun <T> RView.forEachReorderable(
                 }
             }
 
-            render(item)
+            beforeNextElementSetup {
+                ::dragData { handler.encode(idx()) }
+            } - render(item)
 
             separator(item).apply {
                 ::shown shown@{
@@ -119,15 +123,20 @@ class RecyclerReorderable<T, ID>(
 
     override fun id(item: T): ID = wraps.id(item)
 
+    private val halfGap = view.rView.theme.gap / 2
+    init {
+        view.gap = 0.px
+    }
+
     inner class ReorderWrapper(
         val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
         override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable = with(viewWriter) {
             col {
                 themeTakeNonCascadingFromParent = true
+                gap = halfGap
 
                 dropTargetDelegate = handler.Delegate(index)
-                ::dragData { handler.encode(index()) }
 
                 separator(data).apply {
                     ::shown shown@{
@@ -137,7 +146,9 @@ class RecyclerReorderable<T, ID>(
                     }
                 }
 
-                renderer.render(this, data, index)
+                beforeNextElementSetup {
+                    ::dragData { handler.encode(index()) }
+                } - renderer.render(this, data, index)
 
                 separator(data).apply {
                     ::shown shown@{

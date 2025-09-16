@@ -8,7 +8,8 @@ data class DragData(
         label: String,
         mimeType: String,
         data: String,
-    ):this(label, mapOf(mimeType to data))
+    ) : this(label, mapOf(mimeType to data))
+
     val mimeType: String get() = typeToData.keys.firstOrNull() ?: ""
     val data: String get() = typeToData.values.firstOrNull() ?: ""
 

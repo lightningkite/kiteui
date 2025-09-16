@@ -136,14 +136,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.dragData = value
             if (value == null) native.setOnLongClickListener(null)
-            else native.setOnLongClickListener {
-                native.startDrag(
-                    ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
-                    View.DragShadowBuilder(native),
-                    null,
-                    0
-                )
-                true
+            else {
+                native.setOnLongClickListener {
+                    native.startDrag(
+                        ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
+                        View.DragShadowBuilder(native),
+                        value,
+                        0
+                    )
+                    true
+                }
             }
         }
     override var dropTargetDelegate: DropTargetDelegate?
@@ -152,14 +154,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.dropTargetDelegate = value
             if (value == null) native.setOnDragListener(null)
             else native.setOnDragListener { v, event ->
+
                 val ev =
                     DragEvent(
-                        data = event.clipData.let {
+                        data = event.clipData?.let {
                             DragData(
                                 it.description.label.toString(),
                                 (0..<it.itemCount).associate { i -> it.description.getMimeType(i) to it.getItemAt(i).text.toString() },
                             )
-                        },
+                        } ?: (event.localState as? DragData) ?: throw IllegalStateException("ClipData was empty for view $v"),
                         xInView = event.x.toDouble(),
                         yInView = event.y.toDouble(),
                     )
