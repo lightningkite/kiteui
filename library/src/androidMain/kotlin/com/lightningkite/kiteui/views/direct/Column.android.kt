@@ -1,10 +1,7 @@
 package com.lightningkite.kiteui.views.direct
 
 import android.content.Context
-import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.views.RContext

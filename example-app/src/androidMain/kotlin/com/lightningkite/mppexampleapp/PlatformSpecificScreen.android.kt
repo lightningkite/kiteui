@@ -10,13 +10,13 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
-    return col {
-        text("Lookie here at this icon:")
-        val visible = Signal(false)
-        switch { checked bind visible }
-        expanding - zoomableImage {
-            source = Resources.imagesSnowyBackground
-        }
-    }
-}
+//actual fun ViewWriter.platformSpecific(): ViewModifiable {
+//    return col {
+//        text("Lookie here at this icon:")
+//        val visible = Signal(false)
+//        switch { checked bind visible }
+//        expanding - zoomableImage {
+//            source = Resources.imagesSnowyBackground
+//        }
+//    }
+//}

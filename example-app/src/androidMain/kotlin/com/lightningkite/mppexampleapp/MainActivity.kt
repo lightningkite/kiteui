@@ -12,7 +12,7 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.mppexampleapp.*
-import com.lightningkite.mppexampleapp.internal.LeakCheckerPage
+//import com.lightningkite.mppexampleapp.internal.LeakCheckerPage
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*

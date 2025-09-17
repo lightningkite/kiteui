@@ -617,7 +617,7 @@ class Theme(
     val blurBackground: Dimension = 0.px,
     val transform: Transformation? = null,
 
-    val bodyTransitions: ScreenTransitions = ScreenTransitions.Fade,
+    val bodyTransitions: ScreenTransitions = ScreenTransitions.None,
     val dialogTransitions: ScreenTransitions = ScreenTransitions.Fade,
     val transitionDuration: Duration = 0.25.seconds,
 

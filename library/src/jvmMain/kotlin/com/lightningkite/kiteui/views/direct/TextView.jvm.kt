@@ -12,14 +12,17 @@ import com.lightningkite.reactive.core.Signal
 actual class TextView actual constructor(context: RContext) :
     RView(context) {
 
-    var m_content = Signal("")
+    val m_content = Signal("")
     val m_align = Signal<Align?>(null)
+    val m_ellipsis = Signal<Boolean>(false)
 
 
     @Composable
     override fun compose() {
         val contentState = m_content.collectAsMutableState()
         val alignState = m_align.collectAsMutableState()
+        val ellipsisState = m_ellipsis.collectAsMutableState()
+
         Text(text = contentState.value, textAlign = alignState.value?.toComposeAlign())
     }
 
