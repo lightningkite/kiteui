@@ -12,7 +12,7 @@ import kotlin.js.Promise
 import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.get

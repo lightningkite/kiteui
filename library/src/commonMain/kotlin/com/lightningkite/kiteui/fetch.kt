@@ -7,18 +7,21 @@ suspend inline fun fetch(
     type: String = "text/plain",
     body: String
 ) = fetch(url = url, method = method, headers = headers, body = RequestBodyText(body, type))
+
 suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: Blob
 ) = fetch(url = url, method = method, headers = headers, body = RequestBodyBlob(body))
+
 suspend inline fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: FileReference
 ) = fetch(url = url, method = method, headers = headers, body = RequestBodyFile(body))
+
 expect suspend fun fetch(
     url: String,
     method: HttpMethod = HttpMethod.GET,

@@ -5,7 +5,7 @@
 //import com.lightningkite.lightningdb.*
 //import com.lightningkite.lightningserver.db.ClientModelRestEndpoints
 //import com.lightningkite.now
-//import kotlinx.datetime.Instant
+//import kotlin.time.Instant
 //import kotlin.test.Test
 //import kotlin.test.assertEquals
 //import kotlin.test.assertFalse
