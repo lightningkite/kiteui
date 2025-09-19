@@ -20,6 +20,8 @@ import kotlin.time.measureTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Routable("controls")
 object ControlsPage : Page {
