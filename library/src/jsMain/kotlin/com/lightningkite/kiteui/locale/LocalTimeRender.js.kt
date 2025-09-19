@@ -2,6 +2,7 @@ package com.lightningkite.kiteui.locale
 
 import kotlinx.datetime.*
 import kotlin.js.Date
+import kotlin.time.toJSDate
 
 
 actual fun LocalDate.renderToString(

@@ -87,7 +87,7 @@ actual class FutureElement actual constructor() {
             out.append(" id='$it'")
         }
         out.append(" class='")
-        classes.joinToString(" ")
+        out.append(classes.joinToString(" "))
         out.append("' style='")
         style.underlyingMap.forEach { (key, value) ->
             out.append(key)

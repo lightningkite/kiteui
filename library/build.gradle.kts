@@ -50,8 +50,10 @@ kotlin {
 //    explicitApi = ExplicitApiMode.Warning
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.BetaInteropApi")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlinx.cinterop.BetaInteropApi")
+        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
     sourceSets {
 

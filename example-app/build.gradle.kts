@@ -48,6 +48,13 @@ kotlin {
         binaries.executable()
         browser()
     }
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        optIn.add("kotlinx.cinterop.BetaInteropApi")
+        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+    }
 
     sourceSets {
         val commonMain by getting {
