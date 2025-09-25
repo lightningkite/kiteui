@@ -12,10 +12,16 @@ import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
+import platform.Foundation.NSItemProvider
+import platform.Foundation.NSItemProviderReadingProtocol
 import platform.Foundation.NSNumber
 import platform.Foundation.NSString
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
+import platform.QuartzCore.CATransform3DIdentity
+import platform.QuartzCore.CATransform3DMakeRotation
+import platform.QuartzCore.CATransform3DMakeScale
+import platform.QuartzCore.CATransform3DMakeTranslation
 import platform.QuartzCore.kCAGradientLayerAxial
 import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIBlurEffect
@@ -24,19 +30,26 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIDragInteraction
 import platform.UIKit.UIDragInteractionDelegateProtocol
 import platform.UIKit.UIDragItem
+import platform.UIKit.UIDragSessionProtocol
 import platform.UIKit.UIDropInteraction
+import platform.UIKit.UIDropInteractionDelegateProtocol
+import platform.UIKit.UIDropSessionProtocol
 import platform.UIKit.UIVibrancyEffect
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import platform.UIKit.UIVisualEffectView
+import platform.UIKit.addInteraction
 import platform.UIKit.removeInteraction
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.sin
 import kotlin.native.ref.WeakReference
 import kotlin.time.DurationUnit
+
 
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
@@ -158,19 +171,6 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
 
-    // drag 'n drop
-    override var dragData: DragData?
-        get() = super.dragData
-        set(value) {
-            super.dragData = value
-            // TODO
-        }
-    override var dropTargetDelegate: DropTargetDelegate?
-        get() = super.dropTargetDelegate
-        set(value) {
-            super.dropTargetDelegate = value
-            // TODO
-        }
 
 
     protected var previousLoadAnimationHandle: (() -> Unit)? = null
@@ -316,29 +316,29 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 // Apply transformations to the native view's layer
                 if (transform.translationX != 0.0 || transform.translationY != 0.0 || transform.translationZ != 0.0) {
                     // Apply translation
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeTranslation(
+                    native.layer.transform = CATransform3DMakeTranslation(
                         transform.translationX,
                         transform.translationY,
                         transform.translationZ
                     )
                 } else if (transform.rotation != 0.0) {
                     // Apply rotation (convert degrees to radians)
-                    val radians = transform.rotation * (kotlin.math.PI / 180.0)
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
+                    val radians = transform.rotation * (PI / 180.0)
+                    native.layer.transform = CATransform3DMakeRotation(radians, 0.0, 0.0, 1.0)
                 } else if (transform.scaleX != 1.0 || transform.scaleY != 1.0) {
                     // Apply scale
-                    native.layer.transform = platform.QuartzCore.CATransform3DMakeScale(
+                    native.layer.transform = CATransform3DMakeScale(
                         transform.scaleX,
                         transform.scaleY,
                         1.0
                     )
                 } else {
                     // Default identity transform
-                    native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                    native.layer.transform = CATransform3DIdentity.readValue()
                 }
             } ?: run {
                 // Reset transform if no transformation is specified
-                native.layer.transform = platform.QuartzCore.CATransform3DIdentity.readValue()
+                native.layer.transform = CATransform3DIdentity.readValue()
             }
         }
     }
@@ -386,8 +386,11 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         get() = super.dragData
         set(value) {
             super.dragData = value
+
             if (value != null) {
+                println("DEBUG draagInteraction == null ${dragInteraction == null}")
                 if (dragInteraction == null) {
+                    println("DEBUG attempting to create drag session")
                     // Create and add the interaction
                     val interaction = UIDragInteraction(DragInteractionDelegate(this))
                     native.addInteraction(interaction)
@@ -403,20 +406,17 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     // A private delegate class to handle drag events
     private class DragInteractionDelegate(view: RView) : NSObject(), UIDragInteractionDelegateProtocol {
+        @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
-        override fun dragInteraction(
-            interaction: UIDragInteraction,
-            itemsForBeginningSession: platform.UIKit.UIDragSession
-        ): List<*> {
+        // This method correctly uses UIDragSession
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dragInteraction(interaction: UIDragInteraction, itemsForBeginningSession: UIDragSessionProtocol): List<*> {
             val view = owner.get() ?: return listOf<UIDragItem>()
             val data = view.dragData ?: return listOf<UIDragItem>()
 
-            // Convert your common DragData to an NSItemProvider
             val itemProvider = NSItemProvider(item = data.data as? NSString, typeIdentifier = data.mimeType)
             val dragItem = UIDragItem(itemProvider)
-
-            // Store the original DragData in the localContext for in-app drops
             dragItem.localObject = data
             return listOf(dragItem)
         }
@@ -446,91 +446,79 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
     // A private delegate class to handle drop events
     private class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
+        @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
-        private fun getDragData(session: platform.UIKit.UIDropSession): DragData? {
-            // Prioritize local object if available (for in-app drags)
+        // This helper can still be used for synchronous info like enter/exit events
+        private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
+            // Prioritize local object for in-app drags, which is instant
             val local = session.localDragSession?.localContext as? DragData
-            if (local != null) return local
+            if(local != null) return local
 
-            // Fallback for external drags - this part might need more robust handling
-            val provider = session.items.firstOrNull()?.itemProvider ?: return null
-            // This is a simplified example; real implementation may require async loading
+            // For external drags, we create a placeholder
+            val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider  ?: return null
             val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
-            val data = provider.loadObjectOfClass(NSString) { str, _ ->
-                // This is async, a full implementation would use a completion handler
+
+            // We don't have the data yet, so we can use an empty string or null
+            return DragData(
+                mimeType = mimeType, data = "",
+                label = TODO(),
+                dragShadow = TODO()
+            )
+        }
+
+        // ... other delegate methods like canHandleSession, sessionDidUpdate, etc. ...
+        // They can use getDragDataPlaceholder() as they don't need the actual data content.
+
+        @OptIn(ExperimentalNativeApi::class)
+        override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
+            val view = owner.get() ?: return
+            val delegate = view.dropTargetDelegate ?: return
+
+            // Handle fast in-app drags synchronously
+            val localData = performDrop.localDragSession?.localContext as? DragData
+            if (localData != null) {
+                val location = performDrop.locationInView(view.native)
+                val event = DragEvent(
+                    data = localData,
+                    xInView = location.useContents { x },
+                    yInView = location.useContents { y },
+                )
+                delegate.drop(event)
+                return
             }
-            return DragData(mimeType = mimeType, data = "External Data")
-        }
 
-        override fun dropInteraction(
-            interaction: UIDropInteraction,
-            canHandleSession: platform.UIKit.UIDropSession
-        ): Boolean {
-            // Allow handling of sessions that have our supported data types
-            return owner.get()?.dropTargetDelegate != null
-        }
+            // Handle external drags asynchronously
+            val provider = (performDrop.items.firstOrNull() as? UIDragItem )?.itemProvider ?: return
+            val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
 
-        override fun dropInteraction(
-            interaction: UIDropInteraction,
-            sessionDidUpdate: platform.UIKit.UIDropSession
-        ): UIDropProposal {
-            // Called when the drag cursor enters or moves within the view
-            val view = owner.get() ?: return UIDropProposal(kUIDropOperationCancel)
-            val delegate = view.dropTargetDelegate ?: return UIDropProposal(kUIDropOperationCancel)
-            val location = sessionDidUpdate.locationInView(view.native)
-            val data = getDragData(sessionDidUpdate) ?: return UIDropProposal(kUIDropOperationCancel)
+            // Assuming we're dropping a string for this example
+            provider.loadObjectOfClass(NSString as NSItemProviderReadingProtocol, completionHandler = { nsString, error ->
+                if (error != null || nsString == null) {
+                    println("Error loading dropped item: ${error?.localizedDescription}")
+                    return@loadObjectOfClass
+                }
 
-            val event = DragEvent(
-                data = data,
-                xInView = location.useContents { x },
-                yInView = location.useContents { y },
-            )
-            delegate.over(event)
+                // The completion handler might not be on the main UI thread.
+                // Dispatch back to the main thread before updating UI.
+                dispatch_async(dispatch_get_main_queue()) {
+                    val finalView = owner.get() ?: return@dispatch_async
+                    val finalDelegate = finalView.dropTargetDelegate ?: return@dispatch_async
+                    val location = performDrop.locationInView(finalView.native)
 
-            return UIDropProposal(kUIDropOperationCopy)
-        }
-
-        override fun dropInteraction(interaction: UIDropInteraction, sessionDidEnter: platform.UIKit.UIDropSession) {
-            val view = owner.get() ?: return
-            val delegate = view.dropTargetDelegate ?: return
-            val location = sessionDidEnter.locationInView(view.native)
-            val data = getDragData(sessionDidEnter) ?: return
-
-            val event = DragEvent(
-                data = data,
-                xInView = location.useContents { x },
-                yInView = location.useContents { y },
-            )
-            delegate.enter(event)
-        }
-
-        override fun dropInteraction(interaction: UIDropInteraction, sessionDidExit: platform.UIKit.UIDropSession) {
-            val view = owner.get() ?: return
-            val delegate = view.dropTargetDelegate ?: return
-            val location = sessionDidExit.locationInView(view.native)
-            val data = getDragData(sessionDidExit) ?: return
-
-            val event = DragEvent(
-                data = data,
-                xInView = location.useContents { x },
-                yInView = location.useContents { y },
-            )
-            delegate.exit(event)
-        }
-
-        override fun dropInteraction(interaction: UIDropInteraction, performDrop: platform.UIKit.UIDropSession) {
-            val view = owner.get() ?: return
-            val delegate = view.dropTargetDelegate ?: return
-            val location = performDrop.locationInView(view.native)
-            val data = getDragData(performDrop) ?: return
-
-            val event = DragEvent(
-                data = data,
-                xInView = location.useContents { x },
-                yInView = location.useContents { y },
-            )
-            delegate.drop(event)
+                    val data = DragData(
+                        mimeType = mimeType, data = nsString as String,
+                        label = TODO(),
+                        dragShadow = TODO()
+                    )
+                    val event = DragEvent(
+                        data = data,
+                        xInView = location.useContents { x },
+                        yInView = location.useContents { y },
+                    )
+                    finalDelegate.drop(event)
+                }
+            })
         }
     }
 
@@ -539,7 +527,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
 
 var animationsEnabled: Boolean = true
 var isInAnimationBlock: Boolean = false
-actual val RView.areAnimationsEnabled: Boolean get() = com.lightningkite.kiteui.views.animationsEnabled
+actual val RView.areAnimationsEnabled: Boolean get() = animationsEnabled
 actual inline fun RView.withoutAnimation(action: () -> Unit) {
     native.withoutAnimation(action)
 }
