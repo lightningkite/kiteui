@@ -75,6 +75,10 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         set(value) {
             super.dragData = value
             native.attributes.draggable = value != null
+
+            if (value != null) native.classes += "draggable"
+            else native.classes -= "draggable"
+
             nativeSetDragData(value)
         }
     override var dropTargetDelegate: DropTargetDelegate?
