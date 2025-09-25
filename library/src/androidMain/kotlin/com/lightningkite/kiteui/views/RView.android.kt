@@ -3,6 +3,7 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
+import android.graphics.Point
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.Drawable
@@ -27,6 +28,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
+import com.lightningkite.kiteui.views.RView.DragShadowBuilder
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
@@ -36,6 +38,7 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
@@ -129,6 +132,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.transitionName = value
         }
 
+    private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {
+        override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
+            val view = shadow.view.native
+            outShadowSize?.set(view.width, view.height)
+            outShadowTouchPoint?.set(
+                (view.width / 2) + (shadow.xOffset?.px?.roundToInt() ?: 0),
+                (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+            )
+        }
+    }
 
     // drag 'n drop
     override var dragData: DragData?
@@ -139,7 +152,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.setOnLongClickListener {
                 native.startDrag(
                     ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
-                    View.DragShadowBuilder(native),
+                    value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native),
                     null,
                     0
                 )
