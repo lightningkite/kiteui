@@ -3,10 +3,12 @@ package com.lightningkite.mppexampleapp.internal
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.DragShadow
 import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.lighten
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
@@ -41,7 +43,7 @@ object DragPage : Page {
     }
 
     override fun ViewWriter.render(): ViewModifiable = scrolling - col {
-        h2("Drag test")
+        val title = h2("Drag test")
 
         h4("Reorderable List")
         ListSemantic.onNext - col {
@@ -49,6 +51,11 @@ object DragPage : Page {
                 numbers,
                 reorder = { move ->
                     numbers.value = move.reorder(numbers.value)
+                },
+                dataTransform = {
+                    it.copy(
+                        dragShadow = DragShadow(title, xOffset = 1.rem, yOffset = 2.rem)
+                    )
                 }
             ) { number ->
                 card - frame {
