@@ -350,6 +350,7 @@ actual fun RView.nativeSetDragData(data: DragData?) {
             }
         } else {
             (element as HTMLElement).ondragstart = null
+            element.ondragend = null
         }
     }
 }
@@ -397,6 +398,7 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
             }
         } else {
             (it as HTMLElement).ondragover = null
+            it.ondragenter = null
             it.ondragleave = null
             it.ondragexit = null
             it.ondrop = null

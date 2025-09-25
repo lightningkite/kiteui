@@ -582,6 +582,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             img.scaleType-Fit {
                 object-fit: contain;
             }
+            
+            .clickable.draggable {
+                cursor: default;
+            }
+            .draggable {
+                cursor: grab;
+            }
 
             .swapImage > img {
                 object-fit: contain;
