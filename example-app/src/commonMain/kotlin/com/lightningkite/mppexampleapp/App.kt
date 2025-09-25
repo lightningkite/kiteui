@@ -30,7 +30,7 @@ val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
                 font = it.font.copy(bold = true, italic = true),
                 foreground = Color.orange
             ).withoutBack
-        }
+        },
     ))
 val appTheme = Signal<Theme>(defaultTheme)
 
