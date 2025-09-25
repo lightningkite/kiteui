@@ -13,6 +13,7 @@ import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSNumber
+import platform.Foundation.NSString
 import platform.Foundation.numberWithFloat
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCAGradientLayerAxial
@@ -20,10 +21,16 @@ import platform.QuartzCore.kCAGradientLayerRadial
 import platform.UIKit.UIBlurEffect
 import platform.UIKit.UIBlurEffectStyle
 import platform.UIKit.UIColor
+import platform.UIKit.UIDragInteraction
+import platform.UIKit.UIDragInteractionDelegateProtocol
+import platform.UIKit.UIDragItem
+import platform.UIKit.UIDropInteraction
 import platform.UIKit.UIVibrancyEffect
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import platform.UIKit.UIVisualEffectView
+import platform.UIKit.removeInteraction
+import platform.darwin.NSObject
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.math.PI
 import kotlin.math.max
@@ -370,6 +377,164 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             it.native.removeFromSuperview()
         }
     }
+
+    // Add this property inside your RView class
+    private var dragInteraction: UIDragInteraction? = null
+
+    // Replace your existing dragData property with this
+    override var dragData: DragData?
+        get() = super.dragData
+        set(value) {
+            super.dragData = value
+            if (value != null) {
+                if (dragInteraction == null) {
+                    // Create and add the interaction
+                    val interaction = UIDragInteraction(DragInteractionDelegate(this))
+                    native.addInteraction(interaction)
+                    native.userInteractionEnabled = true // Drags require user interaction
+                    this.dragInteraction = interaction
+                }
+            } else {
+                // Remove the interaction
+                dragInteraction?.let { native.removeInteraction(it) }
+                dragInteraction = null
+            }
+        }
+
+    // A private delegate class to handle drag events
+    private class DragInteractionDelegate(view: RView) : NSObject(), UIDragInteractionDelegateProtocol {
+        private val owner = WeakReference(view)
+
+        override fun dragInteraction(
+            interaction: UIDragInteraction,
+            itemsForBeginningSession: platform.UIKit.UIDragSession
+        ): List<*> {
+            val view = owner.get() ?: return listOf<UIDragItem>()
+            val data = view.dragData ?: return listOf<UIDragItem>()
+
+            // Convert your common DragData to an NSItemProvider
+            val itemProvider = NSItemProvider(item = data.data as? NSString, typeIdentifier = data.mimeType)
+            val dragItem = UIDragItem(itemProvider)
+
+            // Store the original DragData in the localContext for in-app drops
+            dragItem.localObject = data
+            return listOf(dragItem)
+        }
+    }
+
+
+    private var dropInteraction: UIDropInteraction? = null
+
+    // Replace your existing dropTargetDelegate property with this
+    override var dropTargetDelegate: DropTargetDelegate?
+        get() = super.dropTargetDelegate
+        set(value) {
+            super.dropTargetDelegate = value
+            if (value != null) {
+                if (dropInteraction == null) {
+                    // Create and add the interaction
+                    val interaction = UIDropInteraction(DropInteractionDelegate(this))
+                    native.addInteraction(interaction)
+                    this.dropInteraction = interaction
+                }
+            } else {
+                // Remove the interaction
+                dropInteraction?.let { native.removeInteraction(it) }
+                dropInteraction = null
+            }
+        }
+
+    // A private delegate class to handle drop events
+    private class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
+        private val owner = WeakReference(view)
+
+        private fun getDragData(session: platform.UIKit.UIDropSession): DragData? {
+            // Prioritize local object if available (for in-app drags)
+            val local = session.localDragSession?.localContext as? DragData
+            if (local != null) return local
+
+            // Fallback for external drags - this part might need more robust handling
+            val provider = session.items.firstOrNull()?.itemProvider ?: return null
+            // This is a simplified example; real implementation may require async loading
+            val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
+            val data = provider.loadObjectOfClass(NSString) { str, _ ->
+                // This is async, a full implementation would use a completion handler
+            }
+            return DragData(mimeType = mimeType, data = "External Data")
+        }
+
+        override fun dropInteraction(
+            interaction: UIDropInteraction,
+            canHandleSession: platform.UIKit.UIDropSession
+        ): Boolean {
+            // Allow handling of sessions that have our supported data types
+            return owner.get()?.dropTargetDelegate != null
+        }
+
+        override fun dropInteraction(
+            interaction: UIDropInteraction,
+            sessionDidUpdate: platform.UIKit.UIDropSession
+        ): UIDropProposal {
+            // Called when the drag cursor enters or moves within the view
+            val view = owner.get() ?: return UIDropProposal(kUIDropOperationCancel)
+            val delegate = view.dropTargetDelegate ?: return UIDropProposal(kUIDropOperationCancel)
+            val location = sessionDidUpdate.locationInView(view.native)
+            val data = getDragData(sessionDidUpdate) ?: return UIDropProposal(kUIDropOperationCancel)
+
+            val event = DragEvent(
+                data = data,
+                xInView = location.useContents { x },
+                yInView = location.useContents { y },
+            )
+            delegate.over(event)
+
+            return UIDropProposal(kUIDropOperationCopy)
+        }
+
+        override fun dropInteraction(interaction: UIDropInteraction, sessionDidEnter: platform.UIKit.UIDropSession) {
+            val view = owner.get() ?: return
+            val delegate = view.dropTargetDelegate ?: return
+            val location = sessionDidEnter.locationInView(view.native)
+            val data = getDragData(sessionDidEnter) ?: return
+
+            val event = DragEvent(
+                data = data,
+                xInView = location.useContents { x },
+                yInView = location.useContents { y },
+            )
+            delegate.enter(event)
+        }
+
+        override fun dropInteraction(interaction: UIDropInteraction, sessionDidExit: platform.UIKit.UIDropSession) {
+            val view = owner.get() ?: return
+            val delegate = view.dropTargetDelegate ?: return
+            val location = sessionDidExit.locationInView(view.native)
+            val data = getDragData(sessionDidExit) ?: return
+
+            val event = DragEvent(
+                data = data,
+                xInView = location.useContents { x },
+                yInView = location.useContents { y },
+            )
+            delegate.exit(event)
+        }
+
+        override fun dropInteraction(interaction: UIDropInteraction, performDrop: platform.UIKit.UIDropSession) {
+            val view = owner.get() ?: return
+            val delegate = view.dropTargetDelegate ?: return
+            val location = performDrop.locationInView(view.native)
+            val data = getDragData(performDrop) ?: return
+
+            val event = DragEvent(
+                data = data,
+                xInView = location.useContents { x },
+                yInView = location.useContents { y },
+            )
+            delegate.drop(event)
+        }
+    }
+
+
 }
 
 var animationsEnabled: Boolean = true
@@ -453,3 +618,5 @@ inline fun RView.transitionIfAllowed(crossinline onComplete: () -> Unit = {}, cr
         onComplete()
     }
 }
+
+
