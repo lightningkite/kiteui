@@ -153,7 +153,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 native.startDrag(
                     ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
                     value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native),
-                    null,
+                    value,
                     0
                 )
                 true
@@ -165,14 +165,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.dropTargetDelegate = value
             if (value == null) native.setOnDragListener(null)
             else native.setOnDragListener { v, event ->
+
                 val ev =
                     DragEvent(
-                        data = event.clipData.let {
+                        data = event.clipData?.let {
                             DragData(
                                 it.description.label.toString(),
                                 (0..<it.itemCount).associate { i -> it.description.getMimeType(i) to it.getItemAt(i).text.toString() },
                             )
-                        },
+                        } ?: (event.localState as? DragData) ?: throw IllegalStateException("ClipData was empty for view $v"),
                         xInView = event.x.toDouble(),
                         yInView = event.y.toDouble(),
                     )

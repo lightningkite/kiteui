@@ -92,6 +92,8 @@ fun <T> RView.forEachReorderable(
         val idx = indexed.lens { it.index }
         col {
             themeTakeNonCascadingFromParent = true
+            gap = theme.gap / 2
+            this@forEachReorderable.gap = 0.px
 
             themeChoice += ThemeDerivation {
                 it.copy(
@@ -150,7 +152,6 @@ class RecyclerReorderable<T, ID>(
                 themeChoice
 
                 dropTargetDelegate = handler.Delegate(index)
-                ::dragData { handler.encode(index()) }
 
                 separator(data).apply {
                     ::shown shown@{
@@ -160,7 +161,9 @@ class RecyclerReorderable<T, ID>(
                     }
                 }
 
-                renderer.render(this, data, index)
+                beforeNextElementSetup {
+                    ::dragData { handler.encode(index()) }
+                } - renderer.render(this, data, index)
 
                 separator(data).apply {
                     ::shown shown@{
