@@ -331,7 +331,19 @@ actual fun RView.nativeSetDragData(data: DragData?) {
                     event.dataTransfer!!.setData(type, value)
                     data.dragShadow?.let { shadow ->
                         shadow.view.native.onElement {
-                            event.dataTransfer!!.setDragImage(it, shadow.xOffset?.px?.roundToInt() ?: 0, shadow.yOffset?.px?.roundToInt() ?: 0)
+                            event.dataTransfer!!.setDragImage(
+                                it,
+                                x = when (shadow.xAlign) {
+                                    Align.Start -> 0
+                                    Align.Center, Align.Stretch -> (it.getBoundingClientRect().width / 2).roundToInt()
+                                    Align.End -> it.getBoundingClientRect().width.roundToInt()
+                                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
+                                y = when (shadow.yAlign) {
+                                    Align.Start -> 0
+                                    Align.Center, Align.Stretch -> (it.getBoundingClientRect().height / 2).roundToInt()
+                                    Align.End -> it.getBoundingClientRect().height.roundToInt()
+                                } + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                            )
                         }
                     }
                 }

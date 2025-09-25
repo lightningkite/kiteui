@@ -131,7 +131,7 @@ fun <T> RView.forEachReorderable(
 class RecyclerReorderable<T, ID>(
     val wraps: RecyclerViewRendererSet<T, ID>,
     val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    val separator: ViewWriter.(Reactive<T>) -> ViewModifiable = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
     val handler = DragDropReordering(view, reorder = reorder)
@@ -153,25 +153,25 @@ class RecyclerReorderable<T, ID>(
 
                 dropTargetDelegate = handler.Delegate(index)
 
-                separator(data).apply {
-                    ::shown shown@{
+                beforeNextElementSetup {
+                    ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start >= i
                     }
-                }
+                } - separator(data)
 
                 beforeNextElementSetup {
                     ::dragData { handler.encode(index()) }
                 } - renderer.render(this, data, index)
 
-                separator(data).apply {
+                beforeNextElementSetup {
                     ::shown shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start < i
                     }
-                }
+                } - separator(data)
             }
         }
     }

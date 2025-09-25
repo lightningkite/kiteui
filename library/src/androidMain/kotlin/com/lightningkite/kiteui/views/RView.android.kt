@@ -4,12 +4,9 @@ import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
 import android.graphics.Point
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
-import android.os.Build
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +14,6 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.Log
@@ -26,17 +22,11 @@ import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
-import com.lightningkite.kiteui.views.RView.DragShadowBuilder
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -137,8 +127,16 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             val view = shadow.view.native
             outShadowSize?.set(view.width, view.height)
             outShadowTouchPoint?.set(
-                (view.width / 2) + (shadow.xOffset?.px?.roundToInt() ?: 0),
-                (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                when (shadow.xAlign) {
+                    Align.Start -> 0
+                    Align.Center, Align.Stretch -> view.width / 2
+                    Align.End -> view.width
+                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
+                when (shadow.yAlign) {
+                    Align.Start -> 0
+                    Align.Center, Align.Stretch -> view.height / 2
+                    Align.End -> view.height
+                } + (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
             )
         }
     }
