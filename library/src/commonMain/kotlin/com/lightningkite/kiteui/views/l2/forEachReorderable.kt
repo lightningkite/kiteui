@@ -2,7 +2,9 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.div
 import com.lightningkite.kiteui.models.px
@@ -30,6 +32,13 @@ class DragDropReordering(
     val mimeType: String = "application/kiteui-index",
     val reorder: suspend (Move) -> Unit
 ) {
+    object HalfGap : Semantic("halfgap") {
+        override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+            cascading = false,
+            gap = theme.gap / 2,
+        )
+    }
+
     fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
     fun decode(data: DragData) = data[mimeType]?.toInt()
 
@@ -92,16 +101,8 @@ fun <T> RView.forEachReorderable(
         val idx = indexed.lens { it.index }
         col {
             themeTakeNonCascadingFromParent = true
-            gap = theme.gap / 2
-            this@forEachReorderable.gap = 0.px
 
-            themeChoice += ThemeDerivation {
-                it.copy(
-                    id = "reorderGap",
-                    cascading = false,
-                    gap = it.gap / 2
-                ).withoutBack
-            }
+            themeChoice += DragDropReordering.HalfGap
 
             dropTargetDelegate = handler.Delegate(idx)
 
@@ -149,7 +150,7 @@ class RecyclerReorderable<T, ID>(
             col {
                 themeTakeNonCascadingFromParent = true
 
-                themeChoice
+                themeChoice += DragDropReordering.HalfGap
 
                 dropTargetDelegate = handler.Delegate(index)
 
