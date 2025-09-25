@@ -852,3 +852,4 @@ operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
 operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
 expect fun Dimension.coerceAtMost(other: Dimension): Dimension
 expect fun Dimension.coerceAtLeast(other: Dimension): Dimension
+operator fun Dimension.unaryMinus(): Dimension = this * -1

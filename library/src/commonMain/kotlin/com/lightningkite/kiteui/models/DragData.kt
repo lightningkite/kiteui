@@ -22,6 +22,8 @@ data class DragData(
 
 data class DragShadow(
     val view: RView,
+    val xAlign: Align = Align.Center,
+    val yAlign: Align = Align.Center,
     val xOffset: Dimension? = null,
     val yOffset: Dimension? = null
 )

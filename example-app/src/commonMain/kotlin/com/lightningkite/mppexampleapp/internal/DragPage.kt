@@ -1,6 +1,7 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.*
+import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
 import com.lightningkite.kiteui.models.DragShadow
@@ -8,11 +9,9 @@ import com.lightningkite.kiteui.models.ListSemantic
 import com.lightningkite.kiteui.models.Semantic
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.lighten
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
@@ -24,8 +23,6 @@ import com.lightningkite.kiteui.views.l2.forEachReorderable
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlinx.coroutines.launch
 
 
@@ -43,6 +40,7 @@ object DragPage : Page {
     }
 
     override fun ViewWriter.render(): ViewModifiable = scrolling - col {
+        atStart
         val title = h2("Drag test")
 
         h4("Reorderable List")
@@ -54,7 +52,7 @@ object DragPage : Page {
                 },
                 dataTransform = {
                     it.copy(
-                        dragShadow = DragShadow(title, xOffset = 1.rem, yOffset = 2.rem)
+                        dragShadow = DragShadow(title, xAlign = Align.Start, xOffset = (-1).rem)
                     )
                 }
             ) { number ->
