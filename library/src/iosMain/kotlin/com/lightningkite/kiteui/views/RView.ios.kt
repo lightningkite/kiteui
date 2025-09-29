@@ -8,8 +8,11 @@ import com.lightningkite.kiteui.objc.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.RawImageViewLike
 import com.lightningkite.kiteui.views.direct.WrapperView
+import kotlinx.cinterop.CValue
+import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSItemProvider
@@ -33,7 +36,10 @@ import platform.UIKit.UIDragItem
 import platform.UIKit.UIDragSessionProtocol
 import platform.UIKit.UIDropInteraction
 import platform.UIKit.UIDropInteractionDelegateProtocol
+import platform.UIKit.UIDropOperation
+import platform.UIKit.UIDropProposal
 import platform.UIKit.UIDropSessionProtocol
+import platform.UIKit.*
 import platform.UIKit.UIVibrancyEffect
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
@@ -378,40 +384,40 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
     }
 
-    // Add this property inside your RView class
     private var dragInteraction: UIDragInteraction? = null
+    private var dragDelegate: DragInteractionDelegate? = null
 
-    // Replace your existing dragData property with this
     override var dragData: DragData?
         get() = super.dragData
         set(value) {
             super.dragData = value
-
             if (value != null) {
-                println("DEBUG draagInteraction == null ${dragInteraction == null}")
                 if (dragInteraction == null) {
-                    println("DEBUG attempting to create drag session")
-                    // Create and add the interaction
-                    val interaction = UIDragInteraction(DragInteractionDelegate(this))
+
+                    val interaction = UIDragInteraction(DragInteractionDelegate(this).also {
+                        dragDelegate=it
+                    })
+                    interaction.enabled = true
                     native.addInteraction(interaction)
-                    native.userInteractionEnabled = true // Drags require user interaction
+                    native.setUserInteractionEnabled(true)
+                    native.userInteractionEnabled = true
                     this.dragInteraction = interaction
                 }
             } else {
                 // Remove the interaction
                 dragInteraction?.let { native.removeInteraction(it) }
                 dragInteraction = null
+                dragDelegate = null
             }
         }
 
-    // A private delegate class to handle drag events
     private class DragInteractionDelegate(view: RView) : NSObject(), UIDragInteractionDelegateProtocol {
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
-        // This method correctly uses UIDragSession
+        @ObjCSignatureOverride
         @OptIn(ExperimentalNativeApi::class)
-        override fun dragInteraction(interaction: UIDragInteraction, itemsForBeginningSession: UIDragSessionProtocol): List<*> {
+        override fun dragInteraction(interaction: UIDragInteraction, itemsForBeginningSession: UIDragSessionProtocol): List<UIDragItem> {
             val view = owner.get() ?: return listOf<UIDragItem>()
             val data = view.dragData ?: return listOf<UIDragItem>()
 
@@ -420,27 +426,31 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             dragItem.localObject = data
             return listOf(dragItem)
         }
+
+
     }
 
 
     private var dropInteraction: UIDropInteraction? = null
+    private var dropInteractionDelegate: DropInteractionDelegate? = null
 
-    // Replace your existing dropTargetDelegate property with this
     override var dropTargetDelegate: DropTargetDelegate?
         get() = super.dropTargetDelegate
         set(value) {
             super.dropTargetDelegate = value
             if (value != null) {
                 if (dropInteraction == null) {
-                    // Create and add the interaction
-                    val interaction = UIDropInteraction(DropInteractionDelegate(this))
+                    val interaction = UIDropInteraction(DropInteractionDelegate(this).also {
+                        dropInteractionDelegate = it
+                    })
+
                     native.addInteraction(interaction)
                     this.dropInteraction = interaction
                 }
             } else {
-                // Remove the interaction
                 dropInteraction?.let { native.removeInteraction(it) }
                 dropInteraction = null
+                dropInteractionDelegate = null
             }
         }
 
@@ -449,34 +459,46 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         @OptIn(ExperimentalNativeApi::class)
         private val owner = WeakReference(view)
 
-        // This helper can still be used for synchronous info like enter/exit events
         private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
-            // Prioritize local object for in-app drags, which is instant
             val local = session.localDragSession?.localContext as? DragData
             if(local != null) return local
 
-            // For external drags, we create a placeholder
-            val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider  ?: return null
+            val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
             val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
 
-            // We don't have the data yet, so we can use an empty string or null
-            return DragData(
-                mimeType = mimeType, data = "",
-                label = TODO(),
-                dragShadow = TODO()
-            )
+            return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
         }
 
-        // ... other delegate methods like canHandleSession, sessionDidUpdate, etc. ...
-        // They can use getDragDataPlaceholder() as they don't need the actual data content.
+        @OptIn(ExperimentalNativeApi::class)
+        @ObjCSignatureOverride
+        override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
+            val view = owner.get() ?: return false
+            return view.dropTargetDelegate != null
+        }
 
+        @OptIn(ExperimentalNativeApi::class)
+        @ObjCSignatureOverride
+        override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
+            val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+            val delegate = view.dropTargetDelegate ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+
+            getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
+                val location = sessionDidUpdate.locationInView(view.native)
+                val event = DragEvent(data, location.useContents { x }, location.useContents { y })
+                delegate.over(event)
+            }
+
+            return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
+        }
+
+
+        @ObjCSignatureOverride
         @OptIn(ExperimentalNativeApi::class)
         override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
             val view = owner.get() ?: return
             val delegate = view.dropTargetDelegate ?: return
+            val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
 
-            // Handle fast in-app drags synchronously
-            val localData = performDrop.localDragSession?.localContext as? DragData
             if (localData != null) {
                 val location = performDrop.locationInView(view.native)
                 val event = DragEvent(
@@ -487,41 +509,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                 delegate.drop(event)
                 return
             }
-
-            // Handle external drags asynchronously
-            val provider = (performDrop.items.firstOrNull() as? UIDragItem )?.itemProvider ?: return
-            val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
-
-            // Assuming we're dropping a string for this example
-            provider.loadObjectOfClass(NSString as NSItemProviderReadingProtocol, completionHandler = { nsString, error ->
-                if (error != null || nsString == null) {
-                    println("Error loading dropped item: ${error?.localizedDescription}")
-                    return@loadObjectOfClass
-                }
-
-                // The completion handler might not be on the main UI thread.
-                // Dispatch back to the main thread before updating UI.
-                dispatch_async(dispatch_get_main_queue()) {
-                    val finalView = owner.get() ?: return@dispatch_async
-                    val finalDelegate = finalView.dropTargetDelegate ?: return@dispatch_async
-                    val location = performDrop.locationInView(finalView.native)
-
-                    val data = DragData(
-                        mimeType = mimeType, data = nsString as String,
-                        label = TODO(),
-                        dragShadow = TODO()
-                    )
-                    val event = DragEvent(
-                        data = data,
-                        xInView = location.useContents { x },
-                        yInView = location.useContents { y },
-                    )
-                    finalDelegate.drop(event)
-                }
-            })
         }
     }
-
 
 }
 
