@@ -7,6 +7,7 @@ import com.lightningkite.kiteui.models.FieldLabelSemantic
 import com.lightningkite.kiteui.models.Icon
 import com.lightningkite.kiteui.models.ImageScaleType
 import com.lightningkite.kiteui.models.ImageSource
+import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.usesTouchscreen
@@ -345,9 +346,27 @@ inline fun ViewWriter.toggleButton(setup: ToggleButton.() -> Unit = {}): ToggleB
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.video(setup: Video.() -> Unit = {}): Video {
+inline fun ViewWriter.video(setup: VideoView.() -> Unit = {}): VideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(Video(context) , setup)
+    return VideoView(this).apply {
+        setup()
+        postSetup()
+    }
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return MediaView(this).apply {
+        setup()
+        postSetup()
+    }
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
+inline fun ViewWriter.rawVideo(source: VideoSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawVideoView.() -> Unit = {}): RawVideoView {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(RawVideoView(context, source, description, scaleType) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl

@@ -26,6 +26,7 @@ import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.RawVideoView
 import com.lightningkite.kiteui.views.direct.RowOrCol
 import com.lightningkite.kiteui.views.direct.button
 import com.lightningkite.kiteui.views.direct.col
@@ -33,6 +34,7 @@ import com.lightningkite.kiteui.views.direct.coordinatorDragHandle
 import com.lightningkite.kiteui.views.direct.dismissBackground
 import com.lightningkite.kiteui.views.direct.h1
 import com.lightningkite.kiteui.views.direct.h2
+import com.lightningkite.kiteui.views.direct.media
 import com.lightningkite.kiteui.views.direct.onClick
 import com.lightningkite.kiteui.views.direct.row
 import com.lightningkite.kiteui.views.direct.separator
@@ -54,30 +56,39 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Routable("/")
-class HomePage: Page {
+class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
     override fun ViewWriter.render(): ViewModifiable = run {
         return article {
-            sizeConstraints(height = 10.rem) - video {
-//                launch {
-//                    val response = fetch(
-//                        "https://api.dev.picme.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.nP7oKDAeHlpYWKRSrp_DRkGGNzAAAAAALAEAACS5J-XN6rZGxMK3hR8u3G7qbKdUUGR5eBQHtgMCFB2TYTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e",
-//                        HttpMethod.GET,
-//                    )
-//                    println("Response: ${response.status}, ${response.headers.get("content-length")} ${response.headers.get("content-type")}")
-//                    val raw = response.blob()
-//                    println("Raw: $raw")
-//                    source = VideoRaw(raw)
-//                }
-                source = VideoRemote("https://jivie.lightningkite.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.zChgSWIysXsddkzRfrvo9a-KNzAAAAAALAEAAHL0H6klLnjlOeGMzNIXjYUFLSSbrczMSaSvkLy_ofs8YTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e")
-//                source = VideoRemote("https://api.dev.picme.com/a/c/dl/G5898d99a59544692a6524953b747c62f/View/20240118025109.1860000-ysxJ.mov?token=HAuth.%7e%7e%7e%7e%7c.zChgSWIysXsddkzRfrvo9a-KNzAAAAAALAEAAHL0H6klLnjlOeGMzNIXjYUFLSSbrczMSaSvkLy_ofs8YTJhYTM2MzgwYWZlNGQyNTlmYWRkY2FkMzNjN2UzOWU%7e")
-//                source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4")
-            }
             centered - h1("KiteUI - Beautiful by Default")
+            separator()
+            sizeConstraints(height = 15.rem) - media {
+                showControls = false
+                loop = true
+                reactive {
+                    (currentRawMediaView() as? RawVideoView)
+                        ?.playing?.let { launch { it set true } }
+                }
+                val srcs = listOf(
+                    Resources.videoFront,
+                    Resources.videoBack,
+                    Resources.imagesSnowyBackground,
+                    Resources.imagesLightningBackground,
+                )
+                launch {
+                    var i = 0
+                    while (true) {
+                        source = srcs[i++ % srcs.size]
+                        delay(5.seconds)
+                    }
+                }
+            }
             separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
             space()
@@ -93,7 +104,8 @@ class HomePage: Page {
             text("- Semantic theming - style and content should be separated and bridged via meaning, not result.  It's not a 'red' button, it's a button that performs a dangerous action.")
             space()
             h2("Quick Sample")
-            example("""
+            example(
+                """
                 val number = Signal(0)
                 col {
                     text("Here is a basic counter:")
@@ -115,7 +127,8 @@ class HomePage: Page {
                         }
                     }
                 }
-            """.trimIndent()) {
+            """.trimIndent()
+            ) {
                 val number = Signal(0)
                 col {
                     text("Here is a basic counter:")

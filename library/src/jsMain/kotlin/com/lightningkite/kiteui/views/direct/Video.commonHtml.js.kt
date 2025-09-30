@@ -1,17 +1,11 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.autoplay
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLVideoElement
 
-actual val Video.nativeTime: MutableReactive<Double>
+actual val RawVideoView.nativeTime: MutableReactive<Double>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.currentTime ?: 0.0 },
@@ -21,7 +15,7 @@ actual val Video.nativeTime: MutableReactive<Double>
             }
         }
     )
-actual val Video.nativePlaying: MutableReactive<Boolean>
+actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.paused?.not() ?: (native.attributes.autoplay != null) },
@@ -37,7 +31,7 @@ actual val Video.nativePlaying: MutableReactive<Boolean>
             }
         }
     )
-actual val Video.nativeVolume: MutableReactive<Float>
+actual val RawVideoView.nativeVolume: MutableReactive<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = { (this.element as? HTMLVideoElement)?.volume?.toFloat() ?: 1f },
@@ -47,3 +41,13 @@ actual val Video.nativeVolume: MutableReactive<Float>
             }
         }
     )
+
+actual fun RawVideoView.nativeLoad(url: String?) {
+    native.onElement {
+        val v = it as HTMLVideoElement
+        v.addEventListener("error", { _state.state = ReactiveState.exception(Exception("Failed to load video")) })
+        v.addEventListener("loadeddata", { _state.state = ReactiveState(Unit) })
+        v.addEventListener("canplay", { _state.state = ReactiveState(Unit) })
+        v.src = url ?: ""
+    }
+}
