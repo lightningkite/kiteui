@@ -102,12 +102,12 @@ kotlin {
 android {
     namespace = "$group.mppexampleapp"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lightningkite.kiteuiexample"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = project.version.toString()
 
