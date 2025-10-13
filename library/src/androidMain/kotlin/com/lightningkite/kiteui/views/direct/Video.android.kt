@@ -145,6 +145,20 @@ actual class RawVideoView actual constructor(
         set(value) {
             native.player!!.repeatMode = if (value) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         }
+
+    actual val completedPlay: Listenable = object: Listenable {
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_ENDED) {
+                        listener()
+                    }
+                }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
 }
 
 //actual fun Video.onComplete(action: () -> Unit) {

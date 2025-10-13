@@ -42,6 +42,8 @@ actual class RawVideoView actual constructor(
     actual var loop: Boolean
         get() = native.attributes.loopBoolean != null
         set(value) { native.attributes.loopBoolean = value }
+
+    actual val completedPlay: Listenable = native.vevent("ended")
 }
 
 expect val RawVideoView.nativeTime: MutableReactive<Double>

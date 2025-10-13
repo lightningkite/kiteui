@@ -61,6 +61,8 @@ class MediaView(viewWriter: ViewWriter) : ViewModifiable {
             info = info?.copy(description = value) ?: Info(listOf(), ImageScaleType.Fit, value)
         }
 
+    var opaqueTransitions: Boolean = false
+
     var ready = false
     fun postSetup() {
         ready = true
@@ -92,7 +94,7 @@ class MediaView(viewWriter: ViewWriter) : ViewModifiable {
         if (lastRendered != info) {
             lastRender?.forEach {
                 if (rView.areAnimationsEnabled) {
-                    it.opacity = 0.0
+                    if(!opaqueTransitions) it.opacity = 0.0
                     if(it is RawVideoView) {
                         launch {
                             val transitionTime = it.theme.transitionDuration * 3 / 4

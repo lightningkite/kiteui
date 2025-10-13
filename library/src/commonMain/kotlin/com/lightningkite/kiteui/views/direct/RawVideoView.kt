@@ -23,4 +23,5 @@ expect class RawVideoView(
     val volume: MutableReactive<Float>
     var showControls: Boolean
     var loop: Boolean
+    val completedPlay: Listenable
 }

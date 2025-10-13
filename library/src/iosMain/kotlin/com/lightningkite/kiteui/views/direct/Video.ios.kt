@@ -94,6 +94,7 @@ actual class RawVideoView actual constructor(
                 playerRateObservationClose = player.observe("rate") {
                     val player = weakPlayer.get() ?: return@observe
                     val value = player.rate > 0f
+                    if (shouldPlay && !value) _completedPlay.invokeAll()
                     if (!value && loop && shouldPlay) {
                         controller.player?.seekToTime(CMTimeMake(0.toLong(), 1000))
                         controller.player?.play()
@@ -305,5 +306,6 @@ actual class RawVideoView actual constructor(
             controller.updatesNowPlayingInfoCenter = value
         }
     actual var loop: Boolean = false
-
+    private val _completedPlay = BasicListenable()
+    actual val completedPlay: Listenable get() = _completedPlay
 }
