@@ -36,7 +36,12 @@ import kotlin.collections.mapOf
 import kotlin.time.Duration.Companion.seconds
 
 
-actual class Video actual constructor(context: RContext) : RView(context) {
+actual class RawVideoView actual constructor(
+    context: RContext,
+    actual val source: VideoSource,
+    actual val description: String,
+    actual val scaleType: ImageScaleType,
+) : RView(context) {
 
     inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
 
@@ -56,6 +61,9 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     }
     override val native = controller.view
 
+        private val _state = RawReactive<Unit>()
+        actual val state: Reactive<Unit> = _state
+
     private val _playing = Signal(false)
     private val _volume = Signal(0f)
     private val _time = Signal(0.0)
@@ -63,6 +71,7 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     private var playerRateObservationClose: (() -> Unit)? = null
     private var volumeObservationClose: (() -> Unit)? = null
     private var endObservationClose: (() -> Unit)? = null
+    private var playerStatusObservationClose: (() -> Unit)? = null
     internal var onComplete: (() -> Unit)? = null
     internal var shouldPlay = false
 
@@ -77,12 +86,15 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             volumeObservationClose = null
             endObservationClose?.invoke()
             endObservationClose = null
+            playerStatusObservationClose?.invoke()
+            playerStatusObservationClose = null
             controller.player = value
             value?.let { player ->
                 val weakPlayer = WeakReference(player)
                 playerRateObservationClose = player.observe("rate") {
                     val player = weakPlayer.get() ?: return@observe
                     val value = player.rate > 0f
+                    if (shouldPlay && !value) _completedPlay.invokeAll()
                     if (!value && loop && shouldPlay) {
                         controller.player?.seekToTime(CMTimeMake(0.toLong(), 1000))
                         controller.player?.play()
@@ -103,6 +115,19 @@ actual class Video actual constructor(context: RContext) : RView(context) {
                     val player = weakPlayer.get() ?: return@observe
                     val value = player.volume
                     _volume.value = value
+                }
+                playerStatusObservationClose = player.observe("status") {
+                    val p = weakPlayer.get() ?: return@observe
+                    when (p.status) {
+                        AVPlayerStatusReadyToPlay -> {
+                            _state.state = ReactiveState(Unit)
+                        }
+                        AVPlayerStatusFailed -> {
+                            val message = p.error?.localizedDescription ?: "Video failed to load"
+                            _state.state = ReactiveState.exception(Exception(message))
+                        }
+                        else -> {}
+                    }
                 }
 //                endObservationClose =
             }
@@ -185,65 +210,71 @@ actual class Video actual constructor(context: RContext) : RView(context) {
     }
 
 
-    actual var source: VideoSource? = null
-        set(value) {
-            field = value
-            when (value) {
-                null -> {
-                    player = null
-                    native.informParentOfSizeChange()
-                }
+    init {
+        // Accessibility description
+        native.accessibilityLabel = description
 
-                is VideoRaw -> {
-                    val filePath = NSTemporaryDirectory() + "/" + UUID().UUIDString() + ".mp4"
-                    value.data.data.writeToFile(filePath, true)
-                    val url = NSURL.fileURLWithPath(filePath)
-                    val reread = url.filePathURL!!
-                    player = AVPlayer(uRL = reread)
-                    native.informParentOfSizeChange()
-                }
-
-                is VideoRemote -> {
-                    val asset = AVURLAsset(NSURL(string = value.url), mapOf<Any?, Any?>())
-                    asset.resourceLoader.setDelegate(playerCallbackHolder, dispatch_get_main_queue())
-                    player = AVPlayer(AVPlayerItem(asset)).also {
-                        println("Player: $it")
-                        println("Url is being set to ${value.url}")
-                    }
-                    native.informParentOfSizeChange()
-                }
-
-                is VideoResource -> {
-                    try {
-                        player = AVPlayer(
-                            NSBundle.mainBundle.URLForResource(value.name, value.extension)
-                                ?: throw Exception("Could not find the video in the bundle ${value.name} / ${value.extension}")
-                        )
-                        native.informParentOfSizeChange()
-                    } catch (e: Exception) {
-                        e.printStackTrace2()
-                    }
-                }
-
-                is VideoLocal -> {
-                    controller.player = null
-                    native.informParentOfSizeChange()
-                    value.file.provider.loadFileRepresentationForContentType(
-                        value.file.suggestedType ?: UTTypeVideo,
-                        openInPlace = true
-                    ) { url, b, err ->
-                        if (url != null) {
-                            dispatch_async(queue = dispatch_get_main_queue(), block = {
-                                player = AVPlayer(url)
-                                native.informParentOfSizeChange()
-                            })
-                        }
-                    }
-                }
-
-                else -> {}
-            }
+        // Apply scale type to video gravity
+        controller.videoGravity = when (scaleType) {
+            ImageScaleType.Fit -> AVLayerVideoGravityResizeAspect
+            ImageScaleType.Crop -> AVLayerVideoGravityResizeAspectFill
+            ImageScaleType.Stretch -> AVLayerVideoGravityResize
+            ImageScaleType.NoScale -> AVLayerVideoGravityResize
         }
+
+        // Load the provided source
+        when (val value = source) {
+            is VideoRaw -> {
+                val filePath = NSTemporaryDirectory() + "/" + UUID().UUIDString() + ".mp4"
+                value.data.data.writeToFile(filePath, true)
+                val url = NSURL.fileURLWithPath(filePath)
+                val reread = url.filePathURL!!
+                player = AVPlayer(uRL = reread)
+                native.informParentOfSizeChange()
+            }
+
+            is VideoRemote -> {
+                val asset = AVURLAsset(NSURL(string = value.url), mapOf<Any?, Any?>())
+                asset.resourceLoader.setDelegate(playerCallbackHolder, dispatch_get_main_queue())
+                player = AVPlayer(AVPlayerItem(asset)).also {
+                    println("Player: $it")
+                    println("Url is being set to ${value.url}")
+                }
+                native.informParentOfSizeChange()
+            }
+
+            is VideoResource -> {
+                try {
+                    player = AVPlayer(
+                        NSBundle.mainBundle.URLForResource(value.name, value.extension)
+                            ?: throw Exception("Could not find the video in the bundle ${value.name} / ${value.extension}")
+                    )
+                    native.informParentOfSizeChange()
+                } catch (e: Exception) {
+                    e.printStackTrace2()
+                    _state.state = ReactiveState.exception(e)
+                }
+            }
+
+            is VideoLocal -> {
+                controller.player = null
+                native.informParentOfSizeChange()
+                value.file.provider.loadFileRepresentationForContentType(
+                    value.file.suggestedType ?: UTTypeVideo,
+                    openInPlace = true
+                ) { url, b, err ->
+                    if (url != null) {
+                        dispatch_async(queue = dispatch_get_main_queue(), block = {
+                            player = AVPlayer(url)
+                            native.informParentOfSizeChange()
+                        })
+                    }
+                }
+            }
+
+            else -> {}
+        }
+    }
 
     
     actual val time: MutableReactive<Double>
@@ -275,15 +306,6 @@ actual class Video actual constructor(context: RContext) : RView(context) {
             controller.updatesNowPlayingInfoCenter = value
         }
     actual var loop: Boolean = false
-    actual var scaleType: ImageScaleType = ImageScaleType.Crop
-        set(value) {
-            field = value
-            controller.videoGravity = when (value) {
-                ImageScaleType.Fit -> AVLayerVideoGravityResizeAspect
-                ImageScaleType.Crop -> AVLayerVideoGravityResizeAspectFill
-                ImageScaleType.Stretch -> AVLayerVideoGravityResize
-                ImageScaleType.NoScale -> AVLayerVideoGravityResize
-            }
-        }
-
+    private val _completedPlay = BasicListenable()
+    actual val completedPlay: Listenable get() = _completedPlay
 }
