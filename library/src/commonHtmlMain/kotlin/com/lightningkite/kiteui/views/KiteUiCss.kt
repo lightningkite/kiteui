@@ -620,8 +620,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
-            .icon > svg {
+            .icon.icon > svg {
                 display: block;
+                max-width: 100%;
+                max-height: 100%;
             }
             
             .textarea-container {
