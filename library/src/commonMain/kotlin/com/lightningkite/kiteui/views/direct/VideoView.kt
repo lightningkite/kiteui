@@ -28,16 +28,30 @@ class VideoView(viewWriter: ViewWriter) : ViewModifiable {
     )
 
     private val current = Signal<RawVideoView?>(null)
+
+    init {
+        val removeListener = current.addListener {
+            current.value?.showControls = showControls
+            current.value?.loop = loop
+        }
+        onRemove {
+            removeListener()
+        }
+    }
+
     val time: MutableReactive<Double> = current.lens { it?.time ?: Signal(0.0) }.flatten()
     val playing: MutableReactive<Boolean> = current.lens { it?.playing ?: Signal(false) }.flatten()
     val volume: MutableReactive<Float> = current.lens { it?.volume ?: Signal(0f) }.flatten()
-    var showControls: Boolean
-        get() = current.value?.showControls ?: false
-        set(value) { current.value?.showControls = value }
-    var loop: Boolean
-        get() = current.value?.loop ?: false
-        set(value) { current.value?.loop = value }
-
+    var showControls: Boolean = false
+        set(value) {
+            field = value
+            current.value?.showControls = value
+        }
+    var loop: Boolean = false
+        set(value) {
+            field = value
+            current.value?.loop = value
+        }
     var info: Info? = null
         set(value) {
             field = value
@@ -131,6 +145,8 @@ class VideoView(viewWriter: ViewWriter) : ViewModifiable {
                                         notReady = {}
                                     )
                                 }
+                            }.also {
+                                current.value = it
                             })
                         }
                     }

@@ -36,9 +36,8 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 8.rem, height = 8.rem) - video {
-                        source =
-                            VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - video {
+                        source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                         this.time bind time
                         this.playing bind playing
                         scaleType = ImageScaleType.Crop
@@ -98,7 +97,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 8.rem, height = 8.rem) - video {
+                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
                         source = Resources.videoBack
                         this.loop = true
                         scaleType = ImageScaleType.Crop
@@ -108,6 +107,28 @@ object VideoElementPage: DocPage {
                     }
                 }
             }
+
+
+            text("Media View is the new way to play videos. Use this instead of 'Video'")
+            example("""
+//                media {
+//                    source = Resources.videoBack
+//                    this.loop = true
+//                    this.showControls = true
+//                    scaleType = ImageScaleType.Crop
+//                }
+                """.trimIndent()) {
+                frame {
+                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
+                        source = Resources.videoBack
+                        this.loop = true
+                        this.showControls = true
+                        scaleType = ImageScaleType.Crop
+                    }
+                }
+            }
+
+            space(5.0)
         }
     }
 

@@ -11,8 +11,12 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered
+import com.lightningkite.kiteui.views.direct.RawVideoView
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.flatten
+import com.lightningkite.reactive.lensing.lens
+import com.lightningkite.reactive.lensing.lensListenable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
@@ -31,14 +35,16 @@ class MediaView(viewWriter: ViewWriter) : ViewModifiable {
     )
 
     val currentRawMediaView = Signal<RView?>(null)
-    var showControls: Boolean = false
-        set(value) {
-            (currentRawMediaView.value as? RawVideoView)?.showControls = value
+
+    init {
+        val removeListener = currentRawMediaView.addListener {
+            (currentRawMediaView.value as? RawVideoView)?.showControls = showControls
+            (currentRawMediaView.value as? RawVideoView)?.loop = loop
         }
-    var loop: Boolean = false
-        set(value) {
-            (currentRawMediaView.value as? RawVideoView)?.loop = value
+        onRemove {
+            removeListener()
         }
+    }
 
     var info: Info? = null
         set(value) {
@@ -62,6 +68,22 @@ class MediaView(viewWriter: ViewWriter) : ViewModifiable {
         }
 
     var opaqueTransitions: Boolean = false
+
+    var showControls: Boolean = false
+        set(value) {
+            field = value
+            (currentRawMediaView.value as? RawVideoView)?.showControls = value
+        }
+    var loop: Boolean = false
+        set(value) {
+            field = value
+            (currentRawMediaView.value as? RawVideoView)?.loop = value
+        }
+
+    val time: MutableReactive<Double> = currentRawMediaView.lens( get = { (it as? RawVideoView)?.time ?: Signal(0.0) } ).flatten()
+    val playing: MutableReactive<Boolean> = currentRawMediaView.lens { (it as? RawVideoView)?.playing ?: Signal(false) }.flatten()
+    val volume: MutableReactive<Float> = currentRawMediaView.lens { (it as? RawVideoView)?.volume ?: Signal(0f) }.flatten()
+
 
     var ready = false
     fun postSetup() {
