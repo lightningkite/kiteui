@@ -111,12 +111,12 @@ object VideoElementPage: DocPage {
 
             text("Media View is the new way to play videos. Use this instead of 'Video'")
             example("""
-//                media {
-//                    source = Resources.videoBack
-//                    this.loop = true
-//                    this.showControls = true
-//                    scaleType = ImageScaleType.Crop
-//                }
+                media {
+                    source = Resources.videoBack
+                    this.loop = true
+                    this.showControls = true
+                    scaleType = ImageScaleType.Crop
+                }
                 """.trimIndent()) {
                 frame {
                     centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
