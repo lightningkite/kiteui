@@ -31,3 +31,4 @@ actual val RawVideoView.nativeVolume: MutableReactive<Float>
 actual fun RawVideoView.nativeLoad(url: String?) {
     native.attributes.src = url
 }
+actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>> get() = listOf()

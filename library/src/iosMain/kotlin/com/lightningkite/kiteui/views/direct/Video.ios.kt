@@ -41,6 +41,7 @@ actual class RawVideoView actual constructor(
     actual val source: VideoSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
+    actual val preloadHint: PreloadHint,
 ) : RView(context) {
 
     inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
@@ -308,4 +309,5 @@ actual class RawVideoView actual constructor(
     actual var loop: Boolean = false
     private val _completedPlay = BasicListenable()
     actual val completedPlay: Listenable get() = _completedPlay
+    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
 }

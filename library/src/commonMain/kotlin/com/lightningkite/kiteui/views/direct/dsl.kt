@@ -364,9 +364,9 @@ inline fun ViewWriter.media(setup: MediaView.() -> Unit = {}): MediaView {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
-inline fun ViewWriter.rawVideo(source: VideoSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, setup: RawVideoView.() -> Unit = {}): RawVideoView {
+inline fun ViewWriter.rawVideo(source: VideoSource, description: String, scaleType: ImageScaleType = ImageScaleType.Fit, preloadHint: PreloadHint = PreloadHint.METADATA, setup: RawVideoView.() -> Unit = {}): RawVideoView {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
-    return write(RawVideoView(context, source, description, scaleType) , setup)
+    return write(RawVideoView(context, source, description, scaleType, preloadHint) , setup)
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl

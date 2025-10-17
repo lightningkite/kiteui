@@ -26,6 +26,7 @@ actual class RawVideoView actual constructor(
     actual val description: String,
     @get:OptIn(UnstableApi::class)
     actual val scaleType: ImageScaleType,
+    actual val preloadHint: PreloadHint,
 ) : RView(context) {
     override val native = PlayerView(context.activity).apply {
         player = ExoPlayer.Builder(context.activity).build()
@@ -159,6 +160,7 @@ actual class RawVideoView actual constructor(
             return { native.player!!.removeListener(l) }
         }
     }
+    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = listOf()
 }
 
 //actual fun Video.onComplete(action: () -> Unit) {

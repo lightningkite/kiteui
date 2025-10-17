@@ -51,3 +51,9 @@ actual fun RawVideoView.nativeLoad(url: String?) {
         v.src = url ?: ""
     }
 }
+actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
+    get() {
+        return (native.element as? HTMLVideoElement)?.seekable?.let {
+            (0 until it.length).map { i -> it.start(i)..it.end(i) }
+        } ?: listOf()
+    }

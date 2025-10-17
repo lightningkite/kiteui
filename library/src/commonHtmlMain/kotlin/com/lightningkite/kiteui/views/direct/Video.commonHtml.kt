@@ -9,6 +9,7 @@ actual class RawVideoView actual constructor(
     actual val source: VideoSource,
     actual val description: String,
     actual val scaleType: ImageScaleType,
+    actual val preloadHint: PreloadHint,
 ) : RView(context) {
     val _state = RawReactive<Unit>()
     actual val state: Reactive<Unit> = _state
@@ -26,6 +27,11 @@ actual class RawVideoView actual constructor(
             else -> native.attributes.src = ""
         }
         nativeLoad(native.attributes.src)
+        native.attributes.preload = when(preloadHint) {
+            PreloadHint.NONE -> "none"
+            PreloadHint.METADATA -> "metadata"
+            PreloadHint.ALL -> "auto"
+        }
     }
 
     actual val time: MutableReactive<Double> = nativeTime
@@ -44,10 +50,12 @@ actual class RawVideoView actual constructor(
         set(value) { native.attributes.loopBoolean = value }
 
     actual val completedPlay: Listenable = native.vevent("ended")
+    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = nativeSeekableTimeRanges
 }
 
 expect val RawVideoView.nativeTime: MutableReactive<Double>
 expect val RawVideoView.nativePlaying: MutableReactive<Boolean>
 expect val RawVideoView.nativeVolume: MutableReactive<Float>
+expect val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
 
 expect fun RawVideoView.nativeLoad(url: String?)
