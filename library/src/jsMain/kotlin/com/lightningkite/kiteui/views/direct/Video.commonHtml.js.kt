@@ -57,3 +57,12 @@ actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<
             (0 until it.length).map { i -> it.start(i)..it.end(i) }
         } ?: listOf()
     }
+actual val RawVideoView.nativeDuration: Reactive<Double?>
+    get() = native.vread(
+        eventName = "durationchange",
+        get = {
+            (this.element as? HTMLVideoElement)?.duration?.takeIf {
+                it.isFinite() && !it.isNaN()
+            }
+        }
+    )

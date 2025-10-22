@@ -37,6 +37,7 @@ actual class RawVideoView actual constructor(
     actual val time: MutableReactive<Double> = nativeTime
     actual val playing: MutableReactive<Boolean> = nativePlaying
     actual val volume: MutableReactive<Float> = nativeVolume
+    actual val sourceDuration: Reactive<Double?> = nativeDuration
 
     actual var showControls: Boolean
         get() = native.attributes.controls != null
@@ -57,5 +58,6 @@ expect val RawVideoView.nativeTime: MutableReactive<Double>
 expect val RawVideoView.nativePlaying: MutableReactive<Boolean>
 expect val RawVideoView.nativeVolume: MutableReactive<Float>
 expect val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
+expect val RawVideoView.nativeDuration: Reactive<Double?>
 
 expect fun RawVideoView.nativeLoad(url: String?)
