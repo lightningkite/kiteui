@@ -136,7 +136,7 @@ kotlin {
 
 android {
     namespace = "com.lightningkite.kiteui"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21

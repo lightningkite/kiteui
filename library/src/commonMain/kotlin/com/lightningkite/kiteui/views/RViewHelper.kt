@@ -135,12 +135,11 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             return
         }
         if (parent?.fullyStarted == false) {
-
             if (this == viewDebugTarget) println("refreshTheming abandoned due to parent $parent not being fully started")
             return
         }
-        val themeBorrowed = if(themeTakeNonCascadingFromParent) parent?.theme ?: Theme.Companion.placeholder
-        else parent?.theme?.let { it.revert ?: it } ?: Theme.Companion.placeholder
+        val themeBorrowed = if(themeTakeNonCascadingFromParent) parent?.theme ?: Theme.placeholder
+        else parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
         if (this == viewDebugTarget) println("refreshTheming will set!  Parent theme is ${themeBorrowed.id}")
         val t = applyState(themeChoice(themeBorrowed))
         if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")

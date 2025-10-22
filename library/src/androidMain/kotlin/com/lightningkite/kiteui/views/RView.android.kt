@@ -3,12 +3,10 @@ package com.lightningkite.kiteui.views
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.res.ColorStateList
-import android.graphics.RenderEffect
-import android.graphics.Shader
+import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
-import android.os.Build
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +14,6 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.Log
@@ -25,17 +22,13 @@ import com.lightningkite.kiteui.debugMode
 import com.lightningkite.kiteui.debugPrint
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.direct.CoordinatorFrame
 import com.lightningkite.kiteui.views.direct.DesiredSizeView
 import com.lightningkite.kiteui.views.direct.colorInt
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 actual abstract class RView actual constructor(context: RContext) : RViewHelper(context) {
     abstract val native: View
@@ -129,6 +122,24 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             native.transitionName = value
         }
 
+    private class DragShadowBuilder(val shadow: DragShadow) : View.DragShadowBuilder(shadow.view.native) {
+        override fun onProvideShadowMetrics(outShadowSize: Point?, outShadowTouchPoint: Point?) {
+            val view = shadow.view.native
+            outShadowSize?.set(view.width, view.height)
+            outShadowTouchPoint?.set(
+                when (shadow.xAlign) {
+                    Align.Start -> 0
+                    Align.Center, Align.Stretch -> view.width / 2
+                    Align.End -> view.width
+                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
+                when (shadow.yAlign) {
+                    Align.Start -> 0
+                    Align.Center, Align.Stretch -> view.height / 2
+                    Align.End -> view.height
+                } + (view.height / 2) + (shadow.yOffset?.px?.roundToInt() ?: 0)
+            )
+        }
+    }
 
     // drag 'n drop
     override var dragData: DragData?
@@ -139,8 +150,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             else native.setOnLongClickListener {
                 native.startDrag(
                     ClipData(value.label, arrayOf(value.mimeType), ClipData.Item(value.data)),
-                    View.DragShadowBuilder(native),
-                    null,
+                    value.dragShadow?.let(::DragShadowBuilder) ?: View.DragShadowBuilder(native),
+                    value,
                     0
                 )
                 true
@@ -152,14 +163,15 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
             super.dropTargetDelegate = value
             if (value == null) native.setOnDragListener(null)
             else native.setOnDragListener { v, event ->
+
                 val ev =
                     DragEvent(
-                        data = event.clipData.let {
+                        data = event.clipData?.let {
                             DragData(
                                 it.description.label.toString(),
                                 (0..<it.itemCount).associate { i -> it.description.getMimeType(i) to it.getItemAt(i).text.toString() },
                             )
-                        },
+                        } ?: (event.localState as? DragData) ?: throw IllegalStateException("ClipData was empty for view $v"),
                         xInView = event.x.toDouble(),
                         yInView = event.y.toDouble(),
                     )
