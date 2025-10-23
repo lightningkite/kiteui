@@ -11,20 +11,22 @@ fun View.showDatePicker(
     max: LocalDate? = null,
     onResult: (LocalDate) -> Unit
 ) {
-    DatePickerDialog(context).apply {
-        this.updateDate(start.year, start.monthNumber - 1, start.dayOfMonth)
+    val picker = DatePickerDialog(context).apply {
+        updateDate(start.year, start.monthNumber - 1, start.dayOfMonth)
+        min?.let { datePicker.minDate = it.toEpochMilliseconds() }
+        max?.let { datePicker.maxDate = it.toEpochMilliseconds() }
+
         setOnDateSetListener { _, year, month, dayOfMonth ->
-            onResult(LocalDate(year, month + 1, dayOfMonth))
+            val selected = LocalDate(year, month + 1, dayOfMonth)
+            onResult(selected)
         }
-    }.apply {
-//        this.datePicker.minDate =
-//            min?.atTime(LocalTime(12, 0))?.toInstant(TimeZone.currentSystemDefault())?.toEpochMilliseconds()
-//                ?: Long.MIN_VALUE
-//        this.datePicker.maxDate =
-//            max?.atTime(LocalTime(12, 0))?.toInstant(TimeZone.currentSystemDefault())?.toEpochMilliseconds()
-//                ?: Long.MAX_VALUE
-        show()
     }
+
+    picker.show()
+}
+
+private fun LocalDate.toEpochMilliseconds(): Long {
+    return this.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
 }
 
 fun View.showTimePicker(
@@ -33,10 +35,15 @@ fun View.showTimePicker(
     max: LocalTime? = null,
     onResult: (LocalTime) -> Unit
 ) {
-    TimePickerDialog(context, TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-        onResult(LocalTime(hourOfDay, minute))
-    }, start.hour, start.minute, false).apply {
-        this.updateTime(start.hour, start.minute)
-        show()
-    }
+    val picker = TimePickerDialog(context, { _, hourOfDay, minute ->
+        val selected = LocalTime(hourOfDay, minute)
+
+        if ((min != null && selected < min) || (max != null && selected > max)) {
+            return@TimePickerDialog
+        }
+
+        onResult(selected)
+    }, start.hour, start.minute, false)
+
+    picker.show()
 }
