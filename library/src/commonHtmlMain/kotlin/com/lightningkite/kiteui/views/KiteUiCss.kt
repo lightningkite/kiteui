@@ -152,33 +152,19 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
                 margin: 10px auto;
             }
 
-            .kui.circle-background {
+            .circle-progress-background {
                           fill: none;
-                          stroke: --background-color;
-                          stroke-width: 3.8;
+                          stroke: var(--nearest-background-color); !important;
+                          stroke-width: 3;
             }
             
-            .kui.circle-progress {
+            .circle-progress {
                 fill: none;
                 stroke-width:2.8;
                 stroke-linecap: round;
                 animation: progress 1s ease-out forwards;
                   stroke: currentcolor;
             }
-         
-
-            .kui.progress-ring-content {
-                text-anchor: middle;
-                
-            }
-            
-            .kui.progress-ring-content {
-              fill: #666;
-              font-family: sans-serif;
-              font-size: 0.5em;
-              text-anchor: middle;
-            }
-
 
             @media (pointer: coarse) and (hover: none) {
                 .touchscreenOnly {
