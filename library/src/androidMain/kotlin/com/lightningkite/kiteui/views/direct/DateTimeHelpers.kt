@@ -11,7 +11,7 @@ fun View.showDatePicker(
     max: LocalDate? = null,
     onResult: (LocalDate) -> Unit
 ) {
-    val picker = DatePickerDialog(context).apply {
+    DatePickerDialog(context).apply {
         updateDate(start.year, start.monthNumber - 1, start.dayOfMonth)
         min?.let { datePicker.minDate = it.toEpochMilliseconds() }
         max?.let { datePicker.maxDate = it.toEpochMilliseconds() }
@@ -20,9 +20,8 @@ fun View.showDatePicker(
             val selected = LocalDate(year, month + 1, dayOfMonth)
             onResult(selected)
         }
+        show()
     }
-
-    picker.show()
 }
 
 private fun LocalDate.toEpochMilliseconds(): Long {
@@ -35,7 +34,7 @@ fun View.showTimePicker(
     max: LocalTime? = null,
     onResult: (LocalTime) -> Unit
 ) {
-    val picker = TimePickerDialog(context, { _, hourOfDay, minute ->
+    TimePickerDialog(context, { _, hourOfDay, minute ->
         val selected = LocalTime(hourOfDay, minute)
 
         if ((min != null && selected < min) || (max != null && selected > max)) {
@@ -43,7 +42,8 @@ fun View.showTimePicker(
         }
 
         onResult(selected)
-    }, start.hour, start.minute, false)
-
-    picker.show()
+    }, start.hour, start.minute, false).apply {
+        this.updateTime(start.hour, start.minute)
+        show()
+    }
 }
