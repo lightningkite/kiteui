@@ -431,8 +431,8 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
     }
 
 
-    private var dropInteraction: UIDropInteraction? = null
-    private var dropInteractionDelegate: DropInteractionDelegate? = null
+    var dropInteraction: UIDropInteraction? = null
+    var dropInteractionDelegate: DropInteractionDelegate? = null
 
     override var dropTargetDelegate: DropTargetDelegate?
         get() = super.dropTargetDelegate
@@ -443,7 +443,7 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
                     val interaction = UIDropInteraction(DropInteractionDelegate(this).also {
                         dropInteractionDelegate = it
                     })
-
+                    native.userInteractionEnabled = true
                     native.addInteraction(interaction)
                     this.dropInteraction = interaction
                 }
@@ -455,62 +455,70 @@ actual abstract class RView actual constructor(context: RContext) : RViewHelper(
         }
 
     // A private delegate class to handle drop events
-    private class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
-        @OptIn(ExperimentalNativeApi::class)
-        private val owner = WeakReference(view)
+        class DropInteractionDelegate(view: RView) : NSObject(), UIDropInteractionDelegateProtocol {
+            @OptIn(ExperimentalNativeApi::class)
+            private val owner = WeakReference(view)
 
-        private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
-            val local = session.localDragSession?.localContext as? DragData
-            if(local != null) return local
+            private fun getDragDataPlaceholder(session: UIDropSessionProtocol): DragData? {
+                val local = session.localDragSession?.localContext as? DragData
+                if(local != null) return local
 
-            val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
-            val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
+                val provider = (session.items.firstOrNull() as? UIDragItem)?.itemProvider ?: return null
+                val mimeType = provider.registeredTypeIdentifiers.firstOrNull() as? String ?: "text/plain"
 
-            return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
-        }
-
-        @OptIn(ExperimentalNativeApi::class)
-        @ObjCSignatureOverride
-        override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
-            val view = owner.get() ?: return false
-            return view.dropTargetDelegate != null
-        }
-
-        @OptIn(ExperimentalNativeApi::class)
-        @ObjCSignatureOverride
-        override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
-            val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-            val delegate = view.dropTargetDelegate ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
-
-            getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
-                val location = sessionDidUpdate.locationInView(view.native)
-                val event = DragEvent(data, location.useContents { x }, location.useContents { y })
-                delegate.over(event)
+                return DragData(mimeType = mimeType, data = "", label = "External Data", dragShadow = null)
             }
 
-            return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
-        }
+            @OptIn(ExperimentalNativeApi::class)
+            @ObjCSignatureOverride
+            override fun dropInteraction(interaction: UIDropInteraction, canHandleSession: UIDropSessionProtocol): Boolean {
+                println("DEBUG can handle drop ${owner.get()}")
+                val view = owner.get() ?: return false
+                return view.dropTargetDelegate != null
+            }
+
+            @OptIn(ExperimentalNativeApi::class)
+            @ObjCSignatureOverride
+            override fun dropInteraction(interaction: UIDropInteraction, sessionDidUpdate: UIDropSessionProtocol): UIDropProposal {
+                println("DEBUG sessionDidUpdaatet")
+                val view = owner.get() ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+                val delegate = view.dropTargetDelegate ?: return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationCancel)
+
+                getDragDataPlaceholder(sessionDidUpdate)?.let { data ->
+                    val location = sessionDidUpdate.locationInView(view.native)
+                    val event = DragEvent(data, location.useContents { x }, location.useContents { y })
+                    delegate.over(event)
+                }
+
+                return platform.UIKit.UIDropProposal(platform.UIKit.UIDropOperationMove)
+            }
 
 
-        @ObjCSignatureOverride
-        @OptIn(ExperimentalNativeApi::class)
-        override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
-            val view = owner.get() ?: return
-            val delegate = view.dropTargetDelegate ?: return
-            val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
-
-            if (localData != null) {
-                val location = performDrop.locationInView(view.native)
-                val event = DragEvent(
-                    data = localData,
-                    xInView = location.useContents { x },
-                    yInView = location.useContents { y },
-                )
-                delegate.drop(event)
-                return
+            @ObjCSignatureOverride
+            @OptIn(ExperimentalNativeApi::class)
+            override fun dropInteraction(interaction: UIDropInteraction, performDrop: UIDropSessionProtocol) {
+                println("DEBUG performm drop")
+                val view = owner.get() ?: return
+                println("DEBUG view ${view}")
+                val delegate = view.dropTargetDelegate ?: return
+                println("DEBUG vew ${view.dropTargetDelegate}")
+                val localData = (performDrop.items.firstOrNull() as? UIDragItem)?.localObject as? DragData
+                println("DEBUG localData ${localData}")
+                if (localData != null) {
+                    val location = performDrop.locationInView(view.native)
+                    println("DEBUG location ${location}")
+                    val event = DragEvent(
+                        data = localData,
+                        xInView = location.useContents { x },
+                        yInView = location.useContents { y },
+                    )
+                    println("DEBUG delegate ${delegate}")
+                    println("DEBUG event ${event}")
+                    delegate.drop(event)
+                    return
+                }
             }
         }
-    }
 
 }
 
