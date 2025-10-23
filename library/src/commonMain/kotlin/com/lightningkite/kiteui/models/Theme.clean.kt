@@ -47,6 +47,15 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
                     elevation = 4.dp
                 )
             },
+            PopoverSemantic to {
+                it.withBack(
+                    cascading = false,
+                    outline = separator,
+                    background = Color.white,
+                    foreground = Color.black,
+                    elevation = 4.dp
+                )
+            },
             ImportantSemantic to {
                 it.withBack(
                     background = highlight,
