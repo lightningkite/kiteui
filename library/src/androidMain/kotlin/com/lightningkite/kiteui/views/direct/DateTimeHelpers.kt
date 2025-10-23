@@ -13,8 +13,8 @@ fun View.showDatePicker(
 ) {
     DatePickerDialog(context).apply {
         updateDate(start.year, start.monthNumber - 1, start.dayOfMonth)
-        min?.let { datePicker.minDate = it.toEpochMilliseconds() }
-        max?.let { datePicker.maxDate = it.toEpochMilliseconds() }
+        min?.let { datePicker.minDate = it.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds() }
+        max?.let { datePicker.maxDate = it.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds() }
 
         setOnDateSetListener { _, year, month, dayOfMonth ->
             val selected = LocalDate(year, month + 1, dayOfMonth)
@@ -22,10 +22,6 @@ fun View.showDatePicker(
         }
         show()
     }
-}
-
-private fun LocalDate.toEpochMilliseconds(): Long {
-    return this.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
 }
 
 fun View.showTimePicker(
