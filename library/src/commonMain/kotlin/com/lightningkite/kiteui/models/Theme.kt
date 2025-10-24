@@ -365,6 +365,10 @@ data object DialogSemantic : Semantic("dlg") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }
 
+data object PopoverSemantic : Semantic("pop") {
+    override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
 data object ImportantSemantic : Semantic("imp") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         background = theme.foreground,
@@ -836,6 +840,7 @@ class Theme(
         hover: (Theme.() -> Theme?)? = null,
         focus: (Theme.() -> Theme?)? = null,
         dialog: (Theme.() -> Theme?)? = null,
+        popover: (Theme.() -> Theme?)? = null,
         down: (Theme.() -> Theme?)? = null,
         unselected: (Theme.() -> Theme?)? = null,
         selected: (Theme.() -> Theme?)? = null,
@@ -880,6 +885,7 @@ class Theme(
             hover?.let { put(HoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             focus?.let { put(FocusSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             dialog?.let { put(DialogSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            popover?.let { put(PopoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             down?.let { put(DownSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             unselected?.let { put(UnselectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             selected?.let { put(SelectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
@@ -920,6 +926,7 @@ class Theme(
         hover: (Theme.() -> Theme?)? = null,
         focus: (Theme.() -> Theme?)? = null,
         dialog: (Theme.() -> Theme?)? = null,
+        popover: (Theme.() -> Theme?)? = null,
         down: (Theme.() -> Theme?)? = null,
         unselected: (Theme.() -> Theme?)? = null,
         selected: (Theme.() -> Theme?)? = null,
@@ -957,6 +964,7 @@ class Theme(
             hover?.let { put(HoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             focus?.let { put(FocusSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             dialog?.let { put(DialogSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
+            popover?.let { put(PopoverSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             down?.let { put(DownSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             unselected?.let { put(UnselectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
             selected?.let { put(SelectedSemantic, { t -> it(t)?.withBack ?: t.withoutBack }) }
@@ -1137,9 +1145,9 @@ fun Theme.focus() = this[FocusSemantic].theme
 
 @Deprecated(
     "Use the new theme derivation system",
-    ReplaceWith("this[DialogSemantic].theme", "com.lightningkite.kiteui.models.DialogSemantic")
+    ReplaceWith("this[PopoverSemantic].theme", "com.lightningkite.kiteui.models.PopoverSemantic")
 )
-fun Theme.dialog() = this[DialogSemantic].theme
+fun Theme.popover() = this[PopoverSemantic].theme
 
 @Deprecated(
     "Use the new theme derivation system",
