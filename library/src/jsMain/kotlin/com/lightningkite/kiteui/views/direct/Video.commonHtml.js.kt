@@ -1,20 +1,30 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.autoplay
 import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.withWrite
 import org.w3c.dom.HTMLVideoElement
 
 actual val RawVideoView.nativeTime: MutableReactive<Double>
-    get() = native.vprop(
-        eventName = "timeupdate",
-        get = { (this.element as? HTMLVideoElement)?.currentTime ?: 0.0 },
-        set = {
-            onElement { element ->
-                (this.element as HTMLVideoElement).currentTime = it
-            }
+    get() = remember {
+        rerunOn(AppState.animationFrame)
+        (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime ?: 0.0
+    }.withWrite { it ->
+        this@nativeTime.native.onElement { element ->
+            (element as HTMLVideoElement).currentTime = it
         }
-    )
+    }
+//    get() = native.vprop(
+//        eventName = "timeupdate",
+//        get = { (this.element as? HTMLVideoElement)?.currentTime ?: 0.0 },
+//        set = {
+//            onElement { element ->
+//                (this.element as HTMLVideoElement).currentTime = it
+//            }
+//        }
+//    )
 actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
