@@ -1,6 +1,7 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.models.*
+import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -581,6 +582,13 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             img.scaleType-Fit {
                 object-fit: contain;
             }
+            
+            .clickable.draggable {
+                cursor: default;
+            }
+            .draggable {
+                cursor: grab;
+            }
 
             .swapImage > img {
                 object-fit: contain;
@@ -619,8 +627,10 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
             .icon {
                 border-radius: 0px !important;
             }
-            .icon > svg {
+            .icon.icon > svg {
                 display: block;
+                max-width: 100%;
+                max-height: 100%;
             }
             
             .textarea-container {
@@ -1089,7 +1099,7 @@ class KiteUiCss(val dynamicCss: DynamicCss) {
 
     val rowCollapsingToColumnHandled = HashSet<String>()
     fun rowCollapsingToColumn(breakpoints: List<Dimension>): String {
-        val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.toString() }}"
+        val name = "rowCollapsingToColumn_${breakpoints.joinToString("_") { it.value.roughPx.roundToInt().toString() }}"
         if (rowCollapsingToColumnHandled.add(name)) {
             dynamicCss.rule(
                 """

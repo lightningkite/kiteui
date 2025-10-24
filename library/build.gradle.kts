@@ -55,8 +55,10 @@ kotlin {
 //    explicitApi = ExplicitApiMode.Warning
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.BetaInteropApi")
-        freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlinx.cinterop.BetaInteropApi")
+        optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
     sourceSets {
 
@@ -155,7 +157,7 @@ kotlin {
 
 android {
     namespace = "com.lightningkite.kiteui"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21

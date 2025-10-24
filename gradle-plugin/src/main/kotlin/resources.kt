@@ -28,6 +28,7 @@ internal sealed class Resource {
     data class Video(val name: String, val source: File, val relativeFile: File) : Resource()
     data class Audio(val name: String, val source: File, val relativeFile: File) : Resource()
     data class Binary(val name: String, val source: File, val relativeFile: File) : Resource()
+    data class ImageVector(val name: String, val source: File, val relativeFile: File) : Resource()
 }
 
 val boldnessNames = mapOf(
@@ -64,6 +65,7 @@ internal fun File.resources(): Map<String, Resource> {
             "png", "jpg", "webp" -> out[name] = Resource.Image(name, file, relativeFile)
             "mp4" -> out[name] = Resource.Video(name, file, relativeFile)
             "mp3", "ogg", "wav" -> out[name] = Resource.Audio(name, file, relativeFile)
+            "svg" -> out[name] = Resource.ImageVector(name, file, relativeFile)
             "otf", "ttf" -> {
                 val font = when (relativeFile.extension) {
                     "otf" -> OTFParser().parseEmbedded(file.inputStream())

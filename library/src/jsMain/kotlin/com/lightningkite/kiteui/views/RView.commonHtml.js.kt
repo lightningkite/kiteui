@@ -4,6 +4,7 @@ import com.lightningkite.kiteui.dom.Event
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.Rect
+import com.lightningkite.kiteui.models.px
 import kotlinx.browser.document
 import kotlinx.dom.addClass
 import kotlinx.dom.hasClass
@@ -12,6 +13,7 @@ import org.w3c.dom.*
 import org.w3c.dom.svg.SVGElement
 import kotlin.js.Json
 import kotlin.js.json
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 actual class FutureElement actual constructor() {
@@ -321,16 +323,34 @@ actual fun RView.nativeScrollIntoView(
 @Suppress("NOTHING_TO_INLINE")
 inline fun objectAssign(target: dynamic, source: dynamic) = js("Object.assign(target, source)")
 actual fun RView.nativeSetDragData(data: DragData?) {
-    native.onElement {
+    native.onElement { element ->
         if (data != null) {
-            (it as HTMLElement).ondragstart = {
-                it.stopPropagation()
-                for((type, value) in data.typeToData) {
-                    it.dataTransfer!!.setData(type, value)
+            (element as HTMLElement).ondragstart = { event ->
+                event.stopPropagation()
+                for ((type, value) in data.typeToData) {
+                    event.dataTransfer!!.setData(type, value)
+                    data.dragShadow?.let { shadow ->
+                        shadow.view.native.onElement {
+                            event.dataTransfer!!.setDragImage(
+                                it,
+                                x = when (shadow.xAlign) {
+                                    Align.Start -> 0
+                                    Align.Center, Align.Stretch -> (it.getBoundingClientRect().width / 2).roundToInt()
+                                    Align.End -> it.getBoundingClientRect().width.roundToInt()
+                                } + (shadow.xOffset?.px?.roundToInt() ?: 0),
+                                y = when (shadow.yAlign) {
+                                    Align.Start -> 0
+                                    Align.Center, Align.Stretch -> (it.getBoundingClientRect().height / 2).roundToInt()
+                                    Align.End -> it.getBoundingClientRect().height.roundToInt()
+                                } + (shadow.yOffset?.px?.roundToInt() ?: 0)
+                            )
+                        }
+                    }
                 }
             }
         } else {
-            (it as HTMLElement).ondragstart = null
+            (element as HTMLElement).ondragstart = null
+            element.ondragend = null
         }
     }
 }
@@ -378,6 +398,7 @@ actual fun RView.nativeOnDrop(listener: DropTargetDelegate?) {
             }
         } else {
             (it as HTMLElement).ondragover = null
+            it.ondragenter = null
             it.ondragleave = null
             it.ondragexit = null
             it.ondrop = null

@@ -2,13 +2,20 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.models.DragData
 import com.lightningkite.kiteui.models.DragEvent
+import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.Theme
+import com.lightningkite.kiteui.models.ThemeAndBack
+import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.div
+import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.DropTargetDelegate
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
+import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.separator
 import com.lightningkite.kiteui.views.forEachUpdating
 import com.lightningkite.reactive.context.*
@@ -25,6 +32,13 @@ class DragDropReordering(
     val mimeType: String = "application/kiteui-index",
     val reorder: suspend (Move) -> Unit
 ) {
+    object HalfGap : Semantic("halfgap") {
+        override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
+            cascading = false,
+            gap = theme.gap / 2,
+        )
+    }
+
     fun encode(index: Int) = DragData("Source Index", mimeType, index.toString())
     fun decode(data: DragData) = data[mimeType]?.toInt()
 
@@ -72,10 +86,13 @@ class DragDropReordering(
 fun <T> RView.forEachReorderable(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    separator: ViewWriter.(Reactive<T>) -> ViewModifiable = { separator() },
+    dataTransform: (DragData) -> DragData = { it },
     render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     val handler = DragDropReordering(this, reorder = reorder)
+
+    this@forEachReorderable.gap = 0.px
 
     forEachUpdating(
         remember { items().mapIndexed { idx, it -> IndexedValue(idx, it) } }
@@ -85,26 +102,28 @@ fun <T> RView.forEachReorderable(
         col {
             themeTakeNonCascadingFromParent = true
 
+            themeChoice += DragDropReordering.HalfGap
             dropTargetDelegate = handler.Delegate(idx)
-            ::dragData { handler.encode(idx()) }
 
-            separator(item).apply {
-                ::shown shown@{
+            beforeNextElementSetup {
+                ::visible shown@{
                     val move = handler.willMove() ?: return@shown false
                     val i = idx()
                     move.end == i && move.start >= i
                 }
-            }
+            } - separator(item)
 
-            render(item)
+            beforeNextElementSetup {
+                ::dragData { dataTransform(handler.encode(idx())) }
+            } - render(item)
 
-            separator(item).apply {
-                ::shown shown@{
+            beforeNextElementSetup {
+                ::visible shown@{
                     val move = handler.willMove() ?: return@shown false
                     val i = idx()
                     move.end == i && move.start < i
                 }
-            }
+            } - separator(item)
         }
     }
 }
@@ -112,12 +131,16 @@ fun <T> RView.forEachReorderable(
 class RecyclerReorderable<T, ID>(
     val wraps: RecyclerViewRendererSet<T, ID>,
     val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    val separator: ViewWriter.(Reactive<T>) -> ViewModifiable = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
     val handler = DragDropReordering(view, reorder = reorder)
 
     override fun id(item: T): ID = wraps.id(item)
+
+    init {
+        view.gap = 0.px
+    }
 
     inner class ReorderWrapper(
         val renderer: RecyclerViewRenderer<T>
@@ -126,26 +149,29 @@ class RecyclerReorderable<T, ID>(
             col {
                 themeTakeNonCascadingFromParent = true
 
-                dropTargetDelegate = handler.Delegate(index)
-                ::dragData { handler.encode(index()) }
+                themeChoice += DragDropReordering.HalfGap
 
-                separator(data).apply {
-                    ::shown shown@{
+                dropTargetDelegate = handler.Delegate(index)
+
+                beforeNextElementSetup {
+                    ::visible shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start >= i
                     }
-                }
+                } - separator(data)
 
-                renderer.render(this, data, index)
+                beforeNextElementSetup {
+                    ::dragData { handler.encode(index()) }
+                } - renderer.render(this, data, index)
 
-                separator(data).apply {
+                beforeNextElementSetup {
                     ::shown shown@{
                         val move = handler.willMove() ?: return@shown false
                         val i = index()
                         move.end == i && move.start < i
                     }
-                }
+                } - separator(data)
             }
         }
     }

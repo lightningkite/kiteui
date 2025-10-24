@@ -1,49 +1,63 @@
 package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
-actual class Video actual constructor(context: RContext) : RView(context) {
+actual class RawVideoView actual constructor(
+    context: RContext,
+    actual val source: VideoSource,
+    actual val description: String,
+    actual val scaleType: ImageScaleType,
+    actual val preloadHint: PreloadHint,
+) : RView(context) {
+    val _state = RawReactive<Unit>()
+    actual val state: Reactive<Unit> = _state
+
     init {
         native.tag = "video"
-    }
-    actual var source: VideoSource? = null
-        set(value) {
-            field = value
-            when(value) {
-                null -> native.attributes.src = ""
-                is VideoRemote -> native.attributes.src = value.url
-                is VideoRaw -> native.attributes.src = createObjectURL(value.data)
-                is VideoResource -> native.attributes.src = context.basePath + value.relativeUrl
-                is VideoLocal -> native.attributes.src = createObjectURL(value.file)
-                else -> {}
-            }
+        native.classes.add("viewDraws")
+        native.classes.add("scaleType-$scaleType")
+        // Set initial attributes
+        when (val value = source) {
+            is VideoRemote -> native.attributes.src = value.url
+            is VideoRaw -> native.attributes.src = createObjectURL(value.data)
+            is VideoResource -> native.attributes.src = context.basePath + value.relativeUrl
+            is VideoLocal -> native.attributes.src = createObjectURL(value.file)
+            else -> native.attributes.src = ""
         }
+        nativeLoad(native.attributes.src)
+        native.attributes.preload = when(preloadHint) {
+            PreloadHint.NONE -> "none"
+            PreloadHint.METADATA -> "metadata"
+            PreloadHint.ALL -> "auto"
+        }
+    }
+
     actual val time: MutableReactive<Double> = nativeTime
     actual val playing: MutableReactive<Boolean> = nativePlaying
     actual val volume: MutableReactive<Float> = nativeVolume
+    actual val sourceDuration: Reactive<Double?> = nativeDuration
+
     actual var showControls: Boolean
         get() = native.attributes.controls != null
         set(value) {
             native.attributes.controls = value
             native.attributes.playsInline = !value
         }
+
     actual var loop: Boolean
         get() = native.attributes.loopBoolean != null
         set(value) { native.attributes.loopBoolean = value }
-    actual var scaleType: ImageScaleType = ImageScaleType.Fit
-        set(value) {
-            field = value
-            native.classes.removeAll { it.startsWith("scaleType-") }
-            native.classes.add("scaleType-$value")
-        }
+
+    actual val completedPlay: Listenable = native.vevent("ended")
+    actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = nativeSeekableTimeRanges
 }
-expect val Video.nativeTime: MutableReactive<Double>
-expect val Video.nativePlaying: MutableReactive<Boolean>
-expect val Video.nativeVolume: MutableReactive<Float>
+
+expect val RawVideoView.nativeTime: MutableReactive<Double>
+expect val RawVideoView.nativePlaying: MutableReactive<Boolean>
+expect val RawVideoView.nativeVolume: MutableReactive<Float>
+expect val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
+expect val RawVideoView.nativeDuration: Reactive<Double?>
+
+expect fun RawVideoView.nativeLoad(url: String?)

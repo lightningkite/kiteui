@@ -189,7 +189,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
                             appendLine("if (it !is ${routable.name}) return@label null")
                             appendLine("val p = HashMap<String, String>()")
                             routable.queryParams.forEach {
-                                appendLine("UrlProperties.encodeToStringMap(it.${it.key}.value, \"${it.value}\", p)")
+                                appendLine("UrlProperties.encodeToStringMap(it.${it.key}.state.getOrNull(), \"${it.value}\", p)")
                             }
                             appendLine("RouteRendered(UrlLikePath(")
                             tab {

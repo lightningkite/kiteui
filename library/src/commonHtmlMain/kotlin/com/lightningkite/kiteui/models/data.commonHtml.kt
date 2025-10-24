@@ -85,10 +85,10 @@ data class FontDirect(
 actual val systemDefaultFont: Font get() = Font("'Montserrat'", "https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap", "Helvetica")
 actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
-actual sealed class ImageSource actual constructor()
+actual sealed class ImageSource actual constructor(): VisualMediaSource
 actual data class ImageResource(val relativeUrl: String) : ImageSource()
 
-actual sealed class VideoSource actual constructor()
+actual sealed class VideoSource actual constructor(): VisualMediaSource
 actual data class VideoResource(val relativeUrl: String) : VideoSource()
 
 actual sealed class AudioSource actual constructor()

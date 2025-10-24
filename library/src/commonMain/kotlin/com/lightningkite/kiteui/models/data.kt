@@ -476,7 +476,8 @@ data class Icon(
 }
 
 
-expect sealed class ImageSource()
+interface VisualMediaSource
+expect sealed class ImageSource(): VisualMediaSource
 data class ImageVector(
     val width: Dimension, val height: Dimension,
     val viewBoxMinX: Int = 0, val viewBoxMinY: Int = 0, val viewBoxWidth: Int = 24, val viewBoxHeight: Int = 24,
@@ -505,7 +506,7 @@ data class ImageRaw(val data: Blob) : ImageSource()
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
 
-expect sealed class VideoSource()
+expect sealed class VideoSource(): VisualMediaSource
 data class VideoRemote(val url: String) : VideoSource()
 data class VideoRaw(val data: Blob) : VideoSource()
 data class VideoLocal(val file: FileReference) : VideoSource()
@@ -852,3 +853,4 @@ operator fun Dimension.div(other: Int): Dimension = this / other.toFloat()
 operator fun Dimension.div(other: Double): Dimension = this / other.toFloat()
 expect fun Dimension.coerceAtMost(other: Dimension): Dimension
 expect fun Dimension.coerceAtLeast(other: Dimension): Dimension
+operator fun Dimension.unaryMinus(): Dimension = this * -1
