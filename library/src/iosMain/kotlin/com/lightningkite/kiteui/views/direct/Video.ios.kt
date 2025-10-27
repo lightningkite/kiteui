@@ -68,6 +68,7 @@ actual class RawVideoView actual constructor(
     private val _playing = Signal(false)
     private val _volume = Signal(0f)
     private val _time = Signal(0.0)
+    private val _sourceDuration = LateInitSignal<Double?>()
     private var animationFrameRateClose: (() -> Unit)? = null
     private var playerRateObservationClose: (() -> Unit)? = null
     private var volumeObservationClose: (() -> Unit)? = null
@@ -90,6 +91,8 @@ actual class RawVideoView actual constructor(
             playerStatusObservationClose?.invoke()
             playerStatusObservationClose = null
             controller.player = value
+            // Update duration whenever the player is swapped
+            updateSourceDurationFromPlayer(controller.player)
             value?.let { player ->
                 val weakPlayer = WeakReference(player)
                 playerRateObservationClose = player.observe("rate") {
@@ -122,6 +125,8 @@ actual class RawVideoView actual constructor(
                     when (p.status) {
                         AVPlayerStatusReadyToPlay -> {
                             _state.state = ReactiveState(Unit)
+                            // Duration becomes available when ready
+                            updateSourceDurationFromPlayer(p)
                         }
                         AVPlayerStatusFailed -> {
                             val message = p.error?.localizedDescription ?: "Video failed to load"
@@ -278,6 +283,11 @@ actual class RawVideoView actual constructor(
     }
 
     
+    private fun updateSourceDurationFromPlayer(p: AVPlayer?) {
+        val secs = p?.currentItem?.duration?.let { CMTimeGetSeconds(it) } ?: 0.0
+        _sourceDuration.value = if (secs.isFinite()) secs else null
+    }
+
     actual val time: MutableReactive<Double>
         get() = _time
             .withWrite {
@@ -300,6 +310,10 @@ actual class RawVideoView actual constructor(
             .withWrite {
                 controller.player?.volume = it
             }
+
+    actual val sourceDuration: Reactive<Double?>
+        get() = _sourceDuration
+
     actual var showControls: Boolean
         get() = controller.showsPlaybackControls
         set(value) {

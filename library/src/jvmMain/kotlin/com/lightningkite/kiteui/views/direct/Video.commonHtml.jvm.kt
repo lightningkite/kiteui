@@ -2,7 +2,7 @@ package com.lightningkite.kiteui.views.direct
 
 import com.lightningkite.kiteui.views.src
 import com.lightningkite.kiteui.views.autoplay
-import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.*
 
 actual val RawVideoView.nativeTime: MutableReactive<Double>
     get() = native.vprop(
@@ -32,3 +32,4 @@ actual fun RawVideoView.nativeLoad(url: String?) {
     native.attributes.src = url
 }
 actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>> get() = listOf()
+actual val RawVideoView.nativeDuration: Reactive<Double?> get() = Reactive.Never

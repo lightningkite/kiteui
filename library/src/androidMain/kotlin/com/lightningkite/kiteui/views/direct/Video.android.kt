@@ -135,6 +135,25 @@ actual class RawVideoView actual constructor(
         }
     }
 
+    actual val sourceDuration: Reactive<Double?> = object : Reactive<Double?> {
+        override val state: ReactiveState<Double?>
+            get() {
+                val d = native.player!!.duration
+                val seconds = if (d <= 0L) null else d / 1000.0
+                return ReactiveState(seconds)
+            }
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            val l = object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    listener()
+                }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
+
     actual var showControls: Boolean
         get() = native.useController
         set(value) {

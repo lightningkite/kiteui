@@ -22,6 +22,11 @@ expect class RawVideoView(
     val seekableTimeRanges: List<ClosedFloatingPointRange<Double>>
 
     val time: MutableReactive<Double>
+
+    /**
+     * The duration of the video in seconds.
+     */
+    val sourceDuration: Reactive<Double?>
     val playing: MutableReactive<Boolean>
     val volume: MutableReactive<Float>
     var showControls: Boolean
