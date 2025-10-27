@@ -138,6 +138,10 @@ kotlin {
                 api(libs.ktorClientCore)
                 api(libs.ktorClientOkhttp)
                 api(libs.ktorClientWebsockets)
+                implementation(libs.coil.compose)
+                implementation(libs.compose.webview.multiplatform)
+                implementation(libs.javafx.media)
+                implementation(libs.javafx.controls)
             }
         }
         val jsMain by getting {

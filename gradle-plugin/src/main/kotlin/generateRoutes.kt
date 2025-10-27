@@ -105,7 +105,7 @@ internal fun generateAutoroutes(sources: File, out: File) {
         ?.map { it.packageName }
         ?.reduce { a, b -> a.commonPrefixWith(b) }
         ?.removeSuffix(".")
-        ?: ""
+        ?: "com.lightningkite.mppexampleapp"
 
     out.writer().use {
         TabAppendable(it).run {

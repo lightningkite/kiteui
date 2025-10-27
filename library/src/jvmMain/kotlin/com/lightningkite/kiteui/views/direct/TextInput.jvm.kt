@@ -1,53 +1,44 @@
 package com.lightningkite.kiteui.views.direct
 
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.KeyboardHints
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.kiteui.reactive.collectAsMutableState
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RViewWithAction
 import com.lightningkite.reactive.core.MutableReactiveValue
-import com.lightningkite.reactive.core.Signal
 
 actual class TextInput actual constructor(context: RContext) :
     RViewWithAction(context) {
 
+    private val m_enabled = Signal(true)
+    actual var enabled: Boolean by m_enabled
 
-    var m_content = Signal<String>("")
-    var test = ""
-    actual var enabled: Boolean
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    actual val content: MutableReactiveValue<String>
-        get() = m_content
-    actual var keyboardHints: KeyboardHints
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    actual var hint: String
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    actual var align: Align
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    actual val content: MutableReactiveValue<String> = Signal("")
+    private val m_keyboardHints = Signal(KeyboardHints())
+    actual var keyboardHints: KeyboardHints by m_keyboardHints
+
+    private val m_hint = Signal("")
+    actual var hint: String by m_hint
+
+    private val m_align = Signal(Align.Start)
+    actual var align: Align by m_align
 
     @Composable
     override fun compose() {
-        var test by remember {
-            mutableStateOf("test")
-        }
+        val value = content.collectAsMutableState()
+        val hint = m_hint.collectAsMutableState()
+        val enabled = m_enabled.collectAsMutableState()
         TextField(
-            test,
-            {
-                println("it ${it}")
-                test = it
-                m_content.value = it
-                println("DEBUG test ${test}")
-            }
+            value = value.value,
+            onValueChange = {
+                value.value = it
+            },
+            label = { Text(hint.value) },
+            enabled = enabled.value
         )
     }
 }

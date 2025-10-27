@@ -92,6 +92,7 @@ actual fun DrawingContext2D.drawText(text: String, x: Double, y: Double):Unit = 
 actual fun DrawingContext2D.drawOutlinedText(text: String, x: Double, y: Double):Unit = TODO()
 actual fun DrawingContext2D.font(size: Double, value: FontAndStyle):Unit = TODO()
 actual fun DrawingContext2D.textAlign(alignment: TextAlign):Unit = TODO()
+actual fun DrawingContext2D.clear():Unit = TODO()
 actual fun DrawingContext2D.fill(): Unit = TODO()
 actual fun DrawingContext2D.fillEvenOdd(): Unit = TODO()
 actual var DrawingContext2D.strokePaint: Paint

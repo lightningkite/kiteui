@@ -23,6 +23,7 @@ import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewWriter
+import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.CalculationContext
 import com.lightningkite.reactive.core.AppScope
 import kotlinx.coroutines.CoroutineScope
@@ -81,7 +82,13 @@ fun main() {
             // Render the root view if it exists
 
             with(viewWriter) {
-                app(mainNavigator, dialogNavigator)
+                frame {
+                    col {
+                        text("A")
+                        text("B")
+                        text("C")
+                    }
+                }
                 rootView?.compose()
             }
         }

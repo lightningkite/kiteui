@@ -15,7 +15,6 @@ import com.lightningkite.reactive.lensing.lens
 import kotlin.coroutines.CoroutineContext
 
 
-@Deprecated("Use VideoView instead") typealias Video = VideoView
 
 class VideoView(viewWriter: ViewWriter) : ViewModifiable {
     override val rView: Frame = with(viewWriter) { frame { } }

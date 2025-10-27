@@ -1,13 +1,12 @@
 package com.lightningkite.kiteui.views
 
-actual class RContext : RContextHelper() {
-    actual fun split(): RContext {
-        TODO("Not yet implemented")
-    }
+import kotlin.random.Random
 
-    actual override val darkMode: Boolean?
-        get() = TODO("Not yet implemented")
-    actual var immersiveMode: Boolean
-        get() = TODO("Not yet implemented")
-        set(value) {}
+actual class RContext(
+) : RContextHelper() {
+    val id = Random.nextInt()
+    actual fun split(): RContext = RContext().apply { addons.putAll(this@RContext.addons) }
+    actual override val darkMode: Boolean? get() = null
+    override fun toString(): String = "RContext@$id"
+    actual var immersiveMode: Boolean = false
 }

@@ -12,6 +12,7 @@ buildscript {
         google()
         mavenCentral()
         maven("https://jitpack.io")
+        maven("https://jogamp.org/deployment/maven")
     }
     dependencies {
         classpath(libs.lkGradleHelpers)
@@ -26,6 +27,7 @@ allprojects {
         maven("https://jitpack.io")
         google()
         mavenCentral()
+        maven("https://jogamp.org/deployment/maven")
     }
 }
 plugins {
