@@ -8,14 +8,13 @@ import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.datetime.*
+import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
+import platform.Foundation.NSDateComponents
+import platform.Foundation.NSTimeZone
+import platform.Foundation.localTimeZone
 import platform.UIKit.*
-
 
 
 actual class LocalDateField actual constructor(context: RContext) : RViewWithAction(context) {
@@ -25,8 +24,25 @@ actual class LocalDateField actual constructor(context: RContext) : RViewWithAct
 
     private val _content = Signal<LocalDate?>(null)
     actual val content: MutableReactiveValue<LocalDate?> get() = _content
-    // TODO
+
     actual var range: ClosedRange<LocalDate>? = null
+        set(value) {
+            field = value
+            val picker = textField.inputView as? UIDatePicker ?: return
+            value?.let { range ->
+                val current = _content.value ?: range.start
+                val clamped = when {
+                    current < range.start -> range.start
+                    current > range.endInclusive -> range.endInclusive
+                    else -> current
+                }
+                _content.value = clamped
+                picker.date = clamped.toNSDate()
+            }
+
+            picker.minimumDate = range?.start?.toNSDate()
+            picker.maximumDate = range?.endInclusive?.toNSDate()
+        }
 
     init {
         // TODO: need a way to CLEAR the field.
@@ -92,8 +108,25 @@ actual class LocalTimeField actual constructor(context: RContext) : RViewWithAct
         super.actionSet(value)
         textField.action = value
     }
-    // TODO
+
     actual var range: ClosedRange<LocalTime>? = null
+        set(value) {
+            field = value
+            val picker = textField.inputView as? UIDatePicker ?: return
+
+            picker.minimumDate = value?.start?.toNSDate()
+            picker.maximumDate = value?.endInclusive?.toNSDate()
+
+            _content.value?.let { time ->
+                if (value != null && time !in value) {
+                    _content.value = value.start
+                    picker.date = value.start.toNSDate()
+                }
+            }
+        }
+
+
+
 
     init {
         textField.inputView = UIDatePicker().apply {
@@ -158,8 +191,22 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         super.actionSet(value)
         textField.action = value
     }
-    // TODO
     actual var range: ClosedRange<LocalDateTime>? = null
+        set(value) {
+            field = value
+            val picker = textField.inputView as? UIDatePicker ?: return
+
+            picker.minimumDate = value?.start?.toNSDate()
+            picker.maximumDate = value?.endInclusive?.toNSDate()
+
+            _content.value?.let { dateTime ->
+                if (value != null && dateTime !in value) {
+                    _content.value = value.start
+                    picker.date = value.start.toNSDateComponents().date()!!
+                }
+            }
+        }
+
 
     init {
         textField.inputView = UIDatePicker().apply {
@@ -211,4 +258,44 @@ actual class LocalDateTimeField actual constructor(context: RContext) : RViewWit
         if(textField.focused) t = t[FocusSemantic]
         return super.applyState(t)
     }
+}
+
+
+//NSDateComponents().date() depends on the calendar property being set.
+//If you don’t specify one (like NSCalendar.currentCalendar()), then date() can return null — because the system doesn’t know which calendar/timezone to use to interpret the components.
+private fun NSDateComponents.toNSDate(): NSDate {
+    val calendar = NSCalendar.currentCalendar
+    calendar.timeZone = NSTimeZone.localTimeZone
+    return calendar.dateFromComponents(this) ?: NSDate()
+}
+
+private fun LocalDate.toNSDate(): NSDate {
+    return NSDateComponents().apply {
+        year = this@toNSDate.year.toLong()
+        month = this@toNSDate.monthNumber.toLong()
+        day = this@toNSDate.dayOfMonth.toLong()
+    }.toNSDate()
+}
+
+private fun LocalTime.toNSDate(): NSDate {
+    val referenceDate =  LocalDate(1970, 1, 1)
+    return NSDateComponents().apply {
+        year = referenceDate.year.toLong()
+        month = referenceDate.monthNumber.toLong()
+        day = referenceDate.dayOfMonth.toLong()
+        hour = this@toNSDate.hour.toLong()
+        minute = this@toNSDate.minute.toLong()
+        second = this@toNSDate.second.toLong()
+    }.toNSDate()
+}
+
+private fun LocalDateTime.toNSDate(): NSDate {
+    return NSDateComponents().apply {
+        year = this@toNSDate.year.toLong()
+        month = this@toNSDate.monthNumber.toLong()
+        day = this@toNSDate.dayOfMonth.toLong()
+        hour = this@toNSDate.hour.toLong()
+        minute = this@toNSDate.minute.toLong()
+        second = this@toNSDate.second.toLong()
+    }.toNSDate()
 }
