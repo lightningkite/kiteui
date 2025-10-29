@@ -2,7 +2,8 @@ package com.lightningkite.kiteui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.Activity
+import android.app.DownloadManager
 import android.content.*
 import android.net.Uri
 import android.os.Build.VERSION
@@ -11,15 +12,13 @@ import android.os.Environment
 import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
-import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.lightningkite.kiteui.views.AndroidAppContext
 import com.lightningkite.kiteui.views.RContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -27,49 +26,81 @@ import java.io.File
 import kotlin.coroutines.resume
 
 actual fun RContext.openTab(url: String) {
-    AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    AndroidAppContext.activityCtx?.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
 }
 
 actual suspend fun RContext.requestFile(
     mimeTypes: List<String>,
-) = requestFiles(mimeTypes, false).firstOrNull()
+) = suspendCancellableCoroutine { cont ->
+
+    if (mimeTypes.any { !it.startsWith("image/") || !it.startsWith("video/") }) {
+        val od = ActivityResultContracts.OpenDocument()
+
+        this@requestFile.activity.startActivityForResult(
+            od.createIntent(this@requestFile.activity, mimeTypes.toTypedArray())
+        ) { code, result ->
+            cont.resume(od.parseResult(code, result)?.let(::FileReference))
+        }
+    } else {
+
+        val pvm = ActivityResultContracts.PickVisualMedia()
+        val request = when {
+            mimeTypes.size == 1 -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.SingleMimeType(mimeTypes.first()))
+            mimeTypes.all { it.startsWith("image/") } -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+
+            mimeTypes.all { it.startsWith("video/") } -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+
+            else -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+        }
+        this@requestFile.activity.startActivityForResult(
+            pvm.createIntent(this@requestFile.activity, request)
+        ) { code, result ->
+            cont.resume(pvm.parseResult(code, result)?.let(::FileReference))
+        }
+    }
+}
 
 actual suspend fun RContext.requestFiles(
     mimeTypes: List<String>,
-) = requestFiles(mimeTypes, true)
+) = suspendCancellableCoroutine { cont ->
 
-suspend fun RContext.requestFiles(
-    mimeTypes: List<String>,
-    allowMultiple: Boolean = true
-): List<FileReference> = suspendCancellableCoroutine {
+    if (mimeTypes.any { !it.startsWith("image/") || !it.startsWith("video/") }) {
+        val od = ActivityResultContracts.OpenDocument()
 
-    val type = mimeTypes.joinToString(",")
+        this@requestFiles.activity.startActivityForResult(
+            od.createIntent(this@requestFiles.activity, mimeTypes.toTypedArray())
+        ) { code, result ->
+            val uri = od.parseResult(code, result) ?: run {
+                cont.resume(emptyList())
+                return@startActivityForResult
+            }
+            cont.resume(listOf(FileReference(uri)))
+        }
+    } else {
 
-    val getIntent = Intent(Intent.ACTION_GET_CONTENT)
-    getIntent.type = type
-    getIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+        val pvm = ActivityResultContracts.PickMultipleVisualMedia()
+        val request = when {
+            mimeTypes.size == 1 -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.SingleMimeType(mimeTypes.first()))
+            mimeTypes.all { it.startsWith("image/") } -> {
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            }
 
-    val chooserIntent = Intent.createChooser(getIntent, "Select items")
+            mimeTypes.all { it.startsWith("video/") } -> {
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+            }
 
-    AndroidAppContext.startActivityForResult(chooserIntent) { code, data ->
-        if (code == Activity.RESULT_OK) {
-            it.resume(
-                data?.clipData?.let {
-                    (0 until it.itemCount).map { index ->
-                        it.getItemAt(index).uri.let(::FileReference)
-                    }
-                }
-                    ?: data?.data?.let(::FileReference)?.let(::listOf)
-                    ?: listOf()
-            )
-        } else {
-            it.resume(listOf())
+            else -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+        }
+        this@requestFiles.activity.startActivityForResult(
+            pvm.createIntent(this@requestFiles.activity, request)
+        ) { code, result ->
+            cont.resume(pvm.parseResult(code, result).map(::FileReference))
         }
     }
 }
 
 actual suspend fun RContext.requestCaptureSelf(
-    mimeTypes: List<String>
+    mimeTypes: List<String>,
 ): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
         true,
@@ -83,7 +114,7 @@ actual suspend fun RContext.requestCaptureSelf(
 }
 
 actual suspend fun RContext.requestCaptureEnvironment(
-    mimeTypes: List<String>
+    mimeTypes: List<String>,
 ): FileReference? {
     return if (mimeTypes.all { it.startsWith("image/") }) requestImageCamera(
         false,
@@ -146,7 +177,7 @@ actual suspend fun RContext.download(
     name: String,
     url: String,
     preferredDestination: DownloadLocation,
-    onDownloadProgress: ((progress: Float) -> Unit)?
+    onDownloadProgress: ((progress: Float) -> Unit)?,
 ) {
     // TODO: Implement photo library storage for both overloads of download
     // TODO: Add progress update callbacks
@@ -163,7 +194,7 @@ actual suspend fun RContext.download(
 }
 
 private fun downloadContinued(name: String, url: String) {
-    val request = DownloadManager.Request(Uri.parse(url)) // 5.
+    val request = DownloadManager.Request(url.toUri()) // 5.
         .setNotificationVisibility( // 6.
             DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
         )
@@ -275,7 +306,7 @@ actual fun RContext.openEvent(
     location: String,
     start: LocalDateTime,
     end: LocalDateTime,
-    zone: TimeZone
+    zone: TimeZone,
 ) {
     AndroidAppContext.startActivityForResult(
         intent = Intent(Intent.ACTION_INSERT).apply {
