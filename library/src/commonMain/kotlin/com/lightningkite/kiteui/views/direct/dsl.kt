@@ -60,6 +60,12 @@ inline fun ViewWriter.checkbox(setup: Checkbox.() -> Unit = {}): Checkbox {
 }
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
+inline fun ViewWriter.colorPicker(setup: ColorPicker.() -> Unit = {}): ColorPicker {
+    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
+    return write(ColorPicker(context) , setup)
+}
+@OptIn(ExperimentalContracts::class)
+@ViewDsl
 inline fun ViewWriter.dismissBackground(setup: DismissBackground.() -> Unit = {}): DismissBackground {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     return write(DismissBackground(context) , setup)

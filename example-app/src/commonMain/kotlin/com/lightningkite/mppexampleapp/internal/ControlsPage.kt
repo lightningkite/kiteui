@@ -350,6 +350,25 @@ object ControlsPage : Page {
             } in card
 
             col {
+                h2 { content = "Color Pickers" }
+                val selectedColor = Signal(Color.blue)
+                col {
+                    frame {
+                        row {
+                            h3 { content = "Pick a Color" } in weight(1f)
+                            colorPicker { color bind selectedColor }
+                        }
+                    } in padded
+                    text {
+                        ::content {
+                            val c = selectedColor()
+                            "R: ${(c.red * 255).toInt()}, G: ${(c.green * 255).toInt()}, B: ${(c.blue * 255).toInt()}"
+                        }
+                    }
+                }
+            } in card
+
+            col {
                 h2 { content = "Activity Indicators" }
                 row {
                     space {} in weight(1f)
