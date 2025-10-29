@@ -18,7 +18,7 @@ fun ViewWriter.navGroupColumn(
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
 ): ViewModifiable {
-    return nav - col {
+    return col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
@@ -35,6 +35,7 @@ private fun RView.selectedIfRouteMatches(it: NavLink) {
 }
 
 private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNavigate: suspend () -> Unit = {}) {
+    themeChoice += ListSemantic
     forEach(readable) {
         fun ViewWriter.display(navElement: NavElement) {
             row {
@@ -130,16 +131,17 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
             }
         }
     }
+    themeChoice += ListSemantic
     forEach(readable) {
         when (it) {
-            is NavAction -> unpadded - button {
+            is NavAction -> button {
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
                 navElementIconAndCount(it)
                 onClick { it.onSelect() }
             }
 
-            is NavExternal -> unpadded - externalLink {
+            is NavExternal -> externalLink {
                 shown = false
                 ::shown { it.hidden?.invoke() != true }
                 ::to { it.to() }
@@ -158,7 +160,7 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
                 it.square(this@forEach)
             }
 
-            is NavLink -> unpadded - link {
+            is NavLink -> link {
                 selectedIfRouteMatches(it)
                 resetsStack = true
                 shown = false
@@ -178,6 +180,7 @@ fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: Containi
 }
 
 private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
+    themeChoice += ListSemantic
     forEach(readable) {
         when (it) {
             is NavAction -> button {
@@ -263,7 +266,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
 }
 
 fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
-    return nav - unpadded - row {
+    return row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
             compact - col {
@@ -271,6 +274,7 @@ fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: Contain
                 centered - subtext { ::content { navElement.title() } }
             }
         }
+        themeChoice += ListSemantic
         forEach(readable) {
             when (it) {
                 is NavAction -> expanding - button {

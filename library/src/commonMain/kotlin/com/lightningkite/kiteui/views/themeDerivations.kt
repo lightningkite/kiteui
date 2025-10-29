@@ -146,7 +146,7 @@ val ViewWriter.underline: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(gap = it.gap * multiplier).withoutBack }.onNext
+fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(id = "withgap${multiplier.toString().replace('.', '_')}", gap = it.gap * multiplier).withoutBack }.onNext
 
 
 fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {

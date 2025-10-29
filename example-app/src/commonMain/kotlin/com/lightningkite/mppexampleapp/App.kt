@@ -21,8 +21,6 @@ import kotlin.time.Duration.Companion.seconds
 
 val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
     "defaulter",
-    transitionDuration = 1.seconds,
-//    transitionDuration = 150.milliseconds,
     bodyTransitions = ScreenTransitions.HorizontalSlide,
     derivations = mapOf(
         EmphasizedSemantic to {

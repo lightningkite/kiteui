@@ -230,6 +230,7 @@ object VectorsTestPage : Page {
             row {
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "grad0",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),
@@ -240,6 +241,7 @@ object VectorsTestPage : Page {
                 } - frame { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "grad1",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),
@@ -250,6 +252,7 @@ object VectorsTestPage : Page {
                 } - frame { space() }
                 sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
                     it.copy(
+                        id = "grad2",
                         background = LinearGradient(
                             listOf(
                                 GradientStop(0f, Color.blue),
@@ -264,6 +267,7 @@ object VectorsTestPage : Page {
                 sizeConstraints(width = size.rem, height = size.rem) - frame {
                     themeChoice += ThemeDerivation {
                         it.copy(
+                            id = "red$size",
                             background = Color.red,
                             cornerRadii = CornerRadii.ForceConstant(2.rem)
                         ).withBack
@@ -271,6 +275,7 @@ object VectorsTestPage : Page {
                     image {
                         themeChoice += ThemeDerivation {
                             it.copy(
+                                id = "radial$size",
                                 background = RadialGradient(
                                     stops = listOfNotNull(
                                         GradientStop(0f, Color.blue),

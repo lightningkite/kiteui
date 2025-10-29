@@ -76,7 +76,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Signal(initialIndex)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        themeFromLast { it.copy(background = Color.black, foreground = Color.white) } - frame {
+        themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) } - frame {
             val rv: ViewPager
             viewPager {
                 rv = this

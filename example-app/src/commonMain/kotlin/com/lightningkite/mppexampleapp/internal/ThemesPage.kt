@@ -83,7 +83,7 @@ object ThemesPage : Page {
                                 saturation = 0.15f,
                                 accentHue = a + Angle.halfTurn,
                                 baseBrightness = 0.8f
-                            ).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
                                 .randomTitleFontSettings()
                         }
                     }
@@ -96,7 +96,7 @@ object ThemesPage : Page {
                                 hue = a,
                                 saturation = 0.5f,
                                 accentHue = a + Angle.halfTurn
-                            ).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
                                 .randomTitleFontSettings()
                         }
                     }
@@ -110,7 +110,7 @@ object ThemesPage : Page {
                                 saturation = 0.15f,
                                 accentHue = a + Angle.halfTurn,
                                 baseBrightness = 0.8f
-                            ).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
                                 .randomTitleFontSettings()
                         }
                     }
@@ -123,7 +123,7 @@ object ThemesPage : Page {
                                 hue = a,
                                 saturation = 0.5f,
                                 accentHue = a + Angle.halfTurn
-                            ).copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
                                 .randomTitleFontSettings()
                         }
                     }
