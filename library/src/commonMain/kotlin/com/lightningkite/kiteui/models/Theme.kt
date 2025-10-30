@@ -70,8 +70,6 @@ interface ThemeDerivation {
     }
 }
 
-val __defaultBuilder = ThemeBuilder()
-
 abstract class Semantic(val key: String) : ThemeDerivation {
     open fun default(theme: Theme): ThemeAndBack = theme.withoutBack
     override fun invoke(theme: Theme): ThemeAndBack = theme[this]
@@ -248,6 +246,10 @@ data object InsetSemantic : Semantic("inset") {
 
 data object CardSemantic : Semantic("crd") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
+}
+
+data object GroupSemantic : Semantic("grp") {
+    override fun default(theme: Theme): ThemeAndBack = theme[CardSemantic]
 }
 
 data object DismissSemantic : Semantic("dsmss") {
@@ -477,111 +479,6 @@ val H4Semantic = HeaderSizeSemantic(4)
 val H5Semantic = HeaderSizeSemantic(5)
 val H6Semantic = HeaderSizeSemantic(6)
 
-class ThemeBuilder {
-    private var inUse = false
-    fun __reset(base: Theme, background: Boolean, padding: Boolean, id: String? = null) {
-        if (inUse) throw Exception()
-        inUse = true
-        this.base = base
-        derivationId = ""
-        this.id = id?.let { base.id + "-" + it } ?: base.id
-        font = base.font
-        elevation = base.elevation
-        cornerRadii = base.cornerRadii
-        gap = base.gap
-        this.padding = base.padding
-        foreground = base.foreground
-        iconOverride = base.iconOverride
-        outline = base.outline
-        outlineWidth = base.outlineWidth
-        this.background = base.background
-        bodyTransitions = base.bodyTransitions
-        dialogTransitions = base.dialogTransitions
-        transitionDuration = base.transitionDuration
-        derivedFrom = base
-        paddingOnImmediateElement = padding
-        drawBackgroundOnImmediateElement = background
-    }
-
-    var base: Theme = Theme.placeholder
-    var derivationId: String = ""
-
-    var id: String = base.id
-
-    var font: FontAndStyle = base.font
-
-    var elevation: Dimension = base.elevation
-    var cornerRadii: CornerRadii = base.cornerRadii
-
-    var gap: Dimension = base.gap
-    var padding: Edges = base.padding
-
-    var foreground: Paint = base.foreground
-    var iconOverride: Paint? = base.iconOverride
-    var outline: Paint = base.outline
-    var outlineWidth: Dimension = base.outlineWidth
-    var background: Paint = base.background
-
-    var bodyTransitions: ScreenTransitions = base.bodyTransitions
-    var dialogTransitions: ScreenTransitions = base.dialogTransitions
-    var transitionDuration: Duration = base.transitionDuration
-
-    var derivedFrom: Theme? = base
-    var revert: Theme? = null
-
-    private var immediateBuilder: (ThemeBuilder.() -> Unit)? = null
-    fun justThisElement(setup: ThemeBuilder.() -> Unit) {
-        val old = immediateBuilder
-        immediateBuilder = {
-            old?.invoke(this)
-            setup(this)
-        }
-    }
-
-    fun nonCascading(setup: ThemeBuilder.() -> Unit) = justThisElement(setup)
-
-    private var _derivations: MutableMap<Semantic, Semantic.(theme: Theme) -> ThemeAndBack>? = null
-    val derivations by lazy {
-        base.derivations.toMutableMap().also { _derivations = it }
-    }
-
-    var drawBackgroundOnImmediateElement: Boolean = true
-    var paddingOnImmediateElement: Boolean = true
-
-    internal fun build(): Theme {
-        inUse = false
-        val cascading = Theme(
-            id = id,
-            font = font,
-            elevation = elevation,
-            cornerRadii = cornerRadii,
-            gap = gap,
-            padding = padding,
-            foreground = foreground,
-            iconOverride = iconOverride,
-            outline = outline,
-            outlineWidth = outlineWidth,
-            background = background,
-            bodyTransitions = bodyTransitions,
-            dialogTransitions = dialogTransitions,
-            transitionDuration = transitionDuration,
-            derivedFrom = derivedFrom,
-            derivationId = derivationId,
-            revert = revert,
-            derivations = _derivations ?: base.derivations,
-        )
-        return immediateBuilder?.let {
-            __reset(cascading, false, false, id = "immediate")
-            this.revert = cascading
-            build()
-        } ?: cascading
-    }
-
-    fun __buildAndSelect(): ThemeAndBack {
-        return build().with(drawBackgroundOnImmediateElement, paddingOnImmediateElement)
-    }
-}
-
 data class Transformation(
     val translationX: Double = 0.0,
     val translationY: Double = 0.0,
@@ -655,12 +552,6 @@ class Theme(
     override fun hashCode(): Int = id.hashCode()
     override fun equals(other: Any?): Boolean {
         return other is Theme && this.id == other.id
-    }
-
-    inline fun alter(crossinline alterations: ThemeBuilder.() -> Unit): ThemeAndBack {
-        __defaultBuilder.__reset(this, true, true)
-        alterations(__defaultBuilder)
-        return __defaultBuilder.__buildAndSelect()
     }
 
     fun customize(
@@ -744,7 +635,7 @@ class Theme(
         dialogTransitions = dialogTransitions ?: this.dialogTransitions,
         transitionDuration = transitionDuration ?: this.transitionDuration,
         derivations = this.derivations + derivations,
-        revert = if (!cascading) this else this.revert?.copy(
+        revert = if (!cascading) (this.revert ?: this) else this.revert?.copy(
             id = id,
             cascading = cascading,
             font = font,
@@ -1103,121 +994,12 @@ class Theme(
                     ).toRGB(),
                 ).randomElevationAndCorners().randomTitleFontSettings(),
                 Theme.flat(id = id, hue = hue, saturation = 0.15f, baseBrightness = 0.8f)
-                    .copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                    .copy(id = id, cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
                 Theme.flat(id = id, hue = hue, saturation = 0.5f)
-                    .copy(cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
+                    .copy(id = id, cornerRadii = CornerRadii.Constant(Random.nextDouble().rem)).randomTitleFontSettings(),
             ).random(random)
         }
     }
 
     override fun toString(): String = id
 }
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[CardSemantic].theme", "com.lightningkite.kiteui.models.CardSemantic")
-)
-fun Theme.card() = this[CardSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[FieldSemantic].theme", "com.lightningkite.kiteui.models.FieldSemantic")
-)
-fun Theme.field() = this[FieldSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[ButtonSemantic].theme", "com.lightningkite.kiteui.models.ButtonSemantic")
-)
-fun Theme.button() = this[ButtonSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[HoverSemantic].theme", "com.lightningkite.kiteui.models.HoverSemantic")
-)
-fun Theme.hover() = this[HoverSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[FocusSemantic].theme", "com.lightningkite.kiteui.models.FocusSemantic")
-)
-fun Theme.focus() = this[FocusSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[PopoverSemantic].theme", "com.lightningkite.kiteui.models.PopoverSemantic")
-)
-fun Theme.popover() = this[PopoverSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[DownSemantic].theme", "com.lightningkite.kiteui.models.DownSemantic")
-)
-fun Theme.down() = this[DownSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[UnselectedSemantic].theme", "com.lightningkite.kiteui.models.UnselectedSemantic")
-)
-fun Theme.unselected() = this[UnselectedSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[SelectedSemantic].theme", "com.lightningkite.kiteui.models.SelectedSemantic")
-)
-fun Theme.selected() = this[SelectedSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[DisabledSemantic].theme", "com.lightningkite.kiteui.models.DisabledSemantic")
-)
-fun Theme.disabled() = this[DisabledSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[MainContentSemantic].theme", "com.lightningkite.kiteui.models.MainContentSemantic")
-)
-fun Theme.mainContent() = this[MainContentSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[BarSemantic].theme", "com.lightningkite.kiteui.models.BarSemantic")
-)
-fun Theme.bar() = this[BarSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[NavSemantic].theme", "com.lightningkite.kiteui.models.NavSemantic")
-)
-fun Theme.nav() = this[NavSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[ImportantSemantic].theme", "com.lightningkite.kiteui.models.ImportantSemantic")
-)
-fun Theme.important() = this[ImportantSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[CriticalSemantic].theme", "com.lightningkite.kiteui.models.CriticalSemantic")
-)
-fun Theme.critical() = this[CriticalSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[WarningSemantic].theme", "com.lightningkite.kiteui.models.WarningSemantic")
-)
-fun Theme.warning() = this[WarningSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[DangerSemantic].theme", "com.lightningkite.kiteui.models.DangerSemantic")
-)
-fun Theme.danger() = this[DangerSemantic].theme
-
-@Deprecated(
-    "Use the new theme derivation system",
-    ReplaceWith("this[AffirmativeSemantic].theme", "com.lightningkite.kiteui.models.AffirmativeSemantic")
-)
-fun Theme.affirmative() = this[AffirmativeSemantic].theme
-

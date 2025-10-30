@@ -55,8 +55,8 @@ object TextElementPage : DocPage {
                 """.trimIndent()
             ) {
                 col {
-                    tweakTheme { it.copy(body = it.font.copy(bold = true)) } - text("Bold Text")
-                    tweakTheme { it.copy(foreground = Color.red) } - text("Red Text")
+                    tweakTheme { it.copy(id = "bold", font = it.font.copy(bold = true)) } - text("Bold Text")
+                    tweakTheme { it.copy(id = "red", foreground = Color.red) } - text("Red Text")
                 }
             }
             text("Common style tweaks are available via some shortcuts.")
@@ -91,7 +91,7 @@ object TextElementPage : DocPage {
             ) {
                 col {
                     for(weight in 900 downTo 100 step 100) {
-                        tweakTheme { it.copy(font = it.font.copy(weight = weight)) } - text("Weight $weight")
+                        tweakTheme { it.copy(id = "weight$weight", font = it.font.copy(weight = weight)) } - text("Weight $weight")
                     }
                 }
             }

@@ -68,28 +68,6 @@ class HomePage : Page {
         return article {
             centered - h1("KiteUI - Beautiful by Default")
             separator()
-            sizeConstraints(height = 15.rem) - media {
-                showControls = false
-                loop = true
-                reactive {
-                    (currentRawMediaView() as? RawVideoView)
-                        ?.playing?.let { launch { it set true } }
-                }
-                val srcs = listOf(
-                    Resources.videoFront,
-                    Resources.videoBack,
-                    Resources.imagesSnowyBackground,
-                    Resources.imagesLightningBackground,
-                )
-                launch {
-                    var i = 0
-                    while (true) {
-                        source = srcs[i++ % srcs.size]
-                        delay(5.seconds)
-                    }
-                }
-            }
-            separator()
             text("In KiteUI, styling is beautiful without effort.  No styling or manual CSS is required to get beautiful layouts.  Just how it should be.")
             space()
             centered - h2("Goals")

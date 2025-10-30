@@ -145,8 +145,10 @@ actual class FloatingInfoHolder actual constructor(val source: RView) {
                         }
                             .firstOrNull {
                                 val proposed = it.bounds()
-                                proposed.left >= screen.left && proposed.right <= screen.right &&
-                                    proposed.top >= screen.top && proposed.bottom <= screen.bottom
+                                val epsilon =
+                                    0.01 // Fix precision mismatch i.e. screen.right is 1231 but proposed is 1231.0000457763672
+                                (proposed.left >= screen.left - epsilon) && (proposed.right <= screen.right + epsilon) &&
+                                        (proposed.top >= screen.top - epsilon) && (proposed.bottom <= screen.bottom + epsilon)
                             }
 
                         if(currentDirection == null) {

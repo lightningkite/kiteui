@@ -61,4 +61,6 @@ actual class RContext(val controller: UIViewController, val parent: RContext? = 
             controller.presentViewController(vc, animated = true, completion = null)
         }
     }
+
+    actual companion object {}
 }
