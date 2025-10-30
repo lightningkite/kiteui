@@ -145,7 +145,7 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
 inline fun ViewWriter.label(label: String, content: RowOrCol.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return col {
-        FieldLabelSemantic.onNext - text(label)
+        FieldLabelSemantic.onNext.text(label)
         spacingOverrideBeforeNext(0.px)
         content()
     }
@@ -425,13 +425,13 @@ inline fun ViewWriter.viewPager(setup: Recycler2.() -> Unit = {}): Recycler2 {
 
         with(outerFrame) {
             if(!Platform.usesTouchscreen) {
-                align(Align.Start, Align.Center) - frame {
+                align(Align.Start, Align.Center).frame {
                     button {
                         icon(Icon.chevronLeft, "Previous")
                         onClick { centerIndex set centerIndex() - 1 }
                     }
                 }
-                align(Align.End, Align.Center) - frame {
+                align(Align.End, Align.Center).frame {
                     button {
                         icon(Icon.chevronRight, "Next")
                         onClick { centerIndex set centerIndex() + 1 }

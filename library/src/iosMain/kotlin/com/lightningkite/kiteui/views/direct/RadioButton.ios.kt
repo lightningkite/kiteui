@@ -42,7 +42,7 @@ actual class RadioButton actual constructor(context: RContext) : RView(context) 
                 cornerRadii = CornerRadii.RatioOfSize(0.5f),
             ).withBack
         }
-        centered - icon(Icon.dot.copy(width = 1.rem, height = 1.rem), "") {
+        centered.icon(Icon.dot.copy(width = 1.rem, height = 1.rem), "") {
             ::visible.invoke { checked() }
         }
         onRemove(button.setOnClick {

@@ -33,7 +33,7 @@ import kotlin.math.min
 
 @ViewModifierDsl3 val ViewWriter.expanding get() = weight(1f)
 
-@ViewModifierDsl3 fun ViewWriter.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(maxWidth = width))
+@ViewModifierDsl3 fun ViewWriter.maxWidthCentered(width: Dimension) = align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(maxWidth = width))
 @ViewModifierDsl3 fun ViewWriter.maxHeight(height: Dimension) = sizedBox(SizeConstraints(maxHeight = height))
 
 @ViewDsl
@@ -120,7 +120,7 @@ fun <T> RView.forEachUpdating(
 fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
-    preHidingModifiers: ViewWriter.(ID)-> ViewWrapper = { ViewWrapper },
+    preHidingModifiers: ViewWriter.(ID)-> ViewWriter = { this },
     render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
@@ -182,7 +182,7 @@ fun <T, ID> RowOrCol.forEachById(
                         this@forEachById.willAddChild(view)
                     }
                 }
-                val view = with(indexWriter) { preHidingModifiers(id(toRender)) - shownWhen { shown() } - render(data) }
+                val view = with(indexWriter) { preHidingModifiers(id(toRender)).shownWhen { shown() }.render(data) }
                 old.add(oldPos, OldViewInfo(
                     oldIndex = index,
                     oldId = id(toRender),
@@ -199,7 +199,7 @@ fun <T, ID> RowOrCol.forEachById(
 }
 fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
-    preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { ViewWrapper },
+    preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { this },
     render: ViewWriter.(T) -> ViewModifiable
 ) {
     val oldEarly = ArrayList<Any>()
@@ -256,7 +256,7 @@ fun <T> RowOrCol.forEachAnimated(
                         this@forEachAnimated.willAddChild(view)
                     }
                 }
-                val view = with(indexWriter) { preHidingModifiers(toRender) - shownWhen { shown() } - render(toRender) }
+                val view = with(indexWriter) { preHidingModifiers(toRender).shownWhen { shown() }.render(toRender) }
                 old.add(oldPos, OldViewInfo(
                     oldIndex = index,
                     data = toRender,

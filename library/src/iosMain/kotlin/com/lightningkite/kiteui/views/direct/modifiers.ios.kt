@@ -42,7 +42,7 @@ actual fun ViewWriter.hintPopover(
         val rec = UILongPressGestureRecognizer(actionHolder, sel_registerName("eventHandler"))
         native.addGestureRecognizer(rec)
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 
@@ -58,7 +58,7 @@ actual fun ViewWriter.hasPopover(
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
-                        centered - frame {
+                        centered.frame {
                             with(split()) {
                                 pageNavigator = originalNavigator
                                 setup(object : PopoverContext {
@@ -86,7 +86,7 @@ actual fun ViewWriter.hasPopover(
             native.addGestureRecognizer(rec)
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -98,7 +98,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         lastSetWeight = amount
         native.extensionWeight = amount
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -110,7 +110,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
             lastSetWeight = amount
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -121,7 +121,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
         native.extensionHorizontalAlign = horizontal
         native.extensionVerticalAlign = vertical
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -130,8 +130,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
 ): ViewWrapper {
-    wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
-    return ViewWrapper
+    return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 }
 
 @ViewModifierDsl3
@@ -165,8 +164,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
         scrollView.scroller.refreshControl = refreshControl
     }
 
-    wrapNextIn(scrollView)
-    return ViewWrapper
+    return scrollView
 }
 
 @ViewModifierDsl3
@@ -174,7 +172,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     beforeNextElementSetup {
         native.extensionSizeConstraints = constraints
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -185,7 +183,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
             native.informParentOfSizeChange()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 // End
@@ -234,5 +232,5 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
             }
         }
     }
-    return ViewWrapper
+        .let { return it }
 }

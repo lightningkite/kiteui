@@ -25,7 +25,7 @@ object R2VPPage : Page {
             var recyclerView: Recycler2? = null
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, false) }
                     }
@@ -33,7 +33,7 @@ object R2VPPage : Page {
             }
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, true) }
                     }
@@ -48,11 +48,11 @@ object R2VPPage : Page {
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
                     override fun render(viewWriter: ViewWriter, data: Reactive<Int>, index: Reactive<Int>) =
                         with(viewWriter) {
-                            padded - stack {
-                                card - button {
-                                    sizeConstraints(minHeight = 10.rem) - col {
+                            padded.stack {
+                                card.button {
+                                    sizeConstraints(minHeight = 10.rem).col {
                                         text { ::content { data().toString() } }
-                                        shownWhen { expanded() == data() } - col {
+                                        shownWhen { expanded() == data() }.col {
                                             text { content = "Expanded Content" }
                                             text { content = "Expanded Content" }
                                             text { content = "Expanded Content" }

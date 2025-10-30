@@ -85,7 +85,7 @@ class VideoView(viewWriter: ViewWriter) : ViewModifiable {
     val activityIndicator: ActivityIndicator
     init {
         with(rView) {
-            centered - activityIndicator {
+            centered.activityIndicator {
                 cannotBeCovered = false
                 activityIndicator = this
                 opacity = 0.0

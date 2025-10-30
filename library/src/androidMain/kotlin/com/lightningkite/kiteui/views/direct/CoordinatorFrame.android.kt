@@ -127,7 +127,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            } - col { sub = content(control) }
+            }.col { sub = content(control) }
         }
     }
 
@@ -178,7 +178,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             } ?: ViewGroup.LayoutParams.WRAP_CONTENT
             (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
 
-        } - content(control)
+        }.content(control)
     }
 
     actual fun rightSlidingPanel(
@@ -228,7 +228,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             } ?: ViewGroup.LayoutParams.WRAP_CONTENT
             (lparams as? CoordinatorLayout.LayoutParams)?.behavior = b
 
-        } - content(control)
+        }.content(control)
     }
 
     actual fun onLeftSwipe(action: suspend () -> Unit) {

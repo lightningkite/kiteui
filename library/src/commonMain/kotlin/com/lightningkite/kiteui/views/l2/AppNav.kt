@@ -67,9 +67,9 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
-    return OuterSemantic.onNext - col {
+    return OuterSemantic.onNext.col {
         debugName = "outer nav"
-        bar - row {
+        bar.row {
             applySafeInsets(bottom = false)
             debugName = "top bar"
             showOnPrint = false
@@ -83,7 +83,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext - centered - expanding - text {
+            HeaderSemantic.onNext.centered.expanding.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
@@ -91,11 +91,11 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
             navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
-        expanding - frame {
+        expanding.frame {
             applySafeInsets(top = false)
             debugName = "menu and navigator container"
             navigatorView(pageNavigator)
-            atStart - shownWhen(false) { showMenu() && appNav.existsProperty() } - nav - scrolling - navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
+            atStart.shownWhen(false) { showMenu() && appNav.existsProperty() }.nav.scrolling.navGroupColumn(appNav.navItemsProperty, { showMenu set false }) {
                 gap = 0.px
             }
         }
@@ -106,8 +106,8 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    return OuterSemantic.onNext - col {
-        bar - row {
+    return OuterSemantic.onNext.col {
+        bar.row {
             applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
@@ -116,39 +116,39 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext - centered - text {
+            HeaderSemantic.onNext.centered.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }
             space()
-            expanding - centered - navGroupTop(appNav.navItemsProperty)
+            expanding.centered.navGroupTop(appNav.navItemsProperty)
             space()
-            centered - navGroupActions(appNav.actionsProperty)
+            centered.navGroupActions(appNav.actionsProperty)
             ::shown { appNav.existsProperty() }
         }
         beforeNextElementSetup {
             applySafeInsets(top = false)
-        } - expanding - navigatorView(pageNavigator)
+        }.expanding.navigatorView(pageNavigator)
     }
 }
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    return OuterSemantic.onNext - col {
+    return OuterSemantic.onNext.col {
         debugName = "outer nav"
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
-            compact - bar - frame {
+            compact.bar.frame {
                 applySafeInsets(bottom = false)
                 debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
-                atStart - InteractiveSemantic.onNext - button {
+                atStart.apply(InteractiveSemantic).button {
                     row {
                         gap = 0.px
-                        centered - icon(Icon.chevronLeft, "Go Back")
-                        centered - text {
+                        centered.icon(Icon.chevronLeft, "Go Back")
+                        centered.text {
                             ::content {
                                 pageNavigator.stack().let { it.getOrNull(it.size - 2) }?.title?.let { it().let{ if(it.length > 15) it.take(15) + "\u2026" else it } } ?: ""
                             }
@@ -157,16 +157,16 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                centered - HeaderSemantic.onNext - centered - expanding - text {
+                centered.apply(HeaderSemantic).centered.expanding.text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
                 }
-                atEnd - navGroupActions(appNav.actionsProperty)
+                atEnd.navGroupActions(appNav.actionsProperty)
                 ::shown { appNav.existsProperty() }
             }
         } else {
-            bar - row {
+            bar.row {
                 applySafeInsets(bottom = false)
                 debugName = "normal app bar"
                 showOnPrint = false
@@ -176,7 +176,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                HeaderSemantic.onNext - centered - expanding - text {
+                HeaderSemantic.onNext.centered.expanding.text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
@@ -188,9 +188,9 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
         beforeNextElementSetup {
             applySafeInsets(top = false, bottom = false)
         }
-        expanding - navigatorView(pageNavigator)
+        expanding.navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
-        nav - navGroupTabs(appNav.navItemsProperty) {
+        nav.navGroupTabs(appNav.navItemsProperty) {
             applySafeInsets(top = false)
             debugName = "navGroupTabs"
             showOnPrint = false
@@ -201,9 +201,9 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    return OuterSemantic.onNext - col {
+    return OuterSemantic.onNext.col {
 // Nav 4 left and top - add dropdown for user info
-        bar - row {
+        bar.row {
             applySafeInsets(bottom = false)
             showOnPrint = false
             setup(appNav)
@@ -212,28 +212,28 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
                 ::visible { pageNavigator.canGoBack() }
                 onClick { pageNavigator.goBack() }
             }
-            HeaderSemantic.onNext - centered - text {
+            HeaderSemantic.onNext.centered.text {
                 ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                 wraps = false
                 ellipsis = true
             }
-            expanding - space {}
+            expanding.space {}
             navGroupActions(appNav.actionsProperty)
 
             ::shown { appNav.existsProperty() }
         }
-        expanding - OuterSemantic.onNext - row {
+        expanding.apply(OuterSemantic).row {
             beforeNextElementSetup {
                 applySafeInsets(right = false)
             }
-            nav - scrolling - navGroupColumn(appNav.navItemsProperty) {
+            nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
             beforeNextElementSetup {
                 applySafeInsets(top = false)
             }
-            expanding - navigatorView(pageNavigator)
+            expanding.navigatorView(pageNavigator)
         }
     }
 }

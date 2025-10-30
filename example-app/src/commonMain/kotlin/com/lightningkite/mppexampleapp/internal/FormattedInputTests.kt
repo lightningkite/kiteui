@@ -35,14 +35,14 @@ class FormattedInputTests : Page {
             }
 
             row {
-                bold - text("Stored:")
+                bold.text("Stored:")
                 text { ::content { general() } }
             }
 
             space()
 
             field("US Phone Number") {
-                sizeConstraints(height = 3.rem) - phoneNumberInput {
+                sizeConstraints(height = 3.rem).phoneNumberInput {
                     format = PhoneNumberFormat.USA
                     hint = "(123) 456-7890"
                     content bind phone
@@ -50,7 +50,7 @@ class FormattedInputTests : Page {
             }
 
             row {
-                bold - text("Stored: ")
+                bold.text("Stored: ")
                 text { ::content { phone() } }
             }
 

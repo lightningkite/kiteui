@@ -15,7 +15,7 @@ object PopoverTestingPage : Page {
                 for(after in listOf(false, true)) {
                     row {
                         for (align in Align.entries) {
-                            card - menuButton {
+                            card.menuButton {
                                 text(buildString {
                                     if (horizontal) append("H") else append("V")
                                     if (after) append(">") else append("<")
@@ -28,8 +28,8 @@ object PopoverTestingPage : Page {
                                 )
                                 requireClick = true
                                 opensMenu {
-                                    sizeConstraints(width = 20.rem, height = 20.rem) - frame {
-                                        centered - col {
+                                    sizeConstraints(width = 20.rem, height = 20.rem).frame {
+                                        centered.col {
                                             text("Popover!")
                                             if (horizontal) text("Horizontal") else text("Vertical")
                                             if (after) text("After") else text("Before")
@@ -42,7 +42,7 @@ object PopoverTestingPage : Page {
                     }
                 }
             }
-            card - menuButton {
+            card.menuButton {
                 text("dumb")
                 preferredDirection = PopoverPreferredDirection(
                     horizontal = true,
@@ -51,8 +51,8 @@ object PopoverTestingPage : Page {
                 )
                 requireClick = true
                 opensMenu {
-                    sizeConstraints(width = 1000.rem, height = 1000.rem) - frame {
-                        centered - col {
+                    sizeConstraints(width = 1000.rem, height = 1000.rem).frame {
+                        centered.col {
                             text("Popover!")
                             text("I take WAY too much space")
                         }
@@ -60,14 +60,14 @@ object PopoverTestingPage : Page {
                 }
             }
         }
-        atTopStart - testGrouping()
-        atTopCenter - testGrouping()
-        atTopEnd - testGrouping()
-        atCenterStart - testGrouping()
-        centered - testGrouping()
-        atCenterEnd - testGrouping()
-        atBottomStart - testGrouping()
-        atBottomCenter - testGrouping()
-        atBottomEnd - testGrouping()
+        atTopStart.testGrouping()
+        atTopCenter.testGrouping()
+        atTopEnd.testGrouping()
+        atCenterStart.testGrouping()
+        centered.testGrouping()
+        atCenterEnd.testGrouping()
+        atBottomStart.testGrouping()
+        atBottomCenter.testGrouping()
+        atBottomEnd.testGrouping()
     }
 }

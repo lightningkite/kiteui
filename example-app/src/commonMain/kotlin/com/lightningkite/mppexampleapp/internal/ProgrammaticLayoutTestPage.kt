@@ -23,17 +23,17 @@ object ProgrammaticLayoutTestPage : Page {
         col {
             h1 { content = "Programmatic Layout Test" }
             val pl: ProgrammaticLayout
-            expanding - programmatic {
+            expanding.programmatic {
                 pl = this
                 val child: Frame
                 val move = Signal(true)
-                card - frame { child = this; text("Left") }
-                card - frame { text("Top Right") }
-                card - frame { text("Bottom Right") }
-                important - button {
+                card.frame { child = this; text("Left") }
+                card.frame { text("Top Right") }
+                card.frame { text("Bottom Right") }
+                important.button {
                     col {
                         text("Obnoxious Bouncing")
-                        shownWhen { move() } - col {
+                        shownWhen { move() }.col {
                             text("We're currently jamming down!")
                             text("We're currently jamming down!")
                             text("We're currently jamming down!")

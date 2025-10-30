@@ -17,15 +17,15 @@ import kotlin.math.*
 @Routable("graph-example")
 object GraphExamplePage : Page {
     override fun ViewWriter.render(): ViewModifiable {
-        return scrolling - col {
+        return scrolling.col {
             h1 { content = "Graph Example" }
 
             // Basic line graph example
-            card - col {
+            card.col {
                 h2 { content = "Basic Line Graph" }
                 text { content = "A simple line graph with some data points." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     lineGraph(
                         listOf(
                             Point(0.0, 0.0),
@@ -43,11 +43,11 @@ object GraphExamplePage : Page {
             }
 
             // Sine wave example
-            card - col {
+            card.col {
                 h2 { content = "Sine Wave" }
                 text { content = "A graph showing a sine wave." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     lineGraph(
                         (0..100).map { 
                             val x = it * 0.1
@@ -62,11 +62,11 @@ object GraphExamplePage : Page {
             }
 
             // Customized graph example
-            card - col {
+            card.col {
                 h2 { content = "Customized Graph" }
                 text { content = "A graph with customized appearance." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     graph {
                         data = (0..50).map { 
                             val x = it * 0.2
@@ -86,11 +86,11 @@ object GraphExamplePage : Page {
             }
 
             // Graph with Y values only
-            card - col {
+            card.col {
                 h2 { content = "Graph with Y Values Only" }
                 text { content = "A graph created from a list of Y values." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     lineGraph(
                         listOf(5.0, 8.0, 13.0, 7.0, 10.0, 15.0, 12.0, 9.0)
                     ) {
@@ -104,11 +104,11 @@ object GraphExamplePage : Page {
             }
 
             // Graph with pairs
-            card - col {
+            card.col {
                 h2 { content = "Graph with Pairs" }
                 text { content = "A graph created from a list of X-Y pairs." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     lineGraph(
                         listOf(
                             0.0 to 0.0,
@@ -128,11 +128,11 @@ object GraphExamplePage : Page {
             }
 
             // Graph with custom text sizes
-            card - col {
+            card.col {
                 h2 { content = "Custom Text Sizes" }
                 text { content = "A graph with customized text sizes for labels." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     lineGraph(
                         (0..20).map { 
                             val x = it * 0.5
@@ -152,11 +152,11 @@ object GraphExamplePage : Page {
             }
 
             // Graph with no data to show custom message font size
-            card - col {
+            card.col {
                 h2 { content = "No Data Message" }
                 text { content = "A graph with no data to demonstrate the custom 'no data' message font size." }
 
-                sizeConstraints(height = 300.dp) - frame {
+                sizeConstraints(height = 300.dp).frame {
                     graph {
                         data = emptyList()  // No data
 

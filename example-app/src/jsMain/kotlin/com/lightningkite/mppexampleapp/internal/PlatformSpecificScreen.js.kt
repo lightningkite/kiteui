@@ -100,13 +100,13 @@ actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //    }
 
     return col {
-        important - compact - compact - button {
+        important.compact.compact.button {
             icon { source = Icon.add }
         }
-        important - compact - button {
+        important.compact.button {
             icon { source = Icon.add }
         }
-        important - button {
+        important.button {
             icon { source = Icon.add }
         }
     }

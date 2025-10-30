@@ -22,15 +22,15 @@ object RecyclerFilterTestPage : Page {
 
     override fun ViewWriter.render(): ViewModifiable = col {
 
-        fieldTheme - row {
-            expanding - textInput {
+        fieldTheme.row {
+            expanding.textInput {
                 hint = "Search"
                 content bind searchText
             }
         }
 
-        expanding - col {
-            expanding - ListSemantic.onNext - recyclerView {
+        expanding.col {
+            expanding.apply(ListSemantic).recyclerView {
                 children(
                     items = shared {
                         listOf("asdf", "asdf1", "qwerty").filter {

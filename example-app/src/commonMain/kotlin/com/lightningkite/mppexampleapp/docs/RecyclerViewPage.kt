@@ -27,21 +27,21 @@ object RecyclerViewPage : DocPage {
             text("The most basic way to use a recyclerView is to create a vertical list of items:")
             example("""
                 // Always use expanding or size constraints with recyclerView
-                expanding - recyclerView {
+                expanding.recyclerView {
                     children(
                         items = remember { (1..100).toList() },
                         id = { it } // Use the item itself as the ID
                     ) { value ->
-                        card - text("Item")
+                        card.text("Item")
                     }
                 }
             """.trimIndent()) {
-                expanding - recyclerView {
+                expanding.recyclerView {
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
-                        card - text("Item")
+                        card.text("Item")
                     }
                 }
             }
@@ -50,21 +50,21 @@ object RecyclerViewPage : DocPage {
             text("You can also create a horizontal recyclerView:")
             example("""
                 // Horizontal recyclerView also needs size constraints
-                expanding - horizontalRecyclerView {
+                expanding.horizontalRecyclerView {
                     children(
                         items = remember { (1..100).toList() },
                         id = { it }
                     ) { value ->
-                        card - sizedBox(SizeConstraints(width = 10.rem)) - centered - text("Item")
+                        card.sizedBox(SizeConstraints(width = 10.rem)).centered.text("Item")
                     }
                 }
             """.trimIndent()) {
-                expanding - horizontalRecyclerView {
+                expanding.horizontalRecyclerView {
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
-                        card - sizedBox(SizeConstraints(width = 10.rem)) - centered - text("Item")
+                        card.sizedBox(SizeConstraints(width = 10.rem)).centered.text("Item")
                     }
                 }
             }
@@ -73,23 +73,23 @@ object RecyclerViewPage : DocPage {
             text("RecyclerView can display items in a grid layout using placers:")
             example("""
                 // Grid layout recyclerView also needs size constraints
-                expanding - recyclerView {
+                expanding.recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2) // 2 columns
                     children(
                         items = remember { (1..100).toList() },
                         id = { it }
                     ) { value ->
-                        card - text("Item")
+                        card.text("Item")
                     }
                 }
             """.trimIndent()) {
-                expanding - recyclerView {
+                expanding.recyclerView {
                     placer = RecyclerViewPlacerVerticalGrid(2)
                     children(
                         items = remember { (1..20).toList() },
                         id = { it }
                     ) { _ ->
-                        card - text("Item")
+                        card.text("Item")
                     }
                 }
             }
@@ -103,13 +103,13 @@ object RecyclerViewPage : DocPage {
                         text("Scroll to Item 10")
                         onClick { recyclerView?.scrollToIndex(10, Align.Start, true) }
                     }
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         recyclerView = this
                         children(
                             items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
                 }
@@ -120,13 +120,13 @@ object RecyclerViewPage : DocPage {
                         text("Scroll to Item 10")
                         onClick { recyclerView?.scrollToIndex(10, Align.Start, true) }
                     }
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         recyclerView = this
                         children(
                             items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
                 }
@@ -141,7 +141,7 @@ object RecyclerViewPage : DocPage {
                     data class Image(val imageUrl: String) : ListItem
                 }
 
-                expanding - recyclerView {
+                expanding.recyclerView {
                     childrenMultipleTypes(
                         items = remember { 
                             listOf(
@@ -153,16 +153,16 @@ object RecyclerViewPage : DocPage {
                         id = { it.hashCode() }
                     ) {
                         type<ListItem.Text> { item ->
-                            card - text { ::content { item().text } }
+                            card.text { ::content { item().text } }
                         }
                         type<ListItem.Image> { item ->
-                            card - image { source = ImageSource.Resource(item().imageUrl) }
+                            card.image { source = ImageSource.Resource(item().imageUrl) }
                         }
                     }
                 }
             """.trimIndent()) {
                 // Simple example with a single type for demonstration
-                expanding - recyclerView {
+                expanding.recyclerView {
                     children(
                         items = remember { 
                             listOf(
@@ -173,7 +173,7 @@ object RecyclerViewPage : DocPage {
                         },
                         id = { it.hashCode() }
                     ) {
-                        card - text { ::content { it() } }
+                        card.text { ::content { it() } }
                     }
                 }
             }
@@ -200,12 +200,12 @@ object RecyclerViewPage : DocPage {
                             itemsList.value = itemsList.value + newItem
                         }
                     }
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         children(
                             items = itemsList,
                             id = { it.id } // Use the unique ID field
                         ) { value ->
-                            card - text { ::content { value().text } }
+                            card.text { ::content { value().text } }
                         }
                     }
                 }
@@ -229,12 +229,12 @@ object RecyclerViewPage : DocPage {
                             itemsList.value = itemsList.value + newItem
                         }
                     }
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         children(
                             items = itemsList,
                             id = { it.id } // Use the unique ID field
                         ) { value ->
-                            card - text { ::content { value().text } }
+                            card.text { ::content { value().text } }
                         }
                     }
                 }
@@ -245,44 +245,44 @@ object RecyclerViewPage : DocPage {
             example("""
                 col {
                     // Using expanding modifier
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         children(
                             items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
 
                     // Using size constraints
-                    sizedBox(SizeConstraints(height = 20.rem)) - recyclerView {
+                    sizedBox(SizeConstraints(height = 20.rem)).recyclerView {
                         children(
                             items = remember { (1..100).toList() },
                             id = { it }
                         ) { value ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
                 }
             """.trimIndent()) {
                 col {
                     // Using expanding modifier
-                    expanding - recyclerView {
+                    expanding.recyclerView {
                         children(
                             items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
 
                     // Using size constraints
-                    sizedBox(SizeConstraints(height = 10.rem)) - recyclerView {
+                    sizedBox(SizeConstraints(height = 10.rem)).recyclerView {
                         children(
                             items = remember { (1..20).toList() },
                             id = { it }
                         ) { _ ->
-                            card - text("Item")
+                            card.text("Item")
                         }
                     }
                 }

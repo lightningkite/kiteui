@@ -28,7 +28,7 @@ object Recycler2TestPage : Page {
             var recyclerView: Recycler2? = null
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, false) }
                     }
@@ -36,7 +36,7 @@ object Recycler2TestPage : Page {
             }
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(75, align, true) }
                     }
@@ -45,18 +45,18 @@ object Recycler2TestPage : Page {
             row {
                 repeat(4) {
                     val cols = (it + 1) * 4
-                    expanding - button {
+                    expanding.button {
                         subtext("${cols} columns")
                         onClick {
                             recyclerView?.placer = RecyclerViewPlacerVerticalGrid(cols, 1.0)
                         }
                     }
                 }
-                sizeConstraints(width = 10.rem) - field("Element Count") {
+                sizeConstraints(width = 10.rem).field("Element Count") {
                     numberInput { content bind elementCount.nullable().asDouble() }
                 }
             }
-            expanding - Recycler2(this).apply {
+            expanding.recyclerView {
                 recyclerView = this
                 log = LogRoot.tag("R2")
                 placer = RecyclerViewPlacerVerticalGrid(1).also { it.log = LogRoot.tag("Placer") }
@@ -68,9 +68,9 @@ object Recycler2TestPage : Page {
                         index: Reactive<Int>
                     ): ViewModifiable {
                         return with(viewWriter) {
-                            card - button {
+                            card.button {
                                 col {
-                                    centered - text { ::content { data().toString() } }
+                                    centered.text { ::content { data().toString() } }
                                     text("Tall element")
                                     text("We've got to")
                                     text("get this to fill")

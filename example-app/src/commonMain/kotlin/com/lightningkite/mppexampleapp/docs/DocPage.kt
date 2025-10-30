@@ -25,17 +25,17 @@ fun ViewWriter.example(
     codeText: String,
     action: ViewWriter.()->ViewModifiable
 ): ViewModifiable {
-    return card - rowCollapsingToColumn(40.rem) {
-        expanding - scrollingHorizontally - code { content = codeText }
+    return card.rowCollapsingToColumn(40.rem) {
+        expanding.scrollingHorizontally.code { content = codeText }
         separator()
-        expanding - action()
+        expanding.action()
     }
 }
 
 fun ViewWriter.article(
     setup: ContainingView.()->Unit
-): ViewModifiable = scrolling - frame {
-    align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col {
+): ViewModifiable = scrolling.frame {
+    align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
         setup()
     }
 }

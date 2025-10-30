@@ -41,14 +41,11 @@ fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
         }
 
         override fun addChild(view: RView) {
-            document.body?.append(view.native.create())
-//            created = view
-        }
-
-        init {
-            beforeNextElementSetup {
+            with(view) {
                 ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
             }
+            document.body?.append(view.native.create())
+//            created = view
         }
     }.apply {
         if(debugMode) {

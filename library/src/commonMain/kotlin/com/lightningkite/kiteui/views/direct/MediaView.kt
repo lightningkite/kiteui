@@ -98,7 +98,7 @@ class MediaView(viewWriter: ViewWriter) : ViewModifiable {
 
     init {
         with(rView) {
-            centered - activityIndicator {
+            centered.activityIndicator {
                 cannotBeCovered = false
                 activityIndicator = this
                 opacity = 0.0

@@ -50,25 +50,26 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun RView.errorText(): ViewModifiable {
+fun ViewWriter.errorText(): ViewModifiable {
     val errors = Signal<Set<Exception>>(setOf())
-    return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
-        this@errorText += object: ExceptionHandler {
-            override val priority: Float
-                get() = 1f
-
-            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
-                errors.value += exception
-                return {
-                    errors.value -= exception
-                }
-            }
-        }
-        ::content {
-            errors().joinToString("\n") {
-                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
-            }
-        }
+    return shownWhen { errors().isNotEmpty() }.apply(ErrorSemantic).text {
+        TODO()
+//        this@errorText += object: ExceptionHandler {
+//            override val priority: Float
+//                get() = 1f
+//
+//            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
+//                errors.value += exception
+//                return {
+//                    errors.value -= exception
+//                }
+//            }
+//        }
+//        ::content {
+//            errors().joinToString("\n") {
+//                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
+//            }
+//        }
     }
 }
 
@@ -78,8 +79,8 @@ inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifia
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     return col {
         gap = 0.px
-        FieldLabelSemantic.onNext - text(label)
-        fieldTheme - content()
-        SubtextSemantic.onNext - errorText()
+        FieldLabelSemantic.onNext.text(label)
+        fieldTheme.content()
+        SubtextSemantic.onNext.errorText()
     }
 }

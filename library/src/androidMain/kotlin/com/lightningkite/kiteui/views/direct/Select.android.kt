@@ -105,7 +105,7 @@ actual class Select actual constructor(context: RContext): RView(context) {
                         }
                     }
                     with(w) {
-                        padded - text {
+                        padded.text {
                             content = render(list[position])
                         }
                     }

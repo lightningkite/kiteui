@@ -29,18 +29,18 @@ object ReactiveToolsPage : Page, DocPage {
     )
 
     fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): ViewModifiable {
-        return fieldTheme - row {
+        return fieldTheme.row {
             gap = 0.5.rem
             val buffer = Signal<Double?>(null)
             space(0.5)
-            weight(2f) - numberInput {
+            weight(2f).numberInput {
                 hint = "New Value"
                 content bind buffer
             }
-            card - button {
+            card.button {
                 gap = 0.5.rem
                 ::enabled { buffer().let { it != null } }
-                centered - text("Set Value")
+                centered.text("Set Value")
                 onClick {
                     sets set (buffer() ?: return@onClick)
                     buffer.value = null
@@ -53,8 +53,8 @@ object ReactiveToolsPage : Page, DocPage {
         article {
             titledSection("Classes and functions to help with reactivity") {
                 text("This article will give an overview of all the tools available in KiteUI to handle common reactive use cases. If you haven't already read through the basic reactive documentation, you should do so. ")
-                atStart - card - link {
-                    centered - text("Reactive Basics")
+                atStart.card.link {
+                    centered.text("Reactive Basics")
                     to = { DataPage }
                 }
                 text("The purpose of this article is to give a list of all of the available tools, so there will be some overlap with the basic reactivity documentation.")
@@ -85,33 +85,33 @@ object ReactiveToolsPage : Page, DocPage {
                     col {
                         gap = 2.rem
                         row {
-                            bold - text("Timer: ")
+                            bold.text("Timer: ")
                             text { ::content { "${timer()} seconds" } }
                         }
                         row {
-                            centered - bold - text("Counter: ")
+                            centered.bold.text("Counter: ")
 
-                            fieldTheme - row {
+                            fieldTheme.row {
                                 gap = 0.5.rem
-                                centered - sizeConstraints(width = 5.rem) - text {
+                                centered.sizeConstraints(width = 5.rem).text {
                                     align = Align.Center
                                     ::content { counter().toString() }
                                 }
-                                card - button {
+                                card.button {
                                     gap = 0.5.rem
-                                    centered - text("-")
+                                    centered.text("-")
                                     onClick { counter.value-- }
                                 }
-                                card - button {
+                                card.button {
                                     gap = 0.5.rem
-                                    centered - text("+")
+                                    centered.text("+")
                                     onClick { counter.value++ }
                                 }
                             }
                         }
                         row {
-                            centered - bold - text("Input Number: ")
-                            fieldTheme - numberInput {
+                            centered.bold.text("Input Number: ")
+                            fieldTheme.numberInput {
                                 hint = "Type a Number..."
                                 content bind inputNumber
                             }
@@ -129,18 +129,18 @@ object ReactiveToolsPage : Page, DocPage {
                         example("""
                             val textInput = Signal("")
                             col {
-                                expanding - text { ::content { textInput() } }
-                                card - button {
-                                    centered - text("+\"Hello World!\"")
+                                expanding.text { ::content { textInput() } }
+                                card.button {
+                                    centered.text("+\"Hello World!\"")
                                     onClick { textInput.value += "Hello World!" }
                                 }
                             }
                         """.trimIndent()) {
                             val textInput = Signal("")
                             col {
-                                expanding - scrolling - text { ::content { textInput() } }
-                                card - button {
-                                    centered - text("+\"Hello World!\"")
+                                expanding.scrolling.text { ::content { textInput() } }
+                                card.button {
+                                    centered.text("+\"Hello World!\"")
                                     onClick { textInput.value += "\nHello World!" }
                                 }
                             }
@@ -153,13 +153,13 @@ object ReactiveToolsPage : Page, DocPage {
                         example("""
                             val textInput = Signal("")
                             col {
-                                expanding - field("Input") {
+                                expanding.field("Input") {
                                     textArea {
                                         hint = "Type Something..."
                                         content bind textInput
                                     }
                                 }
-                                expanding - label {
+                                expanding.label {
                                     content = "Stored Value"
                                     text { ::content { textInput() } }
                                 }
@@ -167,13 +167,13 @@ object ReactiveToolsPage : Page, DocPage {
                         """.trimIndent()) {
                             val textInput = Signal("")
                             col {
-                                expanding - field("Input") {
-                                    expanding - textArea {
+                                expanding.field("Input") {
+                                    expanding.textArea {
                                         hint = "Type Something..."
                                         content bind textInput
                                     }
                                 }
-                                expanding - label {
+                                expanding.label {
                                     content = "Stored Value"
                                     text { ::content { textInput() } }
                                 }
@@ -264,9 +264,9 @@ object ReactiveToolsPage : Page, DocPage {
                         text("We can see this has the exact same result as remember, but with MutableRemember we now have the ability to override the calculation. Below are controls to set and reset 'mutableCalculation'. Try them out and see the effects.")
 
                         row {
-                            expanding - bufferedNumberInput(mutableCalculation)
-                            expanding - card - button {
-                                centered - row {
+                            expanding.bufferedNumberInput(mutableCalculation)
+                            expanding.card.button {
+                                centered.row {
                                     icon(Icon.sync, "Reset")
                                     text("Reset Value")
                                 }
@@ -284,13 +284,13 @@ object ReactiveToolsPage : Page, DocPage {
                             val late = LateInitSignal<Double>()
                             col { 
                                 row { 
-                                    bold - text("LateInitSignal value: ")
+                                    bold.text("LateInitSignal value: ")
                                     text { ::content { late().toString() } }
                                 }
                                 row { 
-                                    weight(2f) - bufferedNumberInput(late)
-                                    weight(1f) - card - button { 
-                                        centered - row {
+                                    weight(2f).bufferedNumberInput(late)
+                                    weight(1f).card.button { 
+                                        centered.row {
                                             icon(Icon.close, "Unset")
                                             text("Unset")
                                         }
@@ -301,14 +301,14 @@ object ReactiveToolsPage : Page, DocPage {
                         """.trimIndent()) {
                             val late = LateInitSignal<Double>()
                             col {
-                                sizeConstraints(height = 5.rem) - row {
-                                    centered - bold - text("LateInitSignal value: ")
-                                    centered - expanding -  text { ::content { late().toString() } }
+                                sizeConstraints(height = 5.rem).row {
+                                    centered.bold.text("LateInitSignal value: ")
+                                    centered.expanding.text { ::content { late().toString() } }
                                 }
                                 row {
-                                    weight(2f) - bufferedNumberInput(late)
-                                    weight(1f) - card - button {
-                                        centered - row {
+                                    weight(2f).bufferedNumberInput(late)
+                                    weight(1f).card.button {
+                                        centered.row {
                                             icon(Icon.close, "Unset")
                                             text("Unset")
                                         }
@@ -339,17 +339,17 @@ object ReactiveToolsPage : Page, DocPage {
 
                             col {
                                 row {
-                                    bold - text("Calculation: ")
+                                    bold.text("Calculation: ")
                                     text { ::content { calculation().toString() } }
                                 }
                                 row {
-                                    centered - bold - text("Input Number: ")
-                                    fieldTheme - numberInput {
+                                    centered.bold.text("Input Number: ")
+                                    fieldTheme.numberInput {
                                         hint = "Type a Number..."
                                         content bind inputNumber
                                     }
                                 }
-                                fieldTheme - bufferedNumberInput(inputNumber)
+                                fieldTheme.bufferedNumberInput(inputNumber)
                             }
                         }
                     }

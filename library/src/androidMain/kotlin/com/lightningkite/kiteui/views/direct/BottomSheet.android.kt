@@ -46,7 +46,7 @@ actual fun ViewWriter.openBottomSheet(
             dialog.dismiss()
         }.apply {
             col {
-                centered - card - write(object: RView(context) {
+                centered.card.write(object: RView(context) {
                     override val native: BottomSheetDragHandleView = BottomSheetDragHandleView(context.activity).apply {
                         minimumWidth = 5.rem.value.toInt()
                         minimumHeight = 1.rem.value.toInt()

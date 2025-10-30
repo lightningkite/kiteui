@@ -98,24 +98,24 @@ class Recycler2(
                 beforeNextElementSetup {
                     padding = 0.px
                     themeTakeNonCascadingFromParent = true
-                } - scrolling(vertical = vertical, horizontal = !vertical) {
+                }.scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
-                } - ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }.onNext - programmatic {
+                }.apply(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
                     padding = null
                     themeTakeNonCascadingFromParent = true
 //                    viewDebugTarget = this
                     cells = this
-                    unpadded - frame {
+                    unpadded.frame {
                         scrollSentinel = this
                     }
                 }
-                if (vertical) atEnd - sizeConstraints(width = 1.rem, maxWidth = 1.rem)
-                else atBottom - sizeConstraints(height = 1.rem, maxHeight = 1.rem)
+                if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+                else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem)
                 scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
-                } - programmatic {
+                }.programmatic {
                     fakeScrollContent = this
                     ignoreInteraction = Platform.current != Platform.Web
                     ThemeDerivation {
@@ -123,7 +123,7 @@ class Recycler2(
                             id = "scrollindicator",
                             background = it.foreground.applyAlpha(0.5f)
                         ).withBack
-                    }.onNext - unpadded - frame {
+                    }.onNext.unpadded.frame {
                         ignoreInteraction = Platform.current != Platform.Web
                         fakeScrollIndicator = this
                         opacity = 0.0

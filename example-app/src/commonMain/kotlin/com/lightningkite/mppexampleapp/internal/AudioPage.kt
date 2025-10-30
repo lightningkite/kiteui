@@ -27,8 +27,8 @@ object AudioPage : Page {
             fun withPool(title: String, audioSource: AudioSource) {
                 h2(title)
                 row {
-                    expanding - button { text("Pool"); onClick { soundEffectPool.play(audioSource) } }
-                    expanding - button { text("Direct"); onClick { audioSource.load().play() } }
+                    expanding.button { text("Pool"); onClick { soundEffectPool.play(audioSource) } }
+                    expanding.button { text("Direct"); onClick { audioSource.load().play() } }
                 }
             }
 //            withPool("CantinaBand3.wav", "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav")

@@ -24,9 +24,9 @@ object ScrollIntoViewTest : Page {
     val jumpTo = Signal<Location?>(null)
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - frame {
-            sizeConstraints(height = 500.rem) - col {
-                centered - important - button {
+        scrolling.frame {
+            sizeConstraints(height = 500.rem).col {
+                centered.important.button {
                     reactive {
                         if (jumpTo() == Location.Top) {
                             this@button.scrollIntoView(horizontal = null, vertical = Align.Start, animate = true)
@@ -37,8 +37,8 @@ object ScrollIntoViewTest : Page {
                     text("Scroll To Bottom")
                     onClick { jumpTo.value = Location.Bottom }
                 }
-                expanding - space()
-                centered - important - button {
+                expanding.space()
+                centered.important.button {
                     reactive {
                         if (jumpTo() == Location.Bottom) {
                             this@button.scrollIntoView(horizontal = null, vertical = Align.Start, animate = true)

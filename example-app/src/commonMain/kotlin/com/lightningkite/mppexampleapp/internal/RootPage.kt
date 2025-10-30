@@ -35,18 +35,18 @@ import com.lightningkite.readable.*
 object RootPage : Page {
     override val title: Reactive<String> = Constant("Test Pages")
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
+        scrolling.col {
             col {
                 h1 { content = "Test Pages" }
                 separator()
                 text("These test pages aren't necessarily meant to be examples of what you can do with KiteUI.  They are meant to be a way to test out new features and find bugs.  They are also meant to be a way to test out different layouts and components.  However, you may find them interesting.")
             }
-            ListSemantic.onNext - col {
+            ListSemantic.onNext.col {
 
-                fun ViewWriter.linkPage(screen: () -> Page) = card - link {
+                fun ViewWriter.linkPage(screen: () -> Page) = card.link {
                     to = screen
                     row {
-                        expanding - text {
+                        expanding.text {
                             ::content{ screen().title() }
                         }
                         icon(Icon.Companion.chevronRight, "Open")
@@ -100,17 +100,17 @@ object RootPage : Page {
                 linkPage { DatePickerExamplePage }
                 run {
                     val screen = { ArgumentsExamplePage("test-id").also { it.toAdd.value = "Preset" } }
-                    link {
+                    card.link {
                         to = screen
                         row {
-                            text {
+                            weight(1f).text {
                                 ::content{ screen().title() }
 //                            content  = screen.toString()
-                            } in weight(1f)
+                            }
                             icon(Icon.Companion.chevronRight, "Open")
                         }
                         transitionId = "test-id"
-                    } in card
+                    }
                 }
 
                 button {

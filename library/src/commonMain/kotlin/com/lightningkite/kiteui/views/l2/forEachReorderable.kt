@@ -111,11 +111,11 @@ fun <T> RView.forEachReorderable(
                     val i = idx()
                     move.end == i && move.start >= i
                 }
-            } - separator(item)
+            }.separator(item)
 
             beforeNextElementSetup {
                 ::dragData { dataTransform(handler.encode(idx())) }
-            } - render(item)
+            }.render(item)
 
             beforeNextElementSetup {
                 ::visible shown@{
@@ -123,7 +123,7 @@ fun <T> RView.forEachReorderable(
                     val i = idx()
                     move.end == i && move.start < i
                 }
-            } - separator(item)
+            }.separator(item)
         }
     }
 }
@@ -159,11 +159,11 @@ class RecyclerReorderable<T, ID>(
                         val i = index()
                         move.end == i && move.start >= i
                     }
-                } - separator(data)
+                }.separator(data)
 
-                beforeNextElementSetup {
+                renderer.render(beforeNextElementSetup {
                     ::dragData { handler.encode(index()) }
-                } - renderer.render(this, data, index)
+                }, data, index)
 
                 beforeNextElementSetup {
                     ::shown shown@{
@@ -171,7 +171,7 @@ class RecyclerReorderable<T, ID>(
                         val i = index()
                         move.end == i && move.start < i
                     }
-                } - separator(data)
+                }.separator(data)
             }
         }
     }

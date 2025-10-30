@@ -16,23 +16,23 @@ object ImageTestPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-            scrolling - sizeConstraints(width = 40.rem) - col {
+            scrolling.sizeConstraints(width = 40.rem).col {
 
                 text("scaleType = ${ImageScaleType.Crop}")
 
-                 centered -  sizeConstraints(
+                 centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
-                ) - image {
+                ).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Crop
                 }
 
                 text("scaleType = ${ImageScaleType.Stretch}")
-                centered -  sizeConstraints(
+                centered.sizeConstraints(
                     width = 6.rem,
                     height = 6.rem
-                ) - image {
+                ).image {
                     source = Resources.imagesSnowyBackground
                     scaleType = ImageScaleType.Stretch
                 }

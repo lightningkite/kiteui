@@ -116,14 +116,14 @@ fun ViewWriter.confirmDanger(
             h2(title)
             text(body)
             row {
-                expanding - buttonTheme - button {
-                    centered - text("Cancel")
+                expanding.buttonTheme.button {
+                    centered.text("Cancel")
                     onClick {
                         closer()
                     }
                 }
-                expanding - danger - buttonTheme - button {
-                    centered - text(actionName)
+                expanding.danger.buttonTheme.button {
+                    centered.text(actionName)
                     onClick {
                         action()
                         closer()
@@ -144,8 +144,8 @@ fun ViewWriter.alert(
             h2(title)
             text(body)
             row {
-                expanding - danger - button {
-                    centered - h6("OK")
+                expanding.danger.button {
+                    centered.h6("OK")
                     onClick {
                         closer()
                     }

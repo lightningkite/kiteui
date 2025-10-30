@@ -9,17 +9,12 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-
-operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
-operator fun ViewWrapper.contains(other: ViewWrapper): Boolean = true
-
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
 fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWrapper {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it).withBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @Deprecated("Just bind to themeChoice directly")
@@ -27,8 +22,7 @@ fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWrapper {
 inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ViewWrapper {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @Deprecated("Just bind to themeChoice directly")
@@ -36,8 +30,7 @@ inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme
 inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewWrapper {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it).withoutBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @ViewModifierDsl3

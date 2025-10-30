@@ -45,7 +45,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         }
 
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 
@@ -81,7 +81,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
         }
 
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -121,13 +121,12 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
-    wrapNextIn(ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup))
-    return ViewWrapper
+    return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 }
 
 @ViewModifierDsl3
@@ -139,7 +138,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 ): ViewWrapper {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
-    if (vertical) {
+    return if (vertical) {
         val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
         refreshLayout.setOnRefreshListener {
             refreshAction.startAction(this)
@@ -151,7 +150,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
                 )
             }
         }
-        wrapNextIn(object: RViewWrapper(context) {
+        object: RViewWrapper(context) {
             override val native: View = refreshLayout
 
             val myChildren: ArrayList<View> = ArrayList()
@@ -174,23 +173,21 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
                     myChildren.clear()
                 }
             }
-        })
+        }
     } else {
         // For horizontal scrolling, just use regular scrolling as SwipeRefreshLayout only supports vertical
+        scrollView
     }
-    wrapNextIn(scrollView)
-
-    return ViewWrapper
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        wrapNextIn(object : RViewWrapper(context) {
+        object : RViewWrapper(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
-        })
+        }
     } else {
         beforeNextElementSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
@@ -205,19 +202,19 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
             constraints.minHeight?.let { native.minimumHeight = it.value.toInt() }
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
-    wrapNextIn(object : RViewWrapper(context) {
+    object : RViewWrapper(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
                 this@apply.constraints = constraints()
             }
         }
-    })
-    return ViewWrapper
+    }
+        .let { return it }
 }
 
 interface MaxSizeLayoutParams {
@@ -365,7 +362,7 @@ actual fun ViewWriter.hintPopover(
             true
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -379,7 +376,7 @@ actual fun ViewWriter.hasPopover(
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
                     return dismissBackground {
-                        centered - frame {
+                        centered.frame {
                             setup(object : PopoverContext {
                                 override val calculationContext: CalculationContext
                                     get() = this@beforeNextElementSetup
@@ -394,7 +391,7 @@ actual fun ViewWriter.hasPopover(
             })
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -404,7 +401,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
             native.tooltipText = message
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 
@@ -477,7 +474,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
             }
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 internal val animatingSize = HashSet<View>()

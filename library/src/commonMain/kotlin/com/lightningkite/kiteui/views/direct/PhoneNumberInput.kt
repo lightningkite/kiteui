@@ -76,9 +76,3 @@ class PhoneNumberInput(container: ViewWriter): ViewModifiable {
     var hint: String by input::hint
     var align: Align by input::align
 }
-
-operator fun ViewWrapper.minus(view: PhoneNumberInput): ViewWrapper { return ViewWrapper }
-operator fun Boolean.minus(view: PhoneNumberInput): Boolean { return true }
-
-operator fun ViewWrapper.contains(view: PhoneNumberInput): Boolean { return true }
-operator fun Boolean.contains(view: PhoneNumberInput): Boolean { return true }

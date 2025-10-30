@@ -32,8 +32,8 @@ object ExperimentPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         col {
             val prop = Signal(true)
-            shownWhen { prop() } - text("A")
-            shownWhen { !prop() } - text("B")
+            shownWhen { prop() }.text("A")
+            shownWhen { !prop() }.text("B")
             button {
                 text("Toggle")
                 onClick { prop.value = !prop.value }

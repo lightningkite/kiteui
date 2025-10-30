@@ -28,7 +28,7 @@ object LoadAnimationTestPage : Page {
             val loading = LateInitSignal<String>()
             val writable = Signal<String>("")
             h1 { content = "Loading animation testing" }
-            expanding - scrolling - col {
+            expanding.scrolling.col {
                 row {
                     button {
                         text("Load")
@@ -39,11 +39,11 @@ object LoadAnimationTestPage : Page {
                         onClick { loading.unset() }
                     }
                 }
-                important - button {
+                important.button {
                     text("Do action")
                     onClick { delay(5000) }
                 }
-                important - button {
+                important.button {
                     col {
                         text("Big do action")
                         text("with multiple text lines")
@@ -53,11 +53,11 @@ object LoadAnimationTestPage : Page {
                 }
                 h1 { ::content { loading() } }
                 text { ::content { loading() } }
-                WeirdSem.onNext - col {
+                WeirdSem.onNext.col {
                     reactive {
                         loading()
                     }
-                    card - text("Hi")
+                    card.text("Hi")
                     text("No card")
                 }
                 row {

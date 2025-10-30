@@ -31,7 +31,7 @@ actual fun ViewWriter.hintPopover(
             floating.close()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -67,12 +67,12 @@ actual fun ViewWriter.hasPopover(
             floating.close()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
-    card - text {
+    card.text {
         content = message
     }
 }
@@ -86,7 +86,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
         native.style.flexBasis = "0"
         parent?.native?.classes?.add("childHasWeight")
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -107,7 +107,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
             parent?.native?.classes?.add("childHasWeight")
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -120,7 +120,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
         native.classes.add("v${vertical}")
         native.desiredVerticalGravity = vertical
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -128,7 +128,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -142,7 +142,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -173,7 +173,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
         if (constraints.height == null) native.style.height = null
         else native.style.height = constraints.height.value.toString()
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 @ViewModifierDsl3
@@ -207,7 +207,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
             else native.style.height = constraints.height.value.toString()
         }
     }
-    return ViewWrapper
+        .let { return it }
 }
 
 // End
@@ -219,7 +219,7 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 //        ::exists.invoke(condition)
 //    }
     var v: RView? = null
-    wrapNextIn(object: RViewWrapper(context) {
+    return object: RViewWrapper(context) {
         init {
             v = this
             native.tag = "div"
@@ -255,9 +255,6 @@ actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() 
 
         override val mySpacingForChildren: Dimension
             get() = parent?.mySpacingForChildren ?: 0.px
-    })
-    return object: ViewWrapper() {
-        override fun view(): RView? = v
     }
 }
 

@@ -22,7 +22,7 @@ object ListEditPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         row {
 
-            expanding - recyclerView {
+            expanding.recyclerView {
                 children(this@ListEditPage.data.lensByElementAssumingSetNeverManipulates()) { itemObs ->
                     row {
                         var old: Int? = null
@@ -31,13 +31,13 @@ object ListEditPage : Page {
                             println("Index has shifted from ${old} to ${new}")
                             old = new
                         }
-                        expanding - fieldTheme - textField {
+                        expanding.fieldTheme.textField {
                             content bind itemObs.flatten()
                         }
                     }
                 }
             }
-            expanding - text {
+            expanding.text {
                 ::content { data().take(5).joinToString("\n") }
             }
         }

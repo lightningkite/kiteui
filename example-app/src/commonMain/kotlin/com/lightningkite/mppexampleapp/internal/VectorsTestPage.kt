@@ -11,7 +11,7 @@ import com.lightningkite.mppexampleapp.Resources
 @Routable("test/vectors")
 object VectorsTestPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
+        scrolling.col {
             row {
                 image {
                     source = ImageVector(
@@ -228,7 +228,7 @@ object VectorsTestPage : Page {
                 }
             }
             row {
-                sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
+                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
                     it.copy(
                         id = "grad0",
                         background = LinearGradient(
@@ -238,8 +238,8 @@ object VectorsTestPage : Page {
                             ), Angle.zero, false
                         )
                     )
-                } - frame { space() }
-                sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
+                }.frame { space() }
+                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
                     it.copy(
                         id = "grad1",
                         background = LinearGradient(
@@ -249,8 +249,8 @@ object VectorsTestPage : Page {
                             ), Angle.eighthTurn, false
                         )
                     )
-                } - frame { space() }
-                sizeConstraints(width = 4.rem, height = 4.rem) - themeFromLast {
+                }.frame { space() }
+                sizeConstraints(width = 4.rem, height = 4.rem).themeFromLast {
                     it.copy(
                         id = "grad2",
                         background = LinearGradient(
@@ -260,11 +260,11 @@ object VectorsTestPage : Page {
                             ), Angle.eighthTurn + Angle.halfTurn, false
                         )
                     )
-                } - frame { space() }
+                }.frame { space() }
             }
 
             listOf(1, 2, 4, 8).forEachIndexed { idx, size ->
-                sizeConstraints(width = size.rem, height = size.rem) - frame {
+                sizeConstraints(width = size.rem, height = size.rem).frame {
                     themeChoice += ThemeDerivation {
                         it.copy(
                             id = "red$size",
@@ -290,13 +290,13 @@ object VectorsTestPage : Page {
                 }
             }
 
-            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+            sizeConstraints(width = 4.rem, height = 4.rem).image {
                 source = Resources.vectorsBox
             }
-            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+            sizeConstraints(width = 4.rem, height = 4.rem).image {
                 source = Resources.vectorsHiking
             }
-            sizeConstraints(width = 4.rem, height = 4.rem) - image {
+            sizeConstraints(width = 4.rem, height = 4.rem).image {
                 source = ImageVector(
                     width = 3.rem,
                     height = 3.rem,

@@ -37,7 +37,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    atTopStart - PopoverSemantic.onNext - frame {
+                    atTopStart.apply(PopoverSemantic).frame {
                         this@dismissBackground.native.apply {
                             clipChildren = false
                             clipToPadding = false

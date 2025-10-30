@@ -30,16 +30,16 @@ object ScrollElementTestPage : Page {
         get() = super.title
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
+        scrolling.col {
             repeat(3) {
-                card - col {
+                card.col {
                     h3("Header")
                     repeat(50) {
                         text("OK")
                     }
-                    sizeConstraints(height = 10.rem) - row {
-                        expanding - space()
-                        expanding - card - col {
+                    sizeConstraints(height = 10.rem).row {
+                        expanding.space()
+                        expanding.card.col {
                             repeat(50) {
                                 text("OK")
                             }

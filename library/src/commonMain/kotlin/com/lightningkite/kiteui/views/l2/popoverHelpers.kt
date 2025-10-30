@@ -30,9 +30,9 @@ fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> V
                     this@overlayWriter.removeChild(this@beforeNextElementSetup)
                 }
             }
-            atBottomCenter - col {
+            atBottomCenter.col {
                 gap = 2.rem
-                DialogSemantic.onNext - content()
+                DialogSemantic.onNext.content()
                 space()
             }
         }
@@ -62,7 +62,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
                 }
                 willRemove = dismissBackground {
                     onClick { if (dismissable) closePopovers() }
-                    centered - DialogSemantic.onNext - frame {
+                    centered.apply(DialogSemantic).frame {
                         content()
                     }
                 }
@@ -75,7 +75,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
-            centered - DialogSemantic.onNext - frame {
+            centered.apply(DialogSemantic).frame {
                 content { close() }
             }
         }

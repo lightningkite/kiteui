@@ -25,7 +25,7 @@ fun ViewWriter.navLayout(
 }
 
 fun ViewWriter.navBottomBar(show: Reactive<Boolean> = Constant(true), navElements: ReactiveContext.() -> List<NavElement>) {
-    nav - row {
+    nav.row {
         ::shown { show() && !AppState.softInputOpen() }
         navGroupTabs(remember { navElements() }) {}
     } 

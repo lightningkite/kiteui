@@ -216,21 +216,15 @@ expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 @ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.")
-val ViewWriter.marginless: ViewWrapper get() = ViewWrapper
+val ViewWriter.marginless: ViewWrapper get() = this
 
 @ViewModifierDsl3
 val ViewWriter.padded: ViewWrapper
-    get() {
-        beforeNextElementSetup { themeChoice += ForcePaddingSemantic }
-        return ViewWrapper
-    }
+    get() = beforeNextElementSetup { themeChoice += ForcePaddingSemantic }
 
 @ViewModifierDsl3
 val ViewWriter.unpadded: ViewWrapper
-    get() {
-        beforeNextElementSetup { padding = 0.px }
-        return ViewWrapper
-    }
+    get() = beforeNextElementSetup { padding = 0.px }
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'padded'", ReplaceWith("padded", "com.lightningkite.kiteui.views.direct.padded"))

@@ -65,9 +65,9 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test bottomSheet" }
                 onClick {
                     coordinatorFrame!!.bottomSheet(startState = BottomSheetState.PARTIALLY_EXPANDED) {
-                        DialogSemantic.onNext - col {
+                        DialogSemantic.onNext.col {
                             applySafeInsets()
-                            centered - coordinatorDragHandle()
+                            centered.coordinatorDragHandle()
                             button {
                                 text("Close")
                                 onClick { it.close() }
@@ -82,7 +82,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test leftSlidingPanel" }
                 onClick {
                     coordinatorFrame!!.leftSlidingPanel {
-                        DialogSemantic.onNext - col {
+                        DialogSemantic.onNext.col {
                             button {
                                 text("Close")
                                 onClick { it.close() }
@@ -97,7 +97,7 @@ object DialogSamplesPage : Page {
                 h6 { content = "Launch Test rightSlidingPanel" }
                 onClick {
                     coordinatorFrame!!.rightSlidingPanel {
-                        DialogSemantic.onNext - col {
+                        DialogSemantic.onNext.col {
                             button {
                                 text("Close")
                                 onClick { it.close() }
@@ -115,14 +115,14 @@ object DialogSamplesPage : Page {
 @Routable("sample/dialog/1") object DialogSampleScreen1: Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         dismissBackground {
-            centered - card - col {
+            centered.card.col {
                 h2 { content = "Sample Dialog" }
                 text { content = "This is a sample dialog." }
                 row {
-                    button {
+                    card.button {
                         text { content = "OK" }
                         onClick { dialogPageNavigator.dismiss() }
-                    } in card
+                    }
                 }
             }
         }

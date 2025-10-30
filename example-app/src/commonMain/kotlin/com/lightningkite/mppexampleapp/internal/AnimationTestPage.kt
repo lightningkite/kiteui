@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("animation-test")
 object AnimationTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = scrolling - col {
+    override fun ViewWriter.render(): ViewModifiable = scrolling.col {
         val a = Signal(true)
         val s = Signal(true)
         val d = Signal(true)
@@ -64,53 +64,53 @@ object AnimationTestPage : Page {
                 "Should see " + map.entries.joinToString { if(it.value()) it.key else "-" }
             }
         }
-        sizeConstraints(height = 30.rem) - row {
-            expanding - card - col {
+        sizeConstraints(height = 30.rem).row {
+            expanding.card.col {
                 h2("forEachAnimated Weighted Vertical")
-                expanding - col {
+                expanding.col {
                     forEachAnimated(remember {
                         map.entries.mapNotNull { if(it.value()) it.key else null }
                     }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
-                        card - text {
+                        card.text {
                             content = it
                             debugName = content
                         }
                     }
                 }
             }
-            expanding - card - col {
+            expanding.card.col {
                 h2("Weighted Vertical")
-                expanding - col {
+                expanding.col {
                     for((key, prop) in map) {
-                        expanding - shownWhen { prop() } - card - text { content = key; debugName = content }
+                        expanding.shownWhen { prop() }.card.text { content = key; debugName = content }
                     }
                 }
             }
-            expanding - card - col {
+            expanding.card.col {
                 h2("Vertical")
-                expanding - col {
+                expanding.col {
                     for((key, prop) in map) {
-                        shownWhen { prop() } - card - text { content = key; debugName = content }
+                        shownWhen { prop() }.card.text { content = key; debugName = content }
                     }
                 }
             }
-            expanding - card - col {
+            expanding.card.col {
                 h2("Vertical (flex)")
-                expanding - col {
+                expanding.col {
                     for((key, prop) in map) {
-                        shownWhen { prop() } - card - text { content = key; debugName = content }
+                        shownWhen { prop() }.card.text { content = key; debugName = content }
                     }
-                    expanding - space()
+                    expanding.space()
                 }
             }
         }
-        card - col {
+        card.col {
             h2("forEachAnimated Weighted Horizontal")
             row {
                 forEachAnimated(remember {
                     map.entries.mapNotNull { if(it.value()) it.key else null }
                 }.debounce(10.milliseconds), preHidingModifiers = { expanding }) {
-                    card - text {
+                    card.text {
                         content = it
                         debugName = content
                     }
@@ -120,20 +120,20 @@ object AnimationTestPage : Page {
 
 
 
-        card - col {
+        card.col {
             h2("Weighted Horizontal")
             row {
                 for((key, prop) in map) {
-                    expanding - shownWhen { prop() } - card - text { content = key; debugName = content }
+                    expanding.shownWhen { prop() }.card.text { content = key; debugName = content }
                 }
             }
         }
 
-        card - col {
+        card.col {
             h2("Horizontal")
             row {
                 for((key, prop) in map) {
-                    shownWhen { prop() } - card - text { content = key; debugName = content }
+                    shownWhen { prop() }.card.text { content = key; debugName = content }
                 }
             }
         }

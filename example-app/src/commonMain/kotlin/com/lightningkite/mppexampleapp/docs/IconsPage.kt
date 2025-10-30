@@ -28,7 +28,7 @@ object IconsPage: DocPage {
                          icon(Icon.search, "Search")
                          icon(Icon.menu, "Menu")
                 """.trimIndent()) {
-                centered - frame {
+                centered.frame {
                      row {
                          icon(Icon.home, "Forward")
                          icon {
@@ -76,7 +76,7 @@ object IconsPage: DocPage {
                         }
                             
                 """.trimIndent()) {
-               centered - card
+               centered.card
                     row {
                         icon(
                             {

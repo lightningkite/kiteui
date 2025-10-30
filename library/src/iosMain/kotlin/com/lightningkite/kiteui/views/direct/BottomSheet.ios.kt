@@ -18,16 +18,16 @@ actual fun ViewWriter.openBottomSheet(
     // TODO: native bottom sheet
     rawPopover(ScreenTransitions.VerticalSlide) {
         col {
-            expanding - space()
-            expanding - DialogSemantic.onNext - col {
+            expanding.space()
+            expanding.apply(DialogSemantic).col {
                 row {
-                    expanding - space()
+                    expanding.space()
                     button {
                         icon(Icon.close, "close")
                         onClick { closePopovers() }
                     }
                 }
-                expanding - view()
+                expanding.view()
             }
         }
     }

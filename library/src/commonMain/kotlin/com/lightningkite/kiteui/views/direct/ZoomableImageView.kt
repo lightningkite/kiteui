@@ -60,7 +60,7 @@ class ZoomableImageView(viewWriter: ViewWriter) : ViewModifiable {
     val activityIndicator: ActivityIndicator
     init {
         with(rView) {
-            centered - activityIndicator {
+            centered.activityIndicator {
                 activityIndicator = this
                 opacity = 0.0
             }

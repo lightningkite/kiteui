@@ -31,9 +31,9 @@ object DataLoadingExamplePage : Page {
         col {
             h1 { content = "This example loads some data." }
             text { content = "It's also faking a lot of loading so you can see what it looks like." }
-            expanding - recyclerView {
+            expanding.recyclerView {
                 children(data) {
-                    card - col {
+                    card.col {
                         val takesTime = rememberSuspending { delay(Random.nextLong(0, 5000)); "" }
                         val f = remember { takesTime() }
                         h3 { ::content { it().title + f() } }

@@ -31,13 +31,13 @@ object ReactivityPage : Page {
             async(dependency()) { delay(1000) }
             "Loaded!"
         }
-        scrolling - col {
-            col {
+        scrolling.col {
+            padded.col {
                 h1 { content = "This screen demonstrates various forms of reactivity." }
                 text { content = "Note the use of the multi-layer 'Reactive' in `fetching`." }
-            } in padded
+            }
 
-            col {
+            card.col {
                 h2 { content = "Data" }
                 field("Locally Stored Value") {
                     textInput { content bind local }
@@ -48,31 +48,31 @@ object ReactivityPage : Page {
                 field("Debounced Value") {
                     textInput { content bind debounced }
                 }
-                button {
+                important.button {
                     text { content = "Reload 'fetching'" }
                     onClick {
                         dependency.value++
                     }
-                } in important
-            } in card
+                }
+            }
 
-            col {
+            card.col {
                 h2 { content = "Using reactiveScope()" }
                 text { reactiveScope { content = "local = ${local()}" } }
                 text { reactiveScope { content = "persist = ${persist()}" } }
                 text { reactiveScope { content = "indirect = ${indirect()}" } }
                 text { reactiveScope { content = "debounced = ${debounced()}" } }
                 text { reactiveScope { content = "fetching = ${fetching()}" } }
-            } in card
+            }
 
-            col {
+            card.col {
                 h2 { content = "Using ::content {}" }
                 text { ::content { "local = ${local()}" } }
                 text { ::content { "persist = ${persist()}" } }
                 text { ::content { "indirect = ${indirect()}" } }
                 text { ::content { "debounced = ${debounced()}" } }
                 text { ::content { "fetching = ${fetching()}" } }
-            } in card
+            }
         }
     }
 }

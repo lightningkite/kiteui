@@ -29,7 +29,7 @@ fun ViewWriter.navigatorView(navigator: PageNavigator): SwapView {
                 with(split()) {
                     this.pageNavigator = n
                     if (screen != null)
-                        with(screen) { MainContentSemantic.onNext - padded - render() }
+                        with(screen) { MainContentSemantic.onNext.padded.render() }
                     else null
                 }
             }
@@ -58,7 +58,7 @@ fun ViewWriter.navigatorViewDialog(): SwapView {
                 with(split()) {
                     this.pageNavigator = n
                     if (screen != null)
-                        with(screen) { DialogSemantic.onNext - render() }
+                        with(screen) { DialogSemantic.onNext.render() }
                     else null
                 }
             }

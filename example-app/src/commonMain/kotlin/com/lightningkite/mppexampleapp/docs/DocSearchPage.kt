@@ -46,15 +46,15 @@ object DocSearchPage : Page {
 
     override fun ViewWriter.render(): ViewModifiable = run {
         frame {
-            align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col  {
+            align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col  {
                 h1("Documentation")
                 text("Here you can find many helpful pages for understanding KiteUI and its tools.")
                 row {
-                    centered - icon { source = Icon.search }
-                    expanding - textField {
+                    centered.icon { source = Icon.search }
+                    expanding.textField {
                         content bind query
                     }
-                    centered - button {
+                    centered.button {
                         gap = 0.1.rem
                         icon { source = Icon.close }
                         onClick {
@@ -62,7 +62,7 @@ object DocSearchPage : Page {
                         }
                     }
                 }
-                expanding - ListSemantic.onNext - recyclerView {
+                expanding.apply(ListSemantic).recyclerView {
                     paddingByEdge = Edges(
                         left = 0.rem,
                         top = 0.rem,
@@ -81,7 +81,7 @@ object DocSearchPage : Page {
                             it to matchingTerms
                         }
                     }, { it }) {
-                        card - link {
+                        card.link {
                             ::to { it().first }
                             col {
                                 gap = 0.25.rem

@@ -23,19 +23,19 @@ class SsrTest {
         val writer = NewViewWriter(AppScope, context)
         with(writer) {
             Theme.flat2("f2", hue = 0.6.turns).onNext - scrolling - col {
-                centered - sizeConstraints(width = 50.rem) - card - col {
-                    centered - h1("Welcome to my Website")
-                    centered - text("I hope you like it!")
+                centered.sizeConstraints(width = 50.rem).card.col {
+                    centered.h1("Welcome to my Website")
+                    centered.text("I hope you like it!")
                 }
-                centered - sizeConstraints(width = 50.rem) - card - col {
-                    centered - h2("Form")
+                centered.sizeConstraints(width = 50.rem).card.col {
+                    centered.h2("Form")
                     field("Email") {
                         textInput {  }
                     }
                     field("Phone Number") {
                         textInput {  }
                     }
-                    centered - important - button { text("Submit") }
+                    centered.important.button { text("Submit") }
                 }
             }
         }

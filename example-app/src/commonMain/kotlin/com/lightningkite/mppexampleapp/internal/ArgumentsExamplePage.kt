@@ -56,7 +56,7 @@ class ArgumentsExamplePage(val id: String): Page {
                 toAdd.value = ""
             }
         }
-        sizeConstraints(height = 10.rem) - image {
+        sizeConstraints(height = 10.rem).image {
             source = when(htmlElementId.hashCode() % 2) {
                 0 -> Resources.imagesSnowyBackground
                 else -> Resources.imagesLightningBackground

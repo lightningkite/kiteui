@@ -44,7 +44,7 @@ actual fun RView.openPopover(
                 closePopovers()
             }
 
-            atTopStart - PopoverSemantic.onNext - frame {
+            atTopStart.apply(PopoverSemantic).frame {
                 this@dismissBackground.native.apply {
                     clipChildren = false
                     clipToPadding = false

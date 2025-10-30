@@ -149,13 +149,13 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = frame {
                     overlayFrame = this
                     if (ratio == null) {
-                        align(Align.Start, Align.Stretch) - content(control)
+                        align(Align.Start, Align.Stretch).content(control)
                     } else {
                         row {
                             gap = 0.px
                             ignoreInteraction = true
-                            weight(ratio) - content(control)
-                            weight(1f - ratio) - frame { ignoreInteraction = true }
+                            weight(ratio).content(control)
+                            weight(1f.ratio).frame { ignoreInteraction = true }
                         }
                     }
                 }.rView
@@ -190,13 +190,13 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = frame {
                     overlayFrame = this
                     if (ratio == null) {
-                        align(Align.End, Align.Stretch) - content(control)
+                        align(Align.End, Align.Stretch).content(control)
                     } else {
                         row {
                             gap = 0.px
                             ignoreInteraction = true
-                            weight(1f - ratio) - frame { ignoreInteraction = true }
-                            weight(ratio) - content(control)
+                            weight(1f.ratio).frame { ignoreInteraction = true }
+                            weight(ratio).content(control)
                         }
                     }
                 }.rView

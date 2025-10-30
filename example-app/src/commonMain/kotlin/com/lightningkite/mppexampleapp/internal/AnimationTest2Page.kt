@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Routable("animation-test2")
 object AnimationTest2Page : Page {
-    override fun ViewWriter.render(): ViewModifiable = scrolling - col {
+    override fun ViewWriter.render(): ViewModifiable = scrolling.col {
         val a = Signal(true)
         val s = Signal(true)
         val d = Signal(true)
@@ -68,16 +68,16 @@ object AnimationTest2Page : Page {
                 "Should see " + map.entries.joinToString { if(it.value()) it.key else "-" }
             }
         }
-        expanding - col {
+        expanding.col {
             map.forEach {
-                shownWhen { it.value() } - card - button {
+                shownWhen { it.value() }.card.button {
                     text {
                         content = it.key
                         debugName = content
                     }
                 }
             }
-            expanding - space()
+            expanding.space()
         }
 
         text("Below")

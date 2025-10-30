@@ -99,7 +99,7 @@ object FormsPage : Page {
     )
 
     override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - titledSection("Form Testing") {
+        scrolling.titledSection("Form Testing") {
             renderForm(form)
             renderFormReadOnly(form)
         }

@@ -33,7 +33,7 @@ fun ViewWriter.issueText(
     transform: (Issue) -> String = { it.summary },
     shownWhen: ReactiveContext.() -> Boolean = { true }
 ): ViewModifiable {
-    return this.shownWhen { shownWhen() && issues().isNotEmpty() } - ErrorSemantic.onNext - subtext {
+    return this.shownWhen { shownWhen() && issues().isNotEmpty() }.apply(ErrorSemantic).subtext {
         ::content {
             issues().joinToString("\n", transform = transform)
         }

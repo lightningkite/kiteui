@@ -24,25 +24,25 @@ object SampleLogInPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         val email = Signal("")
         val password = Signal("")
-        unpadded - frame {
+        unpadded.frame {
             image {
                 source = Resources.imagesSnowyBackground
                 scaleType = ImageScaleType.Crop
                 opacity = 0.5
             }
-            padded - scrolling - col {
-                expanding - space()
-                centered - sizeConstraints(maxWidth = 50.rem) - card - col {
+            padded.scrolling.col {
+                expanding.space()
+                centered.sizeConstraints(maxWidth = 50.rem).card.col {
                     h1 { content = "My App" }
-                    sizeConstraints(width = 20.rem) - field("Email") {
-                        fieldTheme - textInput {
+                    sizeConstraints(width = 20.rem).field("Email") {
+                        fieldTheme.textInput {
                             hint = "Email"
                             keyboardHints = KeyboardHints.email
                             content bind email
                         }
                     }
-                    sizeConstraints(width = 20.rem) - field("Password") {
-                        fieldTheme - textInput {
+                    sizeConstraints(width = 20.rem).field("Password") {
+                        fieldTheme.textInput {
                             hint = "Password"
                             keyboardHints = KeyboardHints.password
                             content bind password
@@ -54,7 +54,7 @@ object SampleLogInPage : Page {
                             }
                         }
                     }
-                    centered - sizeConstraints(width = 15.rem) - important - button {
+                    centered.sizeConstraints(width = 15.rem).important.button {
                         h6 { content = "Log In" }
                         onClick {
                             delay(1000)
@@ -62,7 +62,7 @@ object SampleLogInPage : Page {
                         }
                     }
                 }
-                expanding - space()
+                expanding.space()
             }
         }
     }

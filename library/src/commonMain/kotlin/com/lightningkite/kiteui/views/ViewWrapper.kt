@@ -1,10 +1,6 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.views.RView
+import com.lightningkite.kiteui.views.ViewWriter
 
-abstract class ViewWrapper {
-    abstract fun view(): RView?
-    companion object: ViewWrapper() {
-        override fun view(): RView? = null
-    }
-}
+typealias ViewWrapper = ViewWriter

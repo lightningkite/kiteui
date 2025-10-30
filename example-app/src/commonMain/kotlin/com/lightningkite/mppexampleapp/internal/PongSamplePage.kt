@@ -73,21 +73,21 @@ class PongDelegate : CanvasDelegate() {
     fun frame(time: Double) {
         ballX += ballVX * time
         ballY += ballVY * time
-        if (ballY > stageHalfWidth - ballRadius) {
+        if (ballY > stageHalfWidth -ballRadius) {
             ballVY = -abs(ballVY)
-            ballY = stageHalfWidth - ballRadius
+            ballY = stageHalfWidth -ballRadius
         }
         if (ballY < -stageHalfWidth + ballRadius) {
             ballVY = abs(ballVY)
             ballY = -stageHalfWidth + ballRadius
         }
-        if (abs(ballX - -(stageHalfLength - paddleOffset)) < paddleHalfThickness + ballRadius) {
-            if (abs(ballY - paddleLeftY) < paddleHalfWidth + ballRadius) {
+        if (abs(ballX - -(stageHalfLength -paddleOffset)) < paddleHalfThickness + ballRadius) {
+            if (abs(ballY -paddleLeftY) < paddleHalfWidth + ballRadius) {
                 ballVX = abs(ballVX)
             }
         }
-        if (abs(ballX - (stageHalfLength - paddleOffset)) < paddleHalfThickness + ballRadius) {
-            if (abs(ballY - paddleRightY) < paddleHalfWidth + ballRadius) {
+        if (abs(ballX - (stageHalfLength -paddleOffset)) < paddleHalfThickness + ballRadius) {
+            if (abs(ballY -paddleRightY) < paddleHalfWidth + ballRadius) {
                 ballVX = -abs(ballVX)
             }
         }

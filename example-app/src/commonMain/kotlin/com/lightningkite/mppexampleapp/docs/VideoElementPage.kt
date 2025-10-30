@@ -36,7 +36,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - video {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).video {
                         source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                         this.time bind time
                         this.playing bind playing
@@ -97,7 +97,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack
                         this.loop = true
                         scaleType = ImageScaleType.Crop
@@ -119,7 +119,7 @@ object VideoElementPage: DocPage {
                 }
                 """.trimIndent()) {
                 frame {
-                    centered - sizeConstraints(width = 12.rem, height = 12.rem) - media {
+                    centered.sizeConstraints(width = 12.rem, height = 12.rem).media {
                         source = Resources.videoBack
                         this.loop = true
                         this.showControls = true

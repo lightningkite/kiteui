@@ -68,7 +68,7 @@ object CheatSheet : DocPage {
     ): ViewModifiable {
         val e = ExampleEntry(name)
         known += e
-        return card - rowCollapsingToColumn(79.rem) {
+        return card.rowCollapsingToColumn(79.rem) {
             dynamicTheme {
                 if (jump() == e) ImportantSemantic
                 else null
@@ -76,7 +76,7 @@ object CheatSheet : DocPage {
             reactive {
                 if (jump() == e) scrollIntoView(null, Align.Center, true)
             }
-            weight(1f) - col {
+            weight(1f).col {
                 gap = 0.25.rem
                 text(name)
                 subtext { setBasicHtmlContent(description) }
@@ -86,7 +86,7 @@ object CheatSheet : DocPage {
                     label {
                         content = "See Also:"
                         for (reference in references) {
-                            LinkSemantic.onNext - button {
+                            LinkSemantic.onNext.button {
                                 subtext("- ${reference.name}")
                                 onClick {
                                     jump.value = reference
@@ -99,10 +99,10 @@ object CheatSheet : DocPage {
                 }
             }
             separator()
-            weight(3f) - rowCollapsingToColumn(40.rem) {
-                weight(2f) - scrollingHorizontally - code { content = code }
+            weight(3f).rowCollapsingToColumn(40.rem) {
+                weight(2f).scrollingHorizontally.code { content = code }
                 separator()
-                weight(1f) - col {
+                weight(1f).col {
                     result()
                 }
             }
@@ -120,16 +120,16 @@ object CheatSheet : DocPage {
                         description = "Horizontal stuff",
                         code = """
                             row {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         """.trimIndent(),
                         result = {
                             row {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         }
                     )
@@ -137,17 +137,17 @@ object CheatSheet : DocPage {
                         name = "col",
                         description = "Vertical stuff",
                         code = """
-                            sizeConstraints(height = 10.rem) - col {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                            sizeConstraints(height = 10.rem).col {
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 10.rem) - col {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                            sizeConstraints(height = 10.rem).col {
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         }
                     )
@@ -156,16 +156,16 @@ object CheatSheet : DocPage {
                         description = "Horizontal stuff that becomes vertical stuff at specified screen width",
                         code = """
                             rowCollapsingToColumn(70.rem) {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         """.trimIndent(),
                         result = {
                             rowCollapsingToColumn(70.rem) {
-                                card - text("A")
-                                weight(1f) - card - text("B")
-                                card - text("C")
+                                card.text("A")
+                                weight(1f).card.text("B")
+                                card.text("C")
                             }
                         }
                     )
@@ -173,17 +173,17 @@ object CheatSheet : DocPage {
                         name = "frame",
                         description = "Stuff stacked on top of one another",
                         code = """
-                            sizeConstraints(height = 10.rem) - card - frame {
-                                atTopStart - text("A")
-                                centered - text("B")
-                                atBottomEnd - text("C")
+                            sizeConstraints(height = 10.rem).card.frame {
+                                atTopStart.text("A")
+                                centered.text("B")
+                                atBottomEnd.text("C")
                             }
                         """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 10.rem) - frame {
-                                atTopStart - card - text("A")
-                                centered - card - text("B")
-                                atBottomEnd - card - text("C")
+                            sizeConstraints(height = 10.rem).frame {
+                                atTopStart.card.text("A")
+                                centered.card.text("B")
+                                atBottomEnd.card.text("C")
                             }
                         }
                     )
@@ -217,18 +217,18 @@ object CheatSheet : DocPage {
                         description = "Circular progress indicator",
                         code = """
                             row {
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 1f }
                             }
                     """.trimIndent(),
                         result = {
                             row {
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.4f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.6f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 0.8f }
-                                sizeConstraints(width = 3.rem) - circularProgress { ratio = 1f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.4f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.6f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 0.8f }
+                                sizeConstraints(width = 3.rem).circularProgress { ratio = 1f }
                             }
                         }
                     )
@@ -254,12 +254,12 @@ object CheatSheet : DocPage {
                         name = "image",
                         description = "Displays a changeable image.",
                         code = """
-                    sizeConstraints(height = 8.rem) - image {
+                    sizeConstraints(height = 8.rem).image {
                         source = ImageRemote(url = "https://picsum.photos/200/200")
                     }
                     """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 8.rem) - image {
+                            sizeConstraints(height = 8.rem).image {
                                 source = ImageRemote(url = "https://picsum.photos/200/200")
                             }
                         }
@@ -268,13 +268,13 @@ object CheatSheet : DocPage {
                         name = "video",
                         description = "Displays a changeable video.",
                         code = """
-                            sizeConstraints(height = 10.rem) - video {
+                            sizeConstraints(height = 10.rem).video {
                                 source = VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                                 showControls = true
                             }
                     """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 10.rem) - video {
+                            sizeConstraints(height = 10.rem).video {
                                 source =
                                     VideoRemote("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
                                 showControls = true
@@ -343,7 +343,7 @@ object CheatSheet : DocPage {
                         }
                     )
                     example(
-                        name = "h1 - h6",
+                        name = "h1.h6",
                         description = "Headers h1 through h6",
                         code = """
                             h1("Header 1")
@@ -397,7 +397,7 @@ object CheatSheet : DocPage {
                                 text("Click me")
                                 opensMenu {
                                     col {
-                                        centered - text("Menu")
+                                        centered.text("Menu")
                                         button { text("I am a button") }
                                     }
                                 }
@@ -411,7 +411,7 @@ object CheatSheet : DocPage {
                                 text("Click me")
                                 opensMenu {
                                     col {
-                                        centered - text("Menu")
+                                        centered.text("Menu")
                                         button { text("I am a button") }
                                     }
                                 }
@@ -464,13 +464,13 @@ object CheatSheet : DocPage {
                             val selected = Signal<Set<String>>(setOf("Ketchup"))
                             for(option in listOf("Ketchup", "Mustard", "Mayo")) {
                                 row {
-                                    centered - checkbox {
+                                    centered.checkbox {
                                         checked bind selected.contains(option)
                                     }
-                                    centered - expanding - text(option)
+                                    centered.expanding.text(option)
                                 }
                             }
-                            centered - text {
+                            centered.text {
                                 ::content { "Include " + selected().joinToString(", ") }
                             }
                         }
@@ -480,13 +480,13 @@ object CheatSheet : DocPage {
                                 val selected = Signal<Set<String>>(setOf("Ketchup"))
                                 for (option in listOf("Ketchup", "Mustard", "Mayo")) {
                                     row {
-                                        centered - checkbox {
+                                        centered.checkbox {
                                             checked bind selected.contains(option)
                                         }
-                                        centered - expanding - text(option)
+                                        centered.expanding.text(option)
                                     }
                                 }
-                                centered - text {
+                                centered.text {
                                     ::content { "Include " + selected().joinToString(", ") }
                                 }
                             }
@@ -498,16 +498,16 @@ object CheatSheet : DocPage {
                         code = """
                         col {
                             val selected = Signal<String>("Chicken")
-                            centered - text("Pick one")
+                            centered.text("Pick one")
                             for(option in listOf("Chicken", "Steak", "Shrimp")) {
                                 row {
-                                    centered - radioButton {
+                                    centered.radioButton {
                                         checked bind selected.equalTo(option)
                                     }
-                                    centered - expanding - text(option)
+                                    centered.expanding.text(option)
                                 }
                             }
-                            centered - text {
+                            centered.text {
                                 ::content { "Meat selected: " + selected() }
                             }
                         }
@@ -515,16 +515,16 @@ object CheatSheet : DocPage {
                         result = {
                             col {
                                 val selected = Signal<String>("Chicken")
-                                centered - text("Pick one")
+                                centered.text("Pick one")
                                 for (option in listOf("Chicken", "Steak", "Shrimp")) {
                                     row {
-                                        centered - radioButton {
+                                        centered.radioButton {
                                             checked bind selected.equalTo(option)
                                         }
-                                        centered - expanding - text(option)
+                                        centered.expanding.text(option)
                                     }
                                 }
-                                centered - text {
+                                centered.text {
                                     ::content { "Meat selected: " + selected() }
                                 }
                             }
@@ -536,7 +536,7 @@ object CheatSheet : DocPage {
                         code = """
                             val toggled = Signal<Boolean>(false)
                             toggleButton {
-                                centered - text {
+                                centered.text {
                                     ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
                                 }
                                 checked bind toggled
@@ -545,7 +545,7 @@ object CheatSheet : DocPage {
                         result = {
                             val toggled = Signal<Boolean>(false)
                             toggleButton {
-                                centered - text {
+                                centered.text {
                                     ::content { if (toggled()) "Toggled ON" else "Toggled OFF" }
                                 }
                                 checked bind toggled
@@ -658,7 +658,7 @@ object CheatSheet : DocPage {
                         code = """
                         val switchValue = Signal(false)
                         row {
-                            expanding - text("My switch")
+                            expanding.text("My switch")
                             switch { checked bind switchValue } 
                         }
                         text { ::content { "Switch is ${'$'}{ if(switchValue()) "ON" else "OFF" }" } }
@@ -666,7 +666,7 @@ object CheatSheet : DocPage {
                         result = {
                             val switchValue = Signal(false)
                             row {
-                                expanding - text("My switch")
+                                expanding.text("My switch")
                                 switch { checked bind switchValue }
                             }
                             text { ::content { "Switch is ${if (switchValue()) "ON" else "OFF"}" } }
@@ -677,19 +677,19 @@ object CheatSheet : DocPage {
                         description = "The text area",
                         code = """
                         val longText = Signal("")
-                        sizeConstraints(height = 120.dp) - scrolling - textArea { 
+                        sizeConstraints(height = 120.dp).scrolling.textArea { 
                             content bind longText
                             hint = "Some hint"
                         }
-                        sizeConstraints(height = 120.dp) - scrolling - text { ::content { "Entered Input: ${'$'}{longText()}" } }
+                        sizeConstraints(height = 120.dp).scrolling.text { ::content { "Entered Input: ${'$'}{longText()}" } }
                     """.trimIndent(),
                         result = {
                             val longText = Signal("")
-                            sizeConstraints(height = 120.dp) - scrolling - textArea {
+                            sizeConstraints(height = 120.dp).scrolling.textArea {
                                 content bind longText
                                 hint = "Some hint"
                             }
-                            sizeConstraints(height = 120.dp) - scrolling - text { ::content { "Entered Input: ${longText()}" } }
+                            sizeConstraints(height = 120.dp).scrolling.text { ::content { "Entered Input: ${longText()}" } }
                         }
                     )
                     example(
@@ -765,13 +765,13 @@ object CheatSheet : DocPage {
                 titledSection("View Modifiers") {
                     example(
                         name = "scrolling", description = "Adds vertical scrolling to the view", code = """
-                        sizeConstraints(height = 100.dp) - scrolling - col {
+                        sizeConstraints(height = 100.dp).scrolling.col {
                             for(it in 0..10) {
                                 text { content = "Element ${'$'}it" }
                             }
                         }
                     """.trimIndent(), result = {
-                            sizeConstraints(height = 100.dp) - scrolling - col {
+                            sizeConstraints(height = 100.dp).scrolling.col {
                                 for (it in 0..10) {
                                     text { content = "Element $it" }
                                 }
@@ -781,7 +781,7 @@ object CheatSheet : DocPage {
                         name = "scrollingHorizontally",
                         description = "Adds horizontal scrolling to the view.",
                         code = """
-                         scrollingHorizontally - row {
+                         scrollingHorizontally.row {
                             for(it in 0..10) {
                                 text { content = "Element ${'$'}it" }
                             }
@@ -789,7 +789,7 @@ object CheatSheet : DocPage {
                     """.trimIndent(),
                         result = {
                             col {
-                                scrollingHorizontally - row {
+                                scrollingHorizontally.row {
                                     for (it in 0..10) {
                                         text { content = "Element $it" }
                                     }
@@ -800,7 +800,7 @@ object CheatSheet : DocPage {
                         name = "scrollingBoth",
                         description = "Adds vertical and horizontal scrolling to the view.",
                         code = """
-                        scrollingBoth {} - col {
+                        scrollingBoth {}.col {
                             for(y in 0..10) {
                                 row {
                                     for(x in 0..10) {
@@ -811,7 +811,7 @@ object CheatSheet : DocPage {
                         }
                     """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 150.dp) - scrollingBoth {} - col {
+                            sizeConstraints(height = 150.dp).scrollingBoth {}.col {
                                 for (y in 0..10) {
                                     row {
                                         for (x in 0..10) {
@@ -831,7 +831,7 @@ object CheatSheet : DocPage {
                                     icon(Icon.help, "")
                                     text("Some rich information")
                                 }
-                            } - card - text("Hover over me!")
+                            }.card.text("Hover over me!")
                         """.trimIndent(),
                         result = {
                             hintPopover {
@@ -839,17 +839,17 @@ object CheatSheet : DocPage {
                                     icon(Icon.help, "")
                                     text("Some rich information")
                                 }
-                            } - card - text("Hover over me!")
+                            }.card.text("Hover over me!")
                         }
                     )
                     example(
                         name = "textPopover",
                         description = "Shows a hint view with text only on hover.",
                         code = """
-                            textPopover("Some info!") - card - text("Hover over me!")
+                            textPopover("Some info!").card.text("Hover over me!")
                         """.trimIndent(),
                         result = {
-                            textPopover("Some info!") - card - text("Hover over me!")
+                            textPopover("Some info!").card.text("Hover over me!")
                         }
                     )
                     example(
@@ -857,16 +857,16 @@ object CheatSheet : DocPage {
                         description = "Indicates this view should take a ratio of the remaining space.",
                         code = """
                             row {
-                                weight(1f) - card - text("A")
-                                weight(2f) - card - text("B")
-                                card - text("C")
+                                weight(1f).card.text("A")
+                                weight(2f).card.text("B")
+                                card.text("C")
                             }
                         """.trimIndent(),
                         result = {
                             row {
-                                weight(1f) - card - text("A")
-                                weight(2f) - card - text("B")
-                                card - text("C")
+                                weight(1f).card.text("A")
+                                weight(2f).card.text("B")
+                                card.text("C")
                             }
                         }
                     )
@@ -875,14 +875,14 @@ object CheatSheet : DocPage {
                         description = "A shortcut for weight(1f).",
                         code = """
                             row {
-                                expanding - card - text("A")
-                                card - text("B")
+                                expanding.card.text("A")
+                                card.text("B")
                             }
                         """.trimIndent(),
                         result = {
                             row {
-                                expanding - card - text("A")
-                                card - text("B")
+                                expanding.card.text("A")
+                                card.text("B")
                             }
                         }
                     )
@@ -890,23 +890,23 @@ object CheatSheet : DocPage {
                         name = "centered",
                         description = "Centers within a container",
                         code = """
-                          sizeConstraints(height = 8.rem) - card - row {
-                                card - expanding - text("I am not centered")
-                                centered - card - expanding - text("I am centered")
+                          sizeConstraints(height = 8.rem).card.row {
+                                card.expanding.text("I am not centered")
+                                centered.card.expanding.text("I am centered")
                             }
-                            card - col {
-                                card - text("I am not centered")
-                                centered - card - text("I am centered")
+                            card.col {
+                                card.text("I am not centered")
+                                centered.card.text("I am centered")
                             }
                         """.trimIndent(),
                         result = {
-                            card - row {
-                                card - expanding - text("I am not centered")
-                                centered - card - expanding - text("I am centered")
+                            card.row {
+                                card.expanding.text("I am not centered")
+                                centered.card.expanding.text("I am centered")
                             }
-                            card - col {
-                                card - text("I am not centered")
-                                centered - card - text("I am centered")
+                            card.col {
+                                card.text("I am not centered")
+                                centered.card.text("I am centered")
                             }
                         }
                     )
@@ -914,41 +914,41 @@ object CheatSheet : DocPage {
                         name = "align",
                         description = "Controls alignment within a container.  Has shortcuts in the form of 'at[Y][X}'.",
                         code = """
-                            sizeConstraints(height = 7.rem) - card - row {
-                                atTop - card - text("T")
-                                centered - card - text("C")
-                                atBottom - card - text("B")
-                                align(Align.Stretch, Align.Stretch) - card - text("S")
+                            sizeConstraints(height = 7.rem).card.row {
+                                atTop.card.text("T")
+                                centered.card.text("C")
+                                atBottom.card.text("B")
+                                align(Align.Stretch, Align.Stretch).card.text("S")
                             }
-                            card - col {
-                                atStart - card - text("Start")
-                                centered - card - text("Centered")
-                                atEnd - card - text("End")
-                                align(Align.Stretch, Align.Stretch) - card - text("Stretch")
+                            card.col {
+                                atStart.card.text("Start")
+                                centered.card.text("Centered")
+                                atEnd.card.text("End")
+                                align(Align.Stretch, Align.Stretch).card.text("Stretch")
                             }
-                            sizeConstraints(height = 12.rem) - card - frame {
-                                atTopStart - card - text("Top Start")
-                                align(Align.Stretch, Align.Center) - card - text("Stretch/Center")
-                                atEnd - card - text("End")
+                            sizeConstraints(height = 12.rem).card.frame {
+                                atTopStart.card.text("Top Start")
+                                align(Align.Stretch, Align.Center).card.text("Stretch/Center")
+                                atEnd.card.text("End")
                             }
                         """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 7.rem) - card - row {
-                                atTop - card - text("T")
-                                centered - card - text("C")
-                                atBottom - card - text("B")
-                                align(Align.Stretch, Align.Stretch) - card - text("S")
+                            sizeConstraints(height = 7.rem).card.row {
+                                atTop.card.text("T")
+                                centered.card.text("C")
+                                atBottom.card.text("B")
+                                align(Align.Stretch, Align.Stretch).card.text("S")
                             }
-                            card - col {
-                                atStart - card - text("Start")
-                                centered - card - text("Centered")
-                                atEnd - card - text("End")
-                                align(Align.Stretch, Align.Stretch) - card - text("Stretch")
+                            card.col {
+                                atStart.card.text("Start")
+                                centered.card.text("Centered")
+                                atEnd.card.text("End")
+                                align(Align.Stretch, Align.Stretch).card.text("Stretch")
                             }
-                            sizeConstraints(height = 12.rem) - card - frame {
-                                atTopStart - card - text("Top Start")
-                                align(Align.Stretch, Align.Center) - card - text("Stretch/Center")
-                                atEnd - card - text("End")
+                            sizeConstraints(height = 12.rem).card.frame {
+                                atTopStart.card.text("Top Start")
+                                align(Align.Stretch, Align.Center).card.text("Stretch/Center")
+                                atEnd.card.text("End")
                             }
                         }
                     )
@@ -956,26 +956,26 @@ object CheatSheet : DocPage {
                         name = "sizeConstraints",
                         description = "Sets requirements on the size of the view.",
                         code = """
-                            sizeConstraints(height = 3.rem) - card - text("Sized")
-                            atStart - sizeConstraints(width = 5.rem) - card - text("Very Short")
-                            atStart - sizeConstraints(width = 200.rem) - card - text("Try for 200")
+                            sizeConstraints(height = 3.rem).card.text("Sized")
+                            atStart.sizeConstraints(width = 5.rem).card.text("Very Short")
+                            atStart.sizeConstraints(width = 200.rem).card.text("Try for 200")
                         """.trimIndent(),
                         result = {
-                            sizeConstraints(height = 3.rem) - card - text("Sized")
-                            atStart - sizeConstraints(width = 5.rem) - card - text("Very Short")
-                            atStart - sizeConstraints(width = 200.rem) - card - text("Try for 200")
+                            sizeConstraints(height = 3.rem).card.text("Sized")
+                            atStart.sizeConstraints(width = 5.rem).card.text("Very Short")
+                            atStart.sizeConstraints(width = 200.rem).card.text("Try for 200")
                         }
                     )
                     example(
                         name = "padded",
                         description = "Forces a view to have padding.",
                         code = """
-                            card - text("Naturally has padding")
-                            padded - text("Has virtual padding")
+                            card.text("Naturally has padding")
+                            padded.text("Has virtual padding")
                         """.trimIndent(),
                         result = {
-                            card - text("Naturally has padding")
-                            padded - text("Has virtual padding")
+                            card.text("Naturally has padding")
+                            padded.text("Has virtual padding")
                         }
                     )
                     example(
@@ -983,23 +983,23 @@ object CheatSheet : DocPage {
                         description = "Forces a view to have no padding.",
                         code = """
                             text("Naturally no padding")
-                            unpadded - card - text("Forced no padding")
+                            unpadded.card.text("Forced no padding")
                         """.trimIndent(),
                         result = {
                             text("Naturally no padding")
-                            unpadded - card - text("Forced no padding")
+                            unpadded.card.text("Forced no padding")
                         }
                     )
                     example(
                         name = "compact",
                         description = "Reduces the padding on a view",
                         code = """
-                            card - text("Regular card")
-                            compact - card - text("Compact card")
+                            card.text("Regular card")
+                            compact.card.text("Compact card")
                         """.trimIndent(),
                         result = {
-                            card - text("Regular card")
-                            compact - card - text("Compact card")
+                            card.text("Regular card")
+                            compact.card.text("Compact card")
                         }
                     )
                     example(
@@ -1008,18 +1008,18 @@ object CheatSheet : DocPage {
                         code = """
                             val visible = Signal(true)
                             row {
-                                expanding - text("Visible")
+                                expanding.text("Visible")
                                 switch { checked bind visible }
                             }
-                            shownWhen { visible() } - text("Only visible when on")
+                            shownWhen { visible() }.text("Only visible when on")
                         """.trimIndent(),
                         result = {
                             val visible = Signal(true)
                             row {
-                                expanding - text("Visible")
+                                expanding.text("Visible")
                                 switch { checked bind visible }
                             }
-                            shownWhen { visible() } - text("Only visible when on")
+                            shownWhen { visible() }.text("Only visible when on")
                         }
                     )
                     example(
@@ -1027,31 +1027,31 @@ object CheatSheet : DocPage {
                         description = "There are a lot of theme-oriented modifiers.  They change the look of something.  The exact look depends on the theme.",
                         code = """
                             text("None")
-                            card - text("card")
-                            fieldTheme - text("fieldTheme")
-                            bar - text("bar")
-                            nav - text("nav")
-                            important - text("important")
-                            critical - text("critical")
-                            warning - text("warning")
-                            danger - text("danger")
-                            affirmative - text("affirmative")
-                            emphasized - text("emphasized")
-                            InsetSemantic.onNext - text("InsetSemantic.onNext")
+                            card.text("card")
+                            fieldTheme.text("fieldTheme")
+                            bar.text("bar")
+                            nav.text("nav")
+                            important.text("important")
+                            critical.text("critical")
+                            warning.text("warning")
+                            danger.text("danger")
+                            affirmative.text("affirmative")
+                            emphasized.text("emphasized")
+                            InsetSemantic.onNext.text("InsetSemantic.onNext")
                         """.trimIndent(),
                         result = {
                             text("None")
-                            card - text("card")
-                            fieldTheme - text("fieldTheme")
-                            bar - text("bar")
-                            nav - text("nav")
-                            important - text("important")
-                            critical - text("critical")
-                            warning - text("warning")
-                            danger - text("danger")
-                            affirmative - text("affirmative")
-                            emphasized - text("emphasized")
-                            InsetSemantic.onNext - text("InsetSemantic.onNext")
+                            card.text("card")
+                            fieldTheme.text("fieldTheme")
+                            bar.text("bar")
+                            nav.text("nav")
+                            important.text("important")
+                            critical.text("critical")
+                            warning.text("warning")
+                            danger.text("danger")
+                            affirmative.text("affirmative")
+                            emphasized.text("emphasized")
+                            InsetSemantic.onNext.text("InsetSemantic.onNext")
                         }
                     )
                 }
@@ -1126,7 +1126,7 @@ object CheatSheet : DocPage {
                         description = "Creates a dimmed background for making floating modals.",
                         code = """
                     dismissBackground {
-                        centered - card - text("I'm like a dialog")
+                        centered.card.text("I'm like a dialog")
                         onClick {
                             println("Put logic to dismiss here")
                         }
@@ -1134,7 +1134,7 @@ object CheatSheet : DocPage {
                     """.trimIndent(),
                         result = {
                             dismissBackground {
-                                centered - card - text("I'm like a dialog")
+                                centered.card.text("I'm like a dialog")
                                 onClick {
                                     println("Put logic to dismiss here")
                                 }
@@ -1146,22 +1146,22 @@ object CheatSheet : DocPage {
                         name = "recyclerView",
                         description = "Used when you have many, many items that needed represented in a scrollable area.",
                         code = """
-                        expanding - recyclerView {
+                        expanding.recyclerView {
                             //Determines the layout of the data.
                             placer = RecyclerViewPlacerVerticalGrid(1)
     
                             children(Constant((1..10000).toList()), id = { it }, render = { item ->
-                                card - text { ::content { "Item ${'$'}{item()}" } }
+                                card.text { ::content { "Item ${'$'}{item()}" } }
                             })
                         }
                     """.trimIndent(),
                         result = {
-                            expanding - recyclerView {
+                            expanding.recyclerView {
                                 //Determines the layout of the data.
                                 placer = RecyclerViewPlacerVerticalGrid(1)
 
                                 children(Constant((1..10000).toList()), id = { it }, render = { item ->
-                                    card - text { ::content { "Item ${item()}" } }
+                                    card.text { ::content { "Item ${item()}" } }
                                 })
                             }
                         }
@@ -1302,7 +1302,7 @@ object CheatSheet : DocPage {
 
                             col {
                                 forEach(remember { fruits }) { fruit ->
-                                    card - text(fruit)
+                                    card.text(fruit)
                                 }
                             }
                     """.trimIndent(),
@@ -1311,7 +1311,7 @@ object CheatSheet : DocPage {
 
                             col {
                                 forEach(remember { fruits }) { fruit ->
-                                    card - text(fruit)
+                                    card.text(fruit)
                                 }
                             }
                         }
@@ -1319,8 +1319,8 @@ object CheatSheet : DocPage {
                 }
             }
         }
-        atTopEnd - col {
-            fieldTheme - row {
+        atTopEnd.col {
+            fieldTheme.row {
                 textInput {
                     hint = "Quick jump..."
                     action = Action("Quick jump") {

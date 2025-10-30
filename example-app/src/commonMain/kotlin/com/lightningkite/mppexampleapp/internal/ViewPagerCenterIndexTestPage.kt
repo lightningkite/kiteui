@@ -23,7 +23,7 @@ import com.lightningkite.readable.*
 object ViewPagerCenterIndexTestPage : Page {
     override fun ViewWriter.render() = frame {
         val slides = Constant((0..10).toList())
-        unpadded - expanding
+        unpadded.expanding
         val recycler = horizontalRecyclerView {
             placer = RecyclerViewPagingPlacer()
             snapToElements = Align.Center
@@ -31,14 +31,14 @@ object ViewPagerCenterIndexTestPage : Page {
 
             children(slides, { it }) { slide ->
                 frame {
-                    centered - h1 {
+                    centered.h1 {
                         ::content { "${slide()}" }
                     }
                 }
             }
         }
 
-        atTopEnd - h3 {
+        atTopEnd.h3 {
             ::content { "Center Index: ${recycler.centerIndex()}" }
         }
     }
