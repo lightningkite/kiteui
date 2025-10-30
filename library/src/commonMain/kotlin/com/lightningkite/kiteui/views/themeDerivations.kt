@@ -41,6 +41,8 @@ inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewW
 }
 
 @ViewModifierDsl3
+inline val ViewWriter.group: ViewWrapper get() = GroupSemantic.onNext
+@ViewModifierDsl3
 inline val ViewWriter.card: ViewWrapper get() = CardSemantic.onNext
 @ViewModifierDsl3
 inline val ViewWriter.fieldTheme: ViewWrapper get() = FieldSemantic.onNext

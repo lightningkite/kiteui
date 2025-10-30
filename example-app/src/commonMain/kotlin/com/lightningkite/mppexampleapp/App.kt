@@ -19,18 +19,7 @@ import com.lightningkite.readable.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val defaultTheme = Theme.flat2("default", Angle(0.55f)).customize(
-    "defaulter",
-    bodyTransitions = ScreenTransitions.HorizontalSlide,
-    derivations = mapOf(
-        EmphasizedSemantic to {
-            it.copy(
-                id = EmphasizedSemantic.key,
-                font = it.font.copy(bold = true, italic = true),
-                foreground = Color.orange
-            ).withoutBack
-        },
-    ))
+val defaultTheme = Theme.shadCnLike("shadcnlike")
 val appTheme = Signal<Theme>(defaultTheme)
 
 fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {

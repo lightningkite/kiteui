@@ -83,3 +83,25 @@ class LayoutsTestPage : Page {
         }
     }
 }
+
+
+
+/**
+ * Calculates the rectangle of this view relative to another view's coordinate space.
+ *
+ * This is useful for positioning elements relative to each other, such as tooltips or popovers.
+ *
+ * @param other The view whose coordinate space should be used as the reference.
+ * @return The rectangle of this view in the other view's coordinate space, or null if either
+ *         view doesn't have a screen rectangle (e.g., not visible or not yet laid out).
+ */
+fun RView.rectangleRelativeTo(other: RView): Rect? {
+    val myRect = screenRectangle() ?: return null
+    val otherRect = other.screenRectangle() ?: return null
+    return Rect(
+        left = myRect.left - otherRect.left,
+        top = myRect.top - otherRect.top,
+        right = myRect.right - otherRect.left,
+        bottom = myRect.bottom - otherRect.top,
+    )
+}

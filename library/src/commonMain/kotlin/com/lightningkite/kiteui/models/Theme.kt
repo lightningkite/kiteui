@@ -248,6 +248,10 @@ data object CardSemantic : Semantic("crd") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack
 }
 
+data object GroupSemantic : Semantic("grp") {
+    override fun default(theme: Theme): ThemeAndBack = theme[CardSemantic]
+}
+
 data object DismissSemantic : Semantic("dsmss") {
     override fun default(theme: Theme): ThemeAndBack = theme.withBack(
         cascading = false,

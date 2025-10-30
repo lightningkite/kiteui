@@ -14,7 +14,7 @@ object ThemesPage : Page {
     override fun ViewWriter.render(): ViewModifiable = run {
         scrolling - col {
             h1 { content = "Theme Control" }
-            card - col {
+            group - col {
                 h2 {
                     content = "Theme Sampling"
                 }
@@ -34,7 +34,8 @@ object ThemesPage : Page {
                     weight(1f) - space {}
                 } in scrollsHorizontally
             }
-            card - frame {
+            group - frame {
+                h2 { content = "Nested Card Test" }
                 card - frame {
                     card - frame {
                         card - frame {
@@ -43,91 +44,119 @@ object ThemesPage : Page {
                     }
                 }
             }
-            card - col {
-                h2 { content = "Randomly Generate Themes" }
+            group - col {
+                h2 { content = "Theme Picker" }
 
                 ListSemantic.onNext - col {
-                    card - button {
-                        text("M1 Light")
-                        onClick {
-                            appTheme set MaterialLikeTheme.randomLight().randomElevationAndCorners()
-                                .randomTitleFontSettings()
+                    ListSemantic.onNext - row {
+                        expanding - button {
+                            text("M1 Light")
+                            onClick {
+                                appTheme set MaterialLikeTheme.randomLight().randomElevationAndCorners()
+                                    .randomTitleFontSettings()
+                            }
+                        }
+                        expanding - button {
+                            text("M1 Dark")
+                            onClick {
+                                appTheme set MaterialLikeTheme.randomDark().randomElevationAndCorners()
+                                    .randomTitleFontSettings()
+                            }
+                        }
+                        expanding - button {
+                            text("M3 Light")
+                            onClick {
+                                appTheme set M3Theme.randomLight().randomElevationAndCorners().randomTitleFontSettings()
+                            }
+                        }
+                        expanding - button {
+                            text("M3 Dark")
+                            onClick {
+                                appTheme set M3Theme.randomDark().randomElevationAndCorners().randomTitleFontSettings()
+                            }
                         }
                     }
-                    card - button {
-                        text("M1 Dark")
-                        onClick {
-                            appTheme set MaterialLikeTheme.randomDark().randomElevationAndCorners()
-                                .randomTitleFontSettings()
+                    ListSemantic.onNext - row {
+                        expanding - button {
+                            text("Flat Light")
+                            onClick {
+                                val a = Angle(Random.nextFloat())
+                                appTheme set Theme.flat(
+                                    id = "flat-${Random.nextInt()}",
+                                    hue = a,
+                                    saturation = 0.15f,
+                                    accentHue = a + Angle.halfTurn,
+                                    baseBrightness = 0.8f
+                                ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                                    .randomTitleFontSettings()
+                            }
+                        }
+                        expanding - button {
+                            text("Flat Dark")
+                            onClick {
+                                val a = Angle(Random.nextFloat())
+                                appTheme set Theme.flat(
+                                    id = "flat-${Random.nextInt()}",
+                                    hue = a,
+                                    saturation = 0.5f,
+                                    accentHue = a + Angle.halfTurn
+                                ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                                    .randomTitleFontSettings()
+                            }
                         }
                     }
-                    card - button {
-                        text("M3 Light")
-                        onClick {
-                            appTheme set M3Theme.randomLight().randomElevationAndCorners().randomTitleFontSettings()
+                    ListSemantic.onNext - row {
+                        expanding - button {
+                            text("Flat2 Light")
+                            onClick {
+                                val a = Angle(Random.nextFloat())
+                                appTheme set Theme.flat2(
+                                    id = "flat2-${Random.nextInt()}",
+                                    hue = a,
+                                    saturation = 0.15f,
+                                    accentHue = a + Angle.halfTurn,
+                                    baseBrightness = 0.8f
+                                ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                                    .randomTitleFontSettings()
+                            }
+                        }
+                        expanding - button {
+                            text("Flat2 Dark")
+                            onClick {
+                                val a = Angle(Random.nextFloat())
+                                appTheme set Theme.flat2(
+                                    id = "flat2-${Random.nextInt()}",
+                                    hue = a,
+                                    saturation = 0.5f,
+                                    accentHue = a + Angle.halfTurn
+                                ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
+                                    .randomTitleFontSettings()
+                            }
                         }
                     }
-                    card - button {
-                        text("M3 Dark")
-                        onClick {
-                            appTheme set M3Theme.randomDark().randomElevationAndCorners().randomTitleFontSettings()
+                    ListSemantic.onNext - row {
+                        expanding - button {
+                            text("ShadCN-Like Light")
+                            onClick {
+                                appTheme set Theme.shadCnLike(
+                                    id = "shadcnlike-light",
+                                    background = Color.white,
+                                    accent = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
+                                )
+                            }
+                        }
+                        expanding - button {
+                            text("ShadCN-Like Dark")
+                            onClick {
+                                appTheme set Theme.shadCnLike(
+                                    id = "shadcnlike-dark",
+                                    background = Color.gray(0.05f),
+                                    accent = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
+                                )
+                            }
                         }
                     }
-                    card - button {
-                        text("Flat Light")
-                        onClick {
-                            val a = Angle(Random.nextFloat())
-                            appTheme set Theme.flat(
-                                id = "flat-${Random.nextInt()}",
-                                hue = a,
-                                saturation = 0.15f,
-                                accentHue = a + Angle.halfTurn,
-                                baseBrightness = 0.8f
-                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
-                                .randomTitleFontSettings()
-                        }
-                    }
-                    card - button {
-                        text("Flat Dark")
-                        onClick {
-                            val a = Angle(Random.nextFloat())
-                            appTheme set Theme.flat(
-                                id = "flat-${Random.nextInt()}",
-                                hue = a,
-                                saturation = 0.5f,
-                                accentHue = a + Angle.halfTurn
-                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
-                                .randomTitleFontSettings()
-                        }
-                    }
-                    card - button {
-                        text("Flat2 Light")
-                        onClick {
-                            val a = Angle(Random.nextFloat())
-                            appTheme set Theme.flat2(
-                                id = "flat2-${Random.nextInt()}",
-                                hue = a,
-                                saturation = 0.15f,
-                                accentHue = a + Angle.halfTurn,
-                                baseBrightness = 0.8f
-                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
-                                .randomTitleFontSettings()
-                        }
-                    }
-                    card - button {
-                        text("Flat2 Dark")
-                        onClick {
-                            val a = Angle(Random.nextFloat())
-                            appTheme set Theme.flat2(
-                                id = "flat2-${Random.nextInt()}",
-                                hue = a,
-                                saturation = 0.5f,
-                                accentHue = a + Angle.halfTurn
-                            ).copy(id = "cri", cornerRadii = CornerRadii.Constant(Random.nextDouble().rem))
-                                .randomTitleFontSettings()
-                        }
-                    }
-                    card - button {
+                    button {
                         text("Clean (iOS like)")
                         onClick {
                             val a = Angle(Random.nextFloat())
