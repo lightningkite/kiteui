@@ -2,7 +2,7 @@
 agp = "8.11.2"
 desugar_jdk_libs = "2.1.5"
 fontbox = "3.0.6"
-kotlin = "2.2.21"
+kotlin = "2.2.20"
 appcompat = "1.7.1"
 cardview = "1.0.0"
 commonsLang3 = "3.19.0"
