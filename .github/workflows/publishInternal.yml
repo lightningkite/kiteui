@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew library:allTests
 
       - name: Test Plugin
-        run: ./gradlew gradle-plugin:allTests
+        run: ./gradlew gradle-plugin:test
 
       - uses: actions/upload-artifact@v4
         if: failure()
