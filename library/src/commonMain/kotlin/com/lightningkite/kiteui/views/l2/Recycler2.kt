@@ -2,16 +2,12 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.max
@@ -100,7 +96,7 @@ class Recycler2(
                 }.scrolling(vertical = vertical, horizontal = !vertical) {
                     scroll = this
                     showScrollBars = false
-                }.apply(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
+                }.onNext(ThemeDerivation { if(this@frame.themeAndBack.drawBackground) it.withBack else it.withoutBack }).programmatic {
                     padding = null
                     themeTakeNonCascadingFromParent = true
 //                    viewDebugTarget = this
@@ -109,9 +105,9 @@ class Recycler2(
                         scrollSentinel = this
                     }
                 }
-                if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
-                else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem)
-                scrolling(vertical = vertical, horizontal = !vertical) {
+                (if (vertical) atEnd.sizeConstraints(width = 1.rem, maxWidth = 1.rem)
+                else atBottom.sizeConstraints(height = 1.rem, maxHeight = 1.rem))
+                    .scrolling(vertical = vertical, horizontal = !vertical) {
                     fakeScroll = this
                     ignoreInteraction = Platform.current != Platform.Web
                 }.programmatic {

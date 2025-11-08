@@ -99,7 +99,7 @@ actual fun ViewWriter.platformSpecific(): ViewModifiable {
 //        }
 //    }
 
-    return col {
+    col {
         important.compact.compact.button {
             icon { source = Icon.add }
         }

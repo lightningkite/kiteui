@@ -89,19 +89,21 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            val mod = beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
-            willRemove = if(ratio == null) {
-                mod.align(Align.Start, Align.Stretch).content(control)
-            } else {
-                mod.row {
-                    gap = 0.px
-                    ignoreInteraction = true
-                    weight(ratio).content(control)
-                    weight(1f - ratio).frame { ignoreInteraction = true }
+            willRemove = produceOne {
+                beforeNextElementSetup {
+                    animateIn(transition.forward)
                 }
-            }.rView
+                if(ratio == null) {
+                    align(Align.Start, Align.Stretch).content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(ratio).content(control)
+                        weight(1f - ratio).frame { ignoreInteraction = true }
+                    }
+                }
+            }
         }
     }
 
@@ -125,19 +127,21 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     closePanel()
                 }
             }
-            val mod = beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
-            willRemove = if(ratio == null) {
-                mod.align(Align.End, Align.Stretch).content(control)
-            } else {
-                mod.row {
-                    gap = 0.px
-                    ignoreInteraction = true
-                    weight(1f - ratio).frame { ignoreInteraction = true }
-                    weight(ratio).content(control)
+            willRemove = produceOne {
+                beforeNextElementSetup {
+                    animateIn(transition.forward)
                 }
-            }.rView
+                if(ratio == null) {
+                    align(Align.End, Align.Stretch).content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(1f - ratio).frame { ignoreInteraction = true }
+                        weight(ratio).content(control)
+                    }
+                }
+            }
         }
     }
 

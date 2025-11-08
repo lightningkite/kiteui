@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.ThemeDerivation.Companion.invoke
 import com.lightningkite.kiteui.models.dp
 import com.lightningkite.kiteui.utils.getBoundariesInWindow
 import com.lightningkite.kiteui.views.RView
@@ -44,7 +43,7 @@ actual fun RView.openPopover(
                 closePopovers()
             }
 
-            atTopStart.apply(PopoverSemantic).frame {
+            atTopStart.onNext(PopoverSemantic).frame {
                 this@dismissBackground.native.apply {
                     clipChildren = false
                     clipToPadding = false

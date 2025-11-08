@@ -31,7 +31,7 @@ object RecyclerFilterTestPage : Page {
             }
 
             expanding.col {
-                expanding.apply(ListSemantic).recyclerView {
+                expanding.onNext(ListSemantic).recyclerView {
                     children(
                         items = shared {
                             listOf("asdf", "asdf1", "qwerty").filter {

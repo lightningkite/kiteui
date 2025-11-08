@@ -66,7 +66,7 @@ object DragPage : Page {
             space()
 
             h4("Recycler Reorderable")
-            sizeConstraints(height = 20.rem).apply(ListSemantic).recyclerView {
+            sizeConstraints(height = 20.rem).onNext(ListSemantic).recyclerView {
                 placer = RecyclerViewPlacerVerticalGrid(3)
                 childrenReorderable(
                     numbers,

@@ -2,14 +2,10 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -52,7 +48,7 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 @ViewDsl
 fun ViewWriter.errorText(): ViewModifiable {
     val errors = Signal<Set<Exception>>(setOf())
-    shownWhen { errors().isNotEmpty() }.apply(ErrorSemantic).text {
+    shownWhen { errors().isNotEmpty() }.onNext(ErrorSemantic).text {
         this@errorText.representsView!! += object: ExceptionHandler {
             override val priority: Float
                 get() = 1f

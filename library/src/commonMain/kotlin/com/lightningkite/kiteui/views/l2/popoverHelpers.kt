@@ -60,7 +60,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.() -> Uni
                     }
                 }.dismissBackground {
                     onClick { if (dismissable) closePopovers() }
-                    centered.apply(DialogSemantic).frame {
+                    centered.onNext(DialogSemantic).frame {
                         content()
                     }
                 }
@@ -73,7 +73,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     overlayWriter(modal = true) { close ->
         dismissBackground {
             onClick { if (dismissable) close() }
-            centered.apply(DialogSemantic).frame {
+            centered.onNext(DialogSemantic).frame {
                 content { close() }
             }
         }

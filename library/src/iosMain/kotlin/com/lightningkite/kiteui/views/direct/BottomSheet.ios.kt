@@ -19,7 +19,7 @@ actual fun ViewWriter.openBottomSheet(
     rawPopover(ScreenTransitions.VerticalSlide) {
         col {
             expanding.space()
-            expanding.apply(DialogSemantic).col {
+            expanding.onNext(DialogSemantic).col {
                 row {
                     expanding.space()
                     button {

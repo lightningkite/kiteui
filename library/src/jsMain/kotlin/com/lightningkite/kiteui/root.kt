@@ -20,6 +20,10 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
     @OptIn(DelicateCoroutinesApi::class)
     object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(basePath)
+        override val representsView: RView? = null
+
+        override fun willAddChild(view: RView) {
+        }
 
         override fun addChild(view: RView) {
             view.themeChoice = ThemeDerivation.SetAsBase(theme)
@@ -33,6 +37,10 @@ fun root(theme: Reactive<Theme>, app: ViewWriter.()->Unit) {
     object : ViewWriter(), CalculationContext by AppScope {
         override val context: RContext = RContext(basePath).also {
             ExternalServices.baseContext = it
+        }
+        override val representsView: RView? = null
+
+        override fun willAddChild(view: RView) {
         }
 
         override fun addChild(view: RView) {

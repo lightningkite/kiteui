@@ -22,6 +22,7 @@ import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
+import com.lightningkite.kiteui.views.produceOne
 import com.lightningkite.kiteui.views.withoutAnimation
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*

@@ -85,14 +85,17 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     val writer = object : ViewWriter(), CalculationContext {
         override val coroutineContext: CoroutineContext = scope
         override val context: RContext = context
+        override val representsView: RView? = null
+        override fun willAddChild(view: RView) {
+        }
         override fun addChild(view: RView) {
             this@kiteUi.view.addSubview(view.native)
         }
     }
     writer.safeInsets = safeInsetProperty
-    val created = writer.app()
+    val created = writer.produceOne { app() }
 
-    val subview = created.rView.native
+    val subview = created.native
     subview.translatesAutoresizingMaskIntoConstraints = false
     subview.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
     subview.leftAnchor.constraintEqualToAnchor(view.leftAnchor).setActive(true)
@@ -140,7 +143,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
             job.cancel()
-            created.rView.shutdown()
+            created.shutdown()
             true
         } else false
     }))

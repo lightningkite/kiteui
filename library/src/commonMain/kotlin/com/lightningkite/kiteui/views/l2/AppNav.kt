@@ -4,16 +4,11 @@ import com.lightningkite.kiteui.*
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.PageNavigator
 import com.lightningkite.kiteui.navigation.pageNavigator
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 data class UserInfo(
     val name: String,
@@ -144,7 +139,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                 debugName = "apple app bar"
                 showOnPrint = false
                 setup(appNav)
-                atStart.apply(InteractiveSemantic).button {
+                atStart.onNext(InteractiveSemantic).button {
                     row {
                         gap = 0.px
                         centered.icon(Icon.chevronLeft, "Go Back")
@@ -157,7 +152,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
                     ::visible { pageNavigator.canGoBack() }
                     onClick { pageNavigator.goBack() }
                 }
-                centered.apply(HeaderSemantic).centered.expanding.text {
+                centered.onNext(HeaderSemantic).centered.expanding.text {
                     ::content.invoke { pageNavigator.currentPage()?.title?.let { it() } ?: "" }
                     wraps = false
                     ellipsis = true
@@ -221,7 +216,7 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
 
             ::shown { appNav.existsProperty() }
         }
-        expanding.apply(OuterSemantic).row {
+        expanding.onNext(OuterSemantic).row {
             beforeNextElementSetup {
                 applySafeInsets(right = false)
             }.nav.scrolling.navGroupColumn(appNav.navItemsProperty) {

@@ -35,7 +35,7 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
 
         var newView: RView? = null
         withoutAnimation {
-            newView = createNewView()?.rView
+            newView = produceOneMaybe { createNewView() }
             println("Swapping to $newView")
             currentView = newView
         }

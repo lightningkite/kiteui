@@ -4,12 +4,7 @@ package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -30,37 +25,6 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
             override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
         }
         return r
-    }
-
-    inline fun produceOne(action: ViewWriter.()->Unit): RView {
-        var output: RView? = null
-        object : ViewWriter() {
-            override val representsView: RView? = this@ViewWriter.representsView
-            override val coroutineContext: CoroutineContext get() = this@ViewWriter.coroutineContext
-            override val context: RContext get() = this@ViewWriter.context
-            override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
-            override fun addChild(view: RView) {
-                if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
-                output = view
-                this@ViewWriter.addChild(view)
-            }
-        }.let(action)
-        return output ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
-    }
-    inline fun produceOneMaybe(action: ViewWriter.()->Unit): RView? {
-        var output: RView? = null
-        object : ViewWriter() {
-            override val representsView: RView? = this@ViewWriter.representsView
-            override val coroutineContext: CoroutineContext get() = this@ViewWriter.coroutineContext
-            override val context: RContext get() = this@ViewWriter.context
-            override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
-            override fun addChild(view: RView) {
-                if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
-                output = view
-                this@ViewWriter.addChild(view)
-            }
-        }.let(action)
-        return output
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -113,8 +77,40 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
         }
     }
 
-    fun apply(themeDerivation: ThemeDerivation) = beforeNextElementSetup {
+    fun onNext(themeDerivation: ThemeDerivation) = beforeNextElementSetup {
         val old = themeChoice
         themeChoice = old + themeDerivation
     }
+}
+
+
+inline fun ViewWriter.produceOne(action: ViewWriter.()->Unit): RView {
+    var output: RView? = null
+    object : ViewWriter() {
+        override val representsView: RView? = this@produceOne.representsView
+        override val coroutineContext: CoroutineContext get() = this@produceOne.coroutineContext
+        override val context: RContext get() = this@produceOne.context
+        override fun willAddChild(view: RView) = this@produceOne.willAddChild(view)
+        override fun addChild(view: RView) {
+            if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
+            output = view
+            this@produceOne.addChild(view)
+        }
+    }.let(action)
+    return output ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
+}
+inline fun ViewWriter.produceOneMaybe(action: ViewWriter.()->Unit): RView? {
+    var output: RView? = null
+    object : ViewWriter() {
+        override val representsView: RView? = this@produceOneMaybe.representsView
+        override val coroutineContext: CoroutineContext get() = this@produceOneMaybe.coroutineContext
+        override val context: RContext get() = this@produceOneMaybe.context
+        override fun willAddChild(view: RView) = this@produceOneMaybe.willAddChild(view)
+        override fun addChild(view: RView) {
+            if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
+            output = view
+            this@produceOneMaybe.addChild(view)
+        }
+    }.let(action)
+    return output
 }
