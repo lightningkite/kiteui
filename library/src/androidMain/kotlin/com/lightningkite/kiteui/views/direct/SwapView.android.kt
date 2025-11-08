@@ -47,13 +47,14 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
             }
 
             override fun addChild(view: RView) {
-                newViewHolder = view
+                // Do nothing yet...
             }
         }
         animationsEnabled = false
         try {
             swapTimeMakeViewPerformance {
-                writer.createNewView()
+                newViewHolder = writer.createNewView()?.rView
+                println("Swapping to $newViewHolder.  RV: ${newViewHolder?.rView}, V: ${newViewHolder?.rView?.native}, Has parent? ${newViewHolder?.rView?.native?.parent}")
             }
         } finally {
             animationsEnabled = true

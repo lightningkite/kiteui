@@ -141,7 +141,6 @@ object ThemesPage : Page {
                                 appTheme set Theme.shadCnLike(
                                     id = "shadcnlike-light",
                                     background = Color.white,
-                                    accent = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
                                 )
                             }
                         }
@@ -151,7 +150,6 @@ object ThemesPage : Page {
                                 appTheme set Theme.shadCnLike(
                                     id = "shadcnlike-dark",
                                     background = Color.gray(0.05f),
-                                    accent = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
                                 )
                             }
                         }

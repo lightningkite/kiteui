@@ -126,6 +126,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+    // TODO: This doesn't work; nor does any other similar wrapping treatment.
     return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 }
 

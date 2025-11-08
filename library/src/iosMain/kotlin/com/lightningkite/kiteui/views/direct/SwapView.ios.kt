@@ -2,7 +2,6 @@ package com.lightningkite.kiteui.views.direct
 
 
 import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.views.NewViewWriter
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewModifiable
@@ -34,18 +33,16 @@ actual class SwapView actual constructor(context: RContext): RView(context) {
         }
         currentView = null
 
-        val newViewWriter = NewViewWriter(this, context)
+        var newView: RView? = null
         withoutAnimation {
-            newViewWriter.createNewView()
-            newViewWriter.newView?.let {
-                addChild(it)
-                currentView = it
-            }
+            newView = createNewView()?.rView
+            println("Swapping to $newView")
+            currentView = newView
         }
-        newViewWriter.newView?.let {
+        newView?.let {
             it.animateIn(transition) {}
         }
-        native.extensionIgnoreInteraction = newViewWriter.newView == null
+        native.extensionIgnoreInteraction = newView == null
     }
 
 }

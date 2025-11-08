@@ -54,6 +54,7 @@ abstract class KiteUiActivity : AppCompatActivity() {
             safeInsets = safeInsetsProperty
         }
         override fun addChild(view: RView) {
+            view::themeChoice { ThemeDerivation.SetAsBase(theme()) }
             root = view
             setContentView(view.native)
             ViewGroupCompat.installCompatInsetsDispatch(view.native)
@@ -72,11 +73,6 @@ abstract class KiteUiActivity : AppCompatActivity() {
             }
             ViewCompat.setOnApplyWindowInsetsListener(view.native, l)
             view.onRemove { ViewCompat.setOnApplyWindowInsetsListener(view.native, null) }
-        }
-        init {
-            beforeNextElementSetup {
-                ::themeChoice { ThemeDerivation.SetAsBase(theme()) }
-            }
         }
     }
 

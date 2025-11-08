@@ -15,7 +15,7 @@ actual fun ViewWriter.platformSpecific(): ViewModifiable {
         text("Lookie here at this icon:")
         val visible = Signal(false)
         switch { checked bind visible }
-        expanding - zoomableImage {
+        expanding.zoomableImage {
             source = Resources.imagesSnowyBackground
         }
     }

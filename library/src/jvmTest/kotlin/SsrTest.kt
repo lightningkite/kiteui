@@ -20,9 +20,9 @@ class SsrTest {
     @Test
     fun test() {
         val context = RContext("/")
-        val writer = NewViewWriter(AppScope, context)
+        val writer = Frame(context)
         with(writer) {
-            Theme.flat2("f2", hue = 0.6.turns).onNext - scrolling - col {
+            Theme.flat2("f2", hue = 0.6.turns).onNext.scrolling.col {
                 centered.sizeConstraints(width = 50.rem).card.col {
                     centered.h1("Welcome to my Website")
                     centered.text("I hope you like it!")
@@ -118,7 +118,7 @@ class SsrTest {
                 </head>
                 <body>
             """.trimIndent())
-            writer.newView!!.native.render(this)
+            writer.children[0].native.render(this)
             appendLine("""
                 </body>
                 </html>

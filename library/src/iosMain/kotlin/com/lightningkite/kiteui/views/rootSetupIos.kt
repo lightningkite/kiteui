@@ -175,9 +175,6 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
     kiteUi {
-        beforeNextElementSetup {
-            ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
-        }
         reactiveScope {
             systemBarBackground.backgroundColor =
                 themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
@@ -185,7 +182,9 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
         reactiveScope {
             view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
         }
-        app()
+        beforeNextElementSetup {
+            ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
+        }.app()
     }
 
 }
