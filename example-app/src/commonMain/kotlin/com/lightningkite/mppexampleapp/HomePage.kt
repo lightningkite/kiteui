@@ -20,7 +20,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.requestFile
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.animateIn
 import com.lightningkite.kiteui.views.animateOut
@@ -65,7 +64,7 @@ import kotlin.time.Duration.Companion.seconds
 @Routable("/")
 class HomePage : Page {
     override val title: Reactive<String> get() = Constant("KiteUI")
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         return article {
             centered.h1("KiteUI - Beautiful by Default")
             separator()

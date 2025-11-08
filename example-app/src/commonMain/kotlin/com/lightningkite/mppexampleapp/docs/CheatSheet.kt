@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
 import com.lightningkite.kiteui.views.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.atBottom
 import com.lightningkite.kiteui.views.atBottomEnd
@@ -65,7 +64,7 @@ object CheatSheet : DocPage {
         code: String,
         references: Set<ExampleEntry> = emptySet(),
         result: RowOrCol.() -> Unit
-    ): ViewModifiable {
+    ): Unit {
         val e = ExampleEntry(name)
         known += e
         card.rowCollapsingToColumn(79.rem) {
@@ -110,7 +109,7 @@ object CheatSheet : DocPage {
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         frame {
             article {
                 titledSection("Available Views") {

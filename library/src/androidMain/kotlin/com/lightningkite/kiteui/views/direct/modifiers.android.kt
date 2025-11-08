@@ -15,7 +15,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import com.lightningkite.kiteui.Log
-import com.lightningkite.kiteui.ViewWrapper
+
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
 import com.lightningkite.kiteui.navigation.dialogPageNavigator
@@ -29,7 +29,7 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+actual fun ViewWriter.weight(amount: Float): ViewWriter {
     beforeNextElementSetup {
         try {
             lastSetWeight = amount
@@ -50,7 +50,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
     beforeNextElementSetup {
         val originalSize = try {
             val lp = (lparams as SimplifiedLinearLayoutLayoutParams)
@@ -85,7 +85,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
@@ -125,7 +125,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWriter {
     return write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
 }
 
@@ -135,7 +135,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
     val view = if (vertical) {
@@ -150,7 +150,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
                 )
             }
         }
-        object: RViewWrapper(context) {
+        object: RViewWriter(context) {
             override val native: View = refreshLayout
 
             val myChildren: ArrayList<View> = ArrayList()
@@ -183,9 +183,9 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        write(object : RViewWrapper(context) {
+        write(object : RViewWriter(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
@@ -209,8 +209,8 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
-    write(object : RViewWrapper(context) {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
+    write(object : RViewWriter(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
                 this@apply.constraints = constraints()
@@ -357,7 +357,7 @@ class DesiredSizeView(context: Context) : ViewGroup(context) {
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         native.setOnLongClickListener {
             // TODO
@@ -373,11 +373,11 @@ actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit,
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         native.setOnClickListener {
             dialogPageNavigator.navigate(object : Page {
-                override fun ViewWriter.render(): ViewModifiable = run {
+                override fun ViewWriter.render(): Unit = run {
                     dismissBackground {
                         centered.frame {
                             setup(object : PopoverContext {
@@ -398,7 +398,7 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper {
+actual fun ViewWriter.textPopover(message: String): ViewWriter {
     beforeNextElementSetup {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             native.tooltipText = message
@@ -409,7 +409,7 @@ actual fun ViewWriter.textPopover(message: String): ViewWrapper {
 
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
     beforeNextElementSetup {
 //        exists = default
 //        ::exists.invoke(condition)

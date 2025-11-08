@@ -24,7 +24,7 @@ object ExternalServicesPage : Page {
     override val title: Reactive<String>
         get() = super.title
     val image = Signal<ImageSource?>(null)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         scrolling.col {
             padded.col {
                 h1 { content = "This screen demonstrates various some external access." }

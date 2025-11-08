@@ -2,7 +2,6 @@
 
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.reactive.context.*
 import kotlin.contracts.ExperimentalContracts
@@ -56,21 +55,21 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
     fun beforeNextElementSetup(action: RView.()->Unit): ViewWriter = BeforeSetup(this, action)
 
     @ViewModifierDsl3
-    val Theme.onNext: ViewWrapper get() {
+    val Theme.onNext: ViewWriter get() {
         return beforeNextElementSetup {
             themeChoice = ThemeDerivation { this@onNext.withBack }
         }
     }
 
     @ViewModifierDsl3
-    val Theme.setAsBaseOnNext: ViewWrapper get() {
+    val Theme.setAsBaseOnNext: ViewWriter get() {
         return beforeNextElementSetup {
             themeChoice = ThemeDerivation { this@setAsBaseOnNext.withoutBack }
         }
     }
 
     @ViewModifierDsl3
-    val ThemeDerivation.onNext: ViewWrapper get() {
+    val ThemeDerivation.onNext: ViewWriter get() {
         return beforeNextElementSetup {
             val old = themeChoice
             themeChoice = old + this@onNext

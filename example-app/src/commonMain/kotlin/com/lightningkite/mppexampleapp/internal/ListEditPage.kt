@@ -19,7 +19,7 @@ object ListEditPage : Page {
 
     val data = Signal(beeMovieScript.split('\n').take(5).toList())
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         row {
 
             expanding.recyclerView {

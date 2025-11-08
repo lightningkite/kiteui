@@ -15,9 +15,9 @@ import kotlin.test.assertEquals
 
 class LayoutsTestPage : Page {
     val checks = ArrayList<() -> Unit>()
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         fun RView.parentRectangle() = parent!!.let { rectangleRelativeTo(it) }!!
-        return card.col {
+        card.col {
             checks += { println(parentRectangle()) }
             val start = text("Start")
             lateinit var above: RView

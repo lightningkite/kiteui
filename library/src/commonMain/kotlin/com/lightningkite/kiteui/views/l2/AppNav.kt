@@ -41,13 +41,13 @@ interface AppNav {
 }
 
 
-val ViewWriter.appNavFactory by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> ViewModifiable>>(
+val ViewWriter.appNavFactory by rContextAddon<Signal<ViewWriter.(AppNav.() -> Unit) -> Unit>>(
     Signal(
         ViewWriter::appNavBottomTabs
     )
 )
 
-fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): ViewModifiable {
+fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup: AppNav.() -> Unit): Unit {
     return appBase(main, dialog) {
         swapView {
             debugName = "swapView for appNavFactory"
@@ -59,7 +59,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
     }
 }
 
-fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
+fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
     OuterSemantic.onNext.col {
@@ -98,7 +98,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
 }
 
 
-fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
+fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
     OuterSemantic.onNext.col {
@@ -128,7 +128,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     }
 }
 
-fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
+fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     OuterSemantic.onNext.col {
         debugName = "outer nav"
@@ -193,7 +193,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     }
 }
 
-fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
+fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): Unit {
     val appNav = AppNav.ByProperty()
     OuterSemantic.onNext.col {
 // Nav 4 left and top - add dropdown for user info

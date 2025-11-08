@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.space
 import com.lightningkite.reactive.context.*
@@ -11,10 +10,10 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 interface RecyclerViewRenderer<in T> {
-    fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable
+    fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit
 
     object Blank : RecyclerViewRenderer<Any?> {
-        override fun render(viewWriter: ViewWriter, data: Reactive<Any?>, index: Reactive<Int>): ViewModifiable {
+        override fun render(viewWriter: ViewWriter, data: Reactive<Any?>, index: Reactive<Int>): Unit {
             return with(viewWriter) { space() }
         }
     }

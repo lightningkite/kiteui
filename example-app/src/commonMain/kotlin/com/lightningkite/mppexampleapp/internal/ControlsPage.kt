@@ -25,7 +25,7 @@ import kotlin.time.Instant
 
 @Routable("controls")
 object ControlsPage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         class PerfProperty<T>(startValue: T) : MutableReactiveValue<T> {
             private val listeners = ArrayList<() -> Unit>()
             override var value: T = startValue

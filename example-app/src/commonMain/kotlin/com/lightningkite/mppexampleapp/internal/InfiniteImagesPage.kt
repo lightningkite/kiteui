@@ -52,7 +52,7 @@ object InfiniteImagesPage : Page {
         override fun contains(element: Int): Boolean = true
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         recyclerView {
 
             new.placer = RecyclerViewPlacerVerticalTrueGrid(4)
@@ -75,7 +75,7 @@ object InfiniteImagesPage : Page {
 class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Signal(initialIndex)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) }.frame {
             val rv: ViewPager
             viewPager {

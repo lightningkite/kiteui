@@ -18,7 +18,7 @@ import com.lightningkite.readable.*
 
 @Routable("layout-examples")
 object LayoutExamplesPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         scrolling.col {
             h1 { content = "Sampling" }
 

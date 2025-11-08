@@ -125,17 +125,18 @@ kotlin {
         }
     }
 
-//    jvm("jvmSsr")
-//    sourceSets {
-//        val jvmSsrMain by getting {
-//            dependsOn(get("commonHtmlMain"))
-//        }
-//    }
-    jvm("jvmSwing")
+    jvm("jvmSsr")
     sourceSets {
-        val jvmSwingMain by getting {
+        val jvmSsrMain by getting {
+            dependsOn(get("commonJvmMain"))
+            dependsOn(get("commonHtmlMain"))
         }
     }
+//    jvm("jvmSwing")
+//    sourceSets {
+//        val jvmSwingMain by getting {
+//        }
+//    }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
         compilations.getByName("main") {

@@ -22,7 +22,7 @@ object Recycler2TestPage : Page {
     @QueryParameter
     val elementCount = Signal(10000)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             val expanded = Signal(-1)
             var recyclerView: Recycler2? = null
@@ -66,7 +66,7 @@ object Recycler2TestPage : Page {
                         viewWriter: ViewWriter,
                         data: Reactive<Int>,
                         index: Reactive<Int>
-                    ): ViewModifiable {
+                    ): Unit {
                         return with(viewWriter) {
                             card.button {
                                 col {

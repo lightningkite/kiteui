@@ -4,7 +4,6 @@ import com.lightningkite.kiteui.models.ErrorSemantic
 import com.lightningkite.kiteui.models.InvalidSemantic
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.shownWhen
 import com.lightningkite.kiteui.views.direct.subtext
@@ -27,7 +26,7 @@ fun ViewWriter.issueText(
     issues: Reactive<List<Issue>>,
     transform: (Issue) -> String = { it.summary },
     shownWhen: ReactiveContext.() -> Boolean = { true }
-): ViewModifiable {
+): Unit {
     this.shownWhen { shownWhen() && issues().isNotEmpty() }.onNext(ErrorSemantic).subtext {
         ::content {
             issues().joinToString("\n", transform = transform)

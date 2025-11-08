@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 object ResourcesPage: DocPage {
     override val covers: List<String> = listOf("resources", "Resources", "assets", "Assets", "images", "audio", "video", "fonts")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Resources")
             text("KiteUI provides a convenient way to access resources (assets) in your multiplatform application. Resources can include images, audio, video, and fonts.")

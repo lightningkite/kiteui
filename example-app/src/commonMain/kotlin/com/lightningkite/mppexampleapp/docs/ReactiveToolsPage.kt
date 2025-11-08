@@ -28,7 +28,7 @@ object ReactiveToolsPage : Page, DocPage {
         "MutableRemember"
     )
 
-    fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): ViewModifiable {
+    fun ViewWriter.bufferedNumberInput(sets: MutableReactive<in Double>): Unit {
         fieldTheme.row {
             gap = 0.5.rem
             val buffer = Signal<Double?>(null)
@@ -49,7 +49,7 @@ object ReactiveToolsPage : Page, DocPage {
         }
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             titledSection("Classes and functions to help with reactivity") {
                 text("This article will give an overview of all the tools available in KiteUI to handle common reactive use cases. If you haven't already read through the basic reactive documentation, you should do so. ")

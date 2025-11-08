@@ -17,7 +17,7 @@ object ViewModifiersPage : DocPage {
     override val covers: List<String> =
         listOf("view modifiers", "View modifier", "ViewModifiers", "viewModifiers", "viewmodifiers")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("View Modifiers")
             text("KiteUI has a number of view modifiers that can be used to modify the look, behavior and position of views.")

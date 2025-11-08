@@ -9,7 +9,7 @@ import org.w3c.dom.HTMLElement
 
 actual fun SwapView.nativeSwap(
     transition: ScreenTransition,
-    createNewView: ViewWriter.() -> ViewModifiable?
+    createNewView: ViewWriter.() -> Unit?
 ) {
     val keyframeName = context.kiteUiCss.transition(transition)
 

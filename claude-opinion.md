@@ -148,12 +148,12 @@ The library is tightly coupled to the separate `reactive` library (signal types,
 
 ### 6. **Documentation of Abstraction Boundaries**
 
-There are many abstraction layers (RView, RViewHelper, RViewWrapper, RViewWithAction, etc.) and it's not always clear which to use when:
+There are many abstraction layers (RView, RViewHelper, RViewWriter, RViewWithAction, etc.) and it's not always clear which to use when:
 
 **From the code:**
 - `RView` - base class (expect/actual)
 - `RViewHelper` - common implementation
-- `RViewWrapper` - delegates gap to parent
+- `RViewWriter` - delegates gap to parent
 - `RViewWithAction` - manages action state
 - `RViewWithSecondaryAction` - manages two actions
 

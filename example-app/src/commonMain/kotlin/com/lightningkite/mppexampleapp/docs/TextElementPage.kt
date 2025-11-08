@@ -10,7 +10,7 @@ import com.lightningkite.kiteui.views.direct.*
 object TextElementPage : DocPage {
     override val covers: List<String> = listOf("Text", "text", "subtext", "h1", "h2", "h3")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Text Elements")
             text("KiteUI has a number of text elements to help you display text in a variety of ways.")

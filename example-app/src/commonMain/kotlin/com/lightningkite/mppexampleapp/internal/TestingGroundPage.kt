@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 @Routable("testing")
 object TestingGroundPage: Page {
     val progressRatio: Signal<Float> = Signal(0f)
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
 //        val ratioShared = sharedSuspending {
 //            kotlinx.coroutines.delay(1000)
 //            ratio.set(ratio.value + 0.1f)

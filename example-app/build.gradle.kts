@@ -73,17 +73,17 @@ kotlin {
         }
     }
 
-//    jvm("jvmSsr")
-//    sourceSets {
-//        val jvmSsrMain by getting {
-//            dependsOn(get("commonHtmlMain"))
-//        }
-//    }
-    jvm("jvmSwing")
+    jvm("jvmSsr")
     sourceSets {
-        val jvmSwingMain by getting {
+        val jvmSsrMain by getting {
+            dependsOn(get("commonHtmlMain"))
         }
     }
+//    jvm("jvmSwing")
+//    sourceSets {
+//        val jvmSwingMain by getting {
+//        }
+//    }
 
     cocoapods {
         // Required properties

@@ -39,7 +39,7 @@ object DragPage : Page {
         )
     }
 
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         scrolling.col {
             val title = atStart.h2("Drag test")
 

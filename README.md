@@ -96,7 +96,7 @@ If you want to try another theme, start [here](https://kiteui.cs.lightningkite.c
 ```kotlin
 @Routable("sample/login")
 object SampleLogInPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         val email = Property("")
         val password = Property("")
         frame {

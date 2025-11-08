@@ -7,7 +7,6 @@ import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.models.ThemeDerivation
 import com.lightningkite.kiteui.models.VisualMediaSource
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.areAnimationsEnabled
 import com.lightningkite.kiteui.views.centered

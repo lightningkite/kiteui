@@ -14,7 +14,7 @@ fun ViewWriter.toast(text: String, duration: Duration = 3.seconds) {
     toast(duration) { text(text) }
 }
 
-fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> ViewModifiable) {
+fun ViewWriter.toast(duration: Duration = 3.seconds, content: ViewWriter.() -> Unit) {
     overlayWriter(false) {
         representsView!!.withoutAnimation {
 
@@ -80,7 +80,7 @@ fun ViewWriter.dialog(dismissable: Boolean = true, content: ViewWriter.(close: (
     }
 }
 
-fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> ViewModifiable) {
+fun ViewWriter.rawPopover(transition: ScreenTransitions, content: ViewWriter.() -> Unit) {
     var willRemove: RView? = null
     overlayWriter {
         representsView!!.withoutAnimation {

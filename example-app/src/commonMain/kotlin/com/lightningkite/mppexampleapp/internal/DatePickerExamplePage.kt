@@ -1,7 +1,6 @@
 package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.h1
@@ -23,7 +22,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 object DatePickerExamplePage : Page {
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         col {
             h1 { content = "Date Picker"}
             space()

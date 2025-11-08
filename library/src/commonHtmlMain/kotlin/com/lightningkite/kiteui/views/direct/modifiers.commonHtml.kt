@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ViewWrapper
+
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.reactive.Action
@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = setup
@@ -39,7 +39,7 @@ actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         val floating = FloatingInfoHolder(this)
         floating.menuGenerator = {
@@ -71,14 +71,14 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper = hasPopover {
+actual fun ViewWriter.textPopover(message: String): ViewWriter = hasPopover {
     card.text {
         content = message
     }
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+actual fun ViewWriter.weight(amount: Float): ViewWriter {
     beforeNextElementSetup {
         lastSetWeight = amount
         native.style.flexGrow = "$amount"
@@ -90,7 +90,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
     beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
@@ -111,7 +111,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
@@ -124,7 +124,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
+actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWriter {
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
     }
@@ -137,7 +137,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     // For web, we'll just use regular scrolling as pull-to-refresh isn't a common pattern on web
     beforeNextElementSetup {
         setup(ScrollingBehaviorImpl(this, horizontal = horizontal, vertical = vertical))
@@ -146,7 +146,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
     beforeNextElementSetup {
 
         if (constraints.minHeight == null) native.style.minHeight = null
@@ -177,7 +177,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
     beforeNextElementSetup {
 
         reactiveScope {
@@ -213,13 +213,13 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 // End
 
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
 //    // TODO: include old animation code
 //    beforeNextElementSetup {
 //        ::exists.invoke(condition)
 //    }
     var v: RView? = null
-    return object: RViewWrapper(context) {
+    return object: RViewWriter(context) {
         init {
             v = this
             native.tag = "div"

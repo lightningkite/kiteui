@@ -10,7 +10,7 @@ import com.lightningkite.mppexampleapp.Resources
 
 @Routable("test/vectors")
 object VectorsTestPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         scrolling.col {
             row {
                 image {

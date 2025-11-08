@@ -19,7 +19,7 @@ import kotlin.random.Random
 object ImageElementPage: DocPage {
     override val covers: List<String> = listOf("image", "Image")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Image")
             text("You can use the image element to render many types of images with fairly smooth animations.")

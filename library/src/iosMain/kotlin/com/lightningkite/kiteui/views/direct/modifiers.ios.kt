@@ -28,7 +28,7 @@ import platform.objc.sel_registerName
 actual fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.() -> Unit,
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         fun openDialog() {
             // TODO
@@ -51,12 +51,12 @@ actual fun ViewWriter.hasPopover(
     requiresClick: Boolean,
     preferredDirection: PopoverPreferredDirection,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWrapper {
+): ViewWriter {
     beforeNextElementSetup {
         val originalNavigator = pageNavigator
         fun openDialog() {
             dialogPageNavigator.navigate(object : Page {
-                override fun ViewWriter.render(): ViewModifiable = run {
+                override fun ViewWriter.render(): Unit = run {
                     dismissBackground {
                         centered.frame {
                             with(split()) {
@@ -90,10 +90,10 @@ actual fun ViewWriter.hasPopover(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.textPopover(message: String): ViewWrapper = TODO()
+actual fun ViewWriter.textPopover(message: String): ViewWriter = TODO()
 
 @ViewModifierDsl3
-actual fun ViewWriter.weight(amount: Float): ViewWrapper {
+actual fun ViewWriter.weight(amount: Float): ViewWriter {
     this.beforeNextElementSetup {
         lastSetWeight = amount
         native.extensionWeight = amount
@@ -102,7 +102,7 @@ actual fun ViewWriter.weight(amount: Float): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper {
+actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter {
     this.beforeNextElementSetup {
         reactiveScope {
             val amount = amount()
@@ -114,7 +114,7 @@ actual fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewW
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
+actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter {
     beforeNextElementSetup {
         lastSetHorizontalAlign = horizontal
         lastSetVerticalAlign = vertical
@@ -129,7 +129,7 @@ actual inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 }
 
@@ -139,7 +139,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit
-): ViewWrapper {
+): ViewWriter {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
     if (vertical) {
@@ -168,7 +168,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
+actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter {
     beforeNextElementSetup {
         native.extensionSizeConstraints = constraints
     }
@@ -176,7 +176,7 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 }
 
 @ViewModifierDsl3
-actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
+actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter {
     beforeNextElementSetup {
         reactiveScope {
             native.extensionSizeConstraints = constraints()
@@ -188,7 +188,7 @@ actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() ->
 
 // End
 @ViewModifierDsl3
-actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWrapper {
+actual fun ViewWriter.shownWhen(default: Boolean, condition: ReactiveContext.() -> Boolean): ViewWriter {
     beforeNextElementSetup {
         native.hidden = !default
         var runNumber = 0

@@ -14,7 +14,6 @@ import com.lightningkite.kiteui.usesTouchscreen
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.ViewDsl
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.l2.Recycler2
 import com.lightningkite.kiteui.views.l2.RecyclerViewPagingPlacer
@@ -135,7 +134,7 @@ class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
     var content: String by label::content
 }
 @OptIn(ExperimentalContracts::class)
-@Deprecated("use the new label: label(String, RowOrCol.() -> ViewModifiable)")
+@Deprecated("use the new label: label(String, RowOrCol.() -> Unit)")
 inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
     contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
     val l: Label
@@ -150,7 +149,7 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.label(label: String, content: RowOrCol.() -> ViewModifiable): ViewModifiable {
+inline fun ViewWriter.label(label: String, content: RowOrCol.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         FieldLabelSemantic.onNext.text(label)

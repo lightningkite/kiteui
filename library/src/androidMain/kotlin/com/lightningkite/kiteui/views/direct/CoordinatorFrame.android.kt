@@ -18,7 +18,6 @@ import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.drawableWithoutCorners
 import com.lightningkite.kiteui.views.lparams
@@ -56,7 +55,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
         lateinit var b: BottomSheetBehavior<View>
         var sub: RView? = null
@@ -135,7 +134,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null
@@ -185,7 +184,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         lateinit var b: SideSheetBehavior<View>
         var backToRemove: RView? = null

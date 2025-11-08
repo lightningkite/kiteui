@@ -50,7 +50,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> Unit
     ) {
         val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
@@ -125,7 +125,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
@@ -168,7 +168,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> Unit
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions.HorizontalSlide

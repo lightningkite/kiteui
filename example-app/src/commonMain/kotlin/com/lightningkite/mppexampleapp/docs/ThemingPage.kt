@@ -1,7 +1,7 @@
 package com.lightningkite.mppexampleapp.docs
 
 import com.lightningkite.kiteui.Routable
-import com.lightningkite.kiteui.ViewWrapper
+
 import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
@@ -36,7 +36,7 @@ import kotlinx.coroutines.delay
 object ThemingPage : DocPage {
     override val covers: List<String> = listOf("theming", "Semantic", "theme", "Theme", "style", "css")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             titledSection("Theming") {
 
@@ -153,7 +153,7 @@ object ThemingPage : DocPage {
                             }
                         }
                         @ViewModifierDsl3
-                        inline val ViewWriter.inverted: ViewWrapper get() = InvertedSemantic.onNext
+                        inline val ViewWriter.inverted: ViewWriter get() = InvertedSemantic.onNext
                         
                         //...
                         
@@ -226,4 +226,4 @@ data object InvertedSemantic : Semantic("invert") {
 }
 
 @ViewModifierDsl3
-inline val ViewWriter.inverted: ViewWrapper get() = InvertedSemantic.onNext
+inline val ViewWriter.inverted: ViewWriter get() = InvertedSemantic.onNext

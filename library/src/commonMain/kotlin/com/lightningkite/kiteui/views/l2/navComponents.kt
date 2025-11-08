@@ -17,7 +17,7 @@ fun ViewWriter.navGroupColumn(
     elements: Reactive<List<NavElement>>,
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
-): ViewModifiable {
+): Unit {
     col {
         navGroupColumnInner(elements, onNavigate)
         setup()
@@ -106,7 +106,7 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
     }
 }
 
-fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
     row {
         navGroupActionsInner(elements)
         setup()
@@ -172,7 +172,7 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
+fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): Unit {
     row {
         navGroupTopInner(readable)
         setup()
@@ -227,7 +227,7 @@ private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
     }
 }
 
-fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
+fun ViewWriter.navElementIconAndCount(navElement: NavElement): Unit {
     frame {
         centered.icon {
             ::source { navElement.icon() }
@@ -246,7 +246,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
     }
 }
 
-fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
+fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): Unit {
     row {
         centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
@@ -265,7 +265,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
     }
 }
 
-fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
+fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): Unit {
     row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {

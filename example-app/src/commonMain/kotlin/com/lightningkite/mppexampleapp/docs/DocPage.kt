@@ -19,12 +19,12 @@ interface DocPage: Page {
 //        font = FontAndStyle(font = systemDefaultFixedWidthFont, size = 0.75.rem)
 //    ).withoutBack
 //}
-//val ViewWriter.code: ViewWrapper get() = CodeSemantic.onNext
+//val ViewWriter.code: ViewWriter get() = CodeSemantic.onNext
 
 fun ViewWriter.example(
     codeText: String,
-    action: ViewWriter.()->ViewModifiable
-): ViewModifiable {
+    action: ViewWriter.()->Unit
+): Unit {
     card.rowCollapsingToColumn(40.rem) {
         expanding.scrollingHorizontally.code { content = codeText }
         separator()
@@ -34,7 +34,7 @@ fun ViewWriter.example(
 
 fun ViewWriter.article(
     setup: ContainingView.()->Unit
-): ViewModifiable {
+): Unit {
     scrolling.frame {
         align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col {
             setup()

@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.navigation
 
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.space
@@ -16,7 +15,7 @@ import com.lightningkite.readable.*
 
 @Deprecated("Move to using 'Page'", ReplaceWith("Page", "com.lightningkite.kiteui.navigation.Page"))
 interface Screen: Page {
-    override fun ViewWriter.render(): ViewModifiable {
+    override fun ViewWriter.render(): Unit {
         @Suppress("DEPRECATION")
         frame { render() }
 //        return this.lastWrittenView ?: throw IllegalStateException("Screens must create a single view, but you have not created one.")
@@ -33,10 +32,10 @@ interface Screen: Page {
     }
 
     @Suppress("Deprecation")
-    open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Screen {
+    open class Direct(title: String = "", val render: ViewWriter.()->Unit): Screen {
 
         @Deprecated("Use render2", ReplaceWith("render2()"))
-        override fun ViewWriter.renderOld(): ViewModifiable = this@Direct.render(this)
+        override fun ViewWriter.renderOld(): Unit = this@Direct.render(this)
         override val title: Reactive<String> = Constant(title)
     }
 }

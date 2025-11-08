@@ -10,7 +10,6 @@ import com.lightningkite.kiteui.models.px
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.centered
@@ -23,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 actual fun ViewWriter.openBottomSheet(
     halfScreenRatio: Float,
     dim: Boolean,
-    view: ViewWriter.() -> ViewModifiable
+    view: ViewWriter.() -> Unit
 ) {
     val dialog = BottomSheetDialog(context.activity)
     dialog.behavior.halfExpandedRatio = halfScreenRatio

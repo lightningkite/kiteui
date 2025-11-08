@@ -46,7 +46,7 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun ViewWriter.errorText(): ViewModifiable {
+fun ViewWriter.errorText(): Unit {
     val errors = Signal<Set<Exception>>(setOf())
     shownWhen { errors().isNotEmpty() }.onNext(ErrorSemantic).text {
         this@errorText.representsView!! += object: ExceptionHandler {
@@ -70,7 +70,7 @@ fun ViewWriter.errorText(): ViewModifiable {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
+inline fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
     col {
         gap = 0.px

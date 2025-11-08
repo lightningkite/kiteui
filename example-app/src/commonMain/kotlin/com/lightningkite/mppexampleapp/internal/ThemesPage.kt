@@ -11,7 +11,7 @@ import kotlin.random.Random
 
 @Routable("themes")
 object ThemesPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         scrolling.col {
             h1 { content = "Theme Control" }
             group.col {

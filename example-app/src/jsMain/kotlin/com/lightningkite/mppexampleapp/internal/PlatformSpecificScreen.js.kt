@@ -12,7 +12,7 @@ import com.lightningkite.readable.*
 
 val data = Signal<List<String>>((0..2500).map { "Item $it" }.toList())
 
-actual fun ViewWriter.platformSpecific(): ViewModifiable {
+actual fun ViewWriter.platformSpecific(): Unit {
 //    val current = Signal(0)
 //    col {
 //        val showExtra = Signal(true)

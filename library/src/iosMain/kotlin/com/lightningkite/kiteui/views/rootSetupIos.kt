@@ -32,11 +32,11 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     setup({ themeReadable.invoke() }, app)
 }
 
@@ -73,7 +73,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 }
 
-fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> Unit) {
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -168,7 +168,7 @@ private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectM
     }
 }
 
-fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     val systemBarBackground = UIView()
 
     view.addSubview(systemBarBackground)

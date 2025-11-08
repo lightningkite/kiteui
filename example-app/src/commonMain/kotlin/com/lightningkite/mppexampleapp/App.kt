@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 val defaultTheme = Theme.shadCnLike("shadcnlike", background = Color.white)
 val appTheme = Signal<Theme>(defaultTheme)
 
-fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): ViewModifiable {
+fun ViewWriter.app(navigator: PageNavigator, dialog: PageNavigator): Unit {
     RViewHelper.leakDetection = true
 //    return frame {
 //        this.forcedSafeInsets = Edges(100.dp)

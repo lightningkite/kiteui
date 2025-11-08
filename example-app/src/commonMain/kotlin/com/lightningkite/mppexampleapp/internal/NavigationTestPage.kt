@@ -2,7 +2,6 @@ package com.lightningkite.mppexampleapp.internal
 
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.card
 import com.lightningkite.kiteui.views.direct.*
@@ -12,10 +11,10 @@ import com.lightningkite.kiteui.views.l2.*
 @Routable("navigation")
 object NavigationTestPage : Page {
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             h1 { content = "Navigation" }
-            fun navSelector(label: String, value: ViewWriter.(AppNav.() -> Unit) -> ViewModifiable) {
+            fun navSelector(label: String, value: ViewWriter.(AppNav.() -> Unit) -> Unit) {
                 card.button {
                     text { content = label }
                     onClick {

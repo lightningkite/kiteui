@@ -15,7 +15,7 @@ import com.lightningkite.kiteui.views.l2.overlayFrame
 
 @Routable("sample/dialog")
 object DialogSamplesPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             h1 { content = "Dialog Samples" }
 
@@ -113,7 +113,7 @@ object DialogSamplesPage : Page {
 }
 
 @Routable("sample/dialog/1") object DialogSampleScreen1: Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         dismissBackground {
             centered.card.col {
                 h2 { content = "Sample Dialog" }

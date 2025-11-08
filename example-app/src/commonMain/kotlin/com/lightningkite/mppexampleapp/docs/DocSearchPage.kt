@@ -39,7 +39,7 @@ object DocSearchPage : Page {
         { CheatSheet }
     ))
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         frame {
             align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col  {
                 h1("Documentation")

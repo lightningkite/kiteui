@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.afterTimeout
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
@@ -121,7 +120,7 @@ fun <T, ID> RowOrCol.forEachById(
     items: Reactive<List<T>>,
     id: (T)->ID,
     preHidingModifiers: ViewWriter.(ID)-> ViewWriter = { this },
-    render: ViewWriter.(Reactive<T>) -> ViewModifiable
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(
@@ -202,8 +201,8 @@ fun <T, ID> RowOrCol.forEachById(
 }
 fun <T> RowOrCol.forEachAnimated(
     items: Reactive<List<T>>,
-    preHidingModifiers: ViewWriter.(T)-> ViewWrapper = { this },
-    render: ViewWriter.(T) -> ViewModifiable
+    preHidingModifiers: ViewWriter.(T)-> ViewWriter = { this },
+    render: ViewWriter.(T) -> Unit
 ) {
     val oldEarly = ArrayList<Any>()
     data class OldViewInfo(

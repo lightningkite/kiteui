@@ -85,7 +85,7 @@ Pages implement the `Page` interface and are annotated with `@Routable`:
 ```kotlin
 @Routable("your/path")
 object YourPage : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         // UI code
     }
 }
@@ -95,7 +95,7 @@ For pages with parameters:
 ```kotlin
 @Routable("items/{id}")
 class ItemDetailPage(val id: String) : Page {
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         // Access id parameter
     }
 }
@@ -105,10 +105,10 @@ Navigate using `pageNavigator.navigate(SomePage)` or use `link` components.
 
 ### ViewWriter and Component Creation
 
-UI is built using `ViewWriter` extension functions. Components return `ViewModifiable` for modifier chaining:
+UI is built using `ViewWriter` extension functions. Components return `Unit` for modifier chaining:
 
 ```kotlin
-fun ViewWriter.myComponent(): ViewModifiable = col {
+fun ViewWriter.myComponent(): Unit = col {
     text("Hello")
     button {
         text("Click me")

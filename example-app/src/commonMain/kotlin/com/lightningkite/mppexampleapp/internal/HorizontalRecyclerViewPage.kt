@@ -22,7 +22,7 @@ object HorizontalRecyclerViewPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         var expanded = Signal(-1)
         val items = Signal((1..101).toList())
         var recyclerView: RecyclerView? = null

@@ -950,12 +950,12 @@ class Recycler2(
 
 
     @Deprecated("Please, don't use this. This is BAD.  It won't identify the elements properly.")
-    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> ViewModifiable): Unit {
+    fun <T> children(items: Reactive<List<T>>, render: ViewWriter.(value: Reactive<T>) -> Unit): Unit {
         var currentData: List<T> = listOf()
         rendererSet = object : RecyclerViewRendererSet<T, Int> {
             override fun id(item: T): Int = currentData.indexOf(item)
             val r = object : RecyclerViewRenderer<T> {
-                override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable {
+                override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit {
                     return viewWriter.render(data)
                 }
             }

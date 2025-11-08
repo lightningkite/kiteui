@@ -18,7 +18,7 @@ import com.lightningkite.readable.*
 object RecyclerViewPage : DocPage {
     override val covers: List<String> = listOf("RecyclerView", "recyclerView", "horizontalRecyclerView", "list", "grid", "vertical", "horizontal")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("RecyclerView")
             text("RecyclerView is a powerful component for displaying lists and grids of items efficiently. It reuses view elements as they scroll off-screen, making it ideal for displaying large datasets.")
