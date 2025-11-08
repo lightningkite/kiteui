@@ -34,7 +34,6 @@ version = "1.0-SNAPSHOT"
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    jvm()
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -66,14 +65,23 @@ kotlin {
         val commonHtmlMain by creating {
             dependsOn(commonMain)
         }
-        val jvmMain by getting {
-            dependsOn(commonHtmlMain)
-        }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
             dependencies {
                 implementation(devNpm("webpack-bundle-analyzer", "4.10.2"))
             }
+        }
+    }
+
+//    jvm("jvmSsr")
+//    sourceSets {
+//        val jvmSsrMain by getting {
+//            dependsOn(get("commonHtmlMain"))
+//        }
+//    }
+    jvm("jvmSwing")
+    sourceSets {
+        val jvmSwingMain by getting {
         }
     }
 

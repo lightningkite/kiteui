@@ -25,7 +25,6 @@ kotlin {
     applyDefaultHierarchyTemplate()
 //    explicitApi()
 
-    jvm()
     androidTarget {
         publishLibraryVariants("release")
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -101,10 +100,6 @@ kotlin {
             }
         }
 
-        val commonHtmlMain by creating {
-            dependsOn(commonMain)
-        }
-
         val iosMain by getting {
             dependencies {
                 implementation(libs.ktorClientDarwin)
@@ -112,8 +107,8 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
-            dependsOn(commonHtmlMain)
+        val commonJvmMain by creating {
+            dependsOn(commonMain)
             dependencies {
                 api(libs.commonsLang3)
                 api(libs.ktorClientCore)
@@ -121,10 +116,27 @@ kotlin {
                 api(libs.ktorClientWebsockets)
             }
         }
+
+        val commonHtmlMain by creating {
+            dependsOn(commonMain)
+        }
         val jsMain by getting {
             dependsOn(commonHtmlMain)
         }
     }
+
+//    jvm("jvmSsr")
+//    sourceSets {
+//        val jvmSsrMain by getting {
+//            dependsOn(get("commonHtmlMain"))
+//        }
+//    }
+    jvm("jvmSwing")
+    sourceSets {
+        val jvmSwingMain by getting {
+        }
+    }
+
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().all {
         compilations.getByName("main") {
             val objcAddition by cinterops.creating {
