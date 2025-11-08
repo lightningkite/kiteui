@@ -51,10 +51,9 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }}
         withoutAnimation {
             bottomSheetState = expanded
-            beforeNextElementSetup {
+            willRemove = beforeNextElementSetup {
                 animateIn(transition.forward)
-            }
-            willRemove = col {
+            }.col {
                 gap = 0.px
                 ignoreInteraction = true
                 expanding.shownWhen { expanded() == BottomSheetState.PARTIALLY_EXPANDED }.frame {
@@ -85,18 +84,18 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
+            val mod = beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
             willRemove = if(ratio == null) {
-                align(Align.Start, Align.Stretch).content(control)
+                mod.align(Align.Start, Align.Stretch).content(control)
             } else {
-                row {
+                mod.row {
                     gap = 0.px
                     ignoreInteraction = true
                     weight(ratio).content(control)
@@ -121,18 +120,18 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
             }
         }
         withoutAnimation {
-            beforeNextElementSetup {
-                animateIn(transition.forward)
-            }
             val control = object : SlidingPanelControl {
                 override fun close() {
                     closePanel()
                 }
             }
+            val mod = beforeNextElementSetup {
+                animateIn(transition.forward)
+            }
             willRemove = if(ratio == null) {
-                align(Align.End, Align.Stretch).content(control)
+                mod.align(Align.End, Align.Stretch).content(control)
             } else {
-                row {
+                mod.row {
                     gap = 0.px
                     ignoreInteraction = true
                     weight(1f - ratio).frame { ignoreInteraction = true }

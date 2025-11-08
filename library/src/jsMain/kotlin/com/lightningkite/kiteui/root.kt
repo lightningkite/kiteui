@@ -22,14 +22,9 @@ fun root(theme: Theme, app: ViewWriter.()->Unit) {
         override val context: RContext = RContext(basePath)
 
         override fun addChild(view: RView) {
+            view.themeChoice = ThemeDerivation.SetAsBase(theme)
             document.body?.append(view.native.create())
 //            created = view
-        }
-
-        init {
-            beforeNextElementSetup {
-                themeChoice = ThemeDerivation.SetAsBase(theme)
-            }
         }
     }.also(app)
 }

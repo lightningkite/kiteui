@@ -67,7 +67,7 @@ fun ViewWriter.appNav(main: PageNavigator, dialog: PageNavigator? = null, setup:
 fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     val showMenu = Signal(false)
-    return OuterSemantic.onNext.col {
+    OuterSemantic.onNext.col {
         debugName = "outer nav"
         bar.row {
             applySafeInsets(bottom = false)
@@ -106,7 +106,7 @@ fun ViewWriter.appNavHamburger(setup: AppNav.() -> Unit): ViewModifiable {
 fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
     // Nav 2 top, horizontal
-    return OuterSemantic.onNext.col {
+    OuterSemantic.onNext.col {
         bar.row {
             applySafeInsets(bottom = false)
             showOnPrint = false
@@ -135,7 +135,7 @@ fun ViewWriter.appNavTop(setup: AppNav.() -> Unit): ViewModifiable {
 
 fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    return OuterSemantic.onNext.col {
+    OuterSemantic.onNext.col {
         debugName = "outer nav"
 // Nav 3 top and bottom (top)
         if (Platform.probablyAppleUser) {
@@ -187,8 +187,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
         }
         beforeNextElementSetup {
             applySafeInsets(top = false, bottom = false)
-        }
-        expanding.navigatorView(pageNavigator)
+        }.expanding.navigatorView(pageNavigator)
         //Nav 3 - top and bottom (bottom/tabs)
         nav.navGroupTabs(appNav.navItemsProperty) {
             applySafeInsets(top = false)
@@ -201,7 +200,7 @@ fun ViewWriter.appNavBottomTabs(setup: AppNav.() -> Unit): ViewModifiable {
 
 fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
     val appNav = AppNav.ByProperty()
-    return OuterSemantic.onNext.col {
+    OuterSemantic.onNext.col {
 // Nav 4 left and top - add dropdown for user info
         bar.row {
             applySafeInsets(bottom = false)
@@ -225,15 +224,13 @@ fun ViewWriter.appNavTopAndLeft(setup: AppNav.() -> Unit): ViewModifiable {
         expanding.apply(OuterSemantic).row {
             beforeNextElementSetup {
                 applySafeInsets(right = false)
-            }
-            nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
+            }.nav.scrolling.navGroupColumn(appNav.navItemsProperty) {
                 ::shown { appNav.navItemsProperty().size > 1 && appNav.existsProperty() }
                 showOnPrint = false
             }
             beforeNextElementSetup {
                 applySafeInsets(top = false)
-            }
-            expanding.navigatorView(pageNavigator)
+            }.expanding.navigatorView(pageNavigator)
         }
     }
 }

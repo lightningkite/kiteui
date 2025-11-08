@@ -19,7 +19,7 @@ object SliderExamplePage : Page {
         val sliderValue = Signal(50f)
         val sliderValueText = Signal("50")
 
-        return scrolling.col {
+        scrolling.col {
             h1 { content = "Slider Example" }
 
             card.col {

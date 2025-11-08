@@ -20,7 +20,7 @@ class Routes(
     val fallback: Page = object: Page {
         override val title = Constant("Not Found")
         override fun ViewWriter.render(): ViewModifiable = run {
-            return frame {
+            frame {
                 centered.col {
                     h1("Not Found")
                     text("Sorry, we couldn't find the page you're looking for.")

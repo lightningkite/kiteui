@@ -171,11 +171,14 @@ fun <T, ID> RowOrCol.forEachById(
             } else {
                 val shown = Signal(false)
                 val data = Signal(toRender)
+                var result: RView? = null
                 val indexWriter = object: ViewWriter() {
+                    override val representsView: RView? = this@forEachById
                     override val context: RContext get() = this@forEachById.context
                     override val coroutineContext: CoroutineContext get() = this@forEachById.coroutineContext
                     override fun addChild(view: RView) {
                         addChild(oldPos, view)
+                        result = view
                     }
 
                     override fun willAddChild(view: RView) {
@@ -187,7 +190,7 @@ fun <T, ID> RowOrCol.forEachById(
                     oldIndex = index,
                     oldId = id(toRender),
                     data = data,
-                    view = view.rView,
+                    view = result!!,
                     shown = shown
                 ))
                 afterTimeout(1) { shown.value = true }
@@ -245,11 +248,14 @@ fun <T> RowOrCol.forEachAnimated(
                 oldPos = matchIndex + 1
             } else {
                 val shown = Signal(false)
+                var result: RView? = null
                 val indexWriter = object: ViewWriter() {
+                    override val representsView: RView? = this@forEachAnimated
                     override val context: RContext get() = this@forEachAnimated.context
                     override val coroutineContext: CoroutineContext get() = this@forEachAnimated.coroutineContext
                     override fun addChild(view: RView) {
                         addChild(oldPos, view)
+                        result = view
                     }
 
                     override fun willAddChild(view: RView) {
@@ -260,7 +266,7 @@ fun <T> RowOrCol.forEachAnimated(
                 old.add(oldPos, OldViewInfo(
                     oldIndex = index,
                     data = toRender,
-                    view = view.rView,
+                    view = result!!,
                     shown = shown
                 ))
                 shown.value = true

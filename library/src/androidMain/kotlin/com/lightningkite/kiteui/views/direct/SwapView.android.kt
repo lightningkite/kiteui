@@ -38,23 +38,24 @@ actual class SwapView actual constructor(context: RContext) : RView(context) {
         val oldView = this.children.firstOrNull()
         var newViewHolder: RView? = null
         val writer = object : ViewWriter(), CalculationContext by this {
+            override val representsView: RView? = this@SwapView
             override val context: RContext
                 get() = this@SwapView.context
 
             override fun willAddChild(view: RView) {
-                super.willAddChild(view)
                 view.parent = this@SwapView
             }
 
             override fun addChild(view: RView) {
-                // Do nothing yet...
+                println("addChild called with $view")
+                newViewHolder = view
             }
         }
         animationsEnabled = false
         try {
             swapTimeMakeViewPerformance {
-                newViewHolder = writer.createNewView()?.rView
-                println("Swapping to $newViewHolder.  RV: ${newViewHolder?.rView}, V: ${newViewHolder?.rView?.native}, Has parent? ${newViewHolder?.rView?.native?.parent}")
+                writer.createNewView()
+                println("Swapping to $newViewHolder.  RV: ${newViewHolder}, V: ${newViewHolder?.native}, Has parent? ${newViewHolder?.native?.parent}")
             }
         } finally {
             animationsEnabled = true

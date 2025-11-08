@@ -52,24 +52,23 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 @ViewDsl
 fun ViewWriter.errorText(): ViewModifiable {
     val errors = Signal<Set<Exception>>(setOf())
-    return shownWhen { errors().isNotEmpty() }.apply(ErrorSemantic).text {
-        TODO()
-//        this@errorText += object: ExceptionHandler {
-//            override val priority: Float
-//                get() = 1f
-//
-//            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
-//                errors.value += exception
-//                return {
-//                    errors.value -= exception
-//                }
-//            }
-//        }
-//        ::content {
-//            errors().joinToString("\n") {
-//                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
-//            }
-//        }
+    shownWhen { errors().isNotEmpty() }.apply(ErrorSemantic).text {
+        this@errorText.representsView!! += object: ExceptionHandler {
+            override val priority: Float
+                get() = 1f
+
+            override fun handle(view: RView, working: Boolean, exception: Exception): (() -> Unit) {
+                errors.value += exception
+                return {
+                    errors.value -= exception
+                }
+            }
+        }
+        ::content {
+            errors().joinToString("\n") {
+                exceptionToMessage(it)?.body ?: it.message ?: it.toString()
+            }
+        }
     }
 }
 
@@ -77,7 +76,7 @@ fun ViewWriter.errorText(): ViewModifiable {
 @OptIn(ExperimentalContracts::class)
 inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    return col {
+    col {
         gap = 0.px
         FieldLabelSemantic.onNext.text(label)
         fieldTheme.content()

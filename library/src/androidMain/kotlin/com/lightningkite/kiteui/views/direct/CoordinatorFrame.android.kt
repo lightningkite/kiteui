@@ -37,7 +37,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
 
     override fun willAddChild(view: RView) {
         view.native.layoutParams = defaultLayoutParams()
-        super.willAddChild(view)
+        
     }
 
     override fun internalAddChild(index: Int, view: RView) {
@@ -58,7 +58,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
     ) {
         lateinit var b: BottomSheetBehavior<View>
-        var sub: ViewModifiable? = null
+        var sub: RView? = null
         var backToRemove: RView? = null
         val state = Signal(startState)
         val control = object : BottomSheetControl {
@@ -94,7 +94,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     this.isHideable = true
                     addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                         override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                            sub?.rView?.native?.run {
+                            sub?.native?.run {
                                 layoutParams.height = (this@CoordinatorFrame.native.height - bottomSheet.top)
                                 requestLayout()
                             }
@@ -127,7 +127,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                     Log.log("$this ($it) blocked the touch, because screw you")
                 }
 
-            }.col { sub = content(control) }
+            }.col { sub = produceOne { content(control) } }
         }
     }
 

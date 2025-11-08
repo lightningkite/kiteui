@@ -39,7 +39,7 @@ var ViewWriter.overlayFrame by rContextAddon<RView?>(null)
 var ViewWriter.coordinatorFrame by rContextAddon<CoordinatorFrame?>(null)
 
 fun ViewWriter.appBase(main: PageNavigator, dialog: PageNavigator? = null, mainLayout: ContainingView.() -> Unit): ViewModifiable {
-    return coordinatorFrame {
+    coordinatorFrame {
         mainPageNavigator = main
         dialog?.let {
             dialogPageNavigator = it

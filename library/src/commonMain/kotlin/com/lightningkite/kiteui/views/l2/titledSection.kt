@@ -18,8 +18,8 @@ fun ViewWriter.titledSection(
 fun ViewWriter.titledSection(
     titleSetup: TextView.() -> Unit = {},
     content: RowOrCol.() -> Unit,
-): ViewModifiable {
-    return col {
+) {
+    col {
         space(4.0)
         try {
             when (++titleDepth) {

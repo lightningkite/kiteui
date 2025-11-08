@@ -37,6 +37,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
             native.gravity = if (value) Gravity.CENTER_HORIZONTAL else Gravity.CENTER_VERTICAL
         }
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        // TODO: This won't work
         beforeNextElementSetup {
             try {
                 val lp = (lparams as SimplifiedLinearLayoutLayoutParams)

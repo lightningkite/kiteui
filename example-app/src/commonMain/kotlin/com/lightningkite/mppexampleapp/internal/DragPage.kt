@@ -39,133 +39,135 @@ object DragPage : Page {
         )
     }
 
-    override fun ViewWriter.render(): ViewModifiable = scrolling.col {
-        atStart
-        val title = h2("Drag test")
+    override fun ViewWriter.render(): ViewModifiable {
+        scrolling.col {
+            val title = atStart.h2("Drag test")
 
-        h4("Reorderable List")
-        ListSemantic.onNext.col {
-            forEachReorderable(
-                numbers,
-                reorder = { move ->
-                    numbers.value = move.reorder(numbers.value)
-                },
-                dataTransform = {
-                    it.copy(
-                        dragShadow = DragShadow(title, xAlign = Align.Start, xOffset = (-1).rem)
-                    )
-                }
-            ) { number ->
-                card.frame {
-                    dynamicTheme { Highlight(number()) }
-                    centered.text { ::content { number().toString() } }
-                }
-            }
-        }
-
-        space()
-
-        h4("Recycler Reorderable")
-        sizeConstraints(height = 20.rem).apply(ListSemantic).recyclerView {
-            placer = RecyclerViewPlacerVerticalGrid(3)
-            childrenReorderable(
-                numbers,
-                id = { it },
-                reorder = { move ->
-                    numbers.modify { move.reorder(it) }
-                }
-            ) { number ->
-                card.frame {
-                    dynamicTheme { Highlight(number()) }
-                    centered.text { ::content { number().toString() } }
+            h4("Reorderable List")
+            ListSemantic.onNext.col {
+                forEachReorderable(
+                    numbers,
+                    reorder = { move ->
+                        numbers.value = move.reorder(numbers.value)
+                    },
+                    dataTransform = {
+                        it.copy(
+                            dragShadow = DragShadow(title, xAlign = Align.Start, xOffset = (-1).rem)
+                        )
+                    }
+                ) { number ->
+                    card.frame {
+                        dynamicTheme { Highlight(number()) }
+                        centered.text { ::content { number().toString() } }
+                    }
                 }
             }
-        }
 
-        space()
+            space()
 
-        text("Behold some dragging magic!")
-        card.link {
-            to = { this@DragPage }
-            dragData = DragData("Stuff", "x-application/thing", "Hello there!")
-            text {
-                content = "Dragging from here leaves the text 'Hello there!'"
-            }
-        }
-        field("Sample input") { textInput {  }}
-        card.frame {
-            text("Print dropped item to console")
-            dropTargetDelegate = object: DropTargetDelegate {
-                override fun drop(event: DragEvent): Boolean {
-                    println(event.data.data)
-                    return true
+            h4("Recycler Reorderable")
+            sizeConstraints(height = 20.rem).apply(ListSemantic).recyclerView {
+                placer = RecyclerViewPlacerVerticalGrid(3)
+                childrenReorderable(
+                    numbers,
+                    id = { it },
+                    reorder = { move ->
+                        numbers.modify { move.reorder(it) }
+                    }
+                ) { number ->
+                    card.frame {
+                        dynamicTheme { Highlight(number()) }
+                        centered.text { ::content { number().toString() } }
+                    }
                 }
             }
-        }
-        sizeConstraints(height = 10.rem).row {
-            val left = Signal<List<String>>(listOf())
-            val right = Signal<List<String>>(listOf())
-            expanding.card.scrolling.col {
-                dropTargetDelegate = object: DropTargetDelegate {
+
+            space()
+
+            text("Behold some dragging magic!")
+            card.link {
+                to = { this@DragPage }
+                dragData = DragData("Stuff", "x-application/thing", "Hello there!")
+                text {
+                    content = "Dragging from here leaves the text 'Hello there!'"
+                }
+            }
+            field("Sample input") { textInput { } }
+            card.frame {
+                text("Print dropped item to console")
+                dropTargetDelegate = object : DropTargetDelegate {
                     override fun drop(event: DragEvent): Boolean {
-                        val it = event.data
-                        left.value += it.data
-                        right.value -= it.data
+                        println(event.data.data)
                         return true
                     }
                 }
-                forEachAnimated(left) {
-                    card.text {
-                        content = it
-                        dragData = DragData(it, "text/plain", it)
-                    }
-                }
             }
-            expanding.card.scrolling.col {
-                dropTargetDelegate = object: DropTargetDelegate {
-                    override fun drop(event: DragEvent): Boolean {
-                        val it = event.data
-                        right.value += it.data
-                        left.value -= it.data
-                        return true
-                    }
-                }
-                forEachAnimated(right) {
-                    card.text {
-                        content = it
-                        dragData = DragData(it, "text/plain", it)
-                    }
-                }
-            }
-        }
-        text("Janky reorderable test")
-        sizeConstraints(height = 30.rem).card.recyclerView {
-            val data = Signal<List<String>>(listOf("A", "B", "C", "D", "E"))
-            children(data, { it }) {
-                card.text {
-                    ::content { it() }
-                    ::dragData { DragData(it(), "text/plain", it()) }
-                    dropTargetDelegate = object: DropTargetDelegate {
+            sizeConstraints(height = 10.rem).row {
+                val left = Signal<List<String>>(listOf())
+                val right = Signal<List<String>>(listOf())
+                expanding.card.scrolling.col {
+                    dropTargetDelegate = object : DropTargetDelegate {
                         override fun drop(event: DragEvent): Boolean {
-                            launch {
-                                val dropped = event.data
-                                val index = data.value.indexOf(it())
-                                val t = data.value.filter { it != dropped.data }
-                                data.value = t.subList(0, index) + dropped.data + t.subList(index, t.size)
-                            }
+                            val it = event.data
+                            left.value += it.data
+                            right.value -= it.data
                             return true
+                        }
+                    }
+                    forEachAnimated(left) {
+                        card.text {
+                            content = it
+                            dragData = DragData(it, "text/plain", it)
+                        }
+                    }
+                }
+                expanding.card.scrolling.col {
+                    dropTargetDelegate = object : DropTargetDelegate {
+                        override fun drop(event: DragEvent): Boolean {
+                            val it = event.data
+                            right.value += it.data
+                            left.value -= it.data
+                            return true
+                        }
+                    }
+                    forEachAnimated(right) {
+                        card.text {
+                            content = it
+                            dragData = DragData(it, "text/plain", it)
                         }
                     }
                 }
             }
-            outerFrame.dropTargetDelegate = object: DropTargetDelegate {
-                override fun drop(event: DragEvent): Boolean {
-                    val it = event.data
-                // Move it to the end
-                data.value -= it.data
-                data.value += it.data
-                return true
-            }}
+            text("Janky reorderable test")
+            sizeConstraints(height = 30.rem).card.recyclerView {
+                val data = Signal<List<String>>(listOf("A", "B", "C", "D", "E"))
+                children(data, { it }) {
+                    card.text {
+                        ::content { it() }
+                        ::dragData { DragData(it(), "text/plain", it()) }
+                        dropTargetDelegate = object : DropTargetDelegate {
+                            override fun drop(event: DragEvent): Boolean {
+                                launch {
+                                    val dropped = event.data
+                                    val index = data.value.indexOf(it())
+                                    val t = data.value.filter { it != dropped.data }
+                                    data.value = t.subList(0, index) + dropped.data + t.subList(index, t.size)
+                                }
+                                return true
+                            }
+                        }
+                    }
+                }
+                outerFrame.dropTargetDelegate = object : DropTargetDelegate {
+                    override fun drop(event: DragEvent): Boolean {
+                        val it = event.data
+                        // Move it to the end
+                        data.value -= it.data
+                        data.value += it.data
+                        return true
+                    }
+                }
+            }
         }
     }
 

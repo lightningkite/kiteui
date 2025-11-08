@@ -79,6 +79,7 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
     popoverCloser?.invoke()
     popoverCloser = close
     val writer = object : ViewWriter(), CalculationContext by this {
+        override val representsView: RView? = overlay.representsView
         override val context: RContext = this@popoverWriter.context.split()
         override fun willAddChild(view: RView) = overlay.willAddChild(view)
         override fun addChild(view: RView) = overlay.addChild(view)
@@ -105,5 +106,5 @@ fun ViewWriter.popoverWriter(overlay: ViewWriter = this, popoverRoot: Boolean = 
 expect fun ViewWriter.overlayWriter(
     modal: Boolean = true,
     transition: ScreenTransitions = ScreenTransitions.Fade,
-    body: RView.(remove: () -> Unit) -> Unit
+    body: ViewWriter.(remove: () -> Unit) -> Unit
 )

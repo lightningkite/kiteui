@@ -18,16 +18,49 @@ import kotlin.coroutines.CoroutineContext
 
 abstract class ViewWriter: CoroutineScopeHelpers() {
     abstract val context: RContext
-    open fun willAddChild(view: RView) {}
+    abstract fun willAddChild(view: RView)
     abstract fun addChild(view: RView)
+    abstract val representsView: RView?
 
     fun split(): ViewWriter {
         val r = object : ViewWriter(), CoroutineScope by this {
+            override val representsView: RView? = this@ViewWriter.representsView
             override val context: RContext = this@ViewWriter.context.split()
             override fun addChild(view: RView) = this@ViewWriter.addChild(view)
             override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
         }
         return r
+    }
+
+    inline fun produceOne(action: ViewWriter.()->Unit): RView {
+        var output: RView? = null
+        object : ViewWriter() {
+            override val representsView: RView? = this@ViewWriter.representsView
+            override val coroutineContext: CoroutineContext get() = this@ViewWriter.coroutineContext
+            override val context: RContext get() = this@ViewWriter.context
+            override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
+            override fun addChild(view: RView) {
+                if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
+                output = view
+                this@ViewWriter.addChild(view)
+            }
+        }.let(action)
+        return output ?: throw IllegalStateException("Produced no views at this layer, but expected one.")
+    }
+    inline fun produceOneMaybe(action: ViewWriter.()->Unit): RView? {
+        var output: RView? = null
+        object : ViewWriter() {
+            override val representsView: RView? = this@ViewWriter.representsView
+            override val coroutineContext: CoroutineContext get() = this@ViewWriter.coroutineContext
+            override val context: RContext get() = this@ViewWriter.context
+            override fun willAddChild(view: RView) = this@ViewWriter.willAddChild(view)
+            override fun addChild(view: RView) {
+                if(output != null) throw IllegalStateException("Produced more than one view at this layer, but only one was expected.")
+                output = view
+                this@ViewWriter.addChild(view)
+            }
+        }.let(action)
+        return output
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -44,6 +77,7 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
         val base: ViewWriter,
         val action: RView.()->Unit
     ): ViewWriter() {
+        override val representsView: RView? = base.representsView
         override val context: RContext get() = base.context
         override val coroutineContext: CoroutineContext get() = base.coroutineContext
         override fun willAddChild(view: RView) {
@@ -84,22 +118,3 @@ abstract class ViewWriter: CoroutineScopeHelpers() {
         themeChoice = old + themeDerivation
     }
 }
-
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.contains(view: Unit): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.contains(view: Boolean): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.contains(view: ViewModifiable): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Unit): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: Boolean): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.contains(view: ViewModifiable): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.contains(view: Unit): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.contains(view: Boolean): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.contains(view: ViewModifiable): Boolean = true
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.minus(view: Unit) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.minus(view: Boolean) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewModifiable.minus(view: ViewModifiable) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Unit) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: Boolean) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun ViewWrapper.minus(view: ViewModifiable) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.minus(view: Unit) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.minus(view: Boolean) = view
-@Deprecated("No longer supported.  Use prefix . syntax.", replaceWith = ReplaceWith("this REPLACEWITHDOT view"), level = DeprecationLevel.ERROR) @ViewModifierDsl3 inline operator fun Boolean.minus(view: ViewModifiable) = view

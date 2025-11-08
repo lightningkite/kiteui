@@ -46,7 +46,7 @@ object R2VPPage : Page {
                 this.snapToElements = Align.Center
                 this.scrollSnapStop = true
                 val main: RecyclerViewRenderer<Int> = object : RecyclerViewRenderer<Int> {
-                    override fun render(viewWriter: ViewWriter, data: Reactive<Int>, index: Reactive<Int>) =
+                    override fun render(viewWriter: ViewWriter, data: Reactive<Int>, index: Reactive<Int>): Unit =
                         with(viewWriter) {
                             padded.stack {
                                 card.button {

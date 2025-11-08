@@ -12,6 +12,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 inline fun CharSequence.substringOrNull(startIndex: Int, endIndex: Int): String? {
@@ -58,14 +59,14 @@ enum class PhoneNumberFormat {
     abstract fun format(clean: String): String
 }
 
-class PhoneNumberInput(container: ViewWriter): ViewModifiable {
+class PhoneNumberInput(container: ViewWriter): CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = input.coroutineContext
     private val input = container.formattedTextInput {
         keyboardHints = KeyboardHints.phone
         format(PhoneNumberFormat.USA::isRawData, PhoneNumberFormat.USA::format)
     }
-    override val rView: RView get() = input
+    val rView: RView get() = input
     var format: PhoneNumberFormat = PhoneNumberFormat.USA
         set(value) {
             field = value

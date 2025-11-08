@@ -126,8 +126,7 @@ actual fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper {
 
 @ViewModifierDsl3
 actual inline fun ViewWriter.__scrollsUncontracted(vertical: Boolean, horizontal: Boolean, crossinline setup: ScrollingBehaviors.()->Unit): ViewWrapper {
-    // TODO: This doesn't work; nor does any other similar wrapping treatment.
-    return ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
+    return write(ScrollView(context, horizontal = horizontal, vertical = vertical), setup)
 }
 
 @ViewModifierDsl3
@@ -139,7 +138,7 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
 ): ViewWrapper {
     val scrollView = ScrollView(context, horizontal = horizontal, vertical = vertical).apply(setup)
 
-    return if (vertical) {
+    val view = if (vertical) {
         val refreshLayout = androidx.swiperefreshlayout.widget.SwipeRefreshLayout(context.activity)
         refreshLayout.setOnRefreshListener {
             refreshAction.startAction(this)
@@ -179,16 +178,19 @@ actual inline fun ViewWriter.__scrollsWithRefreshUncontracted(
         // For horizontal scrolling, just use regular scrolling as SwipeRefreshLayout only supports vertical
         scrollView
     }
+
+    return write(view, {})
 }
 
 @ViewModifierDsl3
 actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
     if (constraints.maxHeight != null || constraints.maxWidth != null || constraints.width != null || constraints.height != null || constraints.aspectRatio != null) {
-        object : RViewWrapper(context) {
+        write(object : RViewWrapper(context) {
             override val native: View = DesiredSizeView(context.activity).apply {
                 this.constraints = constraints
             }
-        }
+        }, {})
+            .let { return it }
     } else {
         beforeNextElementSetup {
             constraints.width?.let { it: Dimension -> lparams.width = it.value.toInt() }
@@ -208,13 +210,13 @@ actual fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper {
 
 @ViewModifierDsl3
 actual fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper {
-    object : RViewWrapper(context) {
+    write(object : RViewWrapper(context) {
         override val native: View = DesiredSizeView(context.activity).apply {
             reactiveScope {
                 this@apply.constraints = constraints()
             }
         }
-    }
+    }, {})
         .let { return it }
 }
 
@@ -376,7 +378,7 @@ actual fun ViewWriter.hasPopover(
         native.setOnClickListener {
             dialogPageNavigator.navigate(object : Page {
                 override fun ViewWriter.render(): ViewModifiable = run {
-                    return dismissBackground {
+                    dismissBackground {
                         centered.frame {
                             setup(object : PopoverContext {
                                 override val calculationContext: CalculationContext

@@ -77,8 +77,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                         refreshTheming()
                     }
                 }
-            }
-            frame {
+            }.frame {
                 overlayFrame = this
                 content(control)
             }

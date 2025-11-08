@@ -20,49 +20,54 @@ class ArgumentsExamplePage(val id: String): Page {
     @QueryParameter
     val list = Signal(listOf("sample"))
 
-    override fun ViewWriter.render() = col {
-        transitionId = htmlElementId
-        h1 { content = "Hello world!" }
-        text {
-            content = "My item ID is ${htmlElementId}"
-            transitionId = "itemid"
-        }
-        text { content = "This is a demonstration of how you can use classes and properties to navigate to different views." }
-        link {
-            text { content = "Append '-plus'" }
-            ::to label@{
-                val a = toAdd()
-                val b = list()
-                return@label {
-                    ArgumentsExamplePage("$htmlElementId-plus").also {
-                        it.toAdd.value = a
-                        it.list.value = b
+    override fun ViewWriter.render() {
+        col {
+            transitionId = htmlElementId
+            h1 { content = "Hello world!" }
+            text {
+                content = "My item ID is ${htmlElementId}"
+                transitionId = "itemid"
+            }
+            text {
+                content =
+                    "This is a demonstration of how you can use classes and properties to navigate to different views."
+            }
+            link {
+                text { content = "Append '-plus'" }
+                ::to label@{
+                    val a = toAdd()
+                    val b = list()
+                    return@label {
+                        ArgumentsExamplePage("$htmlElementId-plus").also {
+                            it.toAdd.value = a
+                            it.list.value = b
+                        }
                     }
                 }
             }
-        }
-        h2 { content = "The list so far" }
-        col {
-            forEachUpdating(list) {
-                text { ::content { it() } }
+            h2 { content = "The list so far" }
+            col {
+                forEachUpdating(list) {
+                    text { ::content { it() } }
+                }
             }
-        }
-        h2 { content = "Add more" }
-        textField { content bind toAdd }
-        button {
-            text { content = "Add" }
-            onClick {
-                list.value += toAdd.value
-                toAdd.value = ""
+            h2 { content = "Add more" }
+            textField { content bind toAdd }
+            button {
+                text { content = "Add" }
+                onClick {
+                    list.value += toAdd.value
+                    toAdd.value = ""
+                }
             }
-        }
-        sizeConstraints(height = 10.rem).image {
-            source = when(htmlElementId.hashCode() % 2) {
-                0 -> Resources.imagesSnowyBackground
-                else -> Resources.imagesLightningBackground
+            sizeConstraints(height = 10.rem).image {
+                source = when (htmlElementId.hashCode() % 2) {
+                    0 -> Resources.imagesSnowyBackground
+                    else -> Resources.imagesLightningBackground
+                }
+                scaleType = ImageScaleType.Crop
+                transitionId = "Sample"
             }
-            scaleType = ImageScaleType.Crop
-            transitionId = "Sample"
         }
     }
 }

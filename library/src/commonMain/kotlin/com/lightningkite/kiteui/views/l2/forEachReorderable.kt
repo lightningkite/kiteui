@@ -183,7 +183,7 @@ fun <T, ID> Recycler2.childrenReorderable(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
+    separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     render: ViewWriter.(Reactive<T>) -> ViewModifiable
 ) {
     rendererSet = RecyclerReorderable(

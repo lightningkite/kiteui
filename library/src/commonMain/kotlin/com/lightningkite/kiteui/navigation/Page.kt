@@ -17,7 +17,9 @@ interface Page {
         )
     fun ViewWriter.render(): ViewModifiable
     object Empty: Page {
-        override fun ViewWriter.render(): ViewModifiable = space {}
+        override fun ViewWriter.render() {
+            space {}
+        }
     }
     open class Direct(title: String = "", val render: ViewWriter.()->ViewModifiable): Page {
         override fun ViewWriter.render(): ViewModifiable = this@Direct.render(this)

@@ -31,6 +31,7 @@ actual fun ViewWriter.openBottomSheet(
     var createdView: RView? = null
     o.withoutAnimation {
         object: ViewWriter() {
+            override val representsView: RView? = null
             override val context: RContext get() = this@openBottomSheet.context
             override fun willAddChild(view: RView) {
                 view.parent = o

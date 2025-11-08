@@ -11,6 +11,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.max
@@ -25,7 +26,7 @@ class Recycler2(
     viewWriter: ViewWriter,
     val vertical: Boolean = true,
     var log: Log? = null//ConsoleRoot.tag("Recycler2"),
-) : ViewModifiable {
+): CoroutineScopeHelpers() {
     override val coroutineContext: CoroutineContext
         get() = outerFrame.coroutineContext
     val outerFrame: Frame
@@ -37,8 +38,6 @@ class Recycler2(
         private set
     internal val fakeScrollContent: ProgrammaticLayout
     internal val fakeScrollIndicator: Frame
-    override val rView: RView
-        get() = outerFrame
 
     var gap: Dimension?
         get() = cells.gap
@@ -235,6 +234,7 @@ class Recycler2(
             this.indexProp.value = index
             log?.log("CELL CREATED: from $data at $index")
             val writer = object: ViewWriter() {
+                override val representsView: RView? = cells
                 override val context: RContext
                     get() = cells.context
 

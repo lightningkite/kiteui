@@ -19,7 +19,7 @@ expect class SwapView(context: RContext) : RView {
 inline fun <T> SwapView.swapping(
     crossinline transition: (T) -> ScreenTransition = { ScreenTransition.Fade },
     crossinline current: ReactiveContext.() -> T,
-    crossinline views: ViewWriter.(T) -> ViewModifiable?
+    crossinline views: ViewWriter.(T) -> ViewModifiable
 ): Unit {
     val queue = ArrayList<T>()
     var alreadySwapping = false

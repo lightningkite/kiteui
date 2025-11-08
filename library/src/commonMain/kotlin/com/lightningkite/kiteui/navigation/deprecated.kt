@@ -18,7 +18,7 @@ import com.lightningkite.readable.*
 interface Screen: Page {
     override fun ViewWriter.render(): ViewModifiable {
         @Suppress("DEPRECATION")
-        return frame { render() }
+        frame { render() }
 //        return this.lastWrittenView ?: throw IllegalStateException("Screens must create a single view, but you have not created one.")
     }
     fun ViewWriter.renderOld(): Any?
@@ -27,7 +27,9 @@ interface Screen: Page {
     object Empty: Screen {
 
         @Deprecated("Use render2", ReplaceWith("render2()"))
-        override fun ViewWriter.renderOld(): ViewModifiable = space {}
+        override fun ViewWriter.renderOld() {
+            space {}
+        }
     }
 
     @Suppress("Deprecation")

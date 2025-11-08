@@ -18,7 +18,7 @@ fun ViewWriter.navGroupColumn(
     onNavigate: suspend () -> Unit = {},
     setup: ContainingView.() -> Unit = {}
 ): ViewModifiable {
-    return col {
+    col {
         navGroupColumnInner(elements, onNavigate)
         setup()
     }
@@ -107,7 +107,7 @@ private fun RView.navGroupColumnInner(readable: Reactive<List<NavElement>>, onNa
 }
 
 fun ViewWriter.navGroupActions(elements: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
-    return row {
+    row {
         navGroupActionsInner(elements)
         setup()
     }
@@ -173,7 +173,7 @@ private fun RView.navGroupActionsInner(readable: Reactive<List<NavElement>>) {
 }
 
 fun ViewWriter.navGroupTop(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit = {}): ViewModifiable {
-    return row {
+    row {
         navGroupTopInner(readable)
         setup()
     }
@@ -228,7 +228,7 @@ private fun RView.navGroupTopInner(readable: Reactive<List<NavElement>>) {
 }
 
 fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
-    return frame {
+    frame {
         centered.icon {
             ::source { navElement.icon() }
             ::description { navElement.title() }
@@ -247,7 +247,7 @@ fun ViewWriter.navElementIconAndCount(navElement: NavElement): ViewModifiable {
 }
 
 fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewModifiable {
-    return row {
+    row {
         centered.icon {
             ::source { navElement.icon().copy(width = 1.5.rem, height = 1.5.rem) }
             ::description { navElement.title() }
@@ -266,7 +266,7 @@ fun ViewWriter.navElementIconAndCountHorizontal(navElement: NavElement): ViewMod
 }
 
 fun ViewWriter.navGroupTabs(readable: Reactive<List<NavElement>>, setup: ContainingView.() -> Unit): ViewModifiable {
-    return row {
+    row {
         setup()
         fun ViewWriter.display(navElement: NavElement) {
             compact.col {

@@ -47,14 +47,18 @@ abstract class KiteUiActivity : AppCompatActivity() {
     lateinit var root: RView
     private val safeInsetsProperty = Signal<Edges>(Edges.ZERO)
     val viewWriter: ViewWriter = object: ViewWriter(), CoroutineScope by this.lifecycleScope {
+        override val representsView: RView? = null
         override val context: RContext = RContext(this@KiteUiActivity).also {
             ExternalServices.baseContext = it
         }
         init {
             safeInsets = safeInsetsProperty
         }
-        override fun addChild(view: RView) {
+
+        override fun willAddChild(view: RView) {
             view::themeChoice { ThemeDerivation.SetAsBase(theme()) }
+        }
+        override fun addChild(view: RView) {
             root = view
             setContentView(view.native)
             ViewGroupCompat.installCompatInsetsDispatch(view.native)

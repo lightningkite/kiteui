@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.minutes
 
 object DatePickerExamplePage : Page {
     override fun ViewWriter.render(): ViewModifiable {
-        return col {
+        col {
             h1 { content = "Date Picker"}
             space()
 

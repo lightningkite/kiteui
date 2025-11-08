@@ -17,6 +17,7 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.flatten
 import com.lightningkite.reactive.lensing.lens
 import com.lightningkite.reactive.lensing.lensListenable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
@@ -24,8 +25,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 
-class MediaView(viewWriter: ViewWriter) : ViewModifiable {
-    override val rView: Frame = with(viewWriter) { frame { } }
+class MediaView(viewWriter: ViewWriter) : CoroutineScope {
+    val rView: Frame = with(viewWriter) { frame { } }
     override val coroutineContext: CoroutineContext get() = rView.coroutineContext
 
     data class Info(

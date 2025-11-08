@@ -17,7 +17,7 @@ import kotlin.math.*
 @Routable("graph-example")
 object GraphExamplePage : Page {
     override fun ViewWriter.render(): ViewModifiable {
-        return scrolling.col {
+        scrolling.col {
             h1 { content = "Graph Example" }
 
             // Basic line graph example

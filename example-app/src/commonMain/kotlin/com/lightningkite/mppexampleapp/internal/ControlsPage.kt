@@ -56,7 +56,7 @@ object ControlsPage : Page {
         val booleanContent = PerfProperty(true).also {
             it.addListener { println("booleanContent changed!") }
         }
-        return scrolling.col {
+        scrolling.col {
 
             h1 { content = "Controls" }
 

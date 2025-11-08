@@ -21,17 +21,19 @@ import kotlin.math.min
 @Routable("sample/pong")
 object PongSamplePage : Page {
 
-    override fun ViewWriter.render() = canvas {
-        val dg = PongDelegate()
-        delegate = dg
-        var last = clockMillis()
-        reactiveScope {
-            rerunOn(AppState.animationFrame)
-            val now = clockMillis()
-            val diff = now - last
-            last = now
-            dg.frame(diff / 1000.0)
-            dg.invalidate()
+    override fun ViewWriter.render() {
+        canvas {
+            val dg = PongDelegate()
+            delegate = dg
+            var last = clockMillis()
+            reactiveScope {
+                rerunOn(AppState.animationFrame)
+                val now = clockMillis()
+                val diff = now - last
+                last = now
+                dg.frame(diff / 1000.0)
+                dg.invalidate()
+            }
         }
     }
 }

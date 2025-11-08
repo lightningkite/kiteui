@@ -20,30 +20,32 @@ import com.lightningkite.readable.shared
 object RecyclerFilterTestPage : Page {
     val searchText = Property("")
 
-    override fun ViewWriter.render(): ViewModifiable = col {
+    override fun ViewWriter.render(): ViewModifiable {
+        col {
 
-        fieldTheme.row {
-            expanding.textInput {
-                hint = "Search"
-                content bind searchText
+            fieldTheme.row {
+                expanding.textInput {
+                    hint = "Search"
+                    content bind searchText
+                }
             }
-        }
 
-        expanding.col {
-            expanding.apply(ListSemantic).recyclerView {
-                children(
-                    items = shared {
-                        listOf("asdf", "asdf1", "qwerty").filter {
-                            it.contains(searchText().lowercase())
+            expanding.col {
+                expanding.apply(ListSemantic).recyclerView {
+                    children(
+                        items = shared {
+                            listOf("asdf", "asdf1", "qwerty").filter {
+                                it.contains(searchText().lowercase())
+                            }
+                        },
+                        id = { it },
+                        render = {
+                            text {
+                                ::content { it() }
+                            }
                         }
-                    },
-                    id = { it },
-                    render = {
-                        text {
-                            ::content { it() }
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }

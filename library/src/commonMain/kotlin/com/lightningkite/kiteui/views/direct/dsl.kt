@@ -24,9 +24,11 @@ import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalContracts::class)
 @ViewDsl
@@ -118,9 +120,15 @@ inline fun ViewWriter.rawImageZoomable(source: ImageSource, description: String,
 //    contract { callsInPlace(setup, InvocationKind.EXACTLY_ONCE) }
 //    return write(ZoomableImageView(context) , setup)
 //}
-class Label(val label: TextView, val container: RowOrCol): ViewWriter(), ViewModifiable by container {
+class Label(val label: TextView, val container: RowOrCol): ViewWriter() {
+    override val coroutineContext: CoroutineContext get() = container.coroutineContext
+    override val representsView: RView? = container
     override val context: RContext
         get() = container.context
+
+    override fun willAddChild(view: RView) {
+        container.willAddChild(view)
+    }
     override fun addChild(view: RView) {
         container.addChild(view)
     }
@@ -144,7 +152,7 @@ inline fun ViewWriter.label(setup: Label.() -> Unit = {}): Label {
 @OptIn(ExperimentalContracts::class)
 inline fun ViewWriter.label(label: String, content: RowOrCol.() -> ViewModifiable): ViewModifiable {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    return col {
+    col {
         FieldLabelSemantic.onNext.text(label)
         spacingOverrideBeforeNext(0.px)
         content()
