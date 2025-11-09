@@ -270,17 +270,22 @@ actual class RawImageViewZoomable actual constructor(
             ImageScaleType.NoScale -> UIViewContentMode.UIViewContentModeCenter
         }
     }
-    val dg: UIScrollViewDelegateProtocol = object: NSObject(), UIScrollViewDelegateProtocol {
-        override fun viewForZoomingInScrollView(scrollView: UIScrollView): UIView? {
-            return imageView
-        }
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+    val dg: UIScrollViewDelegateProtocol = run {
+        // Use weak reference to avoid retain cycle
+        val weakSelf = kotlin.native.ref.WeakReference(this)
+        object: NSObject(), UIScrollViewDelegateProtocol {
+            override fun viewForZoomingInScrollView(scrollView: UIScrollView): UIView? {
+                return imageView
+            }
 
-        override fun scrollViewDidScroll(scrollView: UIScrollView) {
-            _zoomState.value = scrollView.zs
-        }
+            override fun scrollViewDidScroll(scrollView: UIScrollView) {
+                weakSelf.get()?._zoomState?.value = scrollView.zs
+            }
 
-        override fun scrollViewDidZoom(scrollView: UIScrollView) {
-            _zoomState.value = scrollView.zs
+            override fun scrollViewDidZoom(scrollView: UIScrollView) {
+                weakSelf.get()?._zoomState?.value = scrollView.zs
+            }
         }
     }
     init {

@@ -24,8 +24,8 @@ expect suspend fun fetch(
     method: HttpMethod = HttpMethod.GET,
     headers: HttpHeaders = httpHeaders(),
     body: RequestBody? = null,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)? = null,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
 ): RequestResponse
 
 class ConnectionException(message: String, cause: Exception? = null): Exception(message, cause)
@@ -94,16 +94,3 @@ interface WebSocket {
     fun onClose(action: (Short)->Unit)
     fun cancel() { close(1000, "Closed normally") }
 }
-
-/*
-
-retry {
-    val ws = websocket(url)
-    ws.send("asdf")
-    val msg = ws.incoming.receive()
-    ws.close()
-    while(true) {
-        ws.receive()
-    }
-}
- */

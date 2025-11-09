@@ -7,12 +7,13 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 actual class DynamicCss actual constructor(basePath: String) {
-    val rules = ArrayList<String>()
-    val headElements = ArrayList<String>()
+    val rules = java.util.Collections.synchronizedList(ArrayList<String>())
+    val headElements = java.util.Collections.synchronizedList(ArrayList<String>())
 
     actual val basePath: String = basePath
 
-    private val fontHandled = HashSet<String>()
+    private val fontHandled = java.util.Collections.synchronizedSet(HashSet<String>())
+    @Synchronized
     actual fun font(font: Font): String {
         if (!fontHandled.add(font.cssFontFamilyName)) return font.cssFontFamilyName
         if (font.url != null) {
@@ -38,15 +39,16 @@ actual class DynamicCss actual constructor(basePath: String) {
         return rules.joinToString("\n")
     }
 
-    val map = HashMap<String, HashMap<String, HashMap<String, String>>>()
+    val map = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, String>>>()
 
     actual fun add(selector: String, key: String, value: String, media: String) {
-        map.getOrPut(media) { HashMap() }.getOrPut(selector) { HashMap() }[key] = value
+        map.getOrPut(media) { java.util.concurrent.ConcurrentHashMap() }.getOrPut(selector) { java.util.concurrent.ConcurrentHashMap() }[key] = value
     }
 
-    var flushTotal: Duration = 0.seconds
-    var ruleTotal = 0
+    @Volatile var flushTotal: Duration = 0.seconds
+    @Volatile var ruleTotal = 0
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    @Synchronized
     actual fun flush() {
         measureTime {
             val merged = map.mapValues {

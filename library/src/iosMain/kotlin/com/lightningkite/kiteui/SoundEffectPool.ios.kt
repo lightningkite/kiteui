@@ -70,16 +70,23 @@ actual suspend fun AudioSource.load(): PlayableAudio {
     return object : PlayableAudio {
         val playableAudio = this
         var onCompleteHandler: (()->Unit)? = null
-        val dg = object: NSObject(), AVAudioPlayerDelegateProtocol {
-            override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
-                onCompleteHandler?.invoke()
-//                println("keepAlive.remove($playableAudio)")
-                keepAlive.remove(playableAudio)
-            }
+        @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+        val dg = run {
+            // Use weak reference to avoid retain cycle
+            val weakSelf = kotlin.native.ref.WeakReference(this)
+            object: NSObject(), AVAudioPlayerDelegateProtocol {
+                override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
+                    weakSelf.get()?.let { audio ->
+                        audio.onCompleteHandler?.invoke()
+//                        println("keepAlive.remove($audio)")
+                        keepAlive.remove(audio)
+                    }
+                }
 
-            override fun audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
-//                println("keepAlive.remove($playableAudio)")
-                keepAlive.remove(playableAudio)
+                override fun audioPlayerDecodeErrorDidOccur(player: AVAudioPlayer, error: NSError?) {
+//                    println("keepAlive.remove($playableAudio)")
+                    weakSelf.get()?.let { keepAlive.remove(it) }
+                }
             }
         }
         init {

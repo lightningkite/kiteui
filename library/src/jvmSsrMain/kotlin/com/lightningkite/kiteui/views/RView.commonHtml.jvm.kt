@@ -77,17 +77,21 @@ actual class FutureElement actual constructor() {
             out.append(' ')
             out.append(key)
             out.append("='")
-            out.append(value)
+            out.appendSafe(value)
             out.append('\'')
         }
         xmlns?.let {
-            out.append(" xmlns='$it'")
+            out.append(" xmlns='")
+            out.appendSafe(it)
+            out.append('\'')
         }
         id?.let {
-            out.append(" id='$it'")
+            out.append(" id='")
+            out.appendSafe(it)
+            out.append('\'')
         }
         out.append(" class='")
-        out.append(classes.joinToString(" "))
+        classes.forEach { out.appendSafe(it); out.append(' ') }
         out.append("' style='")
         style.underlyingMap.forEach { (key, value) ->
             out.append(key)

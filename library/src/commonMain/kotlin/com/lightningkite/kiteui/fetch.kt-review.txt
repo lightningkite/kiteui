@@ -1,0 +1,160 @@
+CODE REVIEW: fetch.kt
+=========================================
+
+ISSUES:
+-------
+1. Lines 98-109: Large commented code block showing pseudo-code
+   - Should be removed or moved to documentation
+   - Shows incomplete/unimplemented API design
+
+2. Inline functions (lines 3, 10, 16) shouldn't be suspend
+   - suspend inline is rarely useful
+   - These just delegate to another suspend function
+   - Should be regular inline or not inline at all
+
+RISKS:
+------
+1. NO REQUEST TIMEOUT
+   - fetch() has no timeout parameter
+   - Could hang indefinitely on slow/broken connections
+   - Critical missing feature
+
+2. NO RETRY LOGIC
+   - No built-in retry mechanism for transient failures
+   - Users must implement their own retry logic
+
+3. NO REQUEST CANCELLATION
+   - No way to cancel in-progress requests
+   - Should accept CoroutineContext or expose cancellable API
+
+4. SECURITY: No TLS/SSL validation control
+   - No way to pin certificates
+   - No way to configure SSL/TLS versions
+   - No way to handle self-signed certs in dev
+
+5. SECURITY: No input validation
+   - URL is not validated
+   - Could lead to SSRF (Server-Side Request Forgery) if used server-side
+   - Headers are not validated for injection attacks
+
+6. NO ERROR DETAILS
+   - ConnectionException is generic
+   - No way to distinguish network errors from timeouts from DNS failures
+   - No access to underlying exception details in all cases
+
+7. WebSocket interface is callback-based, not Flow/Channel-based
+   - Modern Kotlin approach would use Flows
+   - Current API is harder to use with coroutines
+   - No backpressure handling
+
+SIMPLIFICATION OPPORTUNITIES:
+-----------------------------
+1. Remove 'suspend inline' keywords, use regular 'suspend'
+2. Remove commented code block
+3. Consider builder pattern for complex requests instead of many parameters
+
+ARCHITECTURE:
+-------------
++ Clean separation of expect/actual for platform abstraction
++ Good use of sealed interface for RequestBody
+⚠ Callback-based WebSocket API is outdated pattern
+⚠ Missing timeout and cancellation support
+
+BEST PRACTICES:
+---------------
+- Missing timeout support
+- Missing cancellation support
+- Callback-based WebSocket instead of Channel/Flow
+- No documentation for expect functions
++ Clean API surface for basic use cases
++ Good use of default parameters
+
+PERFORMANCE:
+------------
+? No information about connection pooling
+? No information about HTTP/2 support
+? No caching layer
+
+SECURITY CONCERNS:
+------------------
+⚠ No URL validation - SSRF risk
+⚠ No header validation - injection risk
+⚠ No TLS configuration options
+⚠ No certificate pinning support
+⚠ No max response size limit - DoS risk
+
+DATA SAFETY:
+------------
+⚠ No max download size - could cause OOM
+⚠ text() and blob() on RequestResponse have no size limits
+⚠ ByteArray conversion could fail on large blobs
+
+API DESIGN ISSUES:
+------------------
+1. RequestBodyText calculates bytes every time (line 74)
+   - Should be lazy val
+   - Encoding twice is wasteful
+
+2. WebSocket.cancel() delegates to close() (line 95)
+   - Inconsistent with coroutine cancellation
+   - Should probably be called close() or closeNormally()
+
+3. Progress callbacks use Int for bytes (lines 27-28)
+   - Will overflow at 2GB
+   - Should use Long
+
+MISSING FEATURES:
+-----------------
+- Request timeouts
+- Connection timeouts
+- Read timeouts
+- Request cancellation
+- Retry logic
+- Connection pooling configuration
+- Cookie management
+- Redirect handling configuration
+- Compression support configuration
+- Multipart form data helpers
+- Query parameter builders
+- Modern WebSocket API (Channel/Flow based)
+
+RECOMMENDATIONS:
+----------------
+1. Add timeout parameters (connect, read, write)
+2. Add cancellation support via CoroutineContext
+3. Add max response size parameter
+4. Add URL validation
+5. Validate headers for security issues
+6. Change progress callback to use Long instead of Int
+7. Make RequestBodyText.bytes a lazy val
+8. Add more specific exception types
+9. Modernize WebSocket to use Channels or Flows
+10. Remove commented code
+11. Remove 'suspend inline', use regular 'suspend'
+12. Add comprehensive KDoc
+13. Consider adding:
+    - Response caching
+    - Request/response interceptors
+    - Cookie jar
+    - Connection pooling config
+
+CRITICAL SECURITY FIXES NEEDED:
+--------------------------------
+```kotlin
+suspend fun fetch(
+    url: String,
+    method: HttpMethod = HttpMethod.GET,
+    headers: HttpHeaders = httpHeaders(),
+    body: RequestBody? = null,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)? = null,
+    timeoutMillis: Long = 30_000, // ADD THIS
+    maxResponseSize: Long = 100 * 1024 * 1024, // ADD THIS (100MB default)
+): RequestResponse {
+    // Validate URL
+    require(isValidUrl(url)) { "Invalid URL: $url" }
+    // ... implementation
+}
+```
+
+STATUS: HIGH PRIORITY - Missing timeout is critical, security concerns, API modernization needed

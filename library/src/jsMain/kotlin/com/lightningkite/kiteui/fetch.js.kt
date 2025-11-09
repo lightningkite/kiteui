@@ -36,21 +36,21 @@ actual suspend fun fetch(
     method: HttpMethod,
     headers: HttpHeaders,
     body: RequestBody?,
-    onUploadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
-    onDownloadProgress: ((bytesComplete: Int, bytesExpectedOrNegativeOne: Int) -> Unit)?,
+    onUploadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
+    onDownloadProgress: ((bytesComplete: Long, bytesExpectedOrNegativeOne: Long) -> Unit)?,
 ): RequestResponse {
     return suspendCancellableCoroutine { cont ->
         val request = XMLHttpRequest()
         onUploadProgress?.let { p ->
             request.upload.addEventListener("progress", { event ->
                 event as ProgressEvent
-                p(event.loaded.toInt(), event.total.toInt().let { if(it == 0) -1 else it })
+                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
             })
         }
         onDownloadProgress?.let { p ->
             request.addEventListener("progress", { event ->
                 event as ProgressEvent
-                p(event.loaded.toInt(), event.total.toInt().let { if(it == 0) -1 else it })
+                p(event.loaded.toLong(), event.total.toLong().let { if(it == 0L) -1 else it })
             })
         }
         request.responseType = XMLHttpRequestResponseType.BLOB

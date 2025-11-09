@@ -70,6 +70,12 @@ actual class RawVideoView actual constructor(
             }
         }
         native.player!!.addListener(l)
+
+        // Clean up ExoPlayer when view is removed to prevent memory leaks
+        onRemove {
+            native.player?.release()
+            native.player = null
+        }
     }
 
     actual val time: MutableReactive<Double> = object : MutableReactive<Double> {
