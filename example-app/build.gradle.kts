@@ -13,7 +13,7 @@ plugins {
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidApplication)
-    id("dev.opensavvy.vite.kotlin") version "DEV"
+    id("dev.opensavvy.vite.kotlin") version "0.6.0"
 }
 apply<KiteUiPlugin>()
 configure<KiteUiPluginExtension> {
@@ -149,3 +149,10 @@ fun env(name: String, profile: String) {
     }
 }
 env("lk", "lk")
+
+vite {
+    server {
+        this.host.set("0.0.0.0")
+        this.port.set(8907)
+    }
+}

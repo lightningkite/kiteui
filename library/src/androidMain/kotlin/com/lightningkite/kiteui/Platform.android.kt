@@ -14,6 +14,10 @@ actual val Platform.Companion.usesTouchscreen: Boolean
     get() = true
 actual val Platform.Companion.userAgent: String
     get() = "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
+actual val Platform.Companion.isSafari: Boolean
+    get() = false
+actual val Platform.Companion.isIOSSafari: Boolean
+    get() = false
 
 actual fun setStatusBarColor(color: Color) {
     val window = AndroidAppContext.activityCtx?.window

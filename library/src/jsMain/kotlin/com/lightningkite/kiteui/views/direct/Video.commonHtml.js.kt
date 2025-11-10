@@ -1,11 +1,25 @@
 package com.lightningkite.kiteui.views.direct
 
+import com.lightningkite.kiteui.AudioManager
+import com.lightningkite.kiteui.GainNode
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.report
 import com.lightningkite.kiteui.views.autoplay
+import com.lightningkite.reactive.context.onRemove
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.withWrite
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLVideoElement
+import kotlin.random.Random
+
+// Storage for Web Audio API routing state
+private val videoAudioRouting = mutableMapOf<RawVideoView, VideoAudioState>()
+
+private data class VideoAudioState(
+    val videoId: String,
+    var gainNode: GainNode? = null
+)
 
 actual val RawVideoView.nativeTime: MutableReactive<Double>
     get() = remember {
@@ -29,25 +43,54 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
     get() = native.vprop(
         eventName = "timeupdate",
         get = { (this.element as? HTMLVideoElement)?.paused?.not() ?: (native.attributes.autoplay != null) },
-        set = {
-            native.attributes.autoplay = it
+        set = { shouldPlay ->
+            native.attributes.autoplay = shouldPlay
             onElement { e ->
                 e as HTMLVideoElement
-                if(it) e.play().catch {
-                    if(it.message?.contains("AbortError") == true) return@catch
-                    if(it.message?.contains("NotAllowedError") == true) return@catch
-                    Exception("Failed to play ${this}", it).report()
-                } else e.pause()
+                if(shouldPlay) {
+                    // Try to resume AudioContext before playing (in case it's suspended)
+                    if (AudioManager.shouldUseAudioContext) {
+                        AudioManager.tryResumeContext()
+                    }
+                    e.play().then(
+                        onFulfilled = {
+                        },
+                        onRejected = { error ->
+                            if(error.asDynamic().message?.contains("AbortError") == true) {
+                                return@then
+                            }
+                            if(error.asDynamic().message?.contains("NotAllowedError") == true) {
+                                return@then
+                            }
+                            Exception("Failed to play ${this}", error as? Throwable).report()
+                        }
+                    )
+                } else {
+                    e.pause()
+                }
             }
         }
     )
 actual val RawVideoView.nativeVolume: MutableReactive<Float>
     get() = native.vprop(
         eventName = "volumechange",
-        get = { (this.element as? HTMLVideoElement)?.volume?.toFloat() ?: 1f },
-        set = {
+        get = {
+            // On iOS Safari, get volume from the gain node
+            if (AudioManager.shouldUseAudioContext) {
+                videoAudioRouting[this@nativeVolume]?.gainNode?.gain?.value?.toFloat() ?: 1f
+            } else {
+                (this.element as? HTMLVideoElement)?.volume?.toFloat() ?: 1f
+            }
+        },
+        set = { value ->
             onElement { element ->
-                (element as HTMLVideoElement).volume = it.toDouble()
+                // On iOS Safari, control volume via gain node
+                if (AudioManager.shouldUseAudioContext) {
+                    videoAudioRouting[this@nativeVolume]?.gainNode?.gain?.value = value.toDouble()
+                } else {
+                    // Standard HTML5 volume control
+                    (element as HTMLVideoElement).volume = value.toDouble()
+                }
             }
         }
     )
@@ -55,11 +98,42 @@ actual val RawVideoView.nativeVolume: MutableReactive<Float>
 actual fun RawVideoView.nativeLoad(url: String?) {
     native.onElement {
         val v = it as HTMLVideoElement
+
+        // Set crossorigin attribute BEFORE setting src for Web Audio API compatibility
+        // This allows createMediaElementSource to access audio data from cross-origin videos
+        // Note: Only set if needed, as it requires CORS headers from the server
+        if (AudioManager.shouldUseAudioContext) {
+            v.asDynamic().crossOrigin = "anonymous"
+        }
+
         v.addEventListener("error", { _state.state = ReactiveState.exception(Exception("Failed to load video")) })
         v.addEventListener("loadeddata", { _state.state = ReactiveState(Unit) })
         v.addEventListener("canplay", { _state.state = ReactiveState(Unit) })
+        // Set src after crossOrigin attribute
         v.src = url ?: ""
+
+        // Set up audio routing for iOS Safari
+        if (AudioManager.shouldUseAudioContext) {
+            val state = videoAudioRouting.getOrPut(this) {
+                VideoAudioState(videoId = "video-${Random.nextInt()}")
+            }
+
+            // Connect video element to Web Audio API
+            // This happens after loadeddata to ensure the media element is ready
+            v.addEventListener("loadedmetadata", {
+                state.gainNode = AudioManager.connectVideoElement(state.videoId, v)
+            })
+            // Clean up audio routing when the view's coroutine scope is cancelled
+            // This happens when the view is removed from the hierarchy
+            onRemove {
+                videoAudioRouting[this@nativeLoad]?.let { state ->
+                    AudioManager.disconnectVideoElement(state.videoId)
+                }
+                videoAudioRouting.remove(this@nativeLoad)
+            }
+        }
     }
+
 }
 actual val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
     get() {

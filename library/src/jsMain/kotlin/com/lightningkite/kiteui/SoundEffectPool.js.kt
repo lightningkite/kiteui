@@ -25,7 +25,8 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
 
     // Web doesn't need the provided limit from [concurrency], so we ignore it.
 
-    private val context = AudioContext()
+    private val context: AudioContext
+        get() = AudioManager.getContext()
 
     actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
@@ -92,33 +93,101 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 }
 
-external class AudioContext() {
-    fun createChannelMerger(numberOfInputs: Int): ChannelMergerNode
-    fun createBufferSource(): AudioBufferSourceNode
-    fun decodeAudioData(arrayBuffer: ArrayBuffer): Promise<AudioBuffer>
-    val destination: AudioDestinationNode
-}
-
-open external class AudioNode {
-    fun connect(node: AudioNode)
-    fun connect(node: AudioNode, outputIndex: Int, inputIndex: Int)
-}
-
+// External declarations for Web Audio API types used by SoundEffectPool
+// (Full declarations are in AudioManager.js.kt)
 external class ChannelMergerNode : AudioNode
 
-external class AudioBufferSourceNode : AudioNode {
-    var buffer: AudioBuffer
-    fun start()
-    fun stop()
-}
-
-external class AudioBuffer {
-    val duration: Double
-}
-
-external class AudioDestinationNode : AudioNode
-
 actual suspend fun AudioSource.load(): PlayableAudio {
+    return if (AudioManager.shouldUseAudioContext) {
+        loadViaWebAudio()
+    } else {
+        loadViaHTMLAudio()
+    }
+}
+
+/**
+ * Load audio using Web Audio API for iOS Safari.
+ * This allows multiple audio sources to play simultaneously.
+ */
+private suspend fun AudioSource.loadViaWebAudio(): PlayableAudio {
+    return suspendCancellableCoroutine { cont ->
+        val context = AudioManager.getContext()
+
+        // Create audio element for streaming (Web Audio can use HTML audio as source)
+        val audioElement = document.createElement("audio") as HTMLAudioElement
+        audioElement.hidden = true
+        audioElement.preload = "auto"
+
+        // Create Web Audio nodes
+        val sourceNode = context.createMediaElementSource(audioElement)
+        val gainNode = context.createGain()
+
+        // Connect: audio element -> gain -> destination
+        sourceNode.connect(gainNode)
+        gainNode.connect(context.destination)
+
+        val obj = object : PlayableAudio {
+            override var volume: Float
+                get() = gainNode.gain.value.toFloat()
+                set(value) {
+                    gainNode.gain.value = value.toDouble()
+                }
+
+            override var loop: Boolean
+                get() = audioElement.loop
+                set(value) { audioElement.loop = value }
+
+            override var isPlaying: Boolean
+                get() = !audioElement.paused
+                set(value) {
+                    if (value) audioElement.play().catch {
+                        if(it.message?.contains("AbortError") == true) return@catch
+                        if(it.message?.contains("NotAllowedError") == true) return@catch
+                        Exception("Failed to play ${this}", it).report()
+                    } else audioElement.pause()
+                }
+
+            override fun onComplete(action: () -> Unit) {
+                audioElement.onended = { action() }
+            }
+
+            override fun stop() {
+                audioElement.pause()
+                audioElement.currentTime = 0.0
+            }
+        }
+
+        var done = false
+        audioElement.onloadeddata = label@{
+            if(done) return@label Unit
+            cont.resume(obj)
+            done = true
+            Unit
+        }
+
+        when (val value = this) {
+            is AudioRemote -> audioElement.src = value.url
+            is AudioRaw -> audioElement.src = URL.createObjectURL(Blob(arrayOf(value.data)))
+            is AudioResource -> audioElement.src = basePath + value.relativeUrl
+            is AudioLocal -> audioElement.src = URL.createObjectURL(value.file)
+            else -> {}
+        }
+        audioElement.load()
+
+        cont.invokeOnCancellation {
+            audioElement.pause()
+            audioElement.src = ""
+            gainNode.disconnect()
+            sourceNode.disconnect()
+        }
+    }
+}
+
+/**
+ * Load audio using HTMLAudioElement for non-iOS Safari browsers.
+ * This is the original implementation.
+ */
+private suspend fun AudioSource.loadViaHTMLAudio(): PlayableAudio {
     return suspendCancellableCoroutine { cont ->
         val native = document.createElement("audio") as HTMLAudioElement
         native.hidden = true
