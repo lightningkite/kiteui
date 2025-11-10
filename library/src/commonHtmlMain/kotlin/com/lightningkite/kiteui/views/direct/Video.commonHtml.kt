@@ -16,6 +16,7 @@ actual class RawVideoView actual constructor(
 
     init {
         native.tag = "video"
+        native.attributes.playsInline = true
         native.classes.add("viewDraws")
         native.classes.add("scaleType-$scaleType")
         // Set initial attributes
@@ -43,7 +44,6 @@ actual class RawVideoView actual constructor(
         get() = native.attributes.controls != null
         set(value) {
             native.attributes.controls = value
-            native.attributes.playsInline = !value
         }
 
     actual var loop: Boolean
