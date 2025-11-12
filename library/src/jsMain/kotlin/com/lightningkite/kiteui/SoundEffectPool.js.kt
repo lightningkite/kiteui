@@ -20,6 +20,9 @@ import org.khronos.webgl.ArrayBuffer
 import org.w3c.dom.HTMLAudioElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
 
@@ -150,6 +153,28 @@ actual suspend fun AudioSource.load(): PlayableAudio {
                 native.pause()
                 native.currentTime = 0.0
             }
+
+            override val currentTime: MutableReactive<Duration> = object : BaseListenable(), MutableReactive<Duration> {
+                override suspend fun set(value: Duration) {
+                    native.currentTime = value.toDouble(DurationUnit.SECONDS)
+                }
+
+                override val state get() = ReactiveState(native.currentTime.seconds)
+
+                var remover: (() -> Unit)? = null
+
+                override fun activate() {
+                    remover = AppState.animationFrame.addListener {
+                        if (!native.paused) invokeAllListeners()
+                    }
+                }
+
+                override fun deactivate() {
+                    remover?.invoke()
+                    remover = null
+                }
+            }
+
         }
         var done = false
         native.onloadeddata = label@{

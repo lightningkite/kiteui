@@ -18,6 +18,8 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 import java.io.File
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(UnstableApi::class)
 actual class RawVideoView actual constructor(
@@ -78,6 +80,29 @@ actual class RawVideoView actual constructor(
         }
 
         override val state get() = ReactiveState(native.player!!.currentPosition / 1000.0)
+
+        override fun addListener(listener: () -> Unit): () -> Unit {
+            var remover: (() -> Unit)? = null
+            val l = object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) remover = AppState.animationFrame.addListener(listener)
+                    else {
+                        remover?.invoke()
+                        remover = null
+                    }
+                }
+            }
+            native.player!!.addListener(l)
+            return { native.player!!.removeListener(l) }
+        }
+    }
+
+    actual val currentTime: MutableReactive<Duration> = object : MutableReactive<Duration> {
+        override suspend fun set(value: Duration) {
+            native.player!!.seekTo(value.inWholeMilliseconds)
+        }
+
+        override val state get() = ReactiveState(native.player!!.currentPosition.milliseconds)
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             var remover: (() -> Unit)? = null
