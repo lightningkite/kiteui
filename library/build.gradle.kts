@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinPluginSerialization)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.comLightningkiteTestingManual)
+    alias(libs.plugins.roborazzi)
     signing
     alias(libs.plugins.vannitechPublishing)
     alias(libs.plugins.dokka)
@@ -97,6 +98,7 @@ kotlin {
             dependencies {
                 implementation(libs.junit)
                 implementation(libs.robolectric)
+                implementation(libs.roborazzi)
             }
         }
 
