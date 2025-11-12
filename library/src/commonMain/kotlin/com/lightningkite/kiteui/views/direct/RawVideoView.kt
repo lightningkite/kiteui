@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.VideoSource
 import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.reactive.core.*
+import kotlin.time.Duration
 
 
 expect class RawVideoView(
@@ -21,7 +22,9 @@ expect class RawVideoView(
     val state: Reactive<Unit>
     val seekableTimeRanges: List<ClosedFloatingPointRange<Double>>
 
+    @Deprecated("Use currentTime instead")
     val time: MutableReactive<Double>
+    val currentTime: MutableReactive<Duration>
 
     /**
      * The duration of the video in seconds.

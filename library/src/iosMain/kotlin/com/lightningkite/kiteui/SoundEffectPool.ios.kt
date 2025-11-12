@@ -1,7 +1,11 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.direct.inBackground
+import com.lightningkite.reactive.core.BaseListenable
+import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.ReactiveState
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFAudio.*
 import platform.AVFoundation.AVFileTypeMPEG4
@@ -11,6 +15,9 @@ import platform.Foundation.NSBundle
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 import platform.darwin.NSObject
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
     actual suspend fun preload(sound: AudioSource) {
@@ -121,6 +128,27 @@ actual suspend fun AudioSource.load(): PlayableAudio {
 
         override fun onComplete(action: () -> Unit) {
             onCompleteHandler = action
+        }
+
+        override val currentTime: MutableReactive<Duration> = object : BaseListenable(), MutableReactive<Duration> {
+            override suspend fun set(value: Duration) {
+                native.playAtTime(value.toDouble(DurationUnit.SECONDS))
+            }
+
+            override val state get() = ReactiveState(native.currentTime.seconds)
+
+            var remover: (() -> Unit)? = null
+
+            override fun activate() {
+                remover = AppState.animationFrame.addListener {
+                    if (player.isPlaying()) invokeAllListeners()
+                }
+            }
+
+            override fun deactivate() {
+                remover?.invoke()
+                remover = null
+            }
         }
     }
 }

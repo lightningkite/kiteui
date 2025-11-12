@@ -6,14 +6,17 @@ import com.lightningkite.kiteui.views.autoplay
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.withWrite
 import org.w3c.dom.HTMLVideoElement
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
-actual val RawVideoView.nativeTime: MutableReactive<Double>
+actual val RawVideoView.nativeTime: MutableReactive<Duration>
     get() = remember {
         rerunOn(AppState.animationFrame)
-        (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime ?: 0.0
+        (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime?.seconds ?: Duration.ZERO
     }.withWrite { it ->
         this@nativeTime.native.onElement { element ->
-            (element as HTMLVideoElement).currentTime = it
+            (element as HTMLVideoElement).currentTime = it.toDouble(DurationUnit.SECONDS)
         }
     }
 //    get() = native.vprop(
