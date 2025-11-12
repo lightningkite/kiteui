@@ -114,12 +114,15 @@ actual class FormattedTextInput actual constructor(context: RContext) : RViewWit
             textField.secureTextEntry = value.autocomplete in setOf(AutoComplete.Password, AutoComplete.NewPassword)
         }
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override fun actionSet(value: Action?) {
         super.actionSet(value)
-        textField.delegate = value?.let {
+        textField.delegate = value?.let { action ->
+            // Use weak reference to avoid retain cycle
+            val weakSelf = kotlin.native.ref.WeakReference(this)
             val d = object : NSObject(), UITextFieldDelegateProtocol {
                 override fun textFieldShouldReturn(textField: UITextField): Boolean {
-                    it?.startAction(this@FormattedTextInput)
+                    weakSelf.get()?.let { action.startAction(it) }
                     return true
                 }
             }

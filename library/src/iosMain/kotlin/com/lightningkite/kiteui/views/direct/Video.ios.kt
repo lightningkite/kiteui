@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import kotlin.experimental.ExperimentalNativeApi
@@ -44,8 +45,9 @@ actual class RawVideoView actual constructor(
     actual val preloadHint: PreloadHint,
 ) : RView(context) {
 
-    inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
-
+    // Delegate is a regular class (not inner) to avoid retain cycle
+    class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
+        // Empty delegate - no weak reference needed as it doesn't capture owner
     }
     val ios = IosDelegate()
 
@@ -187,6 +189,7 @@ actual class RawVideoView actual constructor(
     }
 
     init {
+        // Register notification observers
         NSNotificationCenter.defaultCenter.addObserver(
             observer = playerCallbackHolder,
             selector = sel_registerName("playerItemDidReachEnd:"),
@@ -199,6 +202,17 @@ actual class RawVideoView actual constructor(
             name = AVPlayerItemNewAccessLogEntryNotification,
             `object` = null
         )
+
+        // Clean up observers and resources when view is removed
+        onRemove {
+            NSNotificationCenter.defaultCenter.removeObserver(playerCallbackHolder)
+            playerRateObservationClose?.invoke()
+            volumeObservationClose?.invoke()
+            endObservationClose?.invoke()
+            playerStatusObservationClose?.invoke()
+            animationFrameRateClose?.invoke()
+            controller.player = null
+        }
         launch {
             println("AVPlayerStatusUnknown: $AVPlayerStatusUnknown")
             println("AVPlayerStatusReadyToPlay: $AVPlayerStatusReadyToPlay")
