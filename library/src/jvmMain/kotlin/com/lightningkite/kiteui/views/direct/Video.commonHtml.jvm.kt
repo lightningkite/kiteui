@@ -3,11 +3,13 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.views.src
 import com.lightningkite.kiteui.views.autoplay
 import com.lightningkite.reactive.core.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-actual val RawVideoView.nativeTime: MutableReactive<Double>
+actual val RawVideoView.nativeTime: MutableReactive<Duration>
     get() = native.vprop(
         eventName = "timeupdate",
-        get = { attributes["data-currentTime"]?.toDoubleOrNull() ?: 0.0 },
+        get = { attributes["data-currentTime"]?.toDoubleOrNull()?.seconds ?: Duration.ZERO },
         set = { value -> setAttribute("data-currentTime", value.toString()) }
     )
 

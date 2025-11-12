@@ -3,6 +3,10 @@ package com.lightningkite.kiteui.views.direct
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.reactive.core.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 actual class RawVideoView actual constructor(
     context: RContext,
@@ -34,7 +38,8 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val time: MutableReactive<Double> = nativeTime
+    actual val time: MutableReactive<Double> = nativeTime.lens(get = {it.toDouble(DurationUnit.SECONDS)}, set = {it.seconds})
+    actual val currentTime: MutableReactive<Duration> = nativeTime
     actual val playing: MutableReactive<Boolean> = nativePlaying
     actual val volume: MutableReactive<Float> = nativeVolume
     actual val sourceDuration: Reactive<Double?> = nativeDuration
@@ -54,7 +59,7 @@ actual class RawVideoView actual constructor(
     actual val seekableTimeRanges: List<ClosedFloatingPointRange<Double>> = nativeSeekableTimeRanges
 }
 
-expect val RawVideoView.nativeTime: MutableReactive<Double>
+expect val RawVideoView.nativeTime: MutableReactive<Duration>
 expect val RawVideoView.nativePlaying: MutableReactive<Boolean>
 expect val RawVideoView.nativeVolume: MutableReactive<Float>
 expect val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
