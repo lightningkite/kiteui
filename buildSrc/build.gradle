@@ -1,0 +1,27 @@
+// Using Groovy DSL instead of Kotlin DSL to avoid kotlin-dsl plugin
+// Minimal buildSrc to allow main build to proceed
+apply plugin: 'groovy'
+apply plugin: 'java-gradle-plugin'
+
+repositories {
+    mavenCentral()
+}
+
+// Dependencies commented out due to network restrictions
+// Will try to build without them
+dependencies {
+    // implementation 'org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.0'
+    // implementation 'org.apache.pdfbox:fontbox:2.0.27'
+}
+
+// Copy files from gradle-plugin
+def srcDir = file("../gradle-plugin/src/main/kotlin")
+def destDir = file("src/main/groovy")
+
+if (srcDir.exists()) {
+    destDir.mkdirs()
+    copy {
+        from srcDir
+        into destDir
+    }
+}
