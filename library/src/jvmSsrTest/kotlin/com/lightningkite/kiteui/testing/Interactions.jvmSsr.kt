@@ -14,4 +14,12 @@ actual object Interactions {
     actual fun typeText(view: RView, text: String, append: Boolean) {
         throw UnsupportedOperationException("Interactions are not supported on JVM SSR")
     }
+
+    actual fun scrollBy(view: RView, dx: Int, dy: Int) {
+        throw UnsupportedOperationException("Interactions are not supported on JVM SSR")
+    }
+
+    actual fun scrollToView(scrollView: RView, targetView: RView) {
+        throw UnsupportedOperationException("Interactions are not supported on JVM SSR")
+    }
 }

@@ -1,5 +1,9 @@
 package com.lightningkite.kiteui.testing
 
+import android.view.View
+import android.widget.ScrollView
+import android.widget.HorizontalScrollView
+import androidx.core.widget.NestedScrollView
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.TextInput
 
@@ -37,6 +41,44 @@ actual object Interactions {
                 } catch (e: Exception) {
                     throw IllegalArgumentException("Cannot type text into view of type ${view::class.simpleName}: ${e.message}", e)
                 }
+            }
+        }
+    }
+
+    actual fun scrollBy(view: RView, dx: Int, dy: Int) {
+        val native = view.native
+        when (native) {
+            is ScrollView -> native.scrollBy(dx, dy)
+            is HorizontalScrollView -> native.scrollBy(dx, dy)
+            is NestedScrollView -> native.scrollBy(dx, dy)
+            else -> {
+                // Try generic scrollBy
+                try {
+                    native.scrollBy(dx, dy)
+                } catch (e: Exception) {
+                    println("Warning: Could not scroll view of type ${native::class.simpleName}")
+                }
+            }
+        }
+    }
+
+    actual fun scrollToView(scrollView: RView, targetView: RView) {
+        val scrollNative = scrollView.native
+        val targetNative = targetView.native
+
+        when (scrollNative) {
+            is ScrollView -> {
+                scrollNative.post {
+                    scrollNative.requestChildFocus(targetNative, targetNative)
+                }
+            }
+            is NestedScrollView -> {
+                scrollNative.post {
+                    scrollNative.requestChildFocus(targetNative, targetNative)
+                }
+            }
+            else -> {
+                println("Warning: scrollToView not supported for ${scrollNative::class.simpleName}")
             }
         }
     }

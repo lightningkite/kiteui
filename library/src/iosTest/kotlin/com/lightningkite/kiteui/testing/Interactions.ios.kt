@@ -2,8 +2,11 @@ package com.lightningkite.kiteui.testing
 
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.TextInput
+import platform.CoreGraphics.CGPointMake
+import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIControl
 import platform.UIKit.UIControlEventTouchUpInside
+import platform.UIKit.UIScrollView
 
 /**
  * iOS implementation of Interactions.
@@ -48,6 +51,31 @@ actual object Interactions {
                     throw IllegalArgumentException("Cannot type text into view of type ${view::class.simpleName}: ${e.message}", e)
                 }
             }
+        }
+    }
+
+    actual fun scrollBy(view: RView, dx: Int, dy: Int) {
+        val native = view.native
+        if (native is UIScrollView) {
+            val currentOffset = native.contentOffset
+            val newX = currentOffset.useContents { x + dx }
+            val newY = currentOffset.useContents { y + dy }
+            native.setContentOffset(CGPointMake(newX, newY), animated = false)
+        } else {
+            println("Warning: scrollBy not supported for ${native::class.simpleName}")
+        }
+    }
+
+    actual fun scrollToView(scrollView: RView, targetView: RView) {
+        val scrollNative = scrollView.native
+        val targetNative = targetView.native
+
+        if (scrollNative is UIScrollView) {
+            // Get target frame relative to scroll view
+            val targetFrame = targetNative.frame
+            scrollNative.scrollRectToVisible(targetFrame, animated = false)
+        } else {
+            println("Warning: scrollToView not supported for ${scrollNative::class.simpleName}")
         }
     }
 }

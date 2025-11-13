@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.RViewWithAction
 import com.lightningkite.kiteui.views.direct.TextInput
 import kotlinx.coroutines.launch
+import org.w3c.dom.HTMLElement
 
 /**
  * JavaScript/Web implementation of Interactions.
@@ -46,6 +47,24 @@ actual object Interactions {
                     throw IllegalArgumentException("Cannot type text into view of type ${view::class.simpleName}: ${e.message}", e)
                 }
             }
+        }
+    }
+
+    actual fun scrollBy(view: RView, dx: Int, dy: Int) {
+        val native = view.native
+        if (native is HTMLElement) {
+            native.scrollBy(dx.toDouble(), dy.toDouble())
+        } else {
+            println("Warning: scrollBy not supported for ${native::class.simpleName}")
+        }
+    }
+
+    actual fun scrollToView(scrollView: RView, targetView: RView) {
+        val targetNative = targetView.native
+        if (targetNative is HTMLElement) {
+            targetNative.scrollIntoView()
+        } else {
+            println("Warning: scrollToView not supported for ${targetNative::class.simpleName}")
         }
     }
 }
