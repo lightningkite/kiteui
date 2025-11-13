@@ -17,7 +17,7 @@ import com.lightningkite.readable.*
 object ViewPagerElementPage: DocPage {
     override val covers: List<String> = listOf("viewPager", "ViewPager")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("View Pager")
             text("You can use a view pager to create an element that scrolling horizontally displaying pages.")
@@ -29,19 +29,19 @@ object ViewPagerElementPage: DocPage {
                 val currentPage = Signal(9)
                 val items = Constant((1..30).toList())
                 
-                sizeConstraints(height = 10.rem) - card - viewPager {
+                sizeConstraints(height = 10.rem).card.viewPager {
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
                     
                     // Define what to show here
                     children(items) {
                         frame {
-                            centered - text { ::content { "Page ${'$'}{it.await()}" } }
+                            centered.text { ::content { "Page ${'$'}{it.await()}" } }
                         }
                     }
                 }
                 """.trimIndent()) {
-                sizeConstraints(height = 10.rem) - card - viewPager {
+                sizeConstraints(height = 10.rem).card.viewPager {
                     new.log = LogRoot.tag("Viewpager")
                     // Bind the current index of the ViewPager to `currentPage`
                     index bind currentPage
@@ -49,7 +49,7 @@ object ViewPagerElementPage: DocPage {
                     // Define what to show here
                     children(items) {
                         frame {
-                            centered - text { ::content { "Page ${it()}" } }
+                            centered.text { ::content { "Page ${it()}" } }
                         }
                     }
                 }
@@ -61,13 +61,13 @@ object ViewPagerElementPage: DocPage {
                     text {
                         ::content { "Current index; ${'$'}{currentPage()}" }
                     }
-                    important - button {
+                    important.button {
                         text("Scroll to zero (the first one)")
                         onClick {
                             currentPage.value = 0
                         }
                     }
-                    important - button {
+                    important.button {
                         text("Scroll to twenty nine (the last one)")
                         onClick {
                             currentPage.value = 29
@@ -80,13 +80,13 @@ object ViewPagerElementPage: DocPage {
                     text {
                         ::content { "Current index; ${currentPage()}" }
                     }
-                    important - button {
+                    important.button {
                         text("Scroll to index zero (the first one)")
                         onClick {
                             currentPage.value = 0
                         }
                     }
-                    important - button {
+                    important.button {
                         text("Scroll to index twenty nine (the last one)")
                         onClick {
                             currentPage.value = 29

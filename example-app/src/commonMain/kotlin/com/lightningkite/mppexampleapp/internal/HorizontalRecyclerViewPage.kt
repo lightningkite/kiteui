@@ -22,14 +22,14 @@ object HorizontalRecyclerViewPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         var expanded = Signal(-1)
         val items = Signal((1..101).toList())
         var recyclerView: RecyclerView? = null
         col {
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Jump ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, false) }
                     }
@@ -37,7 +37,7 @@ object HorizontalRecyclerViewPage : Page {
             }
             row {
                 for (align in Align.values()) {
-                    expanding - button {
+                    expanding.button {
                         subtext("Scroll ${align.name}")
                         onClick { recyclerView?.scrollToIndex(49, align, true) }
                     }
@@ -46,17 +46,17 @@ object HorizontalRecyclerViewPage : Page {
             row {
                 repeat(4) {
                     val cols = it + 1
-                    expanding - button {
+                    expanding.button {
                         subtext("${cols} columns")
                         onClick { recyclerView?.columns = cols }
                     }
                 }
             }
-            horizontalRecyclerView {
+            weight(1f).horizontalRecyclerView {
                 recyclerView = this
                 gap = 0.5.rem
                 columns = 2
-                this.scrollToIndex(10, Align.Start)
+                scrollToIndex(10, Align.Start)
                 children(items) {
                     col {
                         row {
@@ -65,14 +65,14 @@ object HorizontalRecyclerViewPage : Page {
                                 else if (it() % 7 == 0) HoverSemantic
                                 else null
                             }
-                            expanding - centered - text { ::content { "Item ${it()}" } }
-                            centered - button {
+                            expanding.centered.text { ::content { "Item ${it()}" } }
+                            centered.button {
                                 text {
                                     ::content { if (expanded() == it()) "Expanded" else "Expand" }
                                 }
                                 onClick {
                                     expanded.value = if (it.await() == expanded.value) -1 else it.await()
-//                                    scrollIntoView(null, Align.Start, true)
+            //                                    scrollIntoView(null, Align.Start, true)
                                 }
                             }
                         }
@@ -83,7 +83,7 @@ object HorizontalRecyclerViewPage : Page {
                         }
                     }
                 }
-            } in weight(1f)
+            }
             row {
                 text {
                     ::content {

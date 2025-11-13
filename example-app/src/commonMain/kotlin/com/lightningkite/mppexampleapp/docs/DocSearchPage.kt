@@ -5,17 +5,12 @@ import com.lightningkite.kiteui.QueryParameter
 import com.lightningkite.kiteui.Routable
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.Page
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.kiteui.views.l2.RecyclerViewPlacerVerticalGrid
 import com.lightningkite.kiteui.views.l2.children
-import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 
 @Routable("docs")
 object DocSearchPage : Page {
@@ -44,17 +39,17 @@ object DocSearchPage : Page {
         { CheatSheet }
     ))
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         frame {
-            align(Align.Center, Align.Stretch) - sizedBox(SizeConstraints(width = 80.rem)) - col  {
+            align(Align.Center, Align.Stretch).sizedBox(SizeConstraints(width = 80.rem)).col  {
                 h1("Documentation")
                 text("Here you can find many helpful pages for understanding KiteUI and its tools.")
                 row {
-                    centered - icon { source = Icon.search }
-                    expanding - textField {
+                    centered.icon { source = Icon.search }
+                    expanding.textField {
                         content bind query
                     }
-                    centered - button {
+                    centered.button {
                         gap = 0.1.rem
                         icon { source = Icon.close }
                         onClick {
@@ -62,7 +57,7 @@ object DocSearchPage : Page {
                         }
                     }
                 }
-                expanding - ListSemantic.onNext - recyclerView {
+                expanding.onNext(ListSemantic).recyclerView {
                     paddingByEdge = Edges(
                         left = 0.rem,
                         top = 0.rem,
@@ -81,7 +76,7 @@ object DocSearchPage : Page {
                             it to matchingTerms
                         }
                     }, { it }) {
-                        card - link {
+                        card.link {
                             ::to { it().first }
                             col {
                                 gap = 0.25.rem

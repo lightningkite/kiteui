@@ -24,6 +24,7 @@ actual class RowOrCol actual constructor(context: RContext) : RView(context) {
         }
 
     actual fun spacingOverrideBeforeNext(amount: Dimension): Unit {
+        // TODO: This won't work
         beforeNextElementSetup {
             native.extensionSpacingBeforeOverride = amount
         }

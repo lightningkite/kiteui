@@ -15,7 +15,7 @@ object TemplatePage: DocPage {
         get() = Constant("Name of Topic")
     override val covers: List<String> = listOf("topic")
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Name of Topic")
             text("Some instruction goes here.")

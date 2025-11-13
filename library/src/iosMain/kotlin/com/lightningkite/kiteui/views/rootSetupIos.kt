@@ -32,11 +32,11 @@ import platform.darwin.*
 import platform.darwin.sel_registerName
 import platform.objc.*
 
-fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(theme: Theme, app: ViewWriter.() -> Unit) {
     setup({ theme }, app)
 }
 
-fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeReadable: Reactive<Theme>, app: ViewWriter.() -> Unit) {
     setup({ themeReadable.invoke() }, app)
 }
 
@@ -73,7 +73,7 @@ class KeyboardObserver(val bottom: WeakReference<NSLayoutConstraint>, val view: 
     }
 }
 
-fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: ViewWriter.() -> Unit) {
     definesPresentationContext = true
     val job = SupervisorJob()
     val scope = job + CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -85,14 +85,17 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
     val writer = object : ViewWriter(), CalculationContext {
         override val coroutineContext: CoroutineContext = scope
         override val context: RContext = context
+        override val representsView: RView? = null
+        override fun willAddChild(view: RView) {
+        }
         override fun addChild(view: RView) {
             this@kiteUi.view.addSubview(view.native)
         }
     }
     writer.safeInsets = safeInsetProperty
-    val created = writer.app()
+    val created = writer.produceOne { app() }
 
-    val subview = created.rView.native
+    val subview = created.native
     subview.translatesAutoresizingMaskIntoConstraints = false
     subview.topAnchor.constraintEqualToAnchor(view.topAnchor).setActive(true)
     subview.leftAnchor.constraintEqualToAnchor(view.leftAnchor).setActive(true)
@@ -140,7 +143,7 @@ fun UIViewController.kiteUi(context: RContext = RContext(this@kiteUi), app: View
             NSNotificationCenter.defaultCenter.removeObserver(observer)
             remover()
             job.cancel()
-            created.rView.shutdown()
+            created.shutdown()
             true
         } else false
     }))
@@ -165,7 +168,7 @@ private class RemoveView(var onRemove: (() -> Boolean)? = null) : UIView(CGRectM
     }
 }
 
-fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> ViewModifiable) {
+fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: ViewWriter.() -> Unit) {
     val systemBarBackground = UIView()
 
     view.addSubview(systemBarBackground)
@@ -175,9 +178,6 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
     systemBarBackground.rightAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.rightAnchor).setActive(true)
     systemBarBackground.bottomAnchor.constraintEqualToAnchor(view.safeAreaLayoutGuide.topAnchor).setActive(true)
     kiteUi {
-        beforeNextElementSetup {
-            ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
-        }
         reactiveScope {
             systemBarBackground.backgroundColor =
                 themeCalculation()[SystemBarSemantic].theme.background.closestColor().toUiColor()
@@ -185,7 +185,9 @@ fun UIViewController.setup(themeCalculation: ReactiveContext.() -> Theme, app: V
         reactiveScope {
             view.backgroundColor = themeCalculation()[BarSemantic].theme.background.closestColor().toUiColor()
         }
-        app()
+        beforeNextElementSetup {
+            ::themeChoice { ThemeDerivation.SetAsBase(themeCalculation()) }
+        }.app()
     }
 
 }

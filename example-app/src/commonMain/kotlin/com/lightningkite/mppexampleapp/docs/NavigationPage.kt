@@ -33,7 +33,7 @@ object NavigationPage: DocPage {
         "replace",
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         article {
             h1("Navigation")
 
@@ -45,18 +45,18 @@ object NavigationPage: DocPage {
                 """
             link {
                 to = DocSearchScreen
-                centered - row {
-                    centered - icon(Icon.arrowBack, "Back")
-                    centered - expanding - text("Back to the search screen")
+                centered.row {
+                    centered.icon(Icon.arrowBack, "Back")
+                    centered.expanding.text("Back to the search screen")
                 }
             }
             """.trimIndent()
             ) {
                 link {
                     to = { DocSearchPage }
-                    centered - row {
-                        centered - icon(Icon.arrowBack, "Back")
-                        centered - expanding - text("Back to the search screen")
+                    centered.row {
+                        centered.icon(Icon.arrowBack, "Back")
+                        centered.expanding.text("Back to the search screen")
                     }
                 }
             }
@@ -70,9 +70,9 @@ object NavigationPage: DocPage {
                     onClick { 
                         navigator.navigate(DocSearchPage)
                     }
-                    centered - row {
-                        centered - icon(Icon.arrowBack, "Back")
-                        centered - expanding - text("Back to the search screen")
+                    centered.row {
+                        centered.icon(Icon.arrowBack, "Back")
+                        centered.expanding.text("Back to the search screen")
                     }
                 }
             """.trimIndent()
@@ -81,9 +81,9 @@ object NavigationPage: DocPage {
                     onClick {
                         pageNavigator.navigate(DocSearchPage)
                     }
-                    centered - row {
-                        centered - icon(Icon.arrowBack, "Back")
-                        centered - expanding - text("Back to the search screen")
+                    centered.row {
+                        centered.icon(Icon.arrowBack, "Back")
+                        centered.expanding.text("Back to the search screen")
                     }
                 }
             }
@@ -96,8 +96,8 @@ object NavigationPage: DocPage {
                             navigator.goBack()
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Back to previous screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Back to previous screen")
                         }
                     }
                     button {
@@ -105,8 +105,8 @@ object NavigationPage: DocPage {
                             navigator.replace(DocSearchPage)
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Replace this view in history with the search screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Replace this view in history with the search screen")
                         }
                     }
                     button {
@@ -114,8 +114,8 @@ object NavigationPage: DocPage {
                             navigator.reset(DocSearchPage)
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Clear the stack and go to the search screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Clear the stack and go to the search screen")
                         }
                     }
                 }
@@ -127,8 +127,8 @@ object NavigationPage: DocPage {
                             pageNavigator.goBack()
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Back to previous screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Back to previous screen")
                         }
                     }
                     button {
@@ -136,8 +136,8 @@ object NavigationPage: DocPage {
                             pageNavigator.replace(DocSearchPage)
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Replace this view in history with the search screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Replace this view in history with the search screen")
                         }
                     }
                     button {
@@ -145,8 +145,8 @@ object NavigationPage: DocPage {
                             pageNavigator.reset(DocSearchPage)
                         }
                         row {
-                            centered - icon(Icon.arrowBack, "Back")
-                            centered - expanding - text("Clear the stack and go to the search screen")
+                            centered.icon(Icon.arrowBack, "Back")
+                            centered.expanding.text("Clear the stack and go to the search screen")
                         }
                     }
                 }
@@ -160,13 +160,13 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         navigator.dialog.navigate(object: KiteUiPage {
-                            override fun ViewWriter.render(): ViewModifiable = run {
+                            override fun ViewWriter.render(): Unit = run {
                                 frame {
-                                    centered - card - col {
+                                    centered.card.col {
                                         h1("Hello!")
                                         text("This is a dialog.")
                                         button {
-                                            centered - text("Dismiss")
+                                            centered.text("Dismiss")
                                             onClick {
                                                 navigator.dismiss()
                                             }
@@ -183,13 +183,13 @@ object NavigationPage: DocPage {
                     text("Open a dialog")
                     onClick {
                         dialogPageNavigator.navigate(object: Page {
-                            override fun ViewWriter.render(): ViewModifiable = run {
+                            override fun ViewWriter.render(): Unit = run {
                                 frame {
-                                    centered - card - col {
+                                    centered.card.col {
                                         h1("Hello!")
                                         text("This is a dialog.")
                                         button {
-                                            centered - text("Dismiss")
+                                            centered.text("Dismiss")
                                             onClick {
                                                 pageNavigator.dismiss()
                                             }

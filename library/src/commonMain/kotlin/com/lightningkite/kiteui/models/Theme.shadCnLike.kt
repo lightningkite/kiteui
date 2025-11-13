@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.seconds
 fun Theme.Companion.shadCnLike(
     id: String,
     background: Color = Color.gray(0.05f),
-    accent: Color = HSPColor(hue = 0.6.turns, saturation = 0.8f, brightness = 0.3f).toRGB(),
+    accent: Color = HSPColor(hue = 0.6.turns, saturation = 0.95f, brightness = 0.4f).toRGB(),
     title: FontAndStyle = FontAndStyle(),
     body: FontAndStyle = FontAndStyle(),
 ): Theme {
@@ -65,13 +65,7 @@ fun Theme.Companion.shadCnLike(
                 }
             },
             CardSemantic to {
-                it.alter(
-                    background = it.background.brighten2(cardHighlight),
-                    outline = it.outline.brighten2(cardHighlight),
-                ).withBack(
-                    cascading = false,
-                    outlineWidth = 1.px,
-                )
+                it[GroupSemantic]
             },
             GroupSemantic to {
                 it.withBack(
@@ -81,8 +75,8 @@ fun Theme.Companion.shadCnLike(
             },
             HoverSemantic to {
                 it.withBack(
-                    background = it.background.brighten2(cardHighlight),
-                    outline = it.outline.brighten2(cardHighlight),
+                    background = it.background.highlight2(cardHighlight),
+                    outline = it.outline.highlight2(cardHighlight),
                 )
             },
             FocusSemantic to {
@@ -98,7 +92,15 @@ fun Theme.Companion.shadCnLike(
                 )
             },
 
-            FieldSemantic to { it[CardSemantic] },
+            FieldSemantic to {
+                it.alter(
+                    background = it.background.brighten2(cardHighlight),
+                    outline = it.outline.brighten2(cardHighlight),
+                ).withBack(
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            },
 
             ListSemantic to {
                 it.withoutBack(gap = 1.px, cascading = false)
@@ -136,6 +138,37 @@ fun Theme.Companion.shadCnLike(
                 it.withBack(outlineWidth = 1.dp, padding = Edges(2.rem), cascading = false)
             },
 
+            SelectedSemantic to {
+                it.alter(
+                    background = if(background.perceivedBrightness < 0.5f)
+                        HSVColor(
+                            hue = accent.toHSV().hue,
+                            saturation = accent.toHSV().saturation,
+                            value = background.toHSV().value + 0.05f
+                        ).toRGB()
+                    else
+                        HSVColor(
+                            hue = accent.toHSV().hue,
+                            saturation = background.toHSV().saturation + 0.05f,
+                            value = 1f,
+                        ).toRGB(),
+//                    background = Color.interpolate(background, accent, 0.2f),
+                    foreground = background.foreground(),
+                    outline = accent
+                ).withBack(
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            },
+            UnselectedSemantic to {
+                it.withBack(
+                    background = background,
+                    foreground = background.foreground(),
+                    outline = background.highlight(outlineHighlight),
+                    cascading = false,
+                    outlineWidth = 1.px,
+                )
+            }
             // TODO: Selected / Unselected semantics
         ),
     )

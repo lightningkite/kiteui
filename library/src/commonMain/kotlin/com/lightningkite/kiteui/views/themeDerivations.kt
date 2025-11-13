@@ -1,6 +1,6 @@
 package com.lightningkite.kiteui.views
 
-import com.lightningkite.kiteui.ViewWrapper
+
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
@@ -9,93 +9,86 @@ import com.lightningkite.reactive.extensions.*
 import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
-
-operator fun ViewWrapper.minus(other: ViewWrapper) = ViewWrapper
-operator fun ViewWrapper.contains(other: ViewWrapper): Boolean = true
-
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWrapper {
+fun ViewWriter.themeFromLast(calculate: (Theme) -> Theme): ViewWriter {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it).withBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ViewWrapper {
+inline fun ViewWriter.maybeThemeFromLast(crossinline calculate: (Theme) -> Theme?): ViewWriter {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it)?.withBack ?: it.withoutBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @Deprecated("Just bind to themeChoice directly")
 @ViewModifierDsl3
-inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewWrapper {
+inline fun ViewWriter.tweakTheme(crossinline calculate: (Theme) -> Theme): ViewWriter {
     beforeNextElementSetup {
         themeChoice += ThemeDerivation { calculate(it).withoutBack }
-    }
-    return ViewWrapper
+    }.let { return it }
 }
 
 @ViewModifierDsl3
-inline val ViewWriter.group: ViewWrapper get() = GroupSemantic.onNext
+inline val ViewWriter.group: ViewWriter get() = GroupSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.card: ViewWrapper get() = CardSemantic.onNext
+inline val ViewWriter.card: ViewWriter get() = CardSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.fieldTheme: ViewWrapper get() = FieldSemantic.onNext
+inline val ViewWriter.fieldTheme: ViewWriter get() = FieldSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.buttonTheme: ViewWrapper get() = ButtonSemantic.onNext
+inline val ViewWriter.buttonTheme: ViewWriter get() = ButtonSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.bar: ViewWrapper get() = BarSemantic.onNext
+inline val ViewWriter.bar: ViewWriter get() = BarSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.nav: ViewWrapper get() = NavSemantic.onNext
+inline val ViewWriter.nav: ViewWriter get() = NavSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.important: ViewWrapper get() = ImportantSemantic.onNext
+inline val ViewWriter.important: ViewWriter get() = ImportantSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.critical: ViewWrapper get() = CriticalSemantic.onNext
+inline val ViewWriter.critical: ViewWriter get() = CriticalSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.warning: ViewWrapper get() = WarningSemantic.onNext
+inline val ViewWriter.warning: ViewWriter get() = WarningSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.danger: ViewWrapper get() = DangerSemantic.onNext
+inline val ViewWriter.danger: ViewWriter get() = DangerSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.affirmative: ViewWrapper get() = AffirmativeSemantic.onNext
+inline val ViewWriter.affirmative: ViewWriter get() = AffirmativeSemantic.onNext
 @ViewModifierDsl3
-inline val ViewWriter.emphasized: ViewWrapper get() = EmphasizedSemantic.onNext
+inline val ViewWriter.emphasized: ViewWriter get() = EmphasizedSemantic.onNext
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'emphasized' for consistency of adjective terms.", ReplaceWith("emphasized", "com.lightningkite.kiteui.views.emphasized"))
-inline val ViewWriter.emphasize: ViewWrapper get() = EmphasizedSemantic.onNext
+inline val ViewWriter.emphasize: ViewWriter get() = EmphasizedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DialogSemantic.onNext", "com.lightningkite.kiteui.models.DialogSemantic"))
-inline val ViewWriter.dialog: ViewWrapper get() = DialogSemantic.onNext
+inline val ViewWriter.dialog: ViewWriter get() = DialogSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("MainContentSemantic.onNext", "com.lightningkite.kiteui.models.MainContentSemantic"))
-inline val ViewWriter.mainContent: ViewWrapper get() = MainContentSemantic.onNext
+inline val ViewWriter.mainContent: ViewWriter get() = MainContentSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("HoverSemantic.onNext", "com.lightningkite.kiteui.models.HoverSemantic"))
-inline val ViewWriter.hover: ViewWrapper get() = HoverSemantic.onNext
+inline val ViewWriter.hover: ViewWriter get() = HoverSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DownSemantic.onNext", "com.lightningkite.kiteui.models.DownSemantic"))
-inline val ViewWriter.down: ViewWrapper get() = DownSemantic.onNext
+inline val ViewWriter.down: ViewWriter get() = DownSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("SelectedSemantic.onNext", "com.lightningkite.kiteui.models.SelectedSemantic"))
-inline val ViewWriter.selected: ViewWrapper get() = SelectedSemantic.onNext
+inline val ViewWriter.selected: ViewWriter get() = SelectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("UnselectedSemantic.onNext", "com.lightningkite.kiteui.models.UnselectedSemantic"))
-inline val ViewWriter.unselected: ViewWrapper get() = UnselectedSemantic.onNext
+inline val ViewWriter.unselected: ViewWriter get() = UnselectedSemantic.onNext
 @ViewModifierDsl3
 @Deprecated("Use the semantic directly, as this should be uncommon in use.", ReplaceWith("DisabledSemantic.onNext", "com.lightningkite.kiteui.models.DisabledSemantic"))
-inline val ViewWriter.disabled: ViewWrapper get() = DisabledSemantic.onNext
+inline val ViewWriter.disabled: ViewWriter get() = DisabledSemantic.onNext
 
 @ViewModifierDsl3
-val ViewWriter.compact: ViewWrapper
+val ViewWriter.compact: ViewWriter
     get() = CompactSemantic.onNext
 
 @ViewModifierDsl3
-val ViewWriter.bold: ViewWrapper
+val ViewWriter.bold: ViewWriter
     get() = ThemeDerivation {
         it.copy(
             id = "bold",
@@ -104,7 +97,7 @@ val ViewWriter.bold: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.textSize(size: Dimension): ViewWrapper = ThemeDerivation {
+fun ViewWriter.textSize(size: Dimension): ViewWriter = ThemeDerivation {
     it.copy(
         id = "textSize${size.value.toString().filter { it.isLetterOrDigit() }}",
         font = it.font.copy(size = size)
@@ -112,7 +105,7 @@ fun ViewWriter.textSize(size: Dimension): ViewWrapper = ThemeDerivation {
 }.onNext
 
 @ViewModifierDsl3
-val ViewWriter.italic: ViewWrapper
+val ViewWriter.italic: ViewWriter
     get() = ThemeDerivation {
         it.copy(
             id = "italic",
@@ -121,7 +114,7 @@ val ViewWriter.italic: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-val ViewWriter.allCaps: ViewWrapper
+val ViewWriter.allCaps: ViewWriter
     get() = ThemeDerivation {
         it.copy(
             id = "allCaps",
@@ -130,7 +123,7 @@ val ViewWriter.allCaps: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-val ViewWriter.strikethrough: ViewWrapper
+val ViewWriter.strikethrough: ViewWriter
     get() = ThemeDerivation {
         it.copy(
             id = "strikethrough",
@@ -139,7 +132,7 @@ val ViewWriter.strikethrough: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-val ViewWriter.underline: ViewWrapper
+val ViewWriter.underline: ViewWriter
     get() = ThemeDerivation {
         it.copy(
             id = "underline",
@@ -148,7 +141,7 @@ val ViewWriter.underline: ViewWrapper
     }.onNext
 
 @ViewModifierDsl3
-fun ViewWriter.withSpacing(multiplier: Double): ViewWrapper = ThemeDerivation { it.copy(id = "withgap${multiplier.toString().replace('.', '_')}", gap = it.gap * multiplier).withoutBack }.onNext
+fun ViewWriter.withSpacing(multiplier: Double): ViewWriter = ThemeDerivation { it.copy(id = "withgap${multiplier.toString().replace('.', '_')}", gap = it.gap * multiplier).withoutBack }.onNext
 
 
 fun RView.dynamicTheme(calculate: ReactiveContext.() -> ThemeDerivation?) {

@@ -44,7 +44,7 @@ actual fun RView.openPopover(
             onClick {
                 closePopovers()
             }
-            PopoverSemantic.onNext - frame {
+            PopoverSemantic.onNext.frame {
                 createMenu()
             }
         }

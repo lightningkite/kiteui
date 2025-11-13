@@ -42,7 +42,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                     onClick {
                         closePopovers()
                     }
-                    PopoverSemantic.onNext - frame {
+                    PopoverSemantic.onNext.frame {
                         createMenu()
                     }
                 }

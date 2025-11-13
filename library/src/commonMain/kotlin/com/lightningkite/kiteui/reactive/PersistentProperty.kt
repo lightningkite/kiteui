@@ -1,8 +1,8 @@
 package com.lightningkite.kiteui.reactive
 
+import com.lightningkite.kiteui.Log
 import com.lightningkite.kiteui.PlatformStorage
 import com.lightningkite.kiteui.navigation.DefaultJson
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
@@ -21,7 +21,6 @@ class PersistentProperty<T>(
         get() = super.value
         set(value) {
             PlatformStorage.set(key, DefaultJson.encodeToString(serializer, value))
-//            println("Old: ${super.value} vs new: $value")
             super.value = value
         }
 
@@ -35,6 +34,7 @@ class PersistentProperty<T>(
             try {
                 super.value = DefaultJson.decodeFromString(serializer, stored)
             } catch (e: Exception) {
+                Log.error("Failed to deserialize PersistentProperty '$key': ${e.message}", e)
             }
     }
 }

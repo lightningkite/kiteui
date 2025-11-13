@@ -1,6 +1,5 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Align
 import com.lightningkite.kiteui.models.Dimension
 import com.lightningkite.kiteui.models.ForcePaddingSemantic
@@ -22,7 +21,7 @@ import com.lightningkite.readable.*
 expect fun ViewWriter.hintPopover(
     preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
     setup: ViewWriter.() -> Unit
-): ViewWrapper
+): ViewWriter
 
 @Deprecated("Use hintPopover or opensMenu depending on your situation.")
 @ViewModifierDsl3
@@ -30,7 +29,7 @@ expect fun ViewWriter.hasPopover(
     requiresClick: Boolean = false,
     preferredDirection: PopoverPreferredDirection = PopoverPreferredDirection.belowRight,
     setup: ViewWriter.(popoverContext: PopoverContext) -> Unit
-): ViewWrapper
+): ViewWriter
 
 interface PopoverContext {
     val calculationContext: CalculationContext
@@ -38,44 +37,44 @@ interface PopoverContext {
 }
 
 @ViewModifierDsl3
-expect fun ViewWriter.textPopover(message: String): ViewWrapper
+expect fun ViewWriter.textPopover(message: String): ViewWriter
 
 @ViewModifierDsl3
-expect fun ViewWriter.weight(amount: Float): ViewWrapper
+expect fun ViewWriter.weight(amount: Float): ViewWriter
 
 @ViewModifierDsl3
-expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWrapper
+expect fun ViewWriter.changingWeight(amount: ReactiveContext.() -> Float): ViewWriter
 
 @ViewModifierDsl3
-expect fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWrapper
+expect fun ViewWriter.align(horizontal: Align, vertical: Align): ViewWriter
 
 @ViewModifierDsl3
 @Deprecated("use align instead", ReplaceWith("align"))
-fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWrapper = align(horizontal, vertical)
+fun ViewWriter.gravity(horizontal: Align, vertical: Align): ViewWriter = align(horizontal, vertical)
 
 @ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))
-val ViewWriter.scrolls: ViewWrapper get() = __scrollsUncontracted(true, false)
+val ViewWriter.scrolls: ViewWriter get() = __scrollsUncontracted(true, false)
 
 @ViewModifierDsl3
 @Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollsHorizontally"))
-val ViewWriter.scrollsHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
+val ViewWriter.scrollsHorizontally: ViewWriter get() = __scrollsUncontracted(false, true)
 
 @ViewModifierDsl3
 @Deprecated("use scrolling instead", ReplaceWith("scrolling"))
-inline fun ViewWriter.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrolls(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = true, horizontal = false, setup)
 }
 
 @ViewModifierDsl3
 @Deprecated("use scrollingHorizontally instead", ReplaceWith("scrollingHorizontally"))
-inline fun ViewWriter.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrollsHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
 @Deprecated("use scrollingBoth instead", ReplaceWith("scrollingBoth"))
-inline fun ViewWriter.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrollsBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }
 
@@ -85,28 +84,28 @@ inline fun ViewWriter.scrolls(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
 }
 
 @ViewModifierDsl3
-val ViewWriter.scrolling: ViewWrapper get() = __scrollsUncontracted(true, false)
+val ViewWriter.scrolling: ViewWriter get() = __scrollsUncontracted(true, false)
 
 @ViewModifierDsl3
-val ViewWriter.scrollingHorizontally: ViewWrapper get() = __scrollsUncontracted(false, true)
+val ViewWriter.scrollingHorizontally: ViewWriter get() = __scrollsUncontracted(false, true)
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrolling(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrolling(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = true, horizontal = false, setup)
 }
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrollingHorizontally(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = false, horizontal = true, setup)
 }
 
 @ViewModifierDsl3
-inline fun ViewWriter.scrollingBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWrapper {
+inline fun ViewWriter.scrollingBoth(crossinline setup: ScrollingBehaviors.() -> Unit): ViewWriter {
     return __scrollsUncontracted(vertical = true, horizontal = true, setup)
 }
 
@@ -115,7 +114,7 @@ inline fun ViewWriter.scrolling(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsUncontracted(vertical = vertical, horizontal = horizontal, setup)
 }
 
@@ -123,13 +122,13 @@ expect inline fun ViewWriter.__scrollsUncontracted(
     vertical: Boolean,
     horizontal: Boolean,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper
+): ViewWriter
 
 @ViewModifierDsl3
 inline fun ViewWriter.scrollingWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsWithRefreshUncontracted(vertical = true, horizontal = false, refreshAction = refreshAction, setup)
 }
 
@@ -137,7 +136,7 @@ inline fun ViewWriter.scrollingWithRefresh(
 inline fun ViewWriter.scrollingHorizontallyWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsWithRefreshUncontracted(vertical = false, horizontal = true, refreshAction = refreshAction, setup)
 }
 
@@ -145,7 +144,7 @@ inline fun ViewWriter.scrollingHorizontallyWithRefresh(
 inline fun ViewWriter.scrollingBothWithRefresh(
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsWithRefreshUncontracted(vertical = true, horizontal = true, refreshAction = refreshAction, setup)
 }
 
@@ -155,7 +154,7 @@ inline fun ViewWriter.scrollingWithRefresh(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper {
+): ViewWriter {
     return __scrollsWithRefreshUncontracted(vertical = vertical, horizontal = horizontal, refreshAction = refreshAction, setup)
 }
 
@@ -164,10 +163,10 @@ expect inline fun ViewWriter.__scrollsWithRefreshUncontracted(
     horizontal: Boolean,
     refreshAction: Action,
     crossinline setup: ScrollingBehaviors.() -> Unit = {}
-): ViewWrapper
+): ViewWriter
 
 @ViewModifierDsl3
-expect fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWrapper
+expect fun ViewWriter.sizedBox(constraints: SizeConstraints): ViewWriter
 
 @ViewModifierDsl3
 fun ViewWriter.sizeConstraints(
@@ -178,7 +177,7 @@ fun ViewWriter.sizeConstraints(
     aspectRatio: Pair<Int, Int>,
     width: Dimension? = null,
     height: Dimension? = null,
-): ViewWrapper = sizedBox(
+): ViewWriter = sizedBox(
     SizeConstraints(
         minWidth = minWidth,
         maxWidth = maxWidth,
@@ -199,7 +198,7 @@ fun ViewWriter.sizeConstraints(
     aspectRatio: Double? = null,
     width: Dimension? = null,
     height: Dimension? = null,
-): ViewWrapper = sizedBox(
+): ViewWriter = sizedBox(
     SizeConstraints(
         minWidth = minWidth,
         maxWidth = maxWidth,
@@ -212,33 +211,27 @@ fun ViewWriter.sizeConstraints(
 )
 
 @ViewModifierDsl3
-expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWrapper
+expect fun ViewWriter.changingSizeConstraints(constraints: ReactiveContext.() -> SizeConstraints): ViewWriter
 
 @ViewModifierDsl3
 @Deprecated("No longer needed - just tell the parent what its spacing value should be.")
-val ViewWriter.marginless: ViewWrapper get() = ViewWrapper
+val ViewWriter.marginless: ViewWriter get() = this
 
 @ViewModifierDsl3
-val ViewWriter.padded: ViewWrapper
-    get() {
-        beforeNextElementSetup { themeChoice += ForcePaddingSemantic }
-        return ViewWrapper
-    }
+val ViewWriter.padded: ViewWriter
+    get() = beforeNextElementSetup { themeChoice += ForcePaddingSemantic }
 
 @ViewModifierDsl3
-val ViewWriter.unpadded: ViewWrapper
-    get() {
-        beforeNextElementSetup { padding = 0.px }
-        return ViewWrapper
-    }
+val ViewWriter.unpadded: ViewWriter
+    get() = beforeNextElementSetup { padding = 0.px }
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'padded'", ReplaceWith("padded", "com.lightningkite.kiteui.views.direct.padded"))
-val ViewWriter.withDefaultPadding: ViewWrapper get() = padded
+val ViewWriter.withDefaultPadding: ViewWriter get() = padded
 
 @ViewModifierDsl3
-expect fun ViewWriter.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper
+expect fun ViewWriter.shownWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWriter
 
 @ViewModifierDsl3
 @Deprecated("Renamed to 'shownWhen'", ReplaceWith("shownWhen", "com.lightningkite.kiteui.views.direct.shownWhen"))
-fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWrapper = shownWhen(default, condition)
+fun ViewWriter.onlyWhen(default: Boolean = false, condition: ReactiveContext.() -> Boolean): ViewWriter = shownWhen(default, condition)

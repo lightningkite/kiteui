@@ -62,10 +62,9 @@ import kotlinx.coroutines.SupervisorJob
  * @param context The rendering context providing platform-specific configuration.
  */
 @OptIn(InternalKiteUi::class)
-abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewModifiable {
-    override val rView: RView get() = this as RView
-
+abstract class RViewHelper(override val context: RContext) : ViewWriter() {
     abstract var showOnPrint: Boolean
+    override val representsView: RView get() = this as RView
 
     /**
      * Flag indicating whether this view has been shut down.
@@ -279,12 +278,12 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
             if (this == viewDebugTarget) println("refreshTheming abandoned due to not fullyStarted")
             return
         }
-        if (parent?.fullyStarted == false) {
-            if (this == viewDebugTarget) println("refreshTheming abandoned due to parent $parent not being fully started")
+        if (themeParent?.fullyStarted == false) {
+            if (this == viewDebugTarget) println("refreshTheming abandoned due to themeParent $themeParent not being fully started")
             return
         }
-        val themeBorrowed = if(themeTakeNonCascadingFromParent) parent?.theme ?: Theme.placeholder
-        else parent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
+        val themeBorrowed = if(themeTakeNonCascadingFromParent) themeParent?.theme ?: Theme.placeholder
+        else themeParent?.theme?.let { it.revert ?: it } ?: Theme.placeholder
         if (this == viewDebugTarget) println("refreshTheming will set!  Parent theme is ${themeBorrowed.id}")
         val t = applyState(themeChoice(themeBorrowed))
         if (this == viewDebugTarget) println("refreshTheming will set to ${t.theme.id}!")
@@ -302,8 +301,16 @@ abstract class RViewHelper(override val context: RContext) : ViewWriter(), ViewM
         @InternalKiteUi
         set(value) {
             field = value
-            if (parent != null) refreshTheming()
+            if (value != null) refreshTheming()
         }
+    @InternalKiteUi
+    var themeParentOverride: RView? = null
+        set(value) {
+            field = value
+            if (value != null) refreshTheming()
+        }
+    @InternalKiteUi
+    val themeParent get() = themeParentOverride ?: parent
 
     private val internalChildren = ArrayList<RView>()
 

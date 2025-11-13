@@ -29,17 +29,17 @@ object ScrollElementTestPage : Page {
     override val title: Reactive<String>
         get() = super.title
 
-    override fun ViewWriter.render(): ViewModifiable = run {
-        scrolling - col {
+    override fun ViewWriter.render(): Unit = run {
+        scrolling.col {
             repeat(3) {
-                card - col {
+                card.col {
                     h3("Header")
                     repeat(50) {
                         text("OK")
                     }
-                    sizeConstraints(height = 10.rem) - row {
-                        expanding - space()
-                        expanding - card - col {
+                    sizeConstraints(height = 10.rem).row {
+                        expanding.space()
+                        expanding.card.col {
                             repeat(50) {
                                 text("OK")
                             }

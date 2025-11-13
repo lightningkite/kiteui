@@ -52,14 +52,14 @@ object InfiniteImagesPage : Page {
         override fun contains(element: Int): Boolean = true
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         recyclerView {
 
             new.placer = RecyclerViewPlacerVerticalTrueGrid(4)
             children(Constant(ReturnIndexList)) {
-                unpadded - button {
+                unpadded.button {
                     ::transitionId { it().toString() }
-                    sizeConstraints(aspectRatio = 1.0) - image {
+                    sizeConstraints(aspectRatio = 1.0).image {
                         scaleType = ImageScaleType.Crop
                         ::source { ImageRemote("https://picsum.photos/seed/${it()}/100/100") }
                     }
@@ -75,8 +75,8 @@ object InfiniteImagesPage : Page {
 class ImageViewPager(val initialIndex: Int) : Page {
     val currentPage = Signal(initialIndex)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
-        themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) } - frame {
+    override fun ViewWriter.render(): Unit = run {
+        themeFromLast { it.copy(id="dumb", background = Color.black, foreground = Color.white) }.frame {
             val rv: ViewPager
             viewPager {
                 rv = this
@@ -99,18 +99,18 @@ class ImageViewPager(val initialIndex: Int) : Page {
                                 )
                             }
                         }
-                        centered - h2 { ::content { renders().toString() } }
+                        centered.h2 { ::content { renders().toString() } }
                     }
                 }
                 index bind currentPage
             }
-            align(Align.End, Align.Start) - button {
+            align(Align.End, Align.Start).button {
                 icon { source = Icon.close }
                 onClick {
                     pageNavigator.dismiss()
                 }
             }
-            atBottomCenter - row {
+            atBottomCenter.row {
                 text {
                     ::content { "currentPage ${currentPage()}" }
                 }
@@ -119,7 +119,7 @@ class ImageViewPager(val initialIndex: Int) : Page {
                     ::content { "rv.index ${rv.index()}" }
                 }
             }
-            atBottomStart - button {
+            atBottomStart.button {
                 text("jump to #20")
                 onClick {
                     currentPage.set(20)

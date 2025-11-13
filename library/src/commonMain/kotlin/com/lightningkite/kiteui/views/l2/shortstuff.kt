@@ -2,14 +2,10 @@ package com.lightningkite.kiteui.views.l2
 
 import com.lightningkite.kiteui.exceptions.ExceptionHandler
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.direct.*
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -50,10 +46,10 @@ fun ViewWriter.lazyExpanding(visible: Reactive<Boolean>, sub: ViewWriter.()->Uni
 }
 
 @ViewDsl
-fun RView.errorText(): ViewModifiable {
+fun ViewWriter.errorText(): Unit {
     val errors = Signal<Set<Exception>>(setOf())
-    return shownWhen { errors().isNotEmpty() } - ErrorSemantic.onNext - text {
-        this@errorText += object: ExceptionHandler {
+    shownWhen { errors().isNotEmpty() }.onNext(ErrorSemantic).text {
+        this@errorText.representsView!! += object: ExceptionHandler {
             override val priority: Float
                 get() = 1f
 
@@ -74,12 +70,12 @@ fun RView.errorText(): ViewModifiable {
 
 @ViewDsl
 @OptIn(ExperimentalContracts::class)
-inline fun ViewWriter.field(label: String, content: ViewWriter.() -> ViewModifiable): ViewModifiable {
+inline fun ViewWriter.field(label: String, content: ViewWriter.() -> Unit): Unit {
     contract { callsInPlace(content, InvocationKind.EXACTLY_ONCE) }
-    return col {
+    col {
         gap = 0.px
-        FieldLabelSemantic.onNext - text(label)
-        fieldTheme - content()
-        SubtextSemantic.onNext - errorText()
+        FieldLabelSemantic.onNext.text(label)
+        fieldTheme.content()
+        SubtextSemantic.onNext.errorText()
     }
 }

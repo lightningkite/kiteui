@@ -1,7 +1,6 @@
 package com.lightningkite.kiteui.views
 
 import com.lightningkite.kiteui.InternalKiteUi
-import com.lightningkite.kiteui.ViewWrapper
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.reactive.context.*
@@ -11,11 +10,11 @@ import com.lightningkite.reactive.lensing.*
 import com.lightningkite.readable.*
 
 //@Deprecated("")
-//fun RView.themeModifier(calculate: (()->Theme)->Theme): ViewWrapper {
+//fun RView.themeModifier(calculate: (()->Theme)->Theme): ViewWriter {
 //    beforeNextElementSetup {
 //        themeChoice = ThemeChoice.Derive { calculate { it } }
 //    }
-//    return ViewWrapper
+//    return ViewWriter
 //}
 
 

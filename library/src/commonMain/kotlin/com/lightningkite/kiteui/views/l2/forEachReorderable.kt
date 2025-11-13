@@ -12,7 +12,6 @@ import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.viewDebugTarget
 import com.lightningkite.kiteui.views.DropTargetDelegate
 import com.lightningkite.kiteui.views.RView
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.direct.col
 import com.lightningkite.kiteui.views.direct.frame
@@ -86,9 +85,9 @@ class DragDropReordering(
 fun <T> RView.forEachReorderable(
     items: Reactive<List<T>>,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Reactive<T>) -> ViewModifiable = { separator() },
+    separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     dataTransform: (DragData) -> DragData = { it },
-    render: ViewWriter.(Reactive<T>) -> ViewModifiable
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) {
     val handler = DragDropReordering(this, reorder = reorder)
 
@@ -111,11 +110,11 @@ fun <T> RView.forEachReorderable(
                     val i = idx()
                     move.end == i && move.start >= i
                 }
-            } - separator(item)
+            }.separator(item)
 
             beforeNextElementSetup {
                 ::dragData { dataTransform(handler.encode(idx())) }
-            } - render(item)
+            }.render(item)
 
             beforeNextElementSetup {
                 ::visible shown@{
@@ -123,7 +122,7 @@ fun <T> RView.forEachReorderable(
                     val i = idx()
                     move.end == i && move.start < i
                 }
-            } - separator(item)
+            }.separator(item)
         }
     }
 }
@@ -131,7 +130,7 @@ fun <T> RView.forEachReorderable(
 class RecyclerReorderable<T, ID>(
     val wraps: RecyclerViewRendererSet<T, ID>,
     val view: Recycler2,
-    val separator: ViewWriter.(Reactive<T>) -> ViewModifiable = { separator() },
+    val separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
     reorder: suspend (DragDropReordering.Move) -> Unit
 ) : RecyclerViewRendererSet<T, ID> {
     val handler = DragDropReordering(view, reorder = reorder)
@@ -145,7 +144,7 @@ class RecyclerReorderable<T, ID>(
     inner class ReorderWrapper(
         val renderer: RecyclerViewRenderer<T>
     ) : RecyclerViewRenderer<T> {
-        override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): ViewModifiable = with(viewWriter) {
+        override fun render(viewWriter: ViewWriter, data: Reactive<T>, index: Reactive<Int>): Unit = with(viewWriter) {
             col {
                 themeTakeNonCascadingFromParent = true
 
@@ -159,11 +158,11 @@ class RecyclerReorderable<T, ID>(
                         val i = index()
                         move.end == i && move.start >= i
                     }
-                } - separator(data)
+                }.separator(data)
 
-                beforeNextElementSetup {
+                renderer.render(beforeNextElementSetup {
                     ::dragData { handler.encode(index()) }
-                } - renderer.render(this, data, index)
+                }, data, index)
 
                 beforeNextElementSetup {
                     ::shown shown@{
@@ -171,7 +170,7 @@ class RecyclerReorderable<T, ID>(
                         val i = index()
                         move.end == i && move.start < i
                     }
-                } - separator(data)
+                }.separator(data)
             }
         }
     }
@@ -183,8 +182,8 @@ fun <T, ID> Recycler2.childrenReorderable(
     items: Reactive<List<T>>,
     id: (T) -> ID,
     reorder: suspend (DragDropReordering.Move) -> Unit,
-    separator: ViewWriter.(Reactive<T>) -> RView = { separator() },
-    render: ViewWriter.(Reactive<T>) -> ViewModifiable
+    separator: ViewWriter.(Reactive<T>) -> Unit = { separator() },
+    render: ViewWriter.(Reactive<T>) -> Unit
 ) {
     rendererSet = RecyclerReorderable(
         RecyclerViewRendererSet.single(id, render),

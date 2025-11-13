@@ -3,7 +3,6 @@ package com.lightningkite.kiteui.navigation
 import com.lightningkite.kiteui.decodeURIComponent
 import com.lightningkite.kiteui.encodeURIComponent
 import com.lightningkite.kiteui.reactive.*
-import com.lightningkite.kiteui.views.ViewModifiable
 import com.lightningkite.kiteui.views.ViewWriter
 import com.lightningkite.kiteui.views.centered
 import com.lightningkite.kiteui.views.direct.*
@@ -19,9 +18,9 @@ class Routes(
     val renderers: Map<KClass<out Page>, (Page) -> RouteRendered?>,
     val fallback: Page = object: Page {
         override val title = Constant("Not Found")
-        override fun ViewWriter.render(): ViewModifiable = run {
-            return frame {
-                centered - col {
+        override fun ViewWriter.render(): Unit = run {
+            frame {
+                centered.col {
                     h1("Not Found")
                     text("Sorry, we couldn't find the page you're looking for.")
                 }
@@ -67,5 +66,5 @@ data class UrlLikePath(
 
 }
 
-fun Page.render(writer: ViewWriter): ViewModifiable = with(writer) { render() }
+fun Page.render(writer: ViewWriter): Unit = with(writer) { render() }
 

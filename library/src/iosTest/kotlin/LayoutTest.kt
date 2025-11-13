@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.navigation.render
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.direct.frame
 import com.lightningkite.kiteui.views.direct.stack
+import com.lightningkite.kiteui.views.direct.text
 import com.lightningkite.kiteui.views.setup
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
@@ -23,19 +24,15 @@ class LayoutTest {
     fun test() {
         val s = LayoutsTestPage()
         lateinit var root: RView
-        val vc = object: UIViewController(null, null) {
-            override fun viewDidLoad() {
-                super.viewDidLoad()
-                setup(Theme(id = "unitTest")) {
-                    frame {
-                        s.render(this)
-                    }.also { root = it }
-                }
-            }
-        }
         val window = UIWindow(frame = CGRectMake(0.0, 0.0, 500.0, 1000.0))
-        window.makeKeyAndVisible()
+        val vc = UIViewController(null, null)
         window.rootViewController = vc
+        vc.view.setFrame(CGRectMake(0.0, 0.0, 500.0, 1000.0))
+        vc.setup(Theme(id = "unitTest")) {
+            frame {
+                s.render(this)
+            }.also { root = it }
+        }
         vc.view.setNeedsLayout()
         vc.view.layoutIfNeeded()
         println(root.screenRectangle())

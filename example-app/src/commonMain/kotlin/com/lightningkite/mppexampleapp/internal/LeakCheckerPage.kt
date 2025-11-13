@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 object UltraBasicPage : Page {
     val count = Signal(0)
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
 //        frame {
 //            onRemove { println("stack onRemove") }
         col {
@@ -67,7 +67,7 @@ object CounterPage : Page {
         }
     }
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         col {
             text {
                 ::content { "${count()}" }
@@ -85,7 +85,7 @@ object LeakCheckerPage : Page {
     val stringProp = Signal("X")
     val doubleProp = Signal<Double?>(0.0)
     val makers = listOf<Pair<String, ViewWriter.() -> Unit>>(
-        "scrolling" to { frame { scrolling - col { text("A") } } },
+        "scrolling" to { frame { scrolling.col { text("A") } } },
         "justFrame" to { frame { } },
         "button" to { frame { button { text("hey"); onClick { } } } },
         "link" to { frame { link { text("hey"); onNavigate { }; to = { RootPage } } } },
@@ -98,7 +98,7 @@ object LeakCheckerPage : Page {
         "stack" to { frame { frame { frame { } } } },
         "col" to { frame { col { col { } } } },
         "separator" to { frame { col { separator() } } },
-        "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem) - text("Size") } } },
+        "sizing" to { frame { col { sizeConstraints(minHeight = 10.rem).text("Size") } } },
         "activityIndicator" to { frame { activityIndicator {} } },
         "checkbox" to { frame { checkbox {} } },
         "dismissBackground" to { frame { dismissBackground {} } },
@@ -121,7 +121,7 @@ object LeakCheckerPage : Page {
         "viewPager" to { frame { viewPager { children<Int>(Constant((1..50).toList())) { text { ::content { it().toString() } } } } } },
     )
 
-    override fun ViewWriter.render(): ViewModifiable = run {
+    override fun ViewWriter.render(): Unit = run {
         val index = Signal(0)
         col {
 //            launch {
