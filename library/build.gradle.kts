@@ -125,6 +125,11 @@ kotlin {
         val jsMain by getting {
             dependsOn(commonHtmlMain)
         }
+        val jsTest by getting {
+            dependencies {
+                implementation(npm("html2canvas", "1.4.1"))
+            }
+        }
     }
 
     jvm("jvmSsr")
