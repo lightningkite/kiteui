@@ -18,6 +18,18 @@ expect object Interactions {
      * @param view The view to click
      */
     fun click(view: RView)
+
+    /**
+     * Types text into an input field.
+     *
+     * Works with TextInput, NumberInput, and other input fields that have a 'content' property.
+     * This updates the content reactively, triggering any bindings and change listeners.
+     *
+     * @param view The input view to type into
+     * @param text The text to type
+     * @param append If true, appends to existing text; if false (default), replaces it
+     */
+    fun typeText(view: RView, text: String, append: Boolean = false)
 }
 
 /**
@@ -31,4 +43,20 @@ expect object Interactions {
  */
 fun RView.click() {
     Interactions.click(this)
+}
+
+/**
+ * Extension function to type text into this input view.
+ *
+ * Example:
+ * ```
+ * val emailInput = root.findByDebugName("email")!!
+ * emailInput.typeText("user@example.com")
+ * ```
+ *
+ * @param text The text to type
+ * @param append If true, appends to existing text; if false (default), replaces it
+ */
+fun RView.typeText(text: String, append: Boolean = false) {
+    Interactions.typeText(this, text, append)
 }
