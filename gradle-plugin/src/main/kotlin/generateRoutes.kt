@@ -27,6 +27,11 @@ internal fun generateAutoroutes(sources: File, out: File) {
                 if (next == -1) break
                 index = next + 1
 
+                // Skip if this @Routable is inside a string literal
+                if (text.isInsideStringLiteral(next)) {
+                    continue
+                }
+
                 val quoteStart = text.indexOf('"', next)
                 if (quoteStart == -1) break
                 val quoteEnd = text.indexOf('"', quoteStart + 1)

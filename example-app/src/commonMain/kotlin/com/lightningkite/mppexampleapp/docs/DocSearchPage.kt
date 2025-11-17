@@ -22,6 +22,7 @@ object DocSearchPage : Page {
         // TODO: Gradle tasks
         // TODO: Platform-specific views
         // TODO: Custom widgets
+        { ThemeTesterPage },
         { ResourcesPage },
         { DataPage },
         { ReactiveToolsPage },

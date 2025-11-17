@@ -1,0 +1,512 @@
+package com.lightningkite.mppexampleapp.docs
+
+import com.lightningkite.kiteui.Routable
+import com.lightningkite.kiteui.models.*
+import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.*
+import com.lightningkite.kiteui.views.direct.*
+import com.lightningkite.kiteui.views.l2.*
+import com.lightningkite.mppexampleapp.widgets.code
+import com.lightningkite.reactive.core.*
+import com.lightningkite.reactive.extensions.*
+import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
+
+@Routable("docs/data-loading")
+object DataLoadingPatternsPage : DocPage {
+    override val covers: List<String> = listOf(
+        "data loading", "async", "suspending", "remember", "loading states",
+        "error handling", "retry", "caching", "rememberSuspending"
+    )
+
+    @Serializable
+    data class User(val id: Int, val name: String, val email: String)
+
+    override fun ViewWriter.render(): Unit = run {
+        article {
+            titledSection("Data Loading Patterns") {
+                text("Learn how to load, cache, and handle asynchronous data in KiteUI.")
+
+                space()
+
+                titledSection("Basic Data Loading") {
+                    text("Use remember for synchronous computed values and rememberSuspending for async operations:")
+
+                    space()
+                    code {
+                        content = """
+                            val userData = rememberSuspending {
+                                // This runs in a coroutine
+                                delay(1000) // Simulated network call
+                                User(1, "John Doe", "john@example.com")
+                            }
+
+                            col {
+                                text {
+                                    ::content { "Name: ${'$'}{userData().name}" }
+                                }
+                            }
+                        """.trimIndent()
+                    }
+
+                    space()
+                    text("Key points:")
+                    card.col {
+                        text("• rememberSuspending runs once when the component mounts")
+                        text("• Views automatically show a loading state while data loads")
+                        text("• The result is cached - it won't re-fetch on every render")
+                        text("• Use remember for synchronous computations")
+                    }
+
+                    space()
+                    example("""
+                        val message = rememberSuspending {
+                            delay(2000) // Simulated delay
+                            "Hello after 2 seconds!"
+                        }
+
+                        text {
+                            ::content { message() }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val message = rememberSuspending {
+                                delay(2000)
+                                "Hello after 2 seconds!"
+                            }
+
+                            text {
+                                ::content { message() }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Dependent Data Loading") {
+                    text("Load data that depends on other reactive values:")
+
+                    space()
+                    code {
+                        content = """
+                            val userId = Signal(1)
+
+                            val user = rememberSuspending {
+                                // Re-runs when userId changes
+                                delay(1000)
+                                fetchUser(userId())
+                            }
+
+                            col {
+                                text { ::content { "User: ${'$'}{user().name}" } }
+                                button {
+                                    text("Load Next User")
+                                    onClick { userId.value++ }
+                                }
+                            }
+                        """.trimIndent()
+                    }
+
+                    space()
+                    text("The rememberSuspending block tracks dependencies - it will re-execute when userId changes.")
+                }
+
+                space()
+
+                titledSection("Error Handling") {
+                    text("Handle errors gracefully with try-catch:")
+
+                    space()
+                    example("""
+                        data class LoadResult<T>(
+                            val data: T? = null,
+                            val error: String? = null,
+                            val loading: Boolean = true
+                        )
+
+                        val result = Signal(LoadResult<String>())
+
+                        reactiveScope {
+                            result.value = LoadResult(loading = true)
+                            try {
+                                delay(1000)
+                                // Simulated random failure
+                                if (kotlin.random.Random.nextBoolean()) {
+                                    throw Exception("Random error!")
+                                }
+                                result.value = LoadResult(data = "Success!", loading = false)
+                            } catch (e: Exception) {
+                                result.value = LoadResult(error = e.message, loading = false)
+                            }
+                        }
+
+                        col {
+                            shownWhen { result().loading } - activityIndicator()
+
+                            shownWhen { result().error != null } - danger - col {
+                                text("Error occurred!")
+                                subtext { ::content { result().error ?: "" } }
+                            }
+
+                            shownWhen { result().data != null } - affirmative - text {
+                                ::content { result().data ?: "" }
+                            }
+                        }
+                    """.trimIndent()) {
+                        data class LoadResult<T>(
+                            val data: T? = null,
+                            val error: String? = null,
+                            val loading: Boolean = true
+                        )
+
+                        card.col {
+                            val loadTrigger = Signal(0)
+                            val result = rememberSuspending {
+                                loadTrigger() // Track dependency
+                                delay(1000)
+                                if (kotlin.random.Random.nextBoolean()) {
+                                    throw Exception("Random error!")
+                                }
+                                "Success!"
+                            }
+
+                            try {
+                                affirmative.text { ::content { result() } }
+                            } catch (e: Exception) {
+                                danger.col {
+                                    text("Error occurred!")
+                                    subtext(e.message ?: "Unknown error")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Retry Pattern") {
+                    text("Allow users to retry failed operations:")
+
+                    space()
+                    example("""
+                        val retryTrigger = Signal(0)
+
+                        val data = rememberSuspending {
+                            // Depends on retryTrigger
+                            retryTrigger()
+
+                            delay(1000)
+                            if (kotlin.random.Random.nextBoolean()) {
+                                throw Exception("Failed to load")
+                            }
+                            "Success!"
+                        }
+
+                        col {
+                            try {
+                                text { ::content { data() } }
+                            } catch (e: Exception) {
+                                danger - col {
+                                    text("Failed to load data")
+                                    button {
+                                        text("Retry")
+                                        onClick {
+                                            retryTrigger.value++
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val retryTrigger = Signal(0)
+
+                            val data = rememberSuspending {
+                                retryTrigger()
+                                delay(1000)
+                                if (kotlin.random.Random.nextBoolean()) {
+                                    throw Exception("Failed to load")
+                                }
+                                "Data loaded successfully!"
+                            }
+
+                            try {
+                                affirmative.text { ::content { data() } }
+                            } catch (e: Exception) {
+                                danger.col {
+                                    text("Failed to load data")
+                                    button {
+                                        text("Retry")
+                                        onClick {
+                                            retryTrigger.value++
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Loading Lists") {
+                    text("Load and display lists of data:")
+
+                    space()
+                    code {
+                        content = """
+                            val users = rememberSuspending {
+                                delay(1000)
+                                fetchUsers()
+                            }
+
+                            col {
+                                forEach(users) { user ->
+                                    card.text { ::content { user().name } }
+                                }
+                            }
+                        """.trimIndent()
+                    }
+
+                    space()
+                    text("For large lists, use recyclerView for better performance:")
+                    code {
+                        content = """
+                            recyclerView {
+                                children(users, id = { it.id }) { user ->
+                                    card.text { ::content { user().name } }
+                                }
+                            }
+                        """.trimIndent()
+                    }
+                }
+
+                space()
+
+                titledSection("Pagination") {
+                    text("Load data in pages for better performance:")
+
+                    space()
+                    example("""
+                        val page = Signal(1)
+                        val pageSize = 5
+
+                        val items = rememberSuspending {
+                            delay(1000)
+                            // Simulated pagination
+                            (1..pageSize).map { "Item ${'$'}{(page() - 1) * pageSize + it}" }
+                        }
+
+                        col {
+                            forEach(items) { item ->
+                                card.text(item)
+                            }
+
+                            row {
+                                button {
+                                    text("Previous")
+                                    onClick {
+                                        if (page() > 1) page.value--
+                                    }
+                                }
+                                centered.text {
+                                    ::content { "Page ${'$'}{page()}" }
+                                }
+                                button {
+                                    text("Next")
+                                    onClick { page.value++ }
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val page = Signal(1)
+                            val pageSize = 5
+
+                            val items = rememberSuspending {
+                                delay(500)
+                                (1..pageSize).map { "Item ${(page() - 1) * pageSize + it}" }
+                            }
+
+                            col {
+                                text {
+                                    ::content {
+                                        items().joinToString("\n")
+                                    }
+                                }
+                            }
+
+                            row {
+                                button {
+                                    text("Previous")
+                                    onClick {
+                                        if (page() > 1) page.value--
+                                    }
+                                }
+                                centered.expanding.text {
+                                    ::content { "Page ${page()}" }
+                                }
+                                button {
+                                    text("Next")
+                                    onClick { page.value++ }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Refreshing Data") {
+                    text("Implement pull-to-refresh or manual refresh:")
+
+                    space()
+                    example("""
+                        val refreshTrigger = Signal(0)
+
+                        val timestamp = rememberSuspending {
+                            refreshTrigger() // Track dependency
+                            delay(1000)
+                            kotlinx.datetime.Clock.System.now().toString()
+                        }
+
+                        col {
+                            text {
+                                ::content { "Last updated: ${'$'}{timestamp()}" }
+                            }
+                            button {
+                                text("Refresh")
+                                onClick {
+                                    refreshTrigger.value++
+                                }
+                            }
+                        }
+                    """.trimIndent()) {
+                        card.col {
+                            val refreshTrigger = Signal(0)
+
+                            val timestamp = rememberSuspending {
+                                refreshTrigger()
+                                delay(1000)
+                                Clock.System.now().toString()
+                            }
+
+                            text {
+                                ::content { "Last updated: ${timestamp().take(19)}" }
+                            }
+                            button {
+                                text("Refresh")
+                                onClick {
+                                    refreshTrigger.value++
+                                }
+                            }
+                        }
+                    }
+                }
+
+                space()
+
+                titledSection("Automatic Loading Indicators") {
+                    text("KiteUI automatically shows loading states while data is loading:")
+
+                    space()
+                    code {
+                        content = """
+                            val data = rememberSuspending {
+                                delay(2000)
+                                "Loaded!"
+                            }
+
+                            // This text will show a loading indicator automatically
+                            text {
+                                ::content { data() }
+                            }
+                        """.trimIndent()
+                    }
+
+                    space()
+                    text("You can also show custom loading UI:")
+                    code {
+                        content = """
+                            col {
+                                try {
+                                    text { ::content { data() } }
+                                } catch (e: LoadingException) {
+                                    centered - col {
+                                        activityIndicator()
+                                        subtext("Loading data...")
+                                    }
+                                }
+                            }
+                        """.trimIndent()
+                    }
+                }
+
+                space()
+
+                titledSection("Best Practices") {
+                    card.col {
+                        text("✓ Use rememberSuspending for async operations")
+                        text("✓ Use remember for synchronous computed values")
+                        text("✓ Handle errors gracefully with try-catch")
+                        text("✓ Provide retry mechanisms for failed loads")
+                        text("✓ Show appropriate loading indicators")
+                        text("✓ Use recyclerView for long lists")
+                        text("✓ Implement pagination for large datasets")
+                        text("✓ Cache data when appropriate")
+                        text("✓ Provide refresh mechanisms for stale data")
+                    }
+                }
+
+                space()
+
+                titledSection("Common Patterns Summary") {
+                    card.col {
+                        h5("Simple Load:")
+                        code {
+                            content = """
+                                val data = rememberSuspending { fetchData() }
+                                text { ::content { data() } }
+                            """.trimIndent()
+                        }
+
+                        space()
+                        h5("Load with Dependency:")
+                        code {
+                            content = """
+                                val userId = Signal(1)
+                                val user = rememberSuspending { fetchUser(userId()) }
+                            """.trimIndent()
+                        }
+
+                        space()
+                        h5("Error Handling:")
+                        code {
+                            content = """
+                                try {
+                                    text { ::content { data() } }
+                                } catch (e: Exception) {
+                                    danger.text("Error: ${'$'}{e.message}")
+                                }
+                            """.trimIndent()
+                        }
+
+                        space()
+                        h5("Retry:")
+                        code {
+                            content = """
+                                val trigger = Signal(0)
+                                val data = rememberSuspending {
+                                    trigger(); fetchData()
+                                }
+                                // ... show data or error with retry button
+                            """.trimIndent()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
