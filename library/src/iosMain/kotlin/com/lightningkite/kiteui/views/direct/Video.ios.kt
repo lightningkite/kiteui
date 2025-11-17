@@ -5,6 +5,7 @@ import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.printStackTrace2
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.*
+import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*
 import kotlin.experimental.ExperimentalNativeApi
@@ -33,7 +34,9 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.sel_registerName
 import kotlin.collections.mapOf
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 
 actual class RawVideoView actual constructor(
@@ -44,8 +47,9 @@ actual class RawVideoView actual constructor(
     actual val preloadHint: PreloadHint,
 ) : RView(context) {
 
-    inner class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
-
+    // Delegate is a regular class (not inner) to avoid retain cycle
+    class IosDelegate: NSObject(), AVPlayerViewControllerDelegateProtocol {
+        // Empty delegate - no weak reference needed as it doesn't capture owner
     }
     val ios = IosDelegate()
 
@@ -67,7 +71,7 @@ actual class RawVideoView actual constructor(
 
     private val _playing = Signal(false)
     private val _volume = Signal(0f)
-    private val _time = Signal(0.0)
+    private val _time = Signal(Duration.ZERO)
     private val _sourceDuration = LateInitSignal<Double?>()
     private var animationFrameRateClose: (() -> Unit)? = null
     private var playerRateObservationClose: (() -> Unit)? = null
@@ -107,7 +111,7 @@ actual class RawVideoView actual constructor(
                         if (_playing.value != value) _playing.value = value
                         if (player.rate > 0f) {
                             animationFrameRateClose = AppState.animationFrame.addListener {
-                                _time.value = CMTimeGetSeconds(player.currentTime())
+                                _time.value = CMTimeGetSeconds(player.currentTime()).seconds
                             }
                         } else {
                             animationFrameRateClose?.invoke()
@@ -187,6 +191,7 @@ actual class RawVideoView actual constructor(
     }
 
     init {
+        // Register notification observers
         NSNotificationCenter.defaultCenter.addObserver(
             observer = playerCallbackHolder,
             selector = sel_registerName("playerItemDidReachEnd:"),
@@ -199,6 +204,17 @@ actual class RawVideoView actual constructor(
             name = AVPlayerItemNewAccessLogEntryNotification,
             `object` = null
         )
+
+        // Clean up observers and resources when view is removed
+        onRemove {
+            NSNotificationCenter.defaultCenter.removeObserver(playerCallbackHolder)
+            playerRateObservationClose?.invoke()
+            volumeObservationClose?.invoke()
+            endObservationClose?.invoke()
+            playerStatusObservationClose?.invoke()
+            animationFrameRateClose?.invoke()
+            controller.player = null
+        }
         launch {
             println("AVPlayerStatusUnknown: $AVPlayerStatusUnknown")
             println("AVPlayerStatusReadyToPlay: $AVPlayerStatusReadyToPlay")
@@ -290,11 +306,17 @@ actual class RawVideoView actual constructor(
 
     actual val time: MutableReactive<Double>
         get() = _time
+            .lens({it.toDouble(DurationUnit.SECONDS)}, {it.seconds})
             .withWrite {
                 controller.player?.seekToTime(CMTimeMake((it * 1000.0).toLong(), 1000))
             }
 
-    
+    actual val currentTime: MutableReactive<Duration>
+        get() = _time
+            .withWrite {
+                controller.player?.seekToTime(CMTimeMake(it.inWholeMilliseconds, 1000))
+            }
+
     actual val playing: MutableReactive<Boolean>
         get() = _playing
             .withWrite {

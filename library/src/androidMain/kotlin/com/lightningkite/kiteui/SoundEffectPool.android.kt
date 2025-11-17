@@ -4,19 +4,18 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.net.Uri
 import com.lightningkite.kiteui.models.*
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.AndroidAppContext
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.reactive.core.AppScope
+import com.lightningkite.reactive.core.BaseListenable
+import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.ReactiveState
+import com.lightningkite.reactive.extensions.invokeAllSafe
+import kotlinx.coroutines.*
 import java.io.Closeable
 import kotlin.coroutines.resume
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 actual class SoundEffectPool actual constructor(concurrency: Int) {
 
@@ -59,14 +58,15 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
                 }
             override var isPlaying: Boolean = true
                 set(value) {
-                    if(field == value) return
+                    if (field == value) return
                     field = value
-                    if(value) {
+                    if (value) {
                         soundPool.pause(streamId)
                     } else {
                         soundPool.resume(streamId)
                     }
                 }
+
             override fun stop() {
                 soundPool.stop(streamId)
             }
@@ -86,32 +86,38 @@ private val runningMediaPlayers = ArrayList<MediaPlayer>()
 actual suspend fun AudioSource.load(): PlayableAudio {
     val player = MediaPlayer()
     var toClose: Closeable? = null
-    when(this) {
+    when (this) {
         is AudioLocal -> player.setDataSource(AndroidAppContext.applicationCtx, file.uri)
         is AudioRaw -> TODO()
         is AudioRemote -> player.setDataSource(AndroidAppContext.applicationCtx, Uri.parse(url))
         is AudioResource -> {
-            val afd = AndroidAppContext.applicationCtx.resources.openRawResourceFd(this.resource) ?: throw IllegalStateException("No such resource found")
+            val afd = AndroidAppContext.applicationCtx.resources.openRawResourceFd(this.resource)
+                ?: throw IllegalStateException("No such resource found")
             player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             toClose = afd
         }
+
         else -> TODO()
     }
-    val onCompletes = ArrayList<()->Unit>()
+    val onCompletes = ArrayList<() -> Unit>()
     player.setOnCompletionListener {
         runningMediaPlayers.remove(player)
         onCompletes.invokeAllSafe()
     }
-    val audio = object: PlayableAudio {
+    val audio = object : PlayableAudio {
         override var volume: Float = 1f
-            set(value) { field = value; player.setVolume(value, value) }
+            set(value) {
+                field = value; player.setVolume(value, value)
+            }
         override var loop: Boolean = false
-            set(value) { player.isLooping = value }
+            set(value) {
+                player.isLooping = value
+            }
         override var isPlaying: Boolean
             get() = player.isPlaying
             set(value) {
                 if (value == player.isPlaying) return
-                if(value) {
+                if (value) {
                     player.start()
                     runningMediaPlayers.add(player)
                 } else {
@@ -128,6 +134,27 @@ actual suspend fun AudioSource.load(): PlayableAudio {
             if (player.isPlaying) {
                 player.pause()
                 runningMediaPlayers.remove(player)
+            }
+        }
+
+        override val currentTime: MutableReactive<Duration> = object : BaseListenable(), MutableReactive<Duration> {
+            override suspend fun set(value: Duration) {
+                player.seekTo(value.inWholeMilliseconds.toInt())
+            }
+
+            override val state get() = ReactiveState(player.currentPosition.milliseconds)
+
+            var remover: (() -> Unit)? = null
+
+            override fun activate() {
+                remover = AppState.animationFrame.addListener {
+                    if (player.isPlaying) invokeAllListeners()
+                }
+            }
+
+            override fun deactivate() {
+                remover?.invoke()
+                remover = null
             }
         }
 

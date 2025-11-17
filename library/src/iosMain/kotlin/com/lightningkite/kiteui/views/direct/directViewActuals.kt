@@ -68,8 +68,13 @@ fun NSObject.observe(key: String, action: ()->Unit): ()->Unit {
 private class ObserveRemover(val source: WeakReference<NSObject>, val key: String, var observer: NSObject? = null): ()->Unit {
     override fun invoke() {
         source.get()?.let { source ->
-            observer?.let {
-                source.removeObserver(it, key)
+            observer?.let { obs ->
+                try {
+                    source.removeObserver(obs, key)
+                } catch (e: Exception) {
+                    // Observer was already removed or never registered - log but don't crash
+                    // This can happen in edge cases during rapid view lifecycle changes
+                }
             }
         }
         observer = null

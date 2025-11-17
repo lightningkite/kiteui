@@ -11,6 +11,9 @@ import com.lightningkite.reactive.extensions.withWrite
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLVideoElement
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 import kotlin.random.Random
 
 // Storage for Web Audio API routing state
@@ -21,13 +24,13 @@ private data class VideoAudioState(
     var gainNode: GainNode? = null
 )
 
-actual val RawVideoView.nativeTime: MutableReactive<Double>
+actual val RawVideoView.nativeTime: MutableReactive<Duration>
     get() = remember {
         rerunOn(AppState.animationFrame)
-        (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime ?: 0.0
+        (this@nativeTime.native.element as? HTMLVideoElement)?.currentTime?.seconds ?: Duration.ZERO
     }.withWrite { it ->
         this@nativeTime.native.onElement { element ->
-            (element as HTMLVideoElement).currentTime = it
+            (element as HTMLVideoElement).currentTime = it.toDouble(DurationUnit.SECONDS)
         }
     }
 //    get() = native.vprop(
