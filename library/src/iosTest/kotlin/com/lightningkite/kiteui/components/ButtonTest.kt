@@ -20,7 +20,7 @@ class ButtonTest {
             button {
                 debugName = "test-button"
                 text("Click Me")
-                onClick { clickCount++ }
+                onClick(frequencyCap = null) { clickCount++ }
             }
         }
 
@@ -46,7 +46,7 @@ class ButtonTest {
             button {
                 debugName = "counter-button"
                 text("Click to increment")
-                onClick { counter++ }
+                onClick(frequencyCap = null) { counter++ }
             }
         }
 

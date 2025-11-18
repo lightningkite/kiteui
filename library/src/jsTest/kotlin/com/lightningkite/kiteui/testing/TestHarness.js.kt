@@ -79,12 +79,29 @@ actual class TestHarness {
      *   node local/snapshot-server.js
      *
      * The server saves files to: library/local/screenshots/js/
+     *
+     * Note: This is a best-effort operation. If the server is not running,
+     * it will silently skip saving the file.
      */
     private fun saveSnapshotToFile(name: String, html: String) {
         try {
             val xhr = org.w3c.xhr.XMLHttpRequest()
-            xhr.open("POST", "http://localhost:3001/save-snapshot", async = false) // Synchronous for simplicity
+            // Use async to avoid blocking and prevent network errors from propagating
+            xhr.open("POST", "http://localhost:3001/save-snapshot", async = true)
             xhr.setRequestHeader("Content-Type", "application/json")
+
+            xhr.onload = {
+                if (xhr.status.toInt() == 200) {
+                    println("✅ Snapshot saved to file: $name.html")
+                } else {
+                    println("⚠️  Failed to save snapshot: ${xhr.status} ${xhr.responseText}")
+                }
+            }
+
+            xhr.onerror = {
+                // Silently ignore network errors - snapshot server is optional
+                println("⚠️  Snapshot server not available (this is optional)")
+            }
 
             val payload = json(
                 "name" to name,
@@ -92,16 +109,9 @@ actual class TestHarness {
             )
 
             xhr.send(JSON.stringify(payload))
-
-            if (xhr.status.toInt() == 200) {
-                println("✅ Snapshot saved to file: $name.html")
-            } else {
-                println("⚠️  Failed to save snapshot: ${xhr.status} ${xhr.responseText}")
-            }
         } catch (e: Exception) {
+            // Silently ignore - saving snapshots is optional for tests
             println("⚠️  Could not save snapshot to file: ${e.message}")
-            println("   💡 Make sure the snapshot server is running:")
-            println("      node local/snapshot-server.js")
         }
     }
 
