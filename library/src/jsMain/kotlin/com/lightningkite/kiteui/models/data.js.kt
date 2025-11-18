@@ -1,8 +1,10 @@
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.reactive.AppState
 import kotlinx.browser.document
 import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.url.URL
 
 private val measuringDiv = (document.createElement("div") as HTMLDivElement).apply {
     id = "____--measuringDiv"

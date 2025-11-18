@@ -142,12 +142,12 @@ actual class RawVideoView actual constructor(
         }
     }
 
-    actual val volume: MutableReactive<Float> = object : MutableReactive<Float> {
-        override suspend fun set(value: Float) {
-            native.player!!.volume = value
-        }
-
-        override val state: ReactiveState<Float> get() = ReactiveState(native.player!!.volume)
+    actual val volume: MutableReactiveValue<Float> = object : MutableReactiveValue<Float> {
+        override var value: Float
+            get() = native.player!!.volume
+            set(value) {
+                native.player!!.volume = value
+            }
 
         override fun addListener(listener: () -> Unit): () -> Unit {
             val l = object : Player.Listener {

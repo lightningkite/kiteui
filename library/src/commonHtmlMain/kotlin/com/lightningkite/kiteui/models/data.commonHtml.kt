@@ -2,6 +2,7 @@
 
 package com.lightningkite.kiteui.models
 
+import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.encodeURIComponent
 
 actual data class DimensionRaw(
@@ -87,12 +88,33 @@ actual val systemDefaultFixedWidthFont: Font get() = Font("monospace")
 
 actual sealed class ImageSource actual constructor(): VisualMediaSource
 actual data class ImageResource(val relativeUrl: String) : ImageSource()
+actual class ImageRaw actual constructor(data: Blob) : ImageSource() {
+    val url = createObjectUrl(data)
+    actual fun release() {
+        revokeObjectUrl(url)
+    }
+}
 
 actual sealed class VideoSource actual constructor(): VisualMediaSource
 actual data class VideoResource(val relativeUrl: String) : VideoSource()
+actual class VideoRaw actual constructor(data: Blob) : VideoSource() {
+    val url = createObjectUrl(data)
+    actual fun release() {
+        revokeObjectUrl(url)
+    }
+}
 
 actual sealed class AudioSource actual constructor()
 actual data class AudioResource(val relativeUrl: String) : AudioSource()
+actual class AudioRaw actual constructor(data: Blob) : AudioSource() {
+    val url = createObjectUrl(data)
+    actual fun release() {
+        revokeObjectUrl(url)
+    }
+}
+
+internal expect fun createObjectUrl(data: Blob): String
+internal expect fun revokeObjectUrl(url: String)
 
 fun Dimension.toBoxShadow(): String {
     if (value.roughPx == 0.0)

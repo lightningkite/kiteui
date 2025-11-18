@@ -12,7 +12,7 @@ import kotlin.time.Duration
 
 expect class SoundEffectPool(concurrency: Int = 4) {
     suspend fun preload(sound: AudioSource)
-    suspend fun play(sound: AudioSource): PlayingSoundEffect
+    suspend fun play(sound: AudioSource, volume: Float = 1f, loop: Boolean = false): PlayingSoundEffect
     fun unload(sound: AudioSource)
 }
 

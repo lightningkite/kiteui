@@ -48,10 +48,11 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
         }.await()
     }
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
-        val streamId = soundPool.play(preloadInternal(sound), 1.0f, 1.0f, 0, 0, 1.0f)
+    actual suspend fun play(sound: AudioSource, volume: Float, loop: Boolean): PlayingSoundEffect {
+        val streamId = soundPool.play(preloadInternal(sound), volume, volume, 0, 0, 1.0f)
+        soundPool.setLoop(streamId, if(loop) -1 else 0)
         return object : PlayingSoundEffect {
-            override var volume: Float = 1f
+            override var volume: Float = volume
                 set(value) {
                     field = value
                     soundPool.setVolume(streamId, value, value)

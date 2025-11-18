@@ -60,12 +60,12 @@ object AudioManager {
      * Force using AudioContext-based audio routing.
      * True to force, false to use only if on iOS Safari..
      */
-    var forceUseAudioContext: Boolean = false
+    var forceUseAudioContext: Boolean? = null
     /**
      * Whether to use AudioContext-based audio routing.
      * True on iOS Safari, false otherwise.
      */
-    val shouldUseAudioContext: Boolean get() = forceUseAudioContext ||Platform.isIOSSafari
+    val shouldUseAudioContext: Boolean get() = forceUseAudioContext ?: Platform.isIOSSafari
 
     /**
      * Connects a video element's audio to the Web Audio API.
@@ -270,7 +270,7 @@ external class AudioBufferSourceNode : AudioNode {
     /**
      * Start playing the audio
      */
-    fun start()
+    fun start(delay: Double = definedExternally, offset: Double = definedExternally, duration: Double = definedExternally)
 
     /**
      * Stop playing the audio

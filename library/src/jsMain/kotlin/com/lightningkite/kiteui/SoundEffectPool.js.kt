@@ -31,21 +31,30 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     private val context: AudioContext
         get() = AudioManager.getContext()
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect {
+    actual suspend fun play(sound: AudioSource, volume: Float, loop: Boolean): PlayingSoundEffect {
         // An AudioBufferSourceNode can only be played once so we must create a new instance every time we want to play
         // a sound
+        val gainNode = context.createGain()
+        gainNode.gain.value = volume.toDouble()
         val bufferSource = context.createBufferSource()
+        bufferSource.loop = loop
         bufferSource.buffer = preloadInternal(sound)
-        bufferSource.connect(context.destination)
+        bufferSource.connect(gainNode)
+        gainNode.connect(context.destination)
         bufferSource.start()
 
         return object : PlayingSoundEffect {
             override var volume: Float
-                get() = TODO()
-                set(value) {}
-            override var isPlaying: Boolean
-                get() = TODO()
-                set(value) {}
+                get() = gainNode.gain.value.toFloat()
+                set(value) {
+                    gainNode.gain.value = value.toDouble()
+                }
+            override var isPlaying: Boolean = true
+                set(value) {
+                    if(value) bufferSource.start()
+                    else bufferSource.stop()
+                    field = value
+                }
 
             override fun stop() {
                 bufferSource.stop()
@@ -65,8 +74,11 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
                     }
 
                     is AudioRaw -> {
-                        val blobData = sound.data.asDynamic().arrayBuffer() as Promise<ArrayBuffer>
-                        context.decodeAudioData(blobData.await()).await()
+                        val response = window.fetch(sound.url).await()
+                        val arrayBuffer = response.arrayBuffer().await()
+                        context.decodeAudioData(arrayBuffer).await()
+//                        val blobData = sound.data.asDynamic().arrayBuffer() as Promise<ArrayBuffer>
+//                        context.decodeAudioData(blobData.await()).await()
                     }
 
                     is AudioLocal -> {
@@ -91,8 +103,7 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     }
 
     actual fun unload(sound: AudioSource) {
-        // Not necessary for JS implementation; UIAudioPool holds no references to UIAudioSegment so they are unloaded
-        // when garbage collected
+        loadedMap.remove(sound)
     }
 }
 
@@ -158,6 +169,27 @@ private suspend fun AudioSource.loadViaWebAudio(): PlayableAudio {
                 audioElement.pause()
                 audioElement.currentTime = 0.0
             }
+
+            override val currentTime: MutableReactive<Duration> = object : BaseListenable(), MutableReactive<Duration> {
+                override suspend fun set(value: Duration) {
+                    audioElement.currentTime = value.toDouble(DurationUnit.SECONDS)
+                }
+
+                override val state get() = ReactiveState(audioElement.currentTime.seconds)
+
+                var remover: (() -> Unit)? = null
+
+                override fun activate() {
+                    remover = AppState.animationFrame.addListener {
+                        if (!audioElement.paused) invokeAllListeners()
+                    }
+                }
+
+                override fun deactivate() {
+                    remover?.invoke()
+                    remover = null
+                }
+            }
         }
 
         var done = false
@@ -170,7 +202,7 @@ private suspend fun AudioSource.loadViaWebAudio(): PlayableAudio {
 
         when (val value = this) {
             is AudioRemote -> audioElement.src = value.url
-            is AudioRaw -> audioElement.src = URL.createObjectURL(Blob(arrayOf(value.data)))
+            is AudioRaw -> audioElement.src = value.url
             is AudioResource -> audioElement.src = basePath + value.relativeUrl
             is AudioLocal -> audioElement.src = URL.createObjectURL(value.file)
             else -> {}
@@ -254,7 +286,7 @@ private suspend fun AudioSource.loadViaHTMLAudio(): PlayableAudio {
         }
         when (val value = this) {
             is AudioRemote -> native.src = value.url
-            is AudioRaw -> native.src = URL.createObjectURL(Blob(arrayOf(value.data)))
+            is AudioRaw -> native.src = value.url
             is AudioResource -> native.src = basePath + value.relativeUrl
             is AudioLocal -> native.src = URL.createObjectURL(value.file)
             else -> {}

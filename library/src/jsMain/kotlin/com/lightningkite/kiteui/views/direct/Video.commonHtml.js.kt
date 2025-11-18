@@ -74,7 +74,7 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
             }
         }
     )
-actual val RawVideoView.nativeVolume: MutableReactive<Float>
+actual val RawVideoView.nativeVolume: MutableReactiveValue<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = {
@@ -86,7 +86,9 @@ actual val RawVideoView.nativeVolume: MutableReactive<Float>
             }
         },
         set = { value ->
+            native.setAttribute("muted", if(value == 0f) "true" else null)
             onElement { element ->
+                (element as HTMLVideoElement).muted = value == 0f
                 // On iOS Safari, control volume via gain node
                 if (AudioManager.shouldUseAudioContext) {
                     videoAudioRouting[this@nativeVolume]?.gainNode?.gain?.value = value.toDouble()

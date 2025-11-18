@@ -2,6 +2,7 @@
 package com.lightningkite.kiteui.models
 
 import android.graphics.Typeface
+import com.lightningkite.kiteui.Blob
 import com.lightningkite.kiteui.views.AndroidAppContext
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlin.math.min
@@ -51,3 +52,14 @@ actual class AudioResource(val resource: Int) : AudioSource()
 actual val Dimension.px: Double get() = value.toDouble()
 actual val Dimension.canvasUnits: Double get() = value.toDouble()
 actual val Dimension.viewUnits: Double get() = value.toDouble()
+
+
+actual class ImageRaw actual constructor(val data: Blob) : ImageSource() {
+    actual fun release() = Unit
+}
+actual class VideoRaw actual constructor(val data: Blob) : VideoSource() {
+    actual fun release() = Unit
+}
+actual class AudioRaw actual constructor(val data: Blob) : AudioSource() {
+    actual fun release() = Unit
+}

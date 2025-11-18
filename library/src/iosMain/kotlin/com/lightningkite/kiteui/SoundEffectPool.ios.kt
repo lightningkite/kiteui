@@ -23,16 +23,20 @@ actual class SoundEffectPool actual constructor(concurrency: Int) {
     actual suspend fun preload(sound: AudioSource) {
     }
 
-    actual suspend fun play(sound: AudioSource): PlayingSoundEffect = object : PlayingSoundEffect {
-        override var isPlaying: Boolean
-            get() = false
-            set(value) {}
-        override var volume: Float
-            get() = 0f
-            set(value) {}
+    actual suspend fun play(sound: AudioSource, volume: Float, loop: Boolean): PlayingSoundEffect {
+        TODO("This is incomplete...")
+        return object : PlayingSoundEffect {
+            override var isPlaying: Boolean
+                get() = false
+                set(value) {}
+            override var volume: Float = volume
+                set(value) {
+                    field = value
+                }
 
-        override fun stop() {
+            override fun stop() {
 
+            }
         }
     }
 

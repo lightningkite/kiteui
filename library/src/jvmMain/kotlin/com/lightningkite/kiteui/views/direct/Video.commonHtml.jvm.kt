@@ -23,11 +23,15 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
         }
     )
 
-actual val RawVideoView.nativeVolume: MutableReactive<Float>
+actual val RawVideoView.nativeVolume: MutableReactiveValue<Float>
     get() = native.vprop(
         eventName = "volumechange",
         get = { attributes["data-volume"]?.toFloatOrNull() ?: 1f },
-        set = { value -> setAttribute("data-volume", value.toString()) }
+        set = { value ->
+            setAttribute("data-volume", value.toString())
+            if(value == 0f) setAttribute("muted", "true")
+            else setAttribute("muted", null)
+        }
     )
 
 actual fun RawVideoView.nativeLoad(url: String?) {

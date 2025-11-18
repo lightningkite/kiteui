@@ -45,7 +45,7 @@ actual abstract class RawImageViewLike(
     protected fun ImageSource?.toUrl(): String? = when(val value = this) {
         null -> ""
         is ImageRemote -> value.url
-        is ImageRaw -> createObjectURL(value.data)
+        is ImageRaw -> value.url
         is ImageResource -> context.basePath + value.relativeUrl
         is ImageLocal -> createObjectURL(value.file)
         is ImageVector -> value.vectorToSvgDataUrl()

@@ -31,7 +31,7 @@ expect class RawVideoView(
      */
     val sourceDuration: Reactive<Double?>
     val playing: MutableReactive<Boolean>
-    val volume: MutableReactive<Float>
+    val volume: MutableReactiveValue<Float>
     var showControls: Boolean
     var loop: Boolean
     val completedPlay: Listenable

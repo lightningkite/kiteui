@@ -26,7 +26,7 @@ actual class RawVideoView actual constructor(
         // Set initial attributes
         when (val value = source) {
             is VideoRemote -> native.attributes.src = value.url
-            is VideoRaw -> native.attributes.src = createObjectURL(value.data)
+            is VideoRaw -> native.attributes.src = value.url
             is VideoResource -> native.attributes.src = context.basePath + value.relativeUrl
             is VideoLocal -> native.attributes.src = createObjectURL(value.file)
             else -> native.attributes.src = ""
@@ -42,7 +42,7 @@ actual class RawVideoView actual constructor(
     actual val time: MutableReactive<Double> = nativeTime.lens(get = {it.toDouble(DurationUnit.SECONDS)}, set = {it.seconds})
     actual val currentTime: MutableReactive<Duration> = nativeTime
     actual val playing: MutableReactive<Boolean> = nativePlaying
-    actual val volume: MutableReactive<Float> = nativeVolume
+    actual val volume: MutableReactiveValue<Float> = nativeVolume
     actual val sourceDuration: Reactive<Double?> = nativeDuration
 
     actual var showControls: Boolean
@@ -61,7 +61,7 @@ actual class RawVideoView actual constructor(
 
 expect val RawVideoView.nativeTime: MutableReactive<Duration>
 expect val RawVideoView.nativePlaying: MutableReactive<Boolean>
-expect val RawVideoView.nativeVolume: MutableReactive<Float>
+expect val RawVideoView.nativeVolume: MutableReactiveValue<Float>
 expect val RawVideoView.nativeSeekableTimeRanges: List<ClosedFloatingPointRange<Double>>
 expect val RawVideoView.nativeDuration: Reactive<Double?>
 

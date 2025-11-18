@@ -502,19 +502,25 @@ data class ImageRemote(val url: String) : ImageSource() {
     override fun toString(): String = "ImageRemote($url)"
 }
 
-data class ImageRaw(val data: Blob) : ImageSource()
+expect class ImageRaw constructor(data: Blob) : ImageSource {
+    fun release()
+}
 data class ImageLocal(val file: FileReference) : ImageSource()
 expect class ImageResource : ImageSource
 
 expect sealed class VideoSource(): VisualMediaSource
 data class VideoRemote(val url: String) : VideoSource()
-data class VideoRaw(val data: Blob) : VideoSource()
+expect class VideoRaw constructor(data: Blob) : VideoSource {
+    fun release()
+}
 data class VideoLocal(val file: FileReference) : VideoSource()
 expect class VideoResource : VideoSource
 
 expect sealed class AudioSource()
 data class AudioRemote(val url: String) : AudioSource()
-data class AudioRaw(val data: Blob) : AudioSource()
+expect class AudioRaw constructor(data: Blob) : AudioSource {
+    fun release()
+}
 data class AudioLocal(val file: FileReference) : AudioSource()
 expect class AudioResource : AudioSource
 

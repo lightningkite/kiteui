@@ -327,11 +327,15 @@ actual class RawVideoView actual constructor(
                     controller.player?.pause()
             }
 
-    actual val volume: MutableReactive<Float>
-        get() = _volume
-            .withWrite {
-                controller.player?.volume = it
-            }
+    actual val volume: MutableReactiveValue<Float>
+        get() = object: MutableReactiveValue<Float> by _volume {
+            override var value: Float
+                get() = _volume.value
+                set(value) {
+                    controller.player?.volume = value
+                    _volume.value = value
+                }
+        }
 
     actual val sourceDuration: Reactive<Double?>
         get() = _sourceDuration
