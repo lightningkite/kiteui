@@ -6,9 +6,12 @@ import android.net.Uri
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AppState
 import com.lightningkite.kiteui.views.AndroidAppContext
+import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.reactive.core.AppScope
 import com.lightningkite.reactive.core.BaseListenable
+import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import com.lightningkite.reactive.extensions.invokeAllSafe
 import kotlinx.coroutines.*
@@ -171,3 +174,8 @@ actual suspend fun AudioSource.load(): PlayableAudio {
         }
     }
 }
+
+actual suspend fun RContext.enableAudio() {
+}
+
+actual val RContext.isAudioEnabled: Reactive<Boolean> get() = Constant(true)

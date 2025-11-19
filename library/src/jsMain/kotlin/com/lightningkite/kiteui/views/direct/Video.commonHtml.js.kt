@@ -59,10 +59,11 @@ actual val RawVideoView.nativePlaying: MutableReactive<Boolean>
                         onFulfilled = {
                         },
                         onRejected = { error ->
-                            if(error.asDynamic().message?.contains("AbortError") == true) {
+                            val msg: String = error.asDynamic().message ?: error.toString()
+                            if(msg.contains("AbortError")) {
                                 return@then
                             }
-                            if(error.asDynamic().message?.contains("NotAllowedError") == true) {
+                            if(msg.contains("NotAllowedError")) {
                                 return@then
                             }
                             Exception("Failed to play ${this}", error as? Throwable).report()
@@ -91,6 +92,7 @@ actual val RawVideoView.nativeVolume: MutableReactiveValue<Float>
                 (element as HTMLVideoElement).muted = value == 0f
                 // On iOS Safari, control volume via gain node
                 if (AudioManager.shouldUseAudioContext) {
+                    (element as HTMLVideoElement).volume = 1.0
                     videoAudioRouting[this@nativeVolume]?.gainNode?.gain?.value = value.toDouble()
                 } else {
                     // Standard HTML5 volume control

@@ -1,7 +1,10 @@
 package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.AudioSource
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.Signal
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -30,3 +33,8 @@ actual suspend fun AudioSource.load(): PlayableAudio = object: PlayableAudio {
     override val currentTime: MutableReactive<Duration> = Signal(0.seconds)
     override var volume: Float = 1f
 }
+
+actual suspend fun RContext.enableAudio() {
+}
+
+actual val RContext.isAudioEnabled: Reactive<Boolean> get() = Constant(true)

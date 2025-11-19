@@ -2,6 +2,8 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.AudioResource
 import com.lightningkite.kiteui.models.AudioSource
+import com.lightningkite.kiteui.reactive.Action
+import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +11,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
+
+/**
+ * Only works if triggered by a user interaction.
+ */
+expect suspend fun RContext.enableAudio()
+expect val RContext.isAudioEnabled: Reactive<Boolean>
 
 expect class SoundEffectPool(concurrency: Int = 4) {
     suspend fun preload(sound: AudioSource)

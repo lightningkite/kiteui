@@ -1,8 +1,15 @@
 package com.lightningkite.kiteui
 
+import com.lightningkite.kiteui.views.RContext
+import com.lightningkite.reactive.core.BasicListenable
+import com.lightningkite.reactive.core.Constant
+import com.lightningkite.reactive.core.Reactive
+import com.lightningkite.reactive.core.Signal
+import com.lightningkite.reactive.lensing.lensListenable
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLMediaElement
+import org.w3c.dom.events.Event
 import kotlin.js.Promise
 
 /**
@@ -18,39 +25,36 @@ object AudioManager {
 
     private val context: AudioContext by lazy {
         val ctx = AudioContext()
-
-        // Browser requires user interaction to resume AudioContext
-        // Resume on first touch/click/play
-        val resumeAudio: (dynamic) -> Unit = { event ->
-            if (ctx.state == "suspended") {
-                if (!isResuming) {
-                    isResuming = true
-                    console.log("AudioManager: User gesture detected, resuming AudioContext")
-                    ctx.resume().then(
-                        onFulfilled = {
-                            console.log("AudioManager: AudioContext resumed successfully, state: ${ctx.state}")
-                            isResuming = false
-                        },
-                        onRejected = { error ->
-                            console.error("AudioManager: Failed to resume AudioContext", error)
-                            isResuming = false
-                        }
-                    )
-                } else {
-                    console.log("AudioManager: Already attempting to resume, skipping")
-                }
-            }
-        }
-
-        document.addEventListener("touchstart", resumeAudio)
-        document.addEventListener("click", resumeAudio)
-        document.addEventListener("mousedown", resumeAudio)
-        document.addEventListener("keydown", resumeAudio)
+        document.addEventListener("touchstart", { _ -> requestAudioUse() })
+        document.addEventListener("click", { _ -> requestAudioUse() })
+        document.addEventListener("mousedown", { _ -> requestAudioUse() })
+        document.addEventListener("keydown", { _ -> requestAudioUse() })
         // Listen for play events in capture phase to catch video play events
         val playOptions = js("({capture: true})")
-        document.addEventListener("play", resumeAudio, playOptions)
+        document.addEventListener("play", { _ -> requestAudioUse() }, playOptions)
 
         ctx
+    }
+    public fun requestAudioUse() {
+        if (context.state == "suspended") {
+            if (!isResuming) {
+                isResuming = true
+                console.log("AudioManager: User gesture detected, resuming AudioContext")
+                context.resume().then(
+                    onFulfilled = {
+                        console.log("AudioManager: AudioContext resumed successfully, state: ${context.state}")
+                        isResuming = false
+                        audioEnablementChange.invokeAll()
+                    },
+                    onRejected = { error ->
+                        console.error("AudioManager: Failed to resume AudioContext", error)
+                        isResuming = false
+                    }
+                )
+            } else {
+                console.log("AudioManager: Already attempting to resume, skipping")
+            }
+        }
     }
 
     private val videoSources = mutableMapOf<String, MediaElementAudioSourceNode>()
@@ -206,6 +210,8 @@ external class AudioContext {
      * Decode audio data from an ArrayBuffer into an AudioBuffer
      */
     fun decodeAudioData(arrayBuffer: org.khronos.webgl.ArrayBuffer): Promise<AudioBuffer>
+
+    fun addEventListener(event: String, listener: (Event) -> Unit)
 }
 
 /**
@@ -310,4 +316,18 @@ private fun jsObject(init: dynamic.() -> Unit): dynamic {
     val obj = js("{}")
     obj.init()
     return obj
+}
+
+actual suspend fun RContext.enableAudio() {
+    AudioManager.requestAudioUse()
+}
+private val audioEnablementChange by lazy {
+    BasicListenable().also {
+        AudioManager.getContext().addEventListener("statechange") { _ ->
+            it.invokeAll()
+        }
+    }
+}
+actual val RContext.isAudioEnabled: Reactive<Boolean> get() = audioEnablementChange.lensListenable {
+    AudioManager.getContext().state == "running"
 }

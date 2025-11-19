@@ -3,6 +3,7 @@ package com.lightningkite.kiteui
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.navigation.basePath
 import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.reactive.context.*
 import com.lightningkite.reactive.core.*
 import com.lightningkite.reactive.extensions.*

@@ -2,9 +2,12 @@ package com.lightningkite.kiteui
 
 import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.reactive.AppState
+import com.lightningkite.kiteui.views.RContext
 import com.lightningkite.kiteui.views.direct.inBackground
 import com.lightningkite.reactive.core.BaseListenable
+import com.lightningkite.reactive.core.Constant
 import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.Reactive
 import com.lightningkite.reactive.core.ReactiveState
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFAudio.*
@@ -158,3 +161,7 @@ actual suspend fun AudioSource.load(): PlayableAudio {
 }
 
 private val keepAlive = HashSet<Any?>()
+actual suspend fun RContext.enableAudio() {
+}
+
+actual val RContext.isAudioEnabled: Reactive<Boolean> get() = Constant(true)
