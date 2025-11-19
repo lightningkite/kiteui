@@ -1,39 +1,26 @@
 package com.lightningkite.kiteui.views.direct
 
-import com.lightningkite.kiteui.ExternalServices
-import com.lightningkite.kiteui.models.Align
-import com.lightningkite.kiteui.models.ClickableSemantic
-import com.lightningkite.kiteui.models.Dimension
-import com.lightningkite.kiteui.models.DownSemantic
-import com.lightningkite.kiteui.models.FocusSemantic
-import com.lightningkite.kiteui.models.ScreenTransition
-import com.lightningkite.kiteui.models.ScreenTransitions
-import com.lightningkite.kiteui.models.ThemeAndBack
-import com.lightningkite.kiteui.models.px
-import com.lightningkite.kiteui.objc.presentationController
-import com.lightningkite.kiteui.reactive.*
+import com.lightningkite.kiteui.models.*
 import com.lightningkite.kiteui.views.*
 import com.lightningkite.kiteui.views.l2.overlayFrame
-import com.lightningkite.kiteui.views.popoverWriter
-import com.lightningkite.reactive.context.*
-import com.lightningkite.reactive.core.*
-import com.lightningkite.reactive.extensions.*
-import com.lightningkite.reactive.lensing.*
-import com.lightningkite.readable.*
+import com.lightningkite.reactive.context.invoke
+import com.lightningkite.reactive.context.onRemove
+import com.lightningkite.reactive.core.MutableReactive
+import com.lightningkite.reactive.core.Signal
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import platform.UIKit.*
-import platform.UIKit.UISheetPresentationController
-import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
-private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(null)
+private var ViewWriter.bottomSheetState: MutableReactive<BottomSheetState>? by rContextAddon<MutableReactive<BottomSheetState>?>(
+    null
+)
 
 actual class CoordinatorFrame actual constructor(context: RContext) : RView(context) {
-    
+
     override val native = FrameLayout()
 
     // The system only keeps weak references to the following objects, so we must keep our own references for the
@@ -50,7 +37,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         startState: BottomSheetState,
         shouldRemoveExpandedCorners: Boolean,
         blockBehind: Boolean,
-        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable
+        content: ViewWriter.(control: BottomSheetControl) -> ViewModifiable,
     ) {
         val viewController = object : UIViewController(null, null) {
             override fun viewDidDisappear(animated: Boolean) {
@@ -64,22 +51,17 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 viewController.dismissViewControllerAnimated(true) {}
             }
         }
-        popoverCloser?.invoke()
-        popoverCloser = { control.close() }
         viewController.kiteUi(context.split(viewController)) {
-            popoverCloser = null
-
             beforeNextElementSetup {
                 parent = this@CoordinatorFrame
                 launch {
-                    while(true) {
+                    while (true) {
                         delay(100)
                         refreshTheming()
                     }
                 }
             }
             frame {
-                overlayFrame = this
                 content(control)
             }
         }
@@ -99,7 +81,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
         }
         viewController.definesPresentationContext = true
         (viewController.presentationController as? UISheetPresentationController)?.apply {
-            if(partialRatio < 0.99) {
+            if (partialRatio < 0.99) {
                 detents = listOf(
                     partialDetent,
                     wholeDetent,
@@ -126,7 +108,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun leftSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable,
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions(ScreenTransition.Pop, ScreenTransition.Push, ScreenTransition.Fade)
@@ -138,28 +120,24 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = null
             }
         }
-        val popoverWriter = popoverWriter(popoverRoot = true) { closePanel() }
-        with(popoverWriter) {
-            withoutAnimation {
-                val control = object : SlidingPanelControl {
-                    override fun close() {
-                        this@CoordinatorFrame.closePopovers()
+        withoutAnimation {
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            willRemove = frame {
+                if (ratio == null) {
+                    align(Align.Start, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(ratio) - content(control)
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
                     }
                 }
-                willRemove = frame {
-                    overlayFrame = this
-                    if (ratio == null) {
-                        align(Align.Start, Align.Stretch) - content(control)
-                    } else {
-                        row {
-                            gap = 0.px
-                            ignoreInteraction = true
-                            weight(ratio) - content(control)
-                            weight(1f - ratio) - frame { ignoreInteraction = true }
-                        }
-                    }
-                }.rView
-            }
+            }.rView
         }
         willRemove?.animateIn(transition.forward)
     }
@@ -167,7 +145,7 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
     actual fun rightSlidingPanel(
         ratio: Float?,
         blockBehind: Boolean,
-        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable
+        content: ViewWriter.(control: SlidingPanelControl) -> ViewModifiable,
     ) {
         var willRemove: RView? = null
         val transition = ScreenTransitions.HorizontalSlide
@@ -179,28 +157,25 @@ actual class CoordinatorFrame actual constructor(context: RContext) : RView(cont
                 willRemove = null
             }
         }
-        val popoverWriter = popoverWriter(popoverRoot = true) { closePanel() }
-        with(popoverWriter) {
-            withoutAnimation {
-                val control = object : SlidingPanelControl {
-                    override fun close() {
-                        this@CoordinatorFrame.closePopovers()
+
+        withoutAnimation {
+            val control = object : SlidingPanelControl {
+                override fun close() {
+                    closePanel()
+                }
+            }
+            willRemove = frame {
+                if (ratio == null) {
+                    align(Align.End, Align.Stretch) - content(control)
+                } else {
+                    row {
+                        gap = 0.px
+                        ignoreInteraction = true
+                        weight(1f - ratio) - frame { ignoreInteraction = true }
+                        weight(ratio) - content(control)
                     }
                 }
-                willRemove = frame {
-                    overlayFrame = this
-                    if (ratio == null) {
-                        align(Align.End, Align.Stretch) - content(control)
-                    } else {
-                        row {
-                            gap = 0.px
-                            ignoreInteraction = true
-                            weight(1f - ratio) - frame { ignoreInteraction = true }
-                            weight(ratio) - content(control)
-                        }
-                    }
-                }.rView
-            }
+            }.rView
         }
         willRemove?.animateIn(transition.forward)
     }
