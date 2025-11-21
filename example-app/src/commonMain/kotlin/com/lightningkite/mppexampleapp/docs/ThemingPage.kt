@@ -6,9 +6,11 @@ import com.lightningkite.kiteui.models.Color
 import com.lightningkite.kiteui.models.DownSemantic
 import com.lightningkite.kiteui.models.HoverSemantic
 import com.lightningkite.kiteui.models.Semantic
+import com.lightningkite.kiteui.models.SemanticOverrides
 import com.lightningkite.kiteui.models.Theme
 import com.lightningkite.kiteui.models.ThemeAndBack
 import com.lightningkite.kiteui.models.Transformation
+import com.lightningkite.kiteui.models.override
 import com.lightningkite.kiteui.models.rem
 import com.lightningkite.kiteui.reactive.*
 import com.lightningkite.kiteui.views.*
@@ -184,11 +186,11 @@ data object GlassSemantic : Semantic("glass") {
         return theme.withBack(
             background = Color.gray.withAlpha(0.25f),
             blurBackground = 1.rem,
-            semanticOverrides = mapOf(
-                HoverSemantic to {
+            semanticOverrides = SemanticOverrides(
+                HoverSemantic.override {
                     it.withBack(transform = Transformation(scaleX = 1.2, scaleY = 1.2))
                 },
-                DownSemantic to {
+                DownSemantic.override {
                     it.withBack(transform = Transformation(scaleX = 0.9, scaleY = 0.9))
                 },
             )
