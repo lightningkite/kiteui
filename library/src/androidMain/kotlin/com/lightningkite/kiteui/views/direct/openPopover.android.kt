@@ -27,7 +27,7 @@ actual fun RView.openPopover(
                 it.copy(
                     id = "mnubtndsm",
                     revert = true,
-                    derivations = mapOf(
+                    overrides = mapOf(
                         DismissSemantic to {
                             it.copy(
                                 background = Color.transparent,

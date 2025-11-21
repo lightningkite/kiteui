@@ -22,7 +22,7 @@ fun Theme.Companion.flat(
     foreground = if(baseBrightness > 0.6f) Color.black else Color.white,
     background = HSPColor(hue = hue, saturation = saturation, brightness = baseBrightness).toRGB(),
     outline = HSPColor(hue = hue, saturation = saturation, brightness = 0.4f).toRGB(),
-    derivations = mapOf(
+    overrides = mapOf(
         HeaderSemantic to {
             it.withoutBack(font = title)
         },

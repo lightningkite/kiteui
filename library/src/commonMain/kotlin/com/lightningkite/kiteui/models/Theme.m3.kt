@@ -28,7 +28,7 @@ fun Theme.Companion.material3(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    derivations = mapOf(
+    overrides = mapOf(
         OuterSemantic to {
             it.alter(
                 cascading = false,

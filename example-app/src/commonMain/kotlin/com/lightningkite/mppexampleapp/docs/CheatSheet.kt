@@ -46,7 +46,7 @@ object CheatSheet : DocPage {
 
     data object LinkSemantic : Semantic("link") {
         override fun default(theme: Theme): ThemeAndBack = theme.withoutBack(
-            derivations = mapOf(
+            overrides = mapOf(
                 HoverSemantic to {
                     it.withoutBack(
                         font = it.font.copy(underline = true)

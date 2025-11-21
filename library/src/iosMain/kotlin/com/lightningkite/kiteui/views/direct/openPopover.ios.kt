@@ -6,7 +6,6 @@ import com.lightningkite.kiteui.models.DismissSemantic
 import com.lightningkite.kiteui.models.PopoverPreferredDirection
 import com.lightningkite.kiteui.models.PopoverSemantic
 import com.lightningkite.kiteui.models.ThemeDerivation
-import com.lightningkite.kiteui.models.ThemeDerivation.Companion.invoke
 import com.lightningkite.kiteui.models.dp
 import com.lightningkite.kiteui.views.RView
 import com.lightningkite.kiteui.views.closePopovers
@@ -28,7 +27,7 @@ actual fun RView.openPopover(
                 it.copy(
                     id = "mnubtndsm",
                     revert = true,
-                    derivations = mapOf(
+                    overrides = mapOf(
                         DismissSemantic to {
                             it.copy(
                                 background = Color.transparent,

@@ -16,7 +16,7 @@ fun Theme.Companion.clean(primary: Color?): Theme = run {
         cornerRadii = CornerRadii.Constant(0.5.rem),
         gap = 0.75.rem,
         padding = Edges(0.75.rem),
-        derivations = mapOf(
+        overrides = mapOf(
             CardSemantic to {
                 if(it.background != Color.white)
                     it.withBack(background = it.background.backInvert(), foreground = Color.black)

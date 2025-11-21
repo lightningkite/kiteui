@@ -22,7 +22,7 @@ actual class MenuButton actual constructor(context: RContext): RView(context) {
                         it.copy(
                             id = "mnubtndsm",
                             revert = true,
-                            derivations = mapOf(
+                            overrides = mapOf(
                                 DismissSemantic to {
                                     it.copy(
                                         background = Color.transparent,

@@ -27,7 +27,7 @@ fun Theme.Companion.material(
     outlineWidth = outlineWidth,
     foreground = foreground,
     background = background,
-    derivations = mapOf(
+    overrides = mapOf(
         OuterSemantic to {
             it.alter(
                 cascading = false,
@@ -164,7 +164,7 @@ object MaterialLikeTheme {
 
 fun Theme.randomTitleFontSettings() = copy(
     id = "${Random.nextInt()}",
-    derivations = mapOf(
+    overrides = mapOf(
         HeaderSemantic to {
             val old = this@randomTitleFontSettings[HeaderSemantic]
             old.theme.copy(
